@@ -1,3 +1,6 @@
+//
+// Voxglitch "repeater" module for VCV Rack
+//
 // This code is heavily based on Clément Foulc's PLAY module
 // which can be found here:  https://github.com/cfoulc/cf/blob/v1/src/PLAY.cpp
 
@@ -7,14 +10,11 @@
 #include "dr_wav.h"
 #include <vector>
 #include "cmath"
-#include <dirent.h>
-#include <algorithm> //----added by Joakim Lindbom
 
 using namespace std;
 
 #define NUMBER_OF_SAMPLES 5
 #define NUMBER_OF_SAMPLES_FLOAT 5.0
-#define WAVEFORM_DISPLAY_WIDTH 200
 
 struct sample
 {
@@ -23,7 +23,6 @@ struct sample
 	drwav_uint64 total_sample_count;
 	bool loading;
 	vector<float> playBuffer;
-	vector<double> display_buffer;
 	unsigned int sample_rate;
 	unsigned int channels;
 
@@ -69,42 +68,23 @@ struct sample
 			this->loading = false;
 			this->filename = rack::string::filename(path);
 			this->path = path;
-
-			// Create a vector that holds waveform information for dispay
-			for (unsigned int i=0; i < this->total_sample_count; i = i + (this->total_sample_count / WAVEFORM_DISPLAY_WIDTH))
-			{
-				this->display_buffer.push_back(this->playBuffer[i]);
-			}
 		}
 		else
 		{
 			this->loading = false;
 		}
 	};
-
-
 };
 
 struct Repeater : Module
 {
-	float phase = 0.f;
-	float blinkPhase = 0.f;
 	bool run = false;
-
-	unsigned int channels;
 	unsigned int selected_sample_slot = 0;
-
 	bool led_states[NUMBER_OF_SAMPLES];
 	float samplePos = 0;
-
-	int sampnumber = 0;
 	int step = 0;
-	// vector <std::string> fichier;
 
 	sample samples[NUMBER_OF_SAMPLES];
-
-	// Input triggers
-	dsp::SchmittTrigger loadsampleTrigger;
 	dsp::SchmittTrigger playTrigger;
 
 	enum ParamIds {
@@ -183,26 +163,29 @@ struct Repeater : Module
 		}
 	}
 
-	void process(const ProcessArgs &args) override {
-
+	void process(const ProcessArgs &args) override
+	{
 		unsigned int sample_select_input_value = (unsigned int) floor(NUMBER_OF_SAMPLES_FLOAT * (((inputs[SAMPLE_SELECT_INPUT].getVoltage() / 10.0) * params[SAMPLE_SELECT_ATTN_KNOB].getValue()) + params[SAMPLE_SELECT_KNOB].getValue()));
 
 		if(sample_select_input_value >= NUMBER_OF_SAMPLES) sample_select_input_value = NUMBER_OF_SAMPLES - 1;
 
-		for(int i=0; i < NUMBER_OF_SAMPLES; i++)
+		if(selected_sample_slot != sample_select_input_value)
 		{
-			led_states[i] = false;
+			for(int i=0; i < NUMBER_OF_SAMPLES; i++)
+			{
+				led_states[i] = false;
+			}
+
+			selected_sample_slot = sample_select_input_value;
+			led_states[selected_sample_slot] = true;
+
+			// TODO: make this based on NUMBER_OF_SAMPLES
+			lights[SAMPLE_SELECT_1_LIGHT].setBrightness(led_states[0] ? 0.9f : 0.f);
+			lights[SAMPLE_SELECT_2_LIGHT].setBrightness(led_states[1] ? 0.9f : 0.f);
+			lights[SAMPLE_SELECT_3_LIGHT].setBrightness(led_states[2] ? 0.9f : 0.f);
+			lights[SAMPLE_SELECT_4_LIGHT].setBrightness(led_states[3] ? 0.9f : 0.f);
+			lights[SAMPLE_SELECT_5_LIGHT].setBrightness(led_states[4] ? 0.9f : 0.f);
 		}
-
-		selected_sample_slot = sample_select_input_value;
-		led_states[selected_sample_slot] = true;
-
-		// TODO: make this based on NUMBER_OF_SAMPLES
-		lights[SAMPLE_SELECT_1_LIGHT].setBrightness(led_states[0] ? 0.9f : 0.f);
-		lights[SAMPLE_SELECT_2_LIGHT].setBrightness(led_states[1] ? 0.9f : 0.f);
-		lights[SAMPLE_SELECT_3_LIGHT].setBrightness(led_states[2] ? 0.9f : 0.f);
-		lights[SAMPLE_SELECT_4_LIGHT].setBrightness(led_states[3] ? 0.9f : 0.f);
-		lights[SAMPLE_SELECT_5_LIGHT].setBrightness(led_states[4] ? 0.9f : 0.f);
 
 		sample *selected_sample = &samples[selected_sample_slot];
 
@@ -252,8 +235,7 @@ struct Repeater : Module
 //
 // SampleLabel
 //
-// Defines a transparent widget for showing the labels next to the sample
-// selection buttons.
+// Defines a transparent widget for showing the labels next to the sample selection LEDs.
 
 struct SampleLabel : TransparentWidget
 {
@@ -404,7 +386,7 @@ struct RepeaterWidget : ModuleWidget
 		assert(module);
 
 		//
-		// Add the three "Load Sample.." menu options to the right-click context menu
+		// Add the five "Load Sample.." menu options to the right-click context menu
 		//
 
 		menu->addChild(new MenuEntry);
