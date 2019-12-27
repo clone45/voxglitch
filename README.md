@@ -4,7 +4,7 @@ Modules for VCV Rack.  More info coming soon.
 
 ## Repeater
 
-Repeater is a stuttering sample player.  It sounds like if you're CD player started skipping.  
+Repeater is a stuttering sample player.  It sounds like if your CD player started skipping.  
 
 ### Inputs
 
