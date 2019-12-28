@@ -87,6 +87,7 @@ struct Repeater : Module
 
 	sample samples[NUMBER_OF_SAMPLES];
 	dsp::SchmittTrigger playTrigger;
+	dsp::PulseGenerator triggerOutputPulse;
 
 	enum ParamIds {
 		CLOCK_DIVISION_KNOB,
@@ -160,6 +161,8 @@ struct Repeater : Module
 
 	void process(const ProcessArgs &args) override
 	{
+		bool trigger_output_pulse = false;
+
 		unsigned int sample_select_input_value = (unsigned int) floor(NUMBER_OF_SAMPLES_FLOAT * (((inputs[SAMPLE_SELECT_INPUT].getVoltage() / 10.0) * params[SAMPLE_SELECT_ATTN_KNOB].getValue()) + params[SAMPLE_SELECT_KNOB].getValue()));
 
 		if(sample_select_input_value >= NUMBER_OF_SAMPLES) sample_select_input_value = NUMBER_OF_SAMPLES - 1;
@@ -190,6 +193,7 @@ struct Repeater : Module
 				{
 					selected_sample->run = true;
 					samplePos = selected_sample->total_sample_count * (((inputs[POSITION_INPUT].getVoltage() / 10.0) * params[POSITION_ATTN_KNOB].getValue()) + params[POSITION_KNOB].getValue());
+					triggerOutputPulse.trigger(0.01f);
 				}
 			}
 		}
@@ -220,6 +224,9 @@ struct Repeater : Module
 			selected_sample->run = false;
 			outputs[WAV_OUTPUT].setVoltage(0);
 		}
+
+		trigger_output_pulse = triggerOutputPulse.process(1.0 / args.sampleRate);
+		outputs[TRG_OUTPUT].setVoltage((trigger_output_pulse ? 10.0f : 0.0f));
 	}
 };
 
