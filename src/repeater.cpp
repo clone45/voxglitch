@@ -25,6 +25,7 @@ struct sample
 	vector<float> playBuffer;
 	unsigned int sample_rate;
 	unsigned int channels;
+	bool run = false;
 
 	sample()
 	{
@@ -76,9 +77,9 @@ struct sample
 	};
 };
 
+
 struct Repeater : Module
 {
-	bool run = false;
 	unsigned int selected_sample_slot = 0;
 	bool led_states[NUMBER_OF_SAMPLES];
 	float samplePos = 0;
@@ -107,7 +108,8 @@ struct Repeater : Module
 		NUM_INPUTS
 	};
 	enum OutputIds {
-		OUT_OUTPUT,
+		WAV_OUTPUT,
+		TRG_OUTPUT,
 		NUM_OUTPUTS
 	};
 	enum LightIds {
@@ -125,7 +127,7 @@ struct Repeater : Module
 	Repeater()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(PITCH_KNOB, -5.0f, 5.0f, -1.7f, "PitchKnob");
+		configParam(PITCH_KNOB, -1.0f, 1.0f, 0.0f, "PitchKnob");
 		configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "PitchAttnKnob");
 		configParam(CLOCK_DIVISION_KNOB, 0.0f, 10.0f, 0.0f, "ClockDivisionKnob");
 		configParam(CLOCK_DIVISION_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "ClockDivisionAttnKnob");
@@ -133,13 +135,6 @@ struct Repeater : Module
 		configParam(POSITION_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "PositionAttnKnob");
 		configParam(SAMPLE_SELECT_KNOB, 0.0f, 1.0f, 0.0f, "SampleSelectKnob");
 		configParam(SAMPLE_SELECT_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "SampleSelectAttnKnob");
-
-		for(int sample_slot = 0; sample_slot < NUMBER_OF_SAMPLES; sample_slot++ )
-		{
-			led_states[sample_slot] = false;
-		}
-
-		led_states[0] = true;
 	}
 
 	json_t *dataToJson() override
@@ -171,20 +166,7 @@ struct Repeater : Module
 
 		if(selected_sample_slot != sample_select_input_value)
 		{
-			for(int i=0; i < NUMBER_OF_SAMPLES; i++)
-			{
-				led_states[i] = false;
-			}
-
 			selected_sample_slot = sample_select_input_value;
-			led_states[selected_sample_slot] = true;
-
-			// TODO: make this based on NUMBER_OF_SAMPLES
-			lights[SAMPLE_SELECT_1_LIGHT].setBrightness(led_states[0] ? 0.9f : 0.f);
-			lights[SAMPLE_SELECT_2_LIGHT].setBrightness(led_states[1] ? 0.9f : 0.f);
-			lights[SAMPLE_SELECT_3_LIGHT].setBrightness(led_states[2] ? 0.9f : 0.f);
-			lights[SAMPLE_SELECT_4_LIGHT].setBrightness(led_states[3] ? 0.9f : 0.f);
-			lights[SAMPLE_SELECT_5_LIGHT].setBrightness(led_states[4] ? 0.9f : 0.f);
 		}
 
 		sample *selected_sample = &samples[selected_sample_slot];
@@ -206,60 +188,73 @@ struct Repeater : Module
 
 				if(step == 0)
 				{
-					run = true;
+					selected_sample->run = true;
 					samplePos = selected_sample->total_sample_count * (((inputs[POSITION_INPUT].getVoltage() / 10.0) * params[POSITION_ATTN_KNOB].getValue()) + params[POSITION_KNOB].getValue());
 				}
 			}
 		}
 
-		if ((! selected_sample->loading) && (run) && (selected_sample->total_sample_count > 0) && ((abs(floor(samplePos)) < selected_sample->total_sample_count)))
+		if ((! selected_sample->loading) && (selected_sample->run) && (selected_sample->total_sample_count > 0) && ((abs(floor(samplePos)) < selected_sample->total_sample_count)))
 		{
 			if (samplePos >= 0)
 			{
-				outputs[OUT_OUTPUT].setVoltage(5 * selected_sample->playBuffer[floor(samplePos)]);
+				outputs[WAV_OUTPUT].setVoltage(5 * selected_sample->playBuffer[floor(samplePos)]);
 			}
 			else
 			{
-				outputs[OUT_OUTPUT].setVoltage(5 * selected_sample->playBuffer[floor(selected_sample->total_sample_count - 1 + samplePos)]);
+				outputs[WAV_OUTPUT].setVoltage(5 * selected_sample->playBuffer[floor(selected_sample->total_sample_count - 1 + samplePos)]);
 			}
-			samplePos = samplePos + 1 + (params[PITCH_KNOB].getValue()) / 3;
+
+			// Increment sample offset (pitch)
+			if (inputs[PITCH_INPUT].isConnected())
+			{
+				samplePos = samplePos + (selected_sample->sample_rate / args.sampleRate) + (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
+			}
+			else
+			{
+				samplePos = samplePos + (selected_sample->sample_rate / args.sampleRate) + params[PITCH_KNOB].getValue();
+			}
 		}
 		else
 		{
-			run = false;
-			outputs[OUT_OUTPUT].setVoltage(0);
+			selected_sample->run = false;
+			outputs[WAV_OUTPUT].setVoltage(0);
 		}
 	}
 };
 
-//
-// SampleLabel
-//
-// Defines a transparent widget for showing the labels next to the sample selection LEDs.
-
-struct SampleLabel : TransparentWidget
+struct Readout : TransparentWidget
 {
 	Repeater *module;
 
 	int frame = 0;
-	unsigned int sample_number = 0;
+	// unsigned int sample_number = 0;
 
 	shared_ptr<Font> font;
 
-	SampleLabel()
+	Readout()
 	{
 		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
 	}
 
 	void draw(const DrawArgs &args) override
 	{
-		std::string file_name = module ? module->samples[sample_number].filename : "load sample";
-		std::string to_display = "";
+		std::string to_display;
 
-		// Create a short version of the filename.  Essentially truncates the filename if it is too long.
-		for (int i=0; i<14; i++) to_display = to_display + file_name[i];
+		if(! module)
+		{
+			to_display = "load sample";
+		}
+		else
+		{
+			std::string file_name = module->samples[module->selected_sample_slot].filename;
+			to_display = "#" + std::to_string(module->selected_sample_slot + 1) + ":";
 
-		nvgFontSize(args.vg, 12);
+			// Create a short version of the filename.  Essentially truncates the filename if it is too long.
+			for (int i=0; i<20; i++) to_display = to_display + file_name[i];
+		}
+
+		nvgFontSize(args.vg, 13);
 		nvgFontFaceId(args.vg, font->handle);
 		nvgTextLetterSpacing(args.vg, 0);
 		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
@@ -280,7 +275,6 @@ struct MenuItemLoadSample : MenuItem
 		char *path = osdialog_file(OSDIALOG_OPEN, NULL, NULL, NULL);
 		if (path)
 		{
-			rm->run = false;
 			rm->samples[sample_number].load(path);
 			rm->samplePos = 0;
 			free(path);
@@ -288,23 +282,6 @@ struct MenuItemLoadSample : MenuItem
 	}
 };
 
-//
-// create_label_for_sample
-//
-// This function is simply to avoid a lot of duplicate code when creating the
-// labels for the three samples on the front panel.
-//
-
-SampleLabel* create_label_for_sample(Repeater* module, int sample_number, Vec position)
-{
-	SampleLabel *sample_label = new SampleLabel();
-	sample_label->box.pos = position;  // position of the widget on the panel
-	sample_label->box.size = Vec(110, 30); // bounding box of the widget
-	sample_label->module = module;
-	sample_label->sample_number = sample_number; // sample number starting at 0
-
-	return(sample_label);
-}
 
 struct RepeaterWidget : ModuleWidget
 {
@@ -322,7 +299,7 @@ struct RepeaterWidget : ModuleWidget
 		// Input and label for the sample speed input
 		// addParam(createParam<Trimpot>(Vec(30, 339), module, Repeater::LSPEED_PARAM));
 
-		// Input and label for the trigger input
+		// Input and label for the trigger input (which is labeled "CLK" on the front panel)
 		float trigger_input_x = 6.0;
 		float trigger_input_y = 20.0;
 		addInput(createInput<PJ301MPort>(mm2px(Vec(trigger_input_x, trigger_input_y)), module, Repeater::TRIG_INPUT));
@@ -355,29 +332,14 @@ struct RepeaterWidget : ModuleWidget
 		addParam(createParam<Trimpot>(mm2px(Vec(pitch_x + 16, pitch_y + 1)), module, Repeater::PITCH_ATTN_KNOB));
 		addParam(createParam<RoundLargeBlackKnob>(mm2px(Vec(pitch_x + 30, pitch_y - 3)), module, Repeater::PITCH_KNOB));
 
+		Readout *readout = new Readout();
+		readout->box.pos = mm2px(Vec(22.0, 22.0));
+		readout->box.size = Vec(110, 30); // bounding box of the widget
+		readout->module = module;
+		addChild(readout);
 
-		// Sample select leds
-		float sample_leds_x = 70;
-		float sample_leds_y = 48.0;
-		addChild(createLight<MediumLight<GreenLight>>(mm2px(Vec(sample_leds_x, sample_leds_y)), module, Repeater::SAMPLE_SELECT_1_LIGHT));
-		addChild(createLight<MediumLight<GreenLight>>(mm2px(Vec(sample_leds_x, sample_leds_y + 8)), module, Repeater::SAMPLE_SELECT_2_LIGHT));
-		addChild(createLight<MediumLight<GreenLight>>(mm2px(Vec(sample_leds_x, sample_leds_y + 16)), module, Repeater::SAMPLE_SELECT_3_LIGHT));
-		addChild(createLight<MediumLight<GreenLight>>(mm2px(Vec(sample_leds_x, sample_leds_y + 24)), module, Repeater::SAMPLE_SELECT_4_LIGHT));
-		addChild(createLight<MediumLight<GreenLight>>(mm2px(Vec(sample_leds_x, sample_leds_y + 32)), module, Repeater::SAMPLE_SELECT_5_LIGHT));
-
-		// Add text labels to show the sample filenames next to the three sample selection buttons
-		// These three calls to create_label_for_sample create and return instances of SampleLabel.
-		// Note: create_label_for_sample(Repeater* module, int sample_number, int position_x, int position_y)
-
-		int sample_label_x_offset = 6;
-		int sample_label_y_offset = 1;
-		addChild(create_label_for_sample(module, 0, mm2px(Vec(sample_leds_x + sample_label_x_offset, sample_leds_y + sample_label_y_offset))));
-		addChild(create_label_for_sample(module, 1, mm2px(Vec(sample_leds_x + sample_label_x_offset, sample_leds_y + 8 + sample_label_y_offset))));
-		addChild(create_label_for_sample(module, 2, mm2px(Vec(sample_leds_x + sample_label_x_offset, sample_leds_y + 16 + sample_label_y_offset))));
-		addChild(create_label_for_sample(module, 3, mm2px(Vec(sample_leds_x + sample_label_x_offset, sample_leds_y + 24 + sample_label_y_offset))));
-		addChild(create_label_for_sample(module, 4, mm2px(Vec(sample_leds_x + sample_label_x_offset, sample_leds_y + 32 + sample_label_y_offset))));
-
-		addOutput(createOutput<PJ301MPort>(Vec(321, 324), module, Repeater::OUT_OUTPUT));
+		addOutput(createOutput<PJ301MPort>(Vec(200, 324), module, Repeater::WAV_OUTPUT));
+		addOutput(createOutput<PJ301MPort>(Vec(200, 259), module, Repeater::TRG_OUTPUT));
 	}
 
 	void appendContextMenu(Menu *menu) override
