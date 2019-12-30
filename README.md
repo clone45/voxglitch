@@ -7,7 +7,7 @@ Modules for VCV Rack.  More info coming soon.
 
 ![Repeater](/docs/images/repeater-front-panel-1230224.png)
 =======
-Repeater is a stuttering sample player.  It sounds like if your CD player started skipping.  
+Repeater is a stuttering sample player.  It sounds like a skipping CD player.  
 
 ### Inputs
 
@@ -19,13 +19,28 @@ Here are the inputs:
 * WAV - selects between 5 samples that can be loaded via the context menu
 * PITCH - yep, pitch. Can be used to play samples backwards
 
+### Outputs
+
+* WAV - sample playback output
+* TRG - trigger output.  Fires whenever the sample "stutters"
+
+### Switches and Options
+
+* Smooth - Smooths out pops that would normally occur when setting the sample playback position via the POS input or when switching between .wav files via the WAV input.
+* Retrigger (context menu item) - Causes a sample to restart after reaching the end of playback.
+
 ### Minimal Usage
 
 ![Repeater](/docs/images/repeater-patch-example-1230224.png)
 
-1. Reproduce the patch example that I posted in the image above.
+1. Reproduce the patch example that I posted in the image above.  On the CLOCKED module, notice that the clock ratio for CLK 1 is set to X16.
 2. Right click on the module to load a .wav sample. I suggest that the sample be around 2 to 5 seconds long.
 3. Tweak the POS and DIV knobs!
+
+### Using with a Sequencer
+
+![Repeater](/docs/images/repeater-sequencer-example-1230252.png)
+
 
 ### Please note the following
 
