@@ -5,7 +5,7 @@ Modules for VCV Rack.  More info coming soon.
 ## Repeater
 
 
-![Repeater](/docs/images/repeater-front-panel.png)
+![Repeater](/docs/images/repeater-front-panel-1230224.png)
 =======
 Repeater is a stuttering sample player.  It sounds like if your CD player started skipping.  
 
@@ -21,7 +21,7 @@ Here are the inputs:
 
 ### Minimal Usage
 
-![Repeater](/docs/images/repeater-patch-example.png)
+![Repeater](/docs/images/repeater-patch-example-1230224.png)
 
 1. Reproduce the patch example that I posted in the image above.
 2. Right click on the module to load a .wav sample. I suggest that the sample be around 2 to 5 seconds long.
