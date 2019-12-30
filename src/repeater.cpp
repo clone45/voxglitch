@@ -207,7 +207,7 @@ struct Repeater : Module
 
 		// If the sample has completed playing and the retrigger option is true,
 		// then restart sample playback.
-		
+
 		if(retrigger && abs(floor(samplePos)) >= selected_sample->total_sample_count)
 		{
 			samplePos = 0;
@@ -311,7 +311,7 @@ struct MenuItemLoadSample : MenuItem
 
 	void onAction(const event::Action &e) override
 	{
-		char *path = osdialog_file(OSDIALOG_OPEN, NULL, NULL, NULL);
+		char *path = osdialog_file(OSDIALOG_OPEN, NULL, NULL, osdialog_filters_parse("Wav:wav"));
 		if (path)
 		{
 			repeater_module->samples[sample_number].load(path);
