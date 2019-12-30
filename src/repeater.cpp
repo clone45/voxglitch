@@ -86,11 +86,11 @@ struct Repeater : Module
 	int step = 0;
 	float smooth_ramp = 1;
 	float last_wave_output_voltage = 0;
+	int retrigger;
 
 	sample samples[NUMBER_OF_SAMPLES];
 	dsp::SchmittTrigger playTrigger;
 	dsp::PulseGenerator triggerOutputPulse;
-
 
 	enum ParamIds {
 		CLOCK_DIVISION_KNOB,
@@ -152,6 +152,8 @@ struct Repeater : Module
 			json_object_set_new(rootJ, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(samples[i].path.c_str()));
 		}
 		// json_object_set_new(rootJ, "loaded_sample_path_1", json_string(samples[0].path.c_str()));
+
+		json_object_set_new(rootJ, "retrigger", json_integer(retrigger));
 		return rootJ;
 	}
 
@@ -161,6 +163,9 @@ struct Repeater : Module
 		{
 			json_t *loaded_sample_path = json_object_get(rootJ, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
 			if (loaded_sample_path) samples[i].load(json_string_value(loaded_sample_path));
+
+			json_t* retrigger_json = json_object_get(rootJ, "retrigger");
+			if (retrigger_json) retrigger = json_integer_value(retrigger_json);
 		}
 	}
 
@@ -194,11 +199,19 @@ struct Repeater : Module
 				{
 					selected_sample->run = true;
 					samplePos = selected_sample->total_sample_count * (((inputs[POSITION_INPUT].getVoltage() / 10.0) * params[POSITION_ATTN_KNOB].getValue()) + params[POSITION_KNOB].getValue());
-					// if(this->smoothing) samplePos = selected_sample->zero_crossing_indexes[samplePos]; // Jump to closest zero crossing
 					smooth_ramp = 0;
 					triggerOutputPulse.trigger(0.01f);
 				}
 			}
+		}
+
+		// If the sample has completed playing and the retrigger option is true,
+		// then restart sample playback.
+		
+		if(retrigger && abs(floor(samplePos)) >= selected_sample->total_sample_count)
+		{
+			samplePos = 0;
+			smooth_ramp = 0;
 		}
 
 		if ((! selected_sample->loading) && (selected_sample->run) && (selected_sample->total_sample_count > 0) && ((abs(floor(samplePos)) < selected_sample->total_sample_count)))
@@ -393,27 +406,25 @@ struct RepeaterWidget : ModuleWidget
 		}
 
 		//
-		// Smoothing options
-		// Keeping this code around so I can reference when adding the
-		// retrigger option.
-		//
+		// Options
+		// =====================================================================
 
-		/*
 		menu->addChild(new MenuEntry);
-		menu->addChild(createMenuLabel("Smoothing"));
+		menu->addChild(createMenuLabel("Options"));
 
-		struct SmoothingMenuItem : MenuItem {
+		// Retrigger option
+
+		struct RetriggerMenuItem : MenuItem {
 			Repeater* module;
 			void onAction(const event::Action& e) override {
-				module->smoothing = !(module->smoothing);
+				module->retrigger = !(module->retrigger);
 			}
 		};
 
-		SmoothingMenuItem* smoothing_menu_item = createMenuItem<SmoothingMenuItem>("smoothing");
-		smoothing_menu_item->rightText = CHECKMARK(module->smoothing == 1);
-		smoothing_menu_item->module = module;
-		menu->addChild(smoothing_menu_item);
-		*/
+		RetriggerMenuItem* retrigger_menu_item = createMenuItem<RetriggerMenuItem>("Retrigger");
+		retrigger_menu_item->rightText = CHECKMARK(module->retrigger == 1);
+		retrigger_menu_item->module = module;
+		menu->addChild(retrigger_menu_item);
 	}
 
 };
