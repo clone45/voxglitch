@@ -15,6 +15,7 @@ using namespace std;
 
 #define NUMBER_OF_SAMPLES 5
 #define NUMBER_OF_SAMPLES_FLOAT 5.0
+#define GAIN 5.0
 
 struct sample
 {
@@ -81,13 +82,15 @@ struct sample
 struct Repeater : Module
 {
 	unsigned int selected_sample_slot = 0;
-	bool led_states[NUMBER_OF_SAMPLES];
 	float samplePos = 0;
 	int step = 0;
+	float smooth_ramp = 1;
+	float last_wave_output_voltage = 0;
 
 	sample samples[NUMBER_OF_SAMPLES];
 	dsp::SchmittTrigger playTrigger;
 	dsp::PulseGenerator triggerOutputPulse;
+
 
 	enum ParamIds {
 		CLOCK_DIVISION_KNOB,
@@ -98,6 +101,7 @@ struct Repeater : Module
 		SAMPLE_SELECT_ATTN_KNOB,
 		PITCH_KNOB,
 		PITCH_ATTN_KNOB,
+		SMOOTH_SWITCH,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -136,6 +140,7 @@ struct Repeater : Module
 		configParam(POSITION_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "PositionAttnKnob");
 		configParam(SAMPLE_SELECT_KNOB, 0.0f, 1.0f, 0.0f, "SampleSelectKnob");
 		configParam(SAMPLE_SELECT_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "SampleSelectAttnKnob");
+		configParam(SMOOTH_SWITCH, 0.f, 1.f, 1.f, "Smooth");
 	}
 
 	json_t *dataToJson() override
@@ -166,11 +171,7 @@ struct Repeater : Module
 		unsigned int sample_select_input_value = (unsigned int) floor(NUMBER_OF_SAMPLES_FLOAT * (((inputs[SAMPLE_SELECT_INPUT].getVoltage() / 10.0) * params[SAMPLE_SELECT_ATTN_KNOB].getValue()) + params[SAMPLE_SELECT_KNOB].getValue()));
 
 		if(sample_select_input_value >= NUMBER_OF_SAMPLES) sample_select_input_value = NUMBER_OF_SAMPLES - 1;
-
-		if(selected_sample_slot != sample_select_input_value)
-		{
-			selected_sample_slot = sample_select_input_value;
-		}
+		selected_sample_slot = sample_select_input_value;
 
 		sample *selected_sample = &samples[selected_sample_slot];
 
@@ -193,6 +194,8 @@ struct Repeater : Module
 				{
 					selected_sample->run = true;
 					samplePos = selected_sample->total_sample_count * (((inputs[POSITION_INPUT].getVoltage() / 10.0) * params[POSITION_ATTN_KNOB].getValue()) + params[POSITION_KNOB].getValue());
+					// if(this->smoothing) samplePos = selected_sample->zero_crossing_indexes[samplePos]; // Jump to closest zero crossing
+					smooth_ramp = 0;
 					triggerOutputPulse.trigger(0.01f);
 				}
 			}
@@ -200,14 +203,31 @@ struct Repeater : Module
 
 		if ((! selected_sample->loading) && (selected_sample->run) && (selected_sample->total_sample_count > 0) && ((abs(floor(samplePos)) < selected_sample->total_sample_count)))
 		{
+			float wav_output_voltage;
+
 			if (samplePos >= 0)
 			{
-				outputs[WAV_OUTPUT].setVoltage(5 * selected_sample->playBuffer[floor(samplePos)]);
+				wav_output_voltage = GAIN  * selected_sample->playBuffer[floor(samplePos)];
 			}
 			else
 			{
-				outputs[WAV_OUTPUT].setVoltage(5 * selected_sample->playBuffer[floor(selected_sample->total_sample_count - 1 + samplePos)]);
+				// What is this for?  Does it play the sample in reverse?
+				wav_output_voltage = GAIN * selected_sample->playBuffer[floor(selected_sample->total_sample_count - 1 + samplePos)];
 			}
+
+			if(params[SMOOTH_SWITCH].getValue()  && (smooth_ramp < 1))
+			{
+				float smooth_rate = 128.0f / args.sampleRate;  // A smooth rate of 128 seems to work best
+				smooth_ramp += smooth_rate;
+				wav_output_voltage = (last_wave_output_voltage * (1 - smooth_ramp)) + (wav_output_voltage * smooth_ramp);
+				outputs[WAV_OUTPUT].setVoltage(wav_output_voltage);
+			}
+			else
+			{
+				outputs[WAV_OUTPUT].setVoltage(wav_output_voltage);
+			}
+
+			last_wave_output_voltage = wav_output_voltage;
 
 			// Increment sample offset (pitch)
 			if (inputs[PITCH_INPUT].isConnected())
@@ -235,8 +255,7 @@ struct Readout : TransparentWidget
 	Repeater *module;
 
 	int frame = 0;
-	// unsigned int sample_number = 0;
-
+	unsigned int currently_displayed_sample_slot = 10000;
 	shared_ptr<Font> font;
 
 	Readout()
@@ -246,19 +265,19 @@ struct Readout : TransparentWidget
 
 	void draw(const DrawArgs &args) override
 	{
-		std::string to_display;
+		std::string text_to_display;
 
 		if(! module)
 		{
-			to_display = "load sample";
+			text_to_display = "load sample";
 		}
 		else
 		{
 			std::string file_name = module->samples[module->selected_sample_slot].filename;
-			to_display = "#" + std::to_string(module->selected_sample_slot + 1) + ":";
+			text_to_display = "#" + std::to_string(module->selected_sample_slot + 1) + ":";
 
 			// Create a short version of the filename.  Essentially truncates the filename if it is too long.
-			for (int i=0; i<20; i++) to_display = to_display + file_name[i];
+			for (int i=0; i<20; i++) text_to_display = text_to_display + file_name[i];
 		}
 
 		nvgFontSize(args.vg, 13);
@@ -267,14 +286,14 @@ struct Readout : TransparentWidget
 		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
 
 		// void nvgTextBox(NVGcontext* ctx, float x, float y, float breakRowWidth, const char* string, const char* end);
-		nvgTextBox(args.vg, 5, 5, 700, to_display.c_str(), NULL);
+		nvgTextBox(args.vg, 5, 5, 700, text_to_display.c_str(), NULL);
 	}
 };
 
 
 struct MenuItemLoadSample : MenuItem
 {
-	Repeater *rm;
+	Repeater *repeater_module;
 	unsigned int sample_number = 0;
 
 	void onAction(const event::Action &e) override
@@ -282,8 +301,7 @@ struct MenuItemLoadSample : MenuItem
 		char *path = osdialog_file(OSDIALOG_OPEN, NULL, NULL, NULL);
 		if (path)
 		{
-			rm->samples[sample_number].load(path);
-			rm->samplePos = 0;
+			repeater_module->samples[sample_number].load(path);
 			free(path);
 		}
 	}
@@ -307,40 +325,43 @@ struct RepeaterWidget : ModuleWidget
 		// addParam(createParam<Trimpot>(Vec(30, 339), module, Repeater::LSPEED_PARAM));
 
 		// Input and label for the trigger input (which is labeled "CLK" on the front panel)
-		float trigger_input_x = 6.0;
-		float trigger_input_y = 20.0;
+		float trigger_input_x = 67.7;
+		float trigger_input_y = 42.0;
 		addInput(createInput<PJ301MPort>(mm2px(Vec(trigger_input_x, trigger_input_y)), module, Repeater::TRIG_INPUT));
 
 		// Input, Knob, and Attenuator for the clock division
-		float clock_division_x = 6.0;
+		float clock_division_x = 7.0;
 		float clock_division_y = 42.0;
 		addInput(createInput<PJ301MPort>(mm2px(Vec(clock_division_x, clock_division_y)), module, Repeater::CLOCK_DIVISION_INPUT));
 		addParam(createParam<Trimpot>(mm2px(Vec(clock_division_x + 16, clock_division_y + 1)), module, Repeater::CLOCK_DIVISION_ATTN_KNOB));
 		addParam(createParam<RoundLargeBlackKnob>(mm2px(Vec(clock_division_x + 30, clock_division_y - 3)), module, Repeater::CLOCK_DIVISION_KNOB));
 
 		// Input, Knob, and Attenuator for the position input
-		float position_x = 6.0;
+		float position_x = 7.0;
 		float position_y = 64.0;
 		addInput(createInput<PJ301MPort>(mm2px(Vec(position_x, position_y)), module, Repeater::POSITION_INPUT));
 		addParam(createParam<Trimpot>(mm2px(Vec(position_x + 16, position_y + 1)), module, Repeater::POSITION_ATTN_KNOB));
 		addParam(createParam<RoundLargeBlackKnob>(mm2px(Vec(position_x + 30, position_y - 3)), module, Repeater::POSITION_KNOB));
 
 		// Input, Knob, and Attenuator for the Sample Select
-		float sample_select_x = 6.0;
+		float sample_select_x = 7.0;
 		float sample_select_y = 86.0;
 		addInput(createInput<PJ301MPort>(mm2px(Vec(sample_select_x, sample_select_y)), module, Repeater::SAMPLE_SELECT_INPUT));
 		addParam(createParam<Trimpot>(mm2px(Vec(sample_select_x + 16, sample_select_y + 1)), module, Repeater::SAMPLE_SELECT_ATTN_KNOB));
 		addParam(createParam<RoundLargeBlackKnob>(mm2px(Vec(sample_select_x + 30, sample_select_y - 3)), module, Repeater::SAMPLE_SELECT_KNOB));
 
 		// Input, Knob, and Attenuator for Pitch
-		float pitch_x = 6.0;
+		float pitch_x = 7.0;
 		float pitch_y = 108.0;
 		addInput(createInput<PJ301MPort>(mm2px(Vec(pitch_x, pitch_y)), module, Repeater::PITCH_INPUT));
 		addParam(createParam<Trimpot>(mm2px(Vec(pitch_x + 16, pitch_y + 1)), module, Repeater::PITCH_ATTN_KNOB));
 		addParam(createParam<RoundLargeBlackKnob>(mm2px(Vec(pitch_x + 30, pitch_y - 3)), module, Repeater::PITCH_KNOB));
 
+		// Smooth
+		addParam(createParam<CKSS>(Vec(205, 190), module, Repeater::SMOOTH_SWITCH));
+
 		Readout *readout = new Readout();
-		readout->box.pos = mm2px(Vec(22.0, 22.0));
+		readout->box.pos = mm2px(Vec(11.0, 22.0)); //22,22
 		readout->box.size = Vec(110, 30); // bounding box of the widget
 		readout->module = module;
 		addChild(readout);
@@ -358,7 +379,7 @@ struct RepeaterWidget : ModuleWidget
 		// Add the five "Load Sample.." menu options to the right-click context menu
 		//
 
-		menu->addChild(new MenuEntry);
+		menu->addChild(new MenuEntry); // For spacing only
 
 		std::string menu_text = "Load Sample #";
 
@@ -367,9 +388,32 @@ struct RepeaterWidget : ModuleWidget
 			MenuItemLoadSample *menu_item_load_sample = new MenuItemLoadSample;
 			menu_item_load_sample->sample_number = i;
 			menu_item_load_sample->text = menu_text + std::to_string(i+1);
-			menu_item_load_sample->rm = module;
+			menu_item_load_sample->repeater_module = module;
 			menu->addChild(menu_item_load_sample);
 		}
+
+		//
+		// Smoothing options
+		// Keeping this code around so I can reference when adding the
+		// retrigger option.
+		//
+
+		/*
+		menu->addChild(new MenuEntry);
+		menu->addChild(createMenuLabel("Smoothing"));
+
+		struct SmoothingMenuItem : MenuItem {
+			Repeater* module;
+			void onAction(const event::Action& e) override {
+				module->smoothing = !(module->smoothing);
+			}
+		};
+
+		SmoothingMenuItem* smoothing_menu_item = createMenuItem<SmoothingMenuItem>("smoothing");
+		smoothing_menu_item->rightText = CHECKMARK(module->smoothing == 1);
+		smoothing_menu_item->module = module;
+		menu->addChild(smoothing_menu_item);
+		*/
 	}
 
 };
