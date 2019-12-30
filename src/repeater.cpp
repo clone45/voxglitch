@@ -176,7 +176,15 @@ struct Repeater : Module
 		unsigned int sample_select_input_value = (unsigned int) floor(NUMBER_OF_SAMPLES_FLOAT * (((inputs[SAMPLE_SELECT_INPUT].getVoltage() / 10.0) * params[SAMPLE_SELECT_ATTN_KNOB].getValue()) + params[SAMPLE_SELECT_KNOB].getValue()));
 
 		if(sample_select_input_value >= NUMBER_OF_SAMPLES) sample_select_input_value = NUMBER_OF_SAMPLES - 1;
-		selected_sample_slot = sample_select_input_value;
+
+		if(sample_select_input_value != selected_sample_slot)
+		{
+			// Reset the smooth ramp if the selected sample has changed
+			smooth_ramp = 0;
+
+			// Set the selected sample
+			selected_sample_slot = sample_select_input_value;
+		}
 
 		sample *selected_sample = &samples[selected_sample_slot];
 
@@ -224,7 +232,7 @@ struct Repeater : Module
 			}
 			else
 			{
-				// What is this for?  Does it play the sample in reverse?
+				// What is this for?  Does it play the sample in reverse?  I think so.
 				wav_output_voltage = GAIN * selected_sample->playBuffer[floor(selected_sample->total_sample_count - 1 + samplePos)];
 			}
 
@@ -312,6 +320,7 @@ struct MenuItemLoadSample : MenuItem
 	void onAction(const event::Action &e) override
 	{
 		char *path = osdialog_file(OSDIALOG_OPEN, NULL, NULL, osdialog_filters_parse("Wav:wav"));
+
 		if (path)
 		{
 			repeater_module->samples[sample_number].load(path);
