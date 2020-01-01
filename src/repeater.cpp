@@ -6,7 +6,6 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
-#define DR_WAV_IMPLEMENTATION
 #include "dr_wav.h"
 #include <vector>
 #include "cmath"
@@ -87,6 +86,7 @@ struct Repeater : Module
 	float smooth_ramp = 1;
 	float last_wave_output_voltage = 0;
 	int retrigger;
+	std::string root_dir;
 
 	sample samples[NUMBER_OF_SAMPLES];
 	dsp::SchmittTrigger playTrigger;
@@ -118,11 +118,6 @@ struct Repeater : Module
 		NUM_OUTPUTS
 	};
 	enum LightIds {
-		SAMPLE_SELECT_1_LIGHT,
-		SAMPLE_SELECT_2_LIGHT,
-		SAMPLE_SELECT_3_LIGHT,
-		SAMPLE_SELECT_4_LIGHT,
-		SAMPLE_SELECT_5_LIGHT,
 		NUM_LIGHTS
 	};
 
@@ -276,7 +271,6 @@ struct Readout : TransparentWidget
 	Repeater *module;
 
 	int frame = 0;
-	unsigned int currently_displayed_sample_slot = 10000;
 	shared_ptr<Font> font;
 
 	Readout()
@@ -286,6 +280,8 @@ struct Readout : TransparentWidget
 
 	void draw(const DrawArgs &args) override
 	{
+		nvgSave(args.vg);
+
 		std::string text_to_display;
 
 		if(! module)
@@ -308,6 +304,8 @@ struct Readout : TransparentWidget
 
 		// void nvgTextBox(NVGcontext* ctx, float x, float y, float breakRowWidth, const char* string, const char* end);
 		nvgTextBox(args.vg, 5, 5, 700, text_to_display.c_str(), NULL);
+
+		nvgRestore(args.vg);
 	}
 };
 
@@ -319,11 +317,14 @@ struct MenuItemLoadSample : MenuItem
 
 	void onAction(const event::Action &e) override
 	{
-		char *path = osdialog_file(OSDIALOG_OPEN, NULL, NULL, osdialog_filters_parse("Wav:wav"));
+
+		const std::string dir = repeater_module->root_dir.empty() ? "" : repeater_module->root_dir;
+		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("Wav:wav"));
 
 		if (path)
 		{
 			repeater_module->samples[sample_number].load(path);
+			repeater_module->root_dir = std::string(path);
 			free(path);
 		}
 	}

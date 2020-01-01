@@ -1,23 +1,29 @@
 {
-  "slug": "voxglitch",
-  "name": "voxglitch",
-  "version": "1.0.0",
-  "license": "proprietary",
-  "brand": "voxglitch",
-  "author": "",
-  "authorEmail": "",
-  "authorUrl": "",
-  "pluginUrl": "",
-  "manualUrl": "",
-  "sourceUrl": "",
-  "donateUrl": "",
-  "changelogUrl": "",
-  "modules": [
+    "slug": "voxglitch",
+    "name": "voxglitch",
+    "version": "1.0.0",
+    "license": "proprietary",
+    "brand": "voxglitch",
+    "author": "",
+    "authorEmail": "",
+    "authorUrl": "",
+    "pluginUrl": "",
+    "manualUrl": "",
+    "sourceUrl": "",
+    "donateUrl": "",
+    "changelogUrl": "",
+    "modules": [
     {
-      "slug": "repeater",
-      "name": "Repeater",
-      "description": "",
-      "tags": []
+        "slug": "wavbank",
+        "name": "Wave Bank",
+        "description": "",
+        "tags": []
+    },
+    {
+        "slug": "repeater",
+        "name": "Repeater",
+        "description": "",
+        "tags": []
     }
   ]
 }
