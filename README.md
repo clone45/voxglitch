@@ -63,7 +63,7 @@ The Wav Bank module is a sample player.  It loads all .wav files from a folder a
 
 * WAV - sample playback output
 
-### Examples Usage
+### Example Usage
 
 ![WaveBank](/docs/images/wav-bank-sample-patch-0101447.png)
 
