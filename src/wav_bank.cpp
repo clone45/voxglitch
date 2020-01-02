@@ -321,13 +321,13 @@ struct WavBankWidget : ModuleWidget
 		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(13.185, 75)), module, WavBank::WAV_KNOB));
 
 		WavBankReadout *readout = new WavBankReadout();
-		readout->box.pos = mm2px(Vec(35.294, 92)); //22,22
+		readout->box.pos = mm2px(Vec(34.236, 92)); //22,22
 		readout->box.size = Vec(110, 30); // bounding box of the widget
 		readout->module = module;
 		addChild(readout);
 
 		// WAV output
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(35.294, 114.893)), module, WavBank::WAV_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 114.893)), module, WavBank::WAV_OUTPUT));
 	}
 
 	void appendContextMenu(Menu *menu) override
