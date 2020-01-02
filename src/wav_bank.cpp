@@ -289,7 +289,8 @@ struct MenuItemLoadBank : MenuItem
 
 	void onAction(const event::Action &e) override
 	{
-		const std::string dir = wav_bank_module->rootDir.empty() ? "" : wav_bank_module->rootDir;
+		// const std::string dir = wav_bank_module->rootDir.empty() ? "" : wav_bank_module->rootDir;
+		const std::string dir = wav_bank_module->rootDir;
 		char *path = osdialog_file(OSDIALOG_OPEN_DIR, dir.c_str(), NULL, NULL);
 
 		if (path)

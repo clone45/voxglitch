@@ -146,7 +146,6 @@ struct Repeater : Module
 		{
 			json_object_set_new(rootJ, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(samples[i].path.c_str()));
 		}
-		// json_object_set_new(rootJ, "loaded_sample_path_1", json_string(samples[0].path.c_str()));
 
 		json_object_set_new(rootJ, "retrigger", json_integer(retrigger));
 		return rootJ;

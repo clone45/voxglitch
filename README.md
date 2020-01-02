@@ -11,8 +11,6 @@ Repeater is a stuttering sample player.  It sounds like a skipping CD player.
 
 ### Inputs
 
-Here are the inputs:
-
 * CLK - clock input (very fast clock)
 * DIV - clock division. Controls repeat (stutter) length
 * POS - sample playback position
@@ -48,3 +46,26 @@ Here are the inputs:
 2. I intend to make a companion x/y controller module similar to: https://youtu.be/1pFrvNx5oAc 5
 3. My code is based on Clément Foulc’s PLAY module. A big thank you to him for posting his code. Also, thank you to everyone on these forums for your help!
 4. In order to try with this module, you’ll need to compile it (make install) from my source code. Of course, eventually I hope to submit it to the VCV library. It will be free and open source.
+
+
+## Wav Bank
+![WaveBank](/docs/images/wav-bank-front-panel-0101447.png)
+=======
+The Wav Bank module is a sample player.  It loads all .wav files from a folder and can switch between them on the fly.
+
+### Inputs
+
+* TRG - triggers sample playback
+* WAV - selects sample for playback
+* Pitch - controls sample playback speed
+
+### Outputs
+
+* WAV - sample playback output
+
+### Examples Usage
+
+![WaveBank](/docs/images/wave-bank-sample-patch-0101447.png)
+
+1. Reproduce the patch example shown in the image above.
+2. Right click on the module to select a folder containing one or more .wav files. 
