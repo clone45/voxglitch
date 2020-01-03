@@ -24,6 +24,12 @@
         "name": "Repeater",
         "description": "",
         "tags": []
+    },
+    {
+        "slug": "xy",
+        "name": "XY",
+        "description": "",
+        "tags": []
     }
   ]
 }
