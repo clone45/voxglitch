@@ -153,7 +153,7 @@ struct WavBank : Module
 
 		for (auto entry : dirList)
 		{
-			if (string::lowercase(string::filenameExtension(entry)) == "wav")
+			if (rack::string::lowercase(rack::string::filenameExtension(entry)) == "wav")
 			{
 				Sample new_sample;
 				new_sample.load(entry);
