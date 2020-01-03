@@ -94,8 +94,7 @@ struct WavBank : Module
 	enum ParamIds {
 		WAV_KNOB,
 		WAV_ATTN_KNOB,
-		PITCH_KNOB,
-		PITCH_ATTN_KNOB,
+		SMOOTH_SWITCH,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -118,10 +117,9 @@ struct WavBank : Module
 	WavBank()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(PITCH_KNOB, -1.0f, 1.0f, 0.0f, "PitchKnob");
-		configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "PitchAttnKnob");
 		configParam(WAV_KNOB, 0.0f, 1.0f, 0.0f, "SampleSelectKnob");
 		configParam(WAV_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "SampleSelectAttnKnob");
+		configParam(SMOOTH_SWITCH, 0.0f, 1.0f, 1.0f, "SmoothSwitch");
 	}
 
 	json_t *dataToJson() override
@@ -212,9 +210,9 @@ struct WavBank : Module
 				wav_output_voltage = GAIN * selected_sample->playBuffer[floor(selected_sample->total_sample_count - 1 + samplePos)];
 			}
 
-			if(smooth_ramp < 1)
+			if(params[SMOOTH_SWITCH].getValue()  && (smooth_ramp < 1))
 			{
-				float smooth_rate = 128.0f / args.sampleRate;  // A smooth rate of 128 seems to work best
+				float smooth_rate = (128.0f / args.sampleRate);  // A smooth rate of 128 seems to work best
 				smooth_ramp += smooth_rate;
 				wav_output_voltage = (last_wave_output_voltage * (1 - smooth_ramp)) + (wav_output_voltage * smooth_ramp);
 				outputs[WAV_OUTPUT].setVoltage(wav_output_voltage);
@@ -229,11 +227,11 @@ struct WavBank : Module
 			// Increment sample offset (pitch)
 			if (inputs[PITCH_INPUT].isConnected())
 			{
-				samplePos = samplePos + (selected_sample->sample_rate / args.sampleRate) + (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
+				samplePos = samplePos + (selected_sample->sample_rate / args.sampleRate) + ((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f);
 			}
 			else
 			{
-				samplePos = samplePos + (selected_sample->sample_rate / args.sampleRate) + params[PITCH_KNOB].getValue();
+				samplePos = samplePos + (selected_sample->sample_rate / args.sampleRate);
 			}
 		}
 		else
@@ -319,6 +317,7 @@ struct WavBankWidget : ModuleWidget
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.185, 114.893)), module, WavBank::PITCH_INPUT));
 		addParam(createParamCentered<Trimpot>(mm2px(Vec(13.185, 60)), module, WavBank::WAV_ATTN_KNOB));
 		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(13.185, 75)), module, WavBank::WAV_KNOB));
+		addParam(createParamCentered<CKSS>(mm2px(Vec(13.185, 97)), module, WavBank::SMOOTH_SWITCH));
 
 		WavBankReadout *readout = new WavBankReadout();
 		readout->box.pos = mm2px(Vec(34.236, 92)); //22,22
