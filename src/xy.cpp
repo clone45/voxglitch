@@ -1,8 +1,8 @@
 //
-// Voxglitch "wav bank" module for VCV Rack
+// Voxglitch "xy" module for VCV Rack
 //
-// This code is heavily based on Clément Foulc's PLAY module
-// which can be found here:  https://github.com/cfoulc/cf/blob/v1/src/PLAY.cpp
+// TODO: add manditory clock input to control recording and playback
+// This is necessary to sync with the Repeater module
 
 #include "plugin.hpp"
 #include "osdialog.h"
@@ -15,12 +15,18 @@ using namespace std;
 #define DRAW_AREA_WIDTH 80
 #define DRAW_AREA_HEIGHT 80
 
+#define MODE_PLAYBACK 0
+#define MODE_RECORDING 1
+
 struct XY : Module
 {
     Vec drag_position;
+    vector<Vec> recording_memory;
+    unsigned int mode = MODE_PLAYBACK;
+    unsigned int playback_index = 0;
 
 	enum ParamIds {
-		NUM_PARAMS
+        NUM_PARAMS
 	};
 	enum InputIds {
 		NUM_INPUTS
@@ -31,6 +37,7 @@ struct XY : Module
 		NUM_OUTPUTS
 	};
 	enum LightIds {
+        RECORDING_INDICATOR,
 		NUM_LIGHTS
 	};
 
@@ -62,13 +69,49 @@ struct XY : Module
 
 	void process(const ProcessArgs &args) override
 	{
-        outputs[X_OUTPUT].setVoltage((drag_position.x / 235.0f) * 10.0f);
-        outputs[Y_OUTPUT].setVoltage(((235.0f - drag_position.y) / 235.0f) * 10.0f);
+        if(mode == MODE_RECORDING)
+        {
+            // Output the voltages
+            outputs[X_OUTPUT].setVoltage((drag_position.x / 235.0f) * 10.0f);
+            outputs[Y_OUTPUT].setVoltage(((235.0f - drag_position.y) / 235.0f) * 10.0f);
 
-        // outputs[X_OUTPUT].setVoltage(drag_position.x / );
-        // outputs[Y_OUTPUT].setVoltage((2.93 - (drag_position.y / DRAW_AREA_HEIGHT)) * 3.41f);
+            // Store the mouse x,y position
+            recording_memory.push_back(drag_position);
+        }
 
+        if(mode == MODE_PLAYBACK)
+        {
+            if(recording_memory.size() > 0)
+            {
+                lights[RECORDING_INDICATOR].value = 0;
+
+                // Restart playback if we've reached the end
+                if(playback_index >= recording_memory.size()) playback_index = 0;
+
+                // This will cause the XYDisplay to animate
+                this->drag_position = recording_memory[playback_index];
+
+                // Output the voltages
+                outputs[X_OUTPUT].setVoltage((drag_position.x / 235.0f) * 10.0f);
+                outputs[Y_OUTPUT].setVoltage(((235.0f - drag_position.y) / 235.0f) * 10.0f);
+
+                // Step to the next recorded x,y position
+                playback_index += 1;
+            }
+        }
 	}
+
+    void start_recording()
+    {
+        recording_memory.clear();
+        mode = MODE_RECORDING;
+    }
+
+    void start_playback()
+    {
+        playback_index = 0;
+        mode = MODE_PLAYBACK;
+    }
 };
 
 struct XYDisplay : OpaqueWidget
@@ -77,12 +120,14 @@ struct XYDisplay : OpaqueWidget
 	bool dragging = false;
 	vector<Vec> fading_rectangles;
 
-	XYDisplay(XY *module): OpaqueWidget() {
+	XYDisplay(XY *module): OpaqueWidget()
+    {
 		this->module = module;
 		box.size = mm2px(Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT));
 	}
 
-	void draw(const DrawArgs &args) override {
+	void draw(const DrawArgs &args) override
+    {
 		OpaqueWidget::draw(args);
 		const auto vg = args.vg;
         float color = 40;
@@ -158,14 +203,16 @@ struct XYDisplay : OpaqueWidget
     {
         e.consume(this);
         this->module->drag_position = e.pos;
-        /*
-		bool ctrl = (APP->window->getMods() & RACK_MOD_MASK) == RACK_MOD_CTRL;
-		if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS && !ctrl)
+
+        if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
         {
-			e.consume(this);
-			dragPosition = e.pos;
-		}
-        */
+            this->module->start_recording();
+        }
+
+        if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_RELEASE)
+        {
+            this->module->start_playback();
+        }
 	}
 
 	void onDragStart(const event::DragStart &e) override
