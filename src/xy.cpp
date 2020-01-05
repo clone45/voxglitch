@@ -1,8 +1,9 @@
 //
 // Voxglitch "xy" module for VCV Rack
 //
-// TODO: add manditory clock input to control recording and playback
-// This is necessary to sync with the Repeater module
+// TODO:
+// * add reset input
+// * Take zoom into account
 
 #include "plugin.hpp"
 #include "osdialog.h"
@@ -24,11 +25,16 @@ struct XY : Module
     vector<Vec> recording_memory;
     unsigned int mode = MODE_PLAYBACK;
     unsigned int playback_index = 0;
+    dsp::SchmittTrigger clkTrigger;
+    dsp::SchmittTrigger reset_trigger;
 
 	enum ParamIds {
+        RETRIGGER_SWITCH,
         NUM_PARAMS
 	};
 	enum InputIds {
+        CLK_INPUT,
+        RESET_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -37,7 +43,6 @@ struct XY : Module
 		NUM_OUTPUTS
 	};
 	enum LightIds {
-        RECORDING_INDICATOR,
 		NUM_LIGHTS
 	};
 
@@ -47,57 +52,101 @@ struct XY : Module
 	XY()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+        configParam(RETRIGGER_SWITCH, 0.f, 1.f, 1.f, "Retrigger");
 	}
 
 	json_t *dataToJson() override
 	{
-		json_t *rootJ = json_object();
-		return rootJ;
+        json_t *root = json_object();
+
+        json_t *recording_memory_json_array = json_array();
+
+        for(Vec position : recording_memory)
+        {
+            json_t *xy_vec = json_array();
+            json_array_append_new(xy_vec, json_real(position.x));
+            json_array_append_new(xy_vec, json_real(position.y));
+
+            json_array_append_new(recording_memory_json_array, xy_vec);
+        }
+
+        json_object_set(root, "recording_memory_data", recording_memory_json_array);
+        json_decref(recording_memory_json_array);
+
+		return root;
 	}
 
-	void dataFromJson(json_t *rootJ) override
+	void dataFromJson(json_t *root) override
 	{
-        /*
-		json_t *loaded_path_json = json_object_get(rootJ, ("path"));
-		if (loaded_path_json)
-		{
-			this->path = json_string_value(loaded_path_json);
-			this->load_samples_from_path(this->path.c_str());
+        json_t *recording_memory_data = json_object_get(root, "recording_memory_data");
+
+        if(recording_memory_data)
+        {
+			recording_memory.clear();
+			size_t i;
+			json_t *json_array_pair_xy;
+
+			json_array_foreach(recording_memory_data, i, json_array_pair_xy)
+            {
+                float x = json_real_value(json_array_get(json_array_pair_xy, 0));
+                float y = json_real_value(json_array_get(json_array_pair_xy, 1));
+
+				recording_memory.push_back(Vec(x,y));
+			}
 		}
-        */
 	}
 
 	void process(const ProcessArgs &args) override
 	{
-        if(mode == MODE_RECORDING)
+        if (reset_trigger.process(inputs[RESET_INPUT].getVoltage()))
         {
-            // Output the voltages
-            outputs[X_OUTPUT].setVoltage((drag_position.x / 235.0f) * 10.0f);
-            outputs[Y_OUTPUT].setVoltage(((235.0f - drag_position.y) / 235.0f) * 10.0f);
-
-            // Store the mouse x,y position
-            recording_memory.push_back(drag_position);
+            playback_index = 0;
         }
 
-        if(mode == MODE_PLAYBACK)
-        {
-            if(recording_memory.size() > 0)
+        if (inputs[CLK_INPUT].isConnected())
+		{
+            if (clkTrigger.process(inputs[CLK_INPUT].getVoltage()))
             {
-                lights[RECORDING_INDICATOR].value = 0;
+                if(mode == MODE_RECORDING)
+                {
+                    // Output the voltages
+                    outputs[X_OUTPUT].setVoltage((drag_position.x / 235.0f) * 10.0f);
+                    outputs[Y_OUTPUT].setVoltage(((235.0f - drag_position.y) / 235.0f) * 10.0f);
 
-                // Restart playback if we've reached the end
-                if(playback_index >= recording_memory.size()) playback_index = 0;
+                    // Store the mouse x,y position
+                    recording_memory.push_back(drag_position);
+                }
 
-                // This will cause the XYDisplay to animate
-                this->drag_position = recording_memory[playback_index];
+                if(mode == MODE_PLAYBACK)
+                {
+                    if(recording_memory.size() > 0)
+                    {
+                        if(params[RETRIGGER_SWITCH].getValue())
+                        {
+                            // Restart playback if we've reached the end
+                            if(playback_index >= recording_memory.size()) playback_index = 0;
+                        }
 
-                // Output the voltages
-                outputs[X_OUTPUT].setVoltage((drag_position.x / 235.0f) * 10.0f);
-                outputs[Y_OUTPUT].setVoltage(((235.0f - drag_position.y) / 235.0f) * 10.0f);
+                        if(playback_index < recording_memory.size())
+                        {
+                            // This will cause the XYDisplay to animate
+                            this->drag_position = recording_memory[playback_index];
 
-                // Step to the next recorded x,y position
-                playback_index += 1;
+                            // Output the voltages
+                            outputs[X_OUTPUT].setVoltage((drag_position.x / 235.0f) * 10.0f);
+                            outputs[Y_OUTPUT].setVoltage(((235.0f - drag_position.y) / 235.0f) * 10.0f);
+
+                            // Step to the next recorded x,y position
+                            playback_index += 1;
+                        }
+                    }
+                }
             }
+        }
+        else // CLK input is not connected
+        {
+            outputs[X_OUTPUT].setVoltage((drag_position.x / 235.0f) * 10.0f);
+            outputs[Y_OUTPUT].setVoltage(((235.0f - drag_position.y) / 235.0f) * 10.0f);
         }
 	}
 
@@ -144,22 +193,23 @@ struct XYDisplay : OpaqueWidget
 
 		if(module)
         {
-            float now_x = this->module->drag_position.x;
-            float now_y = this->module->drag_position.y - 235;
+            float now_x = clamp(this->module->drag_position.x, 0.0f, 233.0f);
+            float now_y = clamp(this->module->drag_position.y, 0.0f, 233.0f) - 233;
+            float drag_y = clamp(this->module->drag_position.y, 0.0f, 233.0f);
 
             // draw x,y lines, just because I think they look cool
             nvgBeginPath(vg);
             nvgStrokeWidth(vg, 0.5f);
             nvgStrokeColor(vg, nvgRGBA(0xdd, 0xdd, 0xdd, 255));
             nvgMoveTo(vg, now_x, 0);
-            nvgLineTo(vg, now_x, 235);
+            nvgLineTo(vg, now_x, 233);
             nvgStroke(vg);
 
             nvgBeginPath(vg);
             nvgStrokeWidth(vg, 0.5f);
             nvgStrokeColor(vg, nvgRGBA(0xdd, 0xdd, 0xdd, 255));
-            nvgMoveTo(vg, 0, now_y);
-            nvgLineTo(vg, 235, now_y);
+            nvgMoveTo(vg, 0, drag_y);
+            nvgLineTo(vg, 233, drag_y);
             nvgStroke(vg);
 
             fading_rectangles.push_back(Vec(now_x, now_y));
@@ -270,10 +320,14 @@ struct XYWidget : ModuleWidget
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(59.664, 128.500 - 13.891)), module, XY::X_OUTPUT));
         addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(76.465, 128.500 - 13.891)), module, XY::Y_OUTPUT));
 
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10.477, 128.500 - 13.891)), module, XY::CLK_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(25, 128.500 - 13.891)), module, XY::RESET_INPUT));
+        addParam(createParamCentered<CKSS>(mm2px(Vec(39.5, 128.500 - 13.891)), module, XY::RETRIGGER_SWITCH));
+
         // xy mouse entry box
         XYDisplay *xy_display;
         xy_display = new XYDisplay(module);
-        xy_display->box.pos = mm2px(Vec(2.993, 15.82));
+        xy_display->box.pos = mm2px(Vec(3.45, 15.82));
         addChild(xy_display);
 	}
 
