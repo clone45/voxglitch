@@ -306,6 +306,7 @@ struct Readout : TransparentWidget
 
 		nvgRestore(args.vg);
 	}
+
 };
 
 

@@ -12,3 +12,4 @@ extern Plugin* pluginInstance;
 extern Model *modelRepeater;
 extern Model *modelWavBank;
 extern Model *modelXY;
+extern Model *modelExplore;

@@ -30,6 +30,12 @@
         "name": "XY",
         "description": "",
         "tags": []
+    },
+    {
+        "slug": "explore",
+        "name": "Explore",
+        "description": "",
+        "tags": []
     }
   ]
 }
