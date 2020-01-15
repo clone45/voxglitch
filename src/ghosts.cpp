@@ -153,7 +153,7 @@ struct Ghosts : Module
 
 	vector<Ghost> graveyard;
 	Sample sample;
-	dsp::SchmittTrigger playTrigger;
+	dsp::SchmittTrigger purge_trigger;
 
 	enum ParamIds {
 		GHOST_PLAYBACK_LENGTH_KNOB,
@@ -169,7 +169,7 @@ struct Ghosts : Module
 		NUM_PARAMS
 	};
 	enum InputIds {
-		TRIG_INPUT,
+		PURGE_INPUT,
 		PITCH_INPUT,
 		GHOST_PLAYBACK_LENGTH_INPUT,
 		GRAVEYARD_CAPACITY_INPUT,
@@ -241,7 +241,10 @@ struct Ghosts : Module
 		if(spawn_rate > MAX_GHOST_SPAWN_RATE) spawn_rate = MAX_GHOST_SPAWN_RATE;
 		if(start_position >= sample.total_sample_count) start_position = sample.total_sample_count - 1;
 
-		outputs[DEBUG_OUTPUT].setVoltage(start_position);
+		if (purge_trigger.process(inputs[PURGE_INPUT].getVoltage()))
+		{
+			graveyard.clear();
+		}
 
 		if(spawn_rate_counter >= spawn_rate)
 		{
@@ -331,6 +334,9 @@ struct GhostsWidget : ModuleWidget
 		// Cosmetic rack screws
 		addChild(createWidget<ScrewSilver>(Vec(15, 0)));
 		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
+
+		// Purge
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(15, 33)), module, Ghosts::PURGE_INPUT));
 
 		// Position
 		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(71, 33)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_KNOB));
