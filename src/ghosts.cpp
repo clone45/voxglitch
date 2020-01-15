@@ -213,6 +213,7 @@ struct Ghosts : Module
 	{
 		json_t *rootJ = json_object();
 		json_object_set_new(rootJ, "path", json_string(sample.path.c_str()));
+		json_object_set_new(rootJ, "halloween", json_integer(halloween));
 		return rootJ;
 	}
 
@@ -224,8 +225,10 @@ struct Ghosts : Module
 		{
 			this->path = json_string_value(loaded_path_json);
 			sample.load(path);
-			// root_dir = std::string(path);
 		}
+
+		json_t* halloween_json = json_object_get(rootJ, "halloween");
+		if (halloween_json) halloween = json_integer_value(halloween_json);		
 	}
 
 	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
@@ -245,9 +248,6 @@ struct Ghosts : Module
 
 		if(halloween)
 		{
-			//spawn_rate = spawn_rate / 4.0f;
-			//playback_length = playback_length / 8.0f;
-
 			float r = (static_cast <float> (rand()) / static_cast <float> (RAND_MAX / 1024.0)) - 1024.0;
 			start_position = start_position + r;
 		}
