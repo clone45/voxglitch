@@ -144,7 +144,7 @@ struct Ghost
 };
 
 
-struct Explore : Module
+struct Ghosts : Module
 {
 	float spawn_rate_counter = 0;
 	int step = 0;
@@ -189,7 +189,7 @@ struct Explore : Module
 	//
 	// Constructor
 	//
-	Explore()
+	Ghosts()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(GHOST_PLAYBACK_LENGTH_KNOB, 0.0f, 1.0f, 0.5f, "GhostLengthKnob");
@@ -219,7 +219,7 @@ struct Explore : Module
 		{
 			this->path = json_string_value(loaded_path_json);
 			sample.load(path);
-			root_dir = std::string(path);
+			// root_dir = std::string(path);
 		}
 	}
 
@@ -301,13 +301,15 @@ struct Explore : Module
 	}
 };
 
-struct MenuItemLoadSample : MenuItem
+struct GhostsLoadSample : MenuItem
 {
-	Explore *module;
+	Ghosts *module;
 
 	void onAction(const event::Action &e) override
 	{
-		const std::string dir = module->root_dir.empty() ? "" : module->root_dir;
+
+		// const std::string dir = module->root_dir.empty() ? "" : module->root_dir;
+		const std::string dir = "";
 		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("Wav:wav"));
 
 		if (path)
@@ -319,9 +321,9 @@ struct MenuItemLoadSample : MenuItem
 	}
 };
 
-struct ExploreWidget : ModuleWidget
+struct GhostsWidget : ModuleWidget
 {
-	ExploreWidget(Explore* module)
+	GhostsWidget(Ghosts* module)
 	{
 		setModule(module);
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/ghosts_front_panel.svg")));
@@ -330,41 +332,38 @@ struct ExploreWidget : ModuleWidget
 		addChild(createWidget<ScrewSilver>(Vec(15, 0)));
 		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
 
-		// Input and label for the trigger input (which is labeled "CLK" on the front panel)
-		// addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.185, 114.893)), module, Explore::PITCH_INPUT));
-
 		// Position
-		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(71, 33)), module, Explore::SAMPLE_PLAYBACK_POSITION_KNOB));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(71, 52)), module, Explore::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(71, 65)), module, Explore::SAMPLE_PLAYBACK_POSITION_INPUT));
+		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(71, 33)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_KNOB));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(71, 52)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(71, 65)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_INPUT));
 
 		// Length
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 68)), module, Explore::GHOST_PLAYBACK_LENGTH_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 68)), module, Explore::GHOST_PLAYBACK_LENGTH_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 68)), module, Explore::GHOST_PLAYBACK_LENGTH_ATTN_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 68)), module, Ghosts::GHOST_PLAYBACK_LENGTH_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 68)), module, Ghosts::GHOST_PLAYBACK_LENGTH_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 68)), module, Ghosts::GHOST_PLAYBACK_LENGTH_ATTN_KNOB));
 
 		// Spawn rate
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 112)), module, Explore::GHOST_SPAWN_RATE_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 112)), module, Explore::GHOST_SPAWN_RATE_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 112)), module, Explore::GHOST_SPAWN_RATE_ATTN_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 112)), module, Ghosts::GHOST_SPAWN_RATE_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 112)), module, Ghosts::GHOST_SPAWN_RATE_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 112)), module, Ghosts::GHOST_SPAWN_RATE_ATTN_KNOB));
 
 		// Graveyard Capacity
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 90)), module, Explore::GRAVEYARD_CAPACITY_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 90)), module, Explore::GRAVEYARD_CAPACITY_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 90)), module, Explore::GRAVEYARD_CAPACITY_ATTN_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 90)), module, Ghosts::GRAVEYARD_CAPACITY_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 90)), module, Ghosts::GRAVEYARD_CAPACITY_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 90)), module, Ghosts::GRAVEYARD_CAPACITY_ATTN_KNOB));
 
 		// Trim
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(71.810, 93.915)), module, Explore::TRIM_KNOB));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(71.810, 93.915)), module, Ghosts::TRIM_KNOB));
 
 
 		// WAV output
-		addOutput(createOutput<PJ301MPort>(Vec(200, 324), module, Explore::WAV_OUTPUT));
-		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 124.893)), module, Explore::DEBUG_OUTPUT));
+		addOutput(createOutput<PJ301MPort>(Vec(200, 324), module, Ghosts::WAV_OUTPUT));
+		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 124.893)), module, Ghosts::DEBUG_OUTPUT));
 	}
 
 	void appendContextMenu(Menu *menu) override
 	{
-		Explore *module = dynamic_cast<Explore*>(this->module);
+		Ghosts *module = dynamic_cast<Ghosts*>(this->module);
 		assert(module);
 
 		//
@@ -373,11 +372,7 @@ struct ExploreWidget : ModuleWidget
 
 		menu->addChild(new MenuEntry); // For spacing only
 
-
-		//
-		// Add the "select bank folder" menu item
-		//
-		MenuItemLoadSample *menu_item_load_sample = new MenuItemLoadSample();
+		GhostsLoadSample *menu_item_load_sample = new GhostsLoadSample();
 		menu_item_load_sample->text = "Select .wav file";
 		menu_item_load_sample->module = module;
 		menu->addChild(menu_item_load_sample);
@@ -387,4 +382,4 @@ struct ExploreWidget : ModuleWidget
 
 
 
-Model* modelExplore = createModel<Explore, ExploreWidget>("explore");
+Model* modelGhosts = createModel<Ghosts, GhostsWidget>("ghosts");
