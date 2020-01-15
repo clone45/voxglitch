@@ -1,51 +1,7 @@
 //
-// Voxglitch "wav bank" module for VCV Rack
+// Voxglitch "Ghosts" module for VCV Rack
 //
-// This code is heavily based on Clément Foulc's PLAY module
-// which can be found here:  https://github.com/cfoulc/cf/blob/v1/src/PLAY.cpp
 
-
-// TODO: instead of the samlpe position incrementing, it should be controlled
-// via knob/input !!!
-
-/*
-	Planning:
-
-	in Proces()...
-
-	if((counter / sampleRate) >= spawn_rate)
-	{
-		counter = 0;
-
-		// Create new ghost
-		// set ghost attributes based on inputs:
-		//   - position
-		//   - length
-		//   - pitch
-		//   - lifespan
-		// push ghost on to the graveyard
-	}
-
-
-
-	if(graveyard.empty() == false)
-	{
-		for(int i = graveyard.size() - 1; i >= 0; i--)
-		{
-			Ghost *ghost = graveyard.at(i);
-
-			mix_output += ghost->getOutput();
-
-			ghost->age(args.sampleRate);
-			if(ghost->hasDied()) graveyard.erase(graveyard.begin() + i);
-		}
-	}
-
-    // spawn_rate input should be scaled to between 64 and (sampleRate / 4), which
-	// gives a maximum spawn rate of 1/4 second.  I can try other values later.
-
-
-*/
 
 #include "plugin.hpp"
 #include "osdialog.h"
@@ -146,6 +102,9 @@ struct Ghost
 	// removed from the graveyard (aka, the vector of Ghosts).
 	bool has_died = false;
 
+	// Used as a counter for smoothing transitions
+	//float smooth_ramp = 1;
+	//float last_wave_output_voltage = 0;
 
 	float getOutput()
 	{
@@ -153,7 +112,26 @@ struct Ghost
 
 		if (abs(floor(samplePos)) < this->sample_ptr->total_sample_count)
 		{
-			return(this->amplitude * this->sample_ptr->playBuffer[floor(samplePos)]);
+
+			// Calculate the offset voltage
+			float wav_output_voltage = this->amplitude * this->sample_ptr->playBuffer[floor(samplePos)];
+
+			//
+			// Handle smoothing, if it is activated
+			//
+			/*
+			if(smooth  && (smooth_ramp < 1))
+			{
+				float smooth_rate = 128.0f / settings_sample_rate;  // A smooth rate of 128 seems to work best
+				smooth_ramp += smooth_rate;
+				wav_output_voltage = (last_wave_output_voltage * (1 - smooth_ramp)) + (wav_output_voltage * smooth_ramp);
+			}
+
+			last_wave_output_voltage = wav_output_voltage;
+			*/
+
+			// Return the output
+			return(wav_output_voltage);
 		}
 		else
 		{
@@ -178,12 +156,13 @@ struct Ghost
 		playback_position = playback_position + (this->sample_ptr->sample_rate / settings_sample_rate);
 
 		// If the playback position is past the playback length, then wrap the playback position to the beginning
-		if(playback_position >= playback_length) playback_position = playback_position - playback_length;
-
-		if((playback_position >= playback_length) || (playback_position < 0))
+		if(playback_position >= playback_length)
 		{
-			playback_position = 0;
+			playback_position = playback_position - playback_length;
+			// smooth_ramp = 0;
 		}
+
+		if((playback_position >= playback_length) || (playback_position < 0)) playback_position = 0;
 	}
 };
 
@@ -204,6 +183,8 @@ struct Explore : Module
 		GRAVEYARD_CAPACITY_KNOB,
 		GHOST_SPAWN_RATE_KNOB,
 		SAMPLE_PLAYBACK_POSITION_KNOB,
+		TRIM_KNOB,
+		SMOOTH_SWITCH,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -230,6 +211,8 @@ struct Explore : Module
 		configParam(GRAVEYARD_CAPACITY_KNOB, 0.0f, 1.0f, 1.0f, "GraveyardCapacityKnob");
 		configParam(GHOST_SPAWN_RATE_KNOB, 3000.0f, 24000.0f, 6000.00f, "GhostSpawnRateKnob");
 		configParam(SAMPLE_PLAYBACK_POSITION_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionKnob");
+		configParam(TRIM_KNOB, 0.0f, 1.0f, 1.0f, "TrimKnob");
+		configParam(SMOOTH_SWITCH, 0.f, 1.f, 1.f, "Smooth");
 	}
 
 	json_t *dataToJson() override
@@ -267,7 +250,7 @@ struct Explore : Module
 			//
 			// I ain't afraid of no ghosts!
 			//
-			// samplePos = selected_sample->total_sample_count * (((inputs[POSITION_INPUT].getVoltage() / 10.0) * params[POSITION_ATTN_KNOB].getValue()) + params[POSITION_KNOB].getValue());
+			
 			Ghost ghost;
 			ghost.start_position = params[SAMPLE_PLAYBACK_POSITION_KNOB].getValue() * sample.total_sample_count;
 			ghost.playback_length = params[GHOST_PLAYBACK_LENGTH_KNOB].getValue() * args.sampleRate; // from 0 to 1 second
@@ -306,6 +289,8 @@ struct Explore : Module
 					if(graveyard[i].hasDied()) graveyard.erase(graveyard.begin() + i);
 				}
 
+				mix_output = mix_output * params[TRIM_KNOB].getValue();
+
 				outputs[WAV_OUTPUT].setVoltage(mix_output);
 			}
 
@@ -316,42 +301,6 @@ struct Explore : Module
 		{
 			outputs[WAV_OUTPUT].setVoltage(0);
 		}
-	}
-};
-
-struct ExploreReadout : TransparentWidget
-{
-	Explore *module;
-
-	int frame = 0;
-	shared_ptr<Font> font;
-
-	ExploreReadout()
-	{
-		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
-	}
-
-	void draw(const DrawArgs &args) override
-	{
-
-		std::string text_to_display;
-
-		text_to_display = "load sample";
-
-		if(module)
-		{
-			text_to_display = module->sample.filename;
-		}
-
-		nvgFontSize(args.vg, 13);
-		nvgFontFaceId(args.vg, font->handle);
-		nvgTextLetterSpacing(args.vg, 0);
-		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
-
-		nvgRotate(args.vg, -M_PI / 2.0f);
-
-		// void nvgTextBox(NVGcontext* ctx, float x, float y, float breakRowWidth, const char* string, const char* end);
-		nvgTextBox(args.vg, 5, 5, 700, text_to_display.c_str(), NULL);
 	}
 };
 
@@ -378,29 +327,25 @@ struct ExploreWidget : ModuleWidget
 	ExploreWidget(Explore* module)
 	{
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/explore_front_panel.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/ghosts_front_panel.svg")));
 
 		// Cosmetic rack screws
 		addChild(createWidget<ScrewSilver>(Vec(15, 0)));
 		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
 
 		// Input and label for the trigger input (which is labeled "CLK" on the front panel)
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.185, 114.893)), module, Explore::PITCH_INPUT));
+		// addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.185, 114.893)), module, Explore::PITCH_INPUT));
 
-		addParam(createParam<RoundLargeBlackKnob>(mm2px(Vec(13.185, 40)), module, Explore::GHOST_PLAYBACK_LENGTH_KNOB));
-		addParam(createParam<RoundLargeBlackKnob>(mm2px(Vec(13.185, 60)), module, Explore::GRAVEYARD_CAPACITY_KNOB));
-		addParam(createParam<RoundLargeBlackKnob>(mm2px(Vec(13.185, 80)), module, Explore::GHOST_SPAWN_RATE_KNOB));
-		addParam(createParam<RoundLargeBlackKnob>(mm2px(Vec(13.185, 100)), module, Explore::SAMPLE_PLAYBACK_POSITION_KNOB));
+		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(43, 33)), module, Explore::SAMPLE_PLAYBACK_POSITION_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 68)), module, Explore::GHOST_PLAYBACK_LENGTH_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 90)), module, Explore::GRAVEYARD_CAPACITY_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 112)), module, Explore::GHOST_SPAWN_RATE_KNOB));
 
-
-		ExploreReadout *readout = new ExploreReadout();
-		readout->box.pos = mm2px(Vec(34.236, 92)); //22,22
-		readout->box.size = Vec(110, 30); // bounding box of the widget
-		readout->module = module;
-		addChild(readout);
+		// Trim
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(71.810, 93.915)), module, Explore::TRIM_KNOB));
 
 		// WAV output
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 114.893)), module, Explore::WAV_OUTPUT));
+		addOutput(createOutput<PJ301MPort>(Vec(200, 324), module, Explore::WAV_OUTPUT));
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 124.893)), module, Explore::DEBUG_OUTPUT));
 	}
 
