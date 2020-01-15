@@ -13,6 +13,7 @@
 using namespace std;
 #define GAIN 5.0
 #define MAX_GRAVEYARD_CAPACITY 500.0f
+#define MAX_GHOST_SPAWN_RATE 12000.0f
 
 struct Sample
 {
@@ -156,10 +157,13 @@ struct Explore : Module
 
 	enum ParamIds {
 		GHOST_PLAYBACK_LENGTH_KNOB,
+		GHOST_PLAYBACK_LENGTH_ATTN_KNOB,
 		GRAVEYARD_CAPACITY_KNOB,
 		GRAVEYARD_CAPACITY_ATTN_KNOB,
 		GHOST_SPAWN_RATE_KNOB,
+		GHOST_SPAWN_RATE_ATTN_KNOB,
 		SAMPLE_PLAYBACK_POSITION_KNOB,
+		SAMPLE_PLAYBACK_POSITION_ATTN_KNOB,
 		TRIM_KNOB,
 		SMOOTH_SWITCH,
 		NUM_PARAMS
@@ -167,7 +171,10 @@ struct Explore : Module
 	enum InputIds {
 		TRIG_INPUT,
 		PITCH_INPUT,
+		GHOST_PLAYBACK_LENGTH_INPUT,
 		GRAVEYARD_CAPACITY_INPUT,
+		GHOST_SPAWN_RATE_INPUT,
+		SAMPLE_PLAYBACK_POSITION_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -186,70 +193,73 @@ struct Explore : Module
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(GHOST_PLAYBACK_LENGTH_KNOB, 0.0f, 1.0f, 0.5f, "GhostLengthKnob");
+		configParam(GHOST_PLAYBACK_LENGTH_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "GhostLengthAttnKnob");
 		configParam(GRAVEYARD_CAPACITY_KNOB, 0.0f, 1.0f, 1.0f, "GraveyardCapacityKnob");
-		configParam(GHOST_SPAWN_RATE_KNOB, 3000.0f, 24000.0f, 6000.00f, "GhostSpawnRateKnob");
+		configParam(GRAVEYARD_CAPACITY_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "GraveyardCapacityAttnKnob");
+		configParam(GHOST_SPAWN_RATE_KNOB, 0.0f, 1.0f, 0.2f, "GhostSpawnRateKnob");  // max 24000
+		configParam(GHOST_SPAWN_RATE_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "GraveyardCapacityAttnKnob");
 		configParam(SAMPLE_PLAYBACK_POSITION_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionKnob");
-		configParam(TRIM_KNOB, 0.0f, 1.0f, 1.0f, "TrimKnob");
+		configParam(SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionAttnKnob");
+		configParam(TRIM_KNOB, 0.0f, 1.0f, 2.0f, "TrimKnob");
 		configParam(SMOOTH_SWITCH, 0.f, 1.f, 1.f, "Smooth");
 	}
 
 	json_t *dataToJson() override
 	{
-		// TODO: Save and load ghosts
-
 		json_t *rootJ = json_object();
-		// json_object_set_new(rootJ, "path", json_string(this->path.c_str()));
+		json_object_set_new(rootJ, "path", json_string(sample.path.c_str()));
 		return rootJ;
 	}
 
 	void dataFromJson(json_t *rootJ) override
 	{
-		// TODO: Save and load ghosts
-
-        /*
 		json_t *loaded_path_json = json_object_get(rootJ, ("path"));
+
 		if (loaded_path_json)
 		{
 			this->path = json_string_value(loaded_path_json);
-			this->load_samples_from_path(this->path.c_str());
+			sample.load(path);
+			root_dir = std::string(path);
 		}
-        */
+	}
+
+	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
+	{
+		float input_value = inputs[input_index].getVoltage() / 10.0;
+		float knob_value = params[knob_index].getValue();
+		float attenuator_value = params[attenuator_index].getValue();
+
+		return(((input_value * scale) * attenuator_value) + (knob_value * scale));
 	}
 
 	void process(const ProcessArgs &args) override
 	{
+		float spawn_rate = calculate_inputs(GHOST_SPAWN_RATE_INPUT, GHOST_SPAWN_RATE_KNOB, GHOST_SPAWN_RATE_ATTN_KNOB, MAX_GHOST_SPAWN_RATE);
+		float playback_length = calculate_inputs(GHOST_PLAYBACK_LENGTH_INPUT, GHOST_PLAYBACK_LENGTH_KNOB, GHOST_PLAYBACK_LENGTH_ATTN_KNOB, args.sampleRate);
+		float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, sample.total_sample_count);
 
-		outputs[DEBUG_OUTPUT].setVoltage(0);
+		if(spawn_rate > MAX_GHOST_SPAWN_RATE) spawn_rate = MAX_GHOST_SPAWN_RATE;
+		if(start_position >= sample.total_sample_count) start_position = sample.total_sample_count - 1;
 
-		// if(spawn_rate_counter >= (params[GHOST_SPAWN_RATE_KNOB].getValue() * args.sampleRate))
-		if(spawn_rate_counter >= params[GHOST_SPAWN_RATE_KNOB].getValue())
+		outputs[DEBUG_OUTPUT].setVoltage(start_position);
+
+		if(spawn_rate_counter >= spawn_rate)
 		{
-
 			//
-			// I ain't afraid of no ghosts!
+			// I ain't afraid of no ghosts! ♫ ♪
 			//
 
 			Ghost ghost;
-			ghost.start_position = params[SAMPLE_PLAYBACK_POSITION_KNOB].getValue() * sample.total_sample_count;
-			ghost.playback_length = params[GHOST_PLAYBACK_LENGTH_KNOB].getValue() * args.sampleRate; // from 0 to 1 second
+			ghost.start_position = start_position;
+			ghost.playback_length = playback_length;
 			ghost.sample_ptr = &sample;
 			graveyard.push_back(ghost);
-
-			outputs[DEBUG_OUTPUT].setVoltage(10);
 
 			spawn_rate_counter = 0;
 		}
 
-
-		float graveyard_capacity_input = inputs[GRAVEYARD_CAPACITY_INPUT].getVoltage() / 10.0;
-		float graveyard_capacity_attenuator = params[GRAVEYARD_CAPACITY_ATTN_KNOB].getValue();
-		float graveyard_capacity_knob = params[GRAVEYARD_CAPACITY_KNOB].getValue();
-
-		unsigned int graveyard_capacity = floor(((graveyard_capacity_input * MAX_GRAVEYARD_CAPACITY) * graveyard_capacity_attenuator) + (graveyard_capacity_knob * 500.0f));
-		// unsigned int graveyard_capacity = graveyard_capacity_knob * 500.0f;
+		unsigned int graveyard_capacity = floor(calculate_inputs(GRAVEYARD_CAPACITY_INPUT, GRAVEYARD_CAPACITY_KNOB, GRAVEYARD_CAPACITY_ATTN_KNOB, MAX_GRAVEYARD_CAPACITY));
 		if (graveyard_capacity > MAX_GRAVEYARD_CAPACITY) graveyard_capacity = MAX_GRAVEYARD_CAPACITY;
-
-		// (((inputs[POSITION_INPUT].getVoltage() / 10.0) * params[POSITION_ATTN_KNOB].getValue()) + params[POSITION_KNOB].getValue());
 
 		while(graveyard.size() > graveyard_capacity)
 		{
@@ -323,14 +333,25 @@ struct ExploreWidget : ModuleWidget
 		// Input and label for the trigger input (which is labeled "CLK" on the front panel)
 		// addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.185, 114.893)), module, Explore::PITCH_INPUT));
 
-		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(43, 33)), module, Explore::SAMPLE_PLAYBACK_POSITION_KNOB));
+		// Position
+		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(71, 33)), module, Explore::SAMPLE_PLAYBACK_POSITION_KNOB));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(71, 52)), module, Explore::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(71, 65)), module, Explore::SAMPLE_PLAYBACK_POSITION_INPUT));
+
+		// Length
 		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 68)), module, Explore::GHOST_PLAYBACK_LENGTH_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 68)), module, Explore::GHOST_PLAYBACK_LENGTH_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 68)), module, Explore::GHOST_PLAYBACK_LENGTH_ATTN_KNOB));
 
+		// Spawn rate
 		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 112)), module, Explore::GHOST_SPAWN_RATE_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 112)), module, Explore::GHOST_SPAWN_RATE_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 112)), module, Explore::GHOST_SPAWN_RATE_ATTN_KNOB));
 
+		// Graveyard Capacity
 		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 90)), module, Explore::GRAVEYARD_CAPACITY_KNOB));
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 90)), module, Explore::GRAVEYARD_CAPACITY_INPUT));
-		addParam(createParam<Trimpot>(mm2px(Vec(23, 87)), module, Explore::GRAVEYARD_CAPACITY_ATTN_KNOB));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 90)), module, Explore::GRAVEYARD_CAPACITY_ATTN_KNOB));
 
 		// Trim
 		addParam(createParamCentered<Trimpot>(mm2px(Vec(71.810, 93.915)), module, Explore::TRIM_KNOB));
@@ -338,7 +359,7 @@ struct ExploreWidget : ModuleWidget
 
 		// WAV output
 		addOutput(createOutput<PJ301MPort>(Vec(200, 324), module, Explore::WAV_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 124.893)), module, Explore::DEBUG_OUTPUT));
+		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 124.893)), module, Explore::DEBUG_OUTPUT));
 	}
 
 	void appendContextMenu(Menu *menu) override
