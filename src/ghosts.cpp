@@ -155,6 +155,11 @@ struct Ghosts : Module
 	Sample sample;
 	dsp::SchmittTrigger purge_trigger;
 
+	// When halloween is set to true, the module is tweaked to create more
+	// bizarre sounds.  Halloween is togged via the options in the right-click
+	// context menu.
+	int halloween = 0;
+
 	enum ParamIds {
 		GHOST_PLAYBACK_LENGTH_KNOB,
 		GHOST_PLAYBACK_LENGTH_ATTN_KNOB,
@@ -200,7 +205,7 @@ struct Ghosts : Module
 		configParam(GHOST_SPAWN_RATE_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "GraveyardCapacityAttnKnob");
 		configParam(SAMPLE_PLAYBACK_POSITION_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionKnob");
 		configParam(SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionAttnKnob");
-		configParam(TRIM_KNOB, 0.0f, 1.0f, 2.0f, "TrimKnob");
+		configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
 		configParam(SMOOTH_SWITCH, 0.f, 1.f, 1.f, "Smooth");
 	}
 
@@ -237,6 +242,15 @@ struct Ghosts : Module
 		float spawn_rate = calculate_inputs(GHOST_SPAWN_RATE_INPUT, GHOST_SPAWN_RATE_KNOB, GHOST_SPAWN_RATE_ATTN_KNOB, MAX_GHOST_SPAWN_RATE);
 		float playback_length = calculate_inputs(GHOST_PLAYBACK_LENGTH_INPUT, GHOST_PLAYBACK_LENGTH_KNOB, GHOST_PLAYBACK_LENGTH_ATTN_KNOB, args.sampleRate);
 		float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, sample.total_sample_count);
+
+		if(halloween)
+		{
+			//spawn_rate = spawn_rate / 4.0f;
+			//playback_length = playback_length / 8.0f;
+
+			float r = (static_cast <float> (rand()) / static_cast <float> (RAND_MAX / 1024.0)) - 1024.0;
+			start_position = start_position + r;
+		}
 
 		if(spawn_rate > MAX_GHOST_SPAWN_RATE) spawn_rate = MAX_GHOST_SPAWN_RATE;
 		if(start_position >= sample.total_sample_count) start_position = sample.total_sample_count - 1;
@@ -382,6 +396,28 @@ struct GhostsWidget : ModuleWidget
 		menu_item_load_sample->text = "Select .wav file";
 		menu_item_load_sample->module = module;
 		menu->addChild(menu_item_load_sample);
+
+
+		//
+		// Options
+		// =====================================================================
+
+		menu->addChild(new MenuEntry);
+		menu->addChild(createMenuLabel("Options"));
+
+		// Retrigger option
+
+		struct HalloweenMenuItem : MenuItem {
+			Ghosts* module;
+			void onAction(const event::Action& e) override {
+				module->halloween = !(module->halloween);
+			}
+		};
+
+		HalloweenMenuItem* halloween_menu_item = createMenuItem<HalloweenMenuItem>("Halloween");
+		halloween_menu_item->rightText = CHECKMARK(module->halloween == 1);
+		halloween_menu_item->module = module;
+		menu->addChild(halloween_menu_item);
 	}
 
 };
