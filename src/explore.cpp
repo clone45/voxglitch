@@ -12,7 +12,7 @@
 
 using namespace std;
 #define GAIN 5.0
-
+#define MAX_GRAVEYARD_CAPACITY 500.0f
 
 struct Sample
 {
@@ -94,10 +94,6 @@ struct Ghost
 	// start position.
 	float playback_position = 0.0f;
 
-	// Ghosts become quieter as they age.  This is controlled via the
-	// amplitude variable.
-	float amplitude = 5.0;  // output should be from -5 to +5 volts
-
 	// Once a Ghost dies, it's flagged using has_died to it can later be
 	// removed from the graveyard (aka, the vector of Ghosts).
 	bool has_died = false;
@@ -110,28 +106,9 @@ struct Ghost
 	{
 		float samplePos = this->start_position + this->playback_position;
 
-		if (abs(floor(samplePos)) < this->sample_ptr->total_sample_count)
+		if (floor(samplePos) < this->sample_ptr->total_sample_count && (samplePos >= 0))
 		{
-
-			// Calculate the offset voltage
-			float wav_output_voltage = this->amplitude * this->sample_ptr->playBuffer[floor(samplePos)];
-
-			//
-			// Handle smoothing, if it is activated
-			//
-			/*
-			if(smooth  && (smooth_ramp < 1))
-			{
-				float smooth_rate = 128.0f / settings_sample_rate;  // A smooth rate of 128 seems to work best
-				smooth_ramp += smooth_rate;
-				wav_output_voltage = (last_wave_output_voltage * (1 - smooth_ramp)) + (wav_output_voltage * smooth_ramp);
-			}
-
-			last_wave_output_voltage = wav_output_voltage;
-			*/
-
-			// Return the output
-			return(wav_output_voltage);
+			return(this->sample_ptr->playBuffer[floor(samplePos)]);
 		}
 		else
 		{
@@ -159,7 +136,6 @@ struct Ghost
 		if(playback_position >= playback_length)
 		{
 			playback_position = playback_position - playback_length;
-			// smooth_ramp = 0;
 		}
 
 		if((playback_position >= playback_length) || (playback_position < 0)) playback_position = 0;
@@ -181,6 +157,7 @@ struct Explore : Module
 	enum ParamIds {
 		GHOST_PLAYBACK_LENGTH_KNOB,
 		GRAVEYARD_CAPACITY_KNOB,
+		GRAVEYARD_CAPACITY_ATTN_KNOB,
 		GHOST_SPAWN_RATE_KNOB,
 		SAMPLE_PLAYBACK_POSITION_KNOB,
 		TRIM_KNOB,
@@ -190,6 +167,7 @@ struct Explore : Module
 	enum InputIds {
 		TRIG_INPUT,
 		PITCH_INPUT,
+		GRAVEYARD_CAPACITY_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -250,7 +228,7 @@ struct Explore : Module
 			//
 			// I ain't afraid of no ghosts!
 			//
-			
+
 			Ghost ghost;
 			ghost.start_position = params[SAMPLE_PLAYBACK_POSITION_KNOB].getValue() * sample.total_sample_count;
 			ghost.playback_length = params[GHOST_PLAYBACK_LENGTH_KNOB].getValue() * args.sampleRate; // from 0 to 1 second
@@ -262,7 +240,16 @@ struct Explore : Module
 			spawn_rate_counter = 0;
 		}
 
-		unsigned int graveyard_capacity = floor(params[GRAVEYARD_CAPACITY_KNOB].getValue() * 500.0f);
+
+		float graveyard_capacity_input = inputs[GRAVEYARD_CAPACITY_INPUT].getVoltage() / 10.0;
+		float graveyard_capacity_attenuator = params[GRAVEYARD_CAPACITY_ATTN_KNOB].getValue();
+		float graveyard_capacity_knob = params[GRAVEYARD_CAPACITY_KNOB].getValue();
+
+		unsigned int graveyard_capacity = floor(((graveyard_capacity_input * MAX_GRAVEYARD_CAPACITY) * graveyard_capacity_attenuator) + (graveyard_capacity_knob * 500.0f));
+		// unsigned int graveyard_capacity = graveyard_capacity_knob * 500.0f;
+		if (graveyard_capacity > MAX_GRAVEYARD_CAPACITY) graveyard_capacity = MAX_GRAVEYARD_CAPACITY;
+
+		// (((inputs[POSITION_INPUT].getVoltage() / 10.0) * params[POSITION_ATTN_KNOB].getValue()) + params[POSITION_KNOB].getValue());
 
 		while(graveyard.size() > graveyard_capacity)
 		{
@@ -338,11 +325,16 @@ struct ExploreWidget : ModuleWidget
 
 		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(43, 33)), module, Explore::SAMPLE_PLAYBACK_POSITION_KNOB));
 		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 68)), module, Explore::GHOST_PLAYBACK_LENGTH_KNOB));
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 90)), module, Explore::GRAVEYARD_CAPACITY_KNOB));
+
 		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 112)), module, Explore::GHOST_SPAWN_RATE_KNOB));
+
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 90)), module, Explore::GRAVEYARD_CAPACITY_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 90)), module, Explore::GRAVEYARD_CAPACITY_INPUT));
+		addParam(createParam<Trimpot>(mm2px(Vec(23, 87)), module, Explore::GRAVEYARD_CAPACITY_ATTN_KNOB));
 
 		// Trim
 		addParam(createParamCentered<Trimpot>(mm2px(Vec(71.810, 93.915)), module, Explore::TRIM_KNOB));
+
 
 		// WAV output
 		addOutput(createOutput<PJ301MPort>(Vec(200, 324), module, Explore::WAV_OUTPUT));
