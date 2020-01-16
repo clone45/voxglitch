@@ -155,10 +155,11 @@ struct Ghosts : Module
 	Sample sample;
 	dsp::SchmittTrigger purge_trigger;
 
-	// When jitter is set to true, ghosts playback positions are randomized
-	// a little bit.
-
+	// When jitter is set to true, ghosts playback positions are randomized a little bit.
 	int jitter = 0;
+
+	// When broken_evp is true, random grains (ghosts) are not played
+	int broken_evp = 0;
 
 	enum ParamIds {
 		GHOST_PLAYBACK_LENGTH_KNOB,
@@ -214,6 +215,7 @@ struct Ghosts : Module
 		json_t *rootJ = json_object();
 		json_object_set_new(rootJ, "path", json_string(sample.path.c_str()));
 		json_object_set_new(rootJ, "jitter", json_integer(jitter));
+		json_object_set_new(rootJ, "broken_evp", json_integer(broken_evp));
 		return rootJ;
 	}
 
@@ -229,6 +231,9 @@ struct Ghosts : Module
 
 		json_t* jitter_json = json_object_get(rootJ, "jitter");
 		if (jitter_json) jitter = json_integer_value(jitter_json);
+
+		json_t* broken_evp_json = json_object_get(rootJ, "broken_evp");
+		if (broken_evp_json) broken_evp = json_integer_value(broken_evp_json);
 	}
 
 	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
@@ -304,7 +309,6 @@ struct Ghosts : Module
 				}
 
 				mix_output = mix_output * params[TRIM_KNOB].getValue();
-
 				outputs[WAV_OUTPUT].setVoltage(mix_output);
 			}
 
@@ -346,8 +350,10 @@ struct GhostsWidget : ModuleWidget
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/ghosts_front_panel.svg")));
 
 		// Cosmetic rack screws
+		/*
 		addChild(createWidget<ScrewSilver>(Vec(15, 0)));
 		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
+		*/
 
 		// Purge
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(15, 33)), module, Ghosts::PURGE_INPUT));
@@ -405,7 +411,9 @@ struct GhostsWidget : ModuleWidget
 		menu->addChild(new MenuEntry);
 		menu->addChild(createMenuLabel("Options"));
 
-		// Retrigger option
+		//
+		// Jitter option
+		//
 
 		struct jitterMenuItem : MenuItem {
 			Ghosts* module;
@@ -418,6 +426,23 @@ struct GhostsWidget : ModuleWidget
 		jitter_menu_item->rightText = CHECKMARK(module->jitter == 1);
 		jitter_menu_item->module = module;
 		menu->addChild(jitter_menu_item);
+
+		//
+		// Broken EVP Device Option
+		//
+		/*
+		struct brokenEVPDeviceMenuItem : MenuItem {
+			Ghosts* module;
+			void onAction(const event::Action& e) override {
+				module->broken_evp = !(module->broken_evp);
+			}
+		};
+
+		brokenEVPDeviceMenuItem* broken_evp_menu_item = createMenuItem<brokenEVPDeviceMenuItem>("Broken EVP Recording Device");
+		broken_evp_menu_item->rightText = CHECKMARK(module->broken_evp == 1);
+		broken_evp_menu_item->module = module;
+		menu->addChild(broken_evp_menu_item);
+		*/
 	}
 
 };

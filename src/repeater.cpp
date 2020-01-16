@@ -339,10 +339,12 @@ struct RepeaterWidget : ModuleWidget
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/repeater_front_panel.svg")));
 
 		// Cosmetic rack screws
+		/*
 		addChild(createWidget<ScrewSilver>(Vec(15, 0)));
 		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
 		addChild(createWidget<ScrewSilver>(Vec(box.size.x-30, 0)));
 		addChild(createWidget<ScrewSilver>(Vec(box.size.x-30, 365)));
+		*/
 
 		// Input and label for the sample speed input
 		// addParam(createParam<Trimpot>(Vec(30, 339), module, Repeater::LSPEED_PARAM));
