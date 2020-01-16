@@ -155,10 +155,10 @@ struct Ghosts : Module
 	Sample sample;
 	dsp::SchmittTrigger purge_trigger;
 
-	// When halloween is set to true, the module is tweaked to create more
-	// bizarre sounds.  Halloween is togged via the options in the right-click
-	// context menu.
-	int halloween = 0;
+	// When jitter is set to true, ghosts playback positions are randomized
+	// a little bit.
+
+	int jitter = 0;
 
 	enum ParamIds {
 		GHOST_PLAYBACK_LENGTH_KNOB,
@@ -213,7 +213,7 @@ struct Ghosts : Module
 	{
 		json_t *rootJ = json_object();
 		json_object_set_new(rootJ, "path", json_string(sample.path.c_str()));
-		json_object_set_new(rootJ, "halloween", json_integer(halloween));
+		json_object_set_new(rootJ, "jitter", json_integer(jitter));
 		return rootJ;
 	}
 
@@ -227,8 +227,8 @@ struct Ghosts : Module
 			sample.load(path);
 		}
 
-		json_t* halloween_json = json_object_get(rootJ, "halloween");
-		if (halloween_json) halloween = json_integer_value(halloween_json);		
+		json_t* jitter_json = json_object_get(rootJ, "jitter");
+		if (jitter_json) jitter = json_integer_value(jitter_json);
 	}
 
 	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
@@ -246,7 +246,7 @@ struct Ghosts : Module
 		float playback_length = calculate_inputs(GHOST_PLAYBACK_LENGTH_INPUT, GHOST_PLAYBACK_LENGTH_KNOB, GHOST_PLAYBACK_LENGTH_ATTN_KNOB, args.sampleRate);
 		float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, sample.total_sample_count);
 
-		if(halloween)
+		if(jitter)
 		{
 			float r = (static_cast <float> (rand()) / static_cast <float> (RAND_MAX / 1024.0)) - 1024.0;
 			start_position = start_position + r;
@@ -407,17 +407,17 @@ struct GhostsWidget : ModuleWidget
 
 		// Retrigger option
 
-		struct HalloweenMenuItem : MenuItem {
+		struct jitterMenuItem : MenuItem {
 			Ghosts* module;
 			void onAction(const event::Action& e) override {
-				module->halloween = !(module->halloween);
+				module->jitter = !(module->jitter);
 			}
 		};
 
-		HalloweenMenuItem* halloween_menu_item = createMenuItem<HalloweenMenuItem>("Halloween");
-		halloween_menu_item->rightText = CHECKMARK(module->halloween == 1);
-		halloween_menu_item->module = module;
-		menu->addChild(halloween_menu_item);
+		jitterMenuItem* jitter_menu_item = createMenuItem<jitterMenuItem>("Jitter");
+		jitter_menu_item->rightText = CHECKMARK(module->jitter == 1);
+		jitter_menu_item->module = module;
+		menu->addChild(jitter_menu_item);
 	}
 
 };
