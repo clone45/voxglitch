@@ -12,7 +12,7 @@
 
 using namespace std;
 #define GAIN 5.0
-#define MAX_GRAVEYARD_CAPACITY 500.0f
+#define MAX_GRAVEYARD_CAPACITY 128.0f
 #define MAX_GHOST_SPAWN_RATE 12000.0f
 
 struct Sample
@@ -95,9 +95,7 @@ struct Ghost
 	// start position.
 	float playback_position = 0.0f;
 
-	// Once a Ghost dies, it's flagged using has_died to it can later be
-	// removed from the graveyard (aka, the vector of Ghosts).
-	bool has_died = false;
+	unsigned int sample_position = 0;
 
 	// Used as a counter for smoothing transitions
 	//float smooth_ramp = 1;
@@ -105,11 +103,13 @@ struct Ghost
 
 	float getOutput()
 	{
-		float samplePos = this->start_position + this->playback_position;
+		// Note that we're adding two floating point numbers, then casting
+		// them to an int, which is much faster than using floor()
+		sample_position = this->start_position + this->playback_position;
 
-		if (floor(samplePos) < this->sample_ptr->total_sample_count && (samplePos >= 0))
+		if (sample_position < this->sample_ptr->total_sample_count)
 		{
-			return(this->sample_ptr->playBuffer[floor(samplePos)]);
+			return(this->sample_ptr->playBuffer[sample_position]);
 		}
 		else
 		{
@@ -123,15 +123,10 @@ struct Ghost
 		}
 	}
 
-	bool hasDied()
-	{
-		return this->has_died;
-	}
-
-	void age(float settings_sample_rate)
+	void age(float step_amount)
 	{
 		// Step the playback position forward.  TODO: Add pitch into this equation
-		playback_position = playback_position + (this->sample_ptr->sample_rate / settings_sample_rate);
+		playback_position = playback_position + step_amount;
 
 		// If the playback position is past the playback length, then wrap the playback position to the beginning
 		if(playback_position >= playback_length)
@@ -147,6 +142,8 @@ struct Ghost
 struct Ghosts : Module
 {
 	float spawn_rate_counter = 0;
+	float step_amount = 0;
+
 	int step = 0;
 	std::string root_dir;
 	std::string path;
@@ -160,6 +157,7 @@ struct Ghosts : Module
 
 	// When broken_evp is true, random grains (ghosts) are not played
 	int broken_evp = 0;
+	float jitter_divisor = 1;
 
 	enum ParamIds {
 		GHOST_PLAYBACK_LENGTH_KNOB,
@@ -208,6 +206,8 @@ struct Ghosts : Module
 		configParam(SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionAttnKnob");
 		configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
 		configParam(SMOOTH_SWITCH, 0.f, 1.f, 1.f, "Smooth");
+
+		jitter_divisor = static_cast <float> (RAND_MAX / 1024.0);
 	}
 
 	json_t *dataToJson() override
@@ -248,12 +248,12 @@ struct Ghosts : Module
 	void process(const ProcessArgs &args) override
 	{
 		float spawn_rate = calculate_inputs(GHOST_SPAWN_RATE_INPUT, GHOST_SPAWN_RATE_KNOB, GHOST_SPAWN_RATE_ATTN_KNOB, MAX_GHOST_SPAWN_RATE);
-		float playback_length = calculate_inputs(GHOST_PLAYBACK_LENGTH_INPUT, GHOST_PLAYBACK_LENGTH_KNOB, GHOST_PLAYBACK_LENGTH_ATTN_KNOB, args.sampleRate);
+		float playback_length = calculate_inputs(GHOST_PLAYBACK_LENGTH_INPUT, GHOST_PLAYBACK_LENGTH_KNOB, GHOST_PLAYBACK_LENGTH_ATTN_KNOB, (args.sampleRate / 16));
 		float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, sample.total_sample_count);
 
 		if(jitter)
 		{
-			float r = (static_cast <float> (rand()) / static_cast <float> (RAND_MAX / 1024.0)) - 1024.0;
+			float r = (static_cast <float> (rand()) / jitter_divisor) - 1024.0;
 			start_position = start_position + r;
 		}
 
@@ -280,7 +280,7 @@ struct Ghosts : Module
 			spawn_rate_counter = 0;
 		}
 
-		unsigned int graveyard_capacity = floor(calculate_inputs(GRAVEYARD_CAPACITY_INPUT, GRAVEYARD_CAPACITY_KNOB, GRAVEYARD_CAPACITY_ATTN_KNOB, MAX_GRAVEYARD_CAPACITY));
+		unsigned int graveyard_capacity = calculate_inputs(GRAVEYARD_CAPACITY_INPUT, GRAVEYARD_CAPACITY_KNOB, GRAVEYARD_CAPACITY_ATTN_KNOB, MAX_GRAVEYARD_CAPACITY);
 		if (graveyard_capacity > MAX_GRAVEYARD_CAPACITY) graveyard_capacity = MAX_GRAVEYARD_CAPACITY;
 
 		while(graveyard.size() > graveyard_capacity)
@@ -301,11 +301,14 @@ struct Ghosts : Module
 
 			if(graveyard.empty() == false)
 			{
-				for(int i = graveyard.size() - 1; i >= 0; i--)
+				// pre-calculate part of the math used to determine sample positions
+				// in the Ghost's age() function
+				step_amount = sample.sample_rate / args.sampleRate;
+
+				for(Ghost& ghost : graveyard)
 				{
-					mix_output += graveyard[i].getOutput();
-					graveyard[i].age(args.sampleRate);
-					if(graveyard[i].hasDied()) graveyard.erase(graveyard.begin() + i);
+					mix_output += ghost.getOutput();
+					ghost.age(step_amount);
 				}
 
 				mix_output = mix_output * params[TRIM_KNOB].getValue();
@@ -313,7 +316,6 @@ struct Ghosts : Module
 			}
 
 			spawn_rate_counter = spawn_rate_counter + 1.0f;
-
 		}
 		else
 		{
