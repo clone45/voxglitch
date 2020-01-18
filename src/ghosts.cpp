@@ -98,18 +98,35 @@ struct Ghost
 	unsigned int sample_position = 0;
 
 	// Used as a counter for smoothing transitions
-	//float smooth_ramp = 1;
-	//float last_wave_output_voltage = 0;
 
-	float getOutput()
+	//
+	// smooth_ramp:
+	//
+	// Setting this to 0, when the smooth switch it ON, will cause smoothing
+	// of transitions between playback at the end of the sample and beginning
+	// of the sample.  Notice that it's set to 0 by default.  That's so when new
+	// ghosts are added, they'll smooth into the sound when first created.
+	//
+
+	float loop_smoothing_ramp = 0;
+	float removal_smoothing_ramp = 0;
+
+	float last_wave_output_voltage = 0;
+	float output_voltage = 0;
+
+	bool dead = false;
+	bool dying = false;
+
+	float getOutput(bool smooth_switched_on, float smooth_rate)
 	{
+
 		// Note that we're adding two floating point numbers, then casting
 		// them to an int, which is much faster than using floor()
 		sample_position = this->start_position + this->playback_position;
 
 		if (sample_position < this->sample_ptr->total_sample_count)
 		{
-			return(this->sample_ptr->playBuffer[sample_position]);
+			output_voltage = this->sample_ptr->playBuffer[sample_position];
 		}
 		else
 		{
@@ -119,8 +136,25 @@ struct Ghost
 			// the ghost's playback_position if it reached the end of a sample,
 			// but I worry that doing so may generate unexpected high tones.
 
-			return(0);
+			// output_voltage = 0;
 		}
+
+		if(smooth_switched_on && (loop_smoothing_ramp < 1))
+		{
+			loop_smoothing_ramp += smooth_rate;
+			output_voltage = (last_wave_output_voltage * (1.0f - loop_smoothing_ramp)) + (output_voltage * loop_smoothing_ramp);
+		}
+
+		last_wave_output_voltage = output_voltage;
+
+		if(dying && (removal_smoothing_ramp < 1))
+		{
+			removal_smoothing_ramp += 0.001f;
+			output_voltage = (output_voltage * (1.0f - removal_smoothing_ramp));
+			if(removal_smoothing_ramp >= 1) dead = true;
+		}
+
+		return(output_voltage);
 	}
 
 	void age(float step_amount)
@@ -132,9 +166,15 @@ struct Ghost
 		if(playback_position >= playback_length)
 		{
 			playback_position = playback_position - playback_length;
+			loop_smoothing_ramp = 0; // smooth back into it
 		}
 
 		if((playback_position >= playback_length) || (playback_position < 0)) playback_position = 0;
+	}
+
+	void startDying()
+	{
+		dying = true;
 	}
 };
 
@@ -143,6 +183,7 @@ struct Ghosts : Module
 {
 	float spawn_rate_counter = 0;
 	float step_amount = 0;
+	float smooth_rate = 0;
 
 	int step = 0;
 	std::string root_dir;
@@ -280,12 +321,26 @@ struct Ghosts : Module
 			spawn_rate_counter = 0;
 		}
 
+		// Kill off any completely dead ghosts
+		for(int i = graveyard.size() - 1; i >= 0; i--)
+		{
+			if(graveyard[i].dead) graveyard.erase(graveyard.begin() + i);
+		}
+
+		// Start killing off older ghosts.  This doesn't remove them immediately.
+		// Instead, it marks them for removal.  Once marked for removal, the audio
+		// smoothing process will be giving time to complete before the ghost has
+		// been completely removed.
+
 		unsigned int graveyard_capacity = calculate_inputs(GRAVEYARD_CAPACITY_INPUT, GRAVEYARD_CAPACITY_KNOB, GRAVEYARD_CAPACITY_ATTN_KNOB, MAX_GRAVEYARD_CAPACITY);
 		if (graveyard_capacity > MAX_GRAVEYARD_CAPACITY) graveyard_capacity = MAX_GRAVEYARD_CAPACITY;
 
-		while(graveyard.size() > graveyard_capacity)
+		if(graveyard.size() > graveyard_capacity)
 		{
-			graveyard.erase(graveyard.begin());
+			for(unsigned int i=0; i < graveyard.size() - graveyard_capacity; i++)
+			{
+				if(! graveyard[i].dying) graveyard[i].startDying();
+			}
 		}
 
 		if ((! sample.loading) && (sample.total_sample_count > 0))
@@ -304,10 +359,11 @@ struct Ghosts : Module
 				// pre-calculate part of the math used to determine sample positions
 				// in the Ghost's age() function
 				step_amount = sample.sample_rate / args.sampleRate;
+				smooth_rate = 128.0f / args.sampleRate;
 
 				for(Ghost& ghost : graveyard)
 				{
-					mix_output += ghost.getOutput();
+					mix_output += ghost.getOutput(params[SMOOTH_SWITCH].getValue(), smooth_rate);
 					ghost.age(step_amount);
 				}
 
@@ -359,6 +415,7 @@ struct GhostsWidget : ModuleWidget
 
 		// Purge
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(15, 33)), module, Ghosts::PURGE_INPUT));
+		addParam(createParamCentered<CKSS>(Vec(40, 33), module, Ghosts::SMOOTH_SWITCH));
 
 		// Position
 		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(71, 33)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_KNOB));
