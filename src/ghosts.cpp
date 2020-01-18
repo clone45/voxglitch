@@ -117,7 +117,7 @@ struct Ghost
 	bool dead = false;
 	bool dying = false;
 
-	float getOutput(bool smooth_switched_on, float smooth_rate)
+	float getOutput(float smooth_rate)
 	{
 
 		// Note that we're adding two floating point numbers, then casting
@@ -139,7 +139,7 @@ struct Ghost
 			// output_voltage = 0;
 		}
 
-		if(smooth_switched_on && (loop_smoothing_ramp < 1))
+		if(loop_smoothing_ramp < 1)
 		{
 			loop_smoothing_ramp += smooth_rate;
 			output_voltage = (last_wave_output_voltage * (1.0f - loop_smoothing_ramp)) + (output_voltage * loop_smoothing_ramp);
@@ -193,9 +193,6 @@ struct Ghosts : Module
 	Sample sample;
 	dsp::SchmittTrigger purge_trigger;
 
-	// When jitter is set to true, ghosts playback positions are randomized a little bit.
-	int jitter = 0;
-
 	// When broken_evp is true, random grains (ghosts) are not played
 	int broken_evp = 0;
 	float jitter_divisor = 1;
@@ -210,7 +207,7 @@ struct Ghosts : Module
 		SAMPLE_PLAYBACK_POSITION_KNOB,
 		SAMPLE_PLAYBACK_POSITION_ATTN_KNOB,
 		TRIM_KNOB,
-		SMOOTH_SWITCH,
+		JITTER_SWITCH,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -241,12 +238,12 @@ struct Ghosts : Module
 		configParam(GHOST_PLAYBACK_LENGTH_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "GhostLengthAttnKnob");
 		configParam(GRAVEYARD_CAPACITY_KNOB, 0.0f, 1.0f, 1.0f, "GraveyardCapacityKnob");
 		configParam(GRAVEYARD_CAPACITY_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "GraveyardCapacityAttnKnob");
-		configParam(GHOST_SPAWN_RATE_KNOB, 0.0f, 1.0f, 0.2f, "GhostSpawnRateKnob");  // max 24000
+		configParam(GHOST_SPAWN_RATE_KNOB, 0.01f, 1.0f, 0.2f, "GhostSpawnRateKnob");  // max 24000
 		configParam(GHOST_SPAWN_RATE_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "GraveyardCapacityAttnKnob");
 		configParam(SAMPLE_PLAYBACK_POSITION_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionKnob");
 		configParam(SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionAttnKnob");
 		configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
-		configParam(SMOOTH_SWITCH, 0.f, 1.f, 1.f, "Smooth");
+		configParam(JITTER_SWITCH, 0.f, 1.f, 1.f, "Jitter");
 
 		jitter_divisor = static_cast <float> (RAND_MAX / 1024.0);
 	}
@@ -255,8 +252,6 @@ struct Ghosts : Module
 	{
 		json_t *rootJ = json_object();
 		json_object_set_new(rootJ, "path", json_string(sample.path.c_str()));
-		json_object_set_new(rootJ, "jitter", json_integer(jitter));
-		json_object_set_new(rootJ, "broken_evp", json_integer(broken_evp));
 		return rootJ;
 	}
 
@@ -269,12 +264,6 @@ struct Ghosts : Module
 			this->path = json_string_value(loaded_path_json);
 			sample.load(path);
 		}
-
-		json_t* jitter_json = json_object_get(rootJ, "jitter");
-		if (jitter_json) jitter = json_integer_value(jitter_json);
-
-		json_t* broken_evp_json = json_object_get(rootJ, "broken_evp");
-		if (broken_evp_json) broken_evp = json_integer_value(broken_evp_json);
 	}
 
 	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
@@ -292,7 +281,7 @@ struct Ghosts : Module
 		float playback_length = calculate_inputs(GHOST_PLAYBACK_LENGTH_INPUT, GHOST_PLAYBACK_LENGTH_KNOB, GHOST_PLAYBACK_LENGTH_ATTN_KNOB, (args.sampleRate / 16));
 		float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, sample.total_sample_count);
 
-		if(jitter)
+		if(params[JITTER_SWITCH].getValue())
 		{
 			float r = (static_cast <float> (rand()) / jitter_divisor) - 1024.0;
 			start_position = start_position + r;
@@ -303,7 +292,10 @@ struct Ghosts : Module
 
 		if (purge_trigger.process(inputs[PURGE_INPUT].getVoltage()))
 		{
-			graveyard.clear();
+			for(Ghost& ghost : graveyard)
+			{
+				if(! ghost.dying) ghost.startDying();
+			}
 		}
 
 		if(spawn_rate_counter >= spawn_rate)
@@ -363,7 +355,7 @@ struct Ghosts : Module
 
 				for(Ghost& ghost : graveyard)
 				{
-					mix_output += ghost.getOutput(params[SMOOTH_SWITCH].getValue(), smooth_rate);
+					mix_output += ghost.getOutput(smooth_rate);
 					ghost.age(step_amount);
 				}
 
@@ -407,15 +399,10 @@ struct GhostsWidget : ModuleWidget
 		setModule(module);
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/ghosts_front_panel.svg")));
 
-		// Cosmetic rack screws
-		/*
-		addChild(createWidget<ScrewSilver>(Vec(15, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
-		*/
-
 		// Purge
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(15, 33)), module, Ghosts::PURGE_INPUT));
-		addParam(createParamCentered<CKSS>(Vec(40, 33), module, Ghosts::SMOOTH_SWITCH));
+		addParam(createParamCentered<CKSS>(mm2px(Vec(34.372, 33)), module, Ghosts::JITTER_SWITCH));
+		// addParam(createParamCentered<CKSS>(Vec(40, 33), module, Ghosts::SMOOTH_SWITCH));
 
 		// Position
 		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(71, 33)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_KNOB));
@@ -469,22 +456,6 @@ struct GhostsWidget : ModuleWidget
 
 		menu->addChild(new MenuEntry);
 		menu->addChild(createMenuLabel("Options"));
-
-		//
-		// Jitter option
-		//
-
-		struct jitterMenuItem : MenuItem {
-			Ghosts* module;
-			void onAction(const event::Action& e) override {
-				module->jitter = !(module->jitter);
-			}
-		};
-
-		jitterMenuItem* jitter_menu_item = createMenuItem<jitterMenuItem>("Jitter");
-		jitter_menu_item->rightText = CHECKMARK(module->jitter == 1);
-		jitter_menu_item->module = module;
-		menu->addChild(jitter_menu_item);
 
 		//
 		// Broken EVP Device Option
