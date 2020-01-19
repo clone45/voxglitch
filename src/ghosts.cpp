@@ -124,20 +124,13 @@ struct Ghost
 		// them to an int, which is much faster than using floor()
 		sample_position = this->start_position + this->playback_position;
 
-		if (sample_position < this->sample_ptr->total_sample_count)
+		// Wrap if the sample position is past the sample end point
+		if (sample_position >= this->sample_ptr->total_sample_count)
 		{
-			output_voltage = this->sample_ptr->playBuffer[sample_position];
+			sample_position = sample_position % this->sample_ptr->total_sample_count;
 		}
-		else
-		{
-			// A decision that I've made (and I might change my mind later) is
-			// that if a ghost's playback_position is past the end of a sample,
-			// then it will output 0.  Another option could have been to reset
-			// the ghost's playback_position if it reached the end of a sample,
-			// but I worry that doing so may generate unexpected high tones.
 
-			// output_voltage = 0;
-		}
+		output_voltage = this->sample_ptr->playBuffer[sample_position];
 
 		if(loop_smoothing_ramp < 1)
 		{
@@ -211,7 +204,8 @@ struct Ghosts : Module
 		NUM_PARAMS
 	};
 	enum InputIds {
-		PURGE_INPUT,
+		PURGE_TRIGGER_INPUT,
+		JITTER_CV_INPUT,
 		PITCH_INPUT,
 		GHOST_PLAYBACK_LENGTH_INPUT,
 		GRAVEYARD_CAPACITY_INPUT,
@@ -281,16 +275,32 @@ struct Ghosts : Module
 		float playback_length = calculate_inputs(GHOST_PLAYBACK_LENGTH_INPUT, GHOST_PLAYBACK_LENGTH_KNOB, GHOST_PLAYBACK_LENGTH_ATTN_KNOB, (args.sampleRate / 16));
 		float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, sample.total_sample_count);
 
-		if(params[JITTER_SWITCH].getValue())
+		// Ensure that some of the inputs are within range
+		spawn_rate = clamp(spawn_rate, 0.0f, MAX_GHOST_SPAWN_RATE);
+		if(start_position >= sample.total_sample_count) start_position = sample.total_sample_count - 1;
+
+		// Shorten the playback length if it would result in playback passing
+		// the end of the sample data.
+
+		if(playback_length > (sample.total_sample_count - start_position)) playback_length = sample.total_sample_count - start_position;
+
+		//
+		// This next conditional is a little tricky, so let me break it down...
+		//   If there's a cable in the Jitter CV Input, then apply jitter if the signal on that cable is greater than 0
+		//   .. otherwise, use position of the jitter switch to determine if jitter should be applied.
+		//
+		// Additional Notes
+		// * The jitter switch is ignored if a cable is connected to the jitter CV input.
+		// * I'm not sure if (inputs[JITTER_CV_INPUT].getVoltage() > 0) is the proper way to
+		//   check if the voltage is "on", or if I should us 0.5 or some other number?
+
+		if(inputs[JITTER_CV_INPUT].isConnected() ? (inputs[JITTER_CV_INPUT].getVoltage() > 0) : params[JITTER_SWITCH].getValue())
 		{
 			float r = (static_cast <float> (rand()) / jitter_divisor) - 1024.0;
 			start_position = start_position + r;
 		}
 
-		if(spawn_rate > MAX_GHOST_SPAWN_RATE) spawn_rate = MAX_GHOST_SPAWN_RATE;
-		if(start_position >= sample.total_sample_count) start_position = sample.total_sample_count - 1;
-
-		if (purge_trigger.process(inputs[PURGE_INPUT].getVoltage()))
+		if (purge_trigger.process(inputs[PURGE_TRIGGER_INPUT].getVoltage()))
 		{
 			for(Ghost& ghost : graveyard)
 			{
@@ -400,9 +410,9 @@ struct GhostsWidget : ModuleWidget
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/ghosts_front_panel.svg")));
 
 		// Purge
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(15, 33)), module, Ghosts::PURGE_INPUT));
-		addParam(createParamCentered<CKSS>(mm2px(Vec(34.372, 33)), module, Ghosts::JITTER_SWITCH));
-		// addParam(createParamCentered<CKSS>(Vec(40, 33), module, Ghosts::SMOOTH_SWITCH));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 33)), module, Ghosts::PURGE_TRIGGER_INPUT));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(26, 33)), module, Ghosts::JITTER_CV_INPUT));
+		addParam(createParamCentered<CKSS>(mm2px(Vec(42, 33)), module, Ghosts::JITTER_SWITCH));
 
 		// Position
 		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(71, 33)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_KNOB));
@@ -456,23 +466,6 @@ struct GhostsWidget : ModuleWidget
 
 		menu->addChild(new MenuEntry);
 		menu->addChild(createMenuLabel("Options"));
-
-		//
-		// Broken EVP Device Option
-		//
-		/*
-		struct brokenEVPDeviceMenuItem : MenuItem {
-			Ghosts* module;
-			void onAction(const event::Action& e) override {
-				module->broken_evp = !(module->broken_evp);
-			}
-		};
-
-		brokenEVPDeviceMenuItem* broken_evp_menu_item = createMenuItem<brokenEVPDeviceMenuItem>("Broken EVP Recording Device");
-		broken_evp_menu_item->rightText = CHECKMARK(module->broken_evp == 1);
-		broken_evp_menu_item->module = module;
-		menu->addChild(broken_evp_menu_item);
-		*/
 	}
 
 };
