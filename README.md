@@ -11,7 +11,7 @@ Ghosts is a granular synthesis based sample player.  Load a sample using the rig
 ### Inputs
 
 * SPAWN RATE - How quickly new ghosts rise from their graves.  Spawn rate is counter intuitive: Lower values spawn ghosts more quickly.  This is because SPAWN RATE acts like a kitchen timer.
-* QUANTITY - The maximum number of ghosts allowed at one time.  Once there are too many ghosts, the oldest ghosts are put back in their graves.
+* QUANTITY - The maximum number of ghosts allowed at one time.  Once there are too many ghosts, the oldest ghosts are returned to their graves.
 * LENGTH - The length of the sample slice played by newly spawned ghosts.
 * POSITION - In short: An offset into the loaded .wav file.  When a new ghost is spawned, it starts playing back a slice of the loaded .wav file starting at the sample location specified by this input.  
 
