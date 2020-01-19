@@ -275,13 +275,11 @@ struct Ghosts : Module
 		float playback_length = calculate_inputs(GHOST_PLAYBACK_LENGTH_INPUT, GHOST_PLAYBACK_LENGTH_KNOB, GHOST_PLAYBACK_LENGTH_ATTN_KNOB, (args.sampleRate / 16));
 		float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, sample.total_sample_count);
 
-		// Ensure that some of the inputs are within range
+		// Ensure that the inputs are within range
 		spawn_rate = clamp(spawn_rate, 0.0f, MAX_GHOST_SPAWN_RATE);
 		if(start_position >= sample.total_sample_count) start_position = sample.total_sample_count - 1;
 
-		// Shorten the playback length if it would result in playback passing
-		// the end of the sample data.
-
+		// Shorten the playback length if it would result in playback passing the end of the sample data.
 		if(playback_length > (sample.total_sample_count - start_position)) playback_length = sample.total_sample_count - start_position;
 
 		//
