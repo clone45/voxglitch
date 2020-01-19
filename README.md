@@ -70,7 +70,7 @@ The Wav Bank module is a sample player.  It loads all .wav files from a folder a
 1. Reproduce the patch example shown in the image above.
 2. Right click on the module to select a folder containing one or more .wav files.
 
-
+## XY Controller
 ![XY](/docs/images/xy-front-panel-01.png)
 =======
 XY is a CV output generator with built in gesture recording.  Visuals are based on a Reaktor patch whose name eludes me.
