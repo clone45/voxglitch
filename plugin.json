@@ -20,6 +20,12 @@
         "tags": ["Granular", "Sampler"]
     },
     {
+        "slug": "goblins",
+        "name": "Goblins",
+        "description": "Antisocial .wav player/scanner using granular synthesis",
+        "tags": ["Granular", "Sampler"]
+    },
+    {
         "slug": "repeater",
         "name": "Repeater",
         "description": "Looping sample player with playback offset control.",
@@ -31,7 +37,6 @@
         "description": "Sample player that can load and switch between all .wav files in a folder.",
         "tags": ["Sampler"]
     },
-
     {
         "slug": "xy",
         "name": "XY",
