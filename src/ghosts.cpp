@@ -11,7 +11,6 @@
 #include <memory>
 
 using namespace std;
-#define GAIN 5.0
 #define MAX_GRAVEYARD_CAPACITY 128.0f
 #define MAX_GHOST_SPAWN_RATE 12000.0f
 
@@ -65,9 +64,11 @@ struct Sample
 			drwav_free(pSampleData);
 
 			this->total_sample_count = playBuffer.size();
-			this->loading = false;
 			this->filename = rack::string::filename(path);
 			this->path = path;
+
+			this->loading = false;
+			this->run = true;
 		}
 		else
 		{
@@ -84,8 +85,6 @@ struct Ghost
 
 	// Playback length for the ghost, measuring in .. er.. ticks?
 	float playback_length;
-
-	unsigned int pitch;
 
 	// sample_ptr points to the loaded sample in memory
 	Sample *sample_ptr;
@@ -152,7 +151,7 @@ struct Ghost
 
 	void age(float step_amount)
 	{
-		// Step the playback position forward.  TODO: Add pitch into this equation
+		// Step the playback position forward.
 		playback_position = playback_position + step_amount;
 
 		// If the playback position is past the playback length, then wrap the playback position to the beginning
@@ -186,8 +185,6 @@ struct Ghosts : Module
 	Sample sample;
 	dsp::SchmittTrigger purge_trigger;
 
-	// When broken_evp is true, random grains (ghosts) are not played
-	int broken_evp = 0;
 	float jitter_divisor = 1;
 
 	enum ParamIds {
@@ -233,7 +230,7 @@ struct Ghosts : Module
 		configParam(GRAVEYARD_CAPACITY_KNOB, 0.0f, 1.0f, 1.0f, "GraveyardCapacityKnob");
 		configParam(GRAVEYARD_CAPACITY_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "GraveyardCapacityAttnKnob");
 		configParam(GHOST_SPAWN_RATE_KNOB, 0.01f, 1.0f, 0.2f, "GhostSpawnRateKnob");  // max 24000
-		configParam(GHOST_SPAWN_RATE_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "GraveyardCapacityAttnKnob");
+		configParam(GHOST_SPAWN_RATE_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "GhostSpawnRateAttnKnob");
 		configParam(SAMPLE_PLAYBACK_POSITION_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionKnob");
 		configParam(SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionAttnKnob");
 		configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
@@ -456,14 +453,6 @@ struct GhostsWidget : ModuleWidget
 		menu_item_load_sample->text = "Select .wav file";
 		menu_item_load_sample->module = module;
 		menu->addChild(menu_item_load_sample);
-
-
-		//
-		// Options
-		// =====================================================================
-
-		menu->addChild(new MenuEntry);
-		menu->addChild(createMenuLabel("Options"));
 	}
 
 };
