@@ -64,9 +64,11 @@ struct Sample
 			drwav_free(pSampleData);
 
 			this->total_sample_count = playBuffer.size();
-			this->loading = false;
 			this->filename = rack::string::filename(path);
 			this->path = path;
+
+			this->loading = false;
+			this->run = true;
 		}
 		else
 		{
@@ -451,14 +453,6 @@ struct GhostsWidget : ModuleWidget
 		menu_item_load_sample->text = "Select .wav file";
 		menu_item_load_sample->module = module;
 		menu->addChild(menu_item_load_sample);
-
-
-		//
-		// Options
-		// =====================================================================
-
-		menu->addChild(new MenuEntry);
-		menu->addChild(createMenuLabel("Options"));
 	}
 
 };

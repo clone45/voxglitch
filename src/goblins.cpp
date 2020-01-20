@@ -12,7 +12,9 @@
 
 using namespace std;
 #define MAX_NUMBER_OF_GOBLINS 128.0f
-#define MAX_SPAWN_RATE 8000.0f
+#define MAX_SPAWN_RATE 12000.0f
+#define NUMBER_OF_SAMPLES 5
+#define NUMBER_OF_SAMPLES_FLOAT 5.0
 
 struct Sample
 {
@@ -67,6 +69,8 @@ struct Sample
 			this->loading = false;
 			this->filename = rack::string::filename(path);
 			this->path = path;
+
+			this->run = true;
 		}
 		else
 		{
@@ -121,15 +125,16 @@ struct Goblin
 
 struct Goblins : Module
 {
+	unsigned int selected_sample_slot = 0;
 	float spawn_rate_counter = 0;
 	float step_amount = 0;
-
 	int step = 0;
+
 	std::string root_dir;
 	std::string path;
 
 	vector<Goblin> countryside;
-	Sample sample;
+	Sample samples[NUMBER_OF_SAMPLES];
 	dsp::SchmittTrigger purge_trigger;
 
 	enum ParamIds {
@@ -143,8 +148,8 @@ struct Goblins : Module
 		COUNTRYSIDE_CAPACITY_ATTN_KNOB,
 		PITCH_KNOB,
 		PITCH_ATTN_KNOB,
-		TRIM_KNOB,
-		JITTER_SWITCH,
+		SAMPLE_SELECT_KNOB,
+		SAMPLE_SELECT_ATTN_KNOB,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -154,6 +159,7 @@ struct Goblins : Module
 		COUNTRYSIDE_CAPACITY_INPUT,
 		SPAWN_RATE_INPUT,
 		SAMPLE_PLAYBACK_POSITION_INPUT,
+		SAMPLE_SELECT_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -181,25 +187,28 @@ struct Goblins : Module
 		configParam(COUNTRYSIDE_CAPACITY_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "CountrysideCapacityAttnKnob");
 		configParam(PITCH_KNOB, -1.0f, 1.0f, 0.0f, "PitchKnob");
 		configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "PitchAttnKnob");
-
-		configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
+		configParam(SAMPLE_SELECT_KNOB, 0.0f, 1.0f, 0.0f, "SampleSelectKnob");
+		configParam(SAMPLE_SELECT_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "SampleSelectAttnKnob");
 	}
 
 	json_t *dataToJson() override
 	{
 		json_t *rootJ = json_object();
-		json_object_set_new(rootJ, "path", json_string(sample.path.c_str()));
+
+		for(int i=0; i < NUMBER_OF_SAMPLES; i++)
+		{
+			json_object_set_new(rootJ, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(samples[i].path.c_str()));
+		}
+
 		return rootJ;
 	}
 
 	void dataFromJson(json_t *rootJ) override
 	{
-		json_t *loaded_path_json = json_object_get(rootJ, ("path"));
-
-		if (loaded_path_json)
+		for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
-			this->path = json_string_value(loaded_path_json);
-			sample.load(path);
+			json_t *loaded_sample_path = json_object_get(rootJ, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
+			if (loaded_sample_path) samples[i].load(json_string_value(loaded_sample_path));
 		}
 	}
 
@@ -214,9 +223,23 @@ struct Goblins : Module
 
 	void process(const ProcessArgs &args) override
 	{
+		//
+		//  Set selected sample based on inputs.
+		//  This must happen before we calculate start_position
+
+		// unsigned int sample_select_input_value = (unsigned int) (NUMBER_OF_SAMPLES_FLOAT * (((inputs[SAMPLE_SELECT_INPUT].getVoltage() / 10.0) * params[SAMPLE_SELECT_ATTN_KNOB].getValue()) + params[SAMPLE_SELECT_KNOB].getValue()));
+
+		selected_sample_slot = (unsigned int) calculate_inputs(SAMPLE_SELECT_INPUT, SAMPLE_SELECT_KNOB, SAMPLE_SELECT_ATTN_KNOB, NUMBER_OF_SAMPLES_FLOAT);
+		selected_sample_slot = clamp(selected_sample_slot, 0, NUMBER_OF_SAMPLES - 1);
+
+		Sample *selected_sample = &samples[selected_sample_slot];
+
+		//
+		//  Calculate additional inputs
+
 		float spawn_rate = calculate_inputs(SPAWN_RATE_INPUT, SPAWN_RATE_KNOB, SPAWN_RATE_ATTN_KNOB, MAX_SPAWN_RATE);
 		float playback_length = calculate_inputs(PLAYBACK_LENGTH_INPUT, PLAYBACK_LENGTH_KNOB, PLAYBACK_LENGTH_ATTN_KNOB, (args.sampleRate / 8));
-		float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, sample.total_sample_count);
+		float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, selected_sample->total_sample_count);
 
 		// Ensure that the inputs are within range
 		spawn_rate = clamp(spawn_rate, 0.0f, MAX_SPAWN_RATE);
@@ -228,11 +251,11 @@ struct Goblins : Module
 		}
 
 		// Spawn new goblins
-		if(spawn_rate_counter >= spawn_rate)
+		if((spawn_rate_counter >= spawn_rate) && (selected_sample->run))
 		{
 			Goblin goblin;
 			goblin.start_position = start_position;
-			goblin.sample_ptr = &sample;
+			goblin.sample_ptr = selected_sample;
 			countryside.push_back(goblin);
 
 			spawn_rate_counter = 0;
@@ -248,7 +271,7 @@ struct Goblins : Module
             countryside.erase(countryside.begin());
 		}
 
-		if ((! sample.loading) && (sample.total_sample_count > 0))
+		if ((! selected_sample->loading) && (selected_sample->total_sample_count > 0))
 		{
 			// Iterate over all the goblins in the countryside and collect
 			// their output.
@@ -257,16 +280,18 @@ struct Goblins : Module
 
 			if(countryside.empty() == false)
 			{
-				// old: step_amount = sample.sample_rate / args.sampleRate;
+				// TODO: selected_sample doesn't really have a meaning in this
+				// part of the code.  The step_amount calculation will need to
+				// be moved into the Goblin's age() code.
 
 				// Increment sample offset (pitch)
 				if (inputs[PITCH_INPUT].isConnected())
 				{
-					step_amount = (sample.sample_rate / args.sampleRate) + (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
+					step_amount = (selected_sample->sample_rate / args.sampleRate) + (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
 				}
 				else
 				{
-					step_amount = (sample.sample_rate / args.sampleRate) + params[PITCH_KNOB].getValue();
+					step_amount = (selected_sample->sample_rate / args.sampleRate) + params[PITCH_KNOB].getValue();
 				}
 
 				for(Goblin& goblin : countryside)
@@ -275,7 +300,6 @@ struct Goblins : Module
 					goblin.age(step_amount, playback_length);
 				}
 
-				mix_output = mix_output * params[TRIM_KNOB].getValue();
 				outputs[WAV_OUTPUT].setVoltage(mix_output);
 			}
 
@@ -288,20 +312,64 @@ struct Goblins : Module
 	}
 };
 
-struct GoblinsLoadSample : MenuItem
+struct GoblinsSampleReadout : TransparentWidget
 {
 	Goblins *module;
 
+	int frame = 0;
+	shared_ptr<Font> font;
+
+	GoblinsSampleReadout()
+	{
+		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+	}
+
+	void draw(const DrawArgs &args) override
+	{
+		nvgSave(args.vg);
+
+		std::string text_to_display;
+
+		if(! module)
+		{
+			text_to_display = "load sample";
+		}
+		else
+		{
+			std::string file_name = module->samples[module->selected_sample_slot].filename;
+			text_to_display = "#" + std::to_string(module->selected_sample_slot + 1) + ":";
+
+			// std::string file_name = module->sample.filename;
+
+			// Create a short version of the filename.  Essentially truncates the filename if it is too long.
+			for (int i=0; i<40; i++) text_to_display = text_to_display + file_name[i];
+		}
+
+		nvgFontSize(args.vg, 13);
+		nvgFontFaceId(args.vg, font->handle);
+		nvgTextLetterSpacing(args.vg, 0);
+		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+		nvgTextBox(args.vg, 5, 5, 700, text_to_display.c_str(), NULL);
+
+		nvgRestore(args.vg);
+	}
+
+};
+
+
+struct GoblinsLoadSample : MenuItem
+{
+	Goblins *module;
+	unsigned int sample_number = 0;
+
 	void onAction(const event::Action &e) override
 	{
-
-		// const std::string dir = module->root_dir.empty() ? "" : module->root_dir;
-		const std::string dir = "";
+		const std::string dir = module->root_dir.empty() ? "" : module->root_dir;
 		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("Wav:wav"));
 
 		if (path)
 		{
-			module->sample.load(path);
+			module->samples[sample_number].load(path);
 			module->root_dir = std::string(path);
 			free(path);
 		}
@@ -316,12 +384,12 @@ struct GoblinsWidget : ModuleWidget
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/goblins_front_panel.svg")));
 
 		// Purge
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 33)), module, Goblins::PURGE_TRIGGER_INPUT));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 45)), module, Goblins::PURGE_TRIGGER_INPUT));
 
 		// Position
-		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(50, 33)), module, Goblins::SAMPLE_PLAYBACK_POSITION_KNOB));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(50, 52)), module, Goblins::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(50, 65)), module, Goblins::SAMPLE_PLAYBACK_POSITION_INPUT));
+		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(35, 33)), module, Goblins::SAMPLE_PLAYBACK_POSITION_KNOB));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(54, 33)), module, Goblins::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(67, 33)), module, Goblins::SAMPLE_PLAYBACK_POSITION_INPUT));
 
 		// Length
 		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(10, 90)), module, Goblins::PLAYBACK_LENGTH_KNOB));
@@ -343,11 +411,22 @@ struct GoblinsWidget : ModuleWidget
 		addParam(createParamCentered<Trimpot>(mm2px(Vec(70, 104)), module, Goblins::PITCH_ATTN_KNOB));
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(70, 115.5)), module, Goblins::PITCH_INPUT));
 
+		// Sample
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(90, 90)), module, Goblins::SAMPLE_SELECT_KNOB));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(90, 104)), module, Goblins::SAMPLE_SELECT_ATTN_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(90, 115.5)), module, Goblins::SAMPLE_SELECT_INPUT));
+
 		// Trim / Wav Output
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(88.6, 37)), module, Goblins::TRIM_KNOB));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(88.6, 54.795)), module, Goblins::WAV_OUTPUT));
+		// addParam(createParamCentered<Trimpot>(mm2px(Vec(88.6, 37)), module, Goblins::TRIM_KNOB));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(91.874, 44.611)), module, Goblins::WAV_OUTPUT));
 
 		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 124.893)), module, Ghosts::DEBUG_OUTPUT));
+
+		GoblinsSampleReadout *readout = new GoblinsSampleReadout();
+		readout->box.pos = mm2px(Vec(8, 64.3));
+		readout->box.size = Vec(200, 30); // bounding box of the widget
+		readout->module = module;
+		addChild(readout);
 	}
 
 	void appendContextMenu(Menu *menu) override
@@ -361,18 +440,16 @@ struct GoblinsWidget : ModuleWidget
 
 		menu->addChild(new MenuEntry); // For spacing only
 
-		GoblinsLoadSample *menu_item_load_sample = new GoblinsLoadSample();
-		menu_item_load_sample->text = "Select .wav file";
-		menu_item_load_sample->module = module;
-		menu->addChild(menu_item_load_sample);
+		std::string menu_text = "Load Sample #";
 
-
-		//
-		// Options
-		// =====================================================================
-
-		menu->addChild(new MenuEntry);
-		menu->addChild(createMenuLabel("Options"));
+		for(int i=0; i < NUMBER_OF_SAMPLES; i++)
+		{
+			GoblinsLoadSample *menu_item_load_sample = new GoblinsLoadSample();
+			menu_item_load_sample->sample_number = i;
+			menu_item_load_sample->text = menu_text + std::to_string(i+1);
+			menu_item_load_sample->module = module;
+			menu->addChild(menu_item_load_sample);
+		}
 	}
 
 };
