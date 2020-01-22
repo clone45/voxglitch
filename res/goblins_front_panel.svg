@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="11.2"
-     inkscape:cx="214.70359"
-     inkscape:cy="357.64377"
+     inkscape:zoom="3.959798"
+     inkscape:cx="102.42928"
+     inkscape:cy="269.15024"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -45,7 +45,7 @@
      inkscape:guide-bbox="true"
      showborder="false">
     <sodipodi:guide
-       position="30,140.41816"
+       position="10,80.247676"
        orientation="1,0"
        id="guide64"
        inkscape:locked="false"
@@ -76,7 +76,7 @@
        inkscape:label=""
        inkscape:color="rgb(0,0,255)" />
     <sodipodi:guide
-       position="10,105.85696"
+       position="17,105.85696"
        orientation="1,0"
        id="guide2923"
        inkscape:locked="false"
@@ -107,10 +107,19 @@
        id="guide1630"
        inkscape:locked="false" />
     <sodipodi:guide
-       position="88.29917,83.889225"
+       position="88.29917,76.500001"
        orientation="0,1"
        id="guide1632"
-       inkscape:locked="false" />
+       inkscape:locked="false"
+       inkscape:label=""
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="26.125596,83.500001"
+       orientation="0,1"
+       id="guide928"
+       inkscape:locked="false"
+       inkscape:label=""
+       inkscape:color="rgb(0,0,255)" />
   </sodipodi:namedview>
   <metadata
      id="metadata11000">
@@ -614,6 +623,11 @@
        style="display:inline;fill:none;stroke:#000000;stroke-width:0.12842444px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 110.33387,80.107311 c 4.00726,0 4.05179,0 4.05179,0"
        id="path27-1-2-8-5"
+       inkscape:connector-curvature="0" />
+    <path
+       style="display:inline;fill:none;stroke:#000000;stroke-width:0.12842444px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 76.723905,94.390328 c 2.83356,2.833561 2.86505,2.865048 2.86505,2.865048"
+       id="path27-1-2-8-5-5"
        inkscape:connector-curvature="0" />
   </g>
 </svg>

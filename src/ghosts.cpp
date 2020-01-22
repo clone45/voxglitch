@@ -184,6 +184,7 @@ struct Ghosts : Module
 	vector<Ghost> graveyard;
 	Sample sample;
 	dsp::SchmittTrigger purge_trigger;
+	dsp::SchmittTrigger purge_button_trigger;
 
 	float jitter_divisor = 1;
 
@@ -196,6 +197,7 @@ struct Ghosts : Module
 		GHOST_SPAWN_RATE_ATTN_KNOB,
 		SAMPLE_PLAYBACK_POSITION_KNOB,
 		SAMPLE_PLAYBACK_POSITION_ATTN_KNOB,
+		PURGE_BUTTON_PARAM,
 		TRIM_KNOB,
 		JITTER_SWITCH,
 		NUM_PARAMS
@@ -216,6 +218,7 @@ struct Ghosts : Module
 		NUM_OUTPUTS
 	};
 	enum LightIds {
+		PURGE_LIGHT,
 		NUM_LIGHTS
 	};
 
@@ -233,6 +236,7 @@ struct Ghosts : Module
 		configParam(GHOST_SPAWN_RATE_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "GhostSpawnRateAttnKnob");
 		configParam(SAMPLE_PLAYBACK_POSITION_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionKnob");
 		configParam(SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionAttnKnob");
+		configParam(PURGE_BUTTON_PARAM, 0.f, 1.f, 0.f, "PurgeButtonParam");
 		configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
 		configParam(JITTER_SWITCH, 0.f, 1.f, 1.f, "Jitter");
 
@@ -295,13 +299,17 @@ struct Ghosts : Module
 			start_position = start_position + r;
 		}
 
-		if (purge_trigger.process(inputs[PURGE_TRIGGER_INPUT].getVoltage()))
+		bool purge_is_triggered = purge_trigger.process(inputs[PURGE_TRIGGER_INPUT].getVoltage()) || purge_button_trigger.process(params[PURGE_BUTTON_PARAM].getValue());
+
+		if (purge_is_triggered)
 		{
 			for(Ghost& ghost : graveyard)
 			{
 				if(! ghost.dying) ghost.startDying();
 			}
 		}
+
+		lights[PURGE_LIGHT].setSmoothBrightness(purge_is_triggered, args.sampleTime);
 
 		if(spawn_rate_counter >= spawn_rate)
 		{
@@ -374,6 +382,8 @@ struct Ghosts : Module
 		{
 			outputs[WAV_OUTPUT].setVoltage(0);
 		}
+
+
 	}
 };
 
@@ -406,8 +416,12 @@ struct GhostsWidget : ModuleWidget
 
 		// Purge
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 33)), module, Ghosts::PURGE_TRIGGER_INPUT));
+		addParam(createParamCentered<LEDButton>(mm2px(Vec(10, 46)), module, Ghosts::PURGE_BUTTON_PARAM));
+		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(10, 46)), module, Ghosts::PURGE_LIGHT));
+
+		// Jitter
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(26, 33)), module, Ghosts::JITTER_CV_INPUT));
-		addParam(createParamCentered<CKSS>(mm2px(Vec(42, 33)), module, Ghosts::JITTER_SWITCH));
+		addParam(createParamCentered<CKSS>(mm2px(Vec(26, 46)), module, Ghosts::JITTER_SWITCH));
 
 		// Position
 		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(71, 33)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_KNOB));
