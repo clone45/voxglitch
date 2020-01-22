@@ -136,6 +136,7 @@ struct Goblins : Module
 	vector<Goblin> countryside;
 	Sample samples[NUMBER_OF_SAMPLES];
 	dsp::SchmittTrigger purge_trigger;
+	dsp::SchmittTrigger purge_button_trigger;
 
 	enum ParamIds {
 		SAMPLE_PLAYBACK_POSITION_KNOB,
@@ -150,6 +151,7 @@ struct Goblins : Module
 		PITCH_ATTN_KNOB,
 		SAMPLE_SELECT_KNOB,
 		SAMPLE_SELECT_ATTN_KNOB,
+		PURGE_BUTTON_PARAM,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -168,6 +170,7 @@ struct Goblins : Module
 		NUM_OUTPUTS
 	};
 	enum LightIds {
+		PURGE_LIGHT,
 		NUM_LIGHTS
 	};
 
@@ -189,6 +192,7 @@ struct Goblins : Module
 		configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "PitchAttnKnob");
 		configParam(SAMPLE_SELECT_KNOB, 0.0f, 1.0f, 0.0f, "SampleSelectKnob");
 		configParam(SAMPLE_SELECT_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "SampleSelectAttnKnob");
+		configParam(PURGE_BUTTON_PARAM, 0.f, 1.f, 0.f, "PurgeButtonParam");
 	}
 
 	json_t *dataToJson() override
@@ -245,10 +249,9 @@ struct Goblins : Module
 		spawn_rate = clamp(spawn_rate, 0.0f, MAX_SPAWN_RATE);
 
 		// If the purge input it trittered, empty the goblins from the country side
-		if (purge_trigger.process(inputs[PURGE_TRIGGER_INPUT].getVoltage()))
-		{
-            countryside.clear();
-		}
+		bool purge_is_triggered = purge_trigger.process(inputs[PURGE_TRIGGER_INPUT].getVoltage()) || purge_button_trigger.process(params[PURGE_BUTTON_PARAM].getValue());
+		if (purge_is_triggered) countryside.clear();
+		lights[PURGE_LIGHT].setSmoothBrightness(purge_is_triggered, args.sampleTime);
 
 		// Spawn new goblins
 		if((spawn_rate_counter >= spawn_rate) && (selected_sample->run))
@@ -385,6 +388,8 @@ struct GoblinsWidget : ModuleWidget
 
 		// Purge
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 45)), module, Goblins::PURGE_TRIGGER_INPUT));
+		addParam(createParamCentered<LEDButton>(mm2px(Vec(17, 52)), module, Goblins::PURGE_BUTTON_PARAM));
+		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(17, 52)), module, Goblins::PURGE_LIGHT));
 
 		// Position
 		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(35, 33)), module, Goblins::SAMPLE_PLAYBACK_POSITION_KNOB));
