@@ -13,7 +13,7 @@
 
 using namespace std;
 #define GAIN 5.0
-#define NUMBER_OF_PATTERNS 3
+#define NUMBER_OF_PATTERNS 6
 
 struct AutobreakSample
 {
@@ -82,14 +82,15 @@ struct AutobreakSample
 struct Autobreak : Module
 {
 	unsigned int selected_sample_slot = 0;
-	float old_sample_position = 0;
-	float sample_position = 0;
-	float sample_playback_position = 0;
+	float old_playback_sample_position = 0;
+	float playback_sample_position = 0;
+	float incrementing_sample_position = 0;
 	int step = 0;
 	unsigned int break_pattern_index = 0;
 	unsigned int break_pattern_index_old = 0;
 	unsigned int clock_counter = 0;
 	unsigned int clock_counter_old = 0;
+	unsigned int selected_break_pattern = 0;
 	float smooth_ramp = 1;
 	float last_wave_output_voltage = 0;
 	std::string rootDir;
@@ -98,11 +99,15 @@ struct Autobreak : Module
 	vector<AutobreakSample> samples;
 	dsp::SchmittTrigger playTrigger;
 	dsp::PulseGenerator clockOutputPulse;
+	dsp::PulseGenerator endOutputPulse;
 
 	int break_patterns[NUMBER_OF_PATTERNS][16] = {
-		{  0,  1,  2,  3,   4,  5,  6,  7,   8,  8,  8,  8,  -1, -1, -1, -1 },
-		{  0, -1, -1, -1,   0, -1, -1, -1,  -1, -1, -1, -1,   0, -1, -1, -1 },
-		{ 0, -1, 0, -1,  -1, -1, -1, 4,  6, -1, -1, -1,  6, -1, -1, -1 }
+		{ -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
+		{ -1,-1,-1,-1,  0,-1,-1,-1, -1,-1,-1,-1,  8,-1,-1,-1 },
+		{  0,-1,-1,-1,  0,-1,-1,-1, -1,-1,-1,-1,  0,-1,-1,-1 },
+		{  0,-1, 0,-1, -1,-1,-1, 4,  6,-1,-1,-1,  6,-1,-1,-1 },
+		{  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0 },
+		{  12, 14, 12, 12,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 12 }
 	};
 
 	enum ParamIds {
@@ -113,7 +118,7 @@ struct Autobreak : Module
 		NUM_PARAMS
 	};
 	enum InputIds {
-		TRIG_INPUT,
+		RESET_INPUT,
 		WAV_INPUT,
 		PATTERN_INPUT,
 		NUM_INPUTS
@@ -122,6 +127,7 @@ struct Autobreak : Module
 		WAV_OUTPUT,
 		DEBUG_OUTPUT,
 		CLOCK_OUTPUT,
+		END_OUTPUT,
 		NUM_OUTPUTS
 	};
 	enum LightIds {
@@ -209,37 +215,35 @@ struct Autobreak : Module
 
 		AutobreakSample *selected_sample = &samples[selected_sample_slot];
 
-		if (inputs[TRIG_INPUT].isConnected())
+		if (inputs[RESET_INPUT].isConnected())
 		{
 			//
 			// playTrigger is a SchmittTrigger object.  Here, the SchmittTrigger
-			// determines if a low-to-high transition happened at the TRIG_INPUT
+			// determines if a low-to-high transition happened at the RESET_INPUT
 			//
-			if (playTrigger.process(inputs[TRIG_INPUT].getVoltage()))
+			if (playTrigger.process(inputs[RESET_INPUT].getVoltage()))
 			{
-				sample_position = 0;
-				sample_playback_position = 0;
+				playback_sample_position = 0;
+				incrementing_sample_position = 0;
 				clock_counter = 0;
+				clock_counter_old = 0;
+				break_pattern_index = 0;
+				break_pattern_index_old = 0;
 				smooth_ramp = 0;
 			}
 		}
 
-		if(sample_position >= selected_sample->total_sample_count)
-		{
-			sample_position = 0;
-			clock_counter = 0;
-			smooth_ramp = 0;
-		}
+
 
 		if ((! selected_sample->loading) && (selected_sample->run) && (selected_sample->total_sample_count > 0))
 		{
 			float wav_output_voltage;
 
-			wav_output_voltage = GAIN  * selected_sample->playBuffer[(int)sample_position];
+			wav_output_voltage = GAIN  * selected_sample->playBuffer[(int)playback_sample_position];
 
 			if(smooth_ramp < 1)
 			{
-				float smooth_rate = (128.0f / args.sampleRate);  // A smooth rate of 128 seems to work best
+				float smooth_rate = (6.0f / args.sampleRate);  // A smooth rate of 128 seems to work best
 				smooth_ramp += smooth_rate;
 				wav_output_voltage = (last_wave_output_voltage * (1 - smooth_ramp)) + (wav_output_voltage * smooth_ramp);
 				outputs[WAV_OUTPUT].setVoltage(wav_output_voltage);
@@ -251,38 +255,56 @@ struct Autobreak : Module
 
 			last_wave_output_voltage = wav_output_voltage;
 
-			sample_position = sample_position + (selected_sample->sample_rate / args.sampleRate);
-
-			sample_playback_position = sample_playback_position + (selected_sample->sample_rate / args.sampleRate);
-			if(sample_playback_position >= selected_sample->total_sample_count) sample_playback_position = 0;
 
 			// Update a clock counter and provide a trigger output whenever 1/32nd of the sample
 			// has been reached.
-			clock_counter = (sample_playback_position / selected_sample->total_sample_count) * 32.0f;
+			clock_counter = (incrementing_sample_position / selected_sample->total_sample_count) * 32.0f;
 			if(clock_counter >= 32) clock_counter = 0;
 			if(clock_counter != clock_counter_old) clockOutputPulse.trigger(0.01f);
 			clock_counter_old = clock_counter;
+
 
 			//
 			// Optionally jump to new breakbeat position
 			//
 
-			break_pattern_index = (sample_playback_position / selected_sample->total_sample_count) * 16.0f;
-			if(break_pattern_index > 15) break_pattern_index = 15;
+			break_pattern_index = (incrementing_sample_position / selected_sample->total_sample_count) * 16.0f;
+			break_pattern_index = clamp(break_pattern_index, 0, 15);
 
 			if(break_pattern_index != break_pattern_index_old)
 			{
-				unsigned int selected_pattern = calculate_inputs(PATTERN_INPUT, PATTERN_KNOB, PATTERN_ATTN_KNOB, NUMBER_OF_PATTERNS - 1);
+				selected_break_pattern = calculate_inputs(PATTERN_INPUT, PATTERN_KNOB, PATTERN_ATTN_KNOB, NUMBER_OF_PATTERNS - 1);
 
-				float new_step = break_patterns[selected_pattern][break_pattern_index];
+				float new_step = break_patterns[selected_break_pattern][break_pattern_index];
 
 				if(new_step != -1)
 				{
-					sample_position = new_step * (selected_sample->total_sample_count / 16.0f);
+					playback_sample_position = new_step * (selected_sample->total_sample_count / 16.0f);
 				}
 
 				break_pattern_index_old = break_pattern_index;
 			}
+
+			//
+			// incrementing_sample_position steps from the beginning to the end of the sample
+			// at the playback rate.  It doesn't jump around like the sample_position does.
+
+			incrementing_sample_position = incrementing_sample_position + (selected_sample->sample_rate / args.sampleRate);
+			playback_sample_position = playback_sample_position + (selected_sample->sample_rate / args.sampleRate);
+
+			if(incrementing_sample_position >= selected_sample->total_sample_count)
+			{
+				incrementing_sample_position = 0;
+				endOutputPulse.trigger(0.01f);
+			}
+
+			if(playback_sample_position >= selected_sample->total_sample_count)
+			{
+				playback_sample_position = 0;
+				clock_counter = 0;
+				smooth_ramp = 0;
+			}
+
 			outputs[DEBUG_OUTPUT].setVoltage(clock_counter);
 		}
 		else
@@ -291,8 +313,15 @@ struct Autobreak : Module
 			outputs[WAV_OUTPUT].setVoltage(0);
 		}
 
+		//
+		// Process pulse outputs
+		//
+
 		bool clock_output_pulse = clockOutputPulse.process(1.0 / args.sampleRate);
 		outputs[CLOCK_OUTPUT].setVoltage((clock_output_pulse ? 10.0f : 0.0f));
+
+		bool end_output_pulse = endOutputPulse.process(1.0 / args.sampleRate);
+		outputs[END_OUTPUT].setVoltage((end_output_pulse ? 10.0f : 0.0f));
 
 	}
 };
@@ -336,6 +365,77 @@ struct AutobreakReadout : TransparentWidget
 	}
 };
 
+struct AutobreakPatternReadout : TransparentWidget
+{
+	Autobreak *module;
+
+	int frame = 0;
+	shared_ptr<Font> font;
+
+	AutobreakPatternReadout()
+	{
+		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+	}
+
+	void draw(const DrawArgs &args) override
+	{
+		nvgSave(args.vg);
+
+		if(module)
+		{
+			std::string text_to_display;
+			std::string item_display;
+			text_to_display = "";
+
+			nvgFontSize(args.vg, 13);
+			nvgFontFaceId(args.vg, font->handle);
+			nvgTextLetterSpacing(args.vg, 0);
+			nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+			nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
+			nvgTextLetterSpacing(args.vg, -2);
+
+			for(unsigned int i=0; i<16; i++)
+			{
+				item_display = to_string(module->break_patterns[module->selected_break_pattern][i]);
+				if(item_display == "-1") item_display = ".";
+
+				// Draw inverted text if it's the selected index
+				if(i == module->break_pattern_index)
+				{
+					// Draw background while rectangle
+					nvgBeginPath(args.vg);
+					nvgRect(args.vg, (i * 13), -8, 10, 16);
+					nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+					if(item_display == ".") nvgFillColor(args.vg, nvgRGBA(100, 100, 100, 0xff));
+					nvgFill(args.vg);
+
+					// Draw forground text in black
+					nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 0xff));
+				}
+				// Otherwise just draw while text on the black background
+				else
+				{
+					nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+				}
+
+				// nvgTextBox(args.vg, 3 + (i * 13), 5, 16, item_display.c_str(), NULL);
+				nvgText(args.vg, 5 + (i * 13), 5, item_display.c_str(), NULL);
+
+
+				// text_to_display = text_to_display + item_display;
+				// if(i < 15) text_to_display = text_to_display + " ";
+
+
+
+			}
+
+			// nvgTextBox(args.vg, 5, 5, 700, text_to_display.c_str(), NULL);
+		}
+
+		nvgRestore(args.vg);
+	}
+};
+
 struct MenuItemLoadBank : MenuItem
 {
 	Autobreak *wav_bank_module;
@@ -365,29 +465,36 @@ struct AutobreakWidget : ModuleWidget
 		addChild(createWidget<ScrewSilver>(Vec(15, 0)));
 		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
 
-		// Input and label for the trigger input (which is labeled "CLK" on the front panel)
-		// addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.185, 25.535)), module, Autobreak::TRIG_INPUT));
+		// Input and label for the reset input
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(11, 114.893)), module, Autobreak::RESET_INPUT));
 
 		// Inputs for WAV selection
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(11, 90.182)), module, Autobreak::WAV_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 90.182)), module, Autobreak::WAV_ATTN_KNOB));
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 90.182)), module, Autobreak::WAV_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(11, 43)), module, Autobreak::WAV_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 43)), module, Autobreak::WAV_ATTN_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 43)), module, Autobreak::WAV_KNOB));
 
 		// Pattern Select
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(11, 68.218)), module, Autobreak::PATTERN_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 68.218)), module, Autobreak::PATTERN_ATTN_KNOB));
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 68.218)), module, Autobreak::PATTERN_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(11, 84.567)), module, Autobreak::PATTERN_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 84.567)), module, Autobreak::PATTERN_ATTN_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 84.567)), module, Autobreak::PATTERN_KNOB));
 
 		AutobreakReadout *readout = new AutobreakReadout();
-		readout->box.pos = mm2px(Vec(11.0, 22.0)); //22,22
+		readout->box.pos = mm2px(Vec(11.0, 26.0));
 		readout->box.size = Vec(110, 30); // bounding box of the widget
 		readout->module = module;
 		addChild(readout);
 
-		// WAV output
+		AutobreakPatternReadout *pattern_readout = new AutobreakPatternReadout();
+		pattern_readout->box.pos = mm2px(Vec(10.0, 68.591));
+		pattern_readout->box.size = Vec(110, 30); // bounding box of the widget
+		pattern_readout->module = module;
+		addChild(pattern_readout);
+
+		// Outputs
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 100.893)), module, Autobreak::DEBUG_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.656, 114.893)), module, Autobreak::CLOCK_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(53.224, 114.893)), module, Autobreak::END_OUTPUT));
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(71.810, 114.893)), module, Autobreak::WAV_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(71.810, 92)), module, Autobreak::CLOCK_OUTPUT));
 	}
 
 	void appendContextMenu(Menu *menu) override
