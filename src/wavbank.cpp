@@ -14,20 +14,22 @@
 using namespace std;
 #define GAIN 5.0
 
-struct Sample
+struct StereoSample
 {
 	std::string path;
 	std::string filename;
 	drwav_uint64 total_sample_count;
 	bool loading;
-	vector<float> playBuffer;
+	vector<float> leftPlayBuffer;
+	vector<float> rightPlayBuffer;
 	unsigned int sample_rate;
 	unsigned int channels;
-	bool run = false;
+	bool loaded = false;
 
-	Sample()
+	StereoSample()
 	{
-		playBuffer.resize(0);
+		leftPlayBuffer.resize(0);
+		rightPlayBuffer.resize(0);
 		total_sample_count = 0;
 		loading = false;
 		filename = "[ empty ]";
@@ -54,21 +56,31 @@ struct Sample
 
 			this->channels = reported_channels;
 			this->sample_rate = reported_sample_rate;
-			this->playBuffer.clear();
+			this->leftPlayBuffer.clear();
+			this->rightPlayBuffer.clear();
 
-			for (unsigned int i=0; i < reported_total_sample_count; i = i + this->channels)
-			{
-				this->playBuffer.push_back(pSampleData[i]);
+			if(this->channels > 1) {
+				for (unsigned int i=0; i < reported_total_sample_count; i = i + this->channels)
+				{
+					this->leftPlayBuffer.push_back(pSampleData[i]);
+					this->rightPlayBuffer.push_back(pSampleData[i+1]);
+				}
+			}
+			else {
+				for (unsigned int i=0; i < reported_total_sample_count; i = i + this->channels)
+				{
+					this->leftPlayBuffer.push_back(pSampleData[i]);
+				}
 			}
 
 			drwav_free(pSampleData);
 
-			this->total_sample_count = playBuffer.size();
+			this->total_sample_count = leftPlayBuffer.size();
 			this->loading = false;
 			this->filename = rack::string::filename(path);
 			this->path = path;
 
-            this->run = true;
+            this->loaded = true;
 		}
 		else
 		{
@@ -84,11 +96,11 @@ struct WavBank : Module
 	float samplePos = 0;
 	int step = 0;
 	float smooth_ramp = 1;
-	float last_wave_output_voltage = 0;
+	float last_wave_output_voltage[2] = {0};
 	std::string rootDir;
 	std::string path;
 
-	vector<Sample> samples;
+	vector<StereoSample> samples;
 	dsp::SchmittTrigger playTrigger;
 
 	enum ParamIds {
@@ -104,7 +116,8 @@ struct WavBank : Module
 		NUM_INPUTS
 	};
 	enum OutputIds {
-		WAV_OUTPUT,
+		WAV_LEFT_OUTPUT,
+		WAV_RIGHT_OUTPUT,
 		NUM_OUTPUTS
 	};
 	enum LightIds {
@@ -153,11 +166,13 @@ struct WavBank : Module
 		{
 			if (rack::string::lowercase(rack::string::filenameExtension(entry)) == "wav")
 			{
-				Sample new_sample;
+				StereoSample new_sample;
+				DEBUG("LOAD OK");
 				new_sample.load(entry);
 				this->samples.push_back(new_sample);
 			}
 		}
+				
 	}
 
 	void process(const ProcessArgs &args) override
@@ -181,7 +196,7 @@ struct WavBank : Module
 		// If not, return.  This could happen before any samples have been loaded.
 		if(! (samples.size() > selected_sample_slot)) return;
 
-		Sample *selected_sample = &samples[selected_sample_slot];
+		StereoSample *selected_sample = &samples[selected_sample_slot];
 
 		if (inputs[TRIG_INPUT].isConnected())
 		{
@@ -196,33 +211,51 @@ struct WavBank : Module
 			}
 		}
 
-		if ((! selected_sample->loading) && (selected_sample->run) && (selected_sample->total_sample_count > 0) && ((abs(floor(samplePos)) < selected_sample->total_sample_count)))
+		if ((! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->total_sample_count > 0) && ((abs(floor(samplePos)) < selected_sample->total_sample_count)))
 		{
-			float wav_output_voltage;
+			float left_wav_output_voltage;
+			float right_wav_output_voltage;
 
 			if (samplePos >= 0)
 			{
-				wav_output_voltage = GAIN  * selected_sample->playBuffer[floor(samplePos)];
+				left_wav_output_voltage = GAIN  * selected_sample->leftPlayBuffer[floor(samplePos)];
+				if(selected_sample->channels > 1) {
+					right_wav_output_voltage = GAIN  * selected_sample->rightPlayBuffer[floor(samplePos)];
+				}
+				else {
+					right_wav_output_voltage = left_wav_output_voltage;
+				}
 			}
 			else
 			{
 				// What is this for?  Does it play the sample in reverse?  I think so.
-				wav_output_voltage = GAIN * selected_sample->playBuffer[floor(selected_sample->total_sample_count - 1 + samplePos)];
+				left_wav_output_voltage = GAIN * selected_sample->leftPlayBuffer[floor(selected_sample->total_sample_count - 1 + samplePos)];
+				if(selected_sample->channels > 1) {
+					right_wav_output_voltage = GAIN * selected_sample->rightPlayBuffer[floor(selected_sample->total_sample_count - 1 + samplePos)];
+				}
+				else {
+					right_wav_output_voltage = left_wav_output_voltage;
+				}
 			}
 
 			if(params[SMOOTH_SWITCH].getValue()  && (smooth_ramp < 1))
 			{
 				float smooth_rate = (128.0f / args.sampleRate);  // A smooth rate of 128 seems to work best
 				smooth_ramp += smooth_rate;
-				wav_output_voltage = (last_wave_output_voltage * (1 - smooth_ramp)) + (wav_output_voltage * smooth_ramp);
-				outputs[WAV_OUTPUT].setVoltage(wav_output_voltage);
+				left_wav_output_voltage = (last_wave_output_voltage[0] * (1 - smooth_ramp)) + (left_wav_output_voltage * smooth_ramp);
+				if(selected_sample->channels > 1) {
+					right_wav_output_voltage = (last_wave_output_voltage[1] * (1 - smooth_ramp)) + (right_wav_output_voltage * smooth_ramp);
+				}
+				else {
+					right_wav_output_voltage = left_wav_output_voltage;
+				}	
 			}
-			else
-			{
-				outputs[WAV_OUTPUT].setVoltage(wav_output_voltage);
-			}
+			
+			outputs[WAV_LEFT_OUTPUT].setVoltage(left_wav_output_voltage);
+			outputs[WAV_RIGHT_OUTPUT].setVoltage(right_wav_output_voltage);
 
-			last_wave_output_voltage = wav_output_voltage;
+			last_wave_output_voltage[0] = left_wav_output_voltage;
+			last_wave_output_voltage[1] = right_wav_output_voltage;
 
 			// Increment sample offset (pitch)
 			if (inputs[PITCH_INPUT].isConnected())
@@ -236,8 +269,9 @@ struct WavBank : Module
 		}
 		else
 		{
-			selected_sample->run = false;
-			outputs[WAV_OUTPUT].setVoltage(0);
+			//selected_sample->run = false;
+			outputs[WAV_LEFT_OUTPUT].setVoltage(0);
+			outputs[WAV_RIGHT_OUTPUT].setVoltage(0);
 		}
 	}
 };
@@ -326,7 +360,8 @@ struct WavBankWidget : ModuleWidget
 		addChild(readout);
 
 		// WAV output
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 114.893)), module, WavBank::WAV_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(29.236, 114.893)), module, WavBank::WAV_LEFT_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(39.236, 114.893)), module, WavBank::WAV_RIGHT_OUTPUT));
 	}
 
 	void appendContextMenu(Menu *menu) override
