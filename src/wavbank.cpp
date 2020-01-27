@@ -236,7 +236,7 @@ struct WavBank : Module
 		}
 		else
 		{
-			selected_sample->run = false;
+			//selected_sample->run = false; // This cause sample not to ever play again in this instance
 			outputs[WAV_OUTPUT].setVoltage(0);
 		}
 	}
