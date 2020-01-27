@@ -6,107 +6,32 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
-#include "dr_wav.h"
 #include <vector>
 #include "cmath"
 #include <memory>
+#include "sample.hpp"
 
-using namespace std;
 #define GAIN 5.0
-
-struct StereoSample
-{
-	std::string path;
-	std::string filename;
-	drwav_uint64 total_sample_count;
-	bool loading;
-	vector<float> leftPlayBuffer;
-	vector<float> rightPlayBuffer;
-	unsigned int sample_rate;
-	unsigned int channels;
-	bool loaded = false;
-
-	StereoSample()
-	{
-		leftPlayBuffer.resize(0);
-		rightPlayBuffer.resize(0);
-		total_sample_count = 0;
-		loading = false;
-		filename = "[ empty ]";
-		path = "";
-		sample_rate = 0;
-		channels = 0;
-	}
-
-	void load(std::string path)
-	{
-		this->loading = true;
-
-		unsigned int reported_channels;
-		unsigned int reported_sample_rate;
-		drwav_uint64 reported_total_sample_count;
-		float *pSampleData;
-
-		pSampleData = drwav_open_and_read_file_f32(path.c_str(), &reported_channels, &reported_sample_rate, &reported_total_sample_count);
-
-		if (pSampleData != NULL)
-		{
-			// I'm aware that the "this" pointer isn't necessary here, but I wanted to include
-			// it just to make the code as clear as possible.
-
-			this->channels = reported_channels;
-			this->sample_rate = reported_sample_rate;
-			this->leftPlayBuffer.clear();
-			this->rightPlayBuffer.clear();
-
-			if(this->channels > 1) {
-				for (unsigned int i=0; i < reported_total_sample_count; i = i + this->channels)
-				{
-					this->leftPlayBuffer.push_back(pSampleData[i]);
-					this->rightPlayBuffer.push_back(pSampleData[i+1]);
-				}
-			}
-			else {
-				for (unsigned int i=0; i < reported_total_sample_count; i = i + this->channels)
-				{
-					this->leftPlayBuffer.push_back(pSampleData[i]);
-				}
-			}
-
-			drwav_free(pSampleData);
-
-			this->total_sample_count = leftPlayBuffer.size();
-			this->loading = false;
-			this->filename = rack::string::filename(path);
-			this->path = path;
-
-            this->loaded = true;
-		}
-		else
-		{
-			this->loading = false;
-		}
-	};
-};
-
 
 struct WavBank : Module
 {
 	unsigned int selected_sample_slot = 0;
 	float samplePos = 0;
-	int step = 0;
 	float smooth_ramp = 1;
 	float last_wave_output_voltage[2] = {0};
 	std::string rootDir;
 	std::string path;
 
-	vector<StereoSample> samples;
+	std::vector<Sample> samples;
 	dsp::SchmittTrigger playTrigger;
+
+	bool triggered = false;
 
 	enum ParamIds {
 		WAV_KNOB,
 		WAV_ATTN_KNOB,
 		SMOOTH_SWITCH,
+		LOOP_SWITCH,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -133,6 +58,7 @@ struct WavBank : Module
 		configParam(WAV_KNOB, 0.0f, 1.0f, 0.0f, "SampleSelectKnob");
 		configParam(WAV_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "SampleSelectAttnKnob");
 		configParam(SMOOTH_SWITCH, 0.0f, 1.0f, 1.0f, "SmoothSwitch");
+		configParam(LOOP_SWITCH, 0.0f, 1.0f, 0.0f, "LoopSwitch");
 	}
 
 	json_t *dataToJson() override
@@ -166,9 +92,9 @@ struct WavBank : Module
 		{
 			if (rack::string::lowercase(rack::string::filenameExtension(entry)) == "wav")
 			{
-				StereoSample new_sample;
+				Sample new_sample;
 				DEBUG("LOAD OK");
-				new_sample.load(entry);
+				new_sample.load(entry, false);
 				this->samples.push_back(new_sample);
 			}
 		}
@@ -188,15 +114,20 @@ struct WavBank : Module
 			// Reset the smooth ramp if the selected sample has changed
 			smooth_ramp = 0;
 
+			// Reset sample position so playback does not start at previous sample position
+			samplePos = 0;
+
 			// Set the selected sample
 			selected_sample_slot = wav_input_value;
+
+			triggered = false;
 		}
 
 		// Check to see if the selected sample slot refers to an existing sample.
 		// If not, return.  This could happen before any samples have been loaded.
 		if(! (samples.size() > selected_sample_slot)) return;
 
-		StereoSample *selected_sample = &samples[selected_sample_slot];
+		Sample *selected_sample = &samples[selected_sample_slot];
 
 		if (inputs[TRIG_INPUT].isConnected())
 		{
@@ -208,10 +139,21 @@ struct WavBank : Module
 			{
 				samplePos = 0;
 				smooth_ramp = 0;
+				triggered = true;
+			}
+		}
+		else {
+			triggered = true;
+		}
+
+		// Loop 
+		if(params[LOOP_SWITCH].getValue() == 1.f) {
+			if(abs(floor(samplePos)) >= selected_sample->total_sample_count) {
+				samplePos = 0;
 			}
 		}
 
-		if ((! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->total_sample_count > 0) && ((abs(floor(samplePos)) < selected_sample->total_sample_count)))
+		if (triggered && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->total_sample_count > 0) && ((abs(floor(samplePos)) < selected_sample->total_sample_count)))
 		{
 			float left_wav_output_voltage;
 			float right_wav_output_voltage;
@@ -269,7 +211,7 @@ struct WavBank : Module
 		}
 		else
 		{
-			//selected_sample->run = false;
+			triggered = false; // Cancel current trigger
 			outputs[WAV_LEFT_OUTPUT].setVoltage(0);
 			outputs[WAV_RIGHT_OUTPUT].setVoltage(0);
 		}
@@ -281,7 +223,7 @@ struct WavBankReadout : TransparentWidget
 	WavBank *module;
 
 	int frame = 0;
-	shared_ptr<Font> font;
+	std::shared_ptr<Font> font;
 
 	WavBankReadout()
 	{
@@ -352,6 +294,7 @@ struct WavBankWidget : ModuleWidget
 		addParam(createParamCentered<Trimpot>(mm2px(Vec(13.185, 60)), module, WavBank::WAV_ATTN_KNOB));
 		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(13.185, 75)), module, WavBank::WAV_KNOB));
 		addParam(createParamCentered<CKSS>(mm2px(Vec(13.185, 97)), module, WavBank::SMOOTH_SWITCH));
+		addParam(createParamCentered<CKSS>(mm2px(Vec(23.185, 25.535)), module, WavBank::LOOP_SWITCH));
 
 		WavBankReadout *readout = new WavBankReadout();
 		readout->box.pos = mm2px(Vec(34.236, 92)); //22,22

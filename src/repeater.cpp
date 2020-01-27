@@ -6,89 +6,25 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
-#include "dr_wav.h"
-#include <vector>
 #include "cmath"
-
-using namespace std;
+#include "sample.hpp"
 
 #define NUMBER_OF_SAMPLES 5
 #define NUMBER_OF_SAMPLES_FLOAT 5.0
 #define GAIN 5.0
-
-struct sample
-{
-	std::string path;
-	std::string filename;
-	drwav_uint64 total_sample_count;
-	bool loading;
-	vector<float> playBuffer;
-	unsigned int sample_rate;
-	unsigned int channels;
-	bool run = false;
-
-	sample()
-	{
-		playBuffer.resize(0);
-		total_sample_count = 0;
-		loading = false;
-		filename = "[ empty ]";
-		path = "";
-		sample_rate = 0;
-		channels = 0;
-	}
-
-	void load(std::string path)
-	{
-		this->loading = true;
-
-		unsigned int reported_channels;
-		unsigned int reported_sample_rate;
-		drwav_uint64 reported_total_sample_count;
-		float *pSampleData;
-
-		pSampleData = drwav_open_and_read_file_f32(path.c_str(), &reported_channels, &reported_sample_rate, &reported_total_sample_count);
-
-		if (pSampleData != NULL)
-		{
-			// I'm aware that the "this" pointer isn't necessary here, but I wanted to include
-			// it just to make the code as clear as possible.
-
-			this->channels = reported_channels;
-			this->sample_rate = reported_sample_rate;
-			this->playBuffer.clear();
-
-			for (unsigned int i=0; i < reported_total_sample_count; i = i + this->channels)
-			{
-				this->playBuffer.push_back(pSampleData[i]);
-			}
-
-			drwav_free(pSampleData);
-
-			this->total_sample_count = playBuffer.size();
-			this->loading = false;
-			this->filename = rack::string::filename(path);
-			this->path = path;
-		}
-		else
-		{
-			this->loading = false;
-		}
-	};
-};
-
 
 struct Repeater : Module
 {
 	unsigned int selected_sample_slot = 0;
 	float samplePos = 0;
 	int step = 0;
+	bool isPlaying = false;
 	float smooth_ramp = 1;
 	float last_wave_output_voltage = 0;
 	int retrigger;
 	std::string root_dir;
 
-	sample samples[NUMBER_OF_SAMPLES];
+	Sample samples[NUMBER_OF_SAMPLES];
 	dsp::SchmittTrigger playTrigger;
 	dsp::PulseGenerator triggerOutputPulse;
 
@@ -181,7 +117,7 @@ struct Repeater : Module
 			selected_sample_slot = sample_select_input_value;
 		}
 
-		sample *selected_sample = &samples[selected_sample_slot];
+		Sample *selected_sample = &samples[selected_sample_slot];
 
 		if (inputs[TRIG_INPUT].isConnected())
 		{
@@ -200,7 +136,7 @@ struct Repeater : Module
 
 				if(step == 0)
 				{
-					selected_sample->run = true;
+					isPlaying = true;
 					samplePos = selected_sample->total_sample_count * (((inputs[POSITION_INPUT].getVoltage() / 10.0) * params[POSITION_ATTN_KNOB].getValue()) + params[POSITION_KNOB].getValue());
 					smooth_ramp = 0;
 					triggerOutputPulse.trigger(0.01f);
@@ -217,18 +153,18 @@ struct Repeater : Module
 			smooth_ramp = 0;
 		}
 
-		if ((! selected_sample->loading) && (selected_sample->run) && (selected_sample->total_sample_count > 0) && ((abs(floor(samplePos)) < selected_sample->total_sample_count)))
+		if (isPlaying && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->total_sample_count > 0) && ((abs(floor(samplePos)) < selected_sample->total_sample_count)))
 		{
 			float wav_output_voltage;
 
 			if (samplePos >= 0)
 			{
-				wav_output_voltage = GAIN  * selected_sample->playBuffer[floor(samplePos)];
+				wav_output_voltage = GAIN  * selected_sample->leftPlayBuffer[floor(samplePos)];
 			}
 			else
 			{
 				// What is this for?  Does it play the sample in reverse?  I think so.
-				wav_output_voltage = GAIN * selected_sample->playBuffer[floor(selected_sample->total_sample_count - 1 + samplePos)];
+				wav_output_voltage = GAIN * selected_sample->leftPlayBuffer[floor(selected_sample->total_sample_count - 1 + samplePos)];
 			}
 
 			if(params[SMOOTH_SWITCH].getValue()  && (smooth_ramp < 1))
@@ -257,7 +193,7 @@ struct Repeater : Module
 		}
 		else
 		{
-			selected_sample->run = false;
+			isPlaying = false;
 			outputs[WAV_OUTPUT].setVoltage(0);
 		}
 
@@ -271,7 +207,7 @@ struct Readout : TransparentWidget
 	Repeater *module;
 
 	int frame = 0;
-	shared_ptr<Font> font;
+	std::shared_ptr<Font> font;
 
 	Readout()
 	{
