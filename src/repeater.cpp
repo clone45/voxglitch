@@ -6,7 +6,6 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
-#include "cmath"
 #include "sample.hpp"
 
 #define NUMBER_OF_SAMPLES 5

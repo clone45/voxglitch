@@ -5,8 +5,6 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
-#include "cmath"
-#include <memory>
 #include "sample.hpp"
 
 #define MAX_NUMBER_OF_GOBLINS 128.0f

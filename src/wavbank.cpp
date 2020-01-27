@@ -6,9 +6,6 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
-#include <vector>
-#include "cmath"
-#include <memory>
 #include "sample.hpp"
 
 #define GAIN 5.0
