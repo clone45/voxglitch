@@ -9,9 +9,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="86mm"
+   width="91.330002mm"
    height="128.5mm"
-   viewBox="0 0 86 128.5"
+   viewBox="0 0 91.330002 128.5"
    version="1.1"
    id="svg11003"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4"
-     inkscape:cx="161.62868"
-     inkscape:cy="170.48049"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="192.01898"
+     inkscape:cy="180.59924"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -45,10 +45,12 @@
      inkscape:guide-bbox="true"
      showborder="false">
     <sodipodi:guide
-       position="78.052084,72.760417"
+       position="83.52,72.760416"
        orientation="1,0"
        id="guide64"
-       inkscape:locked="false" />
+       inkscape:locked="false"
+       inkscape:label=""
+       inkscape:color="rgb(0,0,255)" />
     <sodipodi:guide
        position="34.537575,30.757813"
        orientation="1,0"
@@ -72,7 +74,7 @@
        id="guide1474"
        inkscape:locked="false" />
     <sodipodi:guide
-       position="-15.501633,129.09118"
+       position="7.9138765,114.51497"
        orientation="1,0"
        id="guide1655"
        inkscape:locked="false"
@@ -104,7 +106,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -117,8 +119,8 @@
     <path
        inkscape:connector-curvature="0"
        id="path33429"
-       d="M 64.792954,47.169629 H 150.79295 V 175.66963 H 64.792954 Z m 0,0"
-       style="fill:#e6e6e6;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.46018988" />
+       d="M 64.792954,47.169629 H 156.23295 V 175.66963 H 64.792954 Z m 0,0"
+       style="fill:#e6e6e6;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.47452158" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:4.58611107px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
@@ -210,16 +212,17 @@
       </g>
     </g>
     <rect
-       style="fill:#28282a;fill-opacity:1;stroke-width:0.13056774"
+       style="fill:#28282a;fill-opacity:1;stroke-width:0.13556214"
        id="rect438"
-       width="70.132164"
+       width="75.600082"
        height="12.602925"
        x="72.712868"
        y="-80.225494"
        ry="0.78410625"
        transform="scale(1,-1)" />
     <g
-       id="g1737">
+       id="g1737"
+       transform="translate(5.6077964,-2.4294471e-6)">
       <path
          style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.45561951"
          d="m 142.84504,151.33008 c 0,-0.70925 -0.58092,-1.29052 -1.2937,-1.29052 h -9.93261 c -0.711,0 -1.29369,0.58127 -1.29369,1.29052 v 15.70134 c 0,0.70925 0.58269,1.29052 1.29369,1.29052 h 9.93261 c 0.71278,0 1.2937,-0.58127 1.2937,-1.29052 z m 0,0"
@@ -418,13 +421,13 @@
     <path
        inkscape:connector-curvature="0"
        id="path36629-9"
-       d="m 105.70888,151.32976 c 0,-0.70925 -0.58092,-1.29052 -1.2937,-1.29052 h -9.932611 c -0.711,0 -1.29369,0.58127 -1.29369,1.29052 v 15.70134 c 0,0.70925 0.58269,1.29052 1.29369,1.29052 h 9.932611 c 0.71278,0 1.2937,-0.58127 1.2937,-1.29052 z m 0,0"
+       d="m 111.31668,151.32976 c 0,-0.70925 -0.58092,-1.29052 -1.2937,-1.29052 h -9.93261 c -0.711005,0 -1.293695,0.58127 -1.293695,1.29052 v 15.70134 c 0,0.70925 0.58269,1.29052 1.293695,1.29052 h 9.93261 c 0.71278,0 1.2937,-0.58127 1.2937,-1.29052 z m 0,0"
        style="display:inline;fill:#333333;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.45561954" />
     <g
        aria-label="CLK"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        id="text1671"
-       transform="translate(-37.136155,22.594465)">
+       transform="translate(-31.528359,22.594463)">
       <path
          inkscape:connector-curvature="0"
          d="m 134.6904,131.83762 q -0.30692,0 -0.47273,-0.14817 -0.16227,-0.1517 -0.16227,-0.45156 v -1.27 q 0,-0.29986 0.16227,-0.44802 0.16581,-0.1517 0.47273,-0.1517 h 0.50094 v 0.26811 h -0.53622 q -0.13053,0 -0.21167,0.0776 -0.0811,0.0776 -0.0811,0.18698 v 1.40405 q 0,0.10936 0.0811,0.18697 0.0811,0.0776 0.21167,0.0776 h 0.53622 v 0.26812 z"
@@ -444,13 +447,13 @@
     <path
        inkscape:connector-curvature="0"
        id="path36629-9-4"
-       d="m 124.27696,151.32976 c 0,-0.70925 -0.58092,-1.29052 -1.2937,-1.29052 h -9.93261 c -0.711,0 -1.29369,0.58127 -1.29369,1.29052 v 15.70134 c 0,0.70925 0.58269,1.29052 1.29369,1.29052 h 9.93261 c 0.71278,0 1.2937,-0.58127 1.2937,-1.29052 z m 0,0"
+       d="m 129.88476,151.32976 c 0,-0.70925 -0.58092,-1.29052 -1.2937,-1.29052 h -9.93261 c -0.711,0 -1.29369,0.58127 -1.29369,1.29052 v 15.70134 c 0,0.70925 0.58269,1.29052 1.29369,1.29052 h 9.93261 c 0.71278,0 1.2937,-0.58127 1.2937,-1.29052 z m 0,0"
        style="display:inline;fill:#333333;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.45561954" />
     <g
        aria-label="END"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        id="text1703"
-       transform="translate(-18.575232,45.302185)">
+       transform="translate(-12.967436,45.302183)">
       <path
          inkscape:connector-curvature="0"
          d="m 135.23544,106.65006 v 0.25753 h -0.87136 v 0.80786 h 0.78317 v 0.25753 h -0.78317 v 0.889 h 0.87136 v 0.25753 h -1.17828 v -2.46945 z"
@@ -468,9 +471,9 @@
          id="path1716" />
     </g>
     <rect
-       style="display:inline;fill:#28282a;fill-opacity:1;stroke-width:0.13056774"
+       style="display:inline;fill:#28282a;fill-opacity:1;stroke-width:0.13556214"
        id="rect438-7"
-       width="70.132164"
+       width="75.600067"
        height="12.602925"
        x="72.712883"
        y="-121.86213"
