@@ -186,7 +186,9 @@ struct Goblins : Module
 		if (purge_is_triggered) countryside.clear();
 		lights[PURGE_LIGHT].setSmoothBrightness(purge_is_triggered, args.sampleTime);
 
-		// Spawn new goblins
+		// Frolic Goblins!
+		// Ravish the countryside!
+		// Beer! Bread! Lamb!
 		if((spawn_rate_counter >= spawn_rate) && (selected_sample->loaded))
 		{
 			Goblin goblin;
