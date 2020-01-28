@@ -103,13 +103,22 @@ struct WavBank : Module
 
 	}
 
+	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
+	{
+		float input_value = inputs[input_index].getVoltage() / 10.0;
+		float knob_value = params[knob_index].getValue();
+		float attenuator_value = params[attenuator_index].getValue();
+
+		return(((input_value * scale) * attenuator_value) + (knob_value * scale));
+	}
+
 	void process(const ProcessArgs &args) override
 	{
-
 		unsigned int number_of_samples = samples.size();
-		unsigned int wav_input_value = (unsigned int) floor(number_of_samples * (((inputs[WAV_INPUT].getVoltage() / 10.0) * params[WAV_ATTN_KNOB].getValue()) + params[WAV_KNOB].getValue()));
 
-		if(wav_input_value >= number_of_samples) wav_input_value = number_of_samples - 1;
+		// Read the input/knob for sample selection
+		unsigned int wav_input_value = calculate_inputs(WAV_INPUT, WAV_KNOB, WAV_ATTN_KNOB, number_of_samples);
+		wav_input_value = clamp(wav_input_value, 0, number_of_samples - 1);
 
 		if(wav_input_value != selected_sample_slot)
 		{
@@ -117,6 +126,8 @@ struct WavBank : Module
 			smooth_ramp = 0;
 
 			// Reset sample position so playback does not start at previous sample position
+			// TODO: Think this over.  Is it more flexible to allow people to changes
+			// samples without resetting the sample position?
 			samplePos = 0;
 
 			// Set the selected sample
@@ -144,29 +155,28 @@ struct WavBank : Module
 				triggered = true;
 			}
 		}
-		else {
+		else
+		{
 			triggered = true;
 		}
 
 		// Loop
-		if(params[LOOP_SWITCH].getValue() == 1.f) {
-			if(abs(floor(samplePos)) >= selected_sample->total_sample_count) {
-				samplePos = 0;
-			}
-		}
+		if(params[LOOP_SWITCH].getValue() && (samplePos >= selected_sample->total_sample_count)) samplePos = 0;
 
-		if (triggered && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->total_sample_count > 0) && ((abs(floor(samplePos)) < selected_sample->total_sample_count)))
+		if (triggered && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->total_sample_count > 0) && (samplePos < selected_sample->total_sample_count))
 		{
 			float left_wav_output_voltage;
 			float right_wav_output_voltage;
 
 			if (samplePos >= 0)
 			{
-				left_wav_output_voltage = GAIN  * selected_sample->leftPlayBuffer[floor(samplePos)];
-				if(selected_sample->channels > 1) {
-					right_wav_output_voltage = GAIN  * selected_sample->rightPlayBuffer[floor(samplePos)];
+				left_wav_output_voltage = GAIN  * selected_sample->leftPlayBuffer[(int)samplePos];
+				if(selected_sample->channels > 1)
+				{
+					right_wav_output_voltage = GAIN  * selected_sample->rightPlayBuffer[(int)samplePos];
 				}
-				else {
+				else
+				{
 					right_wav_output_voltage = left_wav_output_voltage;
 				}
 			}
@@ -223,9 +233,9 @@ struct WavBank : Module
 struct WavBankReadout : TransparentWidget
 {
 	WavBank *module;
-
-	int frame = 0;
+	float text_rotation_angle = -M_PI / 2.0f;
 	std::shared_ptr<Font> font;
+	std::string text_to_display = "Right-Click to Load Samples";
 
 	WavBankReadout()
 	{
@@ -234,8 +244,6 @@ struct WavBankReadout : TransparentWidget
 
 	void draw(const DrawArgs &args) override
 	{
-		std::string text_to_display = "Right-Click to Load Samples";
-
 		if(module)
 		{
 			text_to_display = "";
@@ -247,15 +255,15 @@ struct WavBankReadout : TransparentWidget
 			}
 		}
 
+		// Set font information
 		nvgFontSize(args.vg, 13);
 		nvgFontFaceId(args.vg, font->handle);
 		nvgTextLetterSpacing(args.vg, 0);
 		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+		nvgRotate(args.vg, text_rotation_angle);
 
-		nvgRotate(args.vg, -M_PI / 2.0f);
-
-		// void nvgTextBox(NVGcontext* ctx, float x, float y, float breakRowWidth, const char* string, const char* end);
-		nvgTextBox(args.vg, 5, 5, 700, text_to_display.c_str(), NULL);
+		// Print out the text
+		nvgText(args.vg, 5, 5, text_to_display.c_str(), NULL);
 	}
 };
 
