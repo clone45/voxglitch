@@ -102,12 +102,12 @@ struct Autobreak : Module
 	dsp::PulseGenerator endOutputPulse;
 
 	int break_patterns[NUMBER_OF_PATTERNS][16] = {
-		{ -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
-		{ -1,-1,-1,-1,  0,-1,-1,-1, -1,-1,-1,-1,  8,-1,-1,-1 },
+		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
+		{  0,-1,-1,-1,  0,-1,-1,-1, -1,-1,-1,-1,  8,-1,-1,-1 },
 		{  0,-1,-1,-1,  0,-1,-1,-1, -1,-1,-1,-1,  0,-1,-1,-1 },
 		{  0,-1, 0,-1, -1,-1,-1, 4,  6,-1,-1,-1,  6,-1,-1,-1 },
 		{  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0 },
-		{  12, 14, 12, 12,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 12 }
+		{  0,14,12,12,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 12 }
 	};
 
 	enum ParamIds {
@@ -243,7 +243,7 @@ struct Autobreak : Module
 
 			if(smooth_ramp < 1)
 			{
-				float smooth_rate = (6.0f / args.sampleRate);  // A smooth rate of 128 seems to work best
+				float smooth_rate = (16.0f / args.sampleRate);  // A smooth rate of 128 seems to work best
 				smooth_ramp += smooth_rate;
 				wav_output_voltage = (last_wave_output_voltage * (1 - smooth_ramp)) + (wav_output_voltage * smooth_ramp);
 				outputs[WAV_OUTPUT].setVoltage(wav_output_voltage);
@@ -255,11 +255,9 @@ struct Autobreak : Module
 
 			last_wave_output_voltage = wav_output_voltage;
 
-
 			// Update a clock counter and provide a trigger output whenever 1/32nd of the sample
 			// has been reached.
 			clock_counter = (incrementing_sample_position / selected_sample->total_sample_count) * 32.0f;
-			if(clock_counter >= 32) clock_counter = 0;
 			if(clock_counter != clock_counter_old) clockOutputPulse.trigger(0.01f);
 			clock_counter_old = clock_counter;
 
@@ -345,11 +343,13 @@ struct AutobreakReadout : TransparentWidget
 		std::string text_to_display;
 		text_to_display = "load sample";
 
+		AutobreakSample *selected_sample = &module->samples[module->selected_sample_slot];
+
 		if(module)
 		{
 			if(module->samples.size() > module->selected_sample_slot)
 			{
-				text_to_display = module->samples[module->selected_sample_slot].filename;
+				text_to_display = selected_sample->filename;
 			}
 		}
 
@@ -360,6 +360,14 @@ struct AutobreakReadout : TransparentWidget
 
 		// void nvgTextBox(NVGcontext* ctx, float x, float y, float breakRowWidth, const char* string, const char* end);
 		nvgTextBox(args.vg, 5, 5, 700, text_to_display.c_str(), NULL);
+
+		// Now draw a line underneath the text to show where, in the sample, playback is happening
+		// Draw background while rectangle
+		nvgBeginPath(args.vg);
+		nvgMoveTo(args.vg, 5, 12);
+		nvgLineTo(args.vg, 200.0 * (module->playback_sample_position/selected_sample->total_sample_count), 12);
+		nvgStrokeColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+		nvgStroke(args.vg);
 
 		nvgRestore(args.vg);
 	}
@@ -420,16 +428,7 @@ struct AutobreakPatternReadout : TransparentWidget
 
 				// nvgTextBox(args.vg, 3 + (i * 13), 5, 16, item_display.c_str(), NULL);
 				nvgText(args.vg, 5 + (i * 13), 5, item_display.c_str(), NULL);
-
-
-				// text_to_display = text_to_display + item_display;
-				// if(i < 15) text_to_display = text_to_display + " ";
-
-
-
 			}
-
-			// nvgTextBox(args.vg, 5, 5, 700, text_to_display.c_str(), NULL);
 		}
 
 		nvgRestore(args.vg);
@@ -485,16 +484,16 @@ struct AutobreakWidget : ModuleWidget
 		addChild(readout);
 
 		AutobreakPatternReadout *pattern_readout = new AutobreakPatternReadout();
-		pattern_readout->box.pos = mm2px(Vec(10.0, 68.591));
+		pattern_readout->box.pos = mm2px(Vec(11.0, 68.591));
 		pattern_readout->box.size = Vec(110, 30); // bounding box of the widget
 		pattern_readout->module = module;
 		addChild(pattern_readout);
 
 		// Outputs
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 100.893)), module, Autobreak::DEBUG_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.656, 114.893)), module, Autobreak::CLOCK_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(53.224, 114.893)), module, Autobreak::END_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(71.810, 114.893)), module, Autobreak::WAV_OUTPUT));
+		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 100.893)), module, Autobreak::DEBUG_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(40.264, 114.893)), module, Autobreak::CLOCK_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(58.832, 114.893)), module, Autobreak::END_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(77.418, 114.893)), module, Autobreak::WAV_OUTPUT));
 	}
 
 	void appendContextMenu(Menu *menu) override
