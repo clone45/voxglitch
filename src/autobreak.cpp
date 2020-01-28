@@ -318,6 +318,7 @@ struct Autobreak : Module
 
 		bool end_output_pulse = endOutputPulse.process(1.0 / args.sampleRate);
 		outputs[END_OUTPUT].setVoltage((end_output_pulse ? 10.0f : 0.0f));
+
 	}
 };
 
@@ -336,6 +337,11 @@ struct AutobreakReadout : TransparentWidget
 	void draw(const DrawArgs &args) override
 	{
 		nvgSave(args.vg);
+
+		std::string text_to_display;
+		text_to_display = "load sample";
+
+		AutobreakSample *selected_sample = &module->samples[module->selected_sample_slot];
 
 		if(module)
 		{
