@@ -7,7 +7,7 @@
 #include "osdialog.h"
 #include "sample.hpp"
 
-#define MAX_NUMBER_OF_GOBLINS 128.0f
+#define MAX_NUMBER_OF_GOBLINS 128
 #define MAX_SPAWN_RATE 12000.0f
 #define NUMBER_OF_SAMPLES 5
 #define NUMBER_OF_SAMPLES_FLOAT 5.0
@@ -164,11 +164,8 @@ struct Goblins : Module
 		//  Set selected sample based on inputs.
 		//  This must happen before we calculate start_position
 
-		// unsigned int sample_select_input_value = (unsigned int) (NUMBER_OF_SAMPLES_FLOAT * (((inputs[SAMPLE_SELECT_INPUT].getVoltage() / 10.0) * params[SAMPLE_SELECT_ATTN_KNOB].getValue()) + params[SAMPLE_SELECT_KNOB].getValue()));
-
 		selected_sample_slot = (unsigned int) calculate_inputs(SAMPLE_SELECT_INPUT, SAMPLE_SELECT_KNOB, SAMPLE_SELECT_ATTN_KNOB, NUMBER_OF_SAMPLES_FLOAT);
 		selected_sample_slot = clamp(selected_sample_slot, 0, NUMBER_OF_SAMPLES - 1);
-
 		Sample *selected_sample = &samples[selected_sample_slot];
 
 		//
@@ -200,10 +197,9 @@ struct Goblins : Module
 		}
 
 		unsigned int countryside_capacity = calculate_inputs(COUNTRYSIDE_CAPACITY_INPUT, COUNTRYSIDE_CAPACITY_KNOB, COUNTRYSIDE_CAPACITY_ATTN_KNOB, MAX_NUMBER_OF_GOBLINS);
-		if (countryside_capacity > MAX_NUMBER_OF_GOBLINS) countryside_capacity = MAX_NUMBER_OF_GOBLINS;
+		countryside_capacity = clamp(countryside_capacity, 0, MAX_NUMBER_OF_GOBLINS);
 
-		// If there are too many goblins, kill off the oldest until the
-		// population is under control.
+		// If there are too many goblins, kill off the oldest until the population is under control.
 		while(countryside.size() > countryside_capacity)
 		{
             countryside.erase(countryside.begin());
@@ -211,9 +207,6 @@ struct Goblins : Module
 
 		if ((! selected_sample->loading) && (selected_sample->total_sample_count > 0))
 		{
-			// Iterate over all the goblins in the countryside and collect
-			// their output.
-
 			float mix_output = 0;
 
 			if(countryside.empty() == false)
@@ -232,6 +225,7 @@ struct Goblins : Module
 					step_amount = (selected_sample->sample_rate / args.sampleRate) + params[PITCH_KNOB].getValue();
 				}
 
+				// Iterate over all the goblins in the countryside and collect their output.
 				for(Goblin& goblin : countryside)
 				{
 					mix_output += goblin.getOutput();
@@ -278,7 +272,7 @@ struct GoblinsSampleReadout : TransparentWidget
 		nvgFontFaceId(args.vg, font->handle);
 		nvgTextLetterSpacing(args.vg, 0);
 		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
-		nvgTextBox(args.vg, 5, 5, 700, text_to_display.c_str(), NULL);
+		nvgText(args.vg, 5, 5, text_to_display.c_str(), NULL);
 
 		nvgRestore(args.vg);
 	}
