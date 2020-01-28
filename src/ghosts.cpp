@@ -1,8 +1,6 @@
 //
 // Voxglitch "Ghosts" module for VCV Rack
-// By Bret Truchan
 //
-
 
 #include "plugin.hpp"
 #include "osdialog.h"
@@ -292,8 +290,8 @@ struct Ghosts : Module
 
 			if(graveyard.empty() == false)
 			{
-				// pre-calculate part of the math used to determine sample positions
-				// in the Ghost's age() function
+				// pre-calculate step amount and smooth rate.
+				// This is to reduce the amount of math needed within each Ghost's getOutput() and age() functions.
 				step_amount = sample.sample_rate / args.sampleRate;
 				smooth_rate = 128.0f / args.sampleRate;
 
@@ -307,6 +305,7 @@ struct Ghosts : Module
 				outputs[WAV_OUTPUT].setVoltage(mix_output);
 			}
 
+			// TODO: spawn_rate_counter should probably take into consideration the selected sample rate.
 			spawn_rate_counter = spawn_rate_counter + 1.0f;
 		}
 		else

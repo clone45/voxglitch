@@ -264,21 +264,12 @@ struct GoblinsSampleReadout : TransparentWidget
 	{
 		nvgSave(args.vg);
 
-		std::string text_to_display;
+		std::string text_to_display = "Right click to load sample";
 
-		if(! module)
+		if(module)
 		{
-			text_to_display = "load sample";
-		}
-		else
-		{
-			std::string file_name = module->samples[module->selected_sample_slot].filename;
-			text_to_display = "#" + std::to_string(module->selected_sample_slot + 1) + ":";
-
-			// std::string file_name = module->sample.filename;
-
-			// Create a short version of the filename.  Essentially truncates the filename if it is too long.
-			for (int i=0; i<40; i++) text_to_display = text_to_display + file_name[i];
+			text_to_display = "#" + std::to_string(module->selected_sample_slot + 1) + ":" + module->samples[module->selected_sample_slot].filename;
+			text_to_display.resize(41); // Truncate long text to fit in the display
 		}
 
 		nvgFontSize(args.vg, 13);

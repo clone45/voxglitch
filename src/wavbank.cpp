@@ -90,6 +90,9 @@ struct WavBank : Module
 		this->rootDir = std::string(path);
 		std::list<std::string> dirList = system::getEntries(path);
 
+		// TODO: Decide on a maximum memory consuption allowed and abort if
+		// that amount of member would be exhausted by loading all of the files
+		// in the folder.  Also consider supporting MP3.
 		for (auto entry : dirList)
 		{
 			if (rack::string::lowercase(rack::string::filenameExtension(entry)) == "wav")
@@ -100,7 +103,6 @@ struct WavBank : Module
 				this->samples.push_back(new_sample);
 			}
 		}
-
 	}
 
 	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)

@@ -371,6 +371,7 @@ struct XYWidget : ModuleWidget
         addInput(createInputCentered<PJ301MPort>(mm2px(Vec(25, MODULE_HEIGHT_MM - 13.891)), module, XY::RESET_INPUT));
         addParam(createParamCentered<CKSS>(mm2px(Vec(39.5, MODULE_HEIGHT_MM - 13.891)), module, XY::RETRIGGER_SWITCH));
         addParam(createParamCentered<CKSS>(mm2px(Vec(54, MODULE_HEIGHT_MM - 13.891)), module, XY::PUNCH_SWITCH));
+
         // xy mouse entry box
         XYDisplay *xy_display;
         xy_display = new XYDisplay(module);
@@ -385,7 +386,5 @@ struct XYWidget : ModuleWidget
 	}
 
 };
-
-
 
 Model* modelXY = createModel<XY, XYWidget>("xy");
