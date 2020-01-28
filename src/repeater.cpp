@@ -218,8 +218,6 @@ struct Repeater : Module
 struct Readout : TransparentWidget
 {
 	Repeater *module;
-
-	int frame = 0;
 	std::shared_ptr<Font> font;
 
 	Readout()

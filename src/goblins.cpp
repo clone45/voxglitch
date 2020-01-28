@@ -247,8 +247,6 @@ struct Goblins : Module
 struct GoblinsSampleReadout : TransparentWidget
 {
 	Goblins *module;
-
-	int frame = 0;
 	std::shared_ptr<Font> font;
 
 	GoblinsSampleReadout()
