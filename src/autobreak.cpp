@@ -233,8 +233,6 @@ struct Autobreak : Module
 			}
 		}
 
-
-
 		if ((! selected_sample->loading) && (selected_sample->run) && (selected_sample->total_sample_count > 0))
 		{
 			float wav_output_voltage;
@@ -320,7 +318,6 @@ struct Autobreak : Module
 
 		bool end_output_pulse = endOutputPulse.process(1.0 / args.sampleRate);
 		outputs[END_OUTPUT].setVoltage((end_output_pulse ? 10.0f : 0.0f));
-
 	}
 };
 
@@ -340,34 +337,28 @@ struct AutobreakReadout : TransparentWidget
 	{
 		nvgSave(args.vg);
 
-		std::string text_to_display;
-		text_to_display = "load sample";
-
-		AutobreakSample *selected_sample = &module->samples[module->selected_sample_slot];
-
 		if(module)
 		{
 			if(module->samples.size() > module->selected_sample_slot)
 			{
-				text_to_display = selected_sample->filename;
+				AutobreakSample *selected_sample = &module->samples[module->selected_sample_slot];
+				std::string text_to_display = selected_sample->filename;
+
+				// Display filename or "load sample" in the display area
+				nvgFontSize(args.vg, 13);
+				nvgFontFaceId(args.vg, font->handle);
+				nvgTextLetterSpacing(args.vg, 0);
+				nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+				nvgTextBox(args.vg, 5, 5, 700, text_to_display.c_str(), NULL);
+
+				// Draw a line underneath the text to show where, in the sample, playback is happening
+				nvgBeginPath(args.vg);
+				nvgMoveTo(args.vg, 5, 12);
+				nvgLineTo(args.vg, 200.0 * (module->playback_sample_position/selected_sample->total_sample_count), 12);
+				nvgStrokeColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+				nvgStroke(args.vg);
 			}
 		}
-
-		nvgFontSize(args.vg, 13);
-		nvgFontFaceId(args.vg, font->handle);
-		nvgTextLetterSpacing(args.vg, 0);
-		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
-
-		// void nvgTextBox(NVGcontext* ctx, float x, float y, float breakRowWidth, const char* string, const char* end);
-		nvgTextBox(args.vg, 5, 5, 700, text_to_display.c_str(), NULL);
-
-		// Now draw a line underneath the text to show where, in the sample, playback is happening
-		// Draw background while rectangle
-		nvgBeginPath(args.vg);
-		nvgMoveTo(args.vg, 5, 12);
-		nvgLineTo(args.vg, 200.0 * (module->playback_sample_position/selected_sample->total_sample_count), 12);
-		nvgStrokeColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
-		nvgStroke(args.vg);
 
 		nvgRestore(args.vg);
 	}
@@ -391,16 +382,20 @@ struct AutobreakPatternReadout : TransparentWidget
 
 		if(module)
 		{
-			std::string text_to_display;
+			std::string text_to_display = "";
 			std::string item_display;
-			text_to_display = "";
 
+			// Configure the font size, face, color, etc.
 			nvgFontSize(args.vg, 13);
 			nvgFontFaceId(args.vg, font->handle);
 			nvgTextLetterSpacing(args.vg, 0);
 			nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
 			nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
 			nvgTextLetterSpacing(args.vg, -2);
+
+			//
+			// Display the pattern
+			//
 
 			for(unsigned int i=0; i<16; i++)
 			{
