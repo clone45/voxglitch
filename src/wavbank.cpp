@@ -325,7 +325,7 @@ struct WavBankWidget : ModuleWidget
 		// For spacing only
 		menu->addChild(new MenuEntry);
 
-		// Add the "select bank folder" menu item
+		// Add the "Select Directory Containing WAV Files" menu item
 		MenuItemLoadBank *menu_item_load_bank = new MenuItemLoadBank();
 		menu_item_load_bank->text = "Select Directory Containing WAV Files";
 		menu_item_load_bank->wav_bank_module = module;
