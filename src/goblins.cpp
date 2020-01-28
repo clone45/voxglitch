@@ -5,79 +5,12 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
-#include "dr_wav.h"
-#include <vector>
-#include "cmath"
-#include <memory>
+#include "sample.hpp"
 
-using namespace std;
 #define MAX_NUMBER_OF_GOBLINS 128.0f
 #define MAX_SPAWN_RATE 12000.0f
 #define NUMBER_OF_SAMPLES 5
 #define NUMBER_OF_SAMPLES_FLOAT 5.0
-
-struct Sample
-{
-	std::string path;
-	std::string filename;
-	drwav_uint64 total_sample_count;
-	bool loading;
-	vector<float> playBuffer;
-	unsigned int sample_rate;
-	unsigned int channels;
-	bool run = false;
-
-	Sample()
-	{
-		playBuffer.resize(0);
-		total_sample_count = 0;
-		loading = false;
-		filename = "[ empty ]";
-		path = "";
-		sample_rate = 0;
-		channels = 0;
-	}
-
-	void load(std::string path)
-	{
-		this->loading = true;
-
-		unsigned int reported_channels;
-		unsigned int reported_sample_rate;
-		drwav_uint64 reported_total_sample_count;
-		float *pSampleData;
-
-		pSampleData = drwav_open_and_read_file_f32(path.c_str(), &reported_channels, &reported_sample_rate, &reported_total_sample_count);
-
-		if (pSampleData != NULL)
-		{
-			// I'm aware that the "this" pointer isn't necessary here, but I wanted to include
-			// it just to make the code as clear as possible.
-
-			this->channels = reported_channels;
-			this->sample_rate = reported_sample_rate;
-			this->playBuffer.clear();
-
-			for (unsigned int i=0; i < reported_total_sample_count; i = i + this->channels)
-			{
-				this->playBuffer.push_back(pSampleData[i]);
-			}
-
-			drwav_free(pSampleData);
-
-			this->total_sample_count = playBuffer.size();
-			this->loading = false;
-			this->filename = rack::string::filename(path);
-			this->path = path;
-
-			this->run = true;
-		}
-		else
-		{
-			this->loading = false;
-		}
-	};
-};
 
 struct Goblin
 {
@@ -105,7 +38,7 @@ struct Goblin
 		if (sample_position >= this->sample_ptr->total_sample_count) sample_position = sample_position % this->sample_ptr->total_sample_count;
 
         // Return the audio
-		return(this->sample_ptr->playBuffer[sample_position]);
+		return(this->sample_ptr->leftPlayBuffer[sample_position]);
 	}
 
 	void age(float step_amount, float playback_length)
@@ -133,7 +66,7 @@ struct Goblins : Module
 	std::string root_dir;
 	std::string path;
 
-	vector<Goblin> countryside;
+	std::vector<Goblin> countryside;
 	Sample samples[NUMBER_OF_SAMPLES];
 	dsp::SchmittTrigger purge_trigger;
 	dsp::SchmittTrigger purge_button_trigger;
@@ -254,7 +187,7 @@ struct Goblins : Module
 		lights[PURGE_LIGHT].setSmoothBrightness(purge_is_triggered, args.sampleTime);
 
 		// Spawn new goblins
-		if((spawn_rate_counter >= spawn_rate) && (selected_sample->run))
+		if((spawn_rate_counter >= spawn_rate) && (selected_sample->loaded))
 		{
 			Goblin goblin;
 			goblin.start_position = start_position;
@@ -320,7 +253,7 @@ struct GoblinsSampleReadout : TransparentWidget
 	Goblins *module;
 
 	int frame = 0;
-	shared_ptr<Font> font;
+	std::shared_ptr<Font> font;
 
 	GoblinsSampleReadout()
 	{

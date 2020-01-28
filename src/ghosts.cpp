@@ -5,77 +5,10 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
-#include "dr_wav.h"
-#include <vector>
-#include "cmath"
-#include <memory>
+#include "sample.hpp"
 
-using namespace std;
 #define MAX_GRAVEYARD_CAPACITY 128.0f
 #define MAX_GHOST_SPAWN_RATE 12000.0f
-
-struct Sample
-{
-	std::string path;
-	std::string filename;
-	drwav_uint64 total_sample_count;
-	bool loading;
-	vector<float> playBuffer;
-	unsigned int sample_rate;
-	unsigned int channels;
-	bool run = false;
-
-	Sample()
-	{
-		playBuffer.resize(0);
-		total_sample_count = 0;
-		loading = false;
-		filename = "[ empty ]";
-		path = "";
-		sample_rate = 0;
-		channels = 0;
-	}
-
-	void load(std::string path)
-	{
-		this->loading = true;
-
-		unsigned int reported_channels;
-		unsigned int reported_sample_rate;
-		drwav_uint64 reported_total_sample_count;
-		float *pSampleData;
-
-		pSampleData = drwav_open_and_read_file_f32(path.c_str(), &reported_channels, &reported_sample_rate, &reported_total_sample_count);
-
-		if (pSampleData != NULL)
-		{
-			// I'm aware that the "this" pointer isn't necessary here, but I wanted to include
-			// it just to make the code as clear as possible.
-
-			this->channels = reported_channels;
-			this->sample_rate = reported_sample_rate;
-			this->playBuffer.clear();
-
-			for (unsigned int i=0; i < reported_total_sample_count; i = i + this->channels)
-			{
-				this->playBuffer.push_back(pSampleData[i]);
-			}
-
-			drwav_free(pSampleData);
-
-			this->total_sample_count = playBuffer.size();
-			this->filename = rack::string::filename(path);
-			this->path = path;
-
-			this->loading = false;
-			this->run = true;
-		}
-		else
-		{
-			this->loading = false;
-		}
-	};
-};
 
 struct Ghost
 {
@@ -129,7 +62,7 @@ struct Ghost
 			sample_position = sample_position % this->sample_ptr->total_sample_count;
 		}
 
-		output_voltage = this->sample_ptr->playBuffer[sample_position];
+		output_voltage = this->sample_ptr->leftPlayBuffer[sample_position];
 
 		if(loop_smoothing_ramp < 1)
 		{
@@ -181,7 +114,7 @@ struct Ghosts : Module
 	std::string root_dir;
 	std::string path;
 
-	vector<Ghost> graveyard;
+	std::vector<Ghost> graveyard;
 	Sample sample;
 	dsp::SchmittTrigger purge_trigger;
 	dsp::SchmittTrigger purge_button_trigger;
