@@ -217,19 +217,12 @@ struct Readout : TransparentWidget
 	{
 		nvgSave(args.vg);
 
-		std::string text_to_display;
+		std::string text_to_display = "load sample";;
 
-		if(! module)
+		if(module)
 		{
-			text_to_display = "load sample";
-		}
-		else
-		{
-			std::string file_name = module->samples[module->selected_sample_slot].filename;
-			text_to_display = "#" + std::to_string(module->selected_sample_slot + 1) + ":";
-
-			// Create a short version of the filename.  Essentially truncates the filename if it is too long.
-			for (int i=0; i<20; i++) text_to_display = text_to_display + file_name[i];
+			text_to_display = "#" + std::to_string(module->selected_sample_slot + 1) + ":" + module->samples[module->selected_sample_slot].filename;
+			text_to_display.resize(30); // Truncate long text to fit in the display
 		}
 
 		nvgFontSize(args.vg, 13);
@@ -274,17 +267,6 @@ struct RepeaterWidget : ModuleWidget
 		setModule(module);
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/repeater_front_panel.svg")));
 
-		// Cosmetic rack screws
-		/*
-		addChild(createWidget<ScrewSilver>(Vec(15, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
-		addChild(createWidget<ScrewSilver>(Vec(box.size.x-30, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(box.size.x-30, 365)));
-		*/
-
-		// Input and label for the sample speed input
-		// addParam(createParam<Trimpot>(Vec(30, 339), module, Repeater::LSPEED_PARAM));
-
 		// Input and label for the trigger input (which is labeled "CLK" on the front panel)
 		float trigger_input_x = 67.7;
 		float trigger_input_y = 42.0;
@@ -327,6 +309,7 @@ struct RepeaterWidget : ModuleWidget
 		readout->module = module;
 		addChild(readout);
 
+		// Outputs
 		addOutput(createOutput<PJ301MPort>(Vec(200, 324), module, Repeater::WAV_OUTPUT));
 		addOutput(createOutput<PJ301MPort>(Vec(200, 259), module, Repeater::TRG_OUTPUT));
 	}

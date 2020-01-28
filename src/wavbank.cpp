@@ -10,6 +10,13 @@
 
 #define GAIN 5.0
 
+// There's not many times that you would want smoothing disabled, so to make
+// room on the front panel for the loop switch, I'm simply going to set
+// smoothing to true.  If there's demand, I'll add an option to the right-click
+// context menu for enabling and disabling smoothing.
+
+#define SMOOTH_ENABLED 1
+
 struct WavBank : Module
 {
 	unsigned int selected_sample_slot = 0;
@@ -27,7 +34,6 @@ struct WavBank : Module
 	enum ParamIds {
 		WAV_KNOB,
 		WAV_ATTN_KNOB,
-		SMOOTH_SWITCH,
 		LOOP_SWITCH,
 		NUM_PARAMS
 	};
@@ -54,7 +60,6 @@ struct WavBank : Module
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(WAV_KNOB, 0.0f, 1.0f, 0.0f, "SampleSelectKnob");
 		configParam(WAV_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "SampleSelectAttnKnob");
-		configParam(SMOOTH_SWITCH, 0.0f, 1.0f, 1.0f, "SmoothSwitch");
 		configParam(LOOP_SWITCH, 0.0f, 1.0f, 0.0f, "LoopSwitch");
 	}
 
@@ -95,7 +100,7 @@ struct WavBank : Module
 				this->samples.push_back(new_sample);
 			}
 		}
-				
+
 	}
 
 	void process(const ProcessArgs &args) override
@@ -143,7 +148,7 @@ struct WavBank : Module
 			triggered = true;
 		}
 
-		// Loop 
+		// Loop
 		if(params[LOOP_SWITCH].getValue() == 1.f) {
 			if(abs(floor(samplePos)) >= selected_sample->total_sample_count) {
 				samplePos = 0;
@@ -177,7 +182,7 @@ struct WavBank : Module
 				}
 			}
 
-			if(params[SMOOTH_SWITCH].getValue()  && (smooth_ramp < 1))
+			if(SMOOTH_ENABLED && (smooth_ramp < 1))
 			{
 				float smooth_rate = (128.0f / args.sampleRate);  // A smooth rate of 128 seems to work best
 				smooth_ramp += smooth_rate;
@@ -187,9 +192,9 @@ struct WavBank : Module
 				}
 				else {
 					right_wav_output_voltage = left_wav_output_voltage;
-				}	
+				}
 			}
-			
+
 			outputs[WAV_LEFT_OUTPUT].setVoltage(left_wav_output_voltage);
 			outputs[WAV_RIGHT_OUTPUT].setVoltage(right_wav_output_voltage);
 
@@ -229,16 +234,16 @@ struct WavBankReadout : TransparentWidget
 
 	void draw(const DrawArgs &args) override
 	{
-
-		std::string text_to_display;
-
-		text_to_display = "load sample";
+		std::string text_to_display = "Right-Click to Load Samples";
 
 		if(module)
 		{
+			text_to_display = "";
+
 			if(module->samples.size() > module->selected_sample_slot)
 			{
 				text_to_display = module->samples[module->selected_sample_slot].filename;
+				text_to_display.resize(30); // truncate long text
 			}
 		}
 
@@ -260,7 +265,6 @@ struct MenuItemLoadBank : MenuItem
 
 	void onAction(const event::Action &e) override
 	{
-		// const std::string dir = wav_bank_module->rootDir.empty() ? "" : wav_bank_module->rootDir;
 		const std::string dir = wav_bank_module->rootDir;
 		char *path = osdialog_file(OSDIALOG_OPEN_DIR, dir.c_str(), NULL, NULL);
 
@@ -290,18 +294,17 @@ struct WavBankWidget : ModuleWidget
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.185, 114.893)), module, WavBank::PITCH_INPUT));
 		addParam(createParamCentered<Trimpot>(mm2px(Vec(13.185, 60)), module, WavBank::WAV_ATTN_KNOB));
 		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(13.185, 75)), module, WavBank::WAV_KNOB));
-		addParam(createParamCentered<CKSS>(mm2px(Vec(13.185, 97)), module, WavBank::SMOOTH_SWITCH));
-		addParam(createParamCentered<CKSS>(mm2px(Vec(23.185, 25.535)), module, WavBank::LOOP_SWITCH));
+		addParam(createParamCentered<CKSS>(mm2px(Vec(13.185, 97)), module, WavBank::LOOP_SWITCH));
 
 		WavBankReadout *readout = new WavBankReadout();
-		readout->box.pos = mm2px(Vec(34.236, 92)); //22,22
+		readout->box.pos = mm2px(Vec(34.236, 82));
 		readout->box.size = Vec(110, 30); // bounding box of the widget
 		readout->module = module;
 		addChild(readout);
 
 		// WAV output
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(29.236, 114.893)), module, WavBank::WAV_LEFT_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(39.236, 114.893)), module, WavBank::WAV_RIGHT_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 104)), module, WavBank::WAV_LEFT_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 114.9)), module, WavBank::WAV_RIGHT_OUTPUT));
 	}
 
 	void appendContextMenu(Menu *menu) override
@@ -309,16 +312,10 @@ struct WavBankWidget : ModuleWidget
 		WavBank *module = dynamic_cast<WavBank*>(this->module);
 		assert(module);
 
-		//
-		// Add the five "Load Sample.." menu options to the right-click context menu
-		//
+		// For spacing only
+		menu->addChild(new MenuEntry);
 
-		menu->addChild(new MenuEntry); // For spacing only
-
-
-		//
 		// Add the "select bank folder" menu item
-		//
 		MenuItemLoadBank *menu_item_load_bank = new MenuItemLoadBank();
 		menu_item_load_bank->text = "Select Directory Containing WAV Files";
 		menu_item_load_bank->wav_bank_module = module;

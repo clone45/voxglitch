@@ -26,7 +26,7 @@ struct Sample
 		channels = 0;
 	}
 
-	virtual ~Sample() {} 
+	virtual ~Sample() {}
 
 	virtual void load(std::string path, bool loadAsMono = true)
 	{
@@ -49,14 +49,16 @@ struct Sample
 			this->leftPlayBuffer.clear();
 			this->rightPlayBuffer.clear();
 
-			if(this->channels > 1 && ! loadAsMono) {
+			if(this->channels > 1 && ! loadAsMono)
+			{
 				for (unsigned int i=0; i < reported_total_sample_count; i = i + this->channels)
 				{
 					this->leftPlayBuffer.push_back(pSampleData[i]);
 					this->rightPlayBuffer.push_back(pSampleData[i+1]);
 				}
 			}
-			else {
+			else
+			{
 				for (unsigned int i=0; i < reported_total_sample_count; i = i + this->channels)
 				{
 					this->leftPlayBuffer.push_back(pSampleData[i]);
@@ -78,5 +80,3 @@ struct Sample
 		}
 	};
 };
-
-
