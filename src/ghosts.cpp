@@ -1,5 +1,6 @@
 //
 // Voxglitch "Ghosts" module for VCV Rack
+// By Bret Truchan
 //
 
 
@@ -29,10 +30,8 @@ struct Ghost
 
 	unsigned int sample_position = 0;
 
-	// Used as a counter for smoothing transitions
-
 	//
-	// smooth_ramp:
+	// smoothing ramps:
 	//
 	// Setting this to 0, when the smooth switch it ON, will cause smoothing
 	// of transitions between playback at the end of the sample and beginning
@@ -51,7 +50,6 @@ struct Ghost
 
 	float getOutput(float smooth_rate)
 	{
-
 		// Note that we're adding two floating point numbers, then casting
 		// them to an int, which is much faster than using floor()
 		sample_position = this->start_position + this->playback_position;
@@ -259,7 +257,7 @@ struct Ghosts : Module
 			spawn_rate_counter = 0;
 		}
 
-		// Kill off any completely dead ghosts
+		// Remove any completely dead ghosts from the graveyard
 		for(int i = graveyard.size() - 1; i >= 0; i--)
 		{
 			if(graveyard[i].dead) graveyard.erase(graveyard.begin() + i);
@@ -315,8 +313,6 @@ struct Ghosts : Module
 		{
 			outputs[WAV_OUTPUT].setVoltage(0);
 		}
-
-
 	}
 };
 
@@ -326,8 +322,6 @@ struct GhostsLoadSample : MenuItem
 
 	void onAction(const event::Action &e) override
 	{
-
-		// const std::string dir = module->root_dir.empty() ? "" : module->root_dir;
 		const std::string dir = "";
 		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("Wav:wav"));
 
@@ -389,10 +383,6 @@ struct GhostsWidget : ModuleWidget
 	{
 		Ghosts *module = dynamic_cast<Ghosts*>(this->module);
 		assert(module);
-
-		//
-		// Add the five "Load Sample.." menu options to the right-click context menu
-		//
 
 		menu->addChild(new MenuEntry); // For spacing only
 

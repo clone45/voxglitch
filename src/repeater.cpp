@@ -64,7 +64,7 @@ struct Repeater : Module
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(PITCH_KNOB, -1.0f, 1.0f, 0.0f, "PitchKnob");
 		configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "PitchAttnKnob");
-		configParam(CLOCK_DIVISION_KNOB, 0.0f, 10.0f, 0.0f, "ClockDivisionKnob");
+		configParam(CLOCK_DIVISION_KNOB, 0.0f, 1.0f, 0.0f, "ClockDivisionKnob");
 		configParam(CLOCK_DIVISION_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "ClockDivisionAttnKnob");
 		configParam(POSITION_KNOB, 0.0f, 1.0f, 0.0f, "PositionKnob");
 		configParam(POSITION_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "PositionAttnKnob");
@@ -73,6 +73,7 @@ struct Repeater : Module
 		configParam(SMOOTH_SWITCH, 0.f, 1.f, 1.f, "Smooth");
 	}
 
+	// Autosave module data.  VCV Rack decides when this should be called.
 	json_t *dataToJson() override
 	{
 		json_t *rootJ = json_object();
@@ -86,6 +87,7 @@ struct Repeater : Module
 		return rootJ;
 	}
 
+	// Load module data
 	void dataFromJson(json_t *rootJ) override
 	{
 		for(int i=0; i < NUMBER_OF_SAMPLES; i++)
@@ -98,14 +100,26 @@ struct Repeater : Module
 		}
 	}
 
+	// TODO: Eventually share this code instead of duplicating it
+	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
+	{
+		float input_value = inputs[input_index].getVoltage() / 10.0;
+		float knob_value = params[knob_index].getValue();
+		float attenuator_value = params[attenuator_index].getValue();
+
+		return(((input_value * scale) * attenuator_value) + (knob_value * scale));
+	}
+
+	//
+	// Main module processing loop.  This runs at whatever samplerate is selected within VCV Rack.
+	//
+
 	void process(const ProcessArgs &args) override
 	{
 		bool trigger_output_pulse = false;
 
-		// TODO: Remove expensive floor() call
-		unsigned int sample_select_input_value = (unsigned int) floor(NUMBER_OF_SAMPLES_FLOAT * (((inputs[SAMPLE_SELECT_INPUT].getVoltage() / 10.0) * params[SAMPLE_SELECT_ATTN_KNOB].getValue()) + params[SAMPLE_SELECT_KNOB].getValue()));
-
-		if(sample_select_input_value >= NUMBER_OF_SAMPLES) sample_select_input_value = NUMBER_OF_SAMPLES - 1;
+		unsigned int sample_select_input_value = calculate_inputs(SAMPLE_SELECT_INPUT, SAMPLE_SELECT_KNOB, SAMPLE_SELECT_ATTN_KNOB, NUMBER_OF_SAMPLES_FLOAT);
+		sample_select_input_value = clamp(sample_select_input_value, 0, NUMBER_OF_SAMPLES - 1);
 
 		if(sample_select_input_value != selected_sample_slot)
 		{
@@ -116,6 +130,7 @@ struct Repeater : Module
 			selected_sample_slot = sample_select_input_value;
 		}
 
+		// This is just for convenience
 		Sample *selected_sample = &samples[selected_sample_slot];
 
 		if (inputs[TRIG_INPUT].isConnected())
@@ -126,9 +141,8 @@ struct Repeater : Module
 			//
 			if (playTrigger.process(inputs[TRIG_INPUT].getVoltage()))
 			{
-				float clock_division = floor((inputs[CLOCK_DIVISION_INPUT].getVoltage() * params[CLOCK_DIVISION_ATTN_KNOB].getValue()) + params[CLOCK_DIVISION_KNOB].getValue());
-
-				if(clock_division > 10.0) clock_division = 10.0;
+				float clock_division = calculate_inputs(CLOCK_DIVISION_INPUT, CLOCK_DIVISION_KNOB, CLOCK_DIVISION_ATTN_KNOB, 10);
+				clock_division = clamp(clock_division, 0.0, 10.0);
 
 				step += 1;
 				if(step > clock_division) step = 0;
@@ -136,7 +150,7 @@ struct Repeater : Module
 				if(step == 0)
 				{
 					isPlaying = true;
-					samplePos = selected_sample->total_sample_count * (((inputs[POSITION_INPUT].getVoltage() / 10.0) * params[POSITION_ATTN_KNOB].getValue()) + params[POSITION_KNOB].getValue());
+					samplePos = calculate_inputs(POSITION_INPUT, POSITION_KNOB, POSITION_ATTN_KNOB, selected_sample->total_sample_count);
 					smooth_ramp = 0;
 					triggerOutputPulse.trigger(0.01f);
 				}
@@ -246,7 +260,6 @@ struct MenuItemLoadSample : MenuItem
 
 	void onAction(const event::Action &e) override
 	{
-
 		const std::string dir = repeater_module->root_dir.empty() ? "" : repeater_module->root_dir;
 		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("Wav:wav"));
 
