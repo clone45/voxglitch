@@ -186,6 +186,7 @@ struct Autobreak : Module
 			if(break_pattern_index != break_pattern_index_old)
 			{
 				selected_break_pattern = calculate_inputs(PATTERN_INPUT, PATTERN_KNOB, PATTERN_ATTN_KNOB, NUMBER_OF_PATTERNS - 1);
+				selected_break_pattern = clamp(selected_break_pattern, 0, NUMBER_OF_PATTERNS - 1);
 
 				float new_step = break_patterns[selected_break_pattern][break_pattern_index];
 
