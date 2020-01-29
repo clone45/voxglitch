@@ -62,12 +62,13 @@ struct Goblins : Module
 	float spawn_rate_counter = 0;
 	float step_amount = 0;
 	int step = 0;
-
 	std::string root_dir;
 	std::string path;
 
 	std::vector<Goblin> countryside;
 	Sample samples[NUMBER_OF_SAMPLES];
+	std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
+
 	dsp::SchmittTrigger purge_trigger;
 	dsp::SchmittTrigger purge_button_trigger;
 
@@ -126,6 +127,8 @@ struct Goblins : Module
 		configParam(SAMPLE_SELECT_KNOB, 0.0f, 1.0f, 0.0f, "SampleSelectKnob");
 		configParam(SAMPLE_SELECT_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "SampleSelectAttnKnob");
 		configParam(PURGE_BUTTON_PARAM, 0.f, 1.f, 0.f, "PurgeButtonParam");
+
+		std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 	}
 
 	json_t *dataToJson() override
@@ -145,7 +148,11 @@ struct Goblins : Module
 		for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
 			json_t *loaded_sample_path = json_object_get(rootJ, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
-			if (loaded_sample_path) samples[i].load(json_string_value(loaded_sample_path));
+			if (loaded_sample_path)
+			{
+				samples[i].load(json_string_value(loaded_sample_path));
+				loaded_filenames[i] = samples[i].filename;
+			}
 		}
 	}
 
@@ -292,6 +299,7 @@ struct GoblinsLoadSample : MenuItem
 		{
 			module->samples[sample_number].load(path);
 			module->root_dir = std::string(path);
+			module->loaded_filenames[sample_number] = module->samples[sample_number].filename;
 			free(path);
 		}
 	}
@@ -357,24 +365,22 @@ struct GoblinsWidget : ModuleWidget
 		Goblins *module = dynamic_cast<Goblins*>(this->module);
 		assert(module);
 
-		//
-		// Add the five "Load Sample.." menu options to the right-click context menu
-		//
-
 		menu->addChild(new MenuEntry); // For spacing only
+		menu->addChild(createMenuLabel("Samples"));
 
-		std::string menu_text = "Load Sample #";
+		//
+		// Add the sample slots to the right-click context menu
+		//
 
 		for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
 			GoblinsLoadSample *menu_item_load_sample = new GoblinsLoadSample();
 			menu_item_load_sample->sample_number = i;
-			menu_item_load_sample->text = menu_text + std::to_string(i+1);
+			menu_item_load_sample->text = std::to_string(i+1) + ": " + module->loaded_filenames[i];
 			menu_item_load_sample->module = module;
 			menu->addChild(menu_item_load_sample);
 		}
 	}
-
 };
 
 Model* modelGoblins = createModel<Goblins, GoblinsWidget>("goblins");
