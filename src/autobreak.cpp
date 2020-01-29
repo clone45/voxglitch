@@ -512,15 +512,6 @@ struct AutobreakWidget : ModuleWidget
 
 		menu->addChild(new MenuEntry); // For spacing only
 		menu->addChild(createMenuLabel("Samples"));
-		/*
-		//
-		// Add the "select bank folder" menu item
-		//
-		MenuItemLoadBank *menu_item_load_bank = new MenuItemLoadBank();
-		menu_item_load_bank->text = "Select Directory Containing WAV Files";
-		menu_item_load_bank->wav_bank_module = module;
-		menu->addChild(menu_item_load_bank);
-		*/
 
 		//
 		// Add the five "Load Sample.." menu options to the right-click context menu
