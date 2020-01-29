@@ -6,83 +6,14 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
-#include "dr_wav.h"
-#include <vector>
-#include "cmath"
-#include <memory>
+#include "sample.hpp"
 
-using namespace std;
 #define GAIN 5.0
 #define NUMBER_OF_PATTERNS 6
 #define NUMBER_OF_SAMPLES 5
 #define NUMBER_OF_SAMPLES_FLOAT 5.0
 
-std::string autobreak_loaded_filenames[NUMBER_OF_SAMPLES] = {"[ EMPTY ]"};
-
-struct AutobreakSample
-{
-	std::string path;
-	std::string filename;
-	drwav_uint64 total_sample_count;
-	bool loading;
-	vector<float> playBuffer;
-	unsigned int sample_rate;
-	unsigned int channels;
-	bool loaded = false;
-
-	AutobreakSample()
-	{
-		playBuffer.resize(0);
-		total_sample_count = 0;
-		loading = false;
-		filename = "[ empty ]";
-		path = "";
-		sample_rate = 0;
-		channels = 0;
-	}
-
-	void load(std::string path)
-	{
-		this->loading = true;
-
-		unsigned int reported_channels;
-		unsigned int reported_sample_rate;
-		drwav_uint64 reported_total_sample_count;
-		float *pSampleData;
-
-		pSampleData = drwav_open_and_read_file_f32(path.c_str(), &reported_channels, &reported_sample_rate, &reported_total_sample_count);
-
-		if (pSampleData != NULL)
-		{
-			// I'm aware that the "this" pointer isn't necessary here, but I wanted to include
-			// it just to make the code as clear as possible.
-
-			this->channels = reported_channels;
-			this->sample_rate = reported_sample_rate;
-			this->playBuffer.clear();
-
-			for (unsigned int i=0; i < reported_total_sample_count; i = i + this->channels)
-			{
-				this->playBuffer.push_back(pSampleData[i]);
-			}
-
-			drwav_free(pSampleData);
-
-			this->total_sample_count = playBuffer.size();
-
-			this->filename = rack::string::filename(path);
-			this->path = path;
-
-			this->loading = false;
-			this->loaded = true;
-		}
-		else
-		{
-			this->loading = false;
-		}
-	};
-};
-
+std::string autobreak_loaded_filenames[NUMBER_OF_SAMPLES] = {""};
 
 struct Autobreak : Module
 {
@@ -101,7 +32,7 @@ struct Autobreak : Module
 	std::string root_dir;
 	std::string path;
 
-	AutobreakSample samples[NUMBER_OF_SAMPLES];
+	Sample samples[NUMBER_OF_SAMPLES];
 
 	dsp::SchmittTrigger playTrigger;
 	dsp::PulseGenerator clockOutputPulse;
@@ -177,29 +108,6 @@ struct Autobreak : Module
 		}
 	}
 
-	/*
-	void load_samples_from_path(const char *path)
-	{
-		// Clear out any old .wav files
-		this->samples.clear();
-
-		// Load all .wav files found in the folder specified by 'path'
-
-		this->rootDir = std::string(path);
-		std::list<std::string> dirList = system::getEntries(path);
-
-		for (auto entry : dirList)
-		{
-			if (rack::string::lowercase(rack::string::filenameExtension(entry)) == "wav")
-			{
-				AutobreakSample new_sample;
-				new_sample.load(entry);
-				this->samples.push_back(new_sample);
-			}
-		}
-	}
-	*/
-
 	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
 	{
 		float input_value = inputs[input_index].getVoltage() / 10.0;
@@ -224,7 +132,7 @@ struct Autobreak : Module
 			selected_sample_slot = wav_input_value;
 		}
 
-		AutobreakSample *selected_sample = &samples[selected_sample_slot];
+		Sample *selected_sample = &samples[selected_sample_slot];
 
 		if (inputs[RESET_INPUT].isConnected())
 		{
@@ -246,7 +154,7 @@ struct Autobreak : Module
 
 		if (selected_sample->loaded && (selected_sample->total_sample_count > 0))
 		{
-			float wav_output_voltage = GAIN  * selected_sample->playBuffer[(int)playback_sample_position];
+			float wav_output_voltage = GAIN  * selected_sample->leftPlayBuffer[(int)playback_sample_position];
 
 			if(smooth_ramp < 1)
 			{
@@ -334,7 +242,7 @@ struct AutobreakReadout : TransparentWidget
 	Autobreak *module;
 
 	int frame = 0;
-	shared_ptr<Font> font;
+	std::shared_ptr<Font> font;
 
 	AutobreakReadout()
 	{
@@ -347,12 +255,12 @@ struct AutobreakReadout : TransparentWidget
 
 		if(module)
 		{
-			AutobreakSample *selected_sample = &module->samples[module->selected_sample_slot];
+			Sample *selected_sample = &module->samples[module->selected_sample_slot];
 			std::string text_to_display;
 
 			if(selected_sample->loaded)
 			{
-				AutobreakSample *selected_sample = &module->samples[module->selected_sample_slot];
+				Sample *selected_sample = &module->samples[module->selected_sample_slot];
 				std::string text_to_display = selected_sample->filename;
 
 				// Display filename or "load sample" in the display area
@@ -399,7 +307,7 @@ struct AutobreakPatternReadout : TransparentWidget
 	Autobreak *module;
 
 	int frame = 0;
-	shared_ptr<Font> font;
+	std::shared_ptr<Font> font;
 
 	AutobreakPatternReadout()
 	{
@@ -429,7 +337,7 @@ struct AutobreakPatternReadout : TransparentWidget
 
 			for(unsigned int i=0; i<16; i++)
 			{
-				item_display = to_string(module->break_patterns[module->selected_break_pattern][i]);
+				item_display = std::to_string(module->break_patterns[module->selected_break_pattern][i]);
 				if(item_display == "-1") item_display = ".";
 
 				// Draw inverted text if it's the selected index
