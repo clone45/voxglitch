@@ -392,7 +392,7 @@ struct AutobreakWidget : ModuleWidget
 	AutobreakWidget(Autobreak* module)
 	{
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/autobreak_front_panel_wide.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/autobreak_front_panel.svg")));
 
 		// Cosmetic rack screws
 		addChild(createWidget<ScrewSilver>(Vec(15, 0)));
