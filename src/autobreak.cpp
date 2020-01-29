@@ -14,6 +14,10 @@
 using namespace std;
 #define GAIN 5.0
 #define NUMBER_OF_PATTERNS 6
+#define NUMBER_OF_SAMPLES 5
+#define NUMBER_OF_SAMPLES_FLOAT 5.0
+
+std::string autobreak_loaded_filenames[NUMBER_OF_SAMPLES] = {"[ EMPTY ]"};
 
 struct AutobreakSample
 {
@@ -24,7 +28,7 @@ struct AutobreakSample
 	vector<float> playBuffer;
 	unsigned int sample_rate;
 	unsigned int channels;
-	bool run = false;
+	bool loaded = false;
 
 	AutobreakSample()
 	{
@@ -65,11 +69,12 @@ struct AutobreakSample
 			drwav_free(pSampleData);
 
 			this->total_sample_count = playBuffer.size();
-			this->loading = false;
+
 			this->filename = rack::string::filename(path);
 			this->path = path;
 
-            this->run = true;
+			this->loading = false;
+			this->loaded = true;
 		}
 		else
 		{
@@ -93,10 +98,11 @@ struct Autobreak : Module
 	unsigned int selected_break_pattern = 0;
 	float smooth_ramp = 1;
 	float last_wave_output_voltage = 0;
-	std::string rootDir;
+	std::string root_dir;
 	std::string path;
 
-	vector<AutobreakSample> samples;
+	AutobreakSample samples[NUMBER_OF_SAMPLES];
+
 	dsp::SchmittTrigger playTrigger;
 	dsp::PulseGenerator clockOutputPulse;
 	dsp::PulseGenerator endOutputPulse;
@@ -144,34 +150,34 @@ struct Autobreak : Module
 		configParam(WAV_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "SampleSelectAttnKnob");
 		configParam(PATTERN_KNOB, 0.0f, 1.0f, 0.0f, "PatternSelectKnob");
 		configParam(PATTERN_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "PatternSelectAttnKnob");
-	}
 
-	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
-	{
-		float input_value = inputs[input_index].getVoltage() / 10.0;
-		float knob_value = params[knob_index].getValue();
-		float attenuator_value = params[attenuator_index].getValue();
-
-		return(((input_value * scale) * attenuator_value) + (knob_value * scale));
+		std::fill_n(autobreak_loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 	}
 
 	json_t *dataToJson() override
 	{
 		json_t *rootJ = json_object();
-		json_object_set_new(rootJ, "path", json_string(this->path.c_str()));
+		for(int i=0; i < NUMBER_OF_SAMPLES; i++)
+		{
+			json_object_set_new(rootJ, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(samples[i].path.c_str()));
+		}
 		return rootJ;
 	}
 
 	void dataFromJson(json_t *rootJ) override
 	{
-		json_t *loaded_path_json = json_object_get(rootJ, ("path"));
-		if (loaded_path_json)
+		for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
-			this->path = json_string_value(loaded_path_json);
-			this->load_samples_from_path(this->path.c_str());
+			json_t *loaded_sample_path = json_object_get(rootJ, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
+			if (loaded_sample_path)
+			{
+				samples[i].load(json_string_value(loaded_sample_path));
+				autobreak_loaded_filenames[i] = samples[i].filename;
+			}
 		}
 	}
 
+	/*
 	void load_samples_from_path(const char *path)
 	{
 		// Clear out any old .wav files
@@ -192,13 +198,22 @@ struct Autobreak : Module
 			}
 		}
 	}
+	*/
+
+	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
+	{
+		float input_value = inputs[input_index].getVoltage() / 10.0;
+		float knob_value = params[knob_index].getValue();
+		float attenuator_value = params[attenuator_index].getValue();
+
+		return(((input_value * scale) * attenuator_value) + (knob_value * scale));
+	}
 
 	void process(const ProcessArgs &args) override
 	{
-		unsigned int number_of_samples = samples.size();
-		unsigned int wav_input_value = (unsigned int) floor(number_of_samples * (((inputs[WAV_INPUT].getVoltage() / 10.0) * params[WAV_ATTN_KNOB].getValue()) + params[WAV_KNOB].getValue()));
-
-		if(wav_input_value >= number_of_samples) wav_input_value = number_of_samples - 1;
+		// unsigned int wav_input_value = (unsigned int) floor(NUMBER_OF_SAMPLES * (((inputs[WAV_INPUT].getVoltage() / 10.0) * params[WAV_ATTN_KNOB].getValue()) + params[WAV_KNOB].getValue()));
+		unsigned int wav_input_value = calculate_inputs(WAV_INPUT, WAV_KNOB, WAV_ATTN_KNOB, NUMBER_OF_SAMPLES);
+		wav_input_value = clamp(wav_input_value, 0, NUMBER_OF_SAMPLES - 1);
 
 		if(wav_input_value != selected_sample_slot)
 		{
@@ -208,10 +223,6 @@ struct Autobreak : Module
 			// Set the selected sample
 			selected_sample_slot = wav_input_value;
 		}
-
-		// Check to see if the selected sample slot refers to an existing sample.
-		// If not, return.  This could happen before any samples have been loaded.
-		if(! (samples.size() > selected_sample_slot)) return;
 
 		AutobreakSample *selected_sample = &samples[selected_sample_slot];
 
@@ -233,11 +244,9 @@ struct Autobreak : Module
 			}
 		}
 
-		if ((! selected_sample->loading) && (selected_sample->run) && (selected_sample->total_sample_count > 0))
+		if (selected_sample->loaded && (selected_sample->total_sample_count > 0))
 		{
-			float wav_output_voltage;
-
-			wav_output_voltage = GAIN  * selected_sample->playBuffer[(int)playback_sample_position];
+			float wav_output_voltage = GAIN  * selected_sample->playBuffer[(int)playback_sample_position];
 
 			if(smooth_ramp < 1)
 			{
@@ -305,7 +314,6 @@ struct Autobreak : Module
 		}
 		else
 		{
-			selected_sample->run = false;
 			outputs[WAV_OUTPUT].setVoltage(0);
 		}
 
@@ -318,7 +326,6 @@ struct Autobreak : Module
 
 		bool end_output_pulse = endOutputPulse.process(1.0 / args.sampleRate);
 		outputs[END_OUTPUT].setVoltage((end_output_pulse ? 10.0f : 0.0f));
-
 	}
 };
 
@@ -345,7 +352,7 @@ struct AutobreakReadout : TransparentWidget
 
 		if(module)
 		{
-			if(module->samples.size() > module->selected_sample_slot)
+			if(selected_sample->loaded)
 			{
 				AutobreakSample *selected_sample = &module->samples[module->selected_sample_slot];
 				std::string text_to_display = selected_sample->filename;
@@ -427,7 +434,6 @@ struct AutobreakPatternReadout : TransparentWidget
 					nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
 				}
 
-				// nvgTextBox(args.vg, 3 + (i * 13), 5, 16, item_display.c_str(), NULL);
 				nvgText(args.vg, 5 + (i * 13), 5, item_display.c_str(), NULL);
 			}
 		}
@@ -436,19 +442,21 @@ struct AutobreakPatternReadout : TransparentWidget
 	}
 };
 
-struct MenuItemLoadBank : MenuItem
+struct AutobreakLoadSample : MenuItem
 {
-	Autobreak *wav_bank_module;
+	Autobreak *module;
+	unsigned int sample_number = 0;
 
 	void onAction(const event::Action &e) override
 	{
-		const std::string dir = wav_bank_module->rootDir;
-		char *path = osdialog_file(OSDIALOG_OPEN_DIR, dir.c_str(), NULL, NULL);
+		const std::string dir = module->root_dir.empty() ? "" : module->root_dir;
+		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("Wav:wav"));
 
 		if (path)
 		{
-			wav_bank_module->load_samples_from_path(path);
-			wav_bank_module->path = path;
+			module->samples[sample_number].load(path);
+			module->root_dir = std::string(path);
+			autobreak_loaded_filenames[sample_number] = module->samples[sample_number].filename;
 			free(path);
 		}
 	}
@@ -503,7 +511,8 @@ struct AutobreakWidget : ModuleWidget
 		assert(module);
 
 		menu->addChild(new MenuEntry); // For spacing only
-
+		menu->addChild(createMenuLabel("Samples"));
+		/*
 		//
 		// Add the "select bank folder" menu item
 		//
@@ -511,6 +520,22 @@ struct AutobreakWidget : ModuleWidget
 		menu_item_load_bank->text = "Select Directory Containing WAV Files";
 		menu_item_load_bank->wav_bank_module = module;
 		menu->addChild(menu_item_load_bank);
+		*/
+
+		//
+		// Add the five "Load Sample.." menu options to the right-click context menu
+		//
+
+		std::string menu_text = "#";
+
+		for(int i=0; i < NUMBER_OF_SAMPLES; i++)
+		{
+			AutobreakLoadSample *menu_item_load_sample = new AutobreakLoadSample;
+			menu_item_load_sample->sample_number = i;
+			menu_item_load_sample->text = std::to_string(i+1) + ": " + autobreak_loaded_filenames[i];
+			menu_item_load_sample->module = module;
+			menu->addChild(menu_item_load_sample);
+		}
 	}
 
 };
