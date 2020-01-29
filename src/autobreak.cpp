@@ -13,8 +13,6 @@
 #define NUMBER_OF_SAMPLES 5
 #define NUMBER_OF_SAMPLES_FLOAT 5.0
 
-std::string autobreak_loaded_filenames[NUMBER_OF_SAMPLES] = {""};
-
 struct Autobreak : Module
 {
 	unsigned int selected_sample_slot = 0;
@@ -33,6 +31,7 @@ struct Autobreak : Module
 	std::string path;
 
 	Sample samples[NUMBER_OF_SAMPLES];
+	std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
 
 	dsp::SchmittTrigger playTrigger;
 	dsp::PulseGenerator clockOutputPulse;
@@ -82,7 +81,7 @@ struct Autobreak : Module
 		configParam(PATTERN_KNOB, 0.0f, 1.0f, 0.0f, "PatternSelectKnob");
 		configParam(PATTERN_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "PatternSelectAttnKnob");
 
-		std::fill_n(autobreak_loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
+		std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 	}
 
 	json_t *dataToJson() override
@@ -103,7 +102,7 @@ struct Autobreak : Module
 			if (loaded_sample_path)
 			{
 				samples[i].load(json_string_value(loaded_sample_path));
-				autobreak_loaded_filenames[i] = samples[i].filename;
+				loaded_filenames[i] = samples[i].filename;
 			}
 		}
 	}
@@ -381,7 +380,7 @@ struct AutobreakLoadSample : MenuItem
 		{
 			module->samples[sample_number].load(path);
 			module->root_dir = std::string(path);
-			autobreak_loaded_filenames[sample_number] = module->samples[sample_number].filename;
+			module->loaded_filenames[sample_number] = module->samples[sample_number].filename;
 			free(path);
 		}
 	}
@@ -448,7 +447,7 @@ struct AutobreakWidget : ModuleWidget
 		{
 			AutobreakLoadSample *menu_item_load_sample = new AutobreakLoadSample;
 			menu_item_load_sample->sample_number = i;
-			menu_item_load_sample->text = std::to_string(i+1) + ": " + autobreak_loaded_filenames[i];
+			menu_item_load_sample->text = std::to_string(i+1) + ": " + module->loaded_filenames[i];
 			menu_item_load_sample->module = module;
 			menu->addChild(menu_item_load_sample);
 		}
