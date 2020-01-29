@@ -345,13 +345,11 @@ struct AutobreakReadout : TransparentWidget
 	{
 		nvgSave(args.vg);
 
-		std::string text_to_display;
-		text_to_display = "load sample";
-
-		AutobreakSample *selected_sample = &module->samples[module->selected_sample_slot];
-
 		if(module)
 		{
+			AutobreakSample *selected_sample = &module->samples[module->selected_sample_slot];
+			std::string text_to_display;
+
 			if(selected_sample->loaded)
 			{
 				AutobreakSample *selected_sample = &module->samples[module->selected_sample_slot];
@@ -371,6 +369,24 @@ struct AutobreakReadout : TransparentWidget
 				nvgStrokeColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
 				nvgStroke(args.vg);
 			}
+			else
+			{
+				// Display filename or "load sample" in the display area
+				nvgFontSize(args.vg, 13);
+				nvgFontFaceId(args.vg, font->handle);
+				nvgTextLetterSpacing(args.vg, 0);
+				nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+				nvgTextBox(args.vg, 5, 5, 700, "Right click to load sample", NULL);
+			}
+		}
+		else
+		{
+			// Display filename or "load sample" in the display area
+			nvgFontSize(args.vg, 13);
+			nvgFontFaceId(args.vg, font->handle);
+			nvgTextLetterSpacing(args.vg, 0);
+			nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+			nvgTextBox(args.vg, 5, 5, 700, "drum_loop.wav", NULL);
 		}
 
 		nvgRestore(args.vg);
