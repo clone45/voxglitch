@@ -371,7 +371,7 @@ struct AutobreakReadout : TransparentWidget
 			}
 			else
 			{
-				// Display filename or "load sample" in the display area
+				// If no file is loaded in the slot, then display "Right click to load sample" in the display area
 				nvgFontSize(args.vg, 13);
 				nvgFontFaceId(args.vg, font->handle);
 				nvgTextLetterSpacing(args.vg, 0);
@@ -381,7 +381,8 @@ struct AutobreakReadout : TransparentWidget
 		}
 		else
 		{
-			// Display filename or "load sample" in the display area
+			// Display a fake filename in the display area so people understand
+			// what this module does when viewing the front panel in the library
 			nvgFontSize(args.vg, 13);
 			nvgFontFaceId(args.vg, font->handle);
 			nvgTextLetterSpacing(args.vg, 0);
