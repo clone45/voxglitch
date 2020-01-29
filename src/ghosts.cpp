@@ -240,7 +240,7 @@ struct Ghosts : Module
 
 		lights[PURGE_LIGHT].setSmoothBrightness(purge_is_triggered, args.sampleTime);
 
-		if(spawn_rate_counter >= spawn_rate)
+		if((graveyard.size() < MAX_GRAVEYARD_CAPACITY) && (spawn_rate_counter >= spawn_rate))
 		{
 			//
 			// I ain't afraid of no ghosts! ♫ ♪
