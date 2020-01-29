@@ -24,6 +24,8 @@ struct Repeater : Module
 	std::string root_dir;
 
 	Sample samples[NUMBER_OF_SAMPLES];
+	std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
+
 	dsp::SchmittTrigger playTrigger;
 	dsp::PulseGenerator triggerOutputPulse;
 
@@ -71,6 +73,8 @@ struct Repeater : Module
 		configParam(SAMPLE_SELECT_KNOB, 0.0f, 1.0f, 0.0f, "SampleSelectKnob");
 		configParam(SAMPLE_SELECT_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "SampleSelectAttnKnob");
 		configParam(SMOOTH_SWITCH, 0.f, 1.f, 1.f, "Smooth");
+
+		std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 	}
 
 	// Autosave module data.  VCV Rack decides when this should be called.
@@ -93,7 +97,11 @@ struct Repeater : Module
 		for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
 			json_t *loaded_sample_path = json_object_get(rootJ, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
-			if (loaded_sample_path) samples[i].load(json_string_value(loaded_sample_path));
+			if (loaded_sample_path)
+			{
+				samples[i].load(json_string_value(loaded_sample_path));
+				loaded_filenames[i] = samples[i].filename;
+			}
 
 			json_t* retrigger_json = json_object_get(rootJ, "retrigger");
 			if (retrigger_json) retrigger = json_integer_value(retrigger_json);
@@ -253,18 +261,19 @@ struct Readout : TransparentWidget
 
 struct MenuItemLoadSample : MenuItem
 {
-	Repeater *repeater_module;
+	Repeater *module;
 	unsigned int sample_number = 0;
 
 	void onAction(const event::Action &e) override
 	{
-		const std::string dir = repeater_module->root_dir.empty() ? "" : repeater_module->root_dir;
+		const std::string dir = module->root_dir.empty() ? "" : module->root_dir;
 		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("Wav:wav"));
 
 		if (path)
 		{
-			repeater_module->samples[sample_number].load(path);
-			repeater_module->root_dir = std::string(path);
+			module->samples[sample_number].load(path);
+			module->root_dir = std::string(path);
+			module->loaded_filenames[sample_number] = module->samples[sample_number].filename;
 			free(path);
 		}
 	}
@@ -330,20 +339,19 @@ struct RepeaterWidget : ModuleWidget
 		Repeater *module = dynamic_cast<Repeater*>(this->module);
 		assert(module);
 
+		menu->addChild(new MenuEntry); // For spacing only
+		menu->addChild(createMenuLabel("Samples"));
+
 		//
 		// Add the five "Load Sample.." menu options to the right-click context menu
 		//
-
-		menu->addChild(new MenuEntry); // For spacing only
-
-		std::string menu_text = "Load Sample #";
 
 		for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
 			MenuItemLoadSample *menu_item_load_sample = new MenuItemLoadSample;
 			menu_item_load_sample->sample_number = i;
-			menu_item_load_sample->text = menu_text + std::to_string(i+1);
-			menu_item_load_sample->repeater_module = module;
+			menu_item_load_sample->text = std::to_string(i+1) + ": " + module->loaded_filenames[i];
+			menu_item_load_sample->module = module;
 			menu->addChild(menu_item_load_sample);
 		}
 
