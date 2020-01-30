@@ -4,7 +4,7 @@ Modules for VCV Rack.  More info coming soon.
 
 
 ## Ghosts
-![Ghosts](/docs/images/ghosts-front-panel-01.png)
+![Ghosts](/docs/images/ghosts-front-panel-02.png)
 =======
 Ghosts is a granular synthesis based sample player.  Load a sample using the right-click context menu and have fun!  In my imagination, this module simulates an old graveyard.  The graveyard spawns "ghosts", and each ghost produces sound.  The sounds that ghosts produce are derived from small slices of your loaded .wav file.  
 
