@@ -16,14 +16,28 @@
 struct Autobreak : Module
 {
 	unsigned int selected_sample_slot = 0;
-	float old_playback_sample_position = 0;
-	float playback_sample_position = 0;
-	float incrementing_sample_position = 0;
+	float old_actual_playback_position = 0;
+
+	// Actual index into the sample's array for playback
+	float actual_playback_position = 0;
+
+	// A location in a theoretical sample that's 8 bars at the selected BPM.
+	// This value is stepped and repositioned when jumping around in a breakbeat.
+	// This value is then used to figure out the actual_playback_position based
+	// on the sample's length.
+
+	float theoretical_playback_position = 0;
+
+	// incrementing_bpm_counter counts from 0 to the number of samples required
+	// to play a theoretical sample for 8 bars at a specific bpm.
+	unsigned int incrementing_bpm_counter = 0;
+
+	unsigned int bpm = 160;
 	int step = 0;
 	unsigned int break_pattern_index = 0;
 	unsigned int break_pattern_index_old = 0;
-	unsigned int clock_counter = 0;
-	unsigned int clock_counter_old = 0;
+	int clock_counter = 0;
+	int clock_counter_old = 0;
 	unsigned int selected_break_pattern = 0;
 	float smooth_ramp = 1;
 	float last_wave_output_voltage = 0;
@@ -51,6 +65,7 @@ struct Autobreak : Module
 		WAV_ATTN_KNOB,
 		PATTERN_KNOB,
 		PATTERN_ATTN_KNOB,
+		BPM_KNOB,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -80,6 +95,7 @@ struct Autobreak : Module
 		configParam(WAV_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "SampleSelectAttnKnob");
 		configParam(PATTERN_KNOB, 0.0f, 1.0f, 0.0f, "PatternSelectKnob");
 		configParam(PATTERN_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "PatternSelectAttnKnob");
+		configParam(BPM_KNOB, 50.0f, 200.0f, 120.0f, "PatternSelectKnob");
 
 		std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 	}
@@ -122,6 +138,8 @@ struct Autobreak : Module
 		unsigned int wav_input_value = calculate_inputs(WAV_INPUT, WAV_KNOB, WAV_ATTN_KNOB, NUMBER_OF_SAMPLES);
 		wav_input_value = clamp(wav_input_value, 0, NUMBER_OF_SAMPLES - 1);
 
+		bpm = params[BPM_KNOB].getValue();
+
 		if(wav_input_value != selected_sample_slot)
 		{
 			// Reset the smooth ramp if the selected sample has changed
@@ -141,10 +159,11 @@ struct Autobreak : Module
 			//
 			if (playTrigger.process(inputs[RESET_INPUT].getVoltage()))
 			{
-				playback_sample_position = 0;
-				incrementing_sample_position = 0;
+				actual_playback_position = 0;
+				theoretical_playback_position = 0;
+				incrementing_bpm_counter = 0;
 				clock_counter = 0;
-				clock_counter_old = 0;
+				clock_counter_old = -1;
 				break_pattern_index = 0;
 				break_pattern_index_old = 0;
 				smooth_ramp = 0;
@@ -153,11 +172,16 @@ struct Autobreak : Module
 
 		if (selected_sample->loaded && (selected_sample->total_sample_count > 0))
 		{
-			float wav_output_voltage = GAIN  * selected_sample->leftPlayBuffer[(int)playback_sample_position];
+			// 60.0 is for conversion from minutes to seconds
+			// 8.0 is for 8 beats (2 bars) of loops, which is a typical drum loop length
+			float samples_to_play_per_loop = ((60.0 / (float) bpm) * args.sampleRate) * 8.0;
 
-			if(smooth_ramp < 1)
+			actual_playback_position = clamp(actual_playback_position, 0.0, selected_sample->total_sample_count - 1);
+			float wav_output_voltage = GAIN  * selected_sample->leftPlayBuffer[(int)actual_playback_position];
+
+			if(smooth_ramp < 1) // temporarily removed
 			{
-				float smooth_rate = (16.0f / args.sampleRate);  // A smooth rate of 128 seems to work best
+				float smooth_rate = (128.0f / args.sampleRate);  // A smooth rate of 128 seems to work best
 				smooth_ramp += smooth_rate;
 				wav_output_voltage = (last_wave_output_voltage * (1 - smooth_ramp)) + (wav_output_voltage * smooth_ramp);
 				outputs[WAV_OUTPUT].setVoltage(wav_output_voltage);
@@ -169,18 +193,19 @@ struct Autobreak : Module
 
 			last_wave_output_voltage = wav_output_voltage;
 
-			// Update a clock counter and provide a trigger output whenever 1/32nd of the sample
-			// has been reached.
-			clock_counter = (incrementing_sample_position / selected_sample->total_sample_count) * 32.0f;
+			// Update a clock counter and provide a trigger output whenever 1/32nd of the sample has been reached.
+			clock_counter = (incrementing_bpm_counter / samples_to_play_per_loop) * 32.0f;
 			if(clock_counter != clock_counter_old) clockOutputPulse.trigger(0.01f);
 			clock_counter_old = clock_counter;
 
+			// Step the theoretical playback position
+			theoretical_playback_position = theoretical_playback_position + 1;
 
 			//
 			// Optionally jump to new breakbeat position
 			//
 
-			break_pattern_index = (incrementing_sample_position / selected_sample->total_sample_count) * 16.0f;
+			break_pattern_index = (incrementing_bpm_counter / samples_to_play_per_loop) * 16.0f;
 			break_pattern_index = clamp(break_pattern_index, 0, 15);
 
 			if(break_pattern_index != break_pattern_index_old)
@@ -192,33 +217,33 @@ struct Autobreak : Module
 
 				if(new_step != -1)
 				{
-					playback_sample_position = new_step * (selected_sample->total_sample_count / 16.0f);
+					theoretical_playback_position = new_step * (samples_to_play_per_loop / 16.0f);
 				}
 
 				break_pattern_index_old = break_pattern_index;
 			}
 
-			//
-			// incrementing_sample_position steps from the beginning to the end of the sample
-			// at the playback rate.  It doesn't jump around like the sample_position does.
-
-			incrementing_sample_position = incrementing_sample_position + (selected_sample->sample_rate / args.sampleRate);
-			playback_sample_position = playback_sample_position + (selected_sample->sample_rate / args.sampleRate);
-
-			if(incrementing_sample_position >= selected_sample->total_sample_count)
+			// Loop the theoretical_playback_position
+			if(theoretical_playback_position >= samples_to_play_per_loop)
 			{
-				incrementing_sample_position = 0;
-				endOutputPulse.trigger(0.01f);
-			}
-
-			if(playback_sample_position >= selected_sample->total_sample_count)
-			{
-				playback_sample_position = 0;
-				clock_counter = 0;
+				theoretical_playback_position = 0;
 				smooth_ramp = 0;
 			}
 
-			outputs[DEBUG_OUTPUT].setVoltage(clock_counter);
+			// Map the theoretical playback position to the actual sample playback position
+			actual_playback_position = ((float) theoretical_playback_position / samples_to_play_per_loop) * selected_sample->total_sample_count;
+
+			//
+			// Increment the bpm counter, which goes from 0 to the number of samples
+			// needed to play an entire loop of a theoretical sample at the bpm specified.
+			incrementing_bpm_counter = incrementing_bpm_counter + 1;
+			if(incrementing_bpm_counter > samples_to_play_per_loop)
+			{
+				incrementing_bpm_counter = 0;
+				endOutputPulse.trigger(0.01f);
+			}
+
+			outputs[DEBUG_OUTPUT].setVoltage(break_pattern_index);
 		}
 		else
 		{
@@ -241,7 +266,6 @@ struct AutobreakReadout : TransparentWidget
 {
 	Autobreak *module;
 
-	int frame = 0;
 	std::shared_ptr<Font> font;
 
 	AutobreakReadout()
@@ -273,7 +297,7 @@ struct AutobreakReadout : TransparentWidget
 				// Draw a line underneath the text to show where, in the sample, playback is happening
 				nvgBeginPath(args.vg);
 				nvgMoveTo(args.vg, 5, 12);
-				nvgLineTo(args.vg, 200.0 * (module->playback_sample_position/selected_sample->total_sample_count), 12);
+				nvgLineTo(args.vg, 200.0 * (module->actual_playback_position/selected_sample->total_sample_count), 12);
 				nvgStrokeColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
 				nvgStroke(args.vg);
 			}
@@ -306,7 +330,6 @@ struct AutobreakPatternReadout : TransparentWidget
 {
 	Autobreak *module;
 
-	int frame = 0;
 	std::shared_ptr<Font> font;
 
 	AutobreakPatternReadout()
@@ -367,6 +390,41 @@ struct AutobreakPatternReadout : TransparentWidget
 	}
 };
 
+struct AutobreakBPMDislplay : TransparentWidget
+{
+	Autobreak *module;
+	std::shared_ptr<Font> font;
+
+	AutobreakBPMDislplay()
+	{
+		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+	}
+
+	void draw(const DrawArgs &args) override
+	{
+		nvgSave(args.vg);
+
+		// Configure the font size, face, color, etc.
+		nvgFontSize(args.vg, 13);
+		nvgFontFaceId(args.vg, font->handle);
+		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+		nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
+		nvgTextLetterSpacing(args.vg, -1);
+
+		if(module)
+		{
+			std::string bpm_string = std::to_string(module->bpm);
+			nvgText(args.vg, 5, 0, bpm_string.c_str(), NULL);
+		}
+		else
+		{
+			nvgText(args.vg, 5, 0, "120", NULL);
+		}
+
+		nvgRestore(args.vg);
+	}
+};
+
 struct AutobreakLoadSample : MenuItem
 {
 	Autobreak *module;
@@ -411,6 +469,9 @@ struct AutobreakWidget : ModuleWidget
 		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 84.567)), module, Autobreak::PATTERN_ATTN_KNOB));
 		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 84.567)), module, Autobreak::PATTERN_KNOB));
 
+		// BPM selection
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(78, 43)), module, Autobreak::BPM_KNOB));
+
 		AutobreakReadout *readout = new AutobreakReadout();
 		readout->box.pos = mm2px(Vec(11.0, 26.0));
 		readout->box.size = Vec(110, 30); // bounding box of the widget
@@ -422,6 +483,12 @@ struct AutobreakWidget : ModuleWidget
 		pattern_readout->box.size = Vec(110, 30); // bounding box of the widget
 		pattern_readout->module = module;
 		addChild(pattern_readout);
+
+		AutobreakBPMDislplay *bpm_display = new AutobreakBPMDislplay();
+		bpm_display->box.pos = mm2px(Vec(64.8, 44.2));
+		// bpm_display->box.size = Vec(20, 30); // bounding box of the widget
+		bpm_display->module = module;
+		addChild(bpm_display);
 
 		// Outputs
 		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 100.893)), module, Autobreak::DEBUG_OUTPUT));
