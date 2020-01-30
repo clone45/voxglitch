@@ -7,6 +7,7 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "sample.hpp"
+#include <fstream>
 
 #define GAIN 5.0
 #define NUMBER_OF_PATTERNS 6
@@ -43,6 +44,7 @@ struct Autobreak : Module
 	float last_wave_output_voltage = 0;
 	std::string root_dir;
 	std::string path;
+	std::string loaded_pattern_file;
 
 	Sample samples[NUMBER_OF_SAMPLES];
 	std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
@@ -107,6 +109,9 @@ struct Autobreak : Module
 		{
 			json_object_set_new(rootJ, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(samples[i].path.c_str()));
 		}
+
+		if(loaded_pattern_file != "") json_object_set_new(rootJ, "selected_user_pattern_file", json_string(loaded_pattern_file.c_str()));
+
 		return rootJ;
 	}
 
@@ -121,7 +126,50 @@ struct Autobreak : Module
 				loaded_filenames[i] = samples[i].filename;
 			}
 		}
+
+		json_t* loaded_user_patterns = json_object_get(rootJ, "selected_user_pattern_file");
+		if (loaded_user_patterns) this->load_user_patterns(json_string_value(loaded_user_patterns));
 	}
+
+	void load_user_patterns(std::string path)
+	{
+		// Store for auto-loading
+		this->loaded_pattern_file = path;
+
+		// Load json from file
+		std::ifstream t(path.c_str());
+		std::stringstream buffer;
+		buffer << t.rdbuf();
+
+		// Convert string to json
+		json_t *root;
+		json_error_t error;
+
+		// Parse Json
+		root = json_loads(buffer.str().c_str(), 0, &error);
+		if(!root) return;
+
+		// Iterate over json array and overwrite preset patterns
+		json_t *pattern_arrays_data = json_object_get(root, "patterns");
+
+		if(pattern_arrays_data)
+		{
+			size_t pattern_number;
+			json_t *json_pattern_array;
+
+			json_array_foreach(pattern_arrays_data, pattern_number, json_pattern_array)
+			{
+				if(pattern_number < 16)
+				{
+					for(int i=0; i<16; i++)
+					{
+						this->break_patterns[pattern_number][i] = json_integer_value(json_array_get(json_pattern_array, i));
+					}
+				}
+			}
+		}
+	}
+
 
 	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
 	{
@@ -445,6 +493,23 @@ struct AutobreakLoadSample : MenuItem
 	}
 };
 
+struct AutobreakLoadPatterns : MenuItem
+{
+	Autobreak *module;
+
+	void onAction(const event::Action &e) override
+	{
+		const std::string dir = module->root_dir.empty() ? "" : module->root_dir;
+		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, NULL);
+
+		if (path)
+		{
+			module->load_user_patterns((std::string) path);
+			free(path);
+		}
+	}
+};
+
 struct AutobreakWidget : ModuleWidget
 {
 	AutobreakWidget(Autobreak* module)
@@ -519,6 +584,13 @@ struct AutobreakWidget : ModuleWidget
 			menu_item_load_sample->module = module;
 			menu->addChild(menu_item_load_sample);
 		}
+
+		menu->addChild(new MenuEntry); // For spacing only
+
+		AutobreakLoadPatterns *autobreak_load_patterns = new AutobreakLoadPatterns();
+		autobreak_load_patterns->text = "Load Pattern File";
+		autobreak_load_patterns->module = module;
+		menu->addChild(autobreak_load_patterns);
 	}
 
 };
