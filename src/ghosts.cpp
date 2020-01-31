@@ -40,42 +40,45 @@ struct Ghost
 	float loop_smoothing_ramp = 0;
 	float removal_smoothing_ramp = 0;
 
-	float last_wave_output_voltage = 0;
-	float output_voltage = 0;
+	float last_wave_output_voltage_left = 0;
+	float last_wave_output_voltage_right = 0;
+	float output_voltage_left = 0;
+	float output_voltage_right = 0;
 
 	bool dead = false;
 	bool dying = false;
 
-	float getOutput(float smooth_rate)
+	std::pair<float, float> getStereoOutput(float smooth_rate)
 	{
 		// Note that we're adding two floating point numbers, then casting
 		// them to an int, which is much faster than using floor()
 		sample_position = this->start_position + this->playback_position;
 
 		// Wrap if the sample position is past the sample end point
-		if (sample_position >= this->sample_ptr->total_sample_count)
-		{
-			sample_position = sample_position % this->sample_ptr->total_sample_count;
-		}
+		sample_position = sample_position % this->sample_ptr->total_sample_count;
 
-		output_voltage = this->sample_ptr->leftPlayBuffer[sample_position];
+		output_voltage_left  = this->sample_ptr->leftPlayBuffer[sample_position];
+		output_voltage_right = this->sample_ptr->rightPlayBuffer[sample_position];
 
 		if(loop_smoothing_ramp < 1)
 		{
 			loop_smoothing_ramp += smooth_rate;
-			output_voltage = (last_wave_output_voltage * (1.0f - loop_smoothing_ramp)) + (output_voltage * loop_smoothing_ramp);
+			output_voltage_left  = (last_wave_output_voltage_left *  (1.0f - loop_smoothing_ramp)) + (output_voltage_left * loop_smoothing_ramp);
+			output_voltage_right = (last_wave_output_voltage_right * (1.0f - loop_smoothing_ramp)) + (output_voltage_right * loop_smoothing_ramp);
 		}
 
-		last_wave_output_voltage = output_voltage;
+		last_wave_output_voltage_left = output_voltage_left;
+		last_wave_output_voltage_right = output_voltage_right;
 
 		if(dying && (removal_smoothing_ramp < 1))
 		{
 			removal_smoothing_ramp += 0.001f;
-			output_voltage = (output_voltage * (1.0f - removal_smoothing_ramp));
+			output_voltage_left = (output_voltage_left * (1.0f - removal_smoothing_ramp));
+			output_voltage_right = (output_voltage_right * (1.0f - removal_smoothing_ramp));
 			if(removal_smoothing_ramp >= 1) dead = true;
 		}
 
-		return(output_voltage);
+		return {output_voltage_left, output_voltage_right};
 	}
 
 	void age(float step_amount)
@@ -142,7 +145,8 @@ struct Ghosts : Module
 		NUM_INPUTS
 	};
 	enum OutputIds {
-		WAV_OUTPUT,
+		AUDIO_OUTPUT_LEFT,
+		AUDIO_OUTPUT_RIGHT,
 		DEBUG_OUTPUT,
 		NUM_OUTPUTS
 	};
@@ -186,7 +190,7 @@ struct Ghosts : Module
 		if (loaded_path_json)
 		{
 			this->path = json_string_value(loaded_path_json);
-			sample.load(path);
+			sample.load(path, false);
 		}
 	}
 
@@ -286,7 +290,8 @@ struct Ghosts : Module
 			// even eat nachos?
 			//
 
-			float mix_output = 0;
+			float left_mix_output = 0;
+			float right_mix_output = 0;
 
 			if(graveyard.empty() == false)
 			{
@@ -297,12 +302,18 @@ struct Ghosts : Module
 
 				for(Ghost& ghost : graveyard)
 				{
-					mix_output += ghost.getOutput(smooth_rate);
+					// mix_output += ghost.getStereoOutput(smooth_rate);
+					std::pair<float, float> stereo_output = ghost.getStereoOutput(smooth_rate);
+					left_mix_output  += stereo_output.first;
+					right_mix_output += stereo_output.second;
 					ghost.age(step_amount);
 				}
 
-				mix_output = mix_output * params[TRIM_KNOB].getValue();
-				outputs[WAV_OUTPUT].setVoltage(mix_output);
+				left_mix_output = left_mix_output * params[TRIM_KNOB].getValue();
+				right_mix_output = right_mix_output * params[TRIM_KNOB].getValue();
+
+				outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_mix_output);
+				outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_mix_output);
 			}
 
 			// TODO: spawn_rate_counter should probably take into consideration the selected sample rate.
@@ -310,7 +321,7 @@ struct Ghosts : Module
 		}
 		else
 		{
-			outputs[WAV_OUTPUT].setVoltage(0);
+			outputs[AUDIO_OUTPUT_LEFT].setVoltage(0);
 		}
 	}
 };
@@ -326,7 +337,7 @@ struct GhostsLoadSample : MenuItem
 
 		if (path)
 		{
-			module->sample.load(path);
+			module->sample.load(path, false);
 			module->root_dir = std::string(path);
 			free(path);
 		}
@@ -370,11 +381,12 @@ struct GhostsWidget : ModuleWidget
 		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 90)), module, Ghosts::GRAVEYARD_CAPACITY_ATTN_KNOB));
 
 		// Trim
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(71.810, 93.915)), module, Ghosts::TRIM_KNOB));
-
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(71.810, 90)), module, Ghosts::TRIM_KNOB));
 
 		// WAV output
-		addOutput(createOutput<PJ301MPort>(Vec(200, 324), module, Ghosts::WAV_OUTPUT));
+
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(71.810, 104)), module, Ghosts::AUDIO_OUTPUT_LEFT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(71.810, 114.609)), module, Ghosts::AUDIO_OUTPUT_RIGHT));
 		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 124.893)), module, Ghosts::DEBUG_OUTPUT));
 	}
 
