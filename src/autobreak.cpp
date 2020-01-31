@@ -46,6 +46,11 @@ struct Autobreak : Module
 	std::string path;
 	std::string loaded_pattern_file = "";
 
+	// Developer mode is set through the context menu.  When set to true, the
+	// currently loaded user-defined pattern file is reloaded at the end of every
+	// loop.  This essentially allows for "live coding" of the patterns.
+	bool developer_mode = false;
+
 	Sample samples[NUMBER_OF_SAMPLES];
 	std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
 
@@ -202,7 +207,7 @@ struct Autobreak : Module
 
 			json_array_foreach(pattern_arrays_data, pattern_number, json_pattern_array)
 			{
-				if(pattern_number < 16)
+				if(pattern_number < NUMBER_OF_PATTERNS)
 				{
 					for(int i=0; i<16; i++)
 					{
@@ -213,6 +218,11 @@ struct Autobreak : Module
 		}
 	}
 
+	void reload_user_patterns()
+	{
+		if(this->loaded_pattern_file != "") this->load_user_patterns(loaded_pattern_file);
+		outputs[DEBUG_OUTPUT].setVoltage(22);
+	}
 
 	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
 	{
@@ -270,7 +280,11 @@ struct Autobreak : Module
 			actual_playback_position = clamp(actual_playback_position, 0.0, selected_sample->total_sample_count - 1);
 			float wav_output_voltage = GAIN  * selected_sample->leftPlayBuffer[(int)actual_playback_position];
 
-			if(smooth_ramp < 1) // temporarily removed
+			//
+			// Handle smoothing
+			//
+
+			if(smooth_ramp < 1)
 			{
 				float smooth_rate = (128.0f / args.sampleRate);  // A smooth rate of 128 seems to work best
 				smooth_ramp += smooth_rate;
@@ -281,7 +295,6 @@ struct Autobreak : Module
 			{
 				outputs[WAV_OUTPUT].setVoltage(wav_output_voltage);
 			}
-
 			last_wave_output_voltage = wav_output_voltage;
 
 			// Update a clock counter and provide a trigger output whenever 1/32nd of the sample has been reached.
@@ -321,6 +334,8 @@ struct Autobreak : Module
 				smooth_ramp = 0;
 			}
 
+			// outputs[DEBUG_OUTPUT].setVoltage(theoretical_playback_position);
+
 			// Map the theoretical playback position to the actual sample playback position
 			actual_playback_position = ((float) theoretical_playback_position / samples_to_play_per_loop) * selected_sample->total_sample_count;
 
@@ -332,9 +347,8 @@ struct Autobreak : Module
 			{
 				incrementing_bpm_counter = 0;
 				endOutputPulse.trigger(0.01f);
+				if(developer_mode == true) reload_user_patterns();
 			}
-
-			outputs[DEBUG_OUTPUT].setVoltage(break_pattern_index);
 		}
 		else
 		{
@@ -594,7 +608,6 @@ struct AutobreakWidget : ModuleWidget
 
 		AutobreakBPMDislplay *bpm_display = new AutobreakBPMDislplay();
 		bpm_display->box.pos = mm2px(Vec(64.8, 44.2));
-		// bpm_display->box.size = Vec(20, 30); // bounding box of the widget
 		bpm_display->module = module;
 		addChild(bpm_display);
 
@@ -635,6 +648,28 @@ struct AutobreakWidget : ModuleWidget
 		autobreak_load_patterns->text = (module->loaded_pattern_file == "") ? "[ Load Pattern File ]" :  rack::string::filename(module->loaded_pattern_file);
 		autobreak_load_patterns->module = module;
 		menu->addChild(autobreak_load_patterns);
+
+
+		//
+		// Options
+		//
+
+		menu->addChild(new MenuEntry); // For spacing only
+		menu->addChild(createMenuLabel("Options"));
+
+		// Developer Mode Option
+
+		struct DeveloperModeMenuItem : MenuItem {
+			Autobreak* module;
+			void onAction(const event::Action& e) override {
+				module->developer_mode = !(module->developer_mode);
+			}
+		};
+
+		DeveloperModeMenuItem* developer_mode_menu_item = createMenuItem<DeveloperModeMenuItem>("Developer Mode");
+		developer_mode_menu_item->rightText = CHECKMARK(module->developer_mode == true);
+		developer_mode_menu_item->module = module;
+		menu->addChild(developer_mode_menu_item);
 	}
 
 };
