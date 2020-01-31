@@ -10,7 +10,7 @@
 #include <fstream>
 
 #define GAIN 5.0
-#define NUMBER_OF_PATTERNS 6
+#define NUMBER_OF_PATTERNS 25
 #define NUMBER_OF_SAMPLES 5
 #define NUMBER_OF_SAMPLES_FLOAT 5.0
 
@@ -44,7 +44,7 @@ struct Autobreak : Module
 	float last_wave_output_voltage = 0;
 	std::string root_dir;
 	std::string path;
-	std::string loaded_pattern_file;
+	std::string loaded_pattern_file = "";
 
 	Sample samples[NUMBER_OF_SAMPLES];
 	std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
@@ -54,12 +54,55 @@ struct Autobreak : Module
 	dsp::PulseGenerator endOutputPulse;
 
 	int break_patterns[NUMBER_OF_PATTERNS][16] = {
+
+		// No breaks
 		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
-		{  0,-1,-1,-1,  0,-1,-1,-1, -1,-1,-1,-1,  8,-1,-1,-1 },
-		{  0,-1,-1,-1,  0,-1,-1,-1, -1,-1,-1,-1,  0,-1,-1,-1 },
-		{  0,-1, 0,-1, -1,-1,-1, 4,  6,-1,-1,-1,  6,-1,-1,-1 },
-		{  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 0 },
-		{  0,14,12,12,  0, 0, 0, 0,  0, 0, 0, 0,  0, 0, 0, 12 }
+
+		// Jump backwards on beat 13 and variations
+		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,  4,-1,-1,-1 },
+		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 10,-1,-1,-1 },
+		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,  0,-1,-1,-1 },
+
+		// Jump backwards more frenetic
+		{  0,-1,-1,-1, -1, 0,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
+		{  0,-1,-1,-1, -1,-1, 4,-1,  8,-1,-1,-1,  4,-1,-1,-1 },
+		{  0,-1, 0,-1,  4,-1,-1,-1, -1,-1,-1,-1, 10,-1,-1,-1 },
+		{  0,-1,-1,-1,  0,-1,-1,-1, -1,-1,-1,-1,  0,-1, 3, 3 },
+
+		// Jump back early on beat 5 with variations
+		{  0,-1,-1,-1, 0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
+		{  0,-1,-1,-1, 0,-1,-1,-1,  8,-1,-1,-1, -1,-1,-1,-1 },
+		{  0,-1,-1,-1, 0,-1,-1,-1, -1,-1,-1,-1, 12,-1,-1,-1 },
+		{  0,-1,-1,-1, 0,-1, 6,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
+
+		// Jump back early on beat 5 - busy
+		{  0,-1,-1,-1, 0,-1, 0,-1,  4,-1,-1,-1,  2,-1,12,-1 },
+		{  0,-1,-1,-1, 0,-1,-1,-1,  8,-1,-1,-1, -1,-1,-1,-1 },
+		{  0,-1,-1,-1, 0,-1,-1,-1,  6,-1,-1,-1, 12,-1,12,-1 },
+		{  0,-1, 0,-1, -1,-1, 6,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
+
+		// Tail end breaks
+		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,12,-1 },
+		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,13,-1 },
+		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1, 6,-1 },
+		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1, 3, 3 },
+
+		// Odd beat breaks
+		{  0,-1,-1,-1, -1, 0,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
+		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 12,-1,-1,-1 },
+		{  0,-1,-1,-1, -1,-1,-1, 6, -1,-1, 1,-1, 12,-1,-1,-1 },
+		{  0,-1,-1,-1, -1,-1,-1,-1, -1, 0,-1,-1, -1,-1,-1,-1 },
+
+		// Hesitation break
+		{  0,-1, 0,-1,  0,-1,-1,-1, -1,-1,-1,-1, 10,-1,-1,-1 },
+
+		// Very busy breaks
+		/*
+		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
+		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
+		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
+		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
+		*/
 	};
 
 	enum ParamIds {
@@ -586,9 +629,10 @@ struct AutobreakWidget : ModuleWidget
 		}
 
 		menu->addChild(new MenuEntry); // For spacing only
+		menu->addChild(createMenuLabel("User Defined Break Patterns"));
 
 		AutobreakLoadPatterns *autobreak_load_patterns = new AutobreakLoadPatterns();
-		autobreak_load_patterns->text = "Load Pattern File";
+		autobreak_load_patterns->text = (module->loaded_pattern_file == "") ? "[ Load Pattern File ]" :  rack::string::filename(module->loaded_pattern_file);
 		autobreak_load_patterns->module = module;
 		menu->addChild(autobreak_load_patterns);
 	}
