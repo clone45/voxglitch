@@ -163,7 +163,7 @@ struct Ghosts : Module
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(GHOST_PLAYBACK_LENGTH_KNOB, 0.0f, 1.0f, 0.5f, "GhostLengthKnob");
 		configParam(GHOST_PLAYBACK_LENGTH_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "GhostLengthAttnKnob");
-		configParam(GRAVEYARD_CAPACITY_KNOB, 0.0f, 1.0f, 1.0f, "GraveyardCapacityKnob");
+		configParam(GRAVEYARD_CAPACITY_KNOB, 0.0f, 1.0f, 0.2f, "GraveyardCapacityKnob");
 		configParam(GRAVEYARD_CAPACITY_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "GraveyardCapacityAttnKnob");
 		configParam(GHOST_SPAWN_RATE_KNOB, 0.01f, 1.0f, 0.2f, "GhostSpawnRateKnob");  // max 24000
 		configParam(GHOST_SPAWN_RATE_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "GhostSpawnRateAttnKnob");

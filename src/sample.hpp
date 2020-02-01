@@ -51,6 +51,7 @@ struct Sample
 
 			if(this->channels > 1 && ! loadAsMono)
 			{
+				// Load stereo sample into playback vectors
 				for (unsigned int i=0; i < reported_total_sample_count; i = i + this->channels)
 				{
 					this->leftPlayBuffer.push_back(pSampleData[i]);
@@ -62,6 +63,7 @@ struct Sample
 				for (unsigned int i=0; i < reported_total_sample_count; i = i + this->channels)
 				{
 					this->leftPlayBuffer.push_back(pSampleData[i]);
+					this->rightPlayBuffer.push_back(pSampleData[i]);
 				}
 			}
 
