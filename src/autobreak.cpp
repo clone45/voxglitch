@@ -463,6 +463,11 @@ struct AutobreakPatternReadout : TransparentWidget
 			// Display the pattern
 			//
 
+			float bar_width = 21;
+			float bar_height = 242.0;
+			float bar_horizontal_padding = .8;
+			float bar_transparency = 150;
+
 			for(unsigned int i=0; i<16; i++)
 			{
 				item_display = std::to_string(module->break_patterns[module->selected_break_pattern][i]);
@@ -471,11 +476,12 @@ struct AutobreakPatternReadout : TransparentWidget
 				// Draw inverted text if it's the selected index
 				if(i == module->break_pattern_index)
 				{
+
 					// Draw background while rectangle
 					nvgBeginPath(args.vg);
-					nvgRect(args.vg, (i * 13), -8, 10, 16);
-					nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
-					if(item_display == ".") nvgFillColor(args.vg, nvgRGBA(100, 100, 100, 0xff));
+					nvgRect(args.vg, (i * bar_width) + (i * bar_horizontal_padding), 0, bar_width, -1 * bar_height);
+					nvgFillColor(args.vg, nvgRGBA(255, 255, 255, bar_transparency));
+					if(item_display == ".") nvgFillColor(args.vg, nvgRGBA(100, 100, 100, bar_transparency));
 					nvgFill(args.vg);
 
 					// Draw forground text in black
@@ -484,10 +490,10 @@ struct AutobreakPatternReadout : TransparentWidget
 				// Otherwise just draw while text on the black background
 				else
 				{
-					nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+					nvgFillColor(args.vg, nvgRGBA(255, 255, 255, bar_transparency));
 				}
 
-				nvgText(args.vg, 5 + (i * 13), 5, item_display.c_str(), NULL);
+				// nvgText(args.vg, 5 + (i * 13), 5, item_display.c_str(), NULL);
 			}
 		}
 
@@ -572,50 +578,50 @@ struct AutobreakWidget : ModuleWidget
 	AutobreakWidget(Autobreak* module)
 	{
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/autobreak_front_panel.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/autobreak_front_panel_experimental.svg")));
 
 		// Cosmetic rack screws
 		addChild(createWidget<ScrewSilver>(Vec(15, 0)));
 		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
 
-		// Input and label for the reset input
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(11, 114.893)), module, Autobreak::RESET_INPUT));
+		// Pattern Select
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(13.848, 38)), module, Autobreak::PATTERN_KNOB));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(13.848, 52)), module, Autobreak::PATTERN_ATTN_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.848, 63.5)), module, Autobreak::PATTERN_INPUT));
 
 		// Inputs for WAV selection
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(11, 43)), module, Autobreak::WAV_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 43)), module, Autobreak::WAV_ATTN_KNOB));
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 43)), module, Autobreak::WAV_KNOB));
-
-		// Pattern Select
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(11, 84.567)), module, Autobreak::PATTERN_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 84.567)), module, Autobreak::PATTERN_ATTN_KNOB));
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 84.567)), module, Autobreak::PATTERN_KNOB));
-
-		// BPM selection
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(78, 43)), module, Autobreak::BPM_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(34.541, 38)), module, Autobreak::WAV_KNOB));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(34.541, 52)), module, Autobreak::WAV_ATTN_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.541, 63.5)), module, Autobreak::WAV_INPUT));
 
 		AutobreakReadout *readout = new AutobreakReadout();
-		readout->box.pos = mm2px(Vec(11.0, 26.0));
+		readout->box.pos = mm2px(Vec(53.5, 22));
 		readout->box.size = Vec(110, 30); // bounding box of the widget
 		readout->module = module;
 		addChild(readout);
 
 		AutobreakPatternReadout *pattern_readout = new AutobreakPatternReadout();
-		pattern_readout->box.pos = mm2px(Vec(11.0, 68.591));
-		pattern_readout->box.size = Vec(110, 30); // bounding box of the widget
+		pattern_readout->box.pos = mm2px(Vec(55.141, 117.561));
 		pattern_readout->module = module;
 		addChild(pattern_readout);
 
 		AutobreakBPMDislplay *bpm_display = new AutobreakBPMDislplay();
-		bpm_display->box.pos = mm2px(Vec(64.8, 44.2));
+		bpm_display->box.pos = mm2px(Vec(11.5, 13.5));
 		bpm_display->module = module;
 		addChild(bpm_display);
 
+		// BPM selection
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 12.2)), module, Autobreak::BPM_KNOB));
+
+		// Reset
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.541, 88.685)), module, Autobreak::RESET_INPUT));
+
 		// Outputs
 		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 100.893)), module, Autobreak::DEBUG_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(40.264, 114.893)), module, Autobreak::CLOCK_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(58.832, 114.893)), module, Autobreak::END_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(77.418, 114.893)), module, Autobreak::WAV_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(13.848, 114.893)), module, Autobreak::CLOCK_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(13.848, 88.685)), module, Autobreak::END_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.541, 114.893)), module, Autobreak::WAV_OUTPUT));
+
 	}
 
 	void appendContextMenu(Menu *menu) override
