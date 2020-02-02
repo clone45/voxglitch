@@ -13,6 +13,8 @@
 #define NUMBER_OF_PATTERNS 25
 #define NUMBER_OF_SAMPLES 5
 #define NUMBER_OF_SAMPLES_FLOAT 5.0
+#define DRAW_AREA_WIDTH 348.0
+#define DRAW_AREA_HEIGHT 242.0
 
 struct Autobreak : Module
 {
@@ -439,40 +441,31 @@ struct AutobreakPatternReadout : TransparentWidget
 
 	AutobreakPatternReadout()
 	{
+		box.size = Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
 		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
 	}
 
 	void draw(const DrawArgs &args) override
 	{
-		nvgSave(args.vg);
+		const auto vg = args.vg;
+
+		nvgSave(vg);
 
 		if(module)
 		{
-			std::string text_to_display = "";
-			int item_display;
-
-			// Configure the font size, face, color, etc.
-			/*
-			nvgFontSize(args.vg, 13);
-			nvgFontFaceId(args.vg, font->handle);
-			nvgTextLetterSpacing(args.vg, 0);
-			nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
-			nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
-			nvgTextLetterSpacing(args.vg, -2);
-			*/
-
 			//
 			// Display the pattern
 			//
 
+			int break_position;
 			float bar_width = 21;
-			float bar_height = 242.0;
 			float bar_horizontal_padding = .8;
+			float break_position_bar_height;
 			NVGcolor highlighted_bar_color;
 
 			for(unsigned int i=0; i<16; i++)
 			{
-				item_display = module->break_patterns[module->selected_break_pattern][i];
+				break_position = module->break_patterns[module->selected_break_pattern][i];
 				// if(item_display == "-1") item_display = ".";
 
 				if(i == module->break_pattern_index)
@@ -484,25 +477,53 @@ struct AutobreakPatternReadout : TransparentWidget
 					highlighted_bar_color = nvgRGBA(255, 255, 255, 150);
 				}
 
+				break_position_bar_height = (DRAW_AREA_HEIGHT * ((break_position + 1) / 16.0));
+
 				// Draw the break offset bar
-				nvgBeginPath(args.vg);
-				nvgRect(args.vg, (i * bar_width) + (i * bar_horizontal_padding), 0, bar_width, -1 * bar_height * ((item_display + 1) / 16.0));
-				nvgFillColor(args.vg, highlighted_bar_color);
-				nvgFill(args.vg);
+				if(break_position_bar_height > 0)
+				{
+					nvgBeginPath(vg);
+					// nvgRect(vg, (i * bar_width) + (i * bar_horizontal_padding), DRAW_AREA_HEIGHT, bar_width, -1 * DRAW_AREA_HEIGHT * ((item_display + 1) / 16.0));
+					nvgRect(vg, (i * bar_width) + (i * bar_horizontal_padding), DRAW_AREA_HEIGHT - break_position_bar_height, bar_width, break_position_bar_height);
+					nvgFillColor(vg, highlighted_bar_color);
+					nvgFill(vg);
+				}
 
 				if(i == module->break_pattern_index)
 				{
 					// Highlight entire column
-					nvgBeginPath(args.vg);
-					nvgRect(args.vg, (i * bar_width) + (i * bar_horizontal_padding), 0, bar_width, -1 * bar_height);
-					nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 20));
-					nvgFill(args.vg);
+					nvgBeginPath(vg);
+					nvgRect(vg, (i * bar_width) + (i * bar_horizontal_padding), 0, bar_width, DRAW_AREA_HEIGHT);
+					nvgFillColor(vg, nvgRGBA(255, 255, 255, 20));
+					nvgFill(vg);
 				}
-
 			}
+
+			// Note to self: This is a nice orange for an overlay
+			// and might be interesting to give an option to activate
+			/*
+			nvgBeginPath(vg);
+			nvgRect(vg, 0,0,348,241);
+			nvgFillColor(vg, nvgRGBA(255, 100, 0, 128));
+			nvgFill(vg);
+			*/
 		}
 
-		nvgRestore(args.vg);
+		nvgRestore(vg);
+	}
+
+	Vec clampToDrawArea(Vec location)
+    {
+        float x = clamp(location.x, 0.0f, DRAW_AREA_WIDTH);
+        float y = clamp(location.y, 0.0f, DRAW_AREA_HEIGHT);
+        return(Vec(x,y));
+    }
+
+	void onButton(const event::Button &e) override
+    {
+        e.consume(this);
+		// this->module->drag_position = this->clampToDrawArea(e.pos);
+		DEBUG("%s %f,%f", "button press at: ", e.pos.x, e.pos.y);
 	}
 };
 
@@ -606,7 +627,7 @@ struct AutobreakWidget : ModuleWidget
 		addChild(readout);
 
 		AutobreakPatternReadout *pattern_readout = new AutobreakPatternReadout();
-		pattern_readout->box.pos = mm2px(Vec(55.141, 117.561));
+		pattern_readout->box.pos = mm2px(Vec(55.141, 35.689));
 		pattern_readout->module = module;
 		addChild(pattern_readout);
 
