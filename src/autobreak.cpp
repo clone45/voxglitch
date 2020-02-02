@@ -10,9 +10,13 @@
 #include <fstream>
 
 #define GAIN 5.0
-#define NUMBER_OF_PATTERNS 25
+#define NUMBER_OF_PATTERNS 16
 #define NUMBER_OF_SAMPLES 5
-#define NUMBER_OF_SAMPLES_FLOAT 5.0
+#define DRAW_AREA_WIDTH 348.0
+#define DRAW_AREA_HEIGHT 242.0
+#define BAR_WIDTH 21.0
+#define BAR_HORIZONTAL_PADDING .8
+#define SAMPLE_OFFSET_INDICATION_LINE_WIDTH 356.0
 
 struct Autobreak : Module
 {
@@ -33,8 +37,12 @@ struct Autobreak : Module
 	// to play a theoretical sample for 8 bars at a specific bpm.
 	unsigned int incrementing_bpm_counter = 0;
 
+	// Pattern lock is a flag which, when true, stops the pattern from changing
+	// due to changes in the pattern knob or the CV input.  This flag is set
+	// to true when the user is actively editing the current pattern.
+ 	bool pattern_lock = false;
+
 	unsigned int bpm = 160;
-	int step = 0;
 	unsigned int break_pattern_index = 0;
 	unsigned int break_pattern_index_old = 0;
 	int clock_counter = 0;
@@ -44,12 +52,6 @@ struct Autobreak : Module
 	float last_wave_output_voltage = 0;
 	std::string root_dir;
 	std::string path;
-	std::string loaded_pattern_file = "";
-
-	// Developer mode is set through the context menu.  When set to true, the
-	// currently loaded user-defined pattern file is reloaded at the end of every
-	// loop.  This essentially allows for "live coding" of the patterns.
-	bool developer_mode = false;
 
 	Sample samples[NUMBER_OF_SAMPLES];
 	std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
@@ -85,29 +87,6 @@ struct Autobreak : Module
 		{  0,-1,-1,-1, 0,-1,-1,-1,  8,-1,-1,-1, -1,-1,-1,-1 },
 		{  0,-1,-1,-1, 0,-1,-1,-1,  6,-1,-1,-1, 12,-1,12,-1 },
 		{  0,-1, 0,-1, -1,-1, 6,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
-
-		// Tail end breaks
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,12,-1 },
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,13,-1 },
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1, 6,-1 },
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1, 3, 3 },
-
-		// Odd beat breaks
-		{  0,-1,-1,-1, -1, 0,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 12,-1,-1,-1 },
-		{  0,-1,-1,-1, -1,-1,-1, 6, -1,-1, 1,-1, 12,-1,-1,-1 },
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1, 0,-1,-1, -1,-1,-1,-1 },
-
-		// Hesitation break
-		{  0,-1, 0,-1,  0,-1,-1,-1, -1,-1,-1,-1, 10,-1,-1,-1 },
-
-		// Very busy breaks
-		/*
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
-		*/
 	};
 
 	enum ParamIds {
@@ -150,24 +129,53 @@ struct Autobreak : Module
 		std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 	}
 
+	// Autosave settings
 	json_t *dataToJson() override
 	{
-		json_t *rootJ = json_object();
+		//
+		// Save selected samples
+		//
+
+		json_t *json_root = json_object();
 		for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
-			json_object_set_new(rootJ, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(samples[i].path.c_str()));
+			json_object_set_new(json_root, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(samples[i].path.c_str()));
 		}
 
-		if(loaded_pattern_file != "") json_object_set_new(rootJ, "selected_user_pattern_file", json_string(loaded_pattern_file.c_str()));
+		//
+		// Save patterns
+		//
 
-		return rootJ;
+		json_t *break_patterns_json_array = json_array();
+
+		for(int pattern_number=0; pattern_number<NUMBER_OF_PATTERNS; pattern_number++)
+		{
+			json_t *pattern_json_array = json_array();
+
+			for(int i=0; i<16; i++)
+			{
+				json_array_append_new(pattern_json_array, json_integer(this->break_patterns[pattern_number][i]));
+			}
+
+            json_array_append_new(break_patterns_json_array, pattern_json_array);
+        }
+
+        json_object_set(json_root, "patterns", break_patterns_json_array);
+        json_decref(break_patterns_json_array);
+
+		return json_root;
 	}
 
-	void dataFromJson(json_t *rootJ) override
+	// Autoload settings
+	void dataFromJson(json_t *json_root) override
 	{
+		//
+		// Load samples
+		//
+
 		for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
-			json_t *loaded_sample_path = json_object_get(rootJ, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
+			json_t *loaded_sample_path = json_object_get(json_root, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
 			if (loaded_sample_path)
 			{
 				samples[i].load(json_string_value(loaded_sample_path));
@@ -175,30 +183,11 @@ struct Autobreak : Module
 			}
 		}
 
-		json_t* loaded_user_patterns = json_object_get(rootJ, "selected_user_pattern_file");
-		if (loaded_user_patterns) this->load_user_patterns(json_string_value(loaded_user_patterns));
-	}
+		//
+		// Load patterns
+		//
 
-	void load_user_patterns(std::string path)
-	{
-		// Store for auto-loading
-		this->loaded_pattern_file = path;
-
-		// Load json from file
-		std::ifstream t(path.c_str());
-		std::stringstream buffer;
-		buffer << t.rdbuf();
-
-		// Convert string to json
-		json_t *root;
-		json_error_t error;
-
-		// Parse Json
-		root = json_loads(buffer.str().c_str(), 0, &error);
-		if(!root) return;
-
-		// Iterate over json array and overwrite preset patterns
-		json_t *pattern_arrays_data = json_object_get(root, "patterns");
+		json_t *pattern_arrays_data = json_object_get(json_root, "patterns");
 
 		if(pattern_arrays_data)
 		{
@@ -207,21 +196,12 @@ struct Autobreak : Module
 
 			json_array_foreach(pattern_arrays_data, pattern_number, json_pattern_array)
 			{
-				if(pattern_number < NUMBER_OF_PATTERNS)
+				for(int i=0; i<NUMBER_OF_PATTERNS; i++)
 				{
-					for(int i=0; i<16; i++)
-					{
-						this->break_patterns[pattern_number][i] = json_integer_value(json_array_get(json_pattern_array, i));
-					}
+					this->break_patterns[pattern_number][i] = json_integer_value(json_array_get(json_pattern_array, i));
 				}
 			}
 		}
-	}
-
-	void reload_user_patterns()
-	{
-		if(this->loaded_pattern_file != "") this->load_user_patterns(loaded_pattern_file);
-		outputs[DEBUG_OUTPUT].setVoltage(22);
 	}
 
 	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
@@ -305,6 +285,13 @@ struct Autobreak : Module
 			// Step the theoretical playback position
 			theoretical_playback_position = theoretical_playback_position + 1;
 
+			// Select the break pattern
+			if(pattern_lock == false)
+			{
+				selected_break_pattern = calculate_inputs(PATTERN_INPUT, PATTERN_KNOB, PATTERN_ATTN_KNOB, NUMBER_OF_PATTERNS - 1);
+				selected_break_pattern = clamp(selected_break_pattern, 0, NUMBER_OF_PATTERNS - 1);
+			}
+
 			//
 			// Optionally jump to new breakbeat position
 			//
@@ -314,9 +301,6 @@ struct Autobreak : Module
 
 			if(break_pattern_index != break_pattern_index_old)
 			{
-				selected_break_pattern = calculate_inputs(PATTERN_INPUT, PATTERN_KNOB, PATTERN_ATTN_KNOB, NUMBER_OF_PATTERNS - 1);
-				selected_break_pattern = clamp(selected_break_pattern, 0, NUMBER_OF_PATTERNS - 1);
-
 				float new_step = break_patterns[selected_break_pattern][break_pattern_index];
 
 				if(new_step != -1)
@@ -347,7 +331,6 @@ struct Autobreak : Module
 			{
 				incrementing_bpm_counter = 0;
 				endOutputPulse.trigger(0.01f);
-				if(developer_mode == true) reload_user_patterns();
 			}
 		}
 		else
@@ -402,7 +385,7 @@ struct AutobreakReadout : TransparentWidget
 				// Draw a line underneath the text to show where, in the sample, playback is happening
 				nvgBeginPath(args.vg);
 				nvgMoveTo(args.vg, 5, 12);
-				nvgLineTo(args.vg, 200.0 * (module->actual_playback_position/selected_sample->total_sample_count), 12);
+				nvgLineTo(args.vg, SAMPLE_OFFSET_INDICATION_LINE_WIDTH * (module->actual_playback_position/selected_sample->total_sample_count), 12);
 				nvgStrokeColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
 				nvgStroke(args.vg);
 			}
@@ -434,64 +417,159 @@ struct AutobreakReadout : TransparentWidget
 struct AutobreakPatternReadout : TransparentWidget
 {
 	Autobreak *module;
-
-	std::shared_ptr<Font> font;
+	Vec drag_position;
 
 	AutobreakPatternReadout()
 	{
-		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+		// The bounding box needs to be a little deeper than the visual
+		// controls to allow mouse drags to indicate '0' (off) column heights,
+		// which is why 16 is being added to the draw height to define the
+		// bounding box.
+		box.size = Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT + 16);
 	}
 
 	void draw(const DrawArgs &args) override
 	{
-		nvgSave(args.vg);
+		const auto vg = args.vg;
+
+		nvgSave(vg);
 
 		if(module)
 		{
-			std::string text_to_display = "";
-			std::string item_display;
-
-			// Configure the font size, face, color, etc.
-			nvgFontSize(args.vg, 13);
-			nvgFontFaceId(args.vg, font->handle);
-			nvgTextLetterSpacing(args.vg, 0);
-			nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
-			nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
-			nvgTextLetterSpacing(args.vg, -2);
-
 			//
 			// Display the pattern
 			//
 
+			int break_position;
+			// float bar_width = 21;
+			// float bar_horizontal_padding = .8;
+			float break_position_bar_height;
+			NVGcolor highlighted_bar_color;
+
 			for(unsigned int i=0; i<16; i++)
 			{
-				item_display = std::to_string(module->break_patterns[module->selected_break_pattern][i]);
-				if(item_display == "-1") item_display = ".";
+				break_position = module->break_patterns[module->selected_break_pattern][i];
+				// if(item_display == "-1") item_display = ".";
 
-				// Draw inverted text if it's the selected index
 				if(i == module->break_pattern_index)
 				{
-					// Draw background while rectangle
-					nvgBeginPath(args.vg);
-					nvgRect(args.vg, (i * 13), -8, 10, 16);
-					nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
-					if(item_display == ".") nvgFillColor(args.vg, nvgRGBA(100, 100, 100, 0xff));
-					nvgFill(args.vg);
-
-					// Draw forground text in black
-					nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 0xff));
+					highlighted_bar_color = nvgRGBA(255, 255, 255, 250);
 				}
-				// Otherwise just draw while text on the black background
 				else
 				{
-					nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+					highlighted_bar_color = nvgRGBA(255, 255, 255, 150);
 				}
 
-				nvgText(args.vg, 5 + (i * 13), 5, item_display.c_str(), NULL);
+				break_position_bar_height = (DRAW_AREA_HEIGHT * ((break_position + 1) / 16.0));
+
+				// Draw the break offset bar
+				if(break_position_bar_height > 0)
+				{
+					nvgBeginPath(vg);
+					// nvgRect(vg, (i * bar_width) + (i * bar_horizontal_padding), DRAW_AREA_HEIGHT, bar_width, -1 * DRAW_AREA_HEIGHT * ((item_display + 1) / 16.0));
+					nvgRect(vg, (i * BAR_WIDTH) + (i * BAR_HORIZONTAL_PADDING), DRAW_AREA_HEIGHT - break_position_bar_height, BAR_WIDTH, break_position_bar_height);
+					nvgFillColor(vg, highlighted_bar_color);
+					nvgFill(vg);
+				}
+
+				if(i == module->break_pattern_index)
+				{
+					// Highlight entire column
+					nvgBeginPath(vg);
+					nvgRect(vg, (i * BAR_WIDTH) + (i * BAR_HORIZONTAL_PADDING), 0, BAR_WIDTH, DRAW_AREA_HEIGHT);
+					nvgFillColor(vg, nvgRGBA(255, 255, 255, 20));
+					nvgFill(vg);
+				}
 			}
+
+			// Note to self: This is a nice orange for an overlay
+			// and might be interesting to give an option to activate
+			/*
+			nvgBeginPath(vg);
+			nvgRect(vg, 0,0,348,241);
+			nvgFillColor(vg, nvgRGBA(255, 100, 0, 128));
+			nvgFill(vg);
+			*/
 		}
 
-		nvgRestore(args.vg);
+		nvgRestore(vg);
+	}
+
+	Vec clampToDrawArea(Vec location)
+    {
+        float x = clamp(location.x, 0.0f, DRAW_AREA_WIDTH);
+        float y = clamp(location.y, 0.0f, DRAW_AREA_HEIGHT);
+        return(Vec(x,y));
+    }
+
+	void onButton(const event::Button &e) override
+    {
+        e.consume(this);
+
+		if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
+		{
+			drag_position = e.pos;
+			this->editBar(e.pos);
+		}
+		// DEBUG("%s %d,%d", "button press at: ", clicked_bar_x_index, clicked_bar_y_index);
+	}
+
+	void onDragStart(const event::DragStart &e) override
+    {
+		TransparentWidget::onDragStart(e);
+	}
+
+	void onDragEnd(const event::DragEnd &e) override
+    {
+		TransparentWidget::onDragEnd(e);
+	}
+
+	void onDragMove(const event::DragMove &e) override
+    {
+		TransparentWidget::onDragMove(e);
+		drag_position = drag_position.plus(e.mouseDelta);
+		editBar(drag_position);
+	}
+
+	void step() override {
+		TransparentWidget::step();
+	}
+
+	void editBar(Vec mouse_position)
+	{
+		int clicked_bar_x_index = mouse_position.x / (BAR_WIDTH + BAR_HORIZONTAL_PADDING);
+		int clicked_bar_y_index = 15 - (int) ((mouse_position.y / DRAW_AREA_HEIGHT) * 16.0);
+
+		clicked_bar_x_index = clamp(clicked_bar_x_index, 0, 15);
+		clicked_bar_y_index = clamp(clicked_bar_y_index, 0, 15);
+
+		// DEBUG("%s %f,%f", "height vs ", DRAW_AREA_HEIGHT, drag_position.y);
+
+		// If the mouse position is below the sequencer, then set the corresponding
+		// row of the sequencer to "0" (meaning, don't jump to a new position in the beat)
+		if(mouse_position.y > (DRAW_AREA_HEIGHT - 2))
+		{
+			// Special case: Set the break pattern to -1 for "don't jump to new position"
+			module->break_patterns[module->selected_break_pattern][clicked_bar_x_index] = -1;
+		}
+		else
+		{
+			// Set the break pattern height
+			module->break_patterns[module->selected_break_pattern][clicked_bar_x_index] = clicked_bar_y_index;
+		}
+	}
+
+	void onEnter(const event::Enter &e) override
+    {
+		TransparentWidget::onEnter(e);
+		this->module->pattern_lock = true;
+		DEBUG("On enter called");
+	}
+
+	void onLeave(const event::Leave &e) override
+    {
+		TransparentWidget::onLeave(e);
+		this->module->pattern_lock = false;
 	}
 };
 
@@ -550,72 +628,55 @@ struct AutobreakLoadSample : MenuItem
 	}
 };
 
-struct AutobreakLoadPatterns : MenuItem
-{
-	Autobreak *module;
-
-	void onAction(const event::Action &e) override
-	{
-		const std::string dir = module->root_dir.empty() ? "" : module->root_dir;
-		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, NULL);
-
-		if (path)
-		{
-			module->load_user_patterns((std::string) path);
-			free(path);
-		}
-	}
-};
-
 struct AutobreakWidget : ModuleWidget
 {
 	AutobreakWidget(Autobreak* module)
 	{
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/autobreak_front_panel.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/autobreak_front_panel_experimental.svg")));
 
 		// Cosmetic rack screws
 		addChild(createWidget<ScrewSilver>(Vec(15, 0)));
 		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
 
-		// Input and label for the reset input
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(11, 114.893)), module, Autobreak::RESET_INPUT));
+		// Pattern Select
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(13.848, 38)), module, Autobreak::PATTERN_KNOB));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(13.848, 52)), module, Autobreak::PATTERN_ATTN_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.848, 63.5)), module, Autobreak::PATTERN_INPUT));
 
 		// Inputs for WAV selection
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(11, 43)), module, Autobreak::WAV_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 43)), module, Autobreak::WAV_ATTN_KNOB));
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 43)), module, Autobreak::WAV_KNOB));
-
-		// Pattern Select
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(11, 84.567)), module, Autobreak::PATTERN_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 84.567)), module, Autobreak::PATTERN_ATTN_KNOB));
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 84.567)), module, Autobreak::PATTERN_KNOB));
-
-		// BPM selection
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(78, 43)), module, Autobreak::BPM_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(34.541, 38)), module, Autobreak::WAV_KNOB));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(34.541, 52)), module, Autobreak::WAV_ATTN_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.541, 63.5)), module, Autobreak::WAV_INPUT));
 
 		AutobreakReadout *readout = new AutobreakReadout();
-		readout->box.pos = mm2px(Vec(11.0, 26.0));
+		readout->box.pos = mm2px(Vec(53.5, 22));
 		readout->box.size = Vec(110, 30); // bounding box of the widget
 		readout->module = module;
 		addChild(readout);
 
 		AutobreakPatternReadout *pattern_readout = new AutobreakPatternReadout();
-		pattern_readout->box.pos = mm2px(Vec(11.0, 68.591));
-		pattern_readout->box.size = Vec(110, 30); // bounding box of the widget
+		pattern_readout->box.pos = mm2px(Vec(55.141, 35.689));
 		pattern_readout->module = module;
 		addChild(pattern_readout);
 
 		AutobreakBPMDislplay *bpm_display = new AutobreakBPMDislplay();
-		bpm_display->box.pos = mm2px(Vec(64.8, 44.2));
+		bpm_display->box.pos = mm2px(Vec(11.5, 13.5));
 		bpm_display->module = module;
 		addChild(bpm_display);
 
+		// BPM selection
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 12.2)), module, Autobreak::BPM_KNOB));
+
+		// Reset
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.541, 88.685)), module, Autobreak::RESET_INPUT));
+
 		// Outputs
 		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 100.893)), module, Autobreak::DEBUG_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(40.264, 114.893)), module, Autobreak::CLOCK_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(58.832, 114.893)), module, Autobreak::END_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(77.418, 114.893)), module, Autobreak::WAV_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(13.848, 114.893)), module, Autobreak::CLOCK_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(13.848, 88.685)), module, Autobreak::END_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.541, 114.893)), module, Autobreak::WAV_OUTPUT));
+
 	}
 
 	void appendContextMenu(Menu *menu) override
@@ -640,38 +701,7 @@ struct AutobreakWidget : ModuleWidget
 			menu_item_load_sample->module = module;
 			menu->addChild(menu_item_load_sample);
 		}
-
-		menu->addChild(new MenuEntry); // For spacing only
-		menu->addChild(createMenuLabel("User Defined Break Patterns"));
-
-		AutobreakLoadPatterns *autobreak_load_patterns = new AutobreakLoadPatterns();
-		autobreak_load_patterns->text = (module->loaded_pattern_file == "") ? "[ Load Pattern File ]" :  rack::string::filename(module->loaded_pattern_file);
-		autobreak_load_patterns->module = module;
-		menu->addChild(autobreak_load_patterns);
-
-
-		//
-		// Options
-		//
-
-		menu->addChild(new MenuEntry); // For spacing only
-		menu->addChild(createMenuLabel("Options"));
-
-		// Developer Mode Option
-
-		struct DeveloperModeMenuItem : MenuItem {
-			Autobreak* module;
-			void onAction(const event::Action& e) override {
-				module->developer_mode = !(module->developer_mode);
-			}
-		};
-
-		DeveloperModeMenuItem* developer_mode_menu_item = createMenuItem<DeveloperModeMenuItem>("Developer Mode");
-		developer_mode_menu_item->rightText = CHECKMARK(module->developer_mode == true);
-		developer_mode_menu_item->module = module;
-		menu->addChild(developer_mode_menu_item);
 	}
-
 };
 
 
