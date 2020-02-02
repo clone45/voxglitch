@@ -15,6 +15,8 @@
 #define NUMBER_OF_SAMPLES_FLOAT 5.0
 #define DRAW_AREA_WIDTH 348.0
 #define DRAW_AREA_HEIGHT 242.0
+#define BAR_WIDTH 21.0
+#define BAR_HORIZONTAL_PADDING .8
 
 struct Autobreak : Module
 {
@@ -436,13 +438,14 @@ struct AutobreakReadout : TransparentWidget
 struct AutobreakPatternReadout : TransparentWidget
 {
 	Autobreak *module;
+	Vec drag_position;
 
 	std::shared_ptr<Font> font;
 
 	AutobreakPatternReadout()
 	{
 		box.size = Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
-		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+		// font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
 	}
 
 	void draw(const DrawArgs &args) override
@@ -458,8 +461,8 @@ struct AutobreakPatternReadout : TransparentWidget
 			//
 
 			int break_position;
-			float bar_width = 21;
-			float bar_horizontal_padding = .8;
+			// float bar_width = 21;
+			// float bar_horizontal_padding = .8;
 			float break_position_bar_height;
 			NVGcolor highlighted_bar_color;
 
@@ -484,7 +487,7 @@ struct AutobreakPatternReadout : TransparentWidget
 				{
 					nvgBeginPath(vg);
 					// nvgRect(vg, (i * bar_width) + (i * bar_horizontal_padding), DRAW_AREA_HEIGHT, bar_width, -1 * DRAW_AREA_HEIGHT * ((item_display + 1) / 16.0));
-					nvgRect(vg, (i * bar_width) + (i * bar_horizontal_padding), DRAW_AREA_HEIGHT - break_position_bar_height, bar_width, break_position_bar_height);
+					nvgRect(vg, (i * BAR_WIDTH) + (i * BAR_HORIZONTAL_PADDING), DRAW_AREA_HEIGHT - break_position_bar_height, BAR_WIDTH, break_position_bar_height);
 					nvgFillColor(vg, highlighted_bar_color);
 					nvgFill(vg);
 				}
@@ -493,7 +496,7 @@ struct AutobreakPatternReadout : TransparentWidget
 				{
 					// Highlight entire column
 					nvgBeginPath(vg);
-					nvgRect(vg, (i * bar_width) + (i * bar_horizontal_padding), 0, bar_width, DRAW_AREA_HEIGHT);
+					nvgRect(vg, (i * BAR_WIDTH) + (i * BAR_HORIZONTAL_PADDING), 0, BAR_WIDTH, DRAW_AREA_HEIGHT);
 					nvgFillColor(vg, nvgRGBA(255, 255, 255, 20));
 					nvgFill(vg);
 				}
@@ -522,8 +525,56 @@ struct AutobreakPatternReadout : TransparentWidget
 	void onButton(const event::Button &e) override
     {
         e.consume(this);
-		// this->module->drag_position = this->clampToDrawArea(e.pos);
-		DEBUG("%s %f,%f", "button press at: ", e.pos.x, e.pos.y);
+
+		if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
+		{
+			drag_position = e.pos;
+			this->editBar(e.pos);
+			/*
+			// this->module->drag_position = this->clampToDrawArea(e.pos);
+			int clicked_bar_x_index = e.pos.x / (BAR_WIDTH + BAR_HORIZONTAL_PADDING);
+			int clicked_bar_y_index = 15 - (int) ((e.pos.y / DRAW_AREA_HEIGHT) * 16.0);
+
+			clicked_bar_x_index = clamp(clicked_bar_x_index, 0, 15);
+			clicked_bar_y_index = clamp(clicked_bar_y_index, 0, 15);
+
+			module->break_patterns[module->selected_break_pattern][clicked_bar_x_index] = clicked_bar_y_index;
+			*/
+		}
+		// DEBUG("%s %d,%d", "button press at: ", clicked_bar_x_index, clicked_bar_y_index);
+	}
+
+	void onDragStart(const event::DragStart &e) override
+    {
+		TransparentWidget::onDragStart(e);
+	}
+
+	void onDragEnd(const event::DragEnd &e) override
+    {
+		TransparentWidget::onDragEnd(e);
+	}
+
+	void onDragMove(const event::DragMove &e) override
+    {
+		TransparentWidget::onDragMove(e);
+		drag_position = drag_position.plus(e.mouseDelta);
+		editBar(drag_position);
+		DEBUG("%s %f,%f", "dragged to: ", drag_position.x, drag_position.y);
+	}
+
+	void step() override {
+		TransparentWidget::step();
+	}
+
+	void editBar(Vec mouse_position)
+	{
+		int clicked_bar_x_index = mouse_position.x / (BAR_WIDTH + BAR_HORIZONTAL_PADDING);
+		int clicked_bar_y_index = 15 - (int) ((mouse_position.y / DRAW_AREA_HEIGHT) * 16.0);
+
+		clicked_bar_x_index = clamp(clicked_bar_x_index, 0, 15);
+		clicked_bar_y_index = clamp(clicked_bar_y_index, 0, 15);
+
+		module->break_patterns[module->selected_break_pattern][clicked_bar_x_index] = clicked_bar_y_index;
 	}
 };
 
