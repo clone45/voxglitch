@@ -449,15 +449,17 @@ struct AutobreakPatternReadout : TransparentWidget
 		if(module)
 		{
 			std::string text_to_display = "";
-			std::string item_display;
+			int item_display;
 
 			// Configure the font size, face, color, etc.
+			/*
 			nvgFontSize(args.vg, 13);
 			nvgFontFaceId(args.vg, font->handle);
 			nvgTextLetterSpacing(args.vg, 0);
 			nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
 			nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
 			nvgTextLetterSpacing(args.vg, -2);
+			*/
 
 			//
 			// Display the pattern
@@ -466,34 +468,37 @@ struct AutobreakPatternReadout : TransparentWidget
 			float bar_width = 21;
 			float bar_height = 242.0;
 			float bar_horizontal_padding = .8;
-			float bar_transparency = 150;
+			NVGcolor highlighted_bar_color;
 
 			for(unsigned int i=0; i<16; i++)
 			{
-				item_display = std::to_string(module->break_patterns[module->selected_break_pattern][i]);
-				if(item_display == "-1") item_display = ".";
+				item_display = module->break_patterns[module->selected_break_pattern][i];
+				// if(item_display == "-1") item_display = ".";
 
-				// Draw inverted text if it's the selected index
 				if(i == module->break_pattern_index)
 				{
-
-					// Draw background while rectangle
-					nvgBeginPath(args.vg);
-					nvgRect(args.vg, (i * bar_width) + (i * bar_horizontal_padding), 0, bar_width, -1 * bar_height);
-					nvgFillColor(args.vg, nvgRGBA(255, 255, 255, bar_transparency));
-					if(item_display == ".") nvgFillColor(args.vg, nvgRGBA(100, 100, 100, bar_transparency));
-					nvgFill(args.vg);
-
-					// Draw forground text in black
-					nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 0xff));
+					highlighted_bar_color = nvgRGBA(255, 255, 255, 250);
 				}
-				// Otherwise just draw while text on the black background
 				else
 				{
-					nvgFillColor(args.vg, nvgRGBA(255, 255, 255, bar_transparency));
+					highlighted_bar_color = nvgRGBA(255, 255, 255, 150);
 				}
 
-				// nvgText(args.vg, 5 + (i * 13), 5, item_display.c_str(), NULL);
+				// Draw the break offset bar
+				nvgBeginPath(args.vg);
+				nvgRect(args.vg, (i * bar_width) + (i * bar_horizontal_padding), 0, bar_width, -1 * bar_height * ((item_display + 1) / 16.0));
+				nvgFillColor(args.vg, highlighted_bar_color);
+				nvgFill(args.vg);
+
+				if(i == module->break_pattern_index)
+				{
+					// Highlight entire column
+					nvgBeginPath(args.vg);
+					nvgRect(args.vg, (i * bar_width) + (i * bar_horizontal_padding), 0, bar_width, -1 * bar_height);
+					nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 20));
+					nvgFill(args.vg);
+				}
+
 			}
 		}
 
