@@ -10,9 +10,8 @@
 #include <fstream>
 
 #define GAIN 5.0
-#define NUMBER_OF_PATTERNS 25
+#define NUMBER_OF_PATTERNS 16
 #define NUMBER_OF_SAMPLES 5
-#define NUMBER_OF_SAMPLES_FLOAT 5.0
 #define DRAW_AREA_WIDTH 348.0
 #define DRAW_AREA_HEIGHT 242.0
 #define BAR_WIDTH 21.0
@@ -38,8 +37,12 @@ struct Autobreak : Module
 	// to play a theoretical sample for 8 bars at a specific bpm.
 	unsigned int incrementing_bpm_counter = 0;
 
+	// Pattern lock is a flag which, when true, stops the pattern from changing
+	// due to changes in the pattern knob or the CV input.  This flag is set
+	// to true when the user is actively editing the current pattern.
+ 	bool pattern_lock = false;
+
 	unsigned int bpm = 160;
-	int step = 0;
 	unsigned int break_pattern_index = 0;
 	unsigned int break_pattern_index_old = 0;
 	int clock_counter = 0;
@@ -49,12 +52,6 @@ struct Autobreak : Module
 	float last_wave_output_voltage = 0;
 	std::string root_dir;
 	std::string path;
-	std::string loaded_pattern_file = "";
-
-	// Developer mode is set through the context menu.  When set to true, the
-	// currently loaded user-defined pattern file is reloaded at the end of every
-	// loop.  This essentially allows for "live coding" of the patterns.
-	bool developer_mode = false;
 
 	Sample samples[NUMBER_OF_SAMPLES];
 	std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
@@ -90,29 +87,6 @@ struct Autobreak : Module
 		{  0,-1,-1,-1, 0,-1,-1,-1,  8,-1,-1,-1, -1,-1,-1,-1 },
 		{  0,-1,-1,-1, 0,-1,-1,-1,  6,-1,-1,-1, 12,-1,12,-1 },
 		{  0,-1, 0,-1, -1,-1, 6,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
-
-		// Tail end breaks
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,12,-1 },
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,13,-1 },
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1, 6,-1 },
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1, 3, 3 },
-
-		// Odd beat breaks
-		{  0,-1,-1,-1, -1, 0,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, 12,-1,-1,-1 },
-		{  0,-1,-1,-1, -1,-1,-1, 6, -1,-1, 1,-1, 12,-1,-1,-1 },
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1, 0,-1,-1, -1,-1,-1,-1 },
-
-		// Hesitation break
-		{  0,-1, 0,-1,  0,-1,-1,-1, -1,-1,-1,-1, 10,-1,-1,-1 },
-
-		// Very busy breaks
-		/*
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
-		{  0,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 },
-		*/
 	};
 
 	enum ParamIds {
@@ -155,24 +129,53 @@ struct Autobreak : Module
 		std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 	}
 
+	// Autosave settings
 	json_t *dataToJson() override
 	{
-		json_t *rootJ = json_object();
+		//
+		// Save selected samples
+		//
+
+		json_t *json_root = json_object();
 		for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
-			json_object_set_new(rootJ, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(samples[i].path.c_str()));
+			json_object_set_new(json_root, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(samples[i].path.c_str()));
 		}
 
-		if(loaded_pattern_file != "") json_object_set_new(rootJ, "selected_user_pattern_file", json_string(loaded_pattern_file.c_str()));
+		//
+		// Save patterns
+		//
 
-		return rootJ;
+		json_t *break_patterns_json_array = json_array();
+
+		for(int pattern_number=0; pattern_number<NUMBER_OF_PATTERNS; pattern_number++)
+		{
+			json_t *pattern_json_array = json_array();
+
+			for(int i=0; i<16; i++)
+			{
+				json_array_append_new(pattern_json_array, json_integer(this->break_patterns[pattern_number][i]));
+			}
+
+            json_array_append_new(break_patterns_json_array, pattern_json_array);
+        }
+
+        json_object_set(json_root, "patterns", break_patterns_json_array);
+        json_decref(break_patterns_json_array);
+
+		return json_root;
 	}
 
-	void dataFromJson(json_t *rootJ) override
+	// Autoload settings
+	void dataFromJson(json_t *json_root) override
 	{
+		//
+		// Load samples
+		//
+
 		for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
-			json_t *loaded_sample_path = json_object_get(rootJ, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
+			json_t *loaded_sample_path = json_object_get(json_root, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
 			if (loaded_sample_path)
 			{
 				samples[i].load(json_string_value(loaded_sample_path));
@@ -180,30 +183,11 @@ struct Autobreak : Module
 			}
 		}
 
-		json_t* loaded_user_patterns = json_object_get(rootJ, "selected_user_pattern_file");
-		if (loaded_user_patterns) this->load_user_patterns(json_string_value(loaded_user_patterns));
-	}
+		//
+		// Load patterns
+		//
 
-	void load_user_patterns(std::string path)
-	{
-		// Store for auto-loading
-		this->loaded_pattern_file = path;
-
-		// Load json from file
-		std::ifstream t(path.c_str());
-		std::stringstream buffer;
-		buffer << t.rdbuf();
-
-		// Convert string to json
-		json_t *root;
-		json_error_t error;
-
-		// Parse Json
-		root = json_loads(buffer.str().c_str(), 0, &error);
-		if(!root) return;
-
-		// Iterate over json array and overwrite preset patterns
-		json_t *pattern_arrays_data = json_object_get(root, "patterns");
+		json_t *pattern_arrays_data = json_object_get(json_root, "patterns");
 
 		if(pattern_arrays_data)
 		{
@@ -212,21 +196,12 @@ struct Autobreak : Module
 
 			json_array_foreach(pattern_arrays_data, pattern_number, json_pattern_array)
 			{
-				if(pattern_number < NUMBER_OF_PATTERNS)
+				for(int i=0; i<NUMBER_OF_PATTERNS; i++)
 				{
-					for(int i=0; i<16; i++)
-					{
-						this->break_patterns[pattern_number][i] = json_integer_value(json_array_get(json_pattern_array, i));
-					}
+					this->break_patterns[pattern_number][i] = json_integer_value(json_array_get(json_pattern_array, i));
 				}
 			}
 		}
-	}
-
-	void reload_user_patterns()
-	{
-		if(this->loaded_pattern_file != "") this->load_user_patterns(loaded_pattern_file);
-		outputs[DEBUG_OUTPUT].setVoltage(22);
 	}
 
 	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
@@ -310,6 +285,13 @@ struct Autobreak : Module
 			// Step the theoretical playback position
 			theoretical_playback_position = theoretical_playback_position + 1;
 
+			// Select the break pattern
+			if(pattern_lock == false)
+			{
+				selected_break_pattern = calculate_inputs(PATTERN_INPUT, PATTERN_KNOB, PATTERN_ATTN_KNOB, NUMBER_OF_PATTERNS - 1);
+				selected_break_pattern = clamp(selected_break_pattern, 0, NUMBER_OF_PATTERNS - 1);
+			}
+
 			//
 			// Optionally jump to new breakbeat position
 			//
@@ -319,9 +301,6 @@ struct Autobreak : Module
 
 			if(break_pattern_index != break_pattern_index_old)
 			{
-				selected_break_pattern = calculate_inputs(PATTERN_INPUT, PATTERN_KNOB, PATTERN_ATTN_KNOB, NUMBER_OF_PATTERNS - 1);
-				selected_break_pattern = clamp(selected_break_pattern, 0, NUMBER_OF_PATTERNS - 1);
-
 				float new_step = break_patterns[selected_break_pattern][break_pattern_index];
 
 				if(new_step != -1)
@@ -352,7 +331,6 @@ struct Autobreak : Module
 			{
 				incrementing_bpm_counter = 0;
 				endOutputPulse.trigger(0.01f);
-				if(developer_mode == true) reload_user_patterns();
 			}
 		}
 		else
@@ -441,8 +419,6 @@ struct AutobreakPatternReadout : TransparentWidget
 	Autobreak *module;
 	Vec drag_position;
 
-	std::shared_ptr<Font> font;
-
 	AutobreakPatternReadout()
 	{
 		// The bounding box needs to be a little deeper than the visual
@@ -450,7 +426,6 @@ struct AutobreakPatternReadout : TransparentWidget
 		// which is why 16 is being added to the draw height to define the
 		// bounding box.
 		box.size = Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT + 16);
-		// font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
 	}
 
 	void draw(const DrawArgs &args) override
@@ -568,7 +543,7 @@ struct AutobreakPatternReadout : TransparentWidget
 		clicked_bar_x_index = clamp(clicked_bar_x_index, 0, 15);
 		clicked_bar_y_index = clamp(clicked_bar_y_index, 0, 15);
 
-		DEBUG("%s %f,%f", "height vs ", DRAW_AREA_HEIGHT, drag_position.y);
+		// DEBUG("%s %f,%f", "height vs ", DRAW_AREA_HEIGHT, drag_position.y);
 
 		// If the mouse position is below the sequencer, then set the corresponding
 		// row of the sequencer to "0" (meaning, don't jump to a new position in the beat)
@@ -582,7 +557,19 @@ struct AutobreakPatternReadout : TransparentWidget
 			// Set the break pattern height
 			module->break_patterns[module->selected_break_pattern][clicked_bar_x_index] = clicked_bar_y_index;
 		}
+	}
 
+	void onEnter(const event::Enter &e) override
+    {
+		TransparentWidget::onEnter(e);
+		this->module->pattern_lock = true;
+		DEBUG("On enter called");
+	}
+
+	void onLeave(const event::Leave &e) override
+    {
+		TransparentWidget::onLeave(e);
+		this->module->pattern_lock = false;
 	}
 };
 
@@ -636,23 +623,6 @@ struct AutobreakLoadSample : MenuItem
 			module->samples[sample_number].load(path);
 			module->root_dir = std::string(path);
 			module->loaded_filenames[sample_number] = module->samples[sample_number].filename;
-			free(path);
-		}
-	}
-};
-
-struct AutobreakLoadPatterns : MenuItem
-{
-	Autobreak *module;
-
-	void onAction(const event::Action &e) override
-	{
-		const std::string dir = module->root_dir.empty() ? "" : module->root_dir;
-		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, NULL);
-
-		if (path)
-		{
-			module->load_user_patterns((std::string) path);
 			free(path);
 		}
 	}
@@ -731,38 +701,7 @@ struct AutobreakWidget : ModuleWidget
 			menu_item_load_sample->module = module;
 			menu->addChild(menu_item_load_sample);
 		}
-
-		menu->addChild(new MenuEntry); // For spacing only
-		menu->addChild(createMenuLabel("User Defined Break Patterns"));
-
-		AutobreakLoadPatterns *autobreak_load_patterns = new AutobreakLoadPatterns();
-		autobreak_load_patterns->text = (module->loaded_pattern_file == "") ? "[ Load Pattern File ]" :  rack::string::filename(module->loaded_pattern_file);
-		autobreak_load_patterns->module = module;
-		menu->addChild(autobreak_load_patterns);
-
-
-		//
-		// Options
-		//
-
-		menu->addChild(new MenuEntry); // For spacing only
-		menu->addChild(createMenuLabel("Options"));
-
-		// Developer Mode Option
-
-		struct DeveloperModeMenuItem : MenuItem {
-			Autobreak* module;
-			void onAction(const event::Action& e) override {
-				module->developer_mode = !(module->developer_mode);
-			}
-		};
-
-		DeveloperModeMenuItem* developer_mode_menu_item = createMenuItem<DeveloperModeMenuItem>("Developer Mode");
-		developer_mode_menu_item->rightText = CHECKMARK(module->developer_mode == true);
-		developer_mode_menu_item->module = module;
-		menu->addChild(developer_mode_menu_item);
 	}
-
 };
 
 
