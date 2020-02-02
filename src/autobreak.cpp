@@ -17,6 +17,7 @@
 #define DRAW_AREA_HEIGHT 242.0
 #define BAR_WIDTH 21.0
 #define BAR_HORIZONTAL_PADDING .8
+#define SAMPLE_OFFSET_INDICATION_LINE_WIDTH 356.0
 
 struct Autobreak : Module
 {
@@ -406,7 +407,7 @@ struct AutobreakReadout : TransparentWidget
 				// Draw a line underneath the text to show where, in the sample, playback is happening
 				nvgBeginPath(args.vg);
 				nvgMoveTo(args.vg, 5, 12);
-				nvgLineTo(args.vg, 200.0 * (module->actual_playback_position/selected_sample->total_sample_count), 12);
+				nvgLineTo(args.vg, SAMPLE_OFFSET_INDICATION_LINE_WIDTH * (module->actual_playback_position/selected_sample->total_sample_count), 12);
 				nvgStrokeColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
 				nvgStroke(args.vg);
 			}
@@ -444,7 +445,11 @@ struct AutobreakPatternReadout : TransparentWidget
 
 	AutobreakPatternReadout()
 	{
-		box.size = Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
+		// The bounding box needs to be a little deeper than the visual
+		// controls to allow mouse drags to indicate '0' (off) column heights,
+		// which is why 16 is being added to the draw height to define the
+		// bounding box.
+		box.size = Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT + 16);
 		// font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
 	}
 
@@ -530,16 +535,6 @@ struct AutobreakPatternReadout : TransparentWidget
 		{
 			drag_position = e.pos;
 			this->editBar(e.pos);
-			/*
-			// this->module->drag_position = this->clampToDrawArea(e.pos);
-			int clicked_bar_x_index = e.pos.x / (BAR_WIDTH + BAR_HORIZONTAL_PADDING);
-			int clicked_bar_y_index = 15 - (int) ((e.pos.y / DRAW_AREA_HEIGHT) * 16.0);
-
-			clicked_bar_x_index = clamp(clicked_bar_x_index, 0, 15);
-			clicked_bar_y_index = clamp(clicked_bar_y_index, 0, 15);
-
-			module->break_patterns[module->selected_break_pattern][clicked_bar_x_index] = clicked_bar_y_index;
-			*/
 		}
 		// DEBUG("%s %d,%d", "button press at: ", clicked_bar_x_index, clicked_bar_y_index);
 	}
@@ -559,7 +554,6 @@ struct AutobreakPatternReadout : TransparentWidget
 		TransparentWidget::onDragMove(e);
 		drag_position = drag_position.plus(e.mouseDelta);
 		editBar(drag_position);
-		DEBUG("%s %f,%f", "dragged to: ", drag_position.x, drag_position.y);
 	}
 
 	void step() override {
@@ -574,7 +568,21 @@ struct AutobreakPatternReadout : TransparentWidget
 		clicked_bar_x_index = clamp(clicked_bar_x_index, 0, 15);
 		clicked_bar_y_index = clamp(clicked_bar_y_index, 0, 15);
 
-		module->break_patterns[module->selected_break_pattern][clicked_bar_x_index] = clicked_bar_y_index;
+		DEBUG("%s %f,%f", "height vs ", DRAW_AREA_HEIGHT, drag_position.y);
+
+		// If the mouse position is below the sequencer, then set the corresponding
+		// row of the sequencer to "0" (meaning, don't jump to a new position in the beat)
+		if(mouse_position.y > (DRAW_AREA_HEIGHT - 2))
+		{
+			// Special case: Set the break pattern to -1 for "don't jump to new position"
+			module->break_patterns[module->selected_break_pattern][clicked_bar_x_index] = -1;
+		}
+		else
+		{
+			// Set the break pattern height
+			module->break_patterns[module->selected_break_pattern][clicked_bar_x_index] = clicked_bar_y_index;
+		}
+
 	}
 };
 
