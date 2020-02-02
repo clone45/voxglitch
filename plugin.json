@@ -14,6 +14,12 @@
     "changelogUrl": "",
     "modules": [
     {
+        "slug": "autobreak",
+        "name": "Autobreak",
+        "description": "Automatic breakbeat sample chopper",
+        "tags": [""]
+    },
+    {
         "slug": "ghosts",
         "name": "Ghosts",
         "description": "Granular synthesis based sample player/scanner.",

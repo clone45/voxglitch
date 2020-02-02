@@ -23,6 +23,14 @@ struct Repeater : Module
 	int retrigger;
 	std::string root_dir;
 
+	// When this flag is flase, the display area on the front panel will
+	// display something like, "Right-click to Load.."
+	bool any_sample_has_been_loaded = false;
+
+	// When this flag is flase, the display area will yell at the user to
+	// provide a clock signal.
+	bool trig_input_is_connected = false;
+
 	Sample samples[NUMBER_OF_SAMPLES];
 	std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
 
@@ -101,6 +109,7 @@ struct Repeater : Module
 			{
 				samples[i].load(json_string_value(loaded_sample_path));
 				loaded_filenames[i] = samples[i].filename;
+				this->any_sample_has_been_loaded = true;
 			}
 
 			json_t* retrigger_json = json_object_get(rootJ, "retrigger");
@@ -143,6 +152,8 @@ struct Repeater : Module
 
 		if (inputs[TRIG_INPUT].isConnected())
 		{
+			trig_input_is_connected = true;
+
 			//
 			// playTrigger is a SchmittTrigger object.  Here, the SchmittTrigger
 			// determines if a low-to-high transition happened at the TRIG_INPUT
@@ -163,6 +174,10 @@ struct Repeater : Module
 					triggerOutputPulse.trigger(0.01f);
 				}
 			}
+		}
+		else
+		{
+			trig_input_is_connected = false;
 		}
 
 		// If the sample has completed playing and the retrigger option is true,
@@ -237,12 +252,24 @@ struct Readout : TransparentWidget
 	{
 		nvgSave(args.vg);
 
-		std::string text_to_display = "load sample";;
+		std::string text_to_display = "load sample";
 
 		if(module)
 		{
-			text_to_display = "#" + std::to_string(module->selected_sample_slot + 1) + ":" + module->samples[module->selected_sample_slot].filename;
-			text_to_display.resize(30); // Truncate long text to fit in the display
+			if(module->any_sample_has_been_loaded == true)
+			{
+				text_to_display = "#" + std::to_string(module->selected_sample_slot + 1) + ":" + module->samples[module->selected_sample_slot].filename;
+				text_to_display.resize(30); // Truncate long text to fit in the display
+			}
+			else
+			{
+				text_to_display = "Right-click to load samples";
+			}
+
+			if(module->trig_input_is_connected == false)
+			{
+				text_to_display = "Connect a clock signal to CLK";
+			}
 		}
 
 		nvgFontSize(args.vg, 13);
@@ -271,6 +298,7 @@ struct MenuItemLoadSample : MenuItem
 
 		if (path)
 		{
+			module->any_sample_has_been_loaded = true;
 			module->samples[sample_number].load(path);
 			module->root_dir = std::string(path);
 			module->loaded_filenames[sample_number] = module->samples[sample_number].filename;
