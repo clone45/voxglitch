@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.959798"
-     inkscape:cx="102.42928"
-     inkscape:cy="269.15024"
+     inkscape:zoom="7.919596"
+     inkscape:cx="344.64409"
+     inkscape:cy="334.19612"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -144,11 +144,6 @@
        id="path33429"
        d="M 64.792954,47.169629 H 166.39295 V 175.66963 H 64.792954 Z m 0,0"
        style="fill:#e6e6e6;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.50018966" />
-    <path
-       inkscape:connector-curvature="0"
-       id="path36629"
-       d="m 162.94407,80.870382 c 0,-0.70925 -0.58092,-1.29052 -1.2937,-1.29052 h -9.93261 c -0.711,0 -1.29369,0.58127 -1.29369,1.29052 v 15.701339 c 0,0.70925 0.58269,1.29052 1.29369,1.29052 h 9.93261 c 0.71278,0 1.2937,-0.58127 1.2937,-1.29052 z m 0,0"
-       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.45561951" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:4.58611107px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
@@ -160,25 +155,6 @@
          x="75.943253"
          y="57.956348"
          style="font-size:4.58611107px;stroke-width:0.26458332" /></text>
-    <g
-       id="g1527"
-       transform="translate(2.997164,-10.253739)">
-      <path
-         d="m 151.79579,93.213861 -0.22225,1.00189 h -0.42333 l -0.11994,-2.46945 h 0.26105 l 0.10583,2.20486 0.29281,-1.16416 h 0.21872 l 0.29986,1.16416 0.10936,-2.20486 h 0.24342 l -0.11994,2.46945 h -0.4445 z"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-         id="path2137"
-         inkscape:connector-curvature="0" />
-      <path
-         d="m 153.36235,93.591331 -0.13759,0.62442 h -0.31397 l 0.5962,-2.46945 h 0.40569 l 0.58561,2.46945 h -0.31397 l -0.13406,-0.62442 z m 0.63147,-0.26458 -0.28928,-1.34761 -0.28575,1.34761 z"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-         id="path2139"
-         inkscape:connector-curvature="0" />
-      <path
-         d="m 154.85129,91.746301 h 0.31044 l 0.42334,2.159 0.45508,-2.159 h 0.30339 l -0.55386,2.46945 h -0.41981 z"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-         id="path2141"
-         inkscape:connector-curvature="0" />
-    </g>
     <g
        aria-label="voxglitch"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Sitka Subheading';-inkscape-font-specification:'Sitka Subheading';letter-spacing:0px;word-spacing:0px;fill:#999999;fill-opacity:1;stroke:none;stroke-width:0.26458332"
@@ -629,5 +605,10 @@
        d="m 76.723905,94.390328 c 2.83356,2.833561 2.86505,2.865048 2.86505,2.865048"
        id="path27-1-2-8-5-5"
        inkscape:connector-curvature="0" />
+    <path
+       inkscape:connector-curvature="0"
+       id="path36629-9"
+       d="m 162.94395,76.368446 c 0,-0.897172 -0.58092,-1.632463 -1.2937,-1.632463 h -9.93261 c -0.711,0 -1.29369,0.735291 -1.29369,1.632463 v 19.861713 c 0,0.897172 0.58269,1.632464 1.29369,1.632464 h 9.93261 c 0.71278,0 1.2937,-0.735292 1.2937,-1.632464 z m 0,0"
+       style="display:inline;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.51243901" />
   </g>
 </svg>
