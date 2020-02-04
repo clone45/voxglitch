@@ -28,7 +28,7 @@ struct Goblin
 
 	unsigned int sample_position = 0;
 
-	float getOutput()
+	std::pair<float, float> getStereoOutput()
 	{
 		// Note that we're adding two floating point numbers, then casting
 		// them to an int, which is much faster than using floor()
@@ -38,7 +38,7 @@ struct Goblin
 		if (sample_position >= this->sample_ptr->total_sample_count) sample_position = sample_position % this->sample_ptr->total_sample_count;
 
         // Return the audio
-		return(this->sample_ptr->leftPlayBuffer[sample_position]);
+		return { this->sample_ptr->leftPlayBuffer[sample_position], this->sample_ptr->rightPlayBuffer[sample_position] };
 	}
 
 	void age(float step_amount, float playback_length)
@@ -99,7 +99,8 @@ struct Goblins : Module
 		NUM_INPUTS
 	};
 	enum OutputIds {
-		WAV_OUTPUT,
+		AUDIO_OUTPUT_LEFT,
+		AUDIO_OUTPUT_RIGHT,
 		DEBUG_OUTPUT,
 		NUM_OUTPUTS
 	};
@@ -150,7 +151,7 @@ struct Goblins : Module
 			json_t *loaded_sample_path = json_object_get(rootJ, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
 			if (loaded_sample_path)
 			{
-				samples[i].load(json_string_value(loaded_sample_path));
+				samples[i].load(json_string_value(loaded_sample_path), false);
 				loaded_filenames[i] = samples[i].filename;
 			}
 		}
@@ -214,7 +215,8 @@ struct Goblins : Module
 
 		if ((! selected_sample->loading) && (selected_sample->total_sample_count > 0))
 		{
-			float mix_output = 0;
+			float left_mix_output = 0;
+			float right_mix_output = 0;
 
 			if(countryside.empty() == false)
 			{
@@ -235,18 +237,24 @@ struct Goblins : Module
 				// Iterate over all the goblins in the countryside and collect their output.
 				for(Goblin& goblin : countryside)
 				{
-					mix_output += goblin.getOutput();
+					// mix_output += goblin.getOutput();
+					std::pair<float, float> stereo_output = goblin.getStereoOutput();
+					left_mix_output  += stereo_output.first;
+					right_mix_output += stereo_output.second;
+
 					goblin.age(step_amount, playback_length);
 				}
 
-				outputs[WAV_OUTPUT].setVoltage(mix_output);
+				outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_mix_output);
+				outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_mix_output);
 			}
 
 			spawn_rate_counter = spawn_rate_counter + 1.0f;
 		}
 		else
 		{
-			outputs[WAV_OUTPUT].setVoltage(0);
+			outputs[AUDIO_OUTPUT_LEFT].setVoltage(0);
+			outputs[AUDIO_OUTPUT_RIGHT].setVoltage(0);
 		}
 	}
 };
@@ -297,7 +305,7 @@ struct GoblinsLoadSample : MenuItem
 
 		if (path)
 		{
-			module->samples[sample_number].load(path);
+			module->samples[sample_number].load(path, false);
 			module->root_dir = std::string(path);
 			module->loaded_filenames[sample_number] = module->samples[sample_number].filename;
 			free(path);
@@ -349,7 +357,10 @@ struct GoblinsWidget : ModuleWidget
 
 		// Trim / Wav Output
 		// addParam(createParamCentered<Trimpot>(mm2px(Vec(88.6, 37)), module, Goblins::TRIM_KNOB));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(91.874, 44.611)), module, Goblins::WAV_OUTPUT));
+		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(91.874, 44.611)), module, Goblins::WAV_OUTPUT));
+
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(91.874, 34.052)), module, Goblins::AUDIO_OUTPUT_LEFT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(91.874, 44.611)), module, Goblins::AUDIO_OUTPUT_RIGHT));
 
 		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 124.893)), module, Ghosts::DEBUG_OUTPUT));
 
