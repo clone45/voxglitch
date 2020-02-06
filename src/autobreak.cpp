@@ -551,7 +551,7 @@ struct AutobreakSequencer : OpaqueWidget
 	{
 		// Shift sequence to the right
 		int temp = module->break_patterns[module->selected_break_pattern][15];
-		for(int i=15; i>1; i--)
+		for(int i=15; i>0; i--)
 		{
 			module->break_patterns[module->selected_break_pattern][i] = module->break_patterns[module->selected_break_pattern][i-1];
 		}
