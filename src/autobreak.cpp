@@ -48,7 +48,8 @@ struct Autobreak : Module
 	int clock_counter_old = 0;
 	unsigned int selected_break_pattern = 0;
 	float smooth_ramp = 1;
-	float last_wave_output_voltage = 0;
+	float last_left_output = 0;
+	float last_right_output = 0;
 	std::string root_dir;
 	std::string path;
 
@@ -103,7 +104,8 @@ struct Autobreak : Module
 		NUM_INPUTS
 	};
 	enum OutputIds {
-		WAV_OUTPUT,
+		AUDIO_OUTPUT_LEFT,
+		AUDIO_OUTPUT_RIGHT,
 		DEBUG_OUTPUT,
 		CLOCK_OUTPUT,
 		END_OUTPUT,
@@ -177,7 +179,7 @@ struct Autobreak : Module
 			json_t *loaded_sample_path = json_object_get(json_root, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
 			if (loaded_sample_path)
 			{
-				samples[i].load(json_string_value(loaded_sample_path));
+				samples[i].load(json_string_value(loaded_sample_path), false);
 				loaded_filenames[i] = samples[i].filename;
 			}
 		}
@@ -257,7 +259,9 @@ struct Autobreak : Module
 			float samples_to_play_per_loop = ((60.0 / (float) bpm) * args.sampleRate) * 8.0;
 
 			actual_playback_position = clamp(actual_playback_position, 0.0, selected_sample->total_sample_count - 1);
-			float wav_output_voltage = GAIN  * selected_sample->leftPlayBuffer[(int)actual_playback_position];
+
+			float left_output  = GAIN  * selected_sample->leftPlayBuffer[(int)actual_playback_position];
+			float right_output = GAIN  * selected_sample->rightPlayBuffer[(int)actual_playback_position];
 
 			//
 			// Handle smoothing
@@ -267,14 +271,15 @@ struct Autobreak : Module
 			{
 				float smooth_rate = (128.0f / args.sampleRate);  // A smooth rate of 128 seems to work best
 				smooth_ramp += smooth_rate;
-				wav_output_voltage = (last_wave_output_voltage * (1 - smooth_ramp)) + (wav_output_voltage * smooth_ramp);
-				outputs[WAV_OUTPUT].setVoltage(wav_output_voltage);
+				left_output = (last_left_output * (1 - smooth_ramp)) + (left_output * smooth_ramp);
+				right_output = (last_right_output * (1 - smooth_ramp)) + (right_output * smooth_ramp);
 			}
-			else
-			{
-				outputs[WAV_OUTPUT].setVoltage(wav_output_voltage);
-			}
-			last_wave_output_voltage = wav_output_voltage;
+
+			outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_output);
+			outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_output);
+
+			last_left_output = left_output;
+			last_right_output = right_output;
 
 			// Update a clock counter and provide a trigger output whenever 1/32nd of the sample has been reached.
 			clock_counter = (incrementing_bpm_counter / samples_to_play_per_loop) * 32.0f;
@@ -331,7 +336,8 @@ struct Autobreak : Module
 		}
 		else
 		{
-			outputs[WAV_OUTPUT].setVoltage(0);
+			outputs[AUDIO_OUTPUT_LEFT].setVoltage(0);
+			outputs[AUDIO_OUTPUT_RIGHT].setVoltage(0);
 		}
 
 		//
@@ -530,6 +536,28 @@ struct AutobreakSequencer : OpaqueWidget
 		OpaqueWidget::step();
 	}
 
+	void shift_left()
+	{
+		// Shift sequence to the left
+		int temp = module->break_patterns[module->selected_break_pattern][0];
+		for(int i=0; i<15; i++)
+		{
+			module->break_patterns[module->selected_break_pattern][i] = module->break_patterns[module->selected_break_pattern][i+1];
+		}
+		module->break_patterns[module->selected_break_pattern][15] = temp;
+	}
+
+	void shift_right()
+	{
+		// Shift sequence to the right
+		int temp = module->break_patterns[module->selected_break_pattern][15];
+		for(int i=15; i>1; i--)
+		{
+			module->break_patterns[module->selected_break_pattern][i] = module->break_patterns[module->selected_break_pattern][i-1];
+		}
+		module->break_patterns[module->selected_break_pattern][0] = temp;
+	}
+
 	void editBar(Vec mouse_position)
 	{
 		int clicked_bar_x_index = mouse_position.x / (BAR_WIDTH + BAR_HORIZONTAL_PADDING);
@@ -576,13 +604,7 @@ struct AutobreakSequencer : OpaqueWidget
 
 			if(e.action == GLFW_PRESS)
 			{
-				// Shift sequence to the left
-				int temp = module->break_patterns[module->selected_break_pattern][0];
-				for(int i=0; i<15; i++)
-				{
-					module->break_patterns[module->selected_break_pattern][i] = module->break_patterns[module->selected_break_pattern][i+1];
-				}
-				module->break_patterns[module->selected_break_pattern][15] = temp;
+				this->shift_left();
 			}
 		}
 
@@ -592,13 +614,7 @@ struct AutobreakSequencer : OpaqueWidget
 
 			if(e.action == GLFW_PRESS)
 			{
-				// Shift sequence to the right
-				int temp = module->break_patterns[module->selected_break_pattern][15];
-				for(int i=15; i>1; i--)
-				{
-					module->break_patterns[module->selected_break_pattern][i] = module->break_patterns[module->selected_break_pattern][i-1];
-				}
-				module->break_patterns[module->selected_break_pattern][0] = temp;
+				this->shift_right();
 			}
 		}
 	}
@@ -651,7 +667,7 @@ struct AutobreakLoadSample : MenuItem
 
 		if (path)
 		{
-			module->samples[sample_number].load(path);
+			module->samples[sample_number].load(path, false);
 			module->root_dir = std::string(path);
 			module->loaded_filenames[sample_number] = module->samples[sample_number].filename;
 			free(path);
@@ -671,12 +687,12 @@ struct AutobreakWidget : ModuleWidget
 		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
 
 		// Pattern Select
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(13.848 + 1.268, 38 + 1.587)), module, Autobreak::PATTERN_KNOB));
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(13.848 + 1.268, 38 + 1.587)), module, Autobreak::PATTERN_KNOB));
 		addParam(createParamCentered<Trimpot>(mm2px(Vec(13.848 + 1.268, 52 + 1.587)), module, Autobreak::PATTERN_ATTN_KNOB));
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.848 + 1.268, 63.5 + 1.587)), module, Autobreak::PATTERN_INPUT));
 
 		// Inputs for WAV selection
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(34.541 + 1.268, 38 + 1.587)), module, Autobreak::WAV_KNOB));
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(34.541 + 1.268, 38 + 1.587)), module, Autobreak::WAV_KNOB));
 		addParam(createParamCentered<Trimpot>(mm2px(Vec(34.541+ 1.268, 52 + 1.587)), module, Autobreak::WAV_ATTN_KNOB));
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.541+ 1.268, 63.5 + 1.587)), module, Autobreak::WAV_INPUT));
 
@@ -707,13 +723,13 @@ struct AutobreakWidget : ModuleWidget
 
 		// Outputs
 		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 100.893)), module, Autobreak::DEBUG_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(189.89 + 1.268, 68.8 + 1.587)), module, Autobreak::END_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(189.89 + 1.268, 89.2 + 1.587)), module, Autobreak::CLOCK_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(189.89 + 1.268, 90.787)), module, Autobreak::END_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(189.89 + 1.268, 70.387)), module, Autobreak::CLOCK_OUTPUT));
 
 		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(189.89, 104)), module, Ghosts::AUDIO_OUTPUT_LEFT));
 		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(189.89, 114.609)), module, Ghosts::AUDIO_OUTPUT_RIGHT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(189.89 + 1.268, 114.609 + 1.587)), module, Autobreak::WAV_OUTPUT));
-
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(189.89 + 1.268, 106.196)), module, Autobreak::AUDIO_OUTPUT_LEFT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(189.89 + 1.268, 116.196)), module, Autobreak::AUDIO_OUTPUT_RIGHT));
 	}
 
 	void appendContextMenu(Menu *menu) override
