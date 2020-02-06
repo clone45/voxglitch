@@ -40,7 +40,6 @@ struct Autobreak : Module
 	// Pattern lock is a flag which, when true, stops the pattern from changing
 	// due to changes in the pattern knob or the CV input.  This flag is set
 	// to true when the user is actively editing the current pattern.
- 	bool pattern_lock = false;
 
 	unsigned int bpm = 160;
 	unsigned int break_pattern_index = 0;
@@ -286,11 +285,8 @@ struct Autobreak : Module
 			theoretical_playback_position = theoretical_playback_position + 1;
 
 			// Select the break pattern
-			if(pattern_lock == false)
-			{
-				selected_break_pattern = calculate_inputs(PATTERN_INPUT, PATTERN_KNOB, PATTERN_ATTN_KNOB, NUMBER_OF_PATTERNS - 1);
-				selected_break_pattern = clamp(selected_break_pattern, 0, NUMBER_OF_PATTERNS - 1);
-			}
+			selected_break_pattern = calculate_inputs(PATTERN_INPUT, PATTERN_KNOB, PATTERN_ATTN_KNOB, NUMBER_OF_PATTERNS - 1);
+			selected_break_pattern = clamp(selected_break_pattern, 0, NUMBER_OF_PATTERNS - 1);
 
 			//
 			// Optionally jump to new breakbeat position
@@ -414,12 +410,14 @@ struct AutobreakReadout : TransparentWidget
 	}
 };
 
-struct AutobreakPatternReadout : TransparentWidget
+// TODO: Make a generic sequencer class out of this
+
+struct AutobreakSequencer : OpaqueWidget
 {
 	Autobreak *module;
 	Vec drag_position;
 
-	AutobreakPatternReadout()
+	AutobreakSequencer()
 	{
 		// The bounding box needs to be a little deeper than the visual
 		// controls to allow mouse drags to indicate '0' (off) column heights,
@@ -441,8 +439,6 @@ struct AutobreakPatternReadout : TransparentWidget
 			//
 
 			int break_position;
-			// float bar_width = 21;
-			// float bar_horizontal_padding = .8;
 			float break_position_bar_height;
 			NVGcolor highlighted_bar_color;
 
@@ -511,28 +507,27 @@ struct AutobreakPatternReadout : TransparentWidget
 			drag_position = e.pos;
 			this->editBar(e.pos);
 		}
-		// DEBUG("%s %d,%d", "button press at: ", clicked_bar_x_index, clicked_bar_y_index);
 	}
 
 	void onDragStart(const event::DragStart &e) override
     {
-		TransparentWidget::onDragStart(e);
+		OpaqueWidget::onDragStart(e);
 	}
 
 	void onDragEnd(const event::DragEnd &e) override
     {
-		TransparentWidget::onDragEnd(e);
+		OpaqueWidget::onDragEnd(e);
 	}
 
 	void onDragMove(const event::DragMove &e) override
     {
-		TransparentWidget::onDragMove(e);
+		OpaqueWidget::onDragMove(e);
 		drag_position = drag_position.plus(e.mouseDelta);
 		editBar(drag_position);
 	}
 
 	void step() override {
-		TransparentWidget::step();
+		OpaqueWidget::step();
 	}
 
 	void editBar(Vec mouse_position)
@@ -559,17 +554,53 @@ struct AutobreakPatternReadout : TransparentWidget
 		}
 	}
 
-	void onEnter(const event::Enter &e) override
+	/*
+	void onHover(const event::Hover &e) override
     {
-		TransparentWidget::onEnter(e);
-		this->module->pattern_lock = true;
-		DEBUG("On enter called");
+		OpaqueWidget::onHover(e);
+		e.consume(this);
 	}
 
 	void onLeave(const event::Leave &e) override
     {
-		TransparentWidget::onLeave(e);
-		this->module->pattern_lock = false;
+		OpaqueWidget::onLeave(e);
+		e.consume(this);
+	}
+	*/
+
+	void onHoverKey(const event::HoverKey &e) override
+	{
+		if (e.key == GLFW_KEY_LEFT)
+		{
+			e.consume(this);
+
+			if(e.action == GLFW_PRESS)
+			{
+				// Shift sequence to the left
+				int temp = module->break_patterns[module->selected_break_pattern][0];
+				for(int i=0; i<15; i++)
+				{
+					module->break_patterns[module->selected_break_pattern][i] = module->break_patterns[module->selected_break_pattern][i+1];
+				}
+				module->break_patterns[module->selected_break_pattern][15] = temp;
+			}
+		}
+
+		if (e.key == GLFW_KEY_RIGHT)
+		{
+			e.consume(this);
+
+			if(e.action == GLFW_PRESS)
+			{
+				// Shift sequence to the right
+				int temp = module->break_patterns[module->selected_break_pattern][15];
+				for(int i=15; i>1; i--)
+				{
+					module->break_patterns[module->selected_break_pattern][i] = module->break_patterns[module->selected_break_pattern][i-1];
+				}
+				module->break_patterns[module->selected_break_pattern][0] = temp;
+			}
+		}
 	}
 };
 
@@ -640,42 +671,48 @@ struct AutobreakWidget : ModuleWidget
 		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
 
 		// Pattern Select
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(13.848, 38)), module, Autobreak::PATTERN_KNOB));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(13.848, 52)), module, Autobreak::PATTERN_ATTN_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.848, 63.5)), module, Autobreak::PATTERN_INPUT));
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(13.848 + 1.268, 38 + 1.587)), module, Autobreak::PATTERN_KNOB));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(13.848 + 1.268, 52 + 1.587)), module, Autobreak::PATTERN_ATTN_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.848 + 1.268, 63.5 + 1.587)), module, Autobreak::PATTERN_INPUT));
 
 		// Inputs for WAV selection
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(34.541, 38)), module, Autobreak::WAV_KNOB));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(34.541, 52)), module, Autobreak::WAV_ATTN_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.541, 63.5)), module, Autobreak::WAV_INPUT));
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(34.541 + 1.268, 38 + 1.587)), module, Autobreak::WAV_KNOB));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(34.541+ 1.268, 52 + 1.587)), module, Autobreak::WAV_ATTN_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.541+ 1.268, 63.5 + 1.587)), module, Autobreak::WAV_INPUT));
 
 		AutobreakReadout *readout = new AutobreakReadout();
-		readout->box.pos = mm2px(Vec(53.5, 22));
+		readout->box.pos = mm2px(Vec(56.146 + 1.268, 22 + 1.587));
 		readout->box.size = Vec(110, 30); // bounding box of the widget
 		readout->module = module;
 		addChild(readout);
 
-		AutobreakPatternReadout *pattern_readout = new AutobreakPatternReadout();
-		pattern_readout->box.pos = mm2px(Vec(55.141, 35.689));
-		pattern_readout->module = module;
-		addChild(pattern_readout);
+		AutobreakSequencer *sequencer = new AutobreakSequencer();
+		sequencer->box.pos = mm2px(Vec(57.787 + 1.268, 35.689 + 1.587));
+		sequencer->module = module;
+		addChild(sequencer);
 
 		AutobreakBPMDislplay *bpm_display = new AutobreakBPMDislplay();
-		bpm_display->box.pos = mm2px(Vec(11.5, 13.5));
+		bpm_display->box.pos = mm2px(Vec(11.5 + 1.268, 13.5 + 1.587));
 		bpm_display->module = module;
 		addChild(bpm_display);
 
 		// BPM selection
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 12.2)), module, Autobreak::BPM_KNOB));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 1.268, 12.2 + 1.587)), module, Autobreak::BPM_KNOB));
+
+		//
+		// Controls to the right of the sequencer
 
 		// Reset
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.541, 88.685)), module, Autobreak::RESET_INPUT));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(189.89 + 1.268, 25.601 + 1.587)), module, Autobreak::RESET_INPUT));
 
 		// Outputs
 		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 100.893)), module, Autobreak::DEBUG_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(13.848, 114.893)), module, Autobreak::CLOCK_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(13.848, 88.685)), module, Autobreak::END_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.541, 114.893)), module, Autobreak::WAV_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(189.89 + 1.268, 68.8 + 1.587)), module, Autobreak::END_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(189.89 + 1.268, 89.2 + 1.587)), module, Autobreak::CLOCK_OUTPUT));
+
+		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(189.89, 104)), module, Ghosts::AUDIO_OUTPUT_LEFT));
+		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(189.89, 114.609)), module, Ghosts::AUDIO_OUTPUT_RIGHT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(189.89 + 1.268, 114.609 + 1.587)), module, Autobreak::WAV_OUTPUT));
 
 	}
 
