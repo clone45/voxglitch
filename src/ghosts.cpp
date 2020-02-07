@@ -89,11 +89,10 @@ struct Ghost
 		// If the playback position is past the playback length, then wrap the playback position to the beginning
 		if(playback_position >= playback_length)
 		{
-			playback_position = playback_position - playback_length;
+			// fmod is modulus for floating point variables
+			playback_position = fmod(playback_position, playback_length);
 			loop_smoothing_ramp = 0; // smooth back into it
 		}
-
-		if((playback_position >= playback_length) || (playback_position < 0)) playback_position = 0;
 	}
 
 	void startDying()
@@ -195,7 +194,7 @@ struct Ghosts : Module
 	{
 		json_t *loaded_path_json = json_object_get(rootJ, ("path"));
 
-		if (loaded_path_json)
+		if(loaded_path_json)
 		{
 			this->path = json_string_value(loaded_path_json);
 			sample.load(path, false);
@@ -220,7 +219,7 @@ struct Ghosts : Module
 
 		// Ensure that the inputs are within range
 		spawn_rate = clamp(spawn_rate, 0.0f, MAX_GHOST_SPAWN_RATE);
-		if(start_position >= sample.total_sample_count) start_position = sample.total_sample_count - 1;
+		if(start_position >= (sample.total_sample_count - playback_length)) start_position = sample.total_sample_count - playback_length;
 
 		// Shorten the playback length if it would result in playback passing the end of the sample data.
 		if(playback_length > (sample.total_sample_count - start_position)) playback_length = sample.total_sample_count - start_position;
@@ -243,7 +242,7 @@ struct Ghosts : Module
 
 		bool purge_is_triggered = purge_trigger.process(inputs[PURGE_TRIGGER_INPUT].getVoltage()) || purge_button_trigger.process(params[PURGE_BUTTON_PARAM].getValue());
 
-		if (purge_is_triggered)
+		if(purge_is_triggered)
 		{
 			for(Ghost& ghost : graveyard)
 			{
@@ -269,7 +268,7 @@ struct Ghosts : Module
 		}
 
 		// Remove any completely dead ghosts from the graveyard
-		for(int i = graveyard.size() - 1; i >= 0; i--)
+		for(int i=graveyard.size()-1; i >= 0; i--)
 		{
 			if(graveyard[i].dead) graveyard.erase(graveyard.begin() + i);
 		}
@@ -280,17 +279,19 @@ struct Ghosts : Module
 		// been completely removed.
 
 		unsigned int graveyard_capacity = calculate_inputs(GRAVEYARD_CAPACITY_INPUT, GRAVEYARD_CAPACITY_KNOB, GRAVEYARD_CAPACITY_ATTN_KNOB, MAX_GRAVEYARD_CAPACITY);
-		if (graveyard_capacity > MAX_GRAVEYARD_CAPACITY) graveyard_capacity = MAX_GRAVEYARD_CAPACITY;
+		if(graveyard_capacity > MAX_GRAVEYARD_CAPACITY) graveyard_capacity = MAX_GRAVEYARD_CAPACITY;
 
 		if(graveyard.size() > graveyard_capacity)
 		{
 			for(unsigned int i=0; i < graveyard.size() - graveyard_capacity; i++)
 			{
+				// graveyard[i] is a Ghost
 				if(! graveyard[i].dying) graveyard[i].startDying();
 			}
 		}
 
-		if ((! sample.loading) && (sample.total_sample_count > 0))
+		// if ((! sample.loading) && (sample.total_sample_count > 0))
+		if (sample.loaded)
 		{
 
 			//
@@ -306,10 +307,9 @@ struct Ghosts : Module
 			{
 				// pre-calculate step amount and smooth rate.
 				// This is to reduce the amount of math needed within each Ghost's getOutput() and age() functions.
-				// step_amount = sample.sample_rate / args.sampleRate;
 
 				// Increment sample offset (pitch)
-				if (inputs[PITCH_INPUT].isConnected())
+				if(inputs[PITCH_INPUT].isConnected())
 				{
 					step_amount = (sample.sample_rate / args.sampleRate) + (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
 				}
@@ -323,7 +323,6 @@ struct Ghosts : Module
 
 				for(Ghost& ghost : graveyard)
 				{
-					// mix_output += ghost.getStereoOutput(smooth_rate);
 					std::pair<float, float> stereo_output = ghost.getStereoOutput(smooth_rate);
 					left_mix_output  += stereo_output.first;
 					right_mix_output += stereo_output.second;
@@ -356,7 +355,7 @@ struct GhostsLoadSample : MenuItem
 		const std::string dir = "";
 		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("Wav:wav"));
 
-		if (path)
+		if(path)
 		{
 			module->sample.load(path, false);
 			module->root_dir = std::string(path);
