@@ -129,6 +129,8 @@ struct Ghosts : Module
 		GHOST_SPAWN_RATE_ATTN_KNOB,
 		SAMPLE_PLAYBACK_POSITION_KNOB,
 		SAMPLE_PLAYBACK_POSITION_ATTN_KNOB,
+		PITCH_KNOB,
+		PITCH_ATTN_KNOB,
 		PURGE_BUTTON_PARAM,
 		TRIM_KNOB,
 		JITTER_SWITCH,
@@ -137,11 +139,11 @@ struct Ghosts : Module
 	enum InputIds {
 		PURGE_TRIGGER_INPUT,
 		JITTER_CV_INPUT,
-		PITCH_INPUT,
 		GHOST_PLAYBACK_LENGTH_INPUT,
 		GRAVEYARD_CAPACITY_INPUT,
 		GHOST_SPAWN_RATE_INPUT,
 		SAMPLE_PLAYBACK_POSITION_INPUT,
+		PITCH_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -169,6 +171,8 @@ struct Ghosts : Module
 		configParam(GHOST_SPAWN_RATE_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "GhostSpawnRateAttnKnob");
 		configParam(SAMPLE_PLAYBACK_POSITION_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionKnob");
 		configParam(SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionAttnKnob");
+		configParam(PITCH_KNOB, -0.3f, 1.0f, 0.0f, "PitchKnob");
+		configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "PitchAttnKnob");
 		configParam(PURGE_BUTTON_PARAM, 0.f, 1.f, 0.f, "PurgeButtonParam");
 		configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
 		configParam(JITTER_SWITCH, 0.f, 1.f, 1.f, "Jitter");
@@ -297,7 +301,19 @@ struct Ghosts : Module
 			{
 				// pre-calculate step amount and smooth rate.
 				// This is to reduce the amount of math needed within each Ghost's getOutput() and age() functions.
-				step_amount = sample.sample_rate / args.sampleRate;
+				// step_amount = sample.sample_rate / args.sampleRate;
+
+				// Increment sample offset (pitch)
+				if (inputs[PITCH_INPUT].isConnected())
+				{
+					step_amount = (sample.sample_rate / args.sampleRate) + (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
+				}
+				else
+				{
+					step_amount = (sample.sample_rate / args.sampleRate) + params[PITCH_KNOB].getValue();
+				}
+
+
 				smooth_rate = 128.0f / args.sampleRate;
 
 				for(Ghost& ghost : graveyard)
@@ -352,33 +368,38 @@ struct GhostsWidget : ModuleWidget
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/ghosts_front_panel.svg")));
 
 		// Purge
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 33)), module, Ghosts::PURGE_TRIGGER_INPUT));
-		addParam(createParamCentered<LEDButton>(mm2px(Vec(10, 46)), module, Ghosts::PURGE_BUTTON_PARAM));
-		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(10, 46)), module, Ghosts::PURGE_LIGHT));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(71.762, 26)), module, Ghosts::PURGE_TRIGGER_INPUT));
+		addParam(createParamCentered<LEDButton>(mm2px(Vec(71.762, 39)), module, Ghosts::PURGE_BUTTON_PARAM));
+		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(71.762, 39)), module, Ghosts::PURGE_LIGHT));
 
 		// Jitter
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(26, 33)), module, Ghosts::JITTER_CV_INPUT));
-		addParam(createParamCentered<CKSS>(mm2px(Vec(26, 46)), module, Ghosts::JITTER_SWITCH));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(71.762, 59)), module, Ghosts::JITTER_CV_INPUT));
+		addParam(createParamCentered<CKSS>(mm2px(Vec(71.762, 72)), module, Ghosts::JITTER_SWITCH));
 
 		// Position
-		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(71, 33)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_KNOB));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(71, 52)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(71, 65)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_INPUT));
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 28.526)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 28.526)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 28.526)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
+
+		// Pitch
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 50.489)), module, Ghosts::PITCH_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 50.489)), module, Ghosts::PITCH_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 50.489)), module, Ghosts::PITCH_ATTN_KNOB));
 
 		// Length
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 68)), module, Ghosts::GHOST_PLAYBACK_LENGTH_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 68)), module, Ghosts::GHOST_PLAYBACK_LENGTH_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 68)), module, Ghosts::GHOST_PLAYBACK_LENGTH_ATTN_KNOB));
-
-		// Spawn rate
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 112)), module, Ghosts::GHOST_SPAWN_RATE_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 112)), module, Ghosts::GHOST_SPAWN_RATE_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 112)), module, Ghosts::GHOST_SPAWN_RATE_ATTN_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 72.452)), module, Ghosts::GHOST_PLAYBACK_LENGTH_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 72.452)), module, Ghosts::GHOST_PLAYBACK_LENGTH_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 72.452)), module, Ghosts::GHOST_PLAYBACK_LENGTH_ATTN_KNOB));
 
 		// Graveyard Capacity
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 90)), module, Ghosts::GRAVEYARD_CAPACITY_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 90)), module, Ghosts::GRAVEYARD_CAPACITY_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 90)), module, Ghosts::GRAVEYARD_CAPACITY_ATTN_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 94.416)), module, Ghosts::GRAVEYARD_CAPACITY_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 94.416)), module, Ghosts::GRAVEYARD_CAPACITY_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 94.416)), module, Ghosts::GRAVEYARD_CAPACITY_ATTN_KNOB));
+
+		// Spawn rate
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 116.634)), module, Ghosts::GHOST_SPAWN_RATE_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 116.634)), module, Ghosts::GHOST_SPAWN_RATE_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 116.634)), module, Ghosts::GHOST_SPAWN_RATE_ATTN_KNOB));
 
 		// Trim
 		addParam(createParamCentered<Trimpot>(mm2px(Vec(71.810, 90)), module, Ghosts::TRIM_KNOB));
