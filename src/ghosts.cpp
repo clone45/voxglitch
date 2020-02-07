@@ -120,6 +120,10 @@ struct Ghosts : Module
 
 	float jitter_divisor = 1;
 
+	// The filename of the loaded sample.  This is used to display the currently
+	// loaded sample in the right-click context menu.
+	std::string loaded_filename = "[ EMPTY ]";
+
 	enum ParamIds {
 		GHOST_PLAYBACK_LENGTH_KNOB,
 		GHOST_PLAYBACK_LENGTH_ATTN_KNOB,
@@ -195,6 +199,7 @@ struct Ghosts : Module
 		{
 			this->path = json_string_value(loaded_path_json);
 			sample.load(path, false);
+			loaded_filename = sample.filename;
 		}
 	}
 
@@ -355,6 +360,7 @@ struct GhostsLoadSample : MenuItem
 		{
 			module->sample.load(path, false);
 			module->root_dir = std::string(path);
+			module->loaded_filename = module->sample.filename;
 			free(path);
 		}
 	}
@@ -417,9 +423,10 @@ struct GhostsWidget : ModuleWidget
 		assert(module);
 
 		menu->addChild(new MenuEntry); // For spacing only
+		menu->addChild(createMenuLabel("Sample"));
 
 		GhostsLoadSample *menu_item_load_sample = new GhostsLoadSample();
-		menu_item_load_sample->text = "Select .wav file";
+		menu_item_load_sample->text = module->loaded_filename;
 		menu_item_load_sample->module = module;
 		menu->addChild(menu_item_load_sample);
 	}
