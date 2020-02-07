@@ -686,15 +686,17 @@ struct AutobreakWidget : ModuleWidget
 		addChild(createWidget<ScrewSilver>(Vec(15, 0)));
 		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
 
+		float y_offset = -10;
+
 		// Pattern Select
-		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(13.848 + 1.268, 38 + 1.587)), module, Autobreak::PATTERN_KNOB));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(13.848 + 1.268, 52 + 1.587)), module, Autobreak::PATTERN_ATTN_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.848 + 1.268, 63.5 + 1.587)), module, Autobreak::PATTERN_INPUT));
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(13.848 + 1.268, 38 + y_offset)), module, Autobreak::PATTERN_KNOB));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(13.848 + 1.268, 52 + y_offset)), module, Autobreak::PATTERN_ATTN_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.848 + 1.268, 63.5 + y_offset)), module, Autobreak::PATTERN_INPUT));
 
 		// Inputs for WAV selection
-		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(34.541 + 1.268, 38 + 1.587)), module, Autobreak::WAV_KNOB));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(34.541+ 1.268, 52 + 1.587)), module, Autobreak::WAV_ATTN_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.541+ 1.268, 63.5 + 1.587)), module, Autobreak::WAV_INPUT));
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(34.541 + 1.268, 38 + y_offset)), module, Autobreak::WAV_KNOB));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(34.541+ 1.268, 52 + y_offset)), module, Autobreak::WAV_ATTN_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.541+ 1.268, 63.5 + y_offset)), module, Autobreak::WAV_INPUT));
 
 		AutobreakReadout *readout = new AutobreakReadout();
 		readout->box.pos = mm2px(Vec(56.146 + 1.268, 22 + 1.587));
@@ -708,12 +710,12 @@ struct AutobreakWidget : ModuleWidget
 		addChild(sequencer);
 
 		AutobreakBPMDislplay *bpm_display = new AutobreakBPMDislplay();
-		bpm_display->box.pos = mm2px(Vec(11.5 + 1.268, 13.5 + 1.587));
+		bpm_display->box.pos = mm2px(Vec(11.5 + 1.268, 80));
 		bpm_display->module = module;
 		addChild(bpm_display);
 
 		// BPM selection
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 1.268, 12.2 + 1.587)), module, Autobreak::BPM_KNOB));
+		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(26 + 1.268, 80)), module, Autobreak::BPM_KNOB));
 
 		//
 		// Controls to the right of the sequencer
