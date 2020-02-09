@@ -5,6 +5,7 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "sample.hpp"
+#include "smooth.hpp"
 
 #define MAX_GRAVEYARD_CAPACITY 128.0f
 #define MAX_GHOST_SPAWN_RATE 12000.0f
@@ -37,6 +38,9 @@ struct Ghost
 	// ghosts are added, they'll smooth into the sound when first created.
 	//
 
+	Smooth loop_smooth_left;
+	Smooth loop_smooth_right;
+
 	float loop_smoothing_ramp = 0;
 	float removal_smoothing_ramp = 0;
 
@@ -60,15 +64,9 @@ struct Ghost
 		output_voltage_left  = this->sample_ptr->leftPlayBuffer[sample_position];
 		output_voltage_right = this->sample_ptr->rightPlayBuffer[sample_position];
 
-		if(loop_smoothing_ramp < 1)
-		{
-			loop_smoothing_ramp += smooth_rate;
-			output_voltage_left  = (last_wave_output_voltage_left *  (1.0f - loop_smoothing_ramp)) + (output_voltage_left * loop_smoothing_ramp);
-			output_voltage_right = (last_wave_output_voltage_right * (1.0f - loop_smoothing_ramp)) + (output_voltage_right * loop_smoothing_ramp);
-		}
-
-		last_wave_output_voltage_left = output_voltage_left;
-		last_wave_output_voltage_right = output_voltage_right;
+		// Smooth out transitions (or passthrough unmodified when not triggered)
+		output_voltage_left  = loop_smooth_left.process(output_voltage_left, smooth_rate);
+		output_voltage_right = loop_smooth_right.process(output_voltage_right, smooth_rate);
 
 		if(dying && (removal_smoothing_ramp < 1))
 		{
@@ -92,6 +90,9 @@ struct Ghost
 			// fmod is modulus for floating point variables
 			playback_position = fmod(playback_position, playback_length);
 			loop_smoothing_ramp = 0; // smooth back into it
+
+			loop_smooth_left.trigger();
+			loop_smooth_right.trigger();
 		}
 	}
 
