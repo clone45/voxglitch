@@ -30,6 +30,7 @@ struct Sample
 
 	virtual void load(std::string path, bool loadAsMono = true)
 	{
+		this->loaded = false;
 		this->loading = true;
 
 		unsigned int reported_channels;
@@ -79,6 +80,7 @@ struct Sample
 		else
 		{
 			this->loading = false;
+			this->loaded = false;
 		}
 	};
 };
