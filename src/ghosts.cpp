@@ -29,23 +29,13 @@ struct Ghost
 
 	unsigned int sample_position = 0;
 
-	//
-	// smoothing ramps:
-	//
-	// Setting this to 0, when the smooth switch it ON, will cause smoothing
-	// of transitions between playback at the end of the sample and beginning
-	// of the sample.  Notice that it's set to 0 by default.  That's so when new
-	// ghosts are added, they'll smooth into the sound when first created.
-	//
-
+	// Smoothing classes to remove clicks and pops that would happen when sample
+	// playback position jumps around.
 	Smooth loop_smooth_left;
 	Smooth loop_smooth_right;
 
-	float loop_smoothing_ramp = 0;
 	float removal_smoothing_ramp = 0;
 
-	float last_wave_output_voltage_left = 0;
-	float last_wave_output_voltage_right = 0;
 	float output_voltage_left = 0;
 	float output_voltage_right = 0;
 
@@ -89,7 +79,6 @@ struct Ghost
 		{
 			// fmod is modulus for floating point variables
 			playback_position = fmod(playback_position, playback_length);
-			loop_smoothing_ramp = 0; // smooth back into it
 
 			loop_smooth_left.trigger();
 			loop_smooth_right.trigger();
@@ -269,10 +258,15 @@ struct Ghosts : Module
 		}
 
 		// Remove any completely dead ghosts from the graveyard
-		for(int i=graveyard.size()-1; i >= 0; i--)
-		{
-			if(graveyard[i].dead) graveyard.erase(graveyard.begin() + i);
-		}
+
+		// This may be a bit more difficult to read, but it's a little faster than
+		// using a traditional iterator step through the vector and erase the
+		// dead ghosts.
+
+		graveyard.erase(
+			std::remove_if(graveyard.begin(),graveyard.end(),
+				[](const Ghost &ghost) { return ghost.dead; }),
+			graveyard.end());
 
 		// Start killing off older ghosts.  This doesn't remove them immediately.
 		// Instead, it marks them for removal.  Once marked for removal, the audio
@@ -291,7 +285,6 @@ struct Ghosts : Module
 			}
 		}
 
-		// if ((! sample.loading) && (sample.total_sample_count > 0))
 		if (sample.loaded)
 		{
 
@@ -307,9 +300,7 @@ struct Ghosts : Module
 			if(graveyard.empty() == false)
 			{
 				// pre-calculate step amount and smooth rate.
-				// This is to reduce the amount of math needed within each Ghost's getOutput() and age() functions.
-
-				// Increment sample offset (pitch)
+				// This is to reduce the amount of math needed within each Ghost's getStereoOutput() and age() functions.
 				if(inputs[PITCH_INPUT].isConnected())
 				{
 					step_amount = (sample.sample_rate / args.sampleRate) + (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
@@ -319,8 +310,12 @@ struct Ghosts : Module
 					step_amount = (sample.sample_rate / args.sampleRate) + params[PITCH_KNOB].getValue();
 				}
 
-
 				smooth_rate = 128.0f / args.sampleRate;
+
+				// You might wonder, why not remove ghosts that die within this loop
+				// instead of using another loop (above) for cleaning out dead ghosts?
+				// I ran tests and didn't see any change in CPU usage either way,
+				// so I decided that this method is more readable.
 
 				for(Ghost& ghost : graveyard)
 				{
@@ -339,10 +334,6 @@ struct Ghosts : Module
 
 			// TODO: spawn_rate_counter should probably take into consideration the selected sample rate.
 			spawn_rate_counter = spawn_rate_counter + 1.0f;
-		}
-		else
-		{
-			outputs[AUDIO_OUTPUT_LEFT].setVoltage(0);
 		}
 	}
 };
