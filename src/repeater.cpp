@@ -7,6 +7,7 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "sample.hpp"
+#include "smooth.hpp"
 
 #define NUMBER_OF_SAMPLES 5
 #define NUMBER_OF_SAMPLES_FLOAT 5.0
@@ -18,8 +19,7 @@ struct Repeater : Module
 	float samplePos = 0;
 	int step = 0;
 	bool isPlaying = false;
-	float smooth_ramp = 1;
-	float last_wave_output_voltage = 0;
+	Smooth smooth;
 	int retrigger;
 	std::string root_dir;
 
@@ -140,8 +140,8 @@ struct Repeater : Module
 
 		if(sample_select_input_value != selected_sample_slot)
 		{
-			// Reset the smooth ramp if the selected sample has changed
-			smooth_ramp = 0;
+			// Start smoothing if the selected sample has changed
+			smooth.trigger();
 
 			// Set the selected sample
 			selected_sample_slot = sample_select_input_value;
@@ -170,7 +170,7 @@ struct Repeater : Module
 				{
 					isPlaying = true;
 					samplePos = calculate_inputs(POSITION_INPUT, POSITION_KNOB, POSITION_ATTN_KNOB, selected_sample->total_sample_count);
-					smooth_ramp = 0;
+					smooth.trigger();
 					triggerOutputPulse.trigger(0.01f);
 				}
 			}
@@ -186,7 +186,7 @@ struct Repeater : Module
 		if(retrigger && abs(floor(samplePos)) >= selected_sample->total_sample_count)
 		{
 			samplePos = 0;
-			smooth_ramp = 0;
+			smooth.trigger();
 		}
 
 		if (isPlaying && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->total_sample_count > 0) && ((abs(floor(samplePos)) < selected_sample->total_sample_count)))
@@ -203,19 +203,11 @@ struct Repeater : Module
 				wav_output_voltage = GAIN * selected_sample->leftPlayBuffer[floor(selected_sample->total_sample_count - 1 + samplePos)];
 			}
 
-			if(params[SMOOTH_SWITCH].getValue()  && (smooth_ramp < 1))
-			{
-				float smooth_rate = 128.0f / args.sampleRate;  // A smooth rate of 128 seems to work best
-				smooth_ramp += smooth_rate;
-				wav_output_voltage = (last_wave_output_voltage * (1 - smooth_ramp)) + (wav_output_voltage * smooth_ramp);
-				outputs[WAV_OUTPUT].setVoltage(wav_output_voltage);
-			}
-			else
-			{
-				outputs[WAV_OUTPUT].setVoltage(wav_output_voltage);
-			}
+			// Apply smoothing
+			if(params[SMOOTH_SWITCH].getValue()) wav_output_voltage = smooth.process(wav_output_voltage, (128.0f / args.sampleRate));
 
-			last_wave_output_voltage = wav_output_voltage;
+			// Output voltage
+			outputs[WAV_OUTPUT].setVoltage(wav_output_voltage);
 
 			// Increment sample offset (pitch)
 			if (inputs[PITCH_INPUT].isConnected())
