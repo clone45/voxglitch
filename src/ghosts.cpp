@@ -242,6 +242,10 @@ struct Ghosts : Module
 
 		lights[PURGE_LIGHT].setSmoothBrightness(purge_is_triggered, args.sampleTime);
 
+		// Remove any completely dead ghosts from the graveyard
+		graveyard.erase(std::remove_if(graveyard.begin(),graveyard.end(),[](const Ghost &ghost) { return ghost.dead; }), graveyard.end());
+
+		// Add more ghosts!
 		if((graveyard.size() < MAX_GRAVEYARD_CAPACITY) && (spawn_rate_counter >= spawn_rate))
 		{
 			//
@@ -256,17 +260,6 @@ struct Ghosts : Module
 
 			spawn_rate_counter = 0;
 		}
-
-		// Remove any completely dead ghosts from the graveyard
-
-		// This may be a bit more difficult to read, but it's a little faster than
-		// using a traditional iterator step through the vector and erase the
-		// dead ghosts.
-
-		graveyard.erase(
-			std::remove_if(graveyard.begin(),graveyard.end(),
-				[](const Ghost &ghost) { return ghost.dead; }),
-			graveyard.end());
 
 		// Start killing off older ghosts.  This doesn't remove them immediately.
 		// Instead, it marks them for removal.  Once marked for removal, the audio
@@ -299,8 +292,9 @@ struct Ghosts : Module
 
 			if(graveyard.empty() == false)
 			{
-				// pre-calculate step amount and smooth rate.
-				// This is to reduce the amount of math needed within each Ghost's getStereoOutput() and age() functions.
+				// pre-calculate step amount and smooth rate. This is to reduce the amount of math needed
+				// within each Ghost's getStereoOutput() and age() functions.
+
 				if(inputs[PITCH_INPUT].isConnected())
 				{
 					step_amount = (sample.sample_rate / args.sampleRate) + (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
