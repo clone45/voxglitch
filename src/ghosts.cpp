@@ -8,7 +8,7 @@
 #include "smooth.hpp"
 
 #define MAX_GRAVEYARD_CAPACITY 128.0f
-#define MAX_GHOST_SPAWN_RATE 12000.0f
+#define MAX_GHOST_SPAWN_RATE 30000.0f
 
 struct Ghost
 {
@@ -203,11 +203,12 @@ struct Ghosts : Module
 
 	void process(const ProcessArgs &args) override
 	{
-		float spawn_rate = calculate_inputs(GHOST_SPAWN_RATE_INPUT, GHOST_SPAWN_RATE_KNOB, GHOST_SPAWN_RATE_ATTN_KNOB, MAX_GHOST_SPAWN_RATE);
+		float spawn_rate = calculate_inputs(GHOST_SPAWN_RATE_INPUT, GHOST_SPAWN_RATE_KNOB, GHOST_SPAWN_RATE_ATTN_KNOB, 4) + 1;
 		float playback_length = calculate_inputs(GHOST_PLAYBACK_LENGTH_INPUT, GHOST_PLAYBACK_LENGTH_KNOB, GHOST_PLAYBACK_LENGTH_ATTN_KNOB, (args.sampleRate / 16));
 		float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, sample.total_sample_count);
 
 		// Ensure that the inputs are within range
+		spawn_rate = pow(10.0, spawn_rate);
 		spawn_rate = clamp(spawn_rate, 0.0f, MAX_GHOST_SPAWN_RATE);
 		if(start_position >= (sample.total_sample_count - playback_length)) start_position = sample.total_sample_count - playback_length;
 
