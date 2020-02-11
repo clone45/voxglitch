@@ -5,7 +5,7 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "sample.hpp"
-#include "GrainSilo.hpp"
+#include "GrainSiloArray.hpp"
 
 #define MAX_GRAVEYARD_CAPACITY 128.0f
 #define MAX_GHOST_SPAWN_RATE 30000.0f
@@ -158,10 +158,10 @@ struct Ghosts : Module
 		lights[PURGE_LIGHT].setSmoothBrightness(purge_is_triggered, args.sampleTime);
 
 		// Remove any completely dead ghosts from the graveyard
-		graveyard.cleanup();
+		// graveyard.cleanup();
 
 		// Add more ghosts!
-		if((graveyard.getSize() < MAX_GRAVEYARD_CAPACITY) && (spawn_rate_counter >= spawn_rate))
+		if(spawn_rate_counter >= spawn_rate)
 		{
 			//
 			// I ain't afraid of no ghosts! ♫ ♪
@@ -178,10 +178,10 @@ struct Ghosts : Module
 		int graveyard_capacity = calculate_inputs(GRAVEYARD_CAPACITY_INPUT, GRAVEYARD_CAPACITY_KNOB, GRAVEYARD_CAPACITY_ATTN_KNOB, MAX_GRAVEYARD_CAPACITY);
 		if(graveyard_capacity > MAX_GRAVEYARD_CAPACITY) graveyard_capacity = MAX_GRAVEYARD_CAPACITY;
 
-		if(graveyard.getSize() > graveyard_capacity)
+		if(graveyard.active() > graveyard_capacity)
 		{
 			// Mark the oldest 'nth' ghosts for removal
-			graveyard.markOldestForRemoval(graveyard.getSize() - graveyard_capacity);
+			graveyard.markOldestForRemoval(graveyard.active() - graveyard_capacity);
 		}
 
 		if (sample.loaded)
