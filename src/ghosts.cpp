@@ -5,7 +5,7 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "sample.hpp"
-#include "GrainSiloArray.hpp"
+#include "GrainSilo.hpp"
 
 #define MAX_GRAVEYARD_CAPACITY 128.0f
 #define MAX_GHOST_SPAWN_RATE 30000.0f
