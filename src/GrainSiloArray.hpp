@@ -106,8 +106,8 @@ struct Grain
 
 struct GrainSilo
 {
-	std::vector<Grain *> active_grains;
-	std::vector<Grain *> deprecated_grains;
+	std::deque<Grain *> active_grains;
+	std::deque<Grain *> deprecated_grains;
 	std::stack<Grain *> available_grain_pool;
 
 	GrainSilo()
@@ -129,14 +129,23 @@ struct GrainSilo
 
 	virtual void markAllForRemoval()
 	{
+		/*
         for(int i=active_grains.size() - 1; i>=0; i--)
         {
             // if(! grains[i].marked_for_removal) grains[i].markForRemoval();
 			Grain *grain_ptr = active_grains[i];
 			grain_ptr->markForRemoval();
 			deprecated_grains.push_back(grain_ptr);
-			active_grains.erase(active_grains.begin()+i);
         }
+		*/
+
+		for (Grain * grain_ptr : active_grains)
+		{
+			grain_ptr->markForRemoval();
+			deprecated_grains.push_back(grain_ptr);
+		}
+
+		active_grains.clear();
 	};
 
 	virtual int active()
@@ -168,12 +177,13 @@ struct GrainSilo
         {
 			if(active_grains.size() > 0)
 			{
-				Grain *grain_ptr = active_grains[0];
+				Grain *grain_ptr = active_grains.front();
+				active_grains.pop_front();
 				grain_ptr->markForRemoval();
 				deprecated_grains.push_back(grain_ptr);
 
 				// This could be an expensive operation
-				active_grains.erase(active_grains.begin());
+				// active_grains.erase(active_grains.begin());
 			}
         }
     }
@@ -183,61 +193,62 @@ struct GrainSilo
         float left_mix_output = 0;
         float right_mix_output = 0;
 
-		/*
-        for(Grain* grain : active_grains)
-        {
-            std::pair<float, float> stereo_output = grain->getStereoOutput(smooth_rate);
-            left_mix_output  += stereo_output.first;
-            right_mix_output += stereo_output.second;
-			grain->step(step_amount);
+		//
+		// Process active_grains
+		// ---------------------------------------------------------------------
+		//
 
-			// Possibly TODO: See if grain->recycle is true, if so recycle
-        }
+		for (Grain * grain : active_grains)
+		{
+			std::pair<float, float> stereo_output = grain->getStereoOutput(smooth_rate);
+
+			if(grain->recycle != true)
+			{
+	            left_mix_output  += stereo_output.first;
+	            right_mix_output += stereo_output.second;
+				grain->step(step_amount);
+			}
+		}
+
+		// The block of code above is responsible for seeting recycle = true, which
+		// is why this block of code is safe to be here.
+		/*
+		while((! active_grains.empty()) && (active_grains.back()->recycle == true))
+		{
+			grain = active_grains.pop_back();
+			grain->reset();
+			available_grain_pool.push(grain); // move grain back to available grain pool
+		}
 		*/
 
-		for(int i=active_grains.size() - 1; i>=0; i--)
-        {
-			Grain *grain = active_grains[i];
+		//
+		// Process deprecated_grains
+		// ---------------------------------------------------------------------
+		//
 
-			if(grain->recycle)
+		for (Grain * grain : deprecated_grains)
+		{
+			std::pair<float, float> stereo_output = grain->getStereoOutput(smooth_rate);
+
+			if(grain->recycle != true)
 			{
-				// move grain back to available grain pool
-				grain->reset();
-				available_grain_pool.push(grain);
-				active_grains.erase(active_grains.begin()+i);
-			}
-			else
-			{
-				std::pair<float, float> stereo_output = grain->getStereoOutput(smooth_rate);
 	            left_mix_output  += stereo_output.first;
 	            right_mix_output += stereo_output.second;
-
 				grain->step(step_amount);
 			}
-        }
+		}
 
+		// The block of code above is responsible for seeting recycle = true, which
+		// is why this block of code is safe to be here.
 
-		// Accumulate all audio from the deprecated grains and add to the main mix
-		for(int i=deprecated_grains.size() - 1; i>=0; i--)
-        {
-			Grain *grain = deprecated_grains[i];
+		while((! deprecated_grains.empty()) && (deprecated_grains.back()->recycle == true))
+		{
+			Grain *grain = deprecated_grains.back();
+			deprecated_grains.pop_back();
+			grain->reset();
+			available_grain_pool.push(grain); // move grain back to available grain pool
+		}
 
-			if(grain->recycle)
-			{
-				// move grain back to available grain pool
-				grain->reset();
-				available_grain_pool.push(grain);
-				deprecated_grains.erase(deprecated_grains.begin()+i);
-			}
-			else
-			{
-				std::pair<float, float> stereo_output = grain->getStereoOutput(smooth_rate);
-	            left_mix_output  += stereo_output.first;
-	            right_mix_output += stereo_output.second;
-
-				grain->step(step_amount);
-			}
-        }
 
         return {left_mix_output, right_mix_output};
     }
