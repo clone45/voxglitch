@@ -176,7 +176,6 @@ struct Ghosts : Module
 		// been completely removed.
 
 		int graveyard_capacity = calculate_inputs(GRAVEYARD_CAPACITY_INPUT, GRAVEYARD_CAPACITY_KNOB, GRAVEYARD_CAPACITY_ATTN_KNOB, MAX_GRAVEYARD_CAPACITY);
-		if(graveyard_capacity > MAX_GRAVEYARD_CAPACITY) graveyard_capacity = MAX_GRAVEYARD_CAPACITY;
 
 		if(graveyard.active() > graveyard_capacity)
 		{

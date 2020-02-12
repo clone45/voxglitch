@@ -2,6 +2,8 @@
 #include <stack>
 #include "smooth.hpp"
 
+#define GRAIN_SILO_CAPACITY 120
+
 struct Grain
 {
     // Start Position is the offset into the sample where playback should start.
@@ -57,11 +59,7 @@ struct Grain
 			removal_smoothing_ramp += 0.001f;
 			output_voltage_left = (output_voltage_left * (1.0f - removal_smoothing_ramp));
 			output_voltage_right = (output_voltage_right * (1.0f - removal_smoothing_ramp));
-			if(removal_smoothing_ramp >= 1)
-			{
-				recycle = true;
-				removal_smoothing_ramp = 1;
-			}
+			if(removal_smoothing_ramp >= 1) recycle = true;
 		}
 
 		return {output_voltage_left, output_voltage_right};
@@ -112,7 +110,7 @@ struct GrainSilo
 	GrainSilo()
 	{
 		// Fill up the available grain pool with empty grains
-		for(int i=0; i<128; i++)
+		for(int i=0; i<GRAIN_SILO_CAPACITY; i++)
 		{
 			Grain *grain = new Grain;
 			grain->start_position = 0;
