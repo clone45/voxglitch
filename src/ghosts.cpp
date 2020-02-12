@@ -5,9 +5,9 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "sample.hpp"
-#include "GrainSilo.hpp"
+#include "GrainEngine.hpp"
 
-#define MAX_GRAVEYARD_CAPACITY 128.0f
+#define MAX_GRAVEYARD_CAPACITY 120.0f
 #define MAX_GHOST_SPAWN_RATE 30000.0f
 
 struct Ghosts : Module
@@ -20,7 +20,7 @@ struct Ghosts : Module
 	std::string root_dir;
 	std::string path;
 
-	GrainSilo graveyard;
+	GrainEngine graveyard;
 	Sample sample;
 	dsp::SchmittTrigger purge_trigger;
 	dsp::SchmittTrigger purge_button_trigger;
@@ -177,10 +177,10 @@ struct Ghosts : Module
 
 		int graveyard_capacity = calculate_inputs(GRAVEYARD_CAPACITY_INPUT, GRAVEYARD_CAPACITY_KNOB, GRAVEYARD_CAPACITY_ATTN_KNOB, MAX_GRAVEYARD_CAPACITY);
 
-		if(graveyard.active() > graveyard_capacity)
+		if(graveyard.size() > graveyard_capacity)
 		{
 			// Mark the oldest 'nth' ghosts for removal
-			graveyard.markOldestForRemoval(graveyard.active() - graveyard_capacity);
+			graveyard.markOldestForRemoval(graveyard.size() - graveyard_capacity);
 		}
 
 		if (sample.loaded)
