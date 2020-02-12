@@ -103,13 +103,42 @@ struct Grain
 
 struct GrainSilo
 {
+	// Active grains: Grains that are currently being played
+	// Deprecated grains: Grains that are still being played, but are fading out before they are completely removed
+	// Available grain pool: Grains that can be spawned to start playing.
+
+	// Grains are taken from the available grain pool and added to the active grains
+    // bucket until the quantity of grains in the active bucket exceeds the "quantity"
+    // input of the module.  At that point, older grains are marked for removal
+    // by moving them to the deprecated grain bucket.  once the deprecated
+    // grains have enough time to fade out, they're returned back to the
+    // available grain pool.
+    //
+    // It's likely that, at some point, all of the grains will be in either the
+    // active or deprecated grain buckets.  In that case, then no active grains
+    // would be available to start any new playback.  That's ok.  It just means
+    // that the module needs to wait until some grains become available.  That's
+    // desidered behavior to cap the CPU usage of the module.
+    //
+    /*  available  active     deprecated
+       +-----+    +-----+    +------+
+       |     |    |**   |    |      |
+       |***  +--->+*****+--->+      |
+       |*****|    |*****|    |**    |
+       +-----+    +-----+    +------+
+          ^                      |
+          |                      |
+          +----------------------+
+    */
+
 	std::deque<Grain *> active_grains;
 	std::deque<Grain *> deprecated_grains;
 	std::deque<Grain *> available_grain_pool;
 
 	GrainSilo()
 	{
-		// Fill up the available grain pool with empty grains
+		// Fill up the available grain pool with empty grains. After this loop,
+		// no new grains are ever created.  Instead, grains are recycled.
 		for(int i=0; i<GRAIN_SILO_CAPACITY; i++)
 		{
 			Grain *grain = new Grain;
@@ -149,6 +178,7 @@ struct GrainSilo
 		active_grains.clear();
 	};
 
+    // Return number of active grains
 	virtual int active()
     {
         return(active_grains.size());
@@ -163,14 +193,29 @@ struct GrainSilo
     {
 		if(available_grain_pool.size() > 0)
 		{
+            // Grab one of the available grains from the grain pool
 			Grain *new_grain = available_grain_pool.back();
+
+            // Remvoe it from the grain pool
 			available_grain_pool.pop_back();
+
+            // Configure it for playback
 			new_grain->start_position = start_position;
 			new_grain->playback_length = playback_length;
 			new_grain->sample_ptr = sample_ptr;
+
+            // And finally push it to the end of the active grains.  This means
+            // that the oldest active grains will be at the front of the
+            // active_grains queue.  Order is very important here because we want
+            // to remove the oldest active_grains first.
+
 			active_grains.push_back(new_grain);
 		}
     }
+
+    // Once there are too many active grains, we move a lot of the older active
+    // grains into the deprecated grains bucket.  These deprecated grains will
+    // quickly fade out, then be recycled by being placed into the available grain pool.
 
     virtual void markOldestForRemoval(int nth)
     {
@@ -178,10 +223,18 @@ struct GrainSilo
         {
 			if(active_grains.size() > 0)
 			{
+                // Get the first (and oldest) grain
 				Grain *grain_ptr = active_grains.front();
+
+                // Remove the grain from the active_grains
 				active_grains.pop_front();
+
+                // Start fading out the grain
 				grain_ptr->markForRemoval();
-				deprecated_grains.push_back(grain_ptr);
+
+				// Move the grain to the deprecated grains to continue fading
+                // out until released and returned to the available grain bucket
+				deprecated_grains.push_front(grain_ptr);
 			}
         }
     }
