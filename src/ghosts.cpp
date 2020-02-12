@@ -5,92 +5,10 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "sample.hpp"
-#include "smooth.hpp"
+#include "GrainSilo.hpp"
 
 #define MAX_GRAVEYARD_CAPACITY 128.0f
 #define MAX_GHOST_SPAWN_RATE 30000.0f
-
-struct Ghost
-{
-	// Start Position is the offset into the sample where playback should start.
-	// It is set when the ghost is first created.
-	float start_position;
-
-	// Playback length for the ghost, measuring in .. er.. ticks?
-	float playback_length;
-
-	// sample_ptr points to the loaded sample in memory
-	Sample *sample_ptr;
-
-	// playback_position is similar to samplePos used in for samples.  However,
-	// it's relative to the Ghost's start_position rather than the sample
-	// start position.
-	float playback_position = 0.0f;
-
-	unsigned int sample_position = 0;
-
-	// Smoothing classes to remove clicks and pops that would happen when sample
-	// playback position jumps around.
-	Smooth loop_smooth_left;
-	Smooth loop_smooth_right;
-
-	float removal_smoothing_ramp = 0;
-
-	float output_voltage_left = 0;
-	float output_voltage_right = 0;
-
-	bool dead = false;
-	bool dying = false;
-
-	std::pair<float, float> getStereoOutput(float smooth_rate)
-	{
-		// Note that we're adding two floating point numbers, then casting
-		// them to an int, which is much faster than using floor()
-		sample_position = this->start_position + this->playback_position;
-
-		// Wrap if the sample position is past the sample end point
-		sample_position = sample_position % this->sample_ptr->total_sample_count;
-
-		output_voltage_left  = this->sample_ptr->leftPlayBuffer[sample_position];
-		output_voltage_right = this->sample_ptr->rightPlayBuffer[sample_position];
-
-		// Smooth out transitions (or passthrough unmodified when not triggered)
-		output_voltage_left  = loop_smooth_left.process(output_voltage_left, smooth_rate);
-		output_voltage_right = loop_smooth_right.process(output_voltage_right, smooth_rate);
-
-		if(dying && (removal_smoothing_ramp < 1))
-		{
-			removal_smoothing_ramp += 0.001f;
-			output_voltage_left = (output_voltage_left * (1.0f - removal_smoothing_ramp));
-			output_voltage_right = (output_voltage_right * (1.0f - removal_smoothing_ramp));
-			if(removal_smoothing_ramp >= 1) dead = true;
-		}
-
-		return {output_voltage_left, output_voltage_right};
-	}
-
-	void age(float step_amount)
-	{
-		// Step the playback position forward.
-		playback_position = playback_position + step_amount;
-
-		// If the playback position is past the playback length, then wrap the playback position to the beginning
-		if(playback_position >= playback_length)
-		{
-			// fmod is modulus for floating point variables
-			playback_position = fmod(playback_position, playback_length);
-
-			loop_smooth_left.trigger();
-			loop_smooth_right.trigger();
-		}
-	}
-
-	void startDying()
-	{
-		dying = true;
-	}
-};
-
 
 struct Ghosts : Module
 {
@@ -102,7 +20,7 @@ struct Ghosts : Module
 	std::string root_dir;
 	std::string path;
 
-	std::vector<Ghost> graveyard;
+	GrainSilo graveyard;
 	Sample sample;
 	dsp::SchmittTrigger purge_trigger;
 	dsp::SchmittTrigger purge_button_trigger;
@@ -231,34 +149,24 @@ struct Ghosts : Module
 			start_position = start_position + r;
 		}
 
+		// Handle puge trigger input
 		bool purge_is_triggered = purge_trigger.process(inputs[PURGE_TRIGGER_INPUT].getVoltage()) || purge_button_trigger.process(params[PURGE_BUTTON_PARAM].getValue());
-
 		if(purge_is_triggered)
 		{
-			for(Ghost& ghost : graveyard)
-			{
-				if(! ghost.dying) ghost.startDying();
-			}
+			graveyard.markAllForRemoval();
 		}
-
 		lights[PURGE_LIGHT].setSmoothBrightness(purge_is_triggered, args.sampleTime);
 
 		// Remove any completely dead ghosts from the graveyard
-		graveyard.erase(std::remove_if(graveyard.begin(),graveyard.end(),[](const Ghost &ghost) { return ghost.dead; }), graveyard.end());
+		// graveyard.cleanup();
 
 		// Add more ghosts!
-		if((graveyard.size() < MAX_GRAVEYARD_CAPACITY) && (spawn_rate_counter >= spawn_rate))
+		if(spawn_rate_counter >= spawn_rate)
 		{
 			//
 			// I ain't afraid of no ghosts! ♫ ♪
 			//
-
-			Ghost ghost;
-			ghost.start_position = start_position;
-			ghost.playback_length = playback_length;
-			ghost.sample_ptr = &sample;
-			graveyard.push_back(ghost);
-
+			graveyard.add(start_position, playback_length, &sample);
 			spawn_rate_counter = 0;
 		}
 
@@ -267,16 +175,12 @@ struct Ghosts : Module
 		// smoothing process will be giving time to complete before the ghost has
 		// been completely removed.
 
-		unsigned int graveyard_capacity = calculate_inputs(GRAVEYARD_CAPACITY_INPUT, GRAVEYARD_CAPACITY_KNOB, GRAVEYARD_CAPACITY_ATTN_KNOB, MAX_GRAVEYARD_CAPACITY);
-		if(graveyard_capacity > MAX_GRAVEYARD_CAPACITY) graveyard_capacity = MAX_GRAVEYARD_CAPACITY;
+		int graveyard_capacity = calculate_inputs(GRAVEYARD_CAPACITY_INPUT, GRAVEYARD_CAPACITY_KNOB, GRAVEYARD_CAPACITY_ATTN_KNOB, MAX_GRAVEYARD_CAPACITY);
 
-		if(graveyard.size() > graveyard_capacity)
+		if(graveyard.active() > graveyard_capacity)
 		{
-			for(unsigned int i=0; i < graveyard.size() - graveyard_capacity; i++)
-			{
-				// graveyard[i] is a Ghost
-				if(! graveyard[i].dying) graveyard[i].startDying();
-			}
+			// Mark the oldest 'nth' ghosts for removal
+			graveyard.markOldestForRemoval(graveyard.active() - graveyard_capacity);
 		}
 
 		if (sample.loaded)
@@ -288,10 +192,7 @@ struct Ghosts : Module
 			// even eat nachos?
 			//
 
-			float left_mix_output = 0;
-			float right_mix_output = 0;
-
-			if(graveyard.empty() == false)
+			if(graveyard.isEmpty() == false)
 			{
 				// pre-calculate step amount and smooth rate. This is to reduce the amount of math needed
 				// within each Ghost's getStereoOutput() and age() functions.
@@ -307,22 +208,12 @@ struct Ghosts : Module
 
 				smooth_rate = 128.0f / args.sampleRate;
 
-				// You might wonder, why not remove ghosts that die within this loop
-				// instead of using another loop (above) for cleaning out dead ghosts?
-				// I ran tests and didn't see any change in CPU usage either way,
-				// so I decided that this method is more readable.
+				// Get the output from the graveyard and increase the age of each ghost
+				std::pair<float, float> stereo_output = graveyard.process(smooth_rate, step_amount);
+				float left_mix_output = stereo_output.first * params[TRIM_KNOB].getValue();
+				float right_mix_output = stereo_output.second  * params[TRIM_KNOB].getValue();
 
-				for(Ghost& ghost : graveyard)
-				{
-					std::pair<float, float> stereo_output = ghost.getStereoOutput(smooth_rate);
-					left_mix_output  += stereo_output.first;
-					right_mix_output += stereo_output.second;
-					ghost.age(step_amount);
-				}
-
-				left_mix_output = left_mix_output * params[TRIM_KNOB].getValue();
-				right_mix_output = right_mix_output * params[TRIM_KNOB].getValue();
-
+				// Send audio to outputs
 				outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_mix_output);
 				outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_mix_output);
 			}

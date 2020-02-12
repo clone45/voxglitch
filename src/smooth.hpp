@@ -23,4 +23,10 @@ struct Smooth
         previous_voltage = voltage;
         return voltage;
     }
+
+    void reset()
+    {
+        loop_smoothing_ramp = 0;
+        previous_voltage = 0;
+    }
 };
