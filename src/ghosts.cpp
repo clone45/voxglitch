@@ -5,103 +5,10 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "sample.hpp"
+#include "GrainEngine.hpp"
 
-#define MAX_GRAVEYARD_CAPACITY 128.0f
-#define MAX_GHOST_SPAWN_RATE 12000.0f
-
-struct Ghost
-{
-	// Start Position is the offset into the sample where playback should start.
-	// It is set when the ghost is first created.
-	float start_position;
-
-	// Playback length for the ghost, measuring in .. er.. ticks?
-	float playback_length;
-
-	// sample_ptr points to the loaded sample in memory
-	Sample *sample_ptr;
-
-	// playback_position is similar to samplePos used in for samples.  However,
-	// it's relative to the Ghost's start_position rather than the sample
-	// start position.
-	float playback_position = 0.0f;
-
-	unsigned int sample_position = 0;
-
-	//
-	// smoothing ramps:
-	//
-	// Setting this to 0, when the smooth switch it ON, will cause smoothing
-	// of transitions between playback at the end of the sample and beginning
-	// of the sample.  Notice that it's set to 0 by default.  That's so when new
-	// ghosts are added, they'll smooth into the sound when first created.
-	//
-
-	float loop_smoothing_ramp = 0;
-	float removal_smoothing_ramp = 0;
-
-	float last_wave_output_voltage_left = 0;
-	float last_wave_output_voltage_right = 0;
-	float output_voltage_left = 0;
-	float output_voltage_right = 0;
-
-	bool dead = false;
-	bool dying = false;
-
-	std::pair<float, float> getStereoOutput(float smooth_rate)
-	{
-		// Note that we're adding two floating point numbers, then casting
-		// them to an int, which is much faster than using floor()
-		sample_position = this->start_position + this->playback_position;
-
-		// Wrap if the sample position is past the sample end point
-		sample_position = sample_position % this->sample_ptr->total_sample_count;
-
-		output_voltage_left  = this->sample_ptr->leftPlayBuffer[sample_position];
-		output_voltage_right = this->sample_ptr->rightPlayBuffer[sample_position];
-
-		if(loop_smoothing_ramp < 1)
-		{
-			loop_smoothing_ramp += smooth_rate;
-			output_voltage_left  = (last_wave_output_voltage_left *  (1.0f - loop_smoothing_ramp)) + (output_voltage_left * loop_smoothing_ramp);
-			output_voltage_right = (last_wave_output_voltage_right * (1.0f - loop_smoothing_ramp)) + (output_voltage_right * loop_smoothing_ramp);
-		}
-
-		last_wave_output_voltage_left = output_voltage_left;
-		last_wave_output_voltage_right = output_voltage_right;
-
-		if(dying && (removal_smoothing_ramp < 1))
-		{
-			removal_smoothing_ramp += 0.001f;
-			output_voltage_left = (output_voltage_left * (1.0f - removal_smoothing_ramp));
-			output_voltage_right = (output_voltage_right * (1.0f - removal_smoothing_ramp));
-			if(removal_smoothing_ramp >= 1) dead = true;
-		}
-
-		return {output_voltage_left, output_voltage_right};
-	}
-
-	void age(float step_amount)
-	{
-		// Step the playback position forward.
-		playback_position = playback_position + step_amount;
-
-		// If the playback position is past the playback length, then wrap the playback position to the beginning
-		if(playback_position >= playback_length)
-		{
-			playback_position = playback_position - playback_length;
-			loop_smoothing_ramp = 0; // smooth back into it
-		}
-
-		if((playback_position >= playback_length) || (playback_position < 0)) playback_position = 0;
-	}
-
-	void startDying()
-	{
-		dying = true;
-	}
-};
-
+#define MAX_GRAVEYARD_CAPACITY 120.0f
+#define MAX_GHOST_SPAWN_RATE 30000.0f
 
 struct Ghosts : Module
 {
@@ -113,12 +20,16 @@ struct Ghosts : Module
 	std::string root_dir;
 	std::string path;
 
-	std::vector<Ghost> graveyard;
+	GrainEngine graveyard;
 	Sample sample;
 	dsp::SchmittTrigger purge_trigger;
 	dsp::SchmittTrigger purge_button_trigger;
 
 	float jitter_divisor = 1;
+
+	// The filename of the loaded sample.  This is used to display the currently
+	// loaded sample in the right-click context menu.
+	std::string loaded_filename = "[ EMPTY ]";
 
 	enum ParamIds {
 		GHOST_PLAYBACK_LENGTH_KNOB,
@@ -129,6 +40,8 @@ struct Ghosts : Module
 		GHOST_SPAWN_RATE_ATTN_KNOB,
 		SAMPLE_PLAYBACK_POSITION_KNOB,
 		SAMPLE_PLAYBACK_POSITION_ATTN_KNOB,
+		PITCH_KNOB,
+		PITCH_ATTN_KNOB,
 		PURGE_BUTTON_PARAM,
 		TRIM_KNOB,
 		JITTER_SWITCH,
@@ -137,11 +50,11 @@ struct Ghosts : Module
 	enum InputIds {
 		PURGE_TRIGGER_INPUT,
 		JITTER_CV_INPUT,
-		PITCH_INPUT,
 		GHOST_PLAYBACK_LENGTH_INPUT,
 		GRAVEYARD_CAPACITY_INPUT,
 		GHOST_SPAWN_RATE_INPUT,
 		SAMPLE_PLAYBACK_POSITION_INPUT,
+		PITCH_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -169,6 +82,8 @@ struct Ghosts : Module
 		configParam(GHOST_SPAWN_RATE_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "GhostSpawnRateAttnKnob");
 		configParam(SAMPLE_PLAYBACK_POSITION_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionKnob");
 		configParam(SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionAttnKnob");
+		configParam(PITCH_KNOB, -0.3f, 1.0f, 0.0f, "PitchKnob");
+		configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "PitchAttnKnob");
 		configParam(PURGE_BUTTON_PARAM, 0.f, 1.f, 0.f, "PurgeButtonParam");
 		configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
 		configParam(JITTER_SWITCH, 0.f, 1.f, 1.f, "Jitter");
@@ -187,10 +102,11 @@ struct Ghosts : Module
 	{
 		json_t *loaded_path_json = json_object_get(rootJ, ("path"));
 
-		if (loaded_path_json)
+		if(loaded_path_json)
 		{
 			this->path = json_string_value(loaded_path_json);
 			sample.load(path, false);
+			loaded_filename = sample.filename;
 		}
 	}
 
@@ -205,13 +121,14 @@ struct Ghosts : Module
 
 	void process(const ProcessArgs &args) override
 	{
-		float spawn_rate = calculate_inputs(GHOST_SPAWN_RATE_INPUT, GHOST_SPAWN_RATE_KNOB, GHOST_SPAWN_RATE_ATTN_KNOB, MAX_GHOST_SPAWN_RATE);
+		float spawn_rate = calculate_inputs(GHOST_SPAWN_RATE_INPUT, GHOST_SPAWN_RATE_KNOB, GHOST_SPAWN_RATE_ATTN_KNOB, 4) + 1;
 		float playback_length = calculate_inputs(GHOST_PLAYBACK_LENGTH_INPUT, GHOST_PLAYBACK_LENGTH_KNOB, GHOST_PLAYBACK_LENGTH_ATTN_KNOB, (args.sampleRate / 16));
 		float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, sample.total_sample_count);
 
 		// Ensure that the inputs are within range
+		spawn_rate = pow(10.0, spawn_rate);
 		spawn_rate = clamp(spawn_rate, 0.0f, MAX_GHOST_SPAWN_RATE);
-		if(start_position >= sample.total_sample_count) start_position = sample.total_sample_count - 1;
+		if(start_position >= (sample.total_sample_count - playback_length)) start_position = sample.total_sample_count - playback_length;
 
 		// Shorten the playback length if it would result in playback passing the end of the sample data.
 		if(playback_length > (sample.total_sample_count - start_position)) playback_length = sample.total_sample_count - start_position;
@@ -232,37 +149,25 @@ struct Ghosts : Module
 			start_position = start_position + r;
 		}
 
+		// Handle puge trigger input
 		bool purge_is_triggered = purge_trigger.process(inputs[PURGE_TRIGGER_INPUT].getVoltage()) || purge_button_trigger.process(params[PURGE_BUTTON_PARAM].getValue());
-
-		if (purge_is_triggered)
+		if(purge_is_triggered)
 		{
-			for(Ghost& ghost : graveyard)
-			{
-				if(! ghost.dying) ghost.startDying();
-			}
+			graveyard.markAllForRemoval();
 		}
-
 		lights[PURGE_LIGHT].setSmoothBrightness(purge_is_triggered, args.sampleTime);
 
-		if((graveyard.size() < MAX_GRAVEYARD_CAPACITY) && (spawn_rate_counter >= spawn_rate))
+		// Remove any completely dead ghosts from the graveyard
+		// graveyard.cleanup();
+
+		// Add more ghosts!
+		if(spawn_rate_counter >= spawn_rate)
 		{
 			//
 			// I ain't afraid of no ghosts! ♫ ♪
 			//
-
-			Ghost ghost;
-			ghost.start_position = start_position;
-			ghost.playback_length = playback_length;
-			ghost.sample_ptr = &sample;
-			graveyard.push_back(ghost);
-
+			graveyard.add(start_position, playback_length, &sample);
 			spawn_rate_counter = 0;
-		}
-
-		// Remove any completely dead ghosts from the graveyard
-		for(int i = graveyard.size() - 1; i >= 0; i--)
-		{
-			if(graveyard[i].dead) graveyard.erase(graveyard.begin() + i);
 		}
 
 		// Start killing off older ghosts.  This doesn't remove them immediately.
@@ -270,18 +175,15 @@ struct Ghosts : Module
 		// smoothing process will be giving time to complete before the ghost has
 		// been completely removed.
 
-		unsigned int graveyard_capacity = calculate_inputs(GRAVEYARD_CAPACITY_INPUT, GRAVEYARD_CAPACITY_KNOB, GRAVEYARD_CAPACITY_ATTN_KNOB, MAX_GRAVEYARD_CAPACITY);
-		if (graveyard_capacity > MAX_GRAVEYARD_CAPACITY) graveyard_capacity = MAX_GRAVEYARD_CAPACITY;
+		int graveyard_capacity = calculate_inputs(GRAVEYARD_CAPACITY_INPUT, GRAVEYARD_CAPACITY_KNOB, GRAVEYARD_CAPACITY_ATTN_KNOB, MAX_GRAVEYARD_CAPACITY);
 
 		if(graveyard.size() > graveyard_capacity)
 		{
-			for(unsigned int i=0; i < graveyard.size() - graveyard_capacity; i++)
-			{
-				if(! graveyard[i].dying) graveyard[i].startDying();
-			}
+			// Mark the oldest 'nth' ghosts for removal
+			graveyard.markOldestForRemoval(graveyard.size() - graveyard_capacity);
 		}
 
-		if ((! sample.loading) && (sample.total_sample_count > 0))
+		if (sample.loaded)
 		{
 
 			//
@@ -290,38 +192,34 @@ struct Ghosts : Module
 			// even eat nachos?
 			//
 
-			float left_mix_output = 0;
-			float right_mix_output = 0;
-
-			if(graveyard.empty() == false)
+			if(graveyard.isEmpty() == false)
 			{
-				// pre-calculate step amount and smooth rate.
-				// This is to reduce the amount of math needed within each Ghost's getOutput() and age() functions.
-				step_amount = sample.sample_rate / args.sampleRate;
-				smooth_rate = 128.0f / args.sampleRate;
+				// pre-calculate step amount and smooth rate. This is to reduce the amount of math needed
+				// within each Ghost's getStereoOutput() and age() functions.
 
-				for(Ghost& ghost : graveyard)
+				if(inputs[PITCH_INPUT].isConnected())
 				{
-					// mix_output += ghost.getStereoOutput(smooth_rate);
-					std::pair<float, float> stereo_output = ghost.getStereoOutput(smooth_rate);
-					left_mix_output  += stereo_output.first;
-					right_mix_output += stereo_output.second;
-					ghost.age(step_amount);
+					step_amount = (sample.sample_rate / args.sampleRate) + (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
+				}
+				else
+				{
+					step_amount = (sample.sample_rate / args.sampleRate) + params[PITCH_KNOB].getValue();
 				}
 
-				left_mix_output = left_mix_output * params[TRIM_KNOB].getValue();
-				right_mix_output = right_mix_output * params[TRIM_KNOB].getValue();
+				smooth_rate = 128.0f / args.sampleRate;
 
+				// Get the output from the graveyard and increase the age of each ghost
+				std::pair<float, float> stereo_output = graveyard.process(smooth_rate, step_amount);
+				float left_mix_output = stereo_output.first * params[TRIM_KNOB].getValue();
+				float right_mix_output = stereo_output.second  * params[TRIM_KNOB].getValue();
+
+				// Send audio to outputs
 				outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_mix_output);
 				outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_mix_output);
 			}
 
 			// TODO: spawn_rate_counter should probably take into consideration the selected sample rate.
 			spawn_rate_counter = spawn_rate_counter + 1.0f;
-		}
-		else
-		{
-			outputs[AUDIO_OUTPUT_LEFT].setVoltage(0);
 		}
 	}
 };
@@ -335,10 +233,11 @@ struct GhostsLoadSample : MenuItem
 		const std::string dir = "";
 		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("Wav:wav"));
 
-		if (path)
+		if(path)
 		{
 			module->sample.load(path, false);
 			module->root_dir = std::string(path);
+			module->loaded_filename = module->sample.filename;
 			free(path);
 		}
 	}
@@ -352,41 +251,53 @@ struct GhostsWidget : ModuleWidget
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/ghosts_front_panel.svg")));
 
 		// Purge
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 33)), module, Ghosts::PURGE_TRIGGER_INPUT));
-		addParam(createParamCentered<LEDButton>(mm2px(Vec(10, 46)), module, Ghosts::PURGE_BUTTON_PARAM));
-		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(10, 46)), module, Ghosts::PURGE_LIGHT));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, 25.974)), module, Ghosts::PURGE_TRIGGER_INPUT));
+		addParam(createParamCentered<LEDButton>(mm2px(Vec(75.595, 25.974)), module, Ghosts::PURGE_BUTTON_PARAM));
+		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(75.595, 25.974)), module, Ghosts::PURGE_LIGHT));
 
 		// Jitter
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(26, 33)), module, Ghosts::JITTER_CV_INPUT));
-		addParam(createParamCentered<CKSS>(mm2px(Vec(26, 46)), module, Ghosts::JITTER_SWITCH));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, 45.713)), module, Ghosts::JITTER_CV_INPUT));
+		addParam(createParamCentered<CKSS>(mm2px(Vec(75.595, 45.713)), module, Ghosts::JITTER_SWITCH));
+
+		//
+		// Main Left-side Knobs
+		//
+
+		float y_offset = 1.8;
+		float x_offset = -1.8;
 
 		// Position
-		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(71, 33)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_KNOB));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(71, 52)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(71, 65)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_INPUT));
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 28.526 - y_offset)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 28.526 - y_offset)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 28.526 - y_offset)), module, Ghosts::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
+
+		// Pitch
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 50.489 - y_offset)), module, Ghosts::PITCH_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 50.489 - y_offset)), module, Ghosts::PITCH_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 50.489 - y_offset)), module, Ghosts::PITCH_ATTN_KNOB));
 
 		// Length
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 68)), module, Ghosts::GHOST_PLAYBACK_LENGTH_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 68)), module, Ghosts::GHOST_PLAYBACK_LENGTH_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 68)), module, Ghosts::GHOST_PLAYBACK_LENGTH_ATTN_KNOB));
-
-		// Spawn rate
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 112)), module, Ghosts::GHOST_SPAWN_RATE_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 112)), module, Ghosts::GHOST_SPAWN_RATE_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 112)), module, Ghosts::GHOST_SPAWN_RATE_ATTN_KNOB));
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 72.452 - y_offset)), module, Ghosts::GHOST_PLAYBACK_LENGTH_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 72.452 - y_offset)), module, Ghosts::GHOST_PLAYBACK_LENGTH_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 72.452 - y_offset)), module, Ghosts::GHOST_PLAYBACK_LENGTH_ATTN_KNOB));
 
 		// Graveyard Capacity
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(44, 90)), module, Ghosts::GRAVEYARD_CAPACITY_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 90)), module, Ghosts::GRAVEYARD_CAPACITY_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 90)), module, Ghosts::GRAVEYARD_CAPACITY_ATTN_KNOB));
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 94.416 - y_offset)), module, Ghosts::GRAVEYARD_CAPACITY_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 94.416 - y_offset)), module, Ghosts::GRAVEYARD_CAPACITY_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 94.416 - y_offset)), module, Ghosts::GRAVEYARD_CAPACITY_ATTN_KNOB));
+
+		// Spawn rate
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 116.634 - y_offset)), module, Ghosts::GHOST_SPAWN_RATE_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 116.634 - y_offset)), module, Ghosts::GHOST_SPAWN_RATE_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 116.634 - y_offset)), module, Ghosts::GHOST_SPAWN_RATE_ATTN_KNOB));
 
 		// Trim
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(71.810, 90)), module, Ghosts::TRIM_KNOB));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(75.470, 103.043)), module, Ghosts::TRIM_KNOB));
 
 		// WAV output
 
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(71.810, 104)), module, Ghosts::AUDIO_OUTPUT_LEFT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(71.810, 114.609)), module, Ghosts::AUDIO_OUTPUT_RIGHT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(64.746, 114.702)), module, Ghosts::AUDIO_OUTPUT_LEFT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(75.470, 114.702)), module, Ghosts::AUDIO_OUTPUT_RIGHT));
 		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 124.893)), module, Ghosts::DEBUG_OUTPUT));
 	}
 
@@ -396,9 +307,10 @@ struct GhostsWidget : ModuleWidget
 		assert(module);
 
 		menu->addChild(new MenuEntry); // For spacing only
+		menu->addChild(createMenuLabel("Sample"));
 
 		GhostsLoadSample *menu_item_load_sample = new GhostsLoadSample();
-		menu_item_load_sample->text = "Select .wav file";
+		menu_item_load_sample->text = module->loaded_filename;
 		menu_item_load_sample->module = module;
 		menu->addChild(menu_item_load_sample);
 	}
