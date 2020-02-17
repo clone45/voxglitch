@@ -46,8 +46,9 @@ struct Autobreak : Module
 	float last_left_output = 0;
 	float last_right_output = 0;
 
-    Smooth loop_smooth_left;
-    Smooth loop_smooth_right;
+    // Smooth loop_smooth_left;
+    // Smooth loop_smooth_right;
+    StereoSmooth loop_smooth;
 
     std::string root_dir;
 	std::string path;
@@ -190,8 +191,7 @@ struct Autobreak : Module
 				incrementing_bpm_counter = 0;
 
                 // Smooth back into playback
-                loop_smooth_left.trigger();
-                loop_smooth_right.trigger();
+                loop_smooth.trigger();
 			}
 		}
 
@@ -209,16 +209,14 @@ struct Autobreak : Module
 
             // Handle smoothing
             float smooth_rate = (128.0f / args.sampleRate);
-            left_output = loop_smooth_left.process(left_output, smooth_rate);
-            right_output = loop_smooth_right.process(right_output, smooth_rate);
+            std::tie(left_output, right_output) = loop_smooth.process(left_output, right_output, smooth_rate);
 
+            // Output audio
 			outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_output);
 			outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_output);
 
-
 			// Step the theoretical playback position
 			theoretical_playback_position = theoretical_playback_position + 1;
-
 
 			//
 			// Optionally jump to new breakbeat position
@@ -241,8 +239,7 @@ struct Autobreak : Module
 			if(theoretical_playback_position >= samples_to_play_per_loop)
 			{
 				theoretical_playback_position = 0;
-                loop_smooth_left.trigger();
-                loop_smooth_right.trigger();
+                loop_smooth.trigger();
 			}
 
 			// Map the theoretical playback position to the actual sample playback position
