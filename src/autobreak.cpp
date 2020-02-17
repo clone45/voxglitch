@@ -16,7 +16,6 @@
 struct Autobreak : Module
 {
 	unsigned int selected_sample_slot = 0;
-	float old_actual_playback_position = 0;
 
 	// Actual index into the sample's array for playback
 	float actual_playback_position = 0;
@@ -41,23 +40,15 @@ struct Autobreak : Module
     double timer_before = 0;
     bool clock_triggered = false;
 
-	unsigned int selected_break_pattern = 0;
-	float smooth_ramp = 1;
-	float last_left_output = 0;
-	float last_right_output = 0;
-
-    // Smooth loop_smooth_left;
-    // Smooth loop_smooth_right;
     StereoSmooth loop_smooth;
 
     std::string root_dir;
 	std::string path;
 
-
 	Sample samples[NUMBER_OF_SAMPLES];
 	std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
 
-	dsp::SchmittTrigger playTrigger;
+	dsp::SchmittTrigger resetTrigger;
     dsp::SchmittTrigger clockTrigger;
 
 	enum ParamIds {
@@ -139,14 +130,13 @@ struct Autobreak : Module
 
 	void process(const ProcessArgs &args) override
 	{
-		// unsigned int wav_input_value = (unsigned int) floor(NUMBER_OF_SAMPLES * (((inputs[WAV_INPUT].getVoltage() / 10.0) * params[WAV_ATTN_KNOB].getValue()) + params[WAV_KNOB].getValue()));
 		unsigned int wav_input_value = calculate_inputs(WAV_INPUT, WAV_KNOB, WAV_ATTN_KNOB, NUMBER_OF_SAMPLES);
 		wav_input_value = clamp(wav_input_value, 0, NUMBER_OF_SAMPLES - 1);
 
 		if(wav_input_value != selected_sample_slot)
 		{
 			// Reset the smooth ramp if the selected sample has changed
-			smooth_ramp = 0;
+			loop_smooth.trigger();
 
 			// Set the selected sample
 			selected_sample_slot = wav_input_value;
@@ -154,14 +144,11 @@ struct Autobreak : Module
 
 		Sample *selected_sample = &samples[selected_sample_slot];
 
-
-
         //
         // Handle BPM detection
         //
 
         time_counter += 1.0 / args.sampleRate;
-
 
         if (clockTrigger.process(inputs[CLOCK_INPUT].getVoltage()))
         {
@@ -175,15 +162,13 @@ struct Autobreak : Module
             clock_triggered = true;
         }
 
-
-
         //
         // Handle reset input
         //
 
 		if (inputs[RESET_INPUT].isConnected())
 		{
-			if (playTrigger.process(inputs[RESET_INPUT].getVoltage()))
+			if (resetTrigger.process(inputs[RESET_INPUT].getVoltage()))
 			{
                 // Reset counters
 				actual_playback_position = 0;
@@ -197,7 +182,6 @@ struct Autobreak : Module
 
 		if (selected_sample->loaded && (selected_sample->total_sample_count > 0))
 		{
-
 			// 60.0 is for conversion from minutes to seconds
 			// 8.0 is for 8 beats (2 bars) of loops, which is a typical drum loop length
 			float samples_to_play_per_loop = ((60.0 / bpm) * args.sampleRate) * 8.0;
@@ -218,7 +202,6 @@ struct Autobreak : Module
 			// Step the theoretical playback position
 			theoretical_playback_position = theoretical_playback_position + 1;
 
-			//
 			// Optionally jump to new breakbeat position
             if(clock_triggered)
             {
@@ -235,7 +218,6 @@ struct Autobreak : Module
             }
 
 			// Loop the theoretical_playback_position
-
 			if(theoretical_playback_position >= samples_to_play_per_loop)
 			{
 				theoretical_playback_position = 0;
@@ -249,10 +231,7 @@ struct Autobreak : Module
 			// Increment the bpm counter, which goes from 0 to the number of samples
 			// needed to play an entire loop of a theoretical sample at the bpm specified.
 			incrementing_bpm_counter = incrementing_bpm_counter + 1;
-			if(incrementing_bpm_counter > samples_to_play_per_loop)
-			{
-				incrementing_bpm_counter = 0;
-			}
+			if(incrementing_bpm_counter > samples_to_play_per_loop) incrementing_bpm_counter = 0;
 		}
 	}
 };
