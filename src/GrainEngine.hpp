@@ -1,7 +1,6 @@
 #pragma once
 #include <stack>
 #include "smooth.hpp"
-// 0.01f
 #define REMOVAL_RAMP_ACCUMULATOR 0.01f
 
 struct Grain
@@ -25,8 +24,8 @@ struct Grain
 
     // Smoothing classes to remove clicks and pops that would happen when sample
     // playback position jumps around.
-    Smooth loop_smooth_left;
-    Smooth loop_smooth_right;
+    StereoSmooth loop_smooth;
+    // Smooth loop_smooth_right;
 
     float removal_smoothing_ramp = 0;
 
@@ -51,8 +50,7 @@ struct Grain
         output_voltage_right = this->sample_ptr->rightPlayBuffer[sample_position];
 
         // Smooth out transitions (or passthrough unmodified when not triggered)
-        output_voltage_left  = loop_smooth_left.process(output_voltage_left, smooth_rate);
-        output_voltage_right = loop_smooth_right.process(output_voltage_right, smooth_rate);
+        std::tie(output_voltage_left, output_voltage_right) = loop_smooth.process(output_voltage_left, output_voltage_right, smooth_rate);
 
         if(marked_for_removal && (removal_smoothing_ramp < 1))
         {
@@ -78,8 +76,9 @@ struct Grain
                 // fmod is modulus for floating point variables
                 playback_position = fmod(playback_position, playback_length);
 
-                loop_smooth_left.trigger();
-                loop_smooth_right.trigger();
+                // loop_smooth_left.trigger();
+                // loop_smooth_right.trigger();
+                loop_smooth.trigger();
             }
         }
     }
