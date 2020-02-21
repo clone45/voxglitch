@@ -32,6 +32,12 @@
         "tags": ["Granular", "Sampler"]
     },
     {
+        "slug": "granular",
+        "name": "Granular",
+        "description": ".wav player/scanner using granular synthesis",
+        "tags": ["Granular", "Sampler"]
+    },
+    {
         "slug": "repeater",
         "name": "Repeater",
         "description": "Looping sample player with playback offset control.",

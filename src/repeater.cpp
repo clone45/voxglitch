@@ -7,7 +7,7 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "sample.hpp"
-#include "smooth.hpp"
+#include "submodules.hpp"
 
 #define NUMBER_OF_SAMPLES 5
 #define NUMBER_OF_SAMPLES_FLOAT 5.0
@@ -19,7 +19,7 @@ struct Repeater : Module
 	float samplePos = 0;
 	int step = 0;
 	bool isPlaying = false;
-	Smooth smooth;
+	SmoothSubModule smooth;
 	int retrigger;
 	std::string root_dir;
 

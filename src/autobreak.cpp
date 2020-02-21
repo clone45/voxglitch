@@ -7,7 +7,7 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "sample.hpp"
-#include "smooth.hpp"
+#include "submodules.hpp"
 #include <fstream>
 
 #define GAIN 5.0
@@ -40,7 +40,7 @@ struct Autobreak : Module
     double timer_before = 0;
     bool clock_triggered = false;
 
-    StereoSmooth loop_smooth;
+    StereoSmoothSubModule loop_smooth;
 
     std::string root_dir;
 	std::string path;
