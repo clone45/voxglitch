@@ -1,6 +1,6 @@
 #pragma once
 #include <stack>
-#include "smooth.hpp"
+#include "submodules.hpp"
 #define REMOVAL_RAMP_ACCUMULATOR 0.01f
 
 struct Grain
@@ -24,8 +24,7 @@ struct Grain
 
     // Smoothing classes to remove clicks and pops that would happen when sample
     // playback position jumps around.
-    StereoSmooth loop_smooth;
-    // Smooth loop_smooth_right;
+    StereoSmoothSubModule loop_smooth;
 
     float removal_smoothing_ramp = 0;
 
