@@ -3,6 +3,8 @@
 #include "GrainAmpSlopes.hpp"
 #include "submodules.hpp"
 
+#define MAX_GRAINS 500
+
 struct SimpleGrain
 {
     // Start Position is the offset into the sample where playback should start.
@@ -41,6 +43,8 @@ struct SimpleGrain
 
     std::pair<float, float> getStereoOutput(float smooth_rate, int selected_slope)
     {
+        if(playback_length == 0) return {0,0};
+
         // Note that we're adding two floating point numbers, then casting
         // them to an int, which is much faster than using floor()
         sample_position = this->start_position + this->playback_position;
@@ -57,6 +61,9 @@ struct SimpleGrain
             output_voltage_right = this->sample_ptr->rightPlayBuffer[sample_position];
 
             int slope_index = (playback_position / playback_length) * 512.0;
+            slope_index = clamp(slope_index, 0, 511);
+            selected_slope = clamp(selected_slope, 0, 9);
+
             float slope_value = GRAIN_AMP_SLOPES[selected_slope][slope_index];
 
             output_voltage_left  = (slope_value / 256.0) * output_voltage_left;
@@ -103,6 +110,9 @@ struct SimpleGrainEngine
 
     virtual void add(float start_position, float playback_length, Sample *sample_ptr)
     {
+        if(grain_queue.size() > MAX_GRAINS) return;
+        if(playback_length == 0) return;
+
         SimpleGrain grain;
 
         // Configure it for playback

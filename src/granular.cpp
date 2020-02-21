@@ -37,7 +37,8 @@ struct Granular : Module
 		PITCH_KNOB,
 		PITCH_ATTN_KNOB,
 		TRIM_KNOB,
-        SLOPE_KNOB,
+        AMP_SLOPE_KNOB,
+        AMP_SLOPE_ATTN_KNOB,
 		JITTER_KNOB,
         LEN_MULT_KNOB,
 		NUM_PARAMS
@@ -48,6 +49,7 @@ struct Granular : Module
 		SAMPLE_PLAYBACK_POSITION_INPUT,
 		PITCH_INPUT,
         SPAWN_TRIGGER_INPUT,
+        AMP_SLOPE_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -75,7 +77,8 @@ struct Granular : Module
 		configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "PitchAttnKnob");
 		configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
         configParam(LEN_MULT_KNOB, 1.0f, 128.0f, 1.0f, "LenMultKnob");
-        configParam(SLOPE_KNOB, 0.0f, 1.0f, 0.0f, "SlopeKnob");
+        configParam(AMP_SLOPE_KNOB, 0.0f, 1.0f, 0.0f, "AmpSlopeKnob");
+        configParam(AMP_SLOPE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "AmpSlopeAttnKnob");
 		configParam(JITTER_KNOB, 0.f, 1.0f, 0.0f, "JitterKnob");
 
 		jitter_divisor = static_cast <float> (RAND_MAX / 1024.0);
@@ -114,13 +117,13 @@ struct Granular : Module
         float length_multiplier = params[LEN_MULT_KNOB].getValue();
 		float playback_length = calculate_inputs(LENGTH_INPUT, LENGTH_KNOB, LENGTH_ATTN_KNOB, 128) * length_multiplier;
 		float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, sample.total_sample_count);
+        int amp_slope_selection = calculate_inputs(AMP_SLOPE_INPUT, AMP_SLOPE_KNOB, AMP_SLOPE_ATTN_KNOB, 9.0);
 
 		// Ensure that the inputs are within range
 		if(start_position >= (sample.total_sample_count - playback_length)) start_position = sample.total_sample_count - playback_length;
 
 		// Shorten the playback length if it would result in playback passing the end of the sample data.
 		if(playback_length > (sample.total_sample_count - start_position)) playback_length = sample.total_sample_count - start_position;
-
 
 		if(inputs[JITTER_CV_INPUT].isConnected())
 		{
@@ -158,7 +161,7 @@ struct Granular : Module
 			smooth_rate = 128.0f / args.sampleRate;
 
 			// Get the output from the graveyard and increase the age of each ghost
-			std::pair<float, float> stereo_output = simple_grain_engine.process(smooth_rate, step_amount, params[SLOPE_KNOB].getValue() * 9.0);
+			std::pair<float, float> stereo_output = simple_grain_engine.process(smooth_rate, step_amount, amp_slope_selection);
 			float left_mix_output = stereo_output.first * params[TRIM_KNOB].getValue();
 			float right_mix_output = stereo_output.second  * params[TRIM_KNOB].getValue();
 
@@ -206,10 +209,6 @@ struct GranularWidget : ModuleWidget
 		// addParam(createParamCentered<CKSS>(mm2px(Vec(75.595, 45.713)), module, Granular::JITTER_SWITCH));
         addParam(createParamCentered<Trimpot>(mm2px(Vec(75.595, 45.713)), module, Granular::JITTER_KNOB));
 
-        // Len Mult Knob
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(62.366, 65.452)), module, Granular::LEN_MULT_KNOB));
-
-
 
 		//
 		// Main Left-side Knobs
@@ -225,13 +224,21 @@ struct GranularWidget : ModuleWidget
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 50.489 - y_offset)), module, Granular::PITCH_INPUT));
 		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 50.489 - y_offset)), module, Granular::PITCH_ATTN_KNOB));
 
+        // Amp Slope
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 72.452 - y_offset)), module, Granular::AMP_SLOPE_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 72.452 - y_offset)), module, Granular::AMP_SLOPE_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 72.452 - y_offset)), module, Granular::AMP_SLOPE_ATTN_KNOB));
+
 		// Length
-		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 72.452 - y_offset)), module, Granular::LENGTH_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 72.452 - y_offset)), module, Granular::LENGTH_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 72.452 - y_offset)), module, Granular::LENGTH_ATTN_KNOB));
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 94.416 - y_offset)), module, Granular::LENGTH_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 94.416 - y_offset)), module, Granular::LENGTH_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 94.416 - y_offset)), module, Granular::LENGTH_ATTN_KNOB));
+
+        // Len Mult Knob
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 110)), module, Granular::LEN_MULT_KNOB));
 
         // Slope
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(75.470, 90)), module, Granular::SLOPE_KNOB));
+        // addParam(createParamCentered<Trimpot>(mm2px(Vec(75.470, 90)), module, Granular::SLOPE_KNOB));
 
 		// Trim
 		addParam(createParamCentered<Trimpot>(mm2px(Vec(75.470, 103.043)), module, Granular::TRIM_KNOB));
