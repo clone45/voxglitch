@@ -41,6 +41,7 @@ struct Granular : Module
         AMP_SLOPE_ATTN_KNOB,
 		JITTER_KNOB,
         LEN_MULT_KNOB,
+        PAN_SWITCH,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -50,6 +51,7 @@ struct Granular : Module
 		PITCH_INPUT,
         SPAWN_TRIGGER_INPUT,
         AMP_SLOPE_INPUT,
+        PAN_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -80,6 +82,7 @@ struct Granular : Module
         configParam(AMP_SLOPE_KNOB, 0.0f, 1.0f, 0.0f, "AmpSlopeKnob");
         configParam(AMP_SLOPE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "AmpSlopeAttnKnob");
 		configParam(JITTER_KNOB, 0.f, 1.0f, 0.0f, "JitterKnob");
+        configParam(PAN_SWITCH, 0.0f, 1.0f, 0.0f, "PanSwitch");
 
 		jitter_divisor = static_cast <float> (RAND_MAX / 1024.0);
 	}
@@ -125,6 +128,10 @@ struct Granular : Module
 		// Shorten the playback length if it would result in playback passing the end of the sample data.
 		if(playback_length > (sample.total_sample_count - start_position)) playback_length = sample.total_sample_count - start_position;
 
+        //
+        // Process Jitter input
+        //
+
 		if(inputs[JITTER_CV_INPUT].isConnected())
 		{
             float spread = params[JITTER_KNOB].getValue() * 64.0 * inputs[JITTER_CV_INPUT].getVoltage();
@@ -138,10 +145,28 @@ struct Granular : Module
             start_position = start_position + r;
         }
 
+        //
+        // Process Pan input
+        //
+
+        float pan = 0;
+        if(inputs[PAN_INPUT].isConnected())
+        {
+            if(params[PAN_SWITCH].getValue() == 1) // unipolar
+            {
+                // Incoming pan signal is unipolar.  Convert it to bipolar.
+                pan = (inputs[PAN_INPUT].getVoltage() / 5.0) - 1;
+            }
+            else // bipolar
+            {
+                // Incoming pan signal is bipolar.  No conversion necessary.
+                pan = (inputs[PAN_INPUT].getVoltage() / 10.0);
+            }
+        }
 
         if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage()))
         {
-            simple_grain_engine.add(start_position, playback_length, &sample);
+            simple_grain_engine.add(start_position, playback_length, pan, &sample);
         }
 
 		if (sample.loaded && simple_grain_engine.isEmpty() == false)
@@ -206,9 +231,11 @@ struct GranularWidget : ModuleWidget
 
 		// Jitter
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, 45.713)), module, Granular::JITTER_CV_INPUT));
-		// addParam(createParamCentered<CKSS>(mm2px(Vec(75.595, 45.713)), module, Granular::JITTER_SWITCH));
         addParam(createParamCentered<Trimpot>(mm2px(Vec(75.595, 45.713)), module, Granular::JITTER_KNOB));
 
+        // Pan
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, 65.759)), module, Granular::PAN_INPUT));
+        addParam(createParamCentered<CKSS>(mm2px(Vec(75.595, 65.759)), module, Granular::PAN_SWITCH));
 
 		//
 		// Main Left-side Knobs
