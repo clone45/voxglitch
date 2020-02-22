@@ -141,23 +141,3 @@ struct StereoFadeInSubModule
         }
     }
 };
-
-struct StereoPanSubModule
-{
-    // pan should range from -1 to 1
-    std::pair<float, float> process(float left_voltage, float right_voltage, float pan)
-    {
-        if(pan > 0)
-        {
-            return {left_voltage * (1 - pan), right_voltage};
-        }
-        else if(pan < 0)
-        {
-            return {left_voltage, right_voltage * (1 - abs(pan))};
-        }
-        else
-        {
-            return {left_voltage, right_voltage};
-        }
-    }
-};

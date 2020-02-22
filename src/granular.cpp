@@ -264,6 +264,9 @@ struct GranularWidget : ModuleWidget
         // Len Mult Knob
         addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 110)), module, Granular::LEN_MULT_KNOB));
 
+        // Slope
+        // addParam(createParamCentered<Trimpot>(mm2px(Vec(75.470, 90)), module, Granular::SLOPE_KNOB));
+
 		// Trim
 		addParam(createParamCentered<Trimpot>(mm2px(Vec(75.470, 103.043)), module, Granular::TRIM_KNOB));
 

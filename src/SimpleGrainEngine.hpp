@@ -3,7 +3,7 @@
 #include "GrainAmpSlopes.hpp"
 #include "submodules.hpp"
 
-#define MAX_GRAINS 600
+#define MAX_GRAINS 500
 
 struct SimpleGrain
 {
