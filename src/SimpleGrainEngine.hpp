@@ -3,7 +3,7 @@
 #include "GrainAmpSlopes.hpp"
 #include "submodules.hpp"
 
-#define MAX_GRAINS 500
+#define MAX_GRAINS 600
 
 struct SimpleGrain
 {
@@ -21,7 +21,7 @@ struct SimpleGrain
     // it's relative to the Ghost's start_position rather than the sample
     // start position.
     float playback_position = 0.0f;
-
+    float pan = 0;
     unsigned int sample_position = 0;
 
     float output_voltage_left = 0;
@@ -29,16 +29,17 @@ struct SimpleGrain
 
     bool erase_me = false;
 
-    StereoFadeOutSubModule stereo_fade_out;
-    StereoFadeInSubModule stereo_fade_in;
+    // StereoFadeOutSubModule stereo_fade_out;
+    // StereoFadeInSubModule stereo_fade_in;
+    StereoPanSubModule panner;
 
     SimpleGrain()
     {
         // Since the fade out isn't processed until the sample playback is past
         // a certain point, we can just trigger it now and it'll start working
         // later.
-        stereo_fade_out.trigger();
-        stereo_fade_in.trigger();
+        // stereo_fade_out.trigger();
+        // stereo_fade_in.trigger();
     }
 
     std::pair<float, float> getStereoOutput(float smooth_rate, int selected_slope)
@@ -60,6 +61,7 @@ struct SimpleGrain
             output_voltage_left  = this->sample_ptr->leftPlayBuffer[sample_position];
             output_voltage_right = this->sample_ptr->rightPlayBuffer[sample_position];
 
+            // Apply amplitude slope
             int slope_index = (playback_position / playback_length) * 512.0;
             slope_index = clamp(slope_index, 0, 511);
             selected_slope = clamp(selected_slope, 0, 9);
@@ -68,6 +70,9 @@ struct SimpleGrain
 
             output_voltage_left  = (slope_value / 256.0) * output_voltage_left;
             output_voltage_right = (slope_value / 256.0) * output_voltage_right;
+
+            // Apply pan
+            std::tie(output_voltage_left, output_voltage_right) = panner.process(output_voltage_left, output_voltage_right, pan);
         }
 
         return {output_voltage_left, output_voltage_right};
@@ -108,7 +113,7 @@ struct SimpleGrainEngine
         return(grain_queue.empty());
     }
 
-    virtual void add(float start_position, float playback_length, Sample *sample_ptr)
+    virtual void add(float start_position, float playback_length, float pan, Sample *sample_ptr)
     {
         if(grain_queue.size() > MAX_GRAINS) return;
         if(playback_length == 0) return;
@@ -119,6 +124,7 @@ struct SimpleGrainEngine
         grain.start_position = start_position;
         grain.playback_length = playback_length;
         grain.sample_ptr = sample_ptr;
+        grain.pan = pan;
 
         grain_queue.push_back(grain);
     }
