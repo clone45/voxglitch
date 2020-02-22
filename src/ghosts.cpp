@@ -5,7 +5,7 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "sample.hpp"
-#include "GrainEngine.hpp"
+#include "GhostsEx.hpp"
 
 #define MAX_GRAVEYARD_CAPACITY 120.0f
 #define MAX_GHOST_SPAWN_RATE 30000.0f
@@ -20,7 +20,7 @@ struct Ghosts : Module
 	std::string root_dir;
 	std::string path;
 
-	GrainEngine graveyard;
+	GhostsEx graveyard;
 	Sample sample;
 	dsp::SchmittTrigger purge_trigger;
 	dsp::SchmittTrigger purge_button_trigger;

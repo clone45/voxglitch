@@ -1,13 +1,13 @@
 //
-// Voxglitch "Granular" module for VCV Rack
+// Voxglitch "Grain Engine" module for VCV Rack
 //
 
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "sample.hpp"
-#include "SimpleGrainEngine.hpp"
+#include "GrainEngineEx.hpp"
 
-struct Granular : Module
+struct GrainEngine : Module
 {
 	float spawn_rate_counter = 0;
 	float step_amount = 0;
@@ -17,7 +17,7 @@ struct Granular : Module
 	std::string root_dir;
 	std::string path;
 
-	SimpleGrainEngine simple_grain_engine;
+	GrainEngineEx grain_engine_core;
 	Sample sample;
 	dsp::SchmittTrigger purge_trigger;
 	dsp::SchmittTrigger purge_button_trigger;
@@ -68,7 +68,7 @@ struct Granular : Module
 	//
 	// Constructor
 	//
-	Granular()
+	GrainEngine()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
         configParam(LENGTH_KNOB, 0.0f, 1.0f, 0.5f, "GhostLengthKnob");
@@ -166,10 +166,10 @@ struct Granular : Module
 
         if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage()))
         {
-            simple_grain_engine.add(start_position, playback_length, pan, &sample);
+            grain_engine_core.add(start_position, playback_length, pan, &sample);
         }
 
-		if (sample.loaded && simple_grain_engine.isEmpty() == false)
+		if (sample.loaded && grain_engine_core.isEmpty() == false)
 		{
 			// pre-calculate step amount and smooth rate. This is to reduce the amount of math needed
 			// within each Ghost's getStereoOutput() and age() functions.
@@ -186,7 +186,7 @@ struct Granular : Module
 			smooth_rate = 128.0f / args.sampleRate;
 
 			// Get the output from the graveyard and increase the age of each ghost
-			std::pair<float, float> stereo_output = simple_grain_engine.process(smooth_rate, step_amount, amp_slope_selection);
+			std::pair<float, float> stereo_output = grain_engine_core.process(smooth_rate, step_amount, amp_slope_selection);
 			float left_mix_output = stereo_output.first * params[TRIM_KNOB].getValue();
 			float right_mix_output = stereo_output.second  * params[TRIM_KNOB].getValue();
 
@@ -197,9 +197,9 @@ struct Granular : Module
 	}
 };
 
-struct GranularLoadSample : MenuItem
+struct GrainEngineLoadSample : MenuItem
 {
-	Granular *module;
+	GrainEngine *module;
 
 	void onAction(const event::Action &e) override
 	{
@@ -216,76 +216,73 @@ struct GranularLoadSample : MenuItem
 	}
 };
 
-struct GranularWidget : ModuleWidget
+struct GrainEngineWidget : ModuleWidget
 {
-	GranularWidget(Granular* module)
+	GrainEngineWidget(GrainEngine* module)
 	{
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/granular_front_panel.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/grain_engine_front_panel.svg")));
 
         float y_offset = 1.8;
 		float x_offset = -1.8;
 
         // Spawn Trigger
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, 25.974)), module, Granular::SPAWN_TRIGGER_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, 25.974)), module, GrainEngine::SPAWN_TRIGGER_INPUT));
 
 		// Jitter
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, 45.713)), module, Granular::JITTER_CV_INPUT));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(75.595, 45.713)), module, Granular::JITTER_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, 45.713)), module, GrainEngine::JITTER_CV_INPUT));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(75.595, 45.713)), module, GrainEngine::JITTER_KNOB));
 
         // Pan
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, 65.759)), module, Granular::PAN_INPUT));
-        addParam(createParamCentered<CKSS>(mm2px(Vec(75.595, 65.759)), module, Granular::PAN_SWITCH));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, 65.759)), module, GrainEngine::PAN_INPUT));
+        addParam(createParamCentered<CKSS>(mm2px(Vec(75.595, 65.759)), module, GrainEngine::PAN_SWITCH));
 
 		//
 		// Main Left-side Knobs
 		//
 
 		// Position
-		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 28.526 - y_offset)), module, Granular::SAMPLE_PLAYBACK_POSITION_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 28.526 - y_offset)), module, Granular::SAMPLE_PLAYBACK_POSITION_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 28.526 - y_offset)), module, Granular::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 28.526 - y_offset)), module, GrainEngine::SAMPLE_PLAYBACK_POSITION_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 28.526 - y_offset)), module, GrainEngine::SAMPLE_PLAYBACK_POSITION_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 28.526 - y_offset)), module, GrainEngine::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
 
 		// Pitch
-		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 50.489 - y_offset)), module, Granular::PITCH_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 50.489 - y_offset)), module, Granular::PITCH_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 50.489 - y_offset)), module, Granular::PITCH_ATTN_KNOB));
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 50.489 - y_offset)), module, GrainEngine::PITCH_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 50.489 - y_offset)), module, GrainEngine::PITCH_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 50.489 - y_offset)), module, GrainEngine::PITCH_ATTN_KNOB));
 
         // Amp Slope
-		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 72.452 - y_offset)), module, Granular::AMP_SLOPE_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 72.452 - y_offset)), module, Granular::AMP_SLOPE_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 72.452 - y_offset)), module, Granular::AMP_SLOPE_ATTN_KNOB));
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 72.452 - y_offset)), module, GrainEngine::AMP_SLOPE_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 72.452 - y_offset)), module, GrainEngine::AMP_SLOPE_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 72.452 - y_offset)), module, GrainEngine::AMP_SLOPE_ATTN_KNOB));
 
 		// Length
-		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 94.416 - y_offset)), module, Granular::LENGTH_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 94.416 - y_offset)), module, Granular::LENGTH_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 94.416 - y_offset)), module, Granular::LENGTH_ATTN_KNOB));
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 94.416 - y_offset)), module, GrainEngine::LENGTH_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 94.416 - y_offset)), module, GrainEngine::LENGTH_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 94.416 - y_offset)), module, GrainEngine::LENGTH_ATTN_KNOB));
 
         // Len Mult Knob
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 110)), module, Granular::LEN_MULT_KNOB));
-
-        // Slope
-        // addParam(createParamCentered<Trimpot>(mm2px(Vec(75.470, 90)), module, Granular::SLOPE_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 110)), module, GrainEngine::LEN_MULT_KNOB));
 
 		// Trim
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(75.470, 103.043)), module, Granular::TRIM_KNOB));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(74.94, 103.043)), module, GrainEngine::TRIM_KNOB));
 
 		// WAV output
 
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(64.746, 114.702)), module, Granular::AUDIO_OUTPUT_LEFT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(75.470, 114.702)), module, Granular::AUDIO_OUTPUT_RIGHT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(64.216, 114.702)), module, GrainEngine::AUDIO_OUTPUT_LEFT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(74.94, 114.702)), module, GrainEngine::AUDIO_OUTPUT_RIGHT));
 
 	}
 
 	void appendContextMenu(Menu *menu) override
 	{
-		Granular *module = dynamic_cast<Granular*>(this->module);
+		GrainEngine *module = dynamic_cast<GrainEngine*>(this->module);
 		assert(module);
 
 		menu->addChild(new MenuEntry); // For spacing only
 		menu->addChild(createMenuLabel("Sample"));
 
-		GranularLoadSample *menu_item_load_sample = new GranularLoadSample();
+		GrainEngineLoadSample *menu_item_load_sample = new GrainEngineLoadSample();
 		menu_item_load_sample->text = module->loaded_filename;
 		menu_item_load_sample->module = module;
 		menu->addChild(menu_item_load_sample);
@@ -295,4 +292,4 @@ struct GranularWidget : ModuleWidget
 
 
 
-Model* modelGranular = createModel<Granular, GranularWidget>("granular");
+Model* modelGrainEngine = createModel<GrainEngine, GrainEngineWidget>("grainengine");

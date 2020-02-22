@@ -32,8 +32,8 @@
         "tags": ["Granular", "Sampler"]
     },
     {
-        "slug": "granular",
-        "name": "Granular",
+        "slug": "grainengine",
+        "name": "Grain Engine",
         "description": ".wav player/scanner using granular synthesis",
         "tags": ["Granular", "Sampler"]
     },

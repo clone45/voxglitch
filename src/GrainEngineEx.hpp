@@ -5,7 +5,7 @@
 
 #define MAX_GRAINS 500
 
-struct SimpleGrain
+struct Grain
 {
     // Start Position is the offset into the sample where playback should start.
     // It is set when the ghost is first created.
@@ -33,7 +33,7 @@ struct SimpleGrain
     // StereoFadeInSubModule stereo_fade_in;
     StereoPanSubModule panner;
 
-    SimpleGrain()
+    Grain()
     {
         // Since the fade out isn't processed until the sample playback is past
         // a certain point, we can just trigger it now and it'll start working
@@ -90,16 +90,16 @@ struct SimpleGrain
 
 };
 
-struct SimpleGrainEngine
+struct GrainEngineEx
 {
 
-    std::deque<SimpleGrain> grain_queue;
+    std::deque<Grain> grain_queue;
 
-    SimpleGrainEngine()
+    GrainEngineEx()
     {
     }
 
-    virtual ~SimpleGrainEngine() {
+    virtual ~GrainEngineEx() {
     }
 
     // Return number of active grains
@@ -118,7 +118,7 @@ struct SimpleGrainEngine
         if(grain_queue.size() > MAX_GRAINS) return;
         if(playback_length == 0) return;
 
-        SimpleGrain grain;
+        Grain grain;
 
         // Configure it for playback
         grain.start_position = start_position;
@@ -138,7 +138,7 @@ struct SimpleGrainEngine
         // Process grains
         // ---------------------------------------------------------------------
 
-        for (SimpleGrain &grain : grain_queue)
+        for (Grain &grain : grain_queue)
         {
             if(grain.erase_me != true)
             {
@@ -152,7 +152,7 @@ struct SimpleGrainEngine
         // perform cleanup of grains ready for removal
         grain_queue.erase(std::remove_if(
             grain_queue.begin(), grain_queue.end(),
-                [](const SimpleGrain& grain) {
+                [](const Grain& grain) {
                     return grain.erase_me;
                 }), grain_queue.end());
 

@@ -14,5 +14,5 @@ extern Model *modelWavBank;
 extern Model *modelXY;
 extern Model *modelGhosts;
 extern Model *modelGoblins;
-extern Model *modelGranular;
+extern Model *modelGrainEngine;
 extern Model *modelAutobreak;

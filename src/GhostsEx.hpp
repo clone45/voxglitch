@@ -3,7 +3,7 @@
 #include "submodules.hpp"
 #define REMOVAL_RAMP_ACCUMULATOR 0.01f
 
-struct Grain
+struct Ghost
 {
     // Start Position is the offset into the sample where playback should start.
     // It is set when the ghost is first created.
@@ -88,49 +88,48 @@ struct Grain
     }
 };
 
-struct GrainEngine
+struct GhostsEx
 {
+    std::deque<Ghost> graveyard;
 
-    std::deque<Grain> grain_queue;
-
-    GrainEngine()
+    GhostsEx()
     {
     }
 
-    virtual ~GrainEngine() {
+    virtual ~GhostsEx() {
     }
 
     virtual void markAllForRemoval()
     {
         // Iterate over active grains, mark them for removal, and copy them
         // into the deprecated_grains deque
-        for (Grain &grain : grain_queue)
+        for (Ghost &ghost : graveyard)
         {
-            grain.markForRemoval();
+            ghost.markForRemoval();
         }
     };
 
     // Return number of active grains
     virtual int size()
     {
-        return(grain_queue.size());
+        return(graveyard.size());
     }
 
     virtual bool isEmpty()
     {
-        return(grain_queue.empty());
+        return(graveyard.empty());
     }
 
     virtual void add(float start_position, float playback_length, Sample *sample_ptr)
     {
-        Grain grain;
+        Ghost ghost;
 
         // Configure it for playback
-        grain.start_position = start_position;
-        grain.playback_length = playback_length;
-        grain.sample_ptr = sample_ptr;
+        ghost.start_position = start_position;
+        ghost.playback_length = playback_length;
+        ghost.sample_ptr = sample_ptr;
 
-        grain_queue.push_back(grain);
+        graveyard.push_back(ghost);
     }
 
     // Once there are too many active grains, we move a lot of the older active
@@ -139,7 +138,7 @@ struct GrainEngine
 
     virtual void markOldestForRemoval(unsigned int nth)
     {
-        if(nth >= grain_queue.size())
+        if(nth >= graveyard.size())
         {
             markAllForRemoval();
             return;
@@ -147,7 +146,7 @@ struct GrainEngine
 
         for(unsigned int i=0; i < nth; i++)
         {
-            grain_queue[i].markForRemoval();
+            graveyard[i].markForRemoval();
         }
     }
 
@@ -160,23 +159,23 @@ struct GrainEngine
         // Process grains
         // ---------------------------------------------------------------------
 
-        for (Grain &grain : grain_queue)
+        for (Ghost &ghost : graveyard)
         {
-            if(grain.erase_me != true)
+            if(ghost.erase_me != true)
             {
-                std::pair<float, float> stereo_output = grain.getStereoOutput(smooth_rate);
+                std::pair<float, float> stereo_output = ghost.getStereoOutput(smooth_rate);
                 left_mix_output  += stereo_output.first;
                 right_mix_output += stereo_output.second;
-                grain.step(step_amount);
+                ghost.step(step_amount);
             }
         }
 
         // perform cleanup of grains ready for removal
-        grain_queue.erase(std::remove_if(
-            grain_queue.begin(), grain_queue.end(),
-                [](const Grain& grain) {
-                    return grain.erase_me;
-                }), grain_queue.end());
+        graveyard.erase(std::remove_if(
+            graveyard.begin(), graveyard.end(),
+                [](const Ghost& ghost) {
+                    return ghost.erase_me;
+                }), graveyard.end());
 
         return {left_mix_output, right_mix_output};
     }

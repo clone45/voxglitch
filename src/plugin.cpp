@@ -14,7 +14,7 @@ void init(Plugin* p) {
 	p->addModel(modelXY);
 	p->addModel(modelGhosts);
 	p->addModel(modelGoblins);
-    p->addModel(modelGranular);
+    p->addModel(modelGrainEngine);
 	p->addModel(modelAutobreak);
 
 	// Any other plugin initialization may go here.
