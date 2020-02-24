@@ -7,11 +7,24 @@
 #include <fstream>
 
 #define GAIN 5.0
-#define DRAW_AREA_WIDTH 348.0
-#define DRAW_AREA_HEIGHT 242.0
-#define BAR_WIDTH 21.0
-#define BAR_HORIZONTAL_PADDING .8
+
 #define NUMBER_OF_SEQUENCES 16
+#define MAX_SEQUENCER_STEPS 32
+
+// Constants for patterns
+#define DRAW_AREA_WIDTH 486.0
+#define DRAW_AREA_HEIGHT 214.0
+#define BAR_HEIGHT 214.0
+#define BAR_HORIZONTAL_PADDING .8
+#define DRAW_AREA_POSITION_X 9
+#define DRAW_AREA_POSITION_Y 9.5
+
+// Constants for gate sequencer
+#define GATES_DRAW_AREA_WIDTH 486.0
+#define GATES_DRAW_AREA_HEIGHT 16
+#define GATES_DRAW_AREA_POSITION_X 9
+#define GATES_DRAW_AREA_POSITION_Y 86
+#define GATE_BAR_HEIGHT 16
 
 struct DigitalSequencer : Module
 {
@@ -19,12 +32,15 @@ struct DigitalSequencer : Module
 	dsp::PulseGenerator clockOutputPulse;
 	dsp::PulseGenerator endOutputPulse;
 
-    int sequences[NUMBER_OF_SEQUENCES][16];
+    int sequences[NUMBER_OF_SEQUENCES][MAX_SEQUENCER_STEPS];
+    bool gates[NUMBER_OF_SEQUENCES][MAX_SEQUENCER_STEPS];
     unsigned int sequence_playback_position = 0;
     int selected_sequence = 0;
     bool pattern_lock = false;
+    unsigned int sequencer_steps = 16;
 
 	enum ParamIds {
+        SEQUENCE_LENGTH_KNOB,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -48,13 +64,15 @@ struct DigitalSequencer : Module
 
         for(int sequence=0; sequence<NUMBER_OF_SEQUENCES; sequence++)
         {
-            for(int i=0; i<16; i++)
+            for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
             {
                 sequences[sequence][i] = 0;
+                gates[sequence][i] = false;
             }
         }
 
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+        configParam(SEQUENCE_LENGTH_KNOB, 0.0f, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "SequenceLengthKnob");
 	}
 
 	// Autosave settings
@@ -72,7 +90,7 @@ struct DigitalSequencer : Module
 		{
 			json_t *pattern_json_array = json_array();
 
-			for(int i=0; i<16; i++)
+			for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
 			{
 				json_array_append_new(pattern_json_array, json_integer(this->sequences[pattern_number][i]));
 			}
@@ -102,7 +120,7 @@ struct DigitalSequencer : Module
 
 			json_array_foreach(pattern_arrays_data, pattern_number, json_pattern_array)
 			{
-				for(int i=0; i<NUMBER_OF_SEQUENCES; i++)
+				for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
 				{
 					this->sequences[pattern_number][i] = json_integer_value(json_array_get(json_pattern_array, i));
 				}
@@ -123,7 +141,7 @@ struct DigitalSequencer : Module
 
 	void process(const ProcessArgs &args) override
 	{
-
+        sequencer_steps = params[SEQUENCE_LENGTH_KNOB].getValue();
 	}
 };
 
@@ -155,32 +173,42 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 			//
 
 			int value;
-			float bar_height;
-			NVGcolor highlighted_bar_color;
+			float value_height;
+			NVGcolor bar_color;
 
-			for(unsigned int i=0; i<16; i++)
+            float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
+
+			for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
 			{
 				value = module->sequences[module->selected_sequence][i];
-				// if(item_display == "-1") item_display = ".";
+
+                // Draw grey background bar
+                bar_color = nvgRGBA(60, 60, 64, 255);
+                nvgBeginPath(vg);
+                nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), DRAW_AREA_HEIGHT - BAR_HEIGHT, bar_width, BAR_HEIGHT);
+                nvgFillColor(vg, bar_color);
+                nvgFill(vg);
 
 				if(i == module->sequence_playback_position)
 				{
-					highlighted_bar_color = nvgRGBA(255, 255, 255, 250);
+					bar_color = nvgRGBA(255, 255, 255, 250);
 				}
-				else
+				else if(i < module->sequencer_steps)
 				{
-					highlighted_bar_color = nvgRGBA(255, 255, 255, 150);
+					bar_color = nvgRGBA(255, 255, 255, 150);
 				}
+                else
+                {
+                    bar_color = nvgRGBA(255, 255, 255, 10);
+                }
 
-				bar_height = (DRAW_AREA_HEIGHT * ((value + 1) / 16.0));
+				value_height = (DRAW_AREA_HEIGHT * ((value + 1) / 16.0));
 
-				// Draw the break offset bar
-				if(bar_height > 0)
+				if(value_height > 0)
 				{
 					nvgBeginPath(vg);
-					// nvgRect(vg, (i * bar_width) + (i * bar_horizontal_padding), DRAW_AREA_HEIGHT, bar_width, -1 * DRAW_AREA_HEIGHT * ((item_display + 1) / 16.0));
-					nvgRect(vg, (i * BAR_WIDTH) + (i * BAR_HORIZONTAL_PADDING), DRAW_AREA_HEIGHT - bar_height, BAR_WIDTH, bar_height);
-					nvgFillColor(vg, highlighted_bar_color);
+					nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), DRAW_AREA_HEIGHT - value_height, bar_width, value_height);
+					nvgFillColor(vg, bar_color);
 					nvgFill(vg);
 				}
 
@@ -188,7 +216,7 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 				{
 					// Highlight entire column
 					nvgBeginPath(vg);
-					nvgRect(vg, (i * BAR_WIDTH) + (i * BAR_HORIZONTAL_PADDING), 0, BAR_WIDTH, DRAW_AREA_HEIGHT);
+					nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), 0, bar_width, DRAW_AREA_HEIGHT);
 					nvgFillColor(vg, nvgRGBA(255, 255, 255, 20));
 					nvgFill(vg);
 				}
@@ -196,12 +224,12 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 
 			// Note to self: This is a nice orange for an overlay
 			// and might be interesting to give an option to activate
-			/*
+            /*
 			nvgBeginPath(vg);
-			nvgRect(vg, 0,0,348,241);
+			nvgRect(vg, 0, 0, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
 			nvgFillColor(vg, nvgRGBA(255, 100, 0, 128));
 			nvgFill(vg);
-			*/
+            */
 		}
 
 		nvgRestore(vg);
@@ -249,11 +277,13 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 
 	void editBar(Vec mouse_position)
 	{
-		int clicked_bar_x_index = mouse_position.x / (BAR_WIDTH + BAR_HORIZONTAL_PADDING);
+        float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
+
+		int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
 		int clicked_bar_y_index = 15 - (int) ((mouse_position.y / DRAW_AREA_HEIGHT) * 16.0);
 
-		clicked_bar_x_index = clamp(clicked_bar_x_index, 0, 15);
-		clicked_bar_y_index = clamp(clicked_bar_y_index, 0, 15);
+		clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
+		clicked_bar_y_index = clamp(clicked_bar_y_index, 0, MAX_SEQUENCER_STEPS - 1);
 
 		// DEBUG("%s %f,%f", "height vs ", DRAW_AREA_HEIGHT, drag_position.y);
 
@@ -289,6 +319,249 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 	}
 };
 
+struct DigitalSequencerGatesDisplay : TransparentWidget
+{
+	DigitalSequencer *module;
+	Vec drag_position;
+
+	DigitalSequencerGatesDisplay()
+	{
+		box.size = Vec(GATES_DRAW_AREA_WIDTH, GATES_DRAW_AREA_HEIGHT);
+	}
+
+	void draw(const DrawArgs &args) override
+	{
+		const auto vg = args.vg;
+
+		nvgSave(vg);
+
+		if(module)
+		{
+			int value;
+			float value_height;
+			NVGcolor bar_color;
+
+            float bar_width = (GATES_DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
+
+			for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
+			{
+				value = module->gates[module->selected_sequence][i];
+
+                // Draw grey background bar
+                bar_color = nvgRGBA(60, 60, 64, 255);
+                nvgBeginPath(vg);
+                nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), GATES_DRAW_AREA_HEIGHT - GATE_BAR_HEIGHT, bar_width, GATE_BAR_HEIGHT);
+                nvgFillColor(vg, bar_color);
+                nvgFill(vg);
+
+                if(i == module->sequence_playback_position)
+				{
+					bar_color = nvgRGBA(255, 255, 255, 250);
+				}
+				else if(i < module->sequencer_steps)
+				{
+					bar_color = nvgRGBA(255, 255, 255, 150);
+				}
+                else
+                {
+                    bar_color = nvgRGBA(255, 255, 255, 15);
+                }
+
+				value_height = (GATE_BAR_HEIGHT * value);
+
+				if(value_height > 0)
+				{
+					nvgBeginPath(vg);
+					nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), GATES_DRAW_AREA_HEIGHT - value_height, bar_width, value_height);
+					nvgFillColor(vg, bar_color);
+					nvgFill(vg);
+				}
+
+                // highlight active column
+				if(i == module->sequence_playback_position)
+				{
+					nvgBeginPath(vg);
+					nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), 0, bar_width, GATE_BAR_HEIGHT);
+					nvgFillColor(vg, nvgRGBA(255, 255, 255, 20));
+					nvgFill(vg);
+				}
+			}
+
+			// Note to self: This is a nice orange for an overlay
+			// and might be interesting to give an option to activate
+            /*
+			nvgBeginPath(vg);
+			nvgRect(vg, 0, 0, GATES_DRAW_AREA_WIDTH, GATES_DRAW_AREA_HEIGHT);
+			nvgFillColor(vg, nvgRGBA(0, 100, 255, 128));
+			nvgFill(vg);
+            */
+		}
+
+		nvgRestore(vg);
+	}
+
+	Vec clampToDrawArea(Vec location)
+    {
+        float x = clamp(location.x, 0.0f, DRAW_AREA_WIDTH);
+        float y = clamp(location.y, 0.0f, DRAW_AREA_HEIGHT);
+        return(Vec(x,y));
+    }
+
+	void onButton(const event::Button &e) override
+    {
+        e.consume(this);
+
+		if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
+		{
+			drag_position = e.pos;
+			this->editBar(e.pos);
+		}
+		// DEBUG("%s %d,%d", "button press at: ", clicked_bar_x_index, clicked_bar_y_index);
+	}
+
+	void onDragStart(const event::DragStart &e) override
+    {
+		TransparentWidget::onDragStart(e);
+	}
+
+	void onDragEnd(const event::DragEnd &e) override
+    {
+		TransparentWidget::onDragEnd(e);
+	}
+
+	void onDragMove(const event::DragMove &e) override
+    {
+		TransparentWidget::onDragMove(e);
+		drag_position = drag_position.plus(e.mouseDelta);
+		editBar(drag_position);
+	}
+
+	void step() override {
+		TransparentWidget::step();
+	}
+
+	void editBar(Vec mouse_position)
+	{
+        float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
+
+		int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
+		int clicked_bar_y_index = 15 - (int) ((mouse_position.y / DRAW_AREA_HEIGHT) * 16.0);
+
+		clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
+		clicked_bar_y_index = clamp(clicked_bar_y_index, 0, MAX_SEQUENCER_STEPS - 1);
+
+		// DEBUG("%s %f,%f", "height vs ", DRAW_AREA_HEIGHT, drag_position.y);
+
+		// If the mouse position is below the sequencer, then set the corresponding
+		// row of the sequencer to "0" (meaning, don't jump to a new position in the beat)
+        /*
+		if(mouse_position.y > (DRAW_AREA_HEIGHT - 2))
+		{
+			// Special case: Set the break pattern to -1 for "don't jump to new position"
+			module->sequences[module->selected_sequence][clicked_bar_x_index] = -1;
+		}
+		else
+		{
+			// Set the sequence value height
+			module->sequences[module->selected_sequence][clicked_bar_x_index] = clicked_bar_y_index;
+		}
+        */
+
+        module->gates[module->selected_sequence][clicked_bar_x_index] = clicked_bar_y_index;
+	}
+
+	void onEnter(const event::Enter &e) override
+    {
+		TransparentWidget::onEnter(e);
+		this->module->pattern_lock = true;
+		// DEBUG("On enter called");
+	}
+
+	void onLeave(const event::Leave &e) override
+    {
+		TransparentWidget::onLeave(e);
+		this->module->pattern_lock = false;
+	}
+};
+
+struct DigitalSequencerLenDisplay : TransparentWidget
+{
+	DigitalSequencer *module;
+	std::shared_ptr<Font> font;
+
+    bool moused_over = false;
+
+	DigitalSequencerLenDisplay()
+	{
+        box.size = mm2px(Vec(12.603, 20));
+		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+	}
+
+	void draw(const DrawArgs &args) override
+	{
+		nvgSave(args.vg);
+
+		// Configure the font size, face, color, etc.
+		nvgFontSize(args.vg, 13);
+		nvgFontFaceId(args.vg, font->handle);
+		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+		nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
+		nvgTextLetterSpacing(args.vg, -1);
+
+        int pos_x = 19;
+        int pos_y = 22;
+
+		if(module)
+		{
+            std::string len_string;
+
+            if(moused_over)
+            {
+                len_string = std::to_string(module->sequencer_steps);
+            }
+            else
+            {
+                len_string = "LEN";
+            }
+
+			nvgText(args.vg, pos_x, pos_y, len_string.c_str(), NULL);
+		}
+		else
+		{
+			nvgText(args.vg, pos_x, pos_y, "32", NULL);
+		}
+
+        /*
+        nvgBeginPath(args.vg);
+        nvgRect(args.vg, 0, 0, 40, 60);
+        nvgFillColor(args.vg, nvgRGBA(0, 100, 255, 128));
+        nvgFill(args.vg);
+        */
+
+		nvgRestore(args.vg);
+	}
+
+    void onHover(const event::Hover& e) override {
+		TransparentWidget::onHover(e);
+		e.consume(this);
+	}
+
+    void step() override {
+		TransparentWidget::step();
+	}
+
+    void onEnter(const event::Enter &e) override
+    {
+		TransparentWidget::onEnter(e);
+		this->moused_over = true;
+	}
+
+	void onLeave(const event::Leave &e) override
+    {
+		TransparentWidget::onLeave(e);
+		this->moused_over = false;
+	}
+};
 
 struct DigitalSequencerWidget : ModuleWidget
 {
@@ -308,10 +581,25 @@ struct DigitalSequencerWidget : ModuleWidget
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.848, 63.5)), module, DigitalSequencer::SEQUENCE_INPUT));
         */
 
+
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(13.848, 114.893)), module, DigitalSequencer::SEQUENCE_LENGTH_KNOB));
+
 		DigitalSequencerPatternDisplay *pattern_display = new DigitalSequencerPatternDisplay();
-		pattern_display->box.pos = mm2px(Vec(55.141, 35.689));
+		pattern_display->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
 		pattern_display->module = module;
 		addChild(pattern_display);
+
+        DigitalSequencerGatesDisplay *gates_display = new DigitalSequencerGatesDisplay();
+		gates_display->box.pos = mm2px(Vec(GATES_DRAW_AREA_POSITION_X, GATES_DRAW_AREA_POSITION_Y));
+		gates_display->module = module;
+		addChild(gates_display);
+
+        DigitalSequencerLenDisplay *len_display = new DigitalSequencerLenDisplay();
+        len_display->box.pos = mm2px(Vec(7, 100));
+		len_display->module = module;
+		addChild(len_display);
+
+
 
         /*
 		// BPM selection
