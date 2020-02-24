@@ -28,7 +28,7 @@
 
 struct DigitalSequencer : Module
 {
-	dsp::SchmittTrigger clockTrigger;
+	dsp::SchmittTrigger stepTrigger;
 	dsp::PulseGenerator clockOutputPulse;
 	dsp::PulseGenerator endOutputPulse;
 
@@ -45,6 +45,7 @@ struct DigitalSequencer : Module
 	};
 	enum InputIds {
 		CLOCK_INPUT,
+        STEP_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -72,7 +73,7 @@ struct DigitalSequencer : Module
         }
 
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-        configParam(SEQUENCE_LENGTH_KNOB, 0.0f, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "SequenceLengthKnob");
+        configParam(SEQUENCE_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "SequenceLengthKnob");
 	}
 
 	// Autosave settings
@@ -183,6 +184,11 @@ struct DigitalSequencer : Module
 	void process(const ProcessArgs &args) override
 	{
         sequencer_steps = params[SEQUENCE_LENGTH_KNOB].getValue();
+
+        if(stepTrigger.process(inputs[STEP_INPUT].getVoltage()))
+        {
+            sequence_playback_position = (sequence_playback_position + 1) % sequencer_steps;
+        }
 	}
 };
 
@@ -243,7 +249,9 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
                     bar_color = nvgRGBA(255, 255, 255, 10);
                 }
 
-				value_height = (DRAW_AREA_HEIGHT * ((value + 1) / 16.0));
+				// value_height = (DRAW_AREA_HEIGHT * ((value + 1) / 16.0));
+
+                value_height = value;
 
 				if(value_height > 0)
 				{
@@ -263,14 +271,27 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 				}
 			}
 
+            //
+            // Draw vertical guides every 4 bars
+            //
+
+            for(unsigned int i=1; i < 8; i++)
+            {
+                nvgBeginPath(vg);
+                int x = (i * 4 * bar_width) + (i * 4 * BAR_HORIZONTAL_PADDING);
+                nvgRect(vg, x, 0, 1, DRAW_AREA_HEIGHT);
+                nvgFillColor(vg, nvgRGBA(240, 240, 255, 40));
+                nvgFill(vg);
+            }
+
 			// Note to self: This is a nice orange for an overlay
 			// and might be interesting to give an option to activate
-            /*
+
 			nvgBeginPath(vg);
 			nvgRect(vg, 0, 0, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
-			nvgFillColor(vg, nvgRGBA(255, 100, 0, 128));
+			nvgFillColor(vg, nvgRGBA(0, 100, 255, 28));
 			nvgFill(vg);
-            */
+
 		}
 
 		nvgRestore(vg);
@@ -321,10 +342,9 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
         float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
 
 		int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
-		int clicked_bar_y_index = 15 - (int) ((mouse_position.y / DRAW_AREA_HEIGHT) * 16.0);
+		int clicked_y = DRAW_AREA_HEIGHT - mouse_position.y;
 
 		clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
-		clicked_bar_y_index = clamp(clicked_bar_y_index, 0, MAX_SEQUENCER_STEPS - 1);
 
 		// DEBUG("%s %f,%f", "height vs ", DRAW_AREA_HEIGHT, drag_position.y);
 
@@ -343,7 +363,7 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 		}
         */
 
-        module->sequences[module->selected_sequence][clicked_bar_x_index] = clicked_bar_y_index;
+        module->sequences[module->selected_sequence][clicked_bar_x_index] = clicked_y;
 	}
 
 	void onEnter(const event::Enter &e) override
@@ -364,6 +384,7 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
 {
 	DigitalSequencer *module;
 	Vec drag_position;
+    bool mouse_lock = false;
 
 	DigitalSequencerGatesDisplay()
 	{
@@ -454,27 +475,17 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
 
 		if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
 		{
-			drag_position = e.pos;
-			this->editBar(e.pos);
+            if(this->mouse_lock == false)
+            {
+                this->mouse_lock = true;
+    			this->editBar(e.pos);
+            }
+		}
+        else if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_RELEASE)
+		{
+            this->mouse_lock = false;
 		}
 		// DEBUG("%s %d,%d", "button press at: ", clicked_bar_x_index, clicked_bar_y_index);
-	}
-
-	void onDragStart(const event::DragStart &e) override
-    {
-		TransparentWidget::onDragStart(e);
-	}
-
-	void onDragEnd(const event::DragEnd &e) override
-    {
-		TransparentWidget::onDragEnd(e);
-	}
-
-	void onDragMove(const event::DragMove &e) override
-    {
-		TransparentWidget::onDragMove(e);
-		drag_position = drag_position.plus(e.mouseDelta);
-		editBar(drag_position);
 	}
 
 	void step() override {
@@ -486,29 +497,19 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
         float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
 
 		int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
-		int clicked_bar_y_index = 15 - (int) ((mouse_position.y / DRAW_AREA_HEIGHT) * 16.0);
+		// int clicked_bar_y_index = 15 - (int) ((mouse_position.y / DRAW_AREA_HEIGHT) * 16.0);
 
 		clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
-		clicked_bar_y_index = clamp(clicked_bar_y_index, 0, MAX_SEQUENCER_STEPS - 1);
+		// clicked_bar_y_index = clamp(clicked_bar_y_index, 0, MAX_SEQUENCER_STEPS - 1);
 
-		// DEBUG("%s %f,%f", "height vs ", DRAW_AREA_HEIGHT, drag_position.y);
-
-		// If the mouse position is below the sequencer, then set the corresponding
-		// row of the sequencer to "0" (meaning, don't jump to a new position in the beat)
-        /*
-		if(mouse_position.y > (DRAW_AREA_HEIGHT - 2))
-		{
-			// Special case: Set the break pattern to -1 for "don't jump to new position"
-			module->sequences[module->selected_sequence][clicked_bar_x_index] = -1;
-		}
-		else
-		{
-			// Set the sequence value height
-			module->sequences[module->selected_sequence][clicked_bar_x_index] = clicked_bar_y_index;
-		}
-        */
-
-        module->gates[module->selected_sequence][clicked_bar_x_index] = clicked_bar_y_index;
+        if(module->gates[module->selected_sequence][clicked_bar_x_index])
+        {
+            module->gates[module->selected_sequence][clicked_bar_x_index] = 0;
+        }
+        else
+        {
+            module->gates[module->selected_sequence][clicked_bar_x_index] = 1;
+        }
 	}
 
 	void onEnter(const event::Enter &e) override
@@ -640,14 +641,14 @@ struct DigitalSequencerWidget : ModuleWidget
 		len_display->module = module;
 		addChild(len_display);
 
-
+        // Step
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.541, 114.893)), module, DigitalSequencer::STEP_INPUT));
 
         /*
 		// BPM selection
 		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 12.2)), module, DigitalSequencer::BPM_KNOB));
 
-		// Reset
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.541, 88.685)), module, DigitalSequencer::RESET_INPUT));
+
 
 		// Outputs
 		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 100.893)), module, DigitalSequencer::DEBUG_OUTPUT));
