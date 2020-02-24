@@ -101,6 +101,27 @@ struct DigitalSequencer : Module
         json_object_set(json_root, "patterns", sequences_json_array);
         json_decref(sequences_json_array);
 
+        //
+		// Save gates
+		//
+
+		json_t *gates_json_array = json_array();
+
+		for(int pattern_number=0; pattern_number<NUMBER_OF_SEQUENCES; pattern_number++)
+		{
+			json_t *pattern_json_array = json_array();
+
+			for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
+			{
+				json_array_append_new(pattern_json_array, json_integer(this->gates[pattern_number][i]));
+			}
+
+            json_array_append_new(gates_json_array, pattern_json_array);
+        }
+
+        json_object_set(json_root, "gates", gates_json_array);
+        json_decref(gates_json_array);
+
 		return json_root;
 	}
 
@@ -126,6 +147,26 @@ struct DigitalSequencer : Module
 				}
 			}
 		}
+
+        //
+		// Load gates
+		//
+
+        json_t *gates_arrays_data = json_object_get(json_root, "gates");
+
+        if(gates_arrays_data)
+        {
+            size_t pattern_number;
+            json_t *json_pattern_array;
+
+            json_array_foreach(gates_arrays_data, pattern_number, json_pattern_array)
+            {
+                for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
+                {
+                    this->gates[pattern_number][i] = json_integer_value(json_array_get(json_pattern_array, i));
+                }
+            }
+        }
 	}
 
     /*
