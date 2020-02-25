@@ -41,6 +41,7 @@ struct DigitalSequencer : Module
 
 	enum ParamIds {
         SEQUENCE_LENGTH_KNOB,
+        SEQUENCE_SELECTION_KNOB,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -74,6 +75,7 @@ struct DigitalSequencer : Module
 
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
         configParam(SEQUENCE_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "SequenceLengthKnob");
+        configParam(SEQUENCE_SELECTION_KNOB, 0, NUMBER_OF_SEQUENCES - 1, 0, "SequenceSelectionKnob");
 	}
 
 	// Autosave settings
@@ -189,6 +191,8 @@ struct DigitalSequencer : Module
         {
             sequence_playback_position = (sequence_playback_position + 1) % sequencer_steps;
         }
+
+        selected_sequence = params[SEQUENCE_SELECTION_KNOB].getValue();
 	}
 };
 
@@ -452,10 +456,10 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
 			// Note to self: This is a nice orange for an overlay
 			// and might be interesting to give an option to activate
             /*
-			nvgBeginPath(vg);
-			nvgRect(vg, 0, 0, GATES_DRAW_AREA_WIDTH, GATES_DRAW_AREA_HEIGHT);
-			nvgFillColor(vg, nvgRGBA(0, 100, 255, 128));
-			nvgFill(vg);
+            nvgBeginPath(args.vg);
+            nvgRect(args.vg, 0, 0, mm2px(box_size_width), mm2px(box_size_height));
+            nvgFillColor(args.vg, nvgRGBA(0, 100, 255, 128));
+            nvgFill(args.vg);
             */
 		}
 
@@ -533,9 +537,15 @@ struct DigitalSequencerLenDisplay : TransparentWidget
 
     bool moused_over = false;
 
+    // These shouldn't ever need to change
+    float position_x = 7;  // position relative to widget position
+    float position_y = 7.6; // position relative to widget position
+    float box_size_width = 13;
+    float box_size_height = 20;
+
 	DigitalSequencerLenDisplay()
 	{
-        box.size = mm2px(Vec(12.603, 20));
+        box.size = mm2px(Vec(box_size_width, box_size_height));
 		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
 	}
 
@@ -550,8 +560,8 @@ struct DigitalSequencerLenDisplay : TransparentWidget
 		nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
 		nvgTextLetterSpacing(args.vg, -1);
 
-        int pos_x = 19;
-        int pos_y = 22;
+        int text_position_x = mm2px(position_x);
+        int text_position_y = mm2px(position_y);
 
 		if(module)
 		{
@@ -566,19 +576,104 @@ struct DigitalSequencerLenDisplay : TransparentWidget
                 len_string = "LEN";
             }
 
-			nvgText(args.vg, pos_x, pos_y, len_string.c_str(), NULL);
+			nvgText(args.vg, text_position_x, text_position_y, len_string.c_str(), NULL);
 		}
 		else
 		{
-			nvgText(args.vg, pos_x, pos_y, "32", NULL);
+			nvgText(args.vg, text_position_x, text_position_y, "32", NULL);
 		}
 
         /*
+        // For debugging
         nvgBeginPath(args.vg);
-        nvgRect(args.vg, 0, 0, 40, 60);
+        nvgRect(args.vg, 0, 0, mm2px(box_size_width), mm2px(box_size_height));
         nvgFillColor(args.vg, nvgRGBA(0, 100, 255, 128));
         nvgFill(args.vg);
         */
+
+		nvgRestore(args.vg);
+	}
+
+    void onHover(const event::Hover& e) override {
+		TransparentWidget::onHover(e);
+		e.consume(this);
+	}
+
+    void step() override {
+		TransparentWidget::step();
+	}
+
+    void onEnter(const event::Enter &e) override
+    {
+		TransparentWidget::onEnter(e);
+		this->moused_over = true;
+	}
+
+	void onLeave(const event::Leave &e) override
+    {
+		TransparentWidget::onLeave(e);
+		this->moused_over = false;
+	}
+};
+
+struct DigitalSequencerSeqDisplay : TransparentWidget
+{
+	DigitalSequencer *module;
+	std::shared_ptr<Font> font;
+
+    bool moused_over = false;
+
+    // These shouldn't ever need to change
+    float position_x = 7;  // position relative to widget position
+    float position_y = 7.6; // position relative to widget position
+    float box_size_width = 13;
+    float box_size_height = 20;
+
+	DigitalSequencerSeqDisplay()
+	{
+        box.size = mm2px(Vec(box_size_width, box_size_height));
+		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+	}
+
+	void draw(const DrawArgs &args) override
+	{
+		nvgSave(args.vg);
+
+		// Configure the font size, face, color, etc.
+		nvgFontSize(args.vg, 13);
+		nvgFontFaceId(args.vg, font->handle);
+		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+		nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
+		nvgTextLetterSpacing(args.vg, -1);
+
+        int text_position_x = mm2px(position_x);
+        int text_position_y = mm2px(position_y);
+
+		if(module)
+		{
+            std::string len_string;
+
+            if(moused_over)
+            {
+                len_string = std::to_string(module->selected_sequence + 1);
+            }
+            else
+            {
+                len_string = "SEQ";
+            }
+
+			nvgText(args.vg, text_position_x, text_position_y, len_string.c_str(), NULL);
+		}
+		else
+		{
+			nvgText(args.vg, text_position_x, text_position_y, "1", NULL);
+		}
+
+        // For debugging
+        nvgBeginPath(args.vg);
+        nvgRect(args.vg, 0, 0, mm2px(box_size_width), mm2px(box_size_height));
+        nvgFillColor(args.vg, nvgRGBA(0, 100, 255, 128));
+        nvgFill(args.vg);
 
 		nvgRestore(args.vg);
 	}
@@ -625,6 +720,7 @@ struct DigitalSequencerWidget : ModuleWidget
 
 
         addParam(createParamCentered<Trimpot>(mm2px(Vec(13.848, 114.893)), module, DigitalSequencer::SEQUENCE_LENGTH_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(30.229, 114.893)), module, DigitalSequencer::SEQUENCE_SELECTION_KNOB));
 
 		DigitalSequencerPatternDisplay *pattern_display = new DigitalSequencerPatternDisplay();
 		pattern_display->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
@@ -641,8 +737,13 @@ struct DigitalSequencerWidget : ModuleWidget
 		len_display->module = module;
 		addChild(len_display);
 
+        DigitalSequencerSeqDisplay *seq_display = new DigitalSequencerSeqDisplay();
+        seq_display->box.pos = mm2px(Vec(7 + 16.404, 100));
+		seq_display->module = module;
+		addChild(seq_display);
+
         // Step
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.541, 114.893)), module, DigitalSequencer::STEP_INPUT));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(56.737, 114.893)), module, DigitalSequencer::STEP_INPUT));
 
         /*
 		// BPM selection
