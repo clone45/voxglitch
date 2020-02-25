@@ -8,7 +8,7 @@
 
 #define GAIN 5.0
 
-#define NUMBER_OF_SEQUENCES 16
+#define NUMBER_OF_SEQUENCES 6
 #define MAX_SEQUENCER_STEPS 32
 
 // Constants for patterns
@@ -47,11 +47,27 @@ struct DigitalSequencer : Module
 	enum InputIds {
 		CLOCK_INPUT,
         STEP_INPUT,
+        RESET_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
 		CLOCK_OUTPUT,
 		END_OUTPUT,
+
+        SEQ1_CV_OUTPUT,
+        SEQ1_GATE_OUTPUT,
+        SEQ2_CV_OUTPUT,
+        SEQ2_GATE_OUTPUT,
+        SEQ3_CV_OUTPUT,
+        SEQ3_GATE_OUTPUT,
+
+        SEQ4_CV_OUTPUT,
+        SEQ4_GATE_OUTPUT,
+        SEQ5_CV_OUTPUT,
+        SEQ5_GATE_OUTPUT,
+        SEQ6_CV_OUTPUT,
+        SEQ6_GATE_OUTPUT,
+
 		NUM_OUTPUTS
 	};
 	enum LightIds {
@@ -453,14 +469,11 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
 				}
 			}
 
-			// Note to self: This is a nice orange for an overlay
-			// and might be interesting to give an option to activate
-            /*
-            nvgBeginPath(args.vg);
-            nvgRect(args.vg, 0, 0, mm2px(box_size_width), mm2px(box_size_height));
-            nvgFillColor(args.vg, nvgRGBA(0, 100, 255, 128));
-            nvgFill(args.vg);
-            */
+            // Cool blue hue
+            nvgBeginPath(vg);
+			nvgRect(vg, 0, 0, GATES_DRAW_AREA_WIDTH, GATES_DRAW_AREA_HEIGHT);
+			nvgFillColor(vg, nvgRGBA(0, 100, 255, 28));
+			nvgFill(vg);
 		}
 
 		nvgRestore(vg);
@@ -538,8 +551,8 @@ struct DigitalSequencerLenDisplay : TransparentWidget
     bool moused_over = false;
 
     // These shouldn't ever need to change
-    float position_x = 7;  // position relative to widget position
-    float position_y = 7.6; // position relative to widget position
+    float text_position_x = mm2px(6.4);  // position relative to widget position
+    float text_position_y = mm2px(7.6); // position relative to widget position
     float box_size_width = 13;
     float box_size_height = 20;
 
@@ -559,9 +572,6 @@ struct DigitalSequencerLenDisplay : TransparentWidget
 		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
 		nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
 		nvgTextLetterSpacing(args.vg, -1);
-
-        int text_position_x = mm2px(position_x);
-        int text_position_y = mm2px(position_y);
 
 		if(module)
 		{
@@ -590,6 +600,7 @@ struct DigitalSequencerLenDisplay : TransparentWidget
         nvgFillColor(args.vg, nvgRGBA(0, 100, 255, 128));
         nvgFill(args.vg);
         */
+
 
 		nvgRestore(args.vg);
 	}
@@ -624,8 +635,8 @@ struct DigitalSequencerSeqDisplay : TransparentWidget
     bool moused_over = false;
 
     // These shouldn't ever need to change
-    float position_x = 7;  // position relative to widget position
-    float position_y = 7.6; // position relative to widget position
+    float text_position_x = mm2px(6.4);  // position relative to widget position
+    float text_position_y = mm2px(7.6); // position relative to widget position
     float box_size_width = 13;
     float box_size_height = 20;
 
@@ -645,9 +656,6 @@ struct DigitalSequencerSeqDisplay : TransparentWidget
 		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
 		nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
 		nvgTextLetterSpacing(args.vg, -1);
-
-        int text_position_x = mm2px(position_x);
-        int text_position_y = mm2px(position_y);
 
 		if(module)
 		{
@@ -669,11 +677,13 @@ struct DigitalSequencerSeqDisplay : TransparentWidget
 			nvgText(args.vg, text_position_x, text_position_y, "1", NULL);
 		}
 
+        /*
         // For debugging
         nvgBeginPath(args.vg);
         nvgRect(args.vg, 0, 0, mm2px(box_size_width), mm2px(box_size_height));
         nvgFillColor(args.vg, nvgRGBA(0, 100, 255, 128));
         nvgFill(args.vg);
+        */
 
 		nvgRestore(args.vg);
 	}
@@ -710,6 +720,7 @@ struct DigitalSequencerWidget : ModuleWidget
 		// Cosmetic rack screws
 		addChild(createWidget<ScrewSilver>(Vec(15, 0)));
 		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
+		addChild(createWidget<ScrewSilver>(mm2px(Vec(171.5, 0))));
 
 		// Sequence Select
         /*
@@ -718,9 +729,6 @@ struct DigitalSequencerWidget : ModuleWidget
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.848, 63.5)), module, DigitalSequencer::SEQUENCE_INPUT));
         */
 
-
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(13.848, 114.893)), module, DigitalSequencer::SEQUENCE_LENGTH_KNOB));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(30.229, 114.893)), module, DigitalSequencer::SEQUENCE_SELECTION_KNOB));
 
 		DigitalSequencerPatternDisplay *pattern_display = new DigitalSequencerPatternDisplay();
 		pattern_display->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
@@ -732,18 +740,40 @@ struct DigitalSequencerWidget : ModuleWidget
 		gates_display->module = module;
 		addChild(gates_display);
 
-        DigitalSequencerLenDisplay *len_display = new DigitalSequencerLenDisplay();
-        len_display->box.pos = mm2px(Vec(7, 100));
-		len_display->module = module;
-		addChild(len_display);
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(43.737, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_SELECTION_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(60.152, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_LENGTH_KNOB));
 
         DigitalSequencerSeqDisplay *seq_display = new DigitalSequencerSeqDisplay();
-        seq_display->box.pos = mm2px(Vec(7 + 16.404, 100));
+        seq_display->box.pos = mm2px(Vec(37.440, 100 + 1));
 		seq_display->module = module;
 		addChild(seq_display);
 
+        DigitalSequencerLenDisplay *len_display = new DigitalSequencerLenDisplay();
+        len_display->box.pos = mm2px(Vec(37.440 + 16.404, 100 + 1));
+		len_display->module = module;
+		addChild(len_display);
+
         // Step
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(56.737, 114.893)), module, DigitalSequencer::STEP_INPUT));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 114.893)), module, DigitalSequencer::STEP_INPUT));
+
+        // Reset
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 14.544, 114.893)), module, DigitalSequencer::RESET_INPUT));
+
+
+        // 6 sequencer outputs
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(118, 108.224)), module, DigitalSequencer::SEQ1_CV_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(129, 108.224)), module, DigitalSequencer::SEQ2_CV_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(140, 108.224)), module, DigitalSequencer::SEQ3_CV_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(151, 108.224)), module, DigitalSequencer::SEQ4_CV_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(162, 108.224)), module, DigitalSequencer::SEQ5_CV_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(173, 108.224)), module, DigitalSequencer::SEQ6_CV_OUTPUT));
+
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(118, 119.309)), module, DigitalSequencer::SEQ1_GATE_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(129, 119.309)), module, DigitalSequencer::SEQ2_GATE_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(140, 119.309)), module, DigitalSequencer::SEQ3_GATE_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(151, 119.309)), module, DigitalSequencer::SEQ4_GATE_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(162, 119.309)), module, DigitalSequencer::SEQ5_GATE_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(173, 119.309)), module, DigitalSequencer::SEQ6_GATE_OUTPUT));
 
         /*
 		// BPM selection
