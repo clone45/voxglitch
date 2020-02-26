@@ -1,6 +1,9 @@
 //
 // Voxglitch "DigitalSequencer" module for VCV Rack
 //
+// TODO: Save/Load sequence lengths
+// TODO: Handle resets
+// TODO: Consider per-sequence clock division
 
 #include "plugin.hpp"
 #include "osdialog.h"
@@ -141,6 +144,7 @@ struct DigitalSequencer : Module
     // unsigned int sequence_playback_position = 0;
 
     int selected_sequencer_index = 0;
+    int previously_selected_sequencer_index = -1;
     int voltage_outputs[NUMBER_OF_SEQUENCERS];
     int gate_outputs[NUMBER_OF_SEQUENCERS];
 
@@ -215,16 +219,16 @@ struct DigitalSequencer : Module
 		//
 		// Save patterns
 		//
-        /*
+
 		json_t *sequences_json_array = json_array();
 
-		for(int pattern_number=0; pattern_number<NUMBER_OF_SEQUENCERS; pattern_number++)
+		for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
 		{
 			json_t *pattern_json_array = json_array();
 
 			for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
 			{
-				json_array_append_new(pattern_json_array, json_integer(this->sequences[pattern_number][i]));
+				json_array_append_new(pattern_json_array, json_integer(this->voltage_sequencers[sequencer_number].getValue(i)));
 			}
 
             json_array_append_new(sequences_json_array, pattern_json_array);
@@ -239,13 +243,13 @@ struct DigitalSequencer : Module
 
 		json_t *gates_json_array = json_array();
 
-		for(int pattern_number=0; pattern_number<NUMBER_OF_SEQUENCERS; pattern_number++)
+		for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
 		{
 			json_t *pattern_json_array = json_array();
 
 			for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
 			{
-				json_array_append_new(pattern_json_array, json_integer(this->gates[pattern_number][i]));
+				json_array_append_new(pattern_json_array, json_integer(this->gate_sequencers[sequencer_number].getValue(i)));
 			}
 
             json_array_append_new(gates_json_array, pattern_json_array);
@@ -253,7 +257,7 @@ struct DigitalSequencer : Module
 
         json_object_set(json_root, "gates", gates_json_array);
         json_decref(gates_json_array);
-        */
+
 		return json_root;
 	}
 
@@ -263,7 +267,7 @@ struct DigitalSequencer : Module
 		//
 		// Load patterns
 		//
-        /*
+
 		json_t *pattern_arrays_data = json_object_get(json_root, "patterns");
 
 		if(pattern_arrays_data)
@@ -275,7 +279,8 @@ struct DigitalSequencer : Module
 			{
 				for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
 				{
-					this->sequences[pattern_number][i] = json_integer_value(json_array_get(json_pattern_array, i));
+					// this->sequences[pattern_number][i] = json_integer_value(json_array_get(json_pattern_array, i));
+                    this->voltage_sequencers[pattern_number].setValue(i, json_integer_value(json_array_get(json_pattern_array, i)));
 				}
 			}
 		}
@@ -295,11 +300,12 @@ struct DigitalSequencer : Module
             {
                 for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
                 {
-                    this->gates[pattern_number][i] = json_integer_value(json_array_get(json_pattern_array, i));
+                    // this->gates[pattern_number][i] = json_integer_value(json_array_get(json_pattern_array, i));
+                    this->gate_sequencers[pattern_number].setValue(i, json_integer_value(json_array_get(json_pattern_array, i)));
                 }
             }
         }
-        */
+
 	}
 
     /*
@@ -320,12 +326,21 @@ struct DigitalSequencer : Module
         selected_sequencer_index = params[SEQUENCE_SELECTION_KNOB].getValue();
 
         // Store the selected sequencers for convenience
-        selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
-        selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
+        if(previously_selected_sequencer_index != selected_sequencer_index)
+        {
+            selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
+            selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
 
-        // Set the selected sequencers lengths
-        selected_voltage_sequencer->setLength(params[SEQUENCE_LENGTH_KNOB].getValue());
-        selected_gate_sequencer->setLength(params[SEQUENCE_LENGTH_KNOB].getValue());
+            params[SEQUENCE_LENGTH_KNOB].setValue(selected_voltage_sequencer->getLength());
+
+            previously_selected_sequencer_index = selected_sequencer_index;
+        }
+        else
+        {
+            // Set the selected sequencers lengths
+            selected_voltage_sequencer->setLength(params[SEQUENCE_LENGTH_KNOB].getValue());
+            selected_gate_sequencer->setLength(params[SEQUENCE_LENGTH_KNOB].getValue());
+        }
 
         // Step ALL of the sequencers
         if(stepTrigger.process(inputs[STEP_INPUT].getVoltage()))
