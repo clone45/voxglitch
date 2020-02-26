@@ -8,7 +8,7 @@
 
 #define GAIN 5.0
 
-#define NUMBER_OF_SEQUENCES 6
+#define NUMBER_OF_SEQUENCERS 6
 #define MAX_SEQUENCER_STEPS 32
 
 // Constants for patterns
@@ -26,18 +26,65 @@
 #define GATES_DRAW_AREA_POSITION_Y 86
 #define GATE_BAR_HEIGHT 16
 
+struct VoltageSequencer
+{
+    unsigned int sequence_length = 16;
+    std::array<float, MAX_SEQUENCER_STEPS> sequence;
+    // float sequence[MAX_SEQUENCER_STEPS];
+    unsigned int sequence_playback_position = 0;
+
+    // constructor
+    VoltageSequencer()
+    {
+        sequence.fill(0.0);
+        // std::fill(begin(sequence), end(sequence), 0.0);
+    }
+
+    void step()
+    {
+        sequence_playback_position = (sequence_playback_position + 1) % sequence_length;
+    }
+
+    unsigned int getPlaybackPosition()
+    {
+        return(sequence_playback_position);
+    }
+
+    float getValue(int index)
+    {
+        return(sequence[index]);
+    }
+
+    void setValue(int index, float value)
+    {
+        sequence[index] = value;
+    }
+
+    unsigned int getLength()
+    {
+        return(sequence_length);
+    }
+
+    void setLength(unsigned int sequence_length)
+    {
+        this->sequence_length = sequence_length;
+    }
+};
+
 struct DigitalSequencer : Module
 {
 	dsp::SchmittTrigger stepTrigger;
 	dsp::PulseGenerator clockOutputPulse;
 	dsp::PulseGenerator endOutputPulse;
 
-    int sequences[NUMBER_OF_SEQUENCES][MAX_SEQUENCER_STEPS];
-    bool gates[NUMBER_OF_SEQUENCES][MAX_SEQUENCER_STEPS];
-    unsigned int sequence_playback_position = 0;
-    int selected_sequence = 0;
+    // int sequences[NUMBER_OF_SEQUENCES][MAX_SEQUENCER_STEPS];
+    VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
+    VoltageSequencer *selected_voltage_sequencer;
+    bool gates[NUMBER_OF_SEQUENCERS][MAX_SEQUENCER_STEPS];
+    // unsigned int sequence_playback_position = 0;
+    int selected_sequencer_index = 0;
     bool pattern_lock = false;
-    unsigned int sequencer_steps = 16;
+    // unsigned int sequencer_steps = 16;
 
 	enum ParamIds {
         SEQUENCE_LENGTH_KNOB,
@@ -80,7 +127,8 @@ struct DigitalSequencer : Module
 	DigitalSequencer()
 	{
 
-        for(int sequence=0; sequence<NUMBER_OF_SEQUENCES; sequence++)
+        /*
+        for(int sequence=0; sequence<NUMBER_OF_SEQUENCERS; sequence++)
         {
             for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
             {
@@ -88,10 +136,11 @@ struct DigitalSequencer : Module
                 gates[sequence][i] = false;
             }
         }
+        */
 
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
         configParam(SEQUENCE_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "SequenceLengthKnob");
-        configParam(SEQUENCE_SELECTION_KNOB, 0, NUMBER_OF_SEQUENCES - 1, 0, "SequenceSelectionKnob");
+        configParam(SEQUENCE_SELECTION_KNOB, 0, NUMBER_OF_SEQUENCERS - 1, 0, "SequenceSelectionKnob");
 	}
 
 	// Autosave settings
@@ -102,10 +151,10 @@ struct DigitalSequencer : Module
 		//
 		// Save patterns
 		//
-
+        /*
 		json_t *sequences_json_array = json_array();
 
-		for(int pattern_number=0; pattern_number<NUMBER_OF_SEQUENCES; pattern_number++)
+		for(int pattern_number=0; pattern_number<NUMBER_OF_SEQUENCERS; pattern_number++)
 		{
 			json_t *pattern_json_array = json_array();
 
@@ -126,7 +175,7 @@ struct DigitalSequencer : Module
 
 		json_t *gates_json_array = json_array();
 
-		for(int pattern_number=0; pattern_number<NUMBER_OF_SEQUENCES; pattern_number++)
+		for(int pattern_number=0; pattern_number<NUMBER_OF_SEQUENCERS; pattern_number++)
 		{
 			json_t *pattern_json_array = json_array();
 
@@ -140,7 +189,7 @@ struct DigitalSequencer : Module
 
         json_object_set(json_root, "gates", gates_json_array);
         json_decref(gates_json_array);
-
+        */
 		return json_root;
 	}
 
@@ -150,7 +199,7 @@ struct DigitalSequencer : Module
 		//
 		// Load patterns
 		//
-
+        /*
 		json_t *pattern_arrays_data = json_object_get(json_root, "patterns");
 
 		if(pattern_arrays_data)
@@ -186,6 +235,7 @@ struct DigitalSequencer : Module
                 }
             }
         }
+        */
 	}
 
     /*
@@ -201,14 +251,27 @@ struct DigitalSequencer : Module
 
 	void process(const ProcessArgs &args) override
 	{
-        sequencer_steps = params[SEQUENCE_LENGTH_KNOB].getValue();
 
+        selected_sequencer_index = params[SEQUENCE_SELECTION_KNOB].getValue();
+
+        // Store the selected sequencers for convenience
+        selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
+
+        // Set the selected sequencers lengths
+        selected_voltage_sequencer->setLength(params[SEQUENCE_LENGTH_KNOB].getValue());
+
+        // Step ALL of the sequencers
         if(stepTrigger.process(inputs[STEP_INPUT].getVoltage()))
         {
-            sequence_playback_position = (sequence_playback_position + 1) % sequencer_steps;
+            for(unsigned int i=0; i < (NUMBER_OF_SEQUENCERS - 1); i++)
+            {
+                voltage_sequencers[i].step();
+            }
         }
+        
 
-        selected_sequence = params[SEQUENCE_SELECTION_KNOB].getValue();
+        // output values
+        // TODO
 	}
 };
 
@@ -235,6 +298,12 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 
 		if(module)
 		{
+            //
+            // Always draw the selected sequencer
+            //
+
+            VoltageSequencer *selected_voltage_sequencer = &module->voltage_sequencers[module->selected_sequencer_index];
+
 			//
 			// Display the pattern
 			//
@@ -247,7 +316,7 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 
 			for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
 			{
-				value = module->sequences[module->selected_sequence][i];
+				value = selected_voltage_sequencer->getValue(i);
 
                 // Draw grey background bar
                 bar_color = nvgRGBA(60, 60, 64, 255);
@@ -256,11 +325,11 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
                 nvgFillColor(vg, bar_color);
                 nvgFill(vg);
 
-				if(i == module->sequence_playback_position)
+				if(i == selected_voltage_sequencer->getPlaybackPosition())
 				{
 					bar_color = nvgRGBA(255, 255, 255, 250);
 				}
-				else if(i < module->sequencer_steps)
+				else if(i < selected_voltage_sequencer->getLength())
 				{
 					bar_color = nvgRGBA(255, 255, 255, 150);
 				}
@@ -281,7 +350,7 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 					nvgFill(vg);
 				}
 
-				if(i == module->sequence_playback_position)
+				if(i == selected_voltage_sequencer->getPlaybackPosition())
 				{
 					// Highlight entire column
 					nvgBeginPath(vg);
@@ -304,9 +373,7 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
                 nvgFill(vg);
             }
 
-			// Note to self: This is a nice orange for an overlay
-			// and might be interesting to give an option to activate
-
+            // Draw blue overlay
 			nvgBeginPath(vg);
 			nvgRect(vg, 0, 0, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
 			nvgFillColor(vg, nvgRGBA(0, 100, 255, 28));
@@ -359,31 +426,15 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 
 	void editBar(Vec mouse_position)
 	{
-        float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
+        VoltageSequencer *selected_voltage_sequencer = &module->voltage_sequencers[module->selected_sequencer_index];
 
+        float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
 		int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
 		int clicked_y = DRAW_AREA_HEIGHT - mouse_position.y;
 
 		clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
 
-		// DEBUG("%s %f,%f", "height vs ", DRAW_AREA_HEIGHT, drag_position.y);
-
-		// If the mouse position is below the sequencer, then set the corresponding
-		// row of the sequencer to "0" (meaning, don't jump to a new position in the beat)
-        /*
-		if(mouse_position.y > (DRAW_AREA_HEIGHT - 2))
-		{
-			// Special case: Set the break pattern to -1 for "don't jump to new position"
-			module->sequences[module->selected_sequence][clicked_bar_x_index] = -1;
-		}
-		else
-		{
-			// Set the sequence value height
-			module->sequences[module->selected_sequence][clicked_bar_x_index] = clicked_bar_y_index;
-		}
-        */
-
-        module->sequences[module->selected_sequence][clicked_bar_x_index] = clicked_y;
+        selected_voltage_sequencer->setValue(clicked_bar_x_index, clicked_y);
 	}
 
 	void onEnter(const event::Enter &e) override
@@ -400,6 +451,7 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 	}
 };
 
+/*
 struct DigitalSequencerGatesDisplay : TransparentWidget
 {
 	DigitalSequencer *module;
@@ -542,6 +594,7 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
 		this->module->pattern_lock = false;
 	}
 };
+*/
 
 struct DigitalSequencerLenDisplay : TransparentWidget
 {
@@ -575,11 +628,12 @@ struct DigitalSequencerLenDisplay : TransparentWidget
 
 		if(module)
 		{
+            VoltageSequencer *selected_voltage_sequencer = &module->voltage_sequencers[module->selected_sequencer_index];
             std::string len_string;
 
             if(moused_over)
             {
-                len_string = std::to_string(module->sequencer_steps);
+                len_string = std::to_string(selected_voltage_sequencer->getLength());
             }
             else
             {
@@ -590,7 +644,7 @@ struct DigitalSequencerLenDisplay : TransparentWidget
 		}
 		else
 		{
-			nvgText(args.vg, text_position_x, text_position_y, "32", NULL);
+			nvgText(args.vg, text_position_x, text_position_y, "LEN", NULL);
 		}
 
         /*
@@ -663,7 +717,7 @@ struct DigitalSequencerSeqDisplay : TransparentWidget
 
             if(moused_over)
             {
-                len_string = std::to_string(module->selected_sequence + 1);
+                len_string = std::to_string(module->selected_sequencer_index + 1);
             }
             else
             {
@@ -735,10 +789,12 @@ struct DigitalSequencerWidget : ModuleWidget
 		pattern_display->module = module;
 		addChild(pattern_display);
 
+        /*
         DigitalSequencerGatesDisplay *gates_display = new DigitalSequencerGatesDisplay();
 		gates_display->box.pos = mm2px(Vec(GATES_DRAW_AREA_POSITION_X, GATES_DRAW_AREA_POSITION_Y));
 		gates_display->module = module;
 		addChild(gates_display);
+        */
 
         addParam(createParamCentered<Trimpot>(mm2px(Vec(43.737, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_SELECTION_KNOB));
         addParam(createParamCentered<Trimpot>(mm2px(Vec(60.152, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_LENGTH_KNOB));
