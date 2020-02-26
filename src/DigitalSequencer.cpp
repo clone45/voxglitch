@@ -30,7 +30,6 @@ struct VoltageSequencer
 {
     unsigned int sequence_length = 16;
     std::array<float, MAX_SEQUENCER_STEPS> sequence;
-    // float sequence[MAX_SEQUENCER_STEPS];
     unsigned int sequence_playback_position = 0;
 
     // constructor
@@ -55,7 +54,56 @@ struct VoltageSequencer
         return(sequence[index]);
     }
 
+    float getValue()
+    {
+        return(sequence[sequence_playback_position]);
+    }
+
     void setValue(int index, float value)
+    {
+        sequence[index] = value;
+    }
+
+    unsigned int getLength()
+    {
+        return(sequence_length);
+    }
+
+    void setLength(unsigned int sequence_length)
+    {
+        this->sequence_length = sequence_length;
+    }
+};
+
+struct GateSequencer
+{
+    unsigned int sequence_length = 16;
+    std::array<bool, MAX_SEQUENCER_STEPS> sequence;
+    unsigned int sequence_playback_position = 0;
+
+    // constructor
+    GateSequencer()
+    {
+        sequence.fill(0.0);
+        // std::fill(begin(sequence), end(sequence), 0.0);
+    }
+
+    void step()
+    {
+        sequence_playback_position = (sequence_playback_position + 1) % sequence_length;
+    }
+
+    unsigned int getPlaybackPosition()
+    {
+        return(sequence_playback_position);
+    }
+
+    bool getValue(int index)
+    {
+        return(sequence[index]);
+    }
+
+    void setValue(int index, bool value)
     {
         sequence[index] = value;
     }
@@ -80,10 +128,15 @@ struct DigitalSequencer : Module
     // int sequences[NUMBER_OF_SEQUENCES][MAX_SEQUENCER_STEPS];
     VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
     VoltageSequencer *selected_voltage_sequencer;
-    bool gates[NUMBER_OF_SEQUENCERS][MAX_SEQUENCER_STEPS];
+
+    GateSequencer gate_sequencers[NUMBER_OF_SEQUENCERS];
+    GateSequencer *selected_gate_sequencer;
+
+    // bool gates[NUMBER_OF_SEQUENCERS][MAX_SEQUENCER_STEPS];
     // unsigned int sequence_playback_position = 0;
+
     int selected_sequencer_index = 0;
-    bool pattern_lock = false;
+    int voltage_outputs[NUMBER_OF_SEQUENCERS];
     // unsigned int sequencer_steps = 16;
 
 	enum ParamIds {
@@ -102,17 +155,17 @@ struct DigitalSequencer : Module
 		END_OUTPUT,
 
         SEQ1_CV_OUTPUT,
-        SEQ1_GATE_OUTPUT,
         SEQ2_CV_OUTPUT,
-        SEQ2_GATE_OUTPUT,
         SEQ3_CV_OUTPUT,
-        SEQ3_GATE_OUTPUT,
-
         SEQ4_CV_OUTPUT,
-        SEQ4_GATE_OUTPUT,
         SEQ5_CV_OUTPUT,
-        SEQ5_GATE_OUTPUT,
         SEQ6_CV_OUTPUT,
+
+        SEQ1_GATE_OUTPUT,
+        SEQ2_GATE_OUTPUT,
+        SEQ3_GATE_OUTPUT,
+        SEQ4_GATE_OUTPUT,
+        SEQ5_GATE_OUTPUT,
         SEQ6_GATE_OUTPUT,
 
 		NUM_OUTPUTS
@@ -126,17 +179,14 @@ struct DigitalSequencer : Module
 	//
 	DigitalSequencer()
 	{
+        voltage_outputs[0] = SEQ1_CV_OUTPUT;
+        voltage_outputs[1] = SEQ2_CV_OUTPUT,
+        voltage_outputs[2] = SEQ3_CV_OUTPUT,
+        voltage_outputs[3] = SEQ4_CV_OUTPUT,
+        voltage_outputs[4] = SEQ5_CV_OUTPUT,
+        voltage_outputs[5] = SEQ6_CV_OUTPUT,
 
-        /*
-        for(int sequence=0; sequence<NUMBER_OF_SEQUENCERS; sequence++)
-        {
-            for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
-            {
-                sequences[sequence][i] = 0;
-                gates[sequence][i] = false;
-            }
-        }
-        */
+        selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
 
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
         configParam(SEQUENCE_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "SequenceLengthKnob");
@@ -251,14 +301,15 @@ struct DigitalSequencer : Module
 
 	void process(const ProcessArgs &args) override
 	{
-
         selected_sequencer_index = params[SEQUENCE_SELECTION_KNOB].getValue();
 
         // Store the selected sequencers for convenience
         selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
+        selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
 
         // Set the selected sequencers lengths
         selected_voltage_sequencer->setLength(params[SEQUENCE_LENGTH_KNOB].getValue());
+        selected_gate_sequencer->setLength(params[SEQUENCE_LENGTH_KNOB].getValue());
 
         // Step ALL of the sequencers
         if(stepTrigger.process(inputs[STEP_INPUT].getVoltage()))
@@ -266,12 +317,18 @@ struct DigitalSequencer : Module
             for(unsigned int i=0; i < (NUMBER_OF_SEQUENCERS - 1); i++)
             {
                 voltage_sequencers[i].step();
+                gate_sequencers[i].step();
             }
         }
-        
 
         // output values
-        // TODO
+
+        for(unsigned int i=0; i<(NUMBER_OF_SEQUENCERS-1); i++)
+        {
+            outputs[voltage_outputs[i]].setVoltage((voltage_sequencers[i].getValue() / 214.0) * 10.0);
+        }
+
+        outputs[SEQ1_CV_OUTPUT].setVoltage((voltage_sequencers[0].getValue() / 214.0) * 10.0);
 	}
 };
 
@@ -302,7 +359,8 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
             // Always draw the selected sequencer
             //
 
-            VoltageSequencer *selected_voltage_sequencer = &module->voltage_sequencers[module->selected_sequencer_index];
+            // VoltageSequencer *selected_voltage_sequencer = &module->voltage_sequencers[module->selected_sequencer_index];
+
 
 			//
 			// Display the pattern
@@ -316,7 +374,7 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 
 			for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
 			{
-				value = selected_voltage_sequencer->getValue(i);
+				value = module->selected_voltage_sequencer->getValue(i);
 
                 // Draw grey background bar
                 bar_color = nvgRGBA(60, 60, 64, 255);
@@ -325,11 +383,11 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
                 nvgFillColor(vg, bar_color);
                 nvgFill(vg);
 
-				if(i == selected_voltage_sequencer->getPlaybackPosition())
+				if(i == module->selected_voltage_sequencer->getPlaybackPosition())
 				{
 					bar_color = nvgRGBA(255, 255, 255, 250);
 				}
-				else if(i < selected_voltage_sequencer->getLength())
+				else if(i < module->selected_voltage_sequencer->getLength())
 				{
 					bar_color = nvgRGBA(255, 255, 255, 150);
 				}
@@ -350,7 +408,7 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 					nvgFill(vg);
 				}
 
-				if(i == selected_voltage_sequencer->getPlaybackPosition())
+				if(i == module->selected_voltage_sequencer->getPlaybackPosition())
 				{
 					// Highlight entire column
 					nvgBeginPath(vg);
@@ -426,7 +484,7 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 
 	void editBar(Vec mouse_position)
 	{
-        VoltageSequencer *selected_voltage_sequencer = &module->voltage_sequencers[module->selected_sequencer_index];
+        // VoltageSequencer *selected_voltage_sequencer = &module->voltage_sequencers[module->selected_sequencer_index];
 
         float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
 		int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
@@ -434,24 +492,20 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 
 		clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
 
-        selected_voltage_sequencer->setValue(clicked_bar_x_index, clicked_y);
+        module->selected_voltage_sequencer->setValue(clicked_bar_x_index, clicked_y);
 	}
 
 	void onEnter(const event::Enter &e) override
     {
 		TransparentWidget::onEnter(e);
-		this->module->pattern_lock = true;
-		// DEBUG("On enter called");
 	}
 
 	void onLeave(const event::Leave &e) override
     {
 		TransparentWidget::onLeave(e);
-		this->module->pattern_lock = false;
 	}
 };
 
-/*
 struct DigitalSequencerGatesDisplay : TransparentWidget
 {
 	DigitalSequencer *module;
@@ -479,7 +533,7 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
 
 			for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
 			{
-				value = module->gates[module->selected_sequence][i];
+				value = module->selected_gate_sequencer->getValue(i);
 
                 // Draw grey background bar
                 bar_color = nvgRGBA(60, 60, 64, 255);
@@ -488,11 +542,11 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
                 nvgFillColor(vg, bar_color);
                 nvgFill(vg);
 
-                if(i == module->sequence_playback_position)
+                if(i == module->selected_gate_sequencer->getPlaybackPosition())
 				{
 					bar_color = nvgRGBA(255, 255, 255, 250);
 				}
-				else if(i < module->sequencer_steps)
+				else if(i < module->selected_gate_sequencer->getLength())
 				{
 					bar_color = nvgRGBA(255, 255, 255, 150);
 				}
@@ -512,7 +566,7 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
 				}
 
                 // highlight active column
-				if(i == module->sequence_playback_position)
+				if(i == module->selected_gate_sequencer->getPlaybackPosition())
 				{
 					nvgBeginPath(vg);
 					nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), 0, bar_width, GATE_BAR_HEIGHT);
@@ -566,35 +620,29 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
         float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
 
 		int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
-		// int clicked_bar_y_index = 15 - (int) ((mouse_position.y / DRAW_AREA_HEIGHT) * 16.0);
-
 		clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
-		// clicked_bar_y_index = clamp(clicked_bar_y_index, 0, MAX_SEQUENCER_STEPS - 1);
 
-        if(module->gates[module->selected_sequence][clicked_bar_x_index])
+        if(module->selected_gate_sequencer->getValue(clicked_bar_x_index))
         {
-            module->gates[module->selected_sequence][clicked_bar_x_index] = 0;
+            module->selected_gate_sequencer->setValue(clicked_bar_x_index, 0);
         }
         else
         {
-            module->gates[module->selected_sequence][clicked_bar_x_index] = 1;
+            module->selected_gate_sequencer->setValue(clicked_bar_x_index, 1);
         }
 	}
 
 	void onEnter(const event::Enter &e) override
     {
 		TransparentWidget::onEnter(e);
-		this->module->pattern_lock = true;
-		// DEBUG("On enter called");
 	}
 
 	void onLeave(const event::Leave &e) override
     {
 		TransparentWidget::onLeave(e);
-		this->module->pattern_lock = false;
 	}
 };
-*/
+
 
 struct DigitalSequencerLenDisplay : TransparentWidget
 {
@@ -776,25 +824,16 @@ struct DigitalSequencerWidget : ModuleWidget
 		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
 		addChild(createWidget<ScrewSilver>(mm2px(Vec(171.5, 0))));
 
-		// Sequence Select
-        /*
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(13.848, 38)), module, DigitalSequencer::SEQUENCE_KNOB));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(13.848, 52)), module, DigitalSequencer::SEQUENCE_ATTN_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.848, 63.5)), module, DigitalSequencer::SEQUENCE_INPUT));
-        */
-
-
+        // Main voltage sequencer display
 		DigitalSequencerPatternDisplay *pattern_display = new DigitalSequencerPatternDisplay();
 		pattern_display->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
 		pattern_display->module = module;
 		addChild(pattern_display);
 
-        /*
         DigitalSequencerGatesDisplay *gates_display = new DigitalSequencerGatesDisplay();
 		gates_display->box.pos = mm2px(Vec(GATES_DRAW_AREA_POSITION_X, GATES_DRAW_AREA_POSITION_Y));
 		gates_display->module = module;
 		addChild(gates_display);
-        */
 
         addParam(createParamCentered<Trimpot>(mm2px(Vec(43.737, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_SELECTION_KNOB));
         addParam(createParamCentered<Trimpot>(mm2px(Vec(60.152, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_LENGTH_KNOB));
@@ -830,20 +869,6 @@ struct DigitalSequencerWidget : ModuleWidget
         addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(151, 119.309)), module, DigitalSequencer::SEQ4_GATE_OUTPUT));
         addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(162, 119.309)), module, DigitalSequencer::SEQ5_GATE_OUTPUT));
         addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(173, 119.309)), module, DigitalSequencer::SEQ6_GATE_OUTPUT));
-
-        /*
-		// BPM selection
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 12.2)), module, DigitalSequencer::BPM_KNOB));
-
-
-
-		// Outputs
-		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 100.893)), module, DigitalSequencer::DEBUG_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(13.848, 114.893)), module, DigitalSequencer::CLOCK_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(13.848, 88.685)), module, DigitalSequencer::END_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.541, 114.893)), module, DigitalSequencer::WAV_OUTPUT));
-        */
-
 	}
 
 	void appendContextMenu(Menu *menu) override
