@@ -103,6 +103,11 @@ struct GateSequencer
         return(sequence[index]);
     }
 
+    bool getValue()
+    {
+        return(sequence[sequence_playback_position]);
+    }
+
     void setValue(int index, bool value)
     {
         sequence[index] = value;
@@ -137,7 +142,9 @@ struct DigitalSequencer : Module
 
     int selected_sequencer_index = 0;
     int voltage_outputs[NUMBER_OF_SEQUENCERS];
-    // unsigned int sequencer_steps = 16;
+    int gate_outputs[NUMBER_OF_SEQUENCERS];
+
+    dsp::PulseGenerator gateOutputPulseGenerators[NUMBER_OF_SEQUENCERS];
 
 	enum ParamIds {
         SEQUENCE_LENGTH_KNOB,
@@ -185,6 +192,13 @@ struct DigitalSequencer : Module
         voltage_outputs[3] = SEQ4_CV_OUTPUT,
         voltage_outputs[4] = SEQ5_CV_OUTPUT,
         voltage_outputs[5] = SEQ6_CV_OUTPUT,
+
+        gate_outputs[0] = SEQ1_GATE_OUTPUT;
+        gate_outputs[1] = SEQ2_GATE_OUTPUT,
+        gate_outputs[2] = SEQ3_GATE_OUTPUT,
+        gate_outputs[3] = SEQ4_GATE_OUTPUT,
+        gate_outputs[4] = SEQ5_GATE_OUTPUT,
+        gate_outputs[5] = SEQ6_GATE_OUTPUT,
 
         selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
 
@@ -301,6 +315,8 @@ struct DigitalSequencer : Module
 
 	void process(const ProcessArgs &args) override
 	{
+        bool trigger_output_pulse = false;
+
         selected_sequencer_index = params[SEQUENCE_SELECTION_KNOB].getValue();
 
         // Store the selected sequencers for convenience
@@ -318,17 +334,26 @@ struct DigitalSequencer : Module
             {
                 voltage_sequencers[i].step();
                 gate_sequencers[i].step();
+
+                if(gate_sequencers[i].getValue())
+                {
+                    gateOutputPulseGenerators[i].trigger(0.01f);
+                }
             }
         }
 
         // output values
-
         for(unsigned int i=0; i<(NUMBER_OF_SEQUENCERS-1); i++)
         {
             outputs[voltage_outputs[i]].setVoltage((voltage_sequencers[i].getValue() / 214.0) * 10.0);
         }
 
-        outputs[SEQ1_CV_OUTPUT].setVoltage((voltage_sequencers[0].getValue() / 214.0) * 10.0);
+        // process trigger outputs
+        for(unsigned int i=0; i<(NUMBER_OF_SEQUENCERS-1); i++)
+        {
+            trigger_output_pulse = gateOutputPulseGenerators[i].process(1.0 / args.sampleRate);
+		    outputs[gate_outputs[i]].setVoltage((trigger_output_pulse ? 10.0f : 0.0f));
+        }
 	}
 };
 
