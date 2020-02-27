@@ -34,6 +34,8 @@ struct VoltageSequencer
     unsigned int sequence_length = 16;
     std::array<float, MAX_SEQUENCER_STEPS> sequence;
     unsigned int sequence_playback_position = 0;
+    unsigned int clock_division = 1;
+    unsigned int clock_division_counter = 0;
 
     // constructor
     VoltageSequencer()
@@ -43,7 +45,12 @@ struct VoltageSequencer
 
     void step()
     {
-        sequence_playback_position = (sequence_playback_position + 1) % sequence_length;
+        clock_division_counter++;
+        if(clock_division_counter >= clock_division)
+        {
+            clock_division_counter = 0;
+            sequence_playback_position = (sequence_playback_position + 1) % sequence_length;
+        }
     }
 
     void reset()
@@ -102,6 +109,17 @@ struct VoltageSequencer
 
         sequence[0] = temp;
     }
+
+    void setClockDivision(unsigned int clock_division)
+    {
+        this->clock_division = clock_division;
+        clock_division_counter = 0;
+    }
+
+    unsigned int getClockDivision()
+    {
+        return(clock_division);
+    }
 };
 
 struct GateSequencer
@@ -109,6 +127,8 @@ struct GateSequencer
     unsigned int sequence_length = 16;
     std::array<bool, MAX_SEQUENCER_STEPS> sequence;
     unsigned int sequence_playback_position = 0;
+    unsigned int clock_division = 1;
+    unsigned int clock_division_counter = 0;
 
     // constructor
     GateSequencer()
@@ -119,7 +139,12 @@ struct GateSequencer
 
     void step()
     {
-        sequence_playback_position = (sequence_playback_position + 1) % sequence_length;
+        clock_division_counter++;
+        if(clock_division_counter >= clock_division)
+        {
+            clock_division_counter = 0;
+            sequence_playback_position = (sequence_playback_position + 1) % sequence_length;
+        }
     }
 
     void reset()
@@ -178,6 +203,17 @@ struct GateSequencer
 
         sequence[0] = temp;
     }
+
+    void setClockDivision(unsigned int clock_division)
+    {
+        this->clock_division = clock_division;
+        clock_division_counter = 0;
+    }
+
+    unsigned int getClockDivision()
+    {
+        return(clock_division);
+    }
 };
 
 struct DigitalSequencer : Module
@@ -202,8 +238,9 @@ struct DigitalSequencer : Module
     dsp::PulseGenerator gateOutputPulseGenerators[NUMBER_OF_SEQUENCERS];
 
 	enum ParamIds {
-        SEQUENCE_LENGTH_KNOB,
         SEQUENCE_SELECTION_KNOB,
+        SEQUENCE_LENGTH_KNOB,
+        SEQUENCE_CLOCK_DIVISION_KNOB,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -260,6 +297,7 @@ struct DigitalSequencer : Module
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
         configParam(SEQUENCE_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "SequenceLengthKnob");
         configParam(SEQUENCE_SELECTION_KNOB, 0, NUMBER_OF_SEQUENCERS - 1, 0, "SequenceSelectionKnob");
+        configParam(SEQUENCE_CLOCK_DIVISION_KNOB, 1, 16, 1, "SequenceClockDivisionKnob");
 	}
 
     /*
@@ -424,6 +462,7 @@ ______
         bool trigger_output_pulse = false;
 
         selected_sequencer_index = params[SEQUENCE_SELECTION_KNOB].getValue();
+        selected_sequencer_index = clamp(selected_sequencer_index, 0, NUMBER_OF_SEQUENCERS - 1);
 
         // Store the selected sequencers for convenience
         if(previously_selected_sequencer_index != selected_sequencer_index)
@@ -438,8 +477,11 @@ ______
         else
         {
             // Set the selected sequencers lengths
-            selected_voltage_sequencer->setLength(params[SEQUENCE_LENGTH_KNOB].getValue());
-            selected_gate_sequencer->setLength(params[SEQUENCE_LENGTH_KNOB].getValue());
+            unsigned int sequence_length_knob_value = params[SEQUENCE_LENGTH_KNOB].getValue();
+            sequence_length_knob_value = clamp(sequence_length_knob_value, 1, 32);
+
+            selected_voltage_sequencer->setLength(sequence_length_knob_value);
+            selected_gate_sequencer->setLength(sequence_length_knob_value);
         }
 
         // Reset ALL of the sequencers
@@ -542,7 +584,13 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 				value = module->selected_voltage_sequencer->getValue(i);
 
                 // Draw grey background bar
-                bar_color = nvgRGBA(60, 60, 64, 255);
+                if(i < module->selected_voltage_sequencer->getLength()) {
+                    bar_color = nvgRGBA(60, 60, 64, 255);
+                }
+                else {
+                    bar_color = nvgRGBA(45, 45, 46, 255);
+                }
+
                 nvgBeginPath(vg);
                 nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), DRAW_AREA_HEIGHT - BAR_HEIGHT, bar_width, BAR_HEIGHT);
                 nvgFillColor(vg, bar_color);
@@ -719,7 +767,13 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
 				value = module->selected_gate_sequencer->getValue(i);
 
                 // Draw grey background bar
-                bar_color = nvgRGBA(60, 60, 64, 255);
+                if(i < module->selected_gate_sequencer->getLength()) {
+                    bar_color = nvgRGBA(60, 60, 64, 255);
+                }
+                else {
+                    bar_color = nvgRGBA(45, 45, 46, 255);
+                }
+
                 nvgBeginPath(vg);
                 nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), GATES_DRAW_AREA_HEIGHT - GATE_BAR_HEIGHT, bar_width, GATE_BAR_HEIGHT);
                 nvgFillColor(vg, bar_color);
@@ -844,91 +898,6 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
 };
 
 
-struct DigitalSequencerLenDisplay : TransparentWidget
-{
-	DigitalSequencer *module;
-	std::shared_ptr<Font> font;
-
-    bool moused_over = false;
-
-    // These shouldn't ever need to change
-    float text_position_x = mm2px(6.4);  // position relative to widget position
-    float text_position_y = mm2px(7.6); // position relative to widget position
-    float box_size_width = 13;
-    float box_size_height = 20;
-
-	DigitalSequencerLenDisplay()
-	{
-        box.size = mm2px(Vec(box_size_width, box_size_height));
-		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
-	}
-
-	void draw(const DrawArgs &args) override
-	{
-		nvgSave(args.vg);
-
-		// Configure the font size, face, color, etc.
-		nvgFontSize(args.vg, 13);
-		nvgFontFaceId(args.vg, font->handle);
-		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
-		nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
-		nvgTextLetterSpacing(args.vg, -1);
-
-		if(module)
-		{
-            VoltageSequencer *selected_voltage_sequencer = &module->voltage_sequencers[module->selected_sequencer_index];
-            std::string len_string;
-
-            if(moused_over)
-            {
-                len_string = std::to_string(selected_voltage_sequencer->getLength());
-            }
-            else
-            {
-                len_string = "LEN";
-            }
-
-			nvgText(args.vg, text_position_x, text_position_y, len_string.c_str(), NULL);
-		}
-		else
-		{
-			nvgText(args.vg, text_position_x, text_position_y, "LEN", NULL);
-		}
-
-        /*
-        // For debugging
-        nvgBeginPath(args.vg);
-        nvgRect(args.vg, 0, 0, mm2px(box_size_width), mm2px(box_size_height));
-        nvgFillColor(args.vg, nvgRGBA(0, 100, 255, 128));
-        nvgFill(args.vg);
-        */
-
-
-		nvgRestore(args.vg);
-	}
-
-    void onHover(const event::Hover& e) override {
-		TransparentWidget::onHover(e);
-		e.consume(this);
-	}
-
-    void step() override {
-		TransparentWidget::step();
-	}
-
-    void onEnter(const event::Enter &e) override
-    {
-		TransparentWidget::onEnter(e);
-		this->moused_over = true;
-	}
-
-	void onLeave(const event::Leave &e) override
-    {
-		TransparentWidget::onLeave(e);
-		this->moused_over = false;
-	}
-};
-
 struct DigitalSequencerSeqDisplay : TransparentWidget
 {
 	DigitalSequencer *module;
@@ -1012,6 +981,168 @@ struct DigitalSequencerSeqDisplay : TransparentWidget
 	}
 };
 
+struct DigitalSequencerLenDisplay : TransparentWidget
+{
+	DigitalSequencer *module;
+	std::shared_ptr<Font> font;
+
+    bool moused_over = false;
+
+    // These shouldn't ever need to change
+    float text_position_x = mm2px(6.4);  // position relative to widget position
+    float text_position_y = mm2px(7.6); // position relative to widget position
+    float box_size_width = 13;
+    float box_size_height = 20;
+
+	DigitalSequencerLenDisplay()
+	{
+        box.size = mm2px(Vec(box_size_width, box_size_height));
+		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+	}
+
+	void draw(const DrawArgs &args) override
+	{
+		nvgSave(args.vg);
+
+		// Configure the font size, face, color, etc.
+		nvgFontSize(args.vg, 13);
+		nvgFontFaceId(args.vg, font->handle);
+		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+		nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
+		nvgTextLetterSpacing(args.vg, -1);
+
+		if(module)
+		{
+            // VoltageSequencer *selected_voltage_sequencer = &module->voltage_sequencers[module->selected_sequencer_index];
+            std::string len_string;
+
+            if(moused_over)
+            {
+                len_string = std::to_string(module->selected_voltage_sequencer->getLength());
+            }
+            else
+            {
+                len_string = "LEN";
+            }
+
+			nvgText(args.vg, text_position_x, text_position_y, len_string.c_str(), NULL);
+		}
+		else
+		{
+			nvgText(args.vg, text_position_x, text_position_y, "LEN", NULL);
+		}
+
+        /*
+        // For debugging
+        nvgBeginPath(args.vg);
+        nvgRect(args.vg, 0, 0, mm2px(box_size_width), mm2px(box_size_height));
+        nvgFillColor(args.vg, nvgRGBA(0, 100, 255, 128));
+        nvgFill(args.vg);
+        */
+
+
+		nvgRestore(args.vg);
+	}
+
+    void onHover(const event::Hover& e) override {
+		TransparentWidget::onHover(e);
+		e.consume(this);
+	}
+
+    void step() override {
+		TransparentWidget::step();
+	}
+
+    void onEnter(const event::Enter &e) override
+    {
+		TransparentWidget::onEnter(e);
+		this->moused_over = true;
+	}
+
+	void onLeave(const event::Leave &e) override
+    {
+		TransparentWidget::onLeave(e);
+		this->moused_over = false;
+	}
+};
+
+struct DigitalSequencerDivDisplay : TransparentWidget
+{
+	DigitalSequencer *module;
+	std::shared_ptr<Font> font;
+
+    bool moused_over = false;
+
+    // These shouldn't ever need to change
+    float text_position_x = mm2px(6.4);  // position relative to widget position
+    float text_position_y = mm2px(7.6); // position relative to widget position
+    float box_size_width = 13;
+    float box_size_height = 20;
+
+	DigitalSequencerDivDisplay()
+	{
+        box.size = mm2px(Vec(box_size_width, box_size_height));
+		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+	}
+
+	void draw(const DrawArgs &args) override
+	{
+		nvgSave(args.vg);
+
+		// Configure the font size, face, color, etc.
+		nvgFontSize(args.vg, 13);
+		nvgFontFaceId(args.vg, font->handle);
+		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+		nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
+		nvgTextLetterSpacing(args.vg, -1);
+
+		if(module)
+		{
+            // VoltageSequencer *selected_voltage_sequencer = &module->voltage_sequencers[module->selected_sequencer_index];
+            std::string div_string;
+
+            if(moused_over)
+            {
+                div_string = std::to_string(module->selected_voltage_sequencer->getClockDivision());
+                // div_string = "...";
+            }
+            else
+            {
+                div_string = "DIV";
+            }
+
+			nvgText(args.vg, text_position_x, text_position_y, div_string.c_str(), NULL);
+		}
+		else
+		{
+			nvgText(args.vg, text_position_x, text_position_y, "DIV", NULL);
+		}
+
+		nvgRestore(args.vg);
+	}
+
+    void onHover(const event::Hover& e) override {
+		TransparentWidget::onHover(e);
+		e.consume(this);
+	}
+
+    void step() override {
+		TransparentWidget::step();
+	}
+
+    void onEnter(const event::Enter &e) override
+    {
+		TransparentWidget::onEnter(e);
+		this->moused_over = true;
+	}
+
+	void onLeave(const event::Leave &e) override
+    {
+		TransparentWidget::onLeave(e);
+		this->moused_over = false;
+	}
+};
+
 struct DigitalSequencerWidget : ModuleWidget
 {
 	DigitalSequencerWidget(DigitalSequencer* module)
@@ -1037,6 +1168,7 @@ struct DigitalSequencerWidget : ModuleWidget
 
         addParam(createParamCentered<Trimpot>(mm2px(Vec(43.737, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_SELECTION_KNOB));
         addParam(createParamCentered<Trimpot>(mm2px(Vec(60.152, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_LENGTH_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(76.567, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_CLOCK_DIVISION_KNOB));
 
         DigitalSequencerSeqDisplay *seq_display = new DigitalSequencerSeqDisplay();
         seq_display->box.pos = mm2px(Vec(37.440, 100 + 1));
@@ -1047,6 +1179,11 @@ struct DigitalSequencerWidget : ModuleWidget
         len_display->box.pos = mm2px(Vec(37.440 + 16.404, 100 + 1));
 		len_display->module = module;
 		addChild(len_display);
+
+        DigitalSequencerDivDisplay *div_display = new DigitalSequencerDivDisplay();
+        div_display->box.pos = mm2px(Vec(37.440 + (16.404 * 2), 100 + 1));
+		div_display->module = module;
+		addChild(div_display);
 
         // Step
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 114.893)), module, DigitalSequencer::STEP_INPUT));
