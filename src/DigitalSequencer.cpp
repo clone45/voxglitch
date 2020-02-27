@@ -2,6 +2,7 @@
 // Voxglitch "DigitalSequencer" module for VCV Rack
 //
 // TODO: Consider per-sequence clock division
+// TODO: set up a demo sequence to display in the user library render
 
 #include "plugin.hpp"
 #include "osdialog.h"
@@ -672,6 +673,7 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
         	if(e.action == GLFW_PRESS)
         	{
         		module->selected_voltage_sequencer->shiftRight();
+                if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftRight();
         	}
         }
         if (e.key == GLFW_KEY_LEFT)
@@ -681,6 +683,7 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
         	if(e.action == GLFW_PRESS)
         	{
         		module->selected_voltage_sequencer->shiftLeft();
+                if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftLeft();
         	}
         }
     }
@@ -824,6 +827,7 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
         	if(e.action == GLFW_PRESS)
         	{
         		module->selected_gate_sequencer->shiftRight();
+                if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_voltage_sequencer->shiftRight();
         	}
         }
         if (e.key == GLFW_KEY_LEFT)
@@ -833,6 +837,7 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
         	if(e.action == GLFW_PRESS)
         	{
         		module->selected_gate_sequencer->shiftLeft();
+                if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_voltage_sequencer->shiftLeft();
         	}
         }
     }
