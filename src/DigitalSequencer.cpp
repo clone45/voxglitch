@@ -1,8 +1,6 @@
 //
 // Voxglitch "DigitalSequencer" module for VCV Rack
 //
-// TODO: Save/Load sequence lengths
-// TODO: Handle resets
 // TODO: Consider per-sequence clock division
 
 #include "plugin.hpp"
@@ -29,6 +27,7 @@
 #define GATES_DRAW_AREA_POSITION_Y 86
 #define GATE_BAR_HEIGHT 16
 
+
 struct VoltageSequencer
 {
     unsigned int sequence_length = 16;
@@ -39,12 +38,16 @@ struct VoltageSequencer
     VoltageSequencer()
     {
         sequence.fill(0.0);
-        // std::fill(begin(sequence), end(sequence), 0.0);
     }
 
     void step()
     {
         sequence_playback_position = (sequence_playback_position + 1) % sequence_length;
+    }
+
+    void reset()
+    {
+        sequence_playback_position = 0;
     }
 
     unsigned int getPlaybackPosition()
@@ -76,6 +79,28 @@ struct VoltageSequencer
     {
         this->sequence_length = sequence_length;
     }
+
+    void shiftLeft()
+    {
+        float temp = sequence[0];
+        for(unsigned int i=0; i < this->sequence_length-1; i++)
+        {
+            sequence[i] = sequence[i+1];
+        }
+        sequence[this->sequence_length-1] = temp;
+    }
+
+    void shiftRight()
+    {
+        float temp = sequence[this->sequence_length - 1];
+
+        for(unsigned int i=this->sequence_length-1; i>0; i--)
+        {
+            sequence[i] = sequence[i-1];
+        }
+
+        sequence[0] = temp;
+    }
 };
 
 struct GateSequencer
@@ -94,6 +119,11 @@ struct GateSequencer
     void step()
     {
         sequence_playback_position = (sequence_playback_position + 1) % sequence_length;
+    }
+
+    void reset()
+    {
+        sequence_playback_position = 0;
     }
 
     unsigned int getPlaybackPosition()
@@ -125,23 +155,43 @@ struct GateSequencer
     {
         this->sequence_length = sequence_length;
     }
+
+    void shiftLeft()
+    {
+        bool temp = sequence[0];
+        for(unsigned int i=0; i < this->sequence_length-1; i++)
+        {
+            sequence[i] = sequence[i+1];
+        }
+        sequence[this->sequence_length-1] = temp;
+    }
+
+    void shiftRight()
+    {
+        bool temp = sequence[this->sequence_length - 1];
+
+        for(unsigned int i=this->sequence_length-1; i>0; i--)
+        {
+            sequence[i] = sequence[i-1];
+        }
+
+        sequence[0] = temp;
+    }
 };
 
 struct DigitalSequencer : Module
 {
 	dsp::SchmittTrigger stepTrigger;
+    dsp::SchmittTrigger resetTrigger;
 	dsp::PulseGenerator clockOutputPulse;
 	dsp::PulseGenerator endOutputPulse;
+    long clock_ignore_on_reset = 0;
 
-    // int sequences[NUMBER_OF_SEQUENCES][MAX_SEQUENCER_STEPS];
     VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
     VoltageSequencer *selected_voltage_sequencer;
 
     GateSequencer gate_sequencers[NUMBER_OF_SEQUENCERS];
     GateSequencer *selected_gate_sequencer;
-
-    // bool gates[NUMBER_OF_SEQUENCERS][MAX_SEQUENCER_STEPS];
-    // unsigned int sequence_playback_position = 0;
 
     int selected_sequencer_index = 0;
     int previously_selected_sequencer_index = -1;
@@ -211,7 +261,16 @@ struct DigitalSequencer : Module
         configParam(SEQUENCE_SELECTION_KNOB, 0, NUMBER_OF_SEQUENCERS - 1, 0, "SequenceSelectionKnob");
 	}
 
-	// Autosave settings
+    /*
+                                 ___                 _
+                                / / |               | |
+          ___  __ ___   _____  / /| | ___   __ _  __| |
+        / __|/ _` \ \ / / _ \ / / | |/ _ \ / _` |/ _` |
+        \__ \ (_| |\ V /  __// /  | | (_) | (_| | (_| |
+        |___/\__,_| \_/ \___/_/   |_|\___/ \__,_|\__,_|
+
+    */
+
 	json_t *dataToJson() override
 	{
         json_t *json_root = json_object();
@@ -257,6 +316,17 @@ struct DigitalSequencer : Module
 
         json_object_set(json_root, "gates", gates_json_array);
         json_decref(gates_json_array);
+
+        //
+        // Save sequencer lengths
+        //
+        json_t *sequencer_lengths_json_array = json_array();
+        for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
+        {
+            json_array_append_new(sequencer_lengths_json_array, json_integer(this->voltage_sequencers[sequencer_number].getLength()));
+        }
+        json_object_set(json_root, "lengths", sequencer_lengths_json_array);
+        json_decref(sequencer_lengths_json_array);
 
 		return json_root;
 	}
@@ -306,6 +376,23 @@ struct DigitalSequencer : Module
             }
         }
 
+        //
+        // Load lengths
+        //
+        json_t *lengths_json_array = json_object_get(json_root, "lengths");
+
+        if(lengths_json_array)
+        {
+            size_t sequencer_number;
+            json_t *length_json;
+
+            json_array_foreach(lengths_json_array, sequencer_number, length_json)
+            {
+                this->voltage_sequencers[sequencer_number].setLength(json_integer_value(length_json));
+                this->gate_sequencers[sequencer_number].setLength(json_integer_value(length_json));
+            }
+        }
+
 	}
 
     /*
@@ -318,6 +405,18 @@ struct DigitalSequencer : Module
 		return(((input_value * scale) * attenuator_value) + (knob_value * scale));
 	}
     */
+
+/*
+
+______
+| ___ \
+| |_/ / __ ___   ___ ___  ___ ___
+|  __/ '__/ _ \ / __/ _ \/ __/ __|
+| |  | | | (_) | (_|  __/\__ \__ \
+\_|  |_|  \___/ \___\___||___/___/
+
+
+*/
 
 	void process(const ProcessArgs &args) override
 	{
@@ -342,17 +441,36 @@ struct DigitalSequencer : Module
             selected_gate_sequencer->setLength(params[SEQUENCE_LENGTH_KNOB].getValue());
         }
 
-        // Step ALL of the sequencers
-        if(stepTrigger.process(inputs[STEP_INPUT].getVoltage()))
+        // Reset ALL of the sequencers
+        if(resetTrigger.process(inputs[RESET_INPUT].getVoltage()))
         {
+            // Set up a (reverse) counter so that the clock input will ignore
+            // incoming clock pulses for 1 millisecond after a reset input. This
+            // is to comply with VCV Rack's standards.  See section "Timing" at
+            // https://vcvrack.com/manual/VoltageStandards
+
+            clock_ignore_on_reset = (long) (.001 * args.sampleRate);
+
             for(unsigned int i=0; i < (NUMBER_OF_SEQUENCERS - 1); i++)
             {
-                voltage_sequencers[i].step();
-                gate_sequencers[i].step();
-
-                if(gate_sequencers[i].getValue())
+                voltage_sequencers[i].reset();
+                gate_sequencers[i].reset();
+            }
+        }
+        else if(clock_ignore_on_reset == 0)
+        {
+            // Step ALL of the sequencers
+            if(stepTrigger.process(inputs[STEP_INPUT].getVoltage()))
+            {
+                for(unsigned int i=0; i < (NUMBER_OF_SEQUENCERS - 1); i++)
                 {
-                    gateOutputPulseGenerators[i].trigger(0.01f);
+                    voltage_sequencers[i].step();
+                    gate_sequencers[i].step();
+
+                    if(gate_sequencers[i].getValue())
+                    {
+                        gateOutputPulseGenerators[i].trigger(0.01f);
+                    }
                 }
             }
         }
@@ -369,9 +487,22 @@ struct DigitalSequencer : Module
             trigger_output_pulse = gateOutputPulseGenerators[i].process(1.0 / args.sampleRate);
 		    outputs[gate_outputs[i]].setVoltage((trigger_output_pulse ? 10.0f : 0.0f));
         }
+
+        if (clock_ignore_on_reset > 0) clock_ignore_on_reset--;
 	}
 };
 
+/*
+
+ _    _ _     _            _
+| |  | (_)   | |          | |
+| |  | |_  __| | __ _  ___| |_ ___
+| |/\| | |/ _` |/ _` |/ _ \ __/ __|
+\  /\  / | (_| | (_| |  __/ |_\__ \
+\/  \/|_|\__,_|\__, |\___|\__|___/
+                __/ |
+               |___/
+*/
 
 struct DigitalSequencerPatternDisplay : TransparentWidget
 {
@@ -395,13 +526,6 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 
 		if(module)
 		{
-            //
-            // Always draw the selected sequencer
-            //
-
-            // VoltageSequencer *selected_voltage_sequencer = &module->voltage_sequencers[module->selected_sequencer_index];
-
-
 			//
 			// Display the pattern
 			//
@@ -482,13 +606,6 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 		nvgRestore(vg);
 	}
 
-	Vec clampToDrawArea(Vec location)
-    {
-        float x = clamp(location.x, 0.0f, DRAW_AREA_WIDTH);
-        float y = clamp(location.y, 0.0f, DRAW_AREA_HEIGHT);
-        return(Vec(x,y));
-    }
-
 	void onButton(const event::Button &e) override
     {
         e.consume(this);
@@ -531,6 +648,7 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 		int clicked_y = DRAW_AREA_HEIGHT - mouse_position.y;
 
 		clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
+        clicked_y = clamp(clicked_y, 0, DRAW_AREA_HEIGHT);
 
         module->selected_voltage_sequencer->setValue(clicked_bar_x_index, clicked_y);
 	}
@@ -544,6 +662,28 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
     {
 		TransparentWidget::onLeave(e);
 	}
+
+    void onHoverKey(const event::HoverKey &e) override
+    {
+        if (e.key == GLFW_KEY_RIGHT)
+        {
+        	e.consume(this);
+
+        	if(e.action == GLFW_PRESS)
+        	{
+        		module->selected_voltage_sequencer->shiftRight();
+        	}
+        }
+        if (e.key == GLFW_KEY_LEFT)
+        {
+        	e.consume(this);
+
+        	if(e.action == GLFW_PRESS)
+        	{
+        		module->selected_voltage_sequencer->shiftLeft();
+        	}
+        }
+    }
 };
 
 struct DigitalSequencerGatesDisplay : TransparentWidget
@@ -625,13 +765,6 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
 		nvgRestore(vg);
 	}
 
-	Vec clampToDrawArea(Vec location)
-    {
-        float x = clamp(location.x, 0.0f, DRAW_AREA_WIDTH);
-        float y = clamp(location.y, 0.0f, DRAW_AREA_HEIGHT);
-        return(Vec(x,y));
-    }
-
 	void onButton(const event::Button &e) override
     {
         e.consume(this);
@@ -681,6 +814,28 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
     {
 		TransparentWidget::onLeave(e);
 	}
+
+    void onHoverKey(const event::HoverKey &e) override
+    {
+        if (e.key == GLFW_KEY_RIGHT)
+        {
+        	e.consume(this);
+
+        	if(e.action == GLFW_PRESS)
+        	{
+        		module->selected_gate_sequencer->shiftRight();
+        	}
+        }
+        if (e.key == GLFW_KEY_LEFT)
+        {
+        	e.consume(this);
+
+        	if(e.action == GLFW_PRESS)
+        	{
+        		module->selected_gate_sequencer->shiftLeft();
+        	}
+        }
+    }
 };
 
 
