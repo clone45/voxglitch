@@ -588,7 +588,7 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
                     bar_color = nvgRGBA(60, 60, 64, 255);
                 }
                 else {
-                    bar_color = nvgRGBA(45, 45, 46, 255);
+                    bar_color = nvgRGBA(45, 45, 45, 255);
                 }
 
                 nvgBeginPath(vg);
@@ -771,7 +771,7 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
                     bar_color = nvgRGBA(60, 60, 64, 255);
                 }
                 else {
-                    bar_color = nvgRGBA(45, 45, 46, 255);
+                    bar_color = nvgRGBA(45, 45, 45, 255);
                 }
 
                 nvgBeginPath(vg);
@@ -811,6 +811,19 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
 					nvgFill(vg);
 				}
 			}
+
+            //
+            // Draw vertical guides every 4 bars
+            //
+
+            for(unsigned int i=1; i < 8; i++)
+            {
+                nvgBeginPath(vg);
+                int x = (i * 4 * bar_width) + (i * 4 * BAR_HORIZONTAL_PADDING);
+                nvgRect(vg, x, 0, 1, GATES_DRAW_AREA_HEIGHT);
+                nvgFillColor(vg, nvgRGBA(240, 240, 255, 40));
+                nvgFill(vg);
+            }
 
             // Cool blue hue
             nvgBeginPath(vg);
