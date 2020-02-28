@@ -1,9 +1,6 @@
 //
 // Voxglitch "DigitalSequencer" module for VCV Rack
 //
-// TODO: set up a demo sequence to display in the user library render
-// TODO: Add STR (start) parameter
-// TODO: save/load start paramters
 
 #include "plugin.hpp"
 #include "osdialog.h"
@@ -37,7 +34,6 @@ struct VoltageSequencer
     unsigned int sequence_playback_position = 0;
     unsigned int clock_division = 1;
     unsigned int clock_division_counter = 0;
-    unsigned int sequence_start = 0;
 
     // constructor
     VoltageSequencer()
@@ -72,7 +68,7 @@ struct VoltageSequencer
 
     float getValue()
     {
-        return(sequence[sequence_playback_position]);
+        return(sequence[getPlaybackPosition()]);
     }
 
     void setValue(int index, float value)
@@ -88,16 +84,6 @@ struct VoltageSequencer
     void setLength(unsigned int sequence_length)
     {
         this->sequence_length = sequence_length;
-    }
-
-    unsigned int getStart()
-    {
-        return(sequence_start);
-    }
-
-    void setStart(unsigned int start)
-    {
-        this->sequence_start = start;
     }
 
     void shiftLeft()
@@ -140,7 +126,6 @@ struct GateSequencer
     unsigned int sequence_playback_position = 0;
     unsigned int clock_division = 1;
     unsigned int clock_division_counter = 0;
-    unsigned int sequence_start = 0;
 
     // constructor
     GateSequencer()
@@ -192,16 +177,6 @@ struct GateSequencer
     void setLength(unsigned int sequence_length)
     {
         this->sequence_length = sequence_length;
-    }
-
-    unsigned int getStart()
-    {
-        return(sequence_start);
-    }
-
-    void setStart(unsigned int start)
-    {
-        this->sequence_start = start;
     }
 
     void shiftLeft()
@@ -320,7 +295,6 @@ struct DigitalSequencer : Module
         configParam(SEQUENCE_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "SequenceLengthKnob");
         configParam(SEQUENCE_SELECTION_KNOB, 0, NUMBER_OF_SEQUENCERS - 1, 0, "SequenceSelectionKnob");
         configParam(SEQUENCE_CLOCK_DIVISION_KNOB, 1, 16, 1, "SequenceClockDivisionKnob");
-        configParam(SEQUENCE_START_KNOB, 0, 32, 0, "SequenceStartKnob");
 	}
 
     /*
@@ -528,17 +502,15 @@ struct DigitalSequencer : Module
         }
         else
         {
-            // Set the selected sequencer's lengths
+            // Set the selected sequencer's length
             unsigned int sequence_length_knob_value = params[SEQUENCE_LENGTH_KNOB].getValue();
             sequence_length_knob_value = clamp(sequence_length_knob_value, 1, 32);
-
             selected_voltage_sequencer->setLength(sequence_length_knob_value);
             selected_gate_sequencer->setLength(sequence_length_knob_value);
 
             // Set the selected sequencer's clock division
             unsigned int sequence_clock_division_knob_value = params[SEQUENCE_CLOCK_DIVISION_KNOB].getValue();
             sequence_clock_division_knob_value = clamp(sequence_clock_division_knob_value, 1, 16);
-
             selected_voltage_sequencer->setClockDivision(sequence_clock_division_knob_value);
             selected_gate_sequencer->setClockDivision(sequence_clock_division_knob_value);
         }
@@ -620,7 +592,12 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 	void draw(const DrawArgs &args) override
 	{
 		const auto vg = args.vg;
+        int value;
+        float value_height;
+        NVGcolor bar_color;
+        float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
 
+        // Save the drawing context to restore later
 		nvgSave(vg);
 
 		if(module)
@@ -628,13 +605,6 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 			//
 			// Display the pattern
 			//
-
-			int value;
-			float value_height;
-			NVGcolor bar_color;
-
-            float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
-
 			for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
 			{
 				value = module->selected_voltage_sequencer->getValue(i);
@@ -652,6 +622,8 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
                 nvgFillColor(vg, bar_color);
                 nvgFill(vg);
 
+                // int offset_playback_position = module->selected_voltage_sequencer->getPlaybackPosition()
+
 				if(i == module->selected_voltage_sequencer->getPlaybackPosition())
 				{
 					bar_color = nvgRGBA(255, 255, 255, 250);
@@ -665,8 +637,9 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
                     bar_color = nvgRGBA(255, 255, 255, 10);
                 }
 
-				// value_height = (DRAW_AREA_HEIGHT * ((value + 1) / 16.0));
-
+                //
+                // Draw bars for the sequence values
+                //
                 value_height = value;
 
 				if(value_height > 0)
@@ -707,9 +680,58 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 			nvgFill(vg);
 
 		}
+        else // Draw a demo sequence so that the sequencer looks nice in the library selector
+        {
+            float demo_sequence[32] = {100.0,100.0,93.0,80.0,67.0,55.0,47.0,44.0,43.0,44.0,50.0,69.0,117.0,137.0,166,170,170,164,148,120,105,77,65,41,28,23,22,22,28,48,69,94};
+
+            for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
+			{
+                // Draw blue background bars
+                bar_color = nvgRGBA(60, 60, 64, 255);
+                nvgBeginPath(vg);
+                nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), DRAW_AREA_HEIGHT - BAR_HEIGHT, bar_width, BAR_HEIGHT);
+                nvgFillColor(vg, bar_color);
+                nvgFill(vg);
+
+                value_height = demo_sequence[i];
+
+                bar_color = nvgRGBA(255, 255, 255, 150);
+				nvgBeginPath(vg);
+				nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), DRAW_AREA_HEIGHT - value_height, bar_width, value_height);
+				nvgFillColor(vg, bar_color);
+				nvgFill(vg);
+
+				if(i == 5)
+				{
+					// Highlight entire column
+					nvgBeginPath(vg);
+					nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), 0, bar_width, DRAW_AREA_HEIGHT);
+					nvgFillColor(vg, nvgRGBA(255, 255, 255, 20));
+					nvgFill(vg);
+				}
+
+            }
+
+            // Draw vertical guides every 4 bars
+            for(unsigned int i=1; i < 8; i++)
+            {
+                nvgBeginPath(vg);
+                int x = (i * 4 * bar_width) + (i * 4 * BAR_HORIZONTAL_PADDING);
+                nvgRect(vg, x, 0, 1, DRAW_AREA_HEIGHT);
+                nvgFillColor(vg, nvgRGBA(240, 240, 255, 40));
+                nvgFill(vg);
+            }
+
+            // Draw blue overlay
+			nvgBeginPath(vg);
+			nvgRect(vg, 0, 0, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
+			nvgFillColor(vg, nvgRGBA(0, 100, 255, 28));
+			nvgFill(vg);
+        }
 
 		nvgRestore(vg);
 	}
+
 
 	void onButton(const event::Button &e) override
     {
@@ -807,17 +829,15 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
 	void draw(const DrawArgs &args) override
 	{
 		const auto vg = args.vg;
+        int value;
+        float value_height;
+        NVGcolor bar_color;
+        float bar_width = (GATES_DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
 
 		nvgSave(vg);
 
 		if(module)
 		{
-			int value;
-			float value_height;
-			NVGcolor bar_color;
-
-            float bar_width = (GATES_DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
-
 			for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
 			{
 				value = module->selected_gate_sequencer->getValue(i);
@@ -843,7 +863,7 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
 				{
 					bar_color = nvgRGBA(255, 255, 255, 150);
 				}
-                else
+                else // dim bars past playback position
                 {
                     bar_color = nvgRGBA(255, 255, 255, 15);
                 }
@@ -887,6 +907,61 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
 			nvgFillColor(vg, nvgRGBA(0, 100, 255, 28));
 			nvgFill(vg);
 		}
+        else // draw demo data for the module explorer
+        {
+            int demo_sequence[32] = {1,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,1,1,0,0,0,0};
+
+            for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
+			{
+				value = demo_sequence[i];
+
+                // Draw background grey bar
+                bar_color = nvgRGBA(60, 60, 64, 255);
+                nvgBeginPath(vg);
+                nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), GATES_DRAW_AREA_HEIGHT - GATE_BAR_HEIGHT, bar_width, GATE_BAR_HEIGHT);
+                nvgFillColor(vg, bar_color);
+                nvgFill(vg);
+
+                bar_color = nvgRGBA(255, 255, 255, 150);
+				value_height = (GATE_BAR_HEIGHT * value);
+
+				if(value_height > 0)
+				{
+					nvgBeginPath(vg);
+					nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), GATES_DRAW_AREA_HEIGHT - value_height, bar_width, value_height);
+					nvgFillColor(vg, bar_color);
+					nvgFill(vg);
+				}
+
+                // highlight active column
+				if(i == 5)
+				{
+					nvgBeginPath(vg);
+					nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), 0, bar_width, GATE_BAR_HEIGHT);
+					nvgFillColor(vg, nvgRGBA(255, 255, 255, 20));
+					nvgFill(vg);
+				}
+			}
+
+            //
+            // Draw vertical guides every 4 bars
+            //
+
+            for(unsigned int i=1; i < 8; i++)
+            {
+                nvgBeginPath(vg);
+                int x = (i * 4 * bar_width) + (i * 4 * BAR_HORIZONTAL_PADDING);
+                nvgRect(vg, x, 0, 1, GATES_DRAW_AREA_HEIGHT);
+                nvgFillColor(vg, nvgRGBA(240, 240, 255, 40));
+                nvgFill(vg);
+            }
+
+            // Cool blue hue
+            nvgBeginPath(vg);
+			nvgRect(vg, 0, 0, GATES_DRAW_AREA_WIDTH, GATES_DRAW_AREA_HEIGHT);
+			nvgFillColor(vg, nvgRGBA(0, 100, 255, 28));
+			nvgFill(vg);
+        }
 
 		nvgRestore(vg);
 	}
@@ -1179,6 +1254,7 @@ struct DigitalSequencerDivDisplay : TransparentWidget
 	}
 };
 
+/*
 struct DigitalSequencerStrDisplay : TransparentWidget
 {
 	DigitalSequencer *module;
@@ -1238,6 +1314,7 @@ struct DigitalSequencerStrDisplay : TransparentWidget
 		this->moused_over = false;
 	}
 };
+*/
 
 struct DigitalSequencerWidget : ModuleWidget
 {
@@ -1264,8 +1341,8 @@ struct DigitalSequencerWidget : ModuleWidget
 
         addParam(createParamCentered<Trimpot>(mm2px(Vec(43.737, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_SELECTION_KNOB));
         addParam(createParamCentered<Trimpot>(mm2px(Vec(60.152, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_LENGTH_KNOB));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(72.152, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_START_KNOB));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(84.152, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_CLOCK_DIVISION_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(72.152, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_CLOCK_DIVISION_KNOB));
+        // next is 84.152
 
         DigitalSequencerSeqDisplay *seq_display = new DigitalSequencerSeqDisplay();
         seq_display->box.pos = mm2px(Vec(37.440, 101));
@@ -1277,13 +1354,8 @@ struct DigitalSequencerWidget : ModuleWidget
 		len_display->module = module;
 		addChild(len_display);
 
-        DigitalSequencerStrDisplay *str_display = new DigitalSequencerStrDisplay();
-        str_display->box.pos = mm2px(Vec(65.844, 101));
-		str_display->module = module;
-		addChild(str_display);
-
         DigitalSequencerDivDisplay *div_display = new DigitalSequencerDivDisplay();
-        div_display->box.pos = mm2px(Vec(77.844, 101));
+        div_display->box.pos = mm2px(Vec(65.844, 101)); // 77.844
 		div_display->module = module;
 		addChild(div_display);
 

@@ -22,7 +22,7 @@
     {
         "slug": "digitalsequencer",
         "name": "Digital Sequencer",
-        "description": "Flexible sequencer with mouse-based input.",
+        "description": "Six-in-one cv/gate sequencers with independent control over clock division and sequence length.",
         "tags": ["Sequencer"]
     },
     {
