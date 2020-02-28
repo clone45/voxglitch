@@ -1,8 +1,10 @@
 //
 // Voxglitch "DigitalSequencer" module for VCV Rack
 //
-// TODO: Consider per-sequence clock division
+// TODO: Complete per-sequence clock division
 // TODO: set up a demo sequence to display in the user library render
+// TODO: Crowd LEN, DIV, STR
+// TODO: Add STR (start) parameter
 
 #include "plugin.hpp"
 #include "osdialog.h"
@@ -36,6 +38,7 @@ struct VoltageSequencer
     unsigned int sequence_playback_position = 0;
     unsigned int clock_division = 1;
     unsigned int clock_division_counter = 0;
+    unsigned int sequence_start = 0;
 
     // constructor
     VoltageSequencer()
@@ -88,6 +91,16 @@ struct VoltageSequencer
         this->sequence_length = sequence_length;
     }
 
+    unsigned int getStart()
+    {
+        return(sequence_start);
+    }
+
+    void setStart(unsigned int start)
+    {
+        this->sequence_start = start;
+    }
+
     void shiftLeft()
     {
         float temp = sequence[0];
@@ -113,12 +126,11 @@ struct VoltageSequencer
     void setClockDivision(unsigned int clock_division)
     {
         this->clock_division = clock_division;
-        clock_division_counter = 0;
     }
 
     unsigned int getClockDivision()
     {
-        return(clock_division);
+        return(this->clock_division);
     }
 };
 
@@ -129,6 +141,7 @@ struct GateSequencer
     unsigned int sequence_playback_position = 0;
     unsigned int clock_division = 1;
     unsigned int clock_division_counter = 0;
+    unsigned int sequence_start = 0;
 
     // constructor
     GateSequencer()
@@ -182,6 +195,16 @@ struct GateSequencer
         this->sequence_length = sequence_length;
     }
 
+    unsigned int getStart()
+    {
+        return(sequence_start);
+    }
+
+    void setStart(unsigned int start)
+    {
+        this->sequence_start = start;
+    }
+
     void shiftLeft()
     {
         bool temp = sequence[0];
@@ -207,7 +230,6 @@ struct GateSequencer
     void setClockDivision(unsigned int clock_division)
     {
         this->clock_division = clock_division;
-        clock_division_counter = 0;
     }
 
     unsigned int getClockDivision()
@@ -241,6 +263,7 @@ struct DigitalSequencer : Module
         SEQUENCE_SELECTION_KNOB,
         SEQUENCE_LENGTH_KNOB,
         SEQUENCE_CLOCK_DIVISION_KNOB,
+        SEQUENCE_START_KNOB,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -298,6 +321,7 @@ struct DigitalSequencer : Module
         configParam(SEQUENCE_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "SequenceLengthKnob");
         configParam(SEQUENCE_SELECTION_KNOB, 0, NUMBER_OF_SEQUENCERS - 1, 0, "SequenceSelectionKnob");
         configParam(SEQUENCE_CLOCK_DIVISION_KNOB, 1, 16, 1, "SequenceClockDivisionKnob");
+        configParam(SEQUENCE_START_KNOB, 0, 32, 0, "SequenceStartKnob");
 	}
 
     /*
@@ -445,17 +469,17 @@ struct DigitalSequencer : Module
 	}
     */
 
-/*
+    /*
 
-______
-| ___ \
-| |_/ / __ ___   ___ ___  ___ ___
-|  __/ '__/ _ \ / __/ _ \/ __/ __|
-| |  | | | (_) | (_|  __/\__ \__ \
-\_|  |_|  \___/ \___\___||___/___/
+    ______
+    | ___ \
+    | |_/ / __ ___   ___ ___  ___ ___
+    |  __/ '__/ _ \ / __/ _ \/ __/ __|
+    | |  | | | (_) | (_|  __/\__ \__ \
+    \_|  |_|  \___/ \___\___||___/___/
 
 
-*/
+    */
 
 	void process(const ProcessArgs &args) override
 	{
@@ -471,17 +495,25 @@ ______
             selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
 
             params[SEQUENCE_LENGTH_KNOB].setValue(selected_voltage_sequencer->getLength());
+            params[SEQUENCE_CLOCK_DIVISION_KNOB].setValue(selected_voltage_sequencer->getClockDivision());
 
             previously_selected_sequencer_index = selected_sequencer_index;
         }
         else
         {
-            // Set the selected sequencers lengths
+            // Set the selected sequencer's lengths
             unsigned int sequence_length_knob_value = params[SEQUENCE_LENGTH_KNOB].getValue();
             sequence_length_knob_value = clamp(sequence_length_knob_value, 1, 32);
 
             selected_voltage_sequencer->setLength(sequence_length_knob_value);
             selected_gate_sequencer->setLength(sequence_length_knob_value);
+
+            // Set the selected sequencer's clock division
+            unsigned int sequence_clock_division_knob_value = params[SEQUENCE_CLOCK_DIVISION_KNOB].getValue();
+            sequence_clock_division_knob_value = clamp(sequence_clock_division_knob_value, 1, 16);
+
+            selected_voltage_sequencer->setClockDivision(sequence_clock_division_knob_value);
+            selected_gate_sequencer->setClockDivision(sequence_clock_division_knob_value);
         }
 
         // Reset ALL of the sequencers
@@ -494,7 +526,7 @@ ______
 
             clock_ignore_on_reset = (long) (.001 * args.sampleRate);
 
-            for(unsigned int i=0; i < (NUMBER_OF_SEQUENCERS - 1); i++)
+            for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
             {
                 voltage_sequencers[i].reset();
                 gate_sequencers[i].reset();
@@ -505,27 +537,24 @@ ______
             // Step ALL of the sequencers
             if(stepTrigger.process(inputs[STEP_INPUT].getVoltage()))
             {
-                for(unsigned int i=0; i < (NUMBER_OF_SEQUENCERS - 1); i++)
+                for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
                 {
                     voltage_sequencers[i].step();
                     gate_sequencers[i].step();
 
-                    if(gate_sequencers[i].getValue())
-                    {
-                        gateOutputPulseGenerators[i].trigger(0.01f);
-                    }
+                    if(gate_sequencers[i].getValue()) gateOutputPulseGenerators[i].trigger(0.01f);
                 }
             }
         }
 
         // output values
-        for(unsigned int i=0; i<(NUMBER_OF_SEQUENCERS-1); i++)
+        for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
         {
             outputs[voltage_outputs[i]].setVoltage((voltage_sequencers[i].getValue() / 214.0) * 10.0);
         }
 
         // process trigger outputs
-        for(unsigned int i=0; i<(NUMBER_OF_SEQUENCERS-1); i++)
+        for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
         {
             trigger_output_pulse = gateOutputPulseGenerators[i].process(1.0 / args.sampleRate);
 		    outputs[gate_outputs[i]].setVoltage((trigger_output_pulse ? 10.0f : 0.0f));
@@ -1024,26 +1053,10 @@ struct DigitalSequencerLenDisplay : TransparentWidget
 		nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
 		nvgTextLetterSpacing(args.vg, -1);
 
-		if(module)
-		{
-            // VoltageSequencer *selected_voltage_sequencer = &module->voltage_sequencers[module->selected_sequencer_index];
-            std::string len_string;
+        std::string div_string = "LEN";
+		if(module && moused_over) div_string = std::to_string(module->selected_voltage_sequencer->getLength());
 
-            if(moused_over)
-            {
-                len_string = std::to_string(module->selected_voltage_sequencer->getLength());
-            }
-            else
-            {
-                len_string = "LEN";
-            }
-
-			nvgText(args.vg, text_position_x, text_position_y, len_string.c_str(), NULL);
-		}
-		else
-		{
-			nvgText(args.vg, text_position_x, text_position_y, "LEN", NULL);
-		}
+        nvgText(args.vg, text_position_x, text_position_y, div_string.c_str(), NULL);
 
         /*
         // For debugging
@@ -1109,27 +1122,70 @@ struct DigitalSequencerDivDisplay : TransparentWidget
 		nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
 		nvgTextLetterSpacing(args.vg, -1);
 
-		if(module)
-		{
-            // VoltageSequencer *selected_voltage_sequencer = &module->voltage_sequencers[module->selected_sequencer_index];
-            std::string div_string;
+        std::string div_string = "DIV";
+		if(module && moused_over) div_string = std::to_string(module->selected_voltage_sequencer->getClockDivision());
 
-            if(moused_over)
-            {
-                div_string = std::to_string(module->selected_voltage_sequencer->getClockDivision());
-                // div_string = "...";
-            }
-            else
-            {
-                div_string = "DIV";
-            }
+        nvgText(args.vg, text_position_x, text_position_y, div_string.c_str(), NULL);
 
-			nvgText(args.vg, text_position_x, text_position_y, div_string.c_str(), NULL);
-		}
-		else
-		{
-			nvgText(args.vg, text_position_x, text_position_y, "DIV", NULL);
-		}
+		nvgRestore(args.vg);
+	}
+
+    void onHover(const event::Hover& e) override {
+		TransparentWidget::onHover(e);
+		e.consume(this);
+	}
+
+    void step() override {
+		TransparentWidget::step();
+	}
+
+    void onEnter(const event::Enter &e) override
+    {
+		TransparentWidget::onEnter(e);
+		this->moused_over = true;
+	}
+
+	void onLeave(const event::Leave &e) override
+    {
+		TransparentWidget::onLeave(e);
+		this->moused_over = false;
+	}
+};
+
+struct DigitalSequencerStrDisplay : TransparentWidget
+{
+	DigitalSequencer *module;
+	std::shared_ptr<Font> font;
+
+    bool moused_over = false;
+
+    // These shouldn't ever need to change
+    float text_position_x = mm2px(6.4);  // position relative to widget position
+    float text_position_y = mm2px(7.6); // position relative to widget position
+    float box_size_width = 13;
+    float box_size_height = 20;
+
+	DigitalSequencerStrDisplay()
+	{
+        box.size = mm2px(Vec(box_size_width, box_size_height));
+		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+	}
+
+	void draw(const DrawArgs &args) override
+	{
+		nvgSave(args.vg);
+
+		// Configure the font size, face, color, etc.
+		nvgFontSize(args.vg, 13);
+		nvgFontFaceId(args.vg, font->handle);
+		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+		nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
+		nvgTextLetterSpacing(args.vg, -1);
+
+        std::string div_string = "STR";
+		if(module && moused_over) div_string = std::to_string(module->selected_voltage_sequencer->getStart());
+
+		nvgText(args.vg, text_position_x, text_position_y, div_string.c_str(), NULL);
 
 		nvgRestore(args.vg);
 	}
@@ -1181,20 +1237,26 @@ struct DigitalSequencerWidget : ModuleWidget
 
         addParam(createParamCentered<Trimpot>(mm2px(Vec(43.737, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_SELECTION_KNOB));
         addParam(createParamCentered<Trimpot>(mm2px(Vec(60.152, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_LENGTH_KNOB));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(76.567, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_CLOCK_DIVISION_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(72.152, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_START_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(84.152, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_CLOCK_DIVISION_KNOB));
 
         DigitalSequencerSeqDisplay *seq_display = new DigitalSequencerSeqDisplay();
-        seq_display->box.pos = mm2px(Vec(37.440, 100 + 1));
+        seq_display->box.pos = mm2px(Vec(37.440, 101));
 		seq_display->module = module;
 		addChild(seq_display);
 
         DigitalSequencerLenDisplay *len_display = new DigitalSequencerLenDisplay();
-        len_display->box.pos = mm2px(Vec(37.440 + 16.404, 100 + 1));
+        len_display->box.pos = mm2px(Vec(53.844, 101));
 		len_display->module = module;
 		addChild(len_display);
 
+        DigitalSequencerStrDisplay *str_display = new DigitalSequencerStrDisplay();
+        str_display->box.pos = mm2px(Vec(65.844, 101));
+		str_display->module = module;
+		addChild(str_display);
+
         DigitalSequencerDivDisplay *div_display = new DigitalSequencerDivDisplay();
-        div_display->box.pos = mm2px(Vec(37.440 + (16.404 * 2), 100 + 1));
+        div_display->box.pos = mm2px(Vec(77.844, 101));
 		div_display->module = module;
 		addChild(div_display);
 
