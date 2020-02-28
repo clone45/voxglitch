@@ -1,10 +1,9 @@
 //
 // Voxglitch "DigitalSequencer" module for VCV Rack
 //
-// TODO: Complete per-sequence clock division
 // TODO: set up a demo sequence to display in the user library render
-// TODO: Crowd LEN, DIV, STR
 // TODO: Add STR (start) parameter
+// TODO: save/load start paramters
 
 #include "plugin.hpp"
 #include "osdialog.h"
@@ -391,6 +390,17 @@ struct DigitalSequencer : Module
         json_object_set(json_root, "lengths", sequencer_lengths_json_array);
         json_decref(sequencer_lengths_json_array);
 
+        //
+        // Save sequencer clock division settings
+        //
+        json_t *sequencer_clock_division_json_array = json_array();
+        for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
+        {
+            json_array_append_new(sequencer_clock_division_json_array, json_integer(this->voltage_sequencers[sequencer_number].getClockDivision()));
+        }
+        json_object_set(json_root, "clock_divisions", sequencer_clock_division_json_array);
+        json_decref(sequencer_clock_division_json_array);
+
 		return json_root;
 	}
 
@@ -453,6 +463,23 @@ struct DigitalSequencer : Module
             {
                 this->voltage_sequencers[sequencer_number].setLength(json_integer_value(length_json));
                 this->gate_sequencers[sequencer_number].setLength(json_integer_value(length_json));
+            }
+        }
+
+        //
+        // Load clock divisions
+        //
+        json_t *clock_division_json_array = json_object_get(json_root, "clock_divisions");
+
+        if(clock_division_json_array)
+        {
+            size_t sequencer_number;
+            json_t *division_json;
+
+            json_array_foreach(clock_division_json_array, sequencer_number, division_json)
+            {
+                this->voltage_sequencers[sequencer_number].setClockDivision(json_integer_value(division_json));
+                this->gate_sequencers[sequencer_number].setClockDivision(json_integer_value(division_json));
             }
         }
 
