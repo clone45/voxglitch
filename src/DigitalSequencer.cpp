@@ -575,11 +575,87 @@ struct DigitalSequencer : Module
                |___/
 */
 
-struct DigitalSequencerPatternDisplay : TransparentWidget
+struct DigitalSequencerDisplay : TransparentWidget
 {
-	DigitalSequencer *module;
+    DigitalSequencer *module;
 	Vec drag_position;
+    float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
 
+	void onDragStart(const event::DragStart &e) override
+    {
+		TransparentWidget::onDragStart(e);
+	}
+
+	void onDragEnd(const event::DragEnd &e) override
+    {
+		TransparentWidget::onDragEnd(e);
+	}
+
+    void step() override {
+		TransparentWidget::step();
+	}
+
+    void onEnter(const event::Enter &e) override
+    {
+		TransparentWidget::onEnter(e);
+	}
+
+	void onLeave(const event::Leave &e) override
+    {
+		TransparentWidget::onLeave(e);
+	}
+
+    bool keypressRight(const event::HoverKey &e)
+    {
+        if (e.key == GLFW_KEY_RIGHT)
+        {
+            e.consume(this);
+            if(e.action == GLFW_PRESS) return(true);
+        }
+        return(false);
+    }
+
+    bool keypressLeft(const event::HoverKey &e)
+    {
+        if (e.key == GLFW_KEY_LEFT)
+        {
+            e.consume(this);
+            if(e.action == GLFW_PRESS) return(true);
+        }
+        return(false);
+    }
+
+    void drawVerticalGuildes(NVGcontext *vg, float height)
+    {
+        for(unsigned int i=1; i < 8; i++)
+        {
+            nvgBeginPath(vg);
+            int x = (i * 4 * bar_width) + (i * 4 * BAR_HORIZONTAL_PADDING);
+            nvgRect(vg, x, 0, 1, height);
+            nvgFillColor(vg, nvgRGBA(240, 240, 255, 40));
+            nvgFill(vg);
+        }
+    }
+
+    void drawBlueOverlay(NVGcontext *vg, float width, float height)
+    {
+        nvgBeginPath(vg);
+        nvgRect(vg, 0, 0, width, height);
+        nvgFillColor(vg, nvgRGBA(0, 100, 255, 28));
+        nvgFill(vg);
+    }
+
+    void drawBar(NVGcontext *vg, float position, float height, NVGcolor color)
+    {
+        nvgBeginPath(vg);
+        nvgRect(vg, (position * bar_width) + (position * BAR_HORIZONTAL_PADDING), DRAW_AREA_HEIGHT - height, bar_width, height);
+        nvgFillColor(vg, color);
+        nvgFill(vg);
+    }
+};
+
+struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
+{
 	DigitalSequencerPatternDisplay()
 	{
 		// The bounding box needs to be a little deeper than the visual
@@ -593,9 +669,7 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 	{
 		const auto vg = args.vg;
         int value;
-        float value_height;
         NVGcolor bar_color;
-        float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
 
         // Save the drawing context to restore later
 		nvgSave(vg);
@@ -617,12 +691,7 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
                     bar_color = nvgRGBA(45, 45, 45, 255);
                 }
 
-                nvgBeginPath(vg);
-                nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), DRAW_AREA_HEIGHT - BAR_HEIGHT, bar_width, BAR_HEIGHT);
-                nvgFillColor(vg, bar_color);
-                nvgFill(vg);
-
-                // int offset_playback_position = module->selected_voltage_sequencer->getPlaybackPosition()
+                drawBar(vg, i, BAR_HEIGHT, bar_color);
 
 				if(i == module->selected_voltage_sequencer->getPlaybackPosition())
 				{
@@ -637,47 +706,15 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
                     bar_color = nvgRGBA(255, 255, 255, 10);
                 }
 
-                //
                 // Draw bars for the sequence values
-                //
-                value_height = value;
+				if(value > 0) drawBar(vg, i, value, bar_color);
 
-				if(value_height > 0)
-				{
-					nvgBeginPath(vg);
-					nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), DRAW_AREA_HEIGHT - value_height, bar_width, value_height);
-					nvgFillColor(vg, bar_color);
-					nvgFill(vg);
-				}
-
+                // Highlight the sequence playback column
 				if(i == module->selected_voltage_sequencer->getPlaybackPosition())
 				{
-					// Highlight entire column
-					nvgBeginPath(vg);
-					nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), 0, bar_width, DRAW_AREA_HEIGHT);
-					nvgFillColor(vg, nvgRGBA(255, 255, 255, 20));
-					nvgFill(vg);
+                    drawBar(vg, i, DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
 				}
 			}
-
-            //
-            // Draw vertical guides every 4 bars
-            //
-
-            for(unsigned int i=1; i < 8; i++)
-            {
-                nvgBeginPath(vg);
-                int x = (i * 4 * bar_width) + (i * 4 * BAR_HORIZONTAL_PADDING);
-                nvgRect(vg, x, 0, 1, DRAW_AREA_HEIGHT);
-                nvgFillColor(vg, nvgRGBA(240, 240, 255, 40));
-                nvgFill(vg);
-            }
-
-            // Draw blue overlay
-			nvgBeginPath(vg);
-			nvgRect(vg, 0, 0, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
-			nvgFillColor(vg, nvgRGBA(0, 100, 255, 28));
-			nvgFill(vg);
 
 		}
         else // Draw a demo sequence so that the sequencer looks nice in the library selector
@@ -687,53 +724,23 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
             for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
 			{
                 // Draw blue background bars
-                bar_color = nvgRGBA(60, 60, 64, 255);
-                nvgBeginPath(vg);
-                nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), DRAW_AREA_HEIGHT - BAR_HEIGHT, bar_width, BAR_HEIGHT);
-                nvgFillColor(vg, bar_color);
-                nvgFill(vg);
+                drawBar(vg, i, BAR_HEIGHT, nvgRGBA(60, 60, 64, 255));
 
-                value_height = demo_sequence[i];
+                // Draw bar for value at i
+                drawBar(vg, i, demo_sequence[i], nvgRGBA(255, 255, 255, 150));
 
-                bar_color = nvgRGBA(255, 255, 255, 150);
-				nvgBeginPath(vg);
-				nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), DRAW_AREA_HEIGHT - value_height, bar_width, value_height);
-				nvgFillColor(vg, bar_color);
-				nvgFill(vg);
-
-				if(i == 5)
-				{
-					// Highlight entire column
-					nvgBeginPath(vg);
-					nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), 0, bar_width, DRAW_AREA_HEIGHT);
-					nvgFillColor(vg, nvgRGBA(255, 255, 255, 20));
-					nvgFill(vg);
-				}
-
+                // Highlight active step
+				if(i == 5) drawBar(vg, i, DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
             }
-
-            // Draw vertical guides every 4 bars
-            for(unsigned int i=1; i < 8; i++)
-            {
-                nvgBeginPath(vg);
-                int x = (i * 4 * bar_width) + (i * 4 * BAR_HORIZONTAL_PADDING);
-                nvgRect(vg, x, 0, 1, DRAW_AREA_HEIGHT);
-                nvgFillColor(vg, nvgRGBA(240, 240, 255, 40));
-                nvgFill(vg);
-            }
-
-            // Draw blue overlay
-			nvgBeginPath(vg);
-			nvgRect(vg, 0, 0, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
-			nvgFillColor(vg, nvgRGBA(0, 100, 255, 28));
-			nvgFill(vg);
         }
+
+        drawVerticalGuildes(vg, DRAW_AREA_HEIGHT);
+        drawBlueOverlay(vg, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
 
 		nvgRestore(vg);
 	}
 
-
-	void onButton(const event::Button &e) override
+    void onButton(const event::Button &e) override
     {
         e.consume(this);
 
@@ -742,17 +749,6 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 			drag_position = e.pos;
 			this->editBar(e.pos);
 		}
-		// DEBUG("%s %d,%d", "button press at: ", clicked_bar_x_index, clicked_bar_y_index);
-	}
-
-	void onDragStart(const event::DragStart &e) override
-    {
-		TransparentWidget::onDragStart(e);
-	}
-
-	void onDragEnd(const event::DragEnd &e) override
-    {
-		TransparentWidget::onDragEnd(e);
 	}
 
 	void onDragMove(const event::DragMove &e) override
@@ -760,10 +756,6 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
 		TransparentWidget::onDragMove(e);
 		drag_position = drag_position.plus(e.mouseDelta);
 		editBar(drag_position);
-	}
-
-	void step() override {
-		TransparentWidget::step();
 	}
 
 	void editBar(Vec mouse_position)
@@ -780,45 +772,24 @@ struct DigitalSequencerPatternDisplay : TransparentWidget
         module->selected_voltage_sequencer->setValue(clicked_bar_x_index, clicked_y);
 	}
 
-	void onEnter(const event::Enter &e) override
-    {
-		TransparentWidget::onEnter(e);
-	}
-
-	void onLeave(const event::Leave &e) override
-    {
-		TransparentWidget::onLeave(e);
-	}
-
     void onHoverKey(const event::HoverKey &e) override
     {
-        if (e.key == GLFW_KEY_RIGHT)
+        if(keypressRight(e))
         {
-        	e.consume(this);
-
-        	if(e.action == GLFW_PRESS)
-        	{
-        		module->selected_voltage_sequencer->shiftRight();
-                if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftRight();
-        	}
+            module->selected_voltage_sequencer->shiftRight();
+            if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftRight();
         }
-        if (e.key == GLFW_KEY_LEFT)
-        {
-        	e.consume(this);
 
-        	if(e.action == GLFW_PRESS)
-        	{
-        		module->selected_voltage_sequencer->shiftLeft();
-                if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftLeft();
-        	}
+        if(keypressLeft(e))
+        {
+            module->selected_voltage_sequencer->shiftLeft();
+            if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftLeft();
         }
     }
 };
 
-struct DigitalSequencerGatesDisplay : TransparentWidget
+struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
 {
-	DigitalSequencer *module;
-	Vec drag_position;
     bool mouse_lock = false;
 
 	DigitalSequencerGatesDisplay()
@@ -985,58 +956,26 @@ struct DigitalSequencerGatesDisplay : TransparentWidget
 		// DEBUG("%s %d,%d", "button press at: ", clicked_bar_x_index, clicked_bar_y_index);
 	}
 
-	void step() override {
-		TransparentWidget::step();
-	}
-
 	void editBar(Vec mouse_position)
 	{
         float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
+		int clicked_bar_x_index = clamp(mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING), 0, MAX_SEQUENCER_STEPS - 1);
 
-		int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
-		clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
-
-        if(module->selected_gate_sequencer->getValue(clicked_bar_x_index))
-        {
-            module->selected_gate_sequencer->setValue(clicked_bar_x_index, 0);
-        }
-        else
-        {
-            module->selected_gate_sequencer->setValue(clicked_bar_x_index, 1);
-        }
-	}
-
-	void onEnter(const event::Enter &e) override
-    {
-		TransparentWidget::onEnter(e);
-	}
-
-	void onLeave(const event::Leave &e) override
-    {
-		TransparentWidget::onLeave(e);
+        module->selected_gate_sequencer->setValue(clicked_bar_x_index, ! module->selected_gate_sequencer->getValue(clicked_bar_x_index));
 	}
 
     void onHoverKey(const event::HoverKey &e) override
     {
-        if (e.key == GLFW_KEY_RIGHT)
+        if(keypressRight(e))
         {
-        	e.consume(this);
-
-        	if(e.action == GLFW_PRESS)
-        	{
-        		module->selected_gate_sequencer->shiftRight();
-                if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_voltage_sequencer->shiftRight();
-        	}
+            module->selected_gate_sequencer->shiftRight();
+            if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_voltage_sequencer->shiftRight();
         }
-        if (e.key == GLFW_KEY_LEFT)
-        {
-        	e.consume(this);
 
-        	if(e.action == GLFW_PRESS)
-        	{
-        		module->selected_gate_sequencer->shiftLeft();
-                if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_voltage_sequencer->shiftLeft();
-        	}
+        if(keypressLeft(e))
+        {
+            module->selected_gate_sequencer->shiftLeft();
+            if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_voltage_sequencer->shiftLeft();
         }
     }
 };
