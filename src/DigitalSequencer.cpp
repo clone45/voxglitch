@@ -994,6 +994,19 @@ struct DigitalSequencerCompactInputDisplay : TransparentWidget
 		nvgTextLetterSpacing(vg, -1);
     }
 
+    void drawLabel(NVGcontext *vg, std::string label)
+    {
+        nvgSave(vg);
+
+		// Configure the font size, face, color, etc.
+        setFontStyles(vg);
+
+        // Draw the label or the value
+        nvgText(vg, text_position_x, text_position_y, label.c_str(), NULL);
+
+		nvgRestore(vg);
+    }
+
     std::string getLabel()
     {
         return("");
@@ -1030,16 +1043,8 @@ struct DigitalSequencerSeqDisplay : DigitalSequencerCompactInputDisplay
 {
     void draw(const DrawArgs &args) override
 	{
-		nvgSave(args.vg);
-
-		// Configure the font size, face, color, etc.
-        setFontStyles(args.vg);
-
-        // Draw the label or the value
         std::string display_string = (module && moused_over) ? std::to_string(module->selected_sequencer_index + 1) : "SEQ";
-        nvgText(args.vg, text_position_x, text_position_y, display_string.c_str(), NULL);
-
-		nvgRestore(args.vg);
+        drawLabel(args.vg, display_string);
 	}
 };
 
@@ -1047,16 +1052,8 @@ struct DigitalSequencerLenDisplay : DigitalSequencerCompactInputDisplay
 {
 	void draw(const DrawArgs &args) override
 	{
-		nvgSave(args.vg);
-
-		// Configure the font size, face, color, etc.
-        setFontStyles(args.vg);
-
-        // Draw the text
         std::string display_string = (module && moused_over) ? std::to_string(module->selected_voltage_sequencer->getLength()) : "LEN";
-        nvgText(args.vg, text_position_x, text_position_y, display_string.c_str(), NULL);
-
-		nvgRestore(args.vg);
+        drawLabel(args.vg, display_string);
 	}
 };
 
@@ -1064,16 +1061,8 @@ struct DigitalSequencerDivDisplay : DigitalSequencerCompactInputDisplay
 {
 	void draw(const DrawArgs &args) override
 	{
-		nvgSave(args.vg);
-
-		// Configure the font size, face, color, etc.
-        setFontStyles(args.vg);
-
-        // Render the text
         std::string display_string = (module && moused_over) ? std::to_string(module->selected_voltage_sequencer->getClockDivision()) : "DIV";
-        nvgText(args.vg, text_position_x, text_position_y, display_string.c_str(), NULL);
-
-		nvgRestore(args.vg);
+        drawLabel(args.vg, display_string);
 	}
 };
 
@@ -1116,7 +1105,7 @@ struct DigitalSequencerWidget : ModuleWidget
 		addChild(len_display);
 
         DigitalSequencerDivDisplay *div_display = new DigitalSequencerDivDisplay();
-        div_display->box.pos = mm2px(Vec(65.844, 101)); // 77.844
+        div_display->box.pos = mm2px(Vec(65.844, 101));
 		div_display->module = module;
 		addChild(div_display);
 
