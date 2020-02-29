@@ -1,5 +1,13 @@
 //
 // Voxglitch "DigitalSequencer" module for VCV Rack
+// by Bret Truchan
+//
+// Probably influenced by Nord Modular and Reaktor, but it's been too long for
+// me to remember.
+//
+// Special thanks to Artem Leonov for his testing and suggestions.
+// Special thanks to Marc Boulé for his help with reset trigger behavior.
+// Special thanks to the entire VCV Rack community for their support.
 //
 
 #include "plugin.hpp"
@@ -21,10 +29,10 @@
 
 // Constants for gate sequencer
 #define GATES_DRAW_AREA_WIDTH 486.0
-#define GATES_DRAW_AREA_HEIGHT 16
+#define GATES_DRAW_AREA_HEIGHT 16.0
 #define GATES_DRAW_AREA_POSITION_X 9
 #define GATES_DRAW_AREA_POSITION_Y 86
-#define GATE_BAR_HEIGHT 16
+#define GATE_BAR_HEIGHT 16.0
 
 
 struct VoltageSequencer
@@ -131,7 +139,6 @@ struct GateSequencer
     GateSequencer()
     {
         sequence.fill(0.0);
-        // std::fill(begin(sequence), end(sequence), 0.0);
     }
 
     void step()
@@ -459,16 +466,6 @@ struct DigitalSequencer : Module
 
 	}
 
-    /*
-	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
-	{
-		float input_value = inputs[input_index].getVoltage() / 10.0;
-		float knob_value = params[knob_index].getValue();
-		float attenuator_value = params[attenuator_index].getValue();
-
-		return(((input_value * scale) * attenuator_value) + (knob_value * scale));
-	}
-    */
 
     /*
 
@@ -516,14 +513,15 @@ struct DigitalSequencer : Module
         }
 
         // Reset ALL of the sequencers
-        if(resetTrigger.process(inputs[RESET_INPUT].getVoltage()))
+        if(resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
         {
             // Set up a (reverse) counter so that the clock input will ignore
             // incoming clock pulses for 1 millisecond after a reset input. This
             // is to comply with VCV Rack's standards.  See section "Timing" at
             // https://vcvrack.com/manual/VoltageStandards
 
-            clock_ignore_on_reset = (long) (.001 * args.sampleRate);
+            clock_ignore_on_reset = (long) (args.sampleRate / 100);
+            stepTrigger.reset();
 
             for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
             {
@@ -534,7 +532,7 @@ struct DigitalSequencer : Module
         else if(clock_ignore_on_reset == 0)
         {
             // Step ALL of the sequencers
-            if(stepTrigger.process(inputs[STEP_INPUT].getVoltage()))
+            if(stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
             {
                 for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
                 {
@@ -645,10 +643,10 @@ struct DigitalSequencerDisplay : TransparentWidget
         nvgFill(vg);
     }
 
-    void drawBar(NVGcontext *vg, float position, float height, NVGcolor color)
+    void drawBar(NVGcontext *vg, float position, float height, float container_height, NVGcolor color)
     {
         nvgBeginPath(vg);
-        nvgRect(vg, (position * bar_width) + (position * BAR_HORIZONTAL_PADDING), DRAW_AREA_HEIGHT - height, bar_width, height);
+        nvgRect(vg, (position * bar_width) + (position * BAR_HORIZONTAL_PADDING), container_height - height, bar_width, height);
         nvgFillColor(vg, color);
         nvgFill(vg);
     }
@@ -691,7 +689,7 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
                     bar_color = nvgRGBA(45, 45, 45, 255);
                 }
 
-                drawBar(vg, i, BAR_HEIGHT, bar_color);
+                drawBar(vg, i, BAR_HEIGHT, DRAW_AREA_HEIGHT, bar_color);
 
 				if(i == module->selected_voltage_sequencer->getPlaybackPosition())
 				{
@@ -707,12 +705,12 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
                 }
 
                 // Draw bars for the sequence values
-				if(value > 0) drawBar(vg, i, value, bar_color);
+				if(value > 0) drawBar(vg, i, value, DRAW_AREA_HEIGHT, bar_color);
 
                 // Highlight the sequence playback column
 				if(i == module->selected_voltage_sequencer->getPlaybackPosition())
 				{
-                    drawBar(vg, i, DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
+                    drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
 				}
 			}
 
@@ -724,13 +722,13 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
             for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
 			{
                 // Draw blue background bars
-                drawBar(vg, i, BAR_HEIGHT, nvgRGBA(60, 60, 64, 255));
+                drawBar(vg, i, BAR_HEIGHT, DRAW_AREA_HEIGHT, nvgRGBA(60, 60, 64, 255));
 
                 // Draw bar for value at i
-                drawBar(vg, i, demo_sequence[i], nvgRGBA(255, 255, 255, 150));
+                drawBar(vg, i, demo_sequence[i], DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 150));
 
                 // Highlight active step
-				if(i == 5) drawBar(vg, i, DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
+				if(i == 5) drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
             }
         }
 
@@ -803,7 +801,6 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
         int value;
         float value_height;
         NVGcolor bar_color;
-        float bar_width = (GATES_DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
 
 		nvgSave(vg);
 
@@ -820,11 +817,7 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
                 else {
                     bar_color = nvgRGBA(45, 45, 45, 255);
                 }
-
-                nvgBeginPath(vg);
-                nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), GATES_DRAW_AREA_HEIGHT - GATE_BAR_HEIGHT, bar_width, GATE_BAR_HEIGHT);
-                nvgFillColor(vg, bar_color);
-                nvgFill(vg);
+                drawBar(vg, i, GATE_BAR_HEIGHT, GATES_DRAW_AREA_HEIGHT, bar_color);
 
                 if(i == module->selected_gate_sequencer->getPlaybackPosition())
 				{
@@ -838,45 +831,15 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
                 {
                     bar_color = nvgRGBA(255, 255, 255, 15);
                 }
-
 				value_height = (GATE_BAR_HEIGHT * value);
-
-				if(value_height > 0)
-				{
-					nvgBeginPath(vg);
-					nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), GATES_DRAW_AREA_HEIGHT - value_height, bar_width, value_height);
-					nvgFillColor(vg, bar_color);
-					nvgFill(vg);
-				}
+				if(value_height > 0) drawBar(vg, i, value_height, GATES_DRAW_AREA_HEIGHT, bar_color);
 
                 // highlight active column
 				if(i == module->selected_gate_sequencer->getPlaybackPosition())
 				{
-					nvgBeginPath(vg);
-					nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), 0, bar_width, GATE_BAR_HEIGHT);
-					nvgFillColor(vg, nvgRGBA(255, 255, 255, 20));
-					nvgFill(vg);
+                    drawBar(vg, i, GATE_BAR_HEIGHT, GATES_DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
 				}
 			}
-
-            //
-            // Draw vertical guides every 4 bars
-            //
-
-            for(unsigned int i=1; i < 8; i++)
-            {
-                nvgBeginPath(vg);
-                int x = (i * 4 * bar_width) + (i * 4 * BAR_HORIZONTAL_PADDING);
-                nvgRect(vg, x, 0, 1, GATES_DRAW_AREA_HEIGHT);
-                nvgFillColor(vg, nvgRGBA(240, 240, 255, 40));
-                nvgFill(vg);
-            }
-
-            // Cool blue hue
-            nvgBeginPath(vg);
-			nvgRect(vg, 0, 0, GATES_DRAW_AREA_WIDTH, GATES_DRAW_AREA_HEIGHT);
-			nvgFillColor(vg, nvgRGBA(0, 100, 255, 28));
-			nvgFill(vg);
 		}
         else // draw demo data for the module explorer
         {
@@ -887,52 +850,18 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
 				value = demo_sequence[i];
 
                 // Draw background grey bar
-                bar_color = nvgRGBA(60, 60, 64, 255);
-                nvgBeginPath(vg);
-                nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), GATES_DRAW_AREA_HEIGHT - GATE_BAR_HEIGHT, bar_width, GATE_BAR_HEIGHT);
-                nvgFillColor(vg, bar_color);
-                nvgFill(vg);
+                drawBar(vg, i, GATE_BAR_HEIGHT, GATES_DRAW_AREA_HEIGHT, nvgRGBA(60, 60, 64, 255));
 
-                bar_color = nvgRGBA(255, 255, 255, 150);
-				value_height = (GATE_BAR_HEIGHT * value);
-
-				if(value_height > 0)
-				{
-					nvgBeginPath(vg);
-					nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), GATES_DRAW_AREA_HEIGHT - value_height, bar_width, value_height);
-					nvgFillColor(vg, bar_color);
-					nvgFill(vg);
-				}
+                // Draw value bar
+                if (value > 0) drawBar(vg, i, (GATE_BAR_HEIGHT * value), GATES_DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 150));
 
                 // highlight active column
-				if(i == 5)
-				{
-					nvgBeginPath(vg);
-					nvgRect(vg, (i * bar_width) + (i * BAR_HORIZONTAL_PADDING), 0, bar_width, GATE_BAR_HEIGHT);
-					nvgFillColor(vg, nvgRGBA(255, 255, 255, 20));
-					nvgFill(vg);
-				}
+				if(i == 5) drawBar(vg, i, GATE_BAR_HEIGHT, GATES_DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
 			}
-
-            //
-            // Draw vertical guides every 4 bars
-            //
-
-            for(unsigned int i=1; i < 8; i++)
-            {
-                nvgBeginPath(vg);
-                int x = (i * 4 * bar_width) + (i * 4 * BAR_HORIZONTAL_PADDING);
-                nvgRect(vg, x, 0, 1, GATES_DRAW_AREA_HEIGHT);
-                nvgFillColor(vg, nvgRGBA(240, 240, 255, 40));
-                nvgFill(vg);
-            }
-
-            // Cool blue hue
-            nvgBeginPath(vg);
-			nvgRect(vg, 0, 0, GATES_DRAW_AREA_WIDTH, GATES_DRAW_AREA_HEIGHT);
-			nvgFillColor(vg, nvgRGBA(0, 100, 255, 28));
-			nvgFill(vg);
         }
+
+        drawVerticalGuildes(vg, GATES_DRAW_AREA_HEIGHT);
+        drawBlueOverlay(vg, GATES_DRAW_AREA_WIDTH, GATES_DRAW_AREA_HEIGHT);
 
 		nvgRestore(vg);
 	}
@@ -980,11 +909,10 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
     }
 };
 
-
-struct DigitalSequencerSeqDisplay : TransparentWidget
+struct DigitalSequencerCompactInputDisplay : TransparentWidget
 {
-	DigitalSequencer *module;
-	std::shared_ptr<Font> font;
+    DigitalSequencer *module;
+    std::shared_ptr<Font> font;
 
     bool moused_over = false;
 
@@ -994,266 +922,110 @@ struct DigitalSequencerSeqDisplay : TransparentWidget
     float box_size_width = 13;
     float box_size_height = 20;
 
-	DigitalSequencerSeqDisplay()
-	{
+    DigitalSequencerCompactInputDisplay()
+    {
         box.size = mm2px(Vec(box_size_width, box_size_height));
 		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+    }
+
+    void setFontStyles(NVGcontext *vg)
+    {
+        nvgFontSize(vg, 13);
+		nvgFontFaceId(vg, font->handle);
+		nvgFillColor(vg, nvgRGBA(255, 255, 255, 0xff));
+		nvgTextAlign(vg, NVG_ALIGN_CENTER);
+		nvgTextLetterSpacing(vg, -1);
+    }
+
+    std::string getLabel()
+    {
+        return("");
+    }
+
+    std::string getValue()
+    {
+        return("0");
+    }
+
+    void onHover(const event::Hover& e) override {
+		TransparentWidget::onHover(e);
+		e.consume(this);
 	}
 
-	void draw(const DrawArgs &args) override
+    void step() override {
+		TransparentWidget::step();
+	}
+
+    void onEnter(const event::Enter &e) override
+    {
+		TransparentWidget::onEnter(e);
+		this->moused_over = true;
+	}
+
+	void onLeave(const event::Leave &e) override
+    {
+		TransparentWidget::onLeave(e);
+		this->moused_over = false;
+	}
+};
+
+struct DigitalSequencerSeqDisplay : DigitalSequencerCompactInputDisplay
+{
+    void draw(const DrawArgs &args) override
 	{
 		nvgSave(args.vg);
 
 		// Configure the font size, face, color, etc.
-		nvgFontSize(args.vg, 13);
-		nvgFontFaceId(args.vg, font->handle);
-		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
-		nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
-		nvgTextLetterSpacing(args.vg, -1);
+        setFontStyles(args.vg);
 
 		if(module)
 		{
-            std::string len_string;
-
-            if(moused_over)
-            {
-                len_string = std::to_string(module->selected_sequencer_index + 1);
-            }
-            else
-            {
-                len_string = "SEQ";
-            }
-
-			nvgText(args.vg, text_position_x, text_position_y, len_string.c_str(), NULL);
+            std::string display_string = (moused_over) ? std::to_string(module->selected_sequencer_index + 1) : "SEQ";
+			nvgText(args.vg, text_position_x, text_position_y, display_string.c_str(), NULL);
 		}
 		else
 		{
-			nvgText(args.vg, text_position_x, text_position_y, "1", NULL);
+			nvgText(args.vg, text_position_x, text_position_y, this->getLabel().c_str(), NULL);
 		}
-
-        /*
-        // For debugging
-        nvgBeginPath(args.vg);
-        nvgRect(args.vg, 0, 0, mm2px(box_size_width), mm2px(box_size_height));
-        nvgFillColor(args.vg, nvgRGBA(0, 100, 255, 128));
-        nvgFill(args.vg);
-        */
-
 		nvgRestore(args.vg);
-	}
-
-    void onHover(const event::Hover& e) override {
-		TransparentWidget::onHover(e);
-		e.consume(this);
-	}
-
-    void step() override {
-		TransparentWidget::step();
-	}
-
-    void onEnter(const event::Enter &e) override
-    {
-		TransparentWidget::onEnter(e);
-		this->moused_over = true;
-	}
-
-	void onLeave(const event::Leave &e) override
-    {
-		TransparentWidget::onLeave(e);
-		this->moused_over = false;
 	}
 };
 
-struct DigitalSequencerLenDisplay : TransparentWidget
+struct DigitalSequencerLenDisplay : DigitalSequencerCompactInputDisplay
 {
-	DigitalSequencer *module;
-	std::shared_ptr<Font> font;
-
-    bool moused_over = false;
-
-    // These shouldn't ever need to change
-    float text_position_x = mm2px(6.4);  // position relative to widget position
-    float text_position_y = mm2px(7.6); // position relative to widget position
-    float box_size_width = 13;
-    float box_size_height = 20;
-
-	DigitalSequencerLenDisplay()
-	{
-        box.size = mm2px(Vec(box_size_width, box_size_height));
-		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
-	}
-
 	void draw(const DrawArgs &args) override
 	{
 		nvgSave(args.vg);
 
 		// Configure the font size, face, color, etc.
-		nvgFontSize(args.vg, 13);
-		nvgFontFaceId(args.vg, font->handle);
-		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
-		nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
-		nvgTextLetterSpacing(args.vg, -1);
+        setFontStyles(args.vg);
 
+        // Draw the text
         std::string div_string = "LEN";
 		if(module && moused_over) div_string = std::to_string(module->selected_voltage_sequencer->getLength());
-
         nvgText(args.vg, text_position_x, text_position_y, div_string.c_str(), NULL);
-
-        /*
-        // For debugging
-        nvgBeginPath(args.vg);
-        nvgRect(args.vg, 0, 0, mm2px(box_size_width), mm2px(box_size_height));
-        nvgFillColor(args.vg, nvgRGBA(0, 100, 255, 128));
-        nvgFill(args.vg);
-        */
-
 
 		nvgRestore(args.vg);
 	}
-
-    void onHover(const event::Hover& e) override {
-		TransparentWidget::onHover(e);
-		e.consume(this);
-	}
-
-    void step() override {
-		TransparentWidget::step();
-	}
-
-    void onEnter(const event::Enter &e) override
-    {
-		TransparentWidget::onEnter(e);
-		this->moused_over = true;
-	}
-
-	void onLeave(const event::Leave &e) override
-    {
-		TransparentWidget::onLeave(e);
-		this->moused_over = false;
-	}
 };
 
-struct DigitalSequencerDivDisplay : TransparentWidget
+struct DigitalSequencerDivDisplay : DigitalSequencerCompactInputDisplay
 {
-	DigitalSequencer *module;
-	std::shared_ptr<Font> font;
-
-    bool moused_over = false;
-
-    // These shouldn't ever need to change
-    float text_position_x = mm2px(6.4);  // position relative to widget position
-    float text_position_y = mm2px(7.6); // position relative to widget position
-    float box_size_width = 13;
-    float box_size_height = 20;
-
-	DigitalSequencerDivDisplay()
-	{
-        box.size = mm2px(Vec(box_size_width, box_size_height));
-		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
-	}
-
 	void draw(const DrawArgs &args) override
 	{
 		nvgSave(args.vg);
 
 		// Configure the font size, face, color, etc.
-		nvgFontSize(args.vg, 13);
-		nvgFontFaceId(args.vg, font->handle);
-		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
-		nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
-		nvgTextLetterSpacing(args.vg, -1);
+        setFontStyles(args.vg);
 
+        // Render the text
         std::string div_string = "DIV";
 		if(module && moused_over) div_string = std::to_string(module->selected_voltage_sequencer->getClockDivision());
-
         nvgText(args.vg, text_position_x, text_position_y, div_string.c_str(), NULL);
 
 		nvgRestore(args.vg);
 	}
-
-    void onHover(const event::Hover& e) override {
-		TransparentWidget::onHover(e);
-		e.consume(this);
-	}
-
-    void step() override {
-		TransparentWidget::step();
-	}
-
-    void onEnter(const event::Enter &e) override
-    {
-		TransparentWidget::onEnter(e);
-		this->moused_over = true;
-	}
-
-	void onLeave(const event::Leave &e) override
-    {
-		TransparentWidget::onLeave(e);
-		this->moused_over = false;
-	}
 };
-
-/*
-struct DigitalSequencerStrDisplay : TransparentWidget
-{
-	DigitalSequencer *module;
-	std::shared_ptr<Font> font;
-
-    bool moused_over = false;
-
-    // These shouldn't ever need to change
-    float text_position_x = mm2px(6.4);  // position relative to widget position
-    float text_position_y = mm2px(7.6); // position relative to widget position
-    float box_size_width = 13;
-    float box_size_height = 20;
-
-	DigitalSequencerStrDisplay()
-	{
-        box.size = mm2px(Vec(box_size_width, box_size_height));
-		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
-	}
-
-	void draw(const DrawArgs &args) override
-	{
-		nvgSave(args.vg);
-
-		// Configure the font size, face, color, etc.
-		nvgFontSize(args.vg, 13);
-		nvgFontFaceId(args.vg, font->handle);
-		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
-		nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
-		nvgTextLetterSpacing(args.vg, -1);
-
-        std::string div_string = "STR";
-		if(module && moused_over) div_string = std::to_string(module->selected_voltage_sequencer->getStart());
-
-		nvgText(args.vg, text_position_x, text_position_y, div_string.c_str(), NULL);
-
-		nvgRestore(args.vg);
-	}
-
-    void onHover(const event::Hover& e) override {
-		TransparentWidget::onHover(e);
-		e.consume(this);
-	}
-
-    void step() override {
-		TransparentWidget::step();
-	}
-
-    void onEnter(const event::Enter &e) override
-    {
-		TransparentWidget::onEnter(e);
-		this->moused_over = true;
-	}
-
-	void onLeave(const event::Leave &e) override
-    {
-		TransparentWidget::onLeave(e);
-		this->moused_over = false;
-	}
-};
-*/
 
 struct DigitalSequencerWidget : ModuleWidget
 {
