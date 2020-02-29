@@ -9,10 +9,12 @@
 // Special thanks to Marc Boulé for his help with reset trigger behavior.
 // Special thanks to the entire VCV Rack community for their support.
 //
+// TODO: Move font loading into global area
 
 #include "plugin.hpp"
 #include "osdialog.h"
 #include <fstream>
+#include <array>
 
 #define GAIN 5.0
 
@@ -34,6 +36,8 @@
 #define GATES_DRAW_AREA_POSITION_Y 86
 #define GATE_BAR_HEIGHT 16.0
 
+#define TOOLTIP_WIDTH 33.0
+#define TOOLTIP_HEIGHT 20.0
 
 struct VoltageSequencer
 {
@@ -654,6 +658,11 @@ struct DigitalSequencerDisplay : TransparentWidget
 
 struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
 {
+    bool draw_tooltip = false;
+    float draw_tooltip_index = -1.0;
+    float draw_tooltip_y = -1.0;
+    float tooltip_value = 0.0;
+
 	DigitalSequencerPatternDisplay()
 	{
 		// The bounding box needs to be a little deeper than the visual
@@ -735,7 +744,75 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
         drawVerticalGuildes(vg, DRAW_AREA_HEIGHT);
         drawBlueOverlay(vg, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
 
+        if(draw_tooltip)
+        {
+            drawTooltip(vg);
+            draw_tooltip = false;
+        }
+
 		nvgRestore(vg);
+	}
+
+    void drawTooltip(NVGcontext *vg)
+    {
+        nvgSave(vg);
+
+        // float divit_width = 3.0;
+        // float divit_height = 4.0;
+        float x_offset = 3.0;
+        float y = std::max(60.0f, draw_tooltip_y);
+        float x = ((draw_tooltip_index * bar_width) + (draw_tooltip_index * BAR_HORIZONTAL_PADDING)) + bar_width + x_offset;
+
+        if(draw_tooltip_index > 26) x = x - bar_width - TOOLTIP_WIDTH - (x_offset * 2) - BAR_HORIZONTAL_PADDING;
+        y = DRAW_AREA_HEIGHT - y + 30;
+
+        // Draw box for containing text
+        nvgBeginPath(vg);
+        nvgRoundedRect(vg, x, y, TOOLTIP_WIDTH, TOOLTIP_HEIGHT, 2);
+        nvgFillColor(vg, nvgRGBA(20, 20, 20, 250));
+        nvgFill(vg);
+
+        // Put value in box
+        nvgFontSize(vg, 13);
+		// nvgFontFaceId(vg, font->handle);
+		nvgFillColor(vg, nvgRGBA(255, 255, 255, 0xff));
+		nvgTextAlign(vg, NVG_ALIGN_CENTER);
+		nvgTextLetterSpacing(vg, -1);
+
+        std::string display_string = std::to_string(tooltip_value);
+        display_string = display_string.substr(0,4);
+        nvgText(vg, x + 16.5, y + 14, display_string.c_str(), NULL);
+
+        // Draw connector divit
+        // Aborted: Doesn't work will with low bar values
+        /*
+        if(draw_tooltip_index <= 26)
+        {
+            nvgBeginPath(vg);
+            nvgRect(vg, x - divit_width, DRAW_AREA_HEIGHT - y + 30.0 + (TOOLTIP_HEIGHT/2.0) - (divit_height/2.0), divit_width, divit_height);
+            nvgFillColor(vg, nvgRGBA(20, 20, 20, 250));
+            nvgFill(vg);
+        }
+        */
+        nvgRestore(vg);
+    }
+
+    void editBar(Vec mouse_position)
+	{
+        float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
+		int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
+		int clicked_y = DRAW_AREA_HEIGHT - mouse_position.y;
+
+		clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
+        clicked_y = clamp(clicked_y, 0, DRAW_AREA_HEIGHT);
+
+        module->selected_voltage_sequencer->setValue(clicked_bar_x_index, clicked_y);
+
+        // Tooltip drawing is done in the draw method
+        draw_tooltip = true;
+        draw_tooltip_index = clicked_bar_x_index;
+        draw_tooltip_y = clicked_y;
+        tooltip_value = floorf((clicked_y / 214.0) * 1000) / 100;
 	}
 
     void onButton(const event::Button &e) override
@@ -754,20 +831,6 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
 		TransparentWidget::onDragMove(e);
 		drag_position = drag_position.plus(e.mouseDelta);
 		editBar(drag_position);
-	}
-
-	void editBar(Vec mouse_position)
-	{
-        // VoltageSequencer *selected_voltage_sequencer = &module->voltage_sequencers[module->selected_sequencer_index];
-
-        float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
-		int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
-		int clicked_y = DRAW_AREA_HEIGHT - mouse_position.y;
-
-		clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
-        clicked_y = clamp(clicked_y, 0, DRAW_AREA_HEIGHT);
-
-        module->selected_voltage_sequencer->setValue(clicked_bar_x_index, clicked_y);
 	}
 
     void onHoverKey(const event::HoverKey &e) override
