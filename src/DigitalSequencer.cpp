@@ -757,8 +757,6 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
     {
         nvgSave(vg);
 
-        // float divit_width = 3.0;
-        // float divit_height = 4.0;
         float x_offset = 3.0;
         float y = std::max(60.0f, draw_tooltip_y);
         float x = ((draw_tooltip_index * bar_width) + (draw_tooltip_index * BAR_HORIZONTAL_PADDING)) + bar_width + x_offset;
@@ -772,31 +770,27 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
         nvgFillColor(vg, nvgRGBA(20, 20, 20, 250));
         nvgFill(vg);
 
-        // Put value in box
+        // Set up font style
         nvgFontSize(vg, 13);
-		// nvgFontFaceId(vg, font->handle);
 		nvgFillColor(vg, nvgRGBA(255, 255, 255, 0xff));
 		nvgTextAlign(vg, NVG_ALIGN_CENTER);
 		nvgTextLetterSpacing(vg, -1);
 
+        // Display text
         std::string display_string = std::to_string(tooltip_value);
         display_string = display_string.substr(0,4);
         nvgText(vg, x + 16.5, y + 14, display_string.c_str(), NULL);
 
-        // Draw connector divit
-        // Aborted: Doesn't work will with low bar values
-        /*
-        if(draw_tooltip_index <= 26)
-        {
-            nvgBeginPath(vg);
-            nvgRect(vg, x - divit_width, DRAW_AREA_HEIGHT - y + 30.0 + (TOOLTIP_HEIGHT/2.0) - (divit_height/2.0), divit_width, divit_height);
-            nvgFillColor(vg, nvgRGBA(20, 20, 20, 250));
-            nvgFill(vg);
-        }
-        */
         nvgRestore(vg);
     }
 
+    //
+    // void editBar(Vec mouse_position)
+    //
+    // Called when the user clicks to edit one of the sequencer values.  Sets
+    // the sequencer value that the user has selected, then sets some variables
+    // for drawing the tooltip in this struct's draw(..) method.
+    //
     void editBar(Vec mouse_position)
 	{
         float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
@@ -1041,15 +1035,10 @@ struct DigitalSequencerSeqDisplay : DigitalSequencerCompactInputDisplay
 		// Configure the font size, face, color, etc.
         setFontStyles(args.vg);
 
-		if(module)
-		{
-            std::string display_string = (moused_over) ? std::to_string(module->selected_sequencer_index + 1) : "SEQ";
-			nvgText(args.vg, text_position_x, text_position_y, display_string.c_str(), NULL);
-		}
-		else
-		{
-			nvgText(args.vg, text_position_x, text_position_y, this->getLabel().c_str(), NULL);
-		}
+        // Draw the label or the value
+        std::string display_string = (module && moused_over) ? std::to_string(module->selected_sequencer_index + 1) : "SEQ";
+        nvgText(args.vg, text_position_x, text_position_y, display_string.c_str(), NULL);
+
 		nvgRestore(args.vg);
 	}
 };
@@ -1064,9 +1053,8 @@ struct DigitalSequencerLenDisplay : DigitalSequencerCompactInputDisplay
         setFontStyles(args.vg);
 
         // Draw the text
-        std::string div_string = "LEN";
-		if(module && moused_over) div_string = std::to_string(module->selected_voltage_sequencer->getLength());
-        nvgText(args.vg, text_position_x, text_position_y, div_string.c_str(), NULL);
+        std::string display_string = (module && moused_over) ? std::to_string(module->selected_voltage_sequencer->getLength()) : "LEN";
+        nvgText(args.vg, text_position_x, text_position_y, display_string.c_str(), NULL);
 
 		nvgRestore(args.vg);
 	}
@@ -1082,9 +1070,8 @@ struct DigitalSequencerDivDisplay : DigitalSequencerCompactInputDisplay
         setFontStyles(args.vg);
 
         // Render the text
-        std::string div_string = "DIV";
-		if(module && moused_over) div_string = std::to_string(module->selected_voltage_sequencer->getClockDivision());
-        nvgText(args.vg, text_position_x, text_position_y, div_string.c_str(), NULL);
+        std::string display_string = (module && moused_over) ? std::to_string(module->selected_voltage_sequencer->getClockDivision()) : "DIV";
+        nvgText(args.vg, text_position_x, text_position_y, display_string.c_str(), NULL);
 
 		nvgRestore(args.vg);
 	}
