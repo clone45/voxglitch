@@ -180,15 +180,13 @@ struct GateSequencer : Sequencer
         }
 
         sequence[0] = temp;
-    }    
+    }
 };
 
 struct DigitalSequencer : Module
 {
 	dsp::SchmittTrigger stepTrigger;
     dsp::SchmittTrigger resetTrigger;
-	dsp::PulseGenerator clockOutputPulse;
-	dsp::PulseGenerator endOutputPulse;
     long clock_ignore_on_reset = 0;
 
     VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
@@ -452,7 +450,8 @@ struct DigitalSequencer : Module
 
         // When the user selects a new sequencer using the SEQ knob, update
         // the automated knobs (LEN & DIV) to the corresponding settings for
-        // the newly selected sequencer.
+        // the newly selected sequencer.  Note that this also occurs when the
+        // module is first loaded.
         if(previously_selected_sequencer_index != selected_sequencer_index)
         {
             selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
@@ -463,6 +462,7 @@ struct DigitalSequencer : Module
 
             previously_selected_sequencer_index = selected_sequencer_index;
         }
+
         // ... otherwise, read the values of the LEN and DIV knobs and set those
         // values in the selected sequencer.  Most of the time these values
         // are being set unnecessarily.  Eventually I might add if-statements
@@ -482,7 +482,7 @@ struct DigitalSequencer : Module
             selected_gate_sequencer->setClockDivision(sequence_clock_division_knob_value);
         }
 
-        // Reset ALL of the sequencers
+        // On incoming RESET, reset ALL of the sequencers
         if(resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
         {
             // Set up a (reverse) counter so that the clock input will ignore
@@ -905,7 +905,6 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
 		{
             this->mouse_lock = false;
 		}
-		// DEBUG("%s %d,%d", "button press at: ", clicked_bar_x_index, clicked_bar_y_index);
 	}
 
 	void editBar(Vec mouse_position)
