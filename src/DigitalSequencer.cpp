@@ -39,19 +39,12 @@
 #define TOOLTIP_WIDTH 33.0
 #define TOOLTIP_HEIGHT 20.0
 
-struct VoltageSequencer
+struct Sequencer
 {
     unsigned int sequence_length = 16;
-    std::array<float, MAX_SEQUENCER_STEPS> sequence;
     unsigned int sequence_playback_position = 0;
     unsigned int clock_division = 1;
     unsigned int clock_division_counter = 0;
-
-    // constructor
-    VoltageSequencer()
-    {
-        sequence.fill(0.0);
-    }
 
     void step()
     {
@@ -73,6 +66,37 @@ struct VoltageSequencer
         return(sequence_playback_position);
     }
 
+    unsigned int getLength()
+    {
+        return(sequence_length);
+    }
+
+    void setLength(unsigned int sequence_length)
+    {
+        this->sequence_length = sequence_length;
+    }
+
+    void setClockDivision(unsigned int clock_division)
+    {
+        this->clock_division = clock_division;
+    }
+
+    unsigned int getClockDivision()
+    {
+        return(this->clock_division);
+    }
+};
+
+struct VoltageSequencer : Sequencer
+{
+    std::array<float, MAX_SEQUENCER_STEPS> sequence;
+
+    // constructor
+    VoltageSequencer()
+    {
+        sequence.fill(0.0);
+    }
+
     float getValue(int index)
     {
         return(sequence[index]);
@@ -86,16 +110,6 @@ struct VoltageSequencer
     void setValue(int index, float value)
     {
         sequence[index] = value;
-    }
-
-    unsigned int getLength()
-    {
-        return(sequence_length);
-    }
-
-    void setLength(unsigned int sequence_length)
-    {
-        this->sequence_length = sequence_length;
     }
 
     void shiftLeft()
@@ -119,50 +133,16 @@ struct VoltageSequencer
 
         sequence[0] = temp;
     }
-
-    void setClockDivision(unsigned int clock_division)
-    {
-        this->clock_division = clock_division;
-    }
-
-    unsigned int getClockDivision()
-    {
-        return(this->clock_division);
-    }
 };
 
-struct GateSequencer
+struct GateSequencer : Sequencer
 {
-    unsigned int sequence_length = 16;
     std::array<bool, MAX_SEQUENCER_STEPS> sequence;
-    unsigned int sequence_playback_position = 0;
-    unsigned int clock_division = 1;
-    unsigned int clock_division_counter = 0;
 
     // constructor
     GateSequencer()
     {
         sequence.fill(0.0);
-    }
-
-    void step()
-    {
-        clock_division_counter++;
-        if(clock_division_counter >= clock_division)
-        {
-            clock_division_counter = 0;
-            sequence_playback_position = (sequence_playback_position + 1) % sequence_length;
-        }
-    }
-
-    void reset()
-    {
-        sequence_playback_position = 0;
-    }
-
-    unsigned int getPlaybackPosition()
-    {
-        return(sequence_playback_position);
     }
 
     bool getValue(int index)
@@ -180,19 +160,9 @@ struct GateSequencer
         sequence[index] = value;
     }
 
-    unsigned int getLength()
-    {
-        return(sequence_length);
-    }
-
-    void setLength(unsigned int sequence_length)
-    {
-        this->sequence_length = sequence_length;
-    }
-
     void shiftLeft()
     {
-        bool temp = sequence[0];
+        float temp = sequence[0];
         for(unsigned int i=0; i < this->sequence_length-1; i++)
         {
             sequence[i] = sequence[i+1];
@@ -202,7 +172,7 @@ struct GateSequencer
 
     void shiftRight()
     {
-        bool temp = sequence[this->sequence_length - 1];
+        float temp = sequence[this->sequence_length - 1];
 
         for(unsigned int i=this->sequence_length-1; i>0; i--)
         {
@@ -210,17 +180,7 @@ struct GateSequencer
         }
 
         sequence[0] = temp;
-    }
-
-    void setClockDivision(unsigned int clock_division)
-    {
-        this->clock_division = clock_division;
-    }
-
-    unsigned int getClockDivision()
-    {
-        return(clock_division);
-    }
+    }    
 };
 
 struct DigitalSequencer : Module
@@ -490,7 +450,9 @@ struct DigitalSequencer : Module
         selected_sequencer_index = params[SEQUENCE_SELECTION_KNOB].getValue();
         selected_sequencer_index = clamp(selected_sequencer_index, 0, NUMBER_OF_SEQUENCERS - 1);
 
-        // Store the selected sequencers for convenience
+        // When the user selects a new sequencer using the SEQ knob, update
+        // the automated knobs (LEN & DIV) to the corresponding settings for
+        // the newly selected sequencer.
         if(previously_selected_sequencer_index != selected_sequencer_index)
         {
             selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
@@ -501,6 +463,10 @@ struct DigitalSequencer : Module
 
             previously_selected_sequencer_index = selected_sequencer_index;
         }
+        // ... otherwise, read the values of the LEN and DIV knobs and set those
+        // values in the selected sequencer.  Most of the time these values
+        // are being set unnecessarily.  Eventually I might add if-statements
+        // to only set the values if the knobs have been turned.
         else
         {
             // Set the selected sequencer's length
