@@ -262,8 +262,13 @@ struct DigitalSequencer : Module
 
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
         configParam(SEQUENCE_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "SequenceLengthKnob");
-        configParam(SEQUENCE_SELECTION_KNOB, 0, NUMBER_OF_SEQUENCERS - 1, 0, "SequenceSelectionKnob");
+        configParam(SEQUENCE_SELECTION_KNOB, 0, 12, 0, "SequenceSelectionKnob"); // see notes below
         configParam(SEQUENCE_CLOCK_DIVISION_KNOB, 1, 16, 1, "SequenceClockDivisionKnob");
+
+        // Notes: It might seem a bit strange for SEQUENCE_SELECTION_KNOB's range
+        // to go from 0 to 12 since there is a maxiumum number of 6 sequencers.
+        // If the knob is configured with a range of 0 to 5, it takes a lot
+        // of turning to get to sequencer 6 and just feels wrong.
 	}
 
     /*
