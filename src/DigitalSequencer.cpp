@@ -188,6 +188,7 @@ struct DigitalSequencer : Module
 	dsp::SchmittTrigger stepTrigger;
     dsp::SchmittTrigger resetTrigger;
     long clock_ignore_on_reset = 0;
+    unsigned int tooltip_timer = 0;
 
     VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
     VoltageSequencer *selected_voltage_sequencer;
@@ -201,6 +202,7 @@ struct DigitalSequencer : Module
     int gate_outputs[NUMBER_OF_SEQUENCERS];
 
     dsp::PulseGenerator gateOutputPulseGenerators[NUMBER_OF_SEQUENCERS];
+    float sample_rate;
 
 	enum ParamIds {
         SEQUENCE_SELECTION_KNOB,
@@ -449,6 +451,7 @@ struct DigitalSequencer : Module
 	void process(const ProcessArgs &args) override
 	{
         bool trigger_output_pulse = false;
+        this->sample_rate = args.sampleRate;
 
         selected_sequencer_index = params[SEQUENCE_SELECTION_KNOB].getValue();
         selected_sequencer_index = clamp(selected_sequencer_index, 0, NUMBER_OF_SEQUENCERS - 1);
@@ -533,7 +536,9 @@ struct DigitalSequencer : Module
         }
 
         if (clock_ignore_on_reset > 0) clock_ignore_on_reset--;
+        if (tooltip_timer > 0) tooltip_timer--;
 	}
+
 };
 
 /*
@@ -578,9 +583,9 @@ struct DigitalSequencerDisplay : TransparentWidget
 		TransparentWidget::onLeave(e);
 	}
 
-    bool keypressRight(const event::HoverKey &e)
+    bool keypress(const event::HoverKey &e, int keycode)
     {
-        if (e.key == GLFW_KEY_RIGHT)
+        if (e.key == keycode)
         {
             e.consume(this);
             if(e.action == GLFW_PRESS) return(true);
@@ -588,14 +593,24 @@ struct DigitalSequencerDisplay : TransparentWidget
         return(false);
     }
 
+    bool keypressRight(const event::HoverKey &e)
+    {
+        return(keypress(e, GLFW_KEY_RIGHT));
+    }
+
     bool keypressLeft(const event::HoverKey &e)
     {
-        if (e.key == GLFW_KEY_LEFT)
-        {
-            e.consume(this);
-            if(e.action == GLFW_PRESS) return(true);
-        }
-        return(false);
+        return(keypress(e, GLFW_KEY_LEFT));
+    }
+
+    bool keypressUp(const event::HoverKey &e)
+    {
+        return(keypress(e, GLFW_KEY_UP));
+    }
+
+    bool keypressDown(const event::HoverKey &e)
+    {
+        return(keypress(e, GLFW_KEY_DOWN));
     }
 
     void drawVerticalGuildes(NVGcontext *vg, float height)
@@ -715,6 +730,8 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
         drawVerticalGuildes(vg, DRAW_AREA_HEIGHT);
         drawBlueOverlay(vg, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
 
+        if(module->tooltip_timer > 0) draw_tooltip = true;
+
         if(draw_tooltip)
         {
             drawTooltip(vg);
@@ -777,7 +794,7 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
         draw_tooltip = true;
         draw_tooltip_index = clicked_bar_x_index;
         draw_tooltip_y = clicked_y;
-        tooltip_value = floorf((clicked_y / 214.0) * 1000) / 100;
+        tooltip_value = roundf((clicked_y / DRAW_AREA_HEIGHT) * 1000) / 100;
 	}
 
     void onButton(const event::Button &e) override
@@ -810,6 +827,40 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
         {
             module->selected_voltage_sequencer->shiftLeft();
             if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftLeft();
+        }
+
+        if(keypressUp(e))
+        {
+            int bar_x_index = e.pos.x / (bar_width + BAR_HORIZONTAL_PADDING);
+            float value = module->selected_voltage_sequencer->getValue(bar_x_index);
+
+            // (.01 * (214 / 10)), where 214 is the bar height and 10 is the max voltage
+            value = value + (.01 * (214.0 / 10.0));
+            value = clamp(value, 0.0d, DRAW_AREA_HEIGHT);
+
+            module->selected_voltage_sequencer->setValue(bar_x_index, value);
+
+            module->tooltip_timer = module->sample_rate * 2; // show tooltip for 2 seconds
+            tooltip_value = roundf((value / DRAW_AREA_HEIGHT) * 1000) / 100;
+            draw_tooltip_index = bar_x_index;
+            draw_tooltip_y = value;
+        }
+
+        if(keypressDown(e))
+        {
+            int bar_x_index = e.pos.x / (bar_width + BAR_HORIZONTAL_PADDING);
+            float value = module->selected_voltage_sequencer->getValue(bar_x_index);
+
+            // (.01 * (214 / 10)), where 214 is the bar height and 10 is the max voltage
+            value = value - (.01 * (214.0 / 10.0));
+            value = clamp(value, 0.0d, DRAW_AREA_HEIGHT);
+
+            module->selected_voltage_sequencer->setValue(bar_x_index, value);
+
+            module->tooltip_timer = module->sample_rate * 2; // show tooltip for 2 seconds
+            tooltip_value = roundf((value / DRAW_AREA_HEIGHT) * 1000) / 100;
+            draw_tooltip_index = bar_x_index;
+            draw_tooltip_y = value;
         }
     }
 };
