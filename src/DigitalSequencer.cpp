@@ -740,7 +740,7 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
                 draw_tooltip = false;
             }
         }
-        
+
 		nvgRestore(vg);
 	}
 
@@ -1092,8 +1092,11 @@ struct DigitalSequencerDivDisplay : DigitalSequencerCompactInputDisplay
 
 struct DigitalSequencerWidget : ModuleWidget
 {
+    DigitalSequencer* module;
+
 	DigitalSequencerWidget(DigitalSequencer* module)
 	{
+        this->module = module;
 		setModule(module);
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_sequencer_front_panel.svg")));
 
@@ -1159,6 +1162,20 @@ struct DigitalSequencerWidget : ModuleWidget
 	void appendContextMenu(Menu *menu) override
 	{
 	}
+
+    void step() override {
+        ModuleWidget::step();
+    }
+
+    void onHoverKey(const event::HoverKey &e) override
+    {
+        // GLFW_KEY_1 == 49 and GLFW_KEY_6 == 54
+        if (e.key >= 49 && e.key <= 54)
+        {
+            e.consume(this);
+            if(e.action == GLFW_PRESS) this->module->params[this->module->SEQUENCE_SELECTION_KNOB].setValue(-49 + e.key);
+        }
+    }
 };
 
 Model* modelDigitalSequencer = createModel<DigitalSequencer, DigitalSequencerWidget>("digitalsequencer");
