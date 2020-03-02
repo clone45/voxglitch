@@ -730,14 +730,17 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
         drawVerticalGuildes(vg, DRAW_AREA_HEIGHT);
         drawBlueOverlay(vg, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
 
-        if(module->tooltip_timer > 0) draw_tooltip = true;
-
-        if(draw_tooltip)
+        if(module)
         {
-            drawTooltip(vg);
-            draw_tooltip = false;
-        }
+            if(module->tooltip_timer > 0) draw_tooltip = true;
 
+            if(draw_tooltip)
+            {
+                drawTooltip(vg);
+                draw_tooltip = false;
+            }
+        }
+        
 		nvgRestore(vg);
 	}
 
