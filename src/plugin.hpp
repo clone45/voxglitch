@@ -16,3 +16,4 @@ extern Model *modelGhosts;
 extern Model *modelGoblins;
 extern Model *modelGrainEngine;
 extern Model *modelAutobreak;
+extern Model *modelDigitalSequencer;

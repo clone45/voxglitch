@@ -20,6 +20,12 @@
         "tags": ["Sampler", "Drum"]
     },
     {
+        "slug": "digitalsequencer",
+        "name": "Digital Sequencer",
+        "description": "Six-in-one cv/gate sequencers with independent control over clock division and sequence length.",
+        "tags": ["Sequencer"]
+    },
+    {
         "slug": "ghosts",
         "name": "Ghosts",
         "description": "Granular synthesis sample player/scanner with looping grains.",
