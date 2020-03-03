@@ -307,8 +307,6 @@ struct DigitalSequencer : Module
         configParam(SEQUENCER_5_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer5LengthKnob");
         configParam(SEQUENCER_6_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer6LengthKnob");
 
-        // configParam(SEQUENCE_SELECTION_KNOB, 0, 12, 0, "SequenceSelectionKnob"); // see notes below
-
         configParam(SEQUENCER_1_CLOCK_DIVISION_KNOB, 1, 16, 1, "Sequencer1ClockDivisionKnob");
         configParam(SEQUENCER_2_CLOCK_DIVISION_KNOB, 1, 16, 1, "Sequencer2ClockDivisionKnob");
         configParam(SEQUENCER_3_CLOCK_DIVISION_KNOB, 1, 16, 1, "Sequencer3ClockDivisionKnob");
@@ -322,11 +320,6 @@ struct DigitalSequencer : Module
         configParam(SEQUENCER_4_BUTTON, 0.f, 1.f, 0.f, "Sequence4Button");
         configParam(SEQUENCER_5_BUTTON, 0.f, 1.f, 0.f, "Sequence5Button");
         configParam(SEQUENCER_6_BUTTON, 0.f, 1.f, 0.f, "Sequence6Button");
-
-        // Notes: It might seem a bit strange for SEQUENCE_SELECTION_KNOB's range
-        // to go from 0 to 12 since there is a maxiumum number of 6 sequencers.
-        // If the knob is configured with a range of 0 to 5, it takes a lot
-        // of turning to get to sequencer 6 and just feels wrong.
 	}
 
     /*
@@ -573,14 +566,6 @@ struct DigitalSequencer : Module
             gate_sequencers[3].setClockDivision(clamp((int) params[SEQUENCER_4_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
             gate_sequencers[4].setClockDivision(clamp((int) params[SEQUENCER_5_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
             gate_sequencers[5].setClockDivision(clamp((int) params[SEQUENCER_6_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
-
-            // Set the selected sequencer's clock division
-            /*
-            unsigned int sequence_clock_division_knob_value = params[SEQUENCER_1_CLOCK_DIVISION_KNOB].getValue();
-            sequence_clock_division_knob_value = clamp(sequence_clock_division_knob_value, 1, 16);
-            selected_voltage_sequencer->setClockDivision(sequence_clock_division_knob_value);
-            selected_gate_sequencer->setClockDivision(sequence_clock_division_knob_value);
-            */
         }
 
         // On incoming RESET, reset ALL of the sequencers
