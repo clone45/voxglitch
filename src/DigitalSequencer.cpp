@@ -1075,106 +1075,6 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
     }
 };
 
-struct DigitalSequencerCompactInputDisplay : TransparentWidget
-{
-    DigitalSequencer *module;
-    std::shared_ptr<Font> font;
-
-    bool moused_over = false;
-
-    // These shouldn't ever need to change
-    float text_position_x = mm2px(6.4);  // position relative to widget position
-    float text_position_y = mm2px(7.6); // position relative to widget position
-    float box_size_width = 13;
-    float box_size_height = 20;
-
-    DigitalSequencerCompactInputDisplay()
-    {
-        box.size = mm2px(Vec(box_size_width, box_size_height));
-		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
-    }
-
-    void setFontStyles(NVGcontext *vg)
-    {
-        nvgFontSize(vg, 13);
-		nvgFontFaceId(vg, font->handle);
-		nvgFillColor(vg, nvgRGBA(255, 255, 255, 0xff));
-		nvgTextAlign(vg, NVG_ALIGN_CENTER);
-		nvgTextLetterSpacing(vg, -1);
-    }
-
-    void drawLabel(NVGcontext *vg, std::string label)
-    {
-        nvgSave(vg);
-
-		// Configure the font size, face, color, etc.
-        setFontStyles(vg);
-
-        // Draw the label or the value
-        nvgText(vg, text_position_x, text_position_y, label.c_str(), NULL);
-
-		nvgRestore(vg);
-    }
-
-    std::string getLabel()
-    {
-        return("");
-    }
-
-    std::string getValue()
-    {
-        return("0");
-    }
-
-    void onHover(const event::Hover& e) override {
-		TransparentWidget::onHover(e);
-		e.consume(this);
-	}
-
-    void step() override {
-		TransparentWidget::step();
-	}
-
-    void onEnter(const event::Enter &e) override
-    {
-		TransparentWidget::onEnter(e);
-		this->moused_over = true;
-	}
-
-	void onLeave(const event::Leave &e) override
-    {
-		TransparentWidget::onLeave(e);
-		this->moused_over = false;
-	}
-};
-
-struct DigitalSequencerSeqDisplay : DigitalSequencerCompactInputDisplay
-{
-    void draw(const DrawArgs &args) override
-	{
-        std::string display_string = (module && moused_over) ? std::to_string(module->selected_sequencer_index + 1) : "SEQ";
-        drawLabel(args.vg, display_string);
-	}
-};
-
-struct DigitalSequencerLenDisplay : DigitalSequencerCompactInputDisplay
-{
-	void draw(const DrawArgs &args) override
-	{
-        std::string display_string = (module && moused_over) ? std::to_string(module->selected_voltage_sequencer->getLength()) : "LEN";
-        drawLabel(args.vg, display_string);
-	}
-};
-
-struct DigitalSequencerDivDisplay : DigitalSequencerCompactInputDisplay
-{
-	void draw(const DrawArgs &args) override
-	{
-        std::string display_string = (module && moused_over) ? std::to_string(module->selected_voltage_sequencer->getClockDivision()) : "DIV";
-        drawLabel(args.vg, display_string);
-	}
-};
-
 struct DigitalSequencerWidget : ModuleWidget
 {
     DigitalSequencer* module;
@@ -1250,17 +1150,6 @@ struct DigitalSequencerWidget : ModuleWidget
         addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_4_CLOCK_DIVISION_KNOB));
         addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_5_CLOCK_DIVISION_KNOB));
         addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_6_CLOCK_DIVISION_KNOB));
-/*
-        DigitalSequencerLenDisplay *len_display = new DigitalSequencerLenDisplay();
-        len_display->box.pos = mm2px(Vec(53.844, 101));
-		len_display->module = module;
-		addChild(len_display);
-
-        DigitalSequencerDivDisplay *div_display = new DigitalSequencerDivDisplay();
-        div_display->box.pos = mm2px(Vec(65.844, 101));
-		div_display->module = module;
-		addChild(div_display);
-*/
 
         // Step
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 114.893)), module, DigitalSequencer::STEP_INPUT));
