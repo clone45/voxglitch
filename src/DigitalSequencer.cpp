@@ -924,7 +924,7 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
 
             // (.01 * (214 / 10)), where 214 is the bar height and 10 is the max voltage
             value = value + (.01 * (214.0 / 10.0));
-            value = clamp(value, 0.0d, DRAW_AREA_HEIGHT);
+            value = clamp(value, 0.0, DRAW_AREA_HEIGHT);
 
             module->selected_voltage_sequencer->setValue(bar_x_index, value);
 
@@ -941,7 +941,7 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
 
             // (.01 * (214 / 10)), where 214 is the bar height and 10 is the max voltage
             value = value - (.01 * (214.0 / 10.0));
-            value = clamp(value, 0.0d, DRAW_AREA_HEIGHT);
+            value = clamp(value, 0.0, DRAW_AREA_HEIGHT);
 
             module->selected_voltage_sequencer->setValue(bar_x_index, value);
 
