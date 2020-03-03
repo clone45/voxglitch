@@ -535,10 +535,6 @@ struct DigitalSequencer : Module
             selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
             selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
 
-            // TODO: this is temporarily wrong and should be fixed
-            params[SEQUENCER_1_LENGTH_KNOB].setValue(selected_voltage_sequencer->getLength());
-            params[SEQUENCER_1_CLOCK_DIVISION_KNOB].setValue(selected_voltage_sequencer->getClockDivision());
-
             previously_selected_sequencer_index = selected_sequencer_index;
         }
 
@@ -549,16 +545,42 @@ struct DigitalSequencer : Module
         else
         {
             // Set the selected sequencer's length
-            unsigned int sequence_length_knob_value = params[SEQUENCER_1_LENGTH_KNOB].getValue();
-            sequence_length_knob_value = clamp(sequence_length_knob_value, 1, 32);
-            selected_voltage_sequencer->setLength(sequence_length_knob_value);
-            selected_gate_sequencer->setLength(sequence_length_knob_value);
+            voltage_sequencers[0].setLength(clamp((int) params[SEQUENCER_1_LENGTH_KNOB].getValue(), 1, 32));
+            voltage_sequencers[1].setLength(clamp((int) params[SEQUENCER_2_LENGTH_KNOB].getValue(), 1, 32));
+            voltage_sequencers[2].setLength(clamp((int) params[SEQUENCER_3_LENGTH_KNOB].getValue(), 1, 32));
+            voltage_sequencers[3].setLength(clamp((int) params[SEQUENCER_4_LENGTH_KNOB].getValue(), 1, 32));
+            voltage_sequencers[4].setLength(clamp((int) params[SEQUENCER_5_LENGTH_KNOB].getValue(), 1, 32));
+            voltage_sequencers[5].setLength(clamp((int) params[SEQUENCER_6_LENGTH_KNOB].getValue(), 1, 32));
+
+            gate_sequencers[0].setLength(clamp((int) params[SEQUENCER_1_LENGTH_KNOB].getValue(), 1, 32));
+            gate_sequencers[1].setLength(clamp((int) params[SEQUENCER_2_LENGTH_KNOB].getValue(), 1, 32));
+            gate_sequencers[2].setLength(clamp((int) params[SEQUENCER_3_LENGTH_KNOB].getValue(), 1, 32));
+            gate_sequencers[3].setLength(clamp((int) params[SEQUENCER_4_LENGTH_KNOB].getValue(), 1, 32));
+            gate_sequencers[4].setLength(clamp((int) params[SEQUENCER_5_LENGTH_KNOB].getValue(), 1, 32));
+            gate_sequencers[5].setLength(clamp((int) params[SEQUENCER_6_LENGTH_KNOB].getValue(), 1, 32));
+
+            // Now handle clock division
+            voltage_sequencers[0].setClockDivision(clamp((int) params[SEQUENCER_1_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            voltage_sequencers[1].setClockDivision(clamp((int) params[SEQUENCER_2_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            voltage_sequencers[2].setClockDivision(clamp((int) params[SEQUENCER_3_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            voltage_sequencers[3].setClockDivision(clamp((int) params[SEQUENCER_4_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            voltage_sequencers[4].setClockDivision(clamp((int) params[SEQUENCER_5_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            voltage_sequencers[5].setClockDivision(clamp((int) params[SEQUENCER_6_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+
+            gate_sequencers[0].setClockDivision(clamp((int) params[SEQUENCER_1_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            gate_sequencers[1].setClockDivision(clamp((int) params[SEQUENCER_2_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            gate_sequencers[2].setClockDivision(clamp((int) params[SEQUENCER_3_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            gate_sequencers[3].setClockDivision(clamp((int) params[SEQUENCER_4_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            gate_sequencers[4].setClockDivision(clamp((int) params[SEQUENCER_5_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            gate_sequencers[5].setClockDivision(clamp((int) params[SEQUENCER_6_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
 
             // Set the selected sequencer's clock division
+            /*
             unsigned int sequence_clock_division_knob_value = params[SEQUENCER_1_CLOCK_DIVISION_KNOB].getValue();
             sequence_clock_division_knob_value = clamp(sequence_clock_division_knob_value, 1, 16);
             selected_voltage_sequencer->setClockDivision(sequence_clock_division_knob_value);
             selected_gate_sequencer->setClockDivision(sequence_clock_division_knob_value);
+            */
         }
 
         // On incoming RESET, reset ALL of the sequencers
