@@ -187,6 +187,14 @@ struct DigitalSequencer : Module
 {
 	dsp::SchmittTrigger stepTrigger;
     dsp::SchmittTrigger resetTrigger;
+
+	dsp::SchmittTrigger sequencer_1_button_trigger;
+    dsp::SchmittTrigger sequencer_2_button_trigger;
+    dsp::SchmittTrigger sequencer_3_button_trigger;
+    dsp::SchmittTrigger sequencer_4_button_trigger;
+    dsp::SchmittTrigger sequencer_5_button_trigger;
+    dsp::SchmittTrigger sequencer_6_button_trigger;
+
     long clock_ignore_on_reset = 0;
     unsigned int tooltip_timer = 0;
 
@@ -204,11 +212,34 @@ struct DigitalSequencer : Module
     dsp::PulseGenerator gateOutputPulseGenerators[NUMBER_OF_SEQUENCERS];
     float sample_rate;
 
+    bool sequencer_1_button_is_triggered;
+    bool sequencer_2_button_is_triggered;
+    bool sequencer_3_button_is_triggered;
+    bool sequencer_4_button_is_triggered;
+    bool sequencer_5_button_is_triggered;
+    bool sequencer_6_button_is_triggered;
+
 	enum ParamIds {
         SEQUENCE_SELECTION_KNOB,
-        SEQUENCE_LENGTH_KNOB,
-        SEQUENCE_CLOCK_DIVISION_KNOB,
+        SEQUENCER_1_LENGTH_KNOB,
+        SEQUENCER_2_LENGTH_KNOB,
+        SEQUENCER_3_LENGTH_KNOB,
+        SEQUENCER_4_LENGTH_KNOB,
+        SEQUENCER_5_LENGTH_KNOB,
+        SEQUENCER_6_LENGTH_KNOB,
+        SEQUENCER_1_CLOCK_DIVISION_KNOB,
+        SEQUENCER_2_CLOCK_DIVISION_KNOB,
+        SEQUENCER_3_CLOCK_DIVISION_KNOB,
+        SEQUENCER_4_CLOCK_DIVISION_KNOB,
+        SEQUENCER_5_CLOCK_DIVISION_KNOB,
+        SEQUENCER_6_CLOCK_DIVISION_KNOB,
         SEQUENCE_START_KNOB,
+        SEQUENCER_1_BUTTON,
+        SEQUENCER_2_BUTTON,
+        SEQUENCER_3_BUTTON,
+        SEQUENCER_4_BUTTON,
+        SEQUENCER_5_BUTTON,
+        SEQUENCER_6_BUTTON,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -238,6 +269,12 @@ struct DigitalSequencer : Module
 		NUM_OUTPUTS
 	};
 	enum LightIds {
+        SEQUENCER_1_LIGHT,
+        SEQUENCER_2_LIGHT,
+        SEQUENCER_3_LIGHT,
+        SEQUENCER_4_LIGHT,
+        SEQUENCER_5_LIGHT,
+        SEQUENCER_6_LIGHT,
 		NUM_LIGHTS
 	};
 
@@ -263,14 +300,26 @@ struct DigitalSequencer : Module
         selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
 
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-        configParam(SEQUENCE_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "SequenceLengthKnob");
-        configParam(SEQUENCE_SELECTION_KNOB, 0, 12, 0, "SequenceSelectionKnob"); // see notes below
-        configParam(SEQUENCE_CLOCK_DIVISION_KNOB, 1, 16, 1, "SequenceClockDivisionKnob");
+        configParam(SEQUENCER_1_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "SequenceLengthKnob");
+        configParam(SEQUENCER_2_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer2LengthKnob");
+        configParam(SEQUENCER_3_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer3LengthKnob");
+        configParam(SEQUENCER_4_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer4LengthKnob");
+        configParam(SEQUENCER_5_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer5LengthKnob");
+        configParam(SEQUENCER_6_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer6LengthKnob");
 
-        // Notes: It might seem a bit strange for SEQUENCE_SELECTION_KNOB's range
-        // to go from 0 to 12 since there is a maxiumum number of 6 sequencers.
-        // If the knob is configured with a range of 0 to 5, it takes a lot
-        // of turning to get to sequencer 6 and just feels wrong.
+        configParam(SEQUENCER_1_CLOCK_DIVISION_KNOB, 1, 16, 1, "Sequencer1ClockDivisionKnob");
+        configParam(SEQUENCER_2_CLOCK_DIVISION_KNOB, 1, 16, 1, "Sequencer2ClockDivisionKnob");
+        configParam(SEQUENCER_3_CLOCK_DIVISION_KNOB, 1, 16, 1, "Sequencer3ClockDivisionKnob");
+        configParam(SEQUENCER_4_CLOCK_DIVISION_KNOB, 1, 16, 1, "Sequencer4ClockDivisionKnob");
+        configParam(SEQUENCER_5_CLOCK_DIVISION_KNOB, 1, 16, 1, "Sequencer5ClockDivisionKnob");
+        configParam(SEQUENCER_6_CLOCK_DIVISION_KNOB, 1, 16, 1, "Sequencer6ClockDivisionKnob");
+
+        configParam(SEQUENCER_1_BUTTON, 0.f, 1.f, 0.f, "Sequence1Button");
+        configParam(SEQUENCER_2_BUTTON, 0.f, 1.f, 0.f, "Sequence2Button");
+        configParam(SEQUENCER_3_BUTTON, 0.f, 1.f, 0.f, "Sequence3Button");
+        configParam(SEQUENCER_4_BUTTON, 0.f, 1.f, 0.f, "Sequence4Button");
+        configParam(SEQUENCER_5_BUTTON, 0.f, 1.f, 0.f, "Sequence5Button");
+        configParam(SEQUENCER_6_BUTTON, 0.f, 1.f, 0.f, "Sequence6Button");
 	}
 
     /*
@@ -453,8 +502,22 @@ struct DigitalSequencer : Module
         bool trigger_output_pulse = false;
         this->sample_rate = args.sampleRate;
 
-        selected_sequencer_index = params[SEQUENCE_SELECTION_KNOB].getValue();
-        selected_sequencer_index = clamp(selected_sequencer_index, 0, NUMBER_OF_SEQUENCERS - 1);
+        // selected_sequencer_index = params[SEQUENCE_SELECTION_KNOB].getValue();
+        // selected_sequencer_index = clamp(selected_sequencer_index, 0, NUMBER_OF_SEQUENCERS - 1);
+
+        sequencer_1_button_is_triggered = sequencer_1_button_trigger.process(params[SEQUENCER_1_BUTTON].getValue());
+        sequencer_2_button_is_triggered = sequencer_2_button_trigger.process(params[SEQUENCER_2_BUTTON].getValue());
+        sequencer_3_button_is_triggered = sequencer_3_button_trigger.process(params[SEQUENCER_3_BUTTON].getValue());
+        sequencer_4_button_is_triggered = sequencer_4_button_trigger.process(params[SEQUENCER_4_BUTTON].getValue());
+        sequencer_5_button_is_triggered = sequencer_5_button_trigger.process(params[SEQUENCER_5_BUTTON].getValue());
+        sequencer_6_button_is_triggered = sequencer_6_button_trigger.process(params[SEQUENCER_6_BUTTON].getValue());
+
+		if(sequencer_1_button_is_triggered) selected_sequencer_index = 0;
+        if(sequencer_2_button_is_triggered) selected_sequencer_index = 1;
+        if(sequencer_3_button_is_triggered) selected_sequencer_index = 2;
+        if(sequencer_4_button_is_triggered) selected_sequencer_index = 3;
+        if(sequencer_5_button_is_triggered) selected_sequencer_index = 4;
+        if(sequencer_6_button_is_triggered) selected_sequencer_index = 5;
 
         // When the user selects a new sequencer using the SEQ knob, update
         // the automated knobs (LEN & DIV) to the corresponding settings for
@@ -464,9 +527,6 @@ struct DigitalSequencer : Module
         {
             selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
             selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
-
-            params[SEQUENCE_LENGTH_KNOB].setValue(selected_voltage_sequencer->getLength());
-            params[SEQUENCE_CLOCK_DIVISION_KNOB].setValue(selected_voltage_sequencer->getClockDivision());
 
             previously_selected_sequencer_index = selected_sequencer_index;
         }
@@ -478,16 +538,34 @@ struct DigitalSequencer : Module
         else
         {
             // Set the selected sequencer's length
-            unsigned int sequence_length_knob_value = params[SEQUENCE_LENGTH_KNOB].getValue();
-            sequence_length_knob_value = clamp(sequence_length_knob_value, 1, 32);
-            selected_voltage_sequencer->setLength(sequence_length_knob_value);
-            selected_gate_sequencer->setLength(sequence_length_knob_value);
+            voltage_sequencers[0].setLength(clamp((int) params[SEQUENCER_1_LENGTH_KNOB].getValue(), 1, 32));
+            voltage_sequencers[1].setLength(clamp((int) params[SEQUENCER_2_LENGTH_KNOB].getValue(), 1, 32));
+            voltage_sequencers[2].setLength(clamp((int) params[SEQUENCER_3_LENGTH_KNOB].getValue(), 1, 32));
+            voltage_sequencers[3].setLength(clamp((int) params[SEQUENCER_4_LENGTH_KNOB].getValue(), 1, 32));
+            voltage_sequencers[4].setLength(clamp((int) params[SEQUENCER_5_LENGTH_KNOB].getValue(), 1, 32));
+            voltage_sequencers[5].setLength(clamp((int) params[SEQUENCER_6_LENGTH_KNOB].getValue(), 1, 32));
 
-            // Set the selected sequencer's clock division
-            unsigned int sequence_clock_division_knob_value = params[SEQUENCE_CLOCK_DIVISION_KNOB].getValue();
-            sequence_clock_division_knob_value = clamp(sequence_clock_division_knob_value, 1, 16);
-            selected_voltage_sequencer->setClockDivision(sequence_clock_division_knob_value);
-            selected_gate_sequencer->setClockDivision(sequence_clock_division_knob_value);
+            gate_sequencers[0].setLength(clamp((int) params[SEQUENCER_1_LENGTH_KNOB].getValue(), 1, 32));
+            gate_sequencers[1].setLength(clamp((int) params[SEQUENCER_2_LENGTH_KNOB].getValue(), 1, 32));
+            gate_sequencers[2].setLength(clamp((int) params[SEQUENCER_3_LENGTH_KNOB].getValue(), 1, 32));
+            gate_sequencers[3].setLength(clamp((int) params[SEQUENCER_4_LENGTH_KNOB].getValue(), 1, 32));
+            gate_sequencers[4].setLength(clamp((int) params[SEQUENCER_5_LENGTH_KNOB].getValue(), 1, 32));
+            gate_sequencers[5].setLength(clamp((int) params[SEQUENCER_6_LENGTH_KNOB].getValue(), 1, 32));
+
+            // Now handle clock division
+            voltage_sequencers[0].setClockDivision(clamp((int) params[SEQUENCER_1_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            voltage_sequencers[1].setClockDivision(clamp((int) params[SEQUENCER_2_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            voltage_sequencers[2].setClockDivision(clamp((int) params[SEQUENCER_3_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            voltage_sequencers[3].setClockDivision(clamp((int) params[SEQUENCER_4_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            voltage_sequencers[4].setClockDivision(clamp((int) params[SEQUENCER_5_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            voltage_sequencers[5].setClockDivision(clamp((int) params[SEQUENCER_6_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+
+            gate_sequencers[0].setClockDivision(clamp((int) params[SEQUENCER_1_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            gate_sequencers[1].setClockDivision(clamp((int) params[SEQUENCER_2_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            gate_sequencers[2].setClockDivision(clamp((int) params[SEQUENCER_3_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            gate_sequencers[3].setClockDivision(clamp((int) params[SEQUENCER_4_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            gate_sequencers[4].setClockDivision(clamp((int) params[SEQUENCER_5_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
+            gate_sequencers[5].setClockDivision(clamp((int) params[SEQUENCER_6_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
         }
 
         // On incoming RESET, reset ALL of the sequencers
@@ -537,6 +615,13 @@ struct DigitalSequencer : Module
 
         if (clock_ignore_on_reset > 0) clock_ignore_on_reset--;
         if (tooltip_timer > 0) tooltip_timer--;
+
+        lights[SEQUENCER_1_LIGHT].setBrightness(selected_sequencer_index == 0);
+        lights[SEQUENCER_2_LIGHT].setBrightness(selected_sequencer_index == 1);
+        lights[SEQUENCER_3_LIGHT].setBrightness(selected_sequencer_index == 2);
+        lights[SEQUENCER_4_LIGHT].setBrightness(selected_sequencer_index == 3);
+        lights[SEQUENCER_5_LIGHT].setBrightness(selected_sequencer_index == 4);
+        lights[SEQUENCER_6_LIGHT].setBrightness(selected_sequencer_index == 5);
 	}
 
 };
@@ -740,7 +825,7 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
                 draw_tooltip = false;
             }
         }
-        
+
 		nvgRestore(vg);
 	}
 
@@ -839,7 +924,7 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
 
             // (.01 * (214 / 10)), where 214 is the bar height and 10 is the max voltage
             value = value + (.01 * (214.0 / 10.0));
-            value = clamp(value, 0.0d, DRAW_AREA_HEIGHT);
+            value = clamp(value, 0.0, DRAW_AREA_HEIGHT);
 
             module->selected_voltage_sequencer->setValue(bar_x_index, value);
 
@@ -856,7 +941,7 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
 
             // (.01 * (214 / 10)), where 214 is the bar height and 10 is the max voltage
             value = value - (.01 * (214.0 / 10.0));
-            value = clamp(value, 0.0d, DRAW_AREA_HEIGHT);
+            value = clamp(value, 0.0, DRAW_AREA_HEIGHT);
 
             module->selected_voltage_sequencer->setValue(bar_x_index, value);
 
@@ -990,110 +1075,13 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
     }
 };
 
-struct DigitalSequencerCompactInputDisplay : TransparentWidget
-{
-    DigitalSequencer *module;
-    std::shared_ptr<Font> font;
-
-    bool moused_over = false;
-
-    // These shouldn't ever need to change
-    float text_position_x = mm2px(6.4);  // position relative to widget position
-    float text_position_y = mm2px(7.6); // position relative to widget position
-    float box_size_width = 13;
-    float box_size_height = 20;
-
-    DigitalSequencerCompactInputDisplay()
-    {
-        box.size = mm2px(Vec(box_size_width, box_size_height));
-		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
-    }
-
-    void setFontStyles(NVGcontext *vg)
-    {
-        nvgFontSize(vg, 13);
-		nvgFontFaceId(vg, font->handle);
-		nvgFillColor(vg, nvgRGBA(255, 255, 255, 0xff));
-		nvgTextAlign(vg, NVG_ALIGN_CENTER);
-		nvgTextLetterSpacing(vg, -1);
-    }
-
-    void drawLabel(NVGcontext *vg, std::string label)
-    {
-        nvgSave(vg);
-
-		// Configure the font size, face, color, etc.
-        setFontStyles(vg);
-
-        // Draw the label or the value
-        nvgText(vg, text_position_x, text_position_y, label.c_str(), NULL);
-
-		nvgRestore(vg);
-    }
-
-    std::string getLabel()
-    {
-        return("");
-    }
-
-    std::string getValue()
-    {
-        return("0");
-    }
-
-    void onHover(const event::Hover& e) override {
-		TransparentWidget::onHover(e);
-		e.consume(this);
-	}
-
-    void step() override {
-		TransparentWidget::step();
-	}
-
-    void onEnter(const event::Enter &e) override
-    {
-		TransparentWidget::onEnter(e);
-		this->moused_over = true;
-	}
-
-	void onLeave(const event::Leave &e) override
-    {
-		TransparentWidget::onLeave(e);
-		this->moused_over = false;
-	}
-};
-
-struct DigitalSequencerSeqDisplay : DigitalSequencerCompactInputDisplay
-{
-    void draw(const DrawArgs &args) override
-	{
-        std::string display_string = (module && moused_over) ? std::to_string(module->selected_sequencer_index + 1) : "SEQ";
-        drawLabel(args.vg, display_string);
-	}
-};
-
-struct DigitalSequencerLenDisplay : DigitalSequencerCompactInputDisplay
-{
-	void draw(const DrawArgs &args) override
-	{
-        std::string display_string = (module && moused_over) ? std::to_string(module->selected_voltage_sequencer->getLength()) : "LEN";
-        drawLabel(args.vg, display_string);
-	}
-};
-
-struct DigitalSequencerDivDisplay : DigitalSequencerCompactInputDisplay
-{
-	void draw(const DrawArgs &args) override
-	{
-        std::string display_string = (module && moused_over) ? std::to_string(module->selected_voltage_sequencer->getClockDivision()) : "DIV";
-        drawLabel(args.vg, display_string);
-	}
-};
-
 struct DigitalSequencerWidget : ModuleWidget
 {
+    DigitalSequencer* module;
+
 	DigitalSequencerWidget(DigitalSequencer* module)
 	{
+        this->module = module;
 		setModule(module);
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_sequencer_front_panel.svg")));
 
@@ -1113,25 +1101,55 @@ struct DigitalSequencerWidget : ModuleWidget
 		gates_display->module = module;
 		addChild(gates_display);
 
+        /*
+
         addParam(createParamCentered<Trimpot>(mm2px(Vec(43.737, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_SELECTION_KNOB));
         addParam(createParamCentered<Trimpot>(mm2px(Vec(60.152, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_LENGTH_KNOB));
         addParam(createParamCentered<Trimpot>(mm2px(Vec(72.152, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_CLOCK_DIVISION_KNOB));
+        */
         // next is 84.152
 
+        /*
         DigitalSequencerSeqDisplay *seq_display = new DigitalSequencerSeqDisplay();
         seq_display->box.pos = mm2px(Vec(37.440, 101));
 		seq_display->module = module;
 		addChild(seq_display);
+        */
+        float button_spacing = 9.1;
+        float button_group_x = 48.0;
+        float button_group_y = 103.0;
+        // Sequence 1 button
+        addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x, button_group_y)), module, DigitalSequencer::SEQUENCER_1_BUTTON));
+		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x, button_group_y)), module, DigitalSequencer::SEQUENCER_1_LIGHT));
+        // Sequence 2 button
+        addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y)), module, DigitalSequencer::SEQUENCER_2_BUTTON));
+		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y)), module, DigitalSequencer::SEQUENCER_2_LIGHT));
+        // Sequence 3 button
+        addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y)), module, DigitalSequencer::SEQUENCER_3_BUTTON));
+		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y)), module, DigitalSequencer::SEQUENCER_3_LIGHT));
+        // Sequence 4 button
+        addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y)), module, DigitalSequencer::SEQUENCER_4_BUTTON));
+		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y)), module, DigitalSequencer::SEQUENCER_4_LIGHT));
+        // Sequence 5 button
+        addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y)), module, DigitalSequencer::SEQUENCER_5_BUTTON));
+		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y)), module, DigitalSequencer::SEQUENCER_5_LIGHT));
+        // Sequence 6 button
+        addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y)), module, DigitalSequencer::SEQUENCER_6_BUTTON));
+		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y)), module, DigitalSequencer::SEQUENCER_6_LIGHT));
 
-        DigitalSequencerLenDisplay *len_display = new DigitalSequencerLenDisplay();
-        len_display->box.pos = mm2px(Vec(53.844, 101));
-		len_display->module = module;
-		addChild(len_display);
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x, button_group_y + 9.0)), module, DigitalSequencer::SEQUENCER_1_LENGTH_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y + 9.0)), module, DigitalSequencer::SEQUENCER_2_LENGTH_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y + 9.0)), module, DigitalSequencer::SEQUENCER_3_LENGTH_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y + 9.0)), module, DigitalSequencer::SEQUENCER_4_LENGTH_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y + 9.0)), module, DigitalSequencer::SEQUENCER_5_LENGTH_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y + 9.0)), module, DigitalSequencer::SEQUENCER_6_LENGTH_KNOB));
 
-        DigitalSequencerDivDisplay *div_display = new DigitalSequencerDivDisplay();
-        div_display->box.pos = mm2px(Vec(65.844, 101));
-		div_display->module = module;
-		addChild(div_display);
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x, button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_1_CLOCK_DIVISION_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_2_CLOCK_DIVISION_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_3_CLOCK_DIVISION_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_4_CLOCK_DIVISION_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_5_CLOCK_DIVISION_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_6_CLOCK_DIVISION_KNOB));
 
         // Step
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 114.893)), module, DigitalSequencer::STEP_INPUT));
@@ -1159,6 +1177,25 @@ struct DigitalSequencerWidget : ModuleWidget
 	void appendContextMenu(Menu *menu) override
 	{
 	}
+
+    void step() override {
+        ModuleWidget::step();
+    }
+
+    /*
+    TODO: Figure out why implemeting this override the onHoverEvent for
+    shift-right/shift-left.
+
+    void onHoverKey(const event::HoverKey &e) override
+    {
+        // GLFW_KEY_1 == 49 and GLFW_KEY_6 == 54
+        if (e.key >= 49 && e.key <= 54)
+        {
+            e.consume(this);
+            if(e.action == GLFW_PRESS) this->module->params[this->module->SEQUENCE_SELECTION_KNOB].setValue(-49 + e.key);
+        }
+    }
+    */
 };
 
 Model* modelDigitalSequencer = createModel<DigitalSequencer, DigitalSequencerWidget>("digitalsequencer");
