@@ -43,17 +43,10 @@ struct Sequencer
 {
     unsigned int sequence_length = 16;
     unsigned int sequence_playback_position = 0;
-    unsigned int clock_division = 1;
-    unsigned int clock_division_counter = 0;
 
     void step()
     {
-        clock_division_counter++;
-        if(clock_division_counter >= clock_division)
-        {
-            clock_division_counter = 0;
-            sequence_playback_position = (sequence_playback_position + 1) % sequence_length;
-        }
+        sequence_playback_position = (sequence_playback_position + 1) % sequence_length;
     }
 
     void reset()
@@ -74,16 +67,6 @@ struct Sequencer
     void setLength(unsigned int sequence_length)
     {
         this->sequence_length = sequence_length;
-    }
-
-    void setClockDivision(unsigned int clock_division)
-    {
-        this->clock_division = clock_division;
-    }
-
-    unsigned int getClockDivision()
-    {
-        return(this->clock_division);
     }
 };
 
@@ -186,6 +169,7 @@ struct GateSequencer : Sequencer
 struct DigitalSequencer : Module
 {
 	dsp::SchmittTrigger stepTrigger;
+    dsp::SchmittTrigger sequencer_step_triggers[NUMBER_OF_SEQUENCERS];
     dsp::SchmittTrigger resetTrigger;
 
 	dsp::SchmittTrigger sequencer_1_button_trigger;
@@ -208,6 +192,7 @@ struct DigitalSequencer : Module
     int previously_selected_sequencer_index = -1;
     int voltage_outputs[NUMBER_OF_SEQUENCERS];
     int gate_outputs[NUMBER_OF_SEQUENCERS];
+    int sequencer_step_inputs[NUMBER_OF_SEQUENCERS];
 
     dsp::PulseGenerator gateOutputPulseGenerators[NUMBER_OF_SEQUENCERS];
     float sample_rate;
@@ -227,12 +212,7 @@ struct DigitalSequencer : Module
         SEQUENCER_4_LENGTH_KNOB,
         SEQUENCER_5_LENGTH_KNOB,
         SEQUENCER_6_LENGTH_KNOB,
-        SEQUENCER_1_CLOCK_DIVISION_KNOB,
-        SEQUENCER_2_CLOCK_DIVISION_KNOB,
-        SEQUENCER_3_CLOCK_DIVISION_KNOB,
-        SEQUENCER_4_CLOCK_DIVISION_KNOB,
-        SEQUENCER_5_CLOCK_DIVISION_KNOB,
-        SEQUENCER_6_CLOCK_DIVISION_KNOB,
+
         SEQUENCE_START_KNOB,
         SEQUENCER_1_BUTTON,
         SEQUENCER_2_BUTTON,
@@ -246,6 +226,12 @@ struct DigitalSequencer : Module
 		CLOCK_INPUT,
         STEP_INPUT,
         RESET_INPUT,
+        SEQUENCER_1_STEP_INPUT,
+        SEQUENCER_2_STEP_INPUT,
+        SEQUENCER_3_STEP_INPUT,
+        SEQUENCER_4_STEP_INPUT,
+        SEQUENCER_5_STEP_INPUT,
+        SEQUENCER_6_STEP_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -284,18 +270,25 @@ struct DigitalSequencer : Module
 	DigitalSequencer()
 	{
         voltage_outputs[0] = SEQ1_CV_OUTPUT;
-        voltage_outputs[1] = SEQ2_CV_OUTPUT,
-        voltage_outputs[2] = SEQ3_CV_OUTPUT,
-        voltage_outputs[3] = SEQ4_CV_OUTPUT,
-        voltage_outputs[4] = SEQ5_CV_OUTPUT,
-        voltage_outputs[5] = SEQ6_CV_OUTPUT,
+        voltage_outputs[1] = SEQ2_CV_OUTPUT;
+        voltage_outputs[2] = SEQ3_CV_OUTPUT;
+        voltage_outputs[3] = SEQ4_CV_OUTPUT;
+        voltage_outputs[4] = SEQ5_CV_OUTPUT;
+        voltage_outputs[5] = SEQ6_CV_OUTPUT;
 
         gate_outputs[0] = SEQ1_GATE_OUTPUT;
-        gate_outputs[1] = SEQ2_GATE_OUTPUT,
-        gate_outputs[2] = SEQ3_GATE_OUTPUT,
-        gate_outputs[3] = SEQ4_GATE_OUTPUT,
-        gate_outputs[4] = SEQ5_GATE_OUTPUT,
-        gate_outputs[5] = SEQ6_GATE_OUTPUT,
+        gate_outputs[1] = SEQ2_GATE_OUTPUT;
+        gate_outputs[2] = SEQ3_GATE_OUTPUT;
+        gate_outputs[3] = SEQ4_GATE_OUTPUT;
+        gate_outputs[4] = SEQ5_GATE_OUTPUT;
+        gate_outputs[5] = SEQ6_GATE_OUTPUT;
+
+        sequencer_step_inputs[0] = SEQUENCER_1_STEP_INPUT;
+        sequencer_step_inputs[1] = SEQUENCER_2_STEP_INPUT;
+        sequencer_step_inputs[2] = SEQUENCER_3_STEP_INPUT;
+        sequencer_step_inputs[3] = SEQUENCER_4_STEP_INPUT;
+        sequencer_step_inputs[4] = SEQUENCER_5_STEP_INPUT;
+        sequencer_step_inputs[5] = SEQUENCER_6_STEP_INPUT;
 
         selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
 
@@ -306,13 +299,6 @@ struct DigitalSequencer : Module
         configParam(SEQUENCER_4_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer4LengthKnob");
         configParam(SEQUENCER_5_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer5LengthKnob");
         configParam(SEQUENCER_6_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer6LengthKnob");
-
-        configParam(SEQUENCER_1_CLOCK_DIVISION_KNOB, 1, 16, 1, "Sequencer1ClockDivisionKnob");
-        configParam(SEQUENCER_2_CLOCK_DIVISION_KNOB, 1, 16, 1, "Sequencer2ClockDivisionKnob");
-        configParam(SEQUENCER_3_CLOCK_DIVISION_KNOB, 1, 16, 1, "Sequencer3ClockDivisionKnob");
-        configParam(SEQUENCER_4_CLOCK_DIVISION_KNOB, 1, 16, 1, "Sequencer4ClockDivisionKnob");
-        configParam(SEQUENCER_5_CLOCK_DIVISION_KNOB, 1, 16, 1, "Sequencer5ClockDivisionKnob");
-        configParam(SEQUENCER_6_CLOCK_DIVISION_KNOB, 1, 16, 1, "Sequencer6ClockDivisionKnob");
 
         configParam(SEQUENCER_1_BUTTON, 0.f, 1.f, 0.f, "Sequence1Button");
         configParam(SEQUENCER_2_BUTTON, 0.f, 1.f, 0.f, "Sequence2Button");
@@ -389,16 +375,6 @@ struct DigitalSequencer : Module
         json_object_set(json_root, "lengths", sequencer_lengths_json_array);
         json_decref(sequencer_lengths_json_array);
 
-        //
-        // Save sequencer clock division settings
-        //
-        json_t *sequencer_clock_division_json_array = json_array();
-        for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
-        {
-            json_array_append_new(sequencer_clock_division_json_array, json_integer(this->voltage_sequencers[sequencer_number].getClockDivision()));
-        }
-        json_object_set(json_root, "clock_divisions", sequencer_clock_division_json_array);
-        json_decref(sequencer_clock_division_json_array);
 
 		return json_root;
 	}
@@ -464,24 +440,6 @@ struct DigitalSequencer : Module
                 this->gate_sequencers[sequencer_number].setLength(json_integer_value(length_json));
             }
         }
-
-        //
-        // Load clock divisions
-        //
-        json_t *clock_division_json_array = json_object_get(json_root, "clock_divisions");
-
-        if(clock_division_json_array)
-        {
-            size_t sequencer_number;
-            json_t *division_json;
-
-            json_array_foreach(clock_division_json_array, sequencer_number, division_json)
-            {
-                this->voltage_sequencers[sequencer_number].setClockDivision(json_integer_value(division_json));
-                this->gate_sequencers[sequencer_number].setClockDivision(json_integer_value(division_json));
-            }
-        }
-
 	}
 
 
@@ -502,9 +460,6 @@ struct DigitalSequencer : Module
         bool trigger_output_pulse = false;
         this->sample_rate = args.sampleRate;
 
-        // selected_sequencer_index = params[SEQUENCE_SELECTION_KNOB].getValue();
-        // selected_sequencer_index = clamp(selected_sequencer_index, 0, NUMBER_OF_SEQUENCERS - 1);
-
         sequencer_1_button_is_triggered = sequencer_1_button_trigger.process(params[SEQUENCER_1_BUTTON].getValue());
         sequencer_2_button_is_triggered = sequencer_2_button_trigger.process(params[SEQUENCER_2_BUTTON].getValue());
         sequencer_3_button_is_triggered = sequencer_3_button_trigger.process(params[SEQUENCER_3_BUTTON].getValue());
@@ -519,10 +474,6 @@ struct DigitalSequencer : Module
         if(sequencer_5_button_is_triggered) selected_sequencer_index = 4;
         if(sequencer_6_button_is_triggered) selected_sequencer_index = 5;
 
-        // When the user selects a new sequencer using the SEQ knob, update
-        // the automated knobs (LEN & DIV) to the corresponding settings for
-        // the newly selected sequencer.  Note that this also occurs when the
-        // module is first loaded.
         if(previously_selected_sequencer_index != selected_sequencer_index)
         {
             selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
@@ -530,14 +481,8 @@ struct DigitalSequencer : Module
 
             previously_selected_sequencer_index = selected_sequencer_index;
         }
-
-        // ... otherwise, read the values of the LEN and DIV knobs and set those
-        // values in the selected sequencer.  Most of the time these values
-        // are being set unnecessarily.  Eventually I might add if-statements
-        // to only set the values if the knobs have been turned.
         else
         {
-            // Set the selected sequencer's length
             voltage_sequencers[0].setLength(clamp((int) params[SEQUENCER_1_LENGTH_KNOB].getValue(), 1, 32));
             voltage_sequencers[1].setLength(clamp((int) params[SEQUENCER_2_LENGTH_KNOB].getValue(), 1, 32));
             voltage_sequencers[2].setLength(clamp((int) params[SEQUENCER_3_LENGTH_KNOB].getValue(), 1, 32));
@@ -551,24 +496,9 @@ struct DigitalSequencer : Module
             gate_sequencers[3].setLength(clamp((int) params[SEQUENCER_4_LENGTH_KNOB].getValue(), 1, 32));
             gate_sequencers[4].setLength(clamp((int) params[SEQUENCER_5_LENGTH_KNOB].getValue(), 1, 32));
             gate_sequencers[5].setLength(clamp((int) params[SEQUENCER_6_LENGTH_KNOB].getValue(), 1, 32));
-
-            // Now handle clock division
-            voltage_sequencers[0].setClockDivision(clamp((int) params[SEQUENCER_1_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
-            voltage_sequencers[1].setClockDivision(clamp((int) params[SEQUENCER_2_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
-            voltage_sequencers[2].setClockDivision(clamp((int) params[SEQUENCER_3_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
-            voltage_sequencers[3].setClockDivision(clamp((int) params[SEQUENCER_4_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
-            voltage_sequencers[4].setClockDivision(clamp((int) params[SEQUENCER_5_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
-            voltage_sequencers[5].setClockDivision(clamp((int) params[SEQUENCER_6_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
-
-            gate_sequencers[0].setClockDivision(clamp((int) params[SEQUENCER_1_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
-            gate_sequencers[1].setClockDivision(clamp((int) params[SEQUENCER_2_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
-            gate_sequencers[2].setClockDivision(clamp((int) params[SEQUENCER_3_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
-            gate_sequencers[3].setClockDivision(clamp((int) params[SEQUENCER_4_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
-            gate_sequencers[4].setClockDivision(clamp((int) params[SEQUENCER_5_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
-            gate_sequencers[5].setClockDivision(clamp((int) params[SEQUENCER_6_CLOCK_DIVISION_KNOB].getValue(), 1, 16));
         }
 
-        // On incoming RESET, reset ALL of the sequencers
+        // On incoming RESET, reset the sequencers
         if(resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
         {
             // Set up a (reverse) counter so that the clock input will ignore
@@ -577,10 +507,12 @@ struct DigitalSequencer : Module
             // https://vcvrack.com/manual/VoltageStandards
 
             clock_ignore_on_reset = (long) (args.sampleRate / 100);
+
             stepTrigger.reset();
 
             for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
             {
+                sequencer_step_triggers[i].reset();
                 voltage_sequencers[i].reset();
                 gate_sequencers[i].reset();
             }
@@ -588,13 +520,26 @@ struct DigitalSequencer : Module
         else if(clock_ignore_on_reset == 0)
         {
             // Step ALL of the sequencers
-            if(stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+            bool global_step_trigger = stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f));
+            bool step;
+
+            for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
             {
-                for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
+                step = false;
+
+                if(inputs[sequencer_step_inputs[i]].isConnected() == false)
+                {
+                    if(global_step_trigger) step = true;
+                }
+                else if (sequencer_step_triggers[i].process(rescale(inputs[sequencer_step_inputs[i]].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+                {
+                    step = true;
+                }
+
+                if(step)
                 {
                     voltage_sequencers[i].step();
                     gate_sequencers[i].step();
-
                     if(gate_sequencers[i].getValue()) gateOutputPulseGenerators[i].trigger(0.01f);
                 }
             }
@@ -1101,21 +1046,7 @@ struct DigitalSequencerWidget : ModuleWidget
 		gates_display->module = module;
 		addChild(gates_display);
 
-        /*
-
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(43.737, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_SELECTION_KNOB));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(60.152, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_LENGTH_KNOB));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(72.152, 114.893 + 1)), module, DigitalSequencer::SEQUENCE_CLOCK_DIVISION_KNOB));
-        */
-        // next is 84.152
-
-        /*
-        DigitalSequencerSeqDisplay *seq_display = new DigitalSequencerSeqDisplay();
-        seq_display->box.pos = mm2px(Vec(37.440, 101));
-		seq_display->module = module;
-		addChild(seq_display);
-        */
-        float button_spacing = 9.1;
+        float button_spacing = 9.6; // 9.1
         float button_group_x = 48.0;
         float button_group_y = 103.0;
         // Sequence 1 button
@@ -1137,25 +1068,27 @@ struct DigitalSequencerWidget : ModuleWidget
         addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y)), module, DigitalSequencer::SEQUENCER_6_BUTTON));
 		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y)), module, DigitalSequencer::SEQUENCER_6_LIGHT));
 
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x, button_group_y + 9.0)), module, DigitalSequencer::SEQUENCER_1_LENGTH_KNOB));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y + 9.0)), module, DigitalSequencer::SEQUENCER_2_LENGTH_KNOB));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y + 9.0)), module, DigitalSequencer::SEQUENCER_3_LENGTH_KNOB));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y + 9.0)), module, DigitalSequencer::SEQUENCER_4_LENGTH_KNOB));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y + 9.0)), module, DigitalSequencer::SEQUENCER_5_LENGTH_KNOB));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y + 9.0)), module, DigitalSequencer::SEQUENCER_6_LENGTH_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x, button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_1_LENGTH_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_2_LENGTH_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_3_LENGTH_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_4_LENGTH_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_5_LENGTH_KNOB));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_6_LENGTH_KNOB));
 
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x, button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_1_CLOCK_DIVISION_KNOB));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_2_CLOCK_DIVISION_KNOB));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_3_CLOCK_DIVISION_KNOB));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_4_CLOCK_DIVISION_KNOB));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_5_CLOCK_DIVISION_KNOB));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_6_CLOCK_DIVISION_KNOB));
+        // 6 step inputs
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x, button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_1_STEP_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_2_STEP_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_3_STEP_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_4_STEP_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_5_STEP_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_6_STEP_INPUT));
 
         // Step
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 114.893)), module, DigitalSequencer::STEP_INPUT));
 
         // Reset
         addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 14.544, 114.893)), module, DigitalSequencer::RESET_INPUT));
+
 
 
         // 6 sequencer outputs
