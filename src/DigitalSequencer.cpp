@@ -901,6 +901,9 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
 struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
 {
     bool mouse_lock = false;
+    float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
+    int old_drag_bar_x = -1;
+    bool trigger_edit_value = false;
 
 	DigitalSequencerGatesDisplay()
 	{
@@ -987,7 +990,18 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
             if(this->mouse_lock == false)
             {
                 this->mouse_lock = true;
-    			this->editBar(e.pos);
+
+                int index = getIndexFromX(e.pos.x);
+
+                // Store the value that's being set for later in case the user
+                // drags to set ("paints") additional triggers
+                this->trigger_edit_value = ! module->selected_gate_sequencer->getValue(index);
+
+                // Set the trigger value in the sequencer
+                module->selected_gate_sequencer->setValue(index, this->trigger_edit_value);
+
+                // Store the initial drag position
+                drag_position = e.pos;
             }
 		}
         else if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_RELEASE)
@@ -996,13 +1010,29 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
 		}
 	}
 
+    void onDragMove(const event::DragMove &e) override
+    {
+		TransparentWidget::onDragMove(e);
+		drag_position = drag_position.plus(e.mouseDelta);
+
+        int drag_bar_x_index = getIndexFromX(drag_position.x);
+
+        if(drag_bar_x_index != old_drag_bar_x)
+        {
+            // setTrigger(drag_bar_x_index, trigger_edit_value);
+            module->selected_gate_sequencer->setValue(drag_bar_x_index, trigger_edit_value);
+            old_drag_bar_x = drag_bar_x_index;
+        }
+	}
+
+    /*
 	void editBar(Vec mouse_position)
 	{
-        float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
-		int clicked_bar_x_index = clamp(mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING), 0, MAX_SEQUENCER_STEPS - 1);
+		int clicked_bar_x_index = clamp(mouse_position.x / (barWidth() + BAR_HORIZONTAL_PADDING), 0, MAX_SEQUENCER_STEPS - 1);
 
         module->selected_gate_sequencer->setValue(clicked_bar_x_index, ! module->selected_gate_sequencer->getValue(clicked_bar_x_index));
 	}
+    */
 
     void onHoverKey(const event::HoverKey &e) override
     {
@@ -1017,6 +1047,16 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
             module->selected_gate_sequencer->shiftLeft();
             if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_voltage_sequencer->shiftLeft();
         }
+    }
+
+    int getIndexFromX(float x)
+    {
+        return(x / (barWidth() + BAR_HORIZONTAL_PADDING));
+    }
+
+    float barWidth()
+    {
+        return((DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING);
     }
 };
 
@@ -1115,20 +1155,6 @@ struct DigitalSequencerWidget : ModuleWidget
         ModuleWidget::step();
     }
 
-    /*
-    TODO: Figure out why implemeting this override the onHoverEvent for
-    shift-right/shift-left.
-
-    void onHoverKey(const event::HoverKey &e) override
-    {
-        // GLFW_KEY_1 == 49 and GLFW_KEY_6 == 54
-        if (e.key >= 49 && e.key <= 54)
-        {
-            e.consume(this);
-            if(e.action == GLFW_PRESS) this->module->params[this->module->SEQUENCE_SELECTION_KNOB].setValue(-49 + e.key);
-        }
-    }
-    */
 };
 
 Model* modelDigitalSequencer = createModel<DigitalSequencer, DigitalSequencerWidget>("digitalsequencer");
