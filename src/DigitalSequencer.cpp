@@ -912,6 +912,7 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
 
 	void draw(const DrawArgs &args) override
 	{
+        /*
 		const auto vg = args.vg;
         int value;
         float value_height;
@@ -979,6 +980,7 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
         drawBlueOverlay(vg, GATES_DRAW_AREA_WIDTH, GATES_DRAW_AREA_HEIGHT);
 
 		nvgRestore(vg);
+        */
 	}
 
 	void onButton(const event::Button &e) override
