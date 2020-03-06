@@ -222,18 +222,30 @@ struct XYDisplay : OpaqueWidget
 	XY *module;
 	bool dragging = false;
 	vector<Vec> fading_rectangles;
+    NVGcolor rectangle_colors[30];
 
 	XYDisplay(XY *module): OpaqueWidget()
     {
 		this->module = module;
 		box.size = Vec(DRAW_AREA_WIDTH_PT, DRAW_AREA_HEIGHT_PT);
+
+        // nvgColor rectangle_colors[30];
+        // start at nvgRGB(40, 40, 42),
+        // end at nvgRGB(156, 167, 185)
+
+        for(unsigned int i=0; i<30; i++)
+        {
+            int r = 40.0 + (((156.0 - 40.0)/30.0) * i);
+            int g = 40.0 + (((167.0 - 40.0)/30.0) * i);
+            int b = 42.0 + (((180.0 - 42.0)/30.0) * i);
+            rectangle_colors[i] = nvgRGB(r, g, b);
+        }
 	}
 
 	void draw(const DrawArgs &args) override
     {
 		OpaqueWidget::draw(args);
 		const auto vg = args.vg;
-        float color = 40;
 
 		if(module)
         {
@@ -241,7 +253,10 @@ struct XYDisplay : OpaqueWidget
             float now_y = this->module->drag_position.y - DRAW_AREA_HEIGHT_PT;
             float drag_y = this->module->drag_position.y;
 
+            nvgSave(vg);
+
             // draw x,y lines, just because I think they look cool
+
             nvgBeginPath(vg);
             nvgStrokeWidth(vg, 0.5f);
             nvgStrokeColor(vg, nvgRGBA(0xdd, 0xdd, 0xdd, 255));
@@ -263,20 +278,17 @@ struct XYDisplay : OpaqueWidget
                 fading_rectangles.erase(fading_rectangles.begin());
             }
 
+            int i=0;
+
             for(auto position: fading_rectangles)
             {
                 float x = position.x;
                 float y = position.y;
 
-                color += (150.0f / 30.0f);
-
                 // draw thing
         		nvgBeginPath(vg);
-        		nvgStrokeColor(vg, nvgRGB(color, color, color));
-        		nvgStrokeWidth(vg, 0.f);
-                nvgFillColor(vg, nvgRGBA(color,color,color,255));
         		nvgRect(vg, 0, DRAW_AREA_WIDTH_PT, x, y);
-        		nvgStroke(vg);
+                nvgFillColor(vg, rectangle_colors[i++]);
                 nvgFill(vg);
             }
 
@@ -289,7 +301,39 @@ struct XYDisplay : OpaqueWidget
             nvgRect(vg, 0, 0, DRAW_AREA_WIDTH_PT, DRAW_AREA_HEIGHT_PT);
             nvgStroke(vg);
             */
+
+            nvgRestore(vg);
 		}
+        else
+        {
+            nvgSave(vg);
+
+            // draw preview for module browser
+
+            // vertical line
+            nvgBeginPath(vg);
+            nvgStrokeWidth(vg, 0.5f);
+            nvgStrokeColor(vg, nvgRGBA(0xdd, 0xdd, 0xdd, 255));
+            nvgMoveTo(vg, 120, 0);
+            nvgLineTo(vg, 120, DRAW_AREA_HEIGHT_PT);
+            nvgStroke(vg);
+
+            // horizontal line
+            nvgBeginPath(vg);
+            nvgStrokeWidth(vg, 0.5f);
+            nvgStrokeColor(vg, nvgRGBA(0xdd, 0xdd, 0xdd, 255));
+            nvgMoveTo(vg, 0, 150);
+            nvgLineTo(vg, DRAW_AREA_WIDTH_PT, 150);
+            nvgStroke(vg);
+
+            // filled rectangle
+            nvgBeginPath(vg);
+            nvgRect(vg, 0, DRAW_AREA_WIDTH_PT, 120, -130);
+            nvgFillColor(vg, rectangle_colors[29]);
+            nvgFill(vg);
+
+            nvgRestore(vg);
+        }
 	}
 
     Vec clampToDrawArea(Vec location)
