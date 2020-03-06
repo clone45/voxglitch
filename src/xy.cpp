@@ -7,6 +7,7 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
+#include "settings.hpp"
 #include "dr_wav.h"
 #include <vector>
 #include "cmath"
@@ -344,7 +345,8 @@ struct XYDisplay : OpaqueWidget
 	void onDragMove(const event::DragMove &e) override
     {
 		OpaqueWidget::onDragMove(e);
-        this->module->drag_position = this->clampToDrawArea(this->module->drag_position.plus(e.mouseDelta));
+        float zoom = std::pow(2.f, settings::zoom);
+        this->module->drag_position = this->clampToDrawArea(this->module->drag_position.plus(e.mouseDelta.div(zoom)));
 	}
 
 	void step() override {

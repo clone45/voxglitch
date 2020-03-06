@@ -13,6 +13,7 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
+#include "settings.hpp"
 #include <fstream>
 #include <array>
 
@@ -864,7 +865,8 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
 	void onDragMove(const event::DragMove &e) override
     {
 		TransparentWidget::onDragMove(e);
-		drag_position = drag_position.plus(e.mouseDelta);
+        float zoom = std::pow(2.f, settings::zoom);
+		drag_position = drag_position.plus(e.mouseDelta.div(zoom));
 		editBar(drag_position);
 	}
 
@@ -1037,7 +1039,9 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
     void onDragMove(const event::DragMove &e) override
     {
 		TransparentWidget::onDragMove(e);
-		drag_position = drag_position.plus(e.mouseDelta);
+
+        float zoom = std::pow(2.f, settings::zoom);
+		drag_position = drag_position.plus(e.mouseDelta.div(zoom));
 
         int drag_bar_x_index = getIndexFromX(drag_position.x);
 
