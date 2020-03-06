@@ -13,6 +13,7 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
+#include "settings.hpp"
 #include <fstream>
 #include <array>
 
@@ -189,7 +190,7 @@ struct DigitalSequencer : Module
     GateSequencer *selected_gate_sequencer;
 
     int selected_sequencer_index = 0;
-    int previously_selected_sequencer_index = -1;
+    // int previously_selected_sequencer_index = -1;
     int voltage_outputs[NUMBER_OF_SEQUENCERS];
     int gate_outputs[NUMBER_OF_SEQUENCERS];
     int sequencer_step_inputs[NUMBER_OF_SEQUENCERS];
@@ -291,6 +292,7 @@ struct DigitalSequencer : Module
         sequencer_step_inputs[5] = SEQUENCER_6_STEP_INPUT;
 
         selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
+        selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
 
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
         configParam(SEQUENCER_1_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "SequenceLengthKnob");
@@ -460,6 +462,9 @@ struct DigitalSequencer : Module
         bool trigger_output_pulse = false;
         this->sample_rate = args.sampleRate;
 
+        selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
+        selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
+
         sequencer_1_button_is_triggered = sequencer_1_button_trigger.process(params[SEQUENCER_1_BUTTON].getValue());
         sequencer_2_button_is_triggered = sequencer_2_button_trigger.process(params[SEQUENCER_2_BUTTON].getValue());
         sequencer_3_button_is_triggered = sequencer_3_button_trigger.process(params[SEQUENCER_3_BUTTON].getValue());
@@ -474,6 +479,21 @@ struct DigitalSequencer : Module
         if(sequencer_5_button_is_triggered) selected_sequencer_index = 4;
         if(sequencer_6_button_is_triggered) selected_sequencer_index = 5;
 
+        voltage_sequencers[0].setLength(clamp((int) params[SEQUENCER_1_LENGTH_KNOB].getValue(), 1, 32));
+        voltage_sequencers[1].setLength(clamp((int) params[SEQUENCER_2_LENGTH_KNOB].getValue(), 1, 32));
+        voltage_sequencers[2].setLength(clamp((int) params[SEQUENCER_3_LENGTH_KNOB].getValue(), 1, 32));
+        voltage_sequencers[3].setLength(clamp((int) params[SEQUENCER_4_LENGTH_KNOB].getValue(), 1, 32));
+        voltage_sequencers[4].setLength(clamp((int) params[SEQUENCER_5_LENGTH_KNOB].getValue(), 1, 32));
+        voltage_sequencers[5].setLength(clamp((int) params[SEQUENCER_6_LENGTH_KNOB].getValue(), 1, 32));
+
+        gate_sequencers[0].setLength(clamp((int) params[SEQUENCER_1_LENGTH_KNOB].getValue(), 1, 32));
+        gate_sequencers[1].setLength(clamp((int) params[SEQUENCER_2_LENGTH_KNOB].getValue(), 1, 32));
+        gate_sequencers[2].setLength(clamp((int) params[SEQUENCER_3_LENGTH_KNOB].getValue(), 1, 32));
+        gate_sequencers[3].setLength(clamp((int) params[SEQUENCER_4_LENGTH_KNOB].getValue(), 1, 32));
+        gate_sequencers[4].setLength(clamp((int) params[SEQUENCER_5_LENGTH_KNOB].getValue(), 1, 32));
+        gate_sequencers[5].setLength(clamp((int) params[SEQUENCER_6_LENGTH_KNOB].getValue(), 1, 32));
+
+        /*
         if(previously_selected_sequencer_index != selected_sequencer_index)
         {
             selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
@@ -497,6 +517,7 @@ struct DigitalSequencer : Module
             gate_sequencers[4].setLength(clamp((int) params[SEQUENCER_5_LENGTH_KNOB].getValue(), 1, 32));
             gate_sequencers[5].setLength(clamp((int) params[SEQUENCER_6_LENGTH_KNOB].getValue(), 1, 32));
         }
+        */
 
         // On incoming RESET, reset the sequencers
         if(resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
@@ -844,7 +865,8 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
 	void onDragMove(const event::DragMove &e) override
     {
 		TransparentWidget::onDragMove(e);
-		drag_position = drag_position.plus(e.mouseDelta);
+        float zoom = std::pow(2.f, settings::zoom);
+		drag_position = drag_position.plus(e.mouseDelta.div(zoom));
 		editBar(drag_position);
 	}
 
@@ -912,7 +934,6 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
 
 	void draw(const DrawArgs &args) override
 	{
-        /*
 		const auto vg = args.vg;
         int value;
         float value_height;
@@ -935,8 +956,10 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
                 }
                 drawBar(vg, i, GATE_BAR_HEIGHT, GATES_DRAW_AREA_HEIGHT, bar_color);
 
-                if(i == module->selected_gate_sequencer->getPlaybackPosition())
-				{
+                unsigned int playback_position = module->selected_gate_sequencer->getPlaybackPosition();
+
+                if(i == playback_position)
+                {
 					bar_color = nvgRGBA(255, 255, 255, 250);
 				}
 				else if(i < module->selected_gate_sequencer->getLength())
@@ -947,15 +970,16 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
                 {
                     bar_color = nvgRGBA(255, 255, 255, 15);
                 }
+
 				value_height = (GATE_BAR_HEIGHT * value);
 				if(value_height > 0) drawBar(vg, i, value_height, GATES_DRAW_AREA_HEIGHT, bar_color);
 
                 // highlight active column
-				if(i == module->selected_gate_sequencer->getPlaybackPosition())
+				if(i == playback_position)
 				{
                     drawBar(vg, i, GATE_BAR_HEIGHT, GATES_DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
 				}
-			}
+            }
 		}
         else // draw demo data for the module explorer
         {
@@ -980,7 +1004,7 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
         drawBlueOverlay(vg, GATES_DRAW_AREA_WIDTH, GATES_DRAW_AREA_HEIGHT);
 
 		nvgRestore(vg);
-        */
+
 	}
 
 	void onButton(const event::Button &e) override
@@ -1015,7 +1039,9 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
     void onDragMove(const event::DragMove &e) override
     {
 		TransparentWidget::onDragMove(e);
-		drag_position = drag_position.plus(e.mouseDelta);
+
+        float zoom = std::pow(2.f, settings::zoom);
+		drag_position = drag_position.plus(e.mouseDelta.div(zoom));
 
         int drag_bar_x_index = getIndexFromX(drag_position.x);
 
