@@ -15,7 +15,7 @@
    version="1.1"
    id="svg11003"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
-   sodipodi:docname="glitch-sequencer.svg">
+   sodipodi:docname="glitch_sequencer.svg">
   <defs
      id="defs10997" />
   <sodipodi:namedview
@@ -26,8 +26,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.0000001"
-     inkscape:cx="426.56297"
-     inkscape:cy="305.52749"
+     inkscape:cx="278.38437"
+     inkscape:cy="247.73182"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -56,6 +56,11 @@
        inkscape:locked="false"
        inkscape:label=""
        inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="-87.84166,146.84374"
+       orientation="1,0"
+       id="guide983"
+       inkscape:locked="false" />
   </sodipodi:namedview>
   <metadata
      id="metadata11000">
@@ -65,7 +70,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -197,7 +202,7 @@
     <path
        inkscape:connector-curvature="0"
        id="path33429"
-       d="M 64.792954,47.169621 H 185.49587 V 175.66962 H 64.792954 Z m 0,0"
+       d="M 64.792954,47.169621 H 191.79295 V 175.66962 H 64.792954 Z m 0,0"
        style="fill:#e6e6e6;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.67107487" />
     <text
        xml:space="preserve"
@@ -214,7 +219,7 @@
        aria-label="voxglitch"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Sitka Subheading';-inkscape-font-specification:'Sitka Subheading';letter-spacing:0px;word-spacing:0px;display:inline;fill:#999999;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        id="text939"
-       transform="translate(32.262485,-0.41867076)">
+       transform="translate(38.083322,-0.41867076)">
       <path
          d="m 139.18399,173.2094 q -0.01,-0.0251 -0.0289,-0.0389 -0.0176,-0.0138 -0.0426,-0.0226 l -0.0953,-0.0389 v -0.0778 h 0.58451 v 0.0778 l -0.18438,0.0539 0.29727,0.70116 0.059,0.17811 h 0.0138 l 0.3324,-0.85293 -0.17435,-0.0803 v -0.0778 h 0.47915 v 0.0778 l -0.0991,0.0615 q -0.0251,0.0125 -0.0439,0.0263 -0.0188,0.0138 -0.0289,0.0364 l -0.34369,0.83914 -0.13672,0.27344 h -0.10787 z"
          style="font-size:2.82222223px;fill:#999999;stroke-width:0.26458332"
@@ -264,18 +269,18 @@
     <rect
        style="display:inline;fill:#28282a;fill-opacity:1;stroke-width:0.46351728"
        id="rect438-7"
-       width="90"
-       height="90"
-       x="70.356651"
-       y="-142.88696"
+       width="96"
+       height="96"
+       x="92.076309"
+       y="-147.12062"
        ry="1.0293081"
        transform="scale(1,-1)"
-       rx="1.0897758" />
+       rx="1.0897757" />
     <g
        aria-label="STEP"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        id="text897"
-       transform="translate(-24.399097,0.48310967)">
+       transform="translate(-21.583078,-97.751468)">
       <path
          d="m 96.803395,154.05599 q 0,0.32985 -0.182387,0.49671 -0.178505,0.16298 -0.516113,0.16298 h -0.551039 v -0.29492 H 96.1437 q 0.143581,0 0.232833,-0.0854 0.08925,-0.0854 0.08925,-0.20567 v -0.40358 q 0,-0.11642 -0.06209,-0.18627 -0.05821,-0.0737 -0.178505,-0.0737 h -0.116417 q -0.287161,0 -0.454025,-0.16686 -0.166864,-0.17074 -0.166864,-0.49283 v -0.14746 q 0,-0.32985 0.178506,-0.49283 0.182386,-0.16687 0.519994,-0.16687 h 0.55492 v 0.29493 h -0.593725 q -0.143581,0 -0.232834,0.0854 -0.08925,0.0854 -0.08925,0.20567 v 0.29492 q 0,0.1203 0.07761,0.20179 0.07761,0.0776 0.201789,0.0776 h 0.116416 q 0.27552,0 0.426861,0.1591 0.155223,0.15911 0.155223,0.48119 z"
          style="stroke-width:0.26458332"
@@ -301,7 +306,7 @@
        aria-label="RESET"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        id="text931"
-       transform="translate(-46.723906,-0.57522363)">
+       transform="translate(-59.046118,-78.913957)">
       <path
          d="m 131.44847,154.64826 v 1.12536 h -0.33761 v -2.71639 h 0.72954 q 0.32985,0 0.49671,0.14746 0.17075,0.14358 0.17075,0.45791 v 0.37253 q 0,0.4385 -0.34925,0.54716 l 0.53939,1.19133 h -0.36865 l -0.50059,-1.12536 z m 0.72178,-1.02059 q 0,-0.14746 -0.0699,-0.21343 -0.066,-0.066 -0.21343,-0.066 h -0.4385 v 1.00895 h 0.4385 q 0.14746,0 0.21343,-0.066 0.0699,-0.0699 0.0699,-0.21731 z"
          style="stroke-width:0.26458332"
@@ -328,84 +333,18 @@
          id="path942"
          inkscape:connector-curvature="0" />
     </g>
-    <g
-       aria-label="GATE"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       id="text888"
-       transform="translate(-12.964583,-107.15624)">
-      <circle
-         style="fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         id="path1032"
-         cx="189.56538"
-         cy="175.27275"
-         r="3.3072913" />
-      <circle
-         style="fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         id="path1085"
-         cx="180.15126"
-         cy="175.27275"
-         r="2.1166663" />
-      <circle
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         id="path1032-5"
-         cx="189.56538"
-         cy="185.32678"
-         r="3.3072915" />
-      <circle
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         id="path1085-4"
-         cx="180.15126"
-         cy="185.32678"
-         r="2.1166663" />
-      <circle
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         id="path1032-51"
-         cx="189.56538"
-         cy="194.85165"
-         r="3.3072915" />
-      <circle
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         id="path1085-8"
-         cx="180.15126"
-         cy="194.85165"
-         r="2.1166663" />
-      <circle
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         id="path1032-5-8"
-         cx="189.56538"
-         cy="204.90569"
-         r="3.3072917" />
-      <circle
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         id="path1085-4-0"
-         cx="180.15126"
-         cy="204.90569"
-         r="2.1166663" />
-      <circle
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         id="path1032-6"
-         cx="189.56538"
-         cy="214.43056"
-         r="3.3072915" />
-      <circle
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         id="path1085-0"
-         cx="180.15126"
-         cy="214.43056"
-         r="2.1166663" />
-      <circle
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         id="path1032-5-4"
-         cx="189.56538"
-         cy="224.48459"
-         r="3.3072917" />
-      <circle
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         id="path1085-4-5"
-         cx="180.15126"
-         cy="224.48459"
-         r="2.1166663" />
-    </g>
+    <circle
+       r="3.3072917"
+       cy="166.80528"
+       cx="103.31116"
+       id="path1032-5-4"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <circle
+       r="2.1166663"
+       cy="154.63446"
+       cx="103.42202"
+       id="path1085-4-5"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444444px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332;"
@@ -442,24 +381,73 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="99.188782"
-       y="155.19862"
+       x="70.878365"
+       y="98.048599"
        id="text1030"><tspan
          sodipodi:role="line"
          id="tspan1028"
-         x="99.188782"
-         y="155.19862"
+         x="70.878365"
+         y="98.048599"
          style="font-size:4.23333311px;stroke-width:0.26458332">LENGTH</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="126.70544"
-       y="155.56129"
-       id="text1161"><tspan
-         sodipodi:role="line"
-         id="tspan1159"
-         x="126.70544"
-         y="155.56129"
-         style="stroke-width:0.26458332">Pattern / Triggers switch</tspan></text>
+    <circle
+       r="3.3072917"
+       cy="166.80528"
+       cx="117.59865"
+       id="path1032-5-4-7"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <circle
+       r="2.1166663"
+       cy="154.63446"
+       cx="117.70949"
+       id="path1085-4-5-4"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <circle
+       r="3.3072917"
+       cy="166.80528"
+       cx="131.88609"
+       id="path1032-5-4-7-7"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <circle
+       r="2.1166663"
+       cy="154.63446"
+       cx="131.99693"
+       id="path1085-4-5-4-6"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <circle
+       r="3.3072917"
+       cy="166.80528"
+       cx="146.70256"
+       id="path1032-5-4-1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <circle
+       r="2.1166663"
+       cy="154.63446"
+       cx="146.8134"
+       id="path1085-4-5-7"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <circle
+       r="3.3072917"
+       cy="166.80528"
+       cx="160.98987"
+       id="path1032-5-4-7-5"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <circle
+       r="2.1166663"
+       cy="154.63446"
+       cx="161.10071"
+       id="path1085-4-5-4-9"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <circle
+       r="3.3072917"
+       cy="166.80528"
+       cx="175.27718"
+       id="path1032-5-4-7-7-5"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <circle
+       r="2.1166663"
+       cy="154.63446"
+       cx="175.38802"
+       id="path1085-4-5-4-6-9"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88055563px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:0.4070352;stroke:#000000;stroke-width:0.068;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
   </g>
 </svg>
