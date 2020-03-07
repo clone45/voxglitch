@@ -117,6 +117,14 @@ struct VoltageSequencer : Sequencer
 
         sequence[0] = temp;
     }
+
+    void randomize()
+    {
+        for(unsigned int i=0; i < this->sequence_length; i++)
+        {
+            this->setValue(i, fmod(std::rand(), DRAW_AREA_HEIGHT));
+        }
+    }
 };
 
 struct GateSequencer : Sequencer
@@ -164,6 +172,14 @@ struct GateSequencer : Sequencer
         }
 
         sequence[0] = temp;
+    }
+
+    void randomize()
+    {
+        for(unsigned int i=0; i < this->sequence_length; i++)
+        {
+            this->setValue(i, fmod(std::rand(), 2));
+        }
     }
 };
 
@@ -399,7 +415,6 @@ struct DigitalSequencer : Module
 			{
 				for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
 				{
-					// this->sequences[pattern_number][i] = json_integer_value(json_array_get(json_pattern_array, i));
                     this->voltage_sequencers[pattern_number].setValue(i, json_integer_value(json_array_get(json_pattern_array, i)));
 				}
 			}
@@ -492,32 +507,6 @@ struct DigitalSequencer : Module
         gate_sequencers[3].setLength(clamp((int) params[SEQUENCER_4_LENGTH_KNOB].getValue(), 1, 32));
         gate_sequencers[4].setLength(clamp((int) params[SEQUENCER_5_LENGTH_KNOB].getValue(), 1, 32));
         gate_sequencers[5].setLength(clamp((int) params[SEQUENCER_6_LENGTH_KNOB].getValue(), 1, 32));
-
-        /*
-        if(previously_selected_sequencer_index != selected_sequencer_index)
-        {
-            selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
-            selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
-
-            previously_selected_sequencer_index = selected_sequencer_index;
-        }
-        else
-        {
-            voltage_sequencers[0].setLength(clamp((int) params[SEQUENCER_1_LENGTH_KNOB].getValue(), 1, 32));
-            voltage_sequencers[1].setLength(clamp((int) params[SEQUENCER_2_LENGTH_KNOB].getValue(), 1, 32));
-            voltage_sequencers[2].setLength(clamp((int) params[SEQUENCER_3_LENGTH_KNOB].getValue(), 1, 32));
-            voltage_sequencers[3].setLength(clamp((int) params[SEQUENCER_4_LENGTH_KNOB].getValue(), 1, 32));
-            voltage_sequencers[4].setLength(clamp((int) params[SEQUENCER_5_LENGTH_KNOB].getValue(), 1, 32));
-            voltage_sequencers[5].setLength(clamp((int) params[SEQUENCER_6_LENGTH_KNOB].getValue(), 1, 32));
-
-            gate_sequencers[0].setLength(clamp((int) params[SEQUENCER_1_LENGTH_KNOB].getValue(), 1, 32));
-            gate_sequencers[1].setLength(clamp((int) params[SEQUENCER_2_LENGTH_KNOB].getValue(), 1, 32));
-            gate_sequencers[2].setLength(clamp((int) params[SEQUENCER_3_LENGTH_KNOB].getValue(), 1, 32));
-            gate_sequencers[3].setLength(clamp((int) params[SEQUENCER_4_LENGTH_KNOB].getValue(), 1, 32));
-            gate_sequencers[4].setLength(clamp((int) params[SEQUENCER_5_LENGTH_KNOB].getValue(), 1, 32));
-            gate_sequencers[5].setLength(clamp((int) params[SEQUENCER_6_LENGTH_KNOB].getValue(), 1, 32));
-        }
-        */
 
         // On incoming RESET, reset the sequencers
         if(resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
@@ -917,6 +906,13 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
             draw_tooltip_index = bar_x_index;
             draw_tooltip_y = value;
         }
+
+        // Randomize sequence by hovering over and pressing 'r'
+        if(keypress(e, GLFW_KEY_R))
+        {
+            module->selected_voltage_sequencer->randomize();
+            if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->randomize();
+        }
     }
 };
 
@@ -1075,6 +1071,13 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
             module->selected_gate_sequencer->shiftLeft();
             if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_voltage_sequencer->shiftLeft();
         }
+
+        // Randomize sequence by hovering over and pressing 'r'
+        if(keypress(e, GLFW_KEY_R))
+        {
+            module->selected_gate_sequencer->randomize();
+            if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_voltage_sequencer->randomize();
+        }
     }
 
     int getIndexFromX(float x)
@@ -1086,6 +1089,7 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
     {
         return((DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING);
     }
+
 };
 
 struct DigitalSequencerWidget : ModuleWidget

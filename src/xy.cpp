@@ -237,7 +237,7 @@ struct XYDisplay : OpaqueWidget
         {
             int r = 40.0 + (((156.0 - 40.0)/30.0) * i);
             int g = 40.0 + (((167.0 - 40.0)/30.0) * i);
-            int b = 42.0 + (((180.0 - 42.0)/30.0) * i);
+            int b = 42.0 + (((185.0 - 42.0)/30.0) * i);
             rectangle_colors[i] = nvgRGB(r, g, b);
         }
 	}
