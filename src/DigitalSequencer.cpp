@@ -764,12 +764,18 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
 		const auto vg = args.vg;
         int value;
         NVGcolor bar_color;
+        bool draw_from_center = false;
 
         // Save the drawing context to restore later
 		nvgSave(vg);
 
 		if(module)
 		{
+            float range_low = voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][0];
+            float range_high = voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][1];
+
+            if(range_low < 0 && range_high > 0) draw_from_center = true;
+
 			//
 			// Display the pattern
 			//
@@ -809,6 +815,20 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
                     drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
 				}
 			}
+
+            // Draw a horizontal 0-indicator if the range is not symmetrical
+            if(draw_from_center)
+            {
+                // This calculation for y takes advance of the fact that all
+                // ranges that would have the 0-guide visible are symmetric, so
+                // it will need updating if non-symmetric ranges are added.
+                float y = DRAW_AREA_HEIGHT / 2.0;
+
+                nvgBeginPath(vg);
+                nvgRect(vg, 1, y, (DRAW_AREA_WIDTH - 2), 1.0);
+                nvgFillColor(vg, nvgRGBA(240, 240, 255, 40));
+                nvgFill(vg);
+            }
 
 		}
         else // Draw a demo sequence so that the sequencer looks nice in the library selector
