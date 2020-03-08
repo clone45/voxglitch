@@ -10,6 +10,9 @@
 // Special thanks to the entire VCV Rack community for their support.
 //
 // TODO: Move font loading into global area
+// TODO: copy/paste between sequences
+// TODO: add snap-division per sequencer
+
 
 #include "plugin.hpp"
 #include "osdialog.h"
@@ -17,10 +20,9 @@
 #include <fstream>
 #include <array>
 
-#define GAIN 5.0
-
 #define NUMBER_OF_SEQUENCERS 6
 #define MAX_SEQUENCER_STEPS 32
+#define NUMBER_OF_VOLTAGE_RANGES 4
 
 // Constants for patterns
 #define DRAW_AREA_WIDTH 486.0
@@ -39,6 +41,13 @@
 
 #define TOOLTIP_WIDTH 33.0
 #define TOOLTIP_HEIGHT 20.0
+
+float voltage_ranges[NUMBER_OF_VOLTAGE_RANGES][2] = {
+    { 0.0, 10.0 },
+    { -10.0, 10.0 },
+    { 0.0, 5.0 },
+    { -5.0, 5.0 }
+};
 
 struct Sequencer
 {
@@ -74,6 +83,7 @@ struct Sequencer
 struct VoltageSequencer : Sequencer
 {
     std::array<float, MAX_SEQUENCER_STEPS> sequence;
+    unsigned int voltage_range_index = 0; // see voltage_ranges in DigitalSequencer.h
 
     // constructor
     VoltageSequencer()
@@ -81,14 +91,32 @@ struct VoltageSequencer : Sequencer
         sequence.fill(0.0);
     }
 
+    // Returns the 'raw' output from the sequencer, which ranges from 0 to 214,
+    // which is the height in pixels of the draw area.  To get the value with
+    // the selected range applied, see getOutput()
+
     float getValue(int index)
     {
         return(sequence[index]);
     }
 
+    // Same as GetValue, but if no index is provided, returns the value at the
+    // current playback position.
     float getValue()
     {
         return(sequence[getPlaybackPosition()]);
+    }
+
+    // Returns the value of the sequencer at a specific index after the selected
+    // voltage range has been applied.
+    float getOutput(int index)
+    {
+        return(rescale(sequence[index], 0.0, DRAW_AREA_HEIGHT, voltage_ranges[voltage_range_index][0], voltage_ranges[voltage_range_index][1]));
+    }
+
+    float getOutput()
+    {
+        return(rescale(sequence[getPlaybackPosition()], 0.0, DRAW_AREA_HEIGHT, voltage_ranges[voltage_range_index][0], voltage_ranges[voltage_range_index][1]));
     }
 
     void setValue(int index, float value)
@@ -220,6 +248,13 @@ struct DigitalSequencer : Module
     bool sequencer_4_button_is_triggered;
     bool sequencer_5_button_is_triggered;
     bool sequencer_6_button_is_triggered;
+
+    std::string voltage_range_names[NUMBER_OF_VOLTAGE_RANGES] = {
+        "0.0 to 10.0",
+        "-10.0 to 10.0",
+        "0.0 to 5.0",
+        "-5.0 to 5.0"
+    };
 
 	enum ParamIds {
         SEQUENCE_SELECTION_KNOB,
@@ -393,6 +428,16 @@ struct DigitalSequencer : Module
         json_object_set(json_root, "lengths", sequencer_lengths_json_array);
         json_decref(sequencer_lengths_json_array);
 
+        //
+        // Save sequencer voltage range index selections
+        //
+        json_t *sequencer_voltage_range_json_array = json_array();
+        for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
+        {
+            json_array_append_new(sequencer_voltage_range_json_array, json_integer(this->voltage_sequencers[sequencer_number].voltage_range_index));
+        }
+        json_object_set(json_root, "voltage_ranges", sequencer_voltage_range_json_array);
+        json_decref(sequencer_voltage_range_json_array);
 
 		return json_root;
 	}
@@ -455,6 +500,22 @@ struct DigitalSequencer : Module
             {
                 this->voltage_sequencers[sequencer_number].setLength(json_integer_value(length_json));
                 this->gate_sequencers[sequencer_number].setLength(json_integer_value(length_json));
+            }
+        }
+
+        //
+        // Load voltage ranges
+        //
+        json_t *voltage_ranges_json_array = json_object_get(json_root, "voltage_ranges");
+
+        if(voltage_ranges_json_array)
+        {
+            size_t sequencer_number;
+            json_t *voltage_range_json;
+
+            json_array_foreach(voltage_ranges_json_array, sequencer_number, voltage_range_json)
+            {
+                this->voltage_sequencers[sequencer_number].voltage_range_index = json_integer_value(voltage_range_json);
             }
         }
 	}
@@ -558,7 +619,7 @@ struct DigitalSequencer : Module
         // output values
         for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
         {
-            outputs[voltage_outputs[i]].setVoltage((voltage_sequencers[i].getValue() / 214.0) * 10.0);
+            outputs[voltage_outputs[i]].setVoltage(voltage_sequencers[i].getOutput());
         }
 
         // process trigger outputs
@@ -1179,8 +1240,70 @@ struct DigitalSequencerWidget : ModuleWidget
         addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(173, 119.309)), module, DigitalSequencer::SEQ6_GATE_OUTPUT));
 	}
 
+    struct OutputRangeValueItem : MenuItem {
+        DigitalSequencer *module;
+        int range_index = 0;
+        int sequencer_number = 0;
+
+        void onAction(const event::Action &e) override {
+            module->voltage_sequencers[sequencer_number].voltage_range_index = range_index;
+        }
+    };
+
+    struct OutputRangeItem : MenuItem {
+		DigitalSequencer *module;
+        int sequencer_number = 0;
+
+		Menu *createChildMenu() override {
+			Menu *menu = new Menu;
+
+            for (unsigned int i=0; i < NUMBER_OF_VOLTAGE_RANGES; i++)
+            {
+                OutputRangeValueItem *output_range_value_menu_item = createMenuItem<OutputRangeValueItem>(module->voltage_range_names[i], CHECKMARK(module->voltage_sequencers[sequencer_number].voltage_range_index == i));
+    			output_range_value_menu_item->module = module;
+    			output_range_value_menu_item->range_index = i;
+                output_range_value_menu_item->sequencer_number = this->sequencer_number;
+    			menu->addChild(output_range_value_menu_item);
+            }
+
+			return menu;
+		}
+	};
+
+    struct SequencerItem : MenuItem {
+		DigitalSequencer *module;
+        unsigned int sequencer_number = 0;
+
+		Menu *createChildMenu() override {
+			Menu *menu = new Menu;
+
+            OutputRangeItem *output_range_item = createMenuItem<OutputRangeItem>("Output Range", RIGHT_ARROW);
+            output_range_item->sequencer_number = this->sequencer_number;
+			output_range_item->module = module;
+			menu->addChild(output_range_item);
+
+			return menu;
+		}
+	};
+
 	void appendContextMenu(Menu *menu) override
 	{
+        DigitalSequencer *module = dynamic_cast<DigitalSequencer*>(this->module);
+		assert(module);
+
+        // Menu in development
+		menu->addChild(new MenuEntry); // For spacing only
+        menu->addChild(createMenuLabel("Sequencer Settings"));
+
+        SequencerItem *sequencer_items[6];
+
+        for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
+        {
+            sequencer_items[i] = createMenuItem<SequencerItem>("Sequencer #" + std::to_string(i + 1), RIGHT_ARROW);
+    		sequencer_items[i]->module = module;
+            sequencer_items[i]->sequencer_number = i;
+    		menu->addChild(sequencer_items[i]);
+        }
 	}
 
     void step() override {
