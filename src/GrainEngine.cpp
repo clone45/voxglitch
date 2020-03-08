@@ -5,7 +5,7 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "sample.hpp"
-#include "GrainEngineEx.hpp"
+#include "GrainEngine.hpp"
 
 struct GrainEngine : Module
 {
