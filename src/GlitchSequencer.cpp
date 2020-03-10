@@ -19,6 +19,8 @@ struct GlitchSequencer : Module
         NUM_PARAMS
 	};
 	enum InputIds {
+        STEP_INPUT,
+        RESET_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -82,6 +84,13 @@ struct GlitchSequencerWidget : ModuleWidget
         float button_group_x = 48.0;
         float button_group_y = 103.0;
 
+        // Step
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 114.893)), module, GlitchSequencer::STEP_INPUT));
+
+        // Reset
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 14.544, 114.893)), module, GlitchSequencer::RESET_INPUT));
+
+
         // Sequence 1 button
         addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x, button_group_y)), module, GlitchSequencer::SEQUENCER_1_BUTTON));
 		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x, button_group_y)), module, GlitchSequencer::SEQUENCER_1_LIGHT));
@@ -107,6 +116,7 @@ struct GlitchSequencerWidget : ModuleWidget
         addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 3.0), 119.309)), module, GlitchSequencer::GATE_OUTPUT_4));
         addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 4.0), 119.309)), module, GlitchSequencer::GATE_OUTPUT_5));
         addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 5.0), 119.309)), module, GlitchSequencer::GATE_OUTPUT_6));
+
 	}
 
 	void appendContextMenu(Menu *menu) override
