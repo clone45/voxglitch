@@ -84,6 +84,7 @@ struct VoltageSequencer : Sequencer
 {
     std::array<float, MAX_SEQUENCER_STEPS> sequence;
     unsigned int voltage_range_index = 0; // see voltage_ranges in DigitalSequencer.h
+    unsigned int snap_division = 8;
 
     // constructor
     VoltageSequencer()
@@ -121,7 +122,16 @@ struct VoltageSequencer : Sequencer
 
     void setValue(int index, float value)
     {
-        sequence[index] = value;
+        if(snap_division > 0)
+        {
+            float division = DRAW_AREA_HEIGHT / snap_division;
+            sequence[index] = division * int(value / division);
+        }
+        else
+        {
+            sequence[index] = value;
+        }
+
     }
 
     void shiftLeft()
@@ -1260,6 +1270,45 @@ struct DigitalSequencerWidget : ModuleWidget
         addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(173, 119.309)), module, DigitalSequencer::SEQ6_GATE_OUTPUT));
 	}
 
+    //
+    // INPUT SNAP MENUS
+    //
+    /*
+    struct OutputRangeValueItem : MenuItem {
+        DigitalSequencer *module;
+        int range_index = 0;
+        int sequencer_number = 0;
+
+        void onAction(const event::Action &e) override {
+            module->voltage_sequencers[sequencer_number].voltage_range_index = range_index;
+        }
+    };
+
+    struct InputSnapItem : MenuItem {
+		DigitalSequencer *module;
+        int sequencer_number = 0;
+
+		Menu *createChildMenu() override {
+			Menu *menu = new Menu;
+
+            for (unsigned int i=0; i < NUMBER_OF_VOLTAGE_RANGES; i++)
+            {
+                OutputRangeValueItem *output_range_value_menu_item = createMenuItem<OutputRangeValueItem>(module->voltage_range_names[i], CHECKMARK(module->voltage_sequencers[sequencer_number].voltage_range_index == i));
+    			output_range_value_menu_item->module = module;
+    			output_range_value_menu_item->range_index = i;
+                output_range_value_menu_item->sequencer_number = this->sequencer_number;
+    			menu->addChild(output_range_value_menu_item);
+            }
+
+			return menu;
+		}
+	};
+    */
+
+    //
+    // OUTPUT RANGE MENUS
+    //
+
     struct OutputRangeValueItem : MenuItem {
         DigitalSequencer *module;
         int range_index = 0;
@@ -1306,6 +1355,10 @@ struct DigitalSequencerWidget : ModuleWidget
 		}
 	};
 
+    struct AllSequencersItem : MenuItem {
+
+    };
+
 	void appendContextMenu(Menu *menu) override
 	{
         DigitalSequencer *module = dynamic_cast<DigitalSequencer*>(this->module);
@@ -1315,6 +1368,14 @@ struct DigitalSequencerWidget : ModuleWidget
 		menu->addChild(new MenuEntry); // For spacing only
         menu->addChild(createMenuLabel("Sequencer Settings"));
 
+        // Add "all" sequencer settings
+        /*
+        AllSequencersItem *all_sequencer_items;
+        all_sequencer_items = createMenuItem<AllSequencersItem>("All Sequencers", RIGHT_ARROW);
+        menu->addChild(all_sequencer_items);
+        */
+
+        // Add individual sequencer settings
         SequencerItem *sequencer_items[6];
 
         for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
