@@ -23,6 +23,7 @@
 #define NUMBER_OF_SEQUENCERS 6
 #define MAX_SEQUENCER_STEPS 32
 #define NUMBER_OF_VOLTAGE_RANGES 4
+#define NUMBER_OF_SNAP_DIVISIONS 8
 
 // Constants for patterns
 #define DRAW_AREA_WIDTH 486.0
@@ -48,6 +49,8 @@ float voltage_ranges[NUMBER_OF_VOLTAGE_RANGES][2] = {
     { 0.0, 5.0 },
     { -5.0, 5.0 }
 };
+
+float snap_divisions[NUMBER_OF_SNAP_DIVISIONS] = { 0,8,10,12,16,24,32,26 };
 
 struct Sequencer
 {
@@ -84,7 +87,7 @@ struct VoltageSequencer : Sequencer
 {
     std::array<float, MAX_SEQUENCER_STEPS> sequence;
     unsigned int voltage_range_index = 0; // see voltage_ranges in DigitalSequencer.h
-    unsigned int snap_division = 8;
+    unsigned int snap_division_index = 0;
 
     // constructor
     VoltageSequencer()
@@ -122,10 +125,10 @@ struct VoltageSequencer : Sequencer
 
     void setValue(int index, float value)
     {
-        if(snap_division > 0)
+        if(snap_division_index > 0)
         {
-            float division = DRAW_AREA_HEIGHT / snap_division;
-            sequence[index] = division * int(value / division);
+            float division = DRAW_AREA_HEIGHT / snap_divisions[snap_division_index];
+            sequence[index] = division * roundf(value / division);
         }
         else
         {
@@ -264,6 +267,17 @@ struct DigitalSequencer : Module
         "-10.0 to 10.0",
         "0.0 to 5.0",
         "-5.0 to 5.0"
+    };
+
+    std::string snap_division_names[NUMBER_OF_SNAP_DIVISIONS] = {
+        "None",
+        "8",
+        "10",
+        "12",
+        "16",
+        "24",
+        "32",
+        "36"
     };
 
 	enum ParamIds {
@@ -933,10 +947,9 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
 
     void onButton(const event::Button &e) override
     {
-        e.consume(this);
-
 		if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
 		{
+            e.consume(this);
 			drag_position = e.pos;
 			this->editBar(e.pos);
 		}
@@ -1273,14 +1286,14 @@ struct DigitalSequencerWidget : ModuleWidget
     //
     // INPUT SNAP MENUS
     //
-    /*
-    struct OutputRangeValueItem : MenuItem {
+
+    struct InputSnapValueItem : MenuItem {
         DigitalSequencer *module;
-        int range_index = 0;
+        int snap_division_index = 0;
         int sequencer_number = 0;
 
         void onAction(const event::Action &e) override {
-            module->voltage_sequencers[sequencer_number].voltage_range_index = range_index;
+            module->voltage_sequencers[sequencer_number].snap_division_index = snap_division_index;
         }
     };
 
@@ -1291,19 +1304,18 @@ struct DigitalSequencerWidget : ModuleWidget
 		Menu *createChildMenu() override {
 			Menu *menu = new Menu;
 
-            for (unsigned int i=0; i < NUMBER_OF_VOLTAGE_RANGES; i++)
+            for (unsigned int i=0; i < NUMBER_OF_SNAP_DIVISIONS; i++)
             {
-                OutputRangeValueItem *output_range_value_menu_item = createMenuItem<OutputRangeValueItem>(module->voltage_range_names[i], CHECKMARK(module->voltage_sequencers[sequencer_number].voltage_range_index == i));
-    			output_range_value_menu_item->module = module;
-    			output_range_value_menu_item->range_index = i;
-                output_range_value_menu_item->sequencer_number = this->sequencer_number;
-    			menu->addChild(output_range_value_menu_item);
+                InputSnapValueItem *input_snap_value_item = createMenuItem<InputSnapValueItem>(module->snap_division_names[i], CHECKMARK(module->voltage_sequencers[sequencer_number].snap_division_index == i));
+    			input_snap_value_item->module = module;
+    			input_snap_value_item->snap_division_index = i;
+                input_snap_value_item->sequencer_number = this->sequencer_number;
+    			menu->addChild(input_snap_value_item);
             }
 
 			return menu;
 		}
 	};
-    */
 
     //
     // OUTPUT RANGE MENUS
@@ -1350,6 +1362,11 @@ struct DigitalSequencerWidget : ModuleWidget
             output_range_item->sequencer_number = this->sequencer_number;
 			output_range_item->module = module;
 			menu->addChild(output_range_item);
+
+            InputSnapItem *input_snap_item = createMenuItem<InputSnapItem>("Snap", RIGHT_ARROW);
+            input_snap_item->sequencer_number = this->sequencer_number;
+			input_snap_item->module = module;
+			menu->addChild(input_snap_item);
 
 			return menu;
 		}
