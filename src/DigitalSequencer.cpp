@@ -11,8 +11,6 @@
 //
 // TODO: Move font loading into global area
 // TODO: copy/paste between sequences
-// TODO: add snap-division per sequencer
-
 
 #include "plugin.hpp"
 #include "osdialog.h"
@@ -22,7 +20,8 @@
 
 #define NUMBER_OF_SEQUENCERS 6
 #define MAX_SEQUENCER_STEPS 32
-#define NUMBER_OF_VOLTAGE_RANGES 4
+#define NUMBER_OF_VOLTAGE_RANGES 8
+#define NUMBER_OF_SNAP_DIVISIONS 8
 
 // Constants for patterns
 #define DRAW_AREA_WIDTH 486.0
@@ -42,12 +41,18 @@
 #define TOOLTIP_WIDTH 33.0
 #define TOOLTIP_HEIGHT 20.0
 
-float voltage_ranges[NUMBER_OF_VOLTAGE_RANGES][2] = {
+double voltage_ranges[NUMBER_OF_VOLTAGE_RANGES][2] = {
     { 0.0, 10.0 },
     { -10.0, 10.0 },
     { 0.0, 5.0 },
-    { -5.0, 5.0 }
+    { -5.0, 5.0 },
+    { 0.0, 3.0 },
+    { -3.0, 3.0 },
+    { 0.0, 1.0},
+    { -1.0, 1.0}
 };
+
+double snap_divisions[NUMBER_OF_SNAP_DIVISIONS] = { 0,8,10,12,16,24,32,26 };
 
 struct Sequencer
 {
@@ -82,8 +87,9 @@ struct Sequencer
 
 struct VoltageSequencer : Sequencer
 {
-    std::array<float, MAX_SEQUENCER_STEPS> sequence;
+    std::array<double, MAX_SEQUENCER_STEPS> sequence;
     unsigned int voltage_range_index = 0; // see voltage_ranges in DigitalSequencer.h
+    unsigned int snap_division_index = 0;
 
     // constructor
     VoltageSequencer()
@@ -95,38 +101,46 @@ struct VoltageSequencer : Sequencer
     // which is the height in pixels of the draw area.  To get the value with
     // the selected range applied, see getOutput()
 
-    float getValue(int index)
+    double getValue(int index)
     {
         return(sequence[index]);
     }
 
     // Same as GetValue, but if no index is provided, returns the value at the
     // current playback position.
-    float getValue()
+    double getValue()
     {
         return(sequence[getPlaybackPosition()]);
     }
 
     // Returns the value of the sequencer at a specific index after the selected
     // voltage range has been applied.
-    float getOutput(int index)
+    double getOutput(int index)
     {
         return(rescale(sequence[index], 0.0, DRAW_AREA_HEIGHT, voltage_ranges[voltage_range_index][0], voltage_ranges[voltage_range_index][1]));
     }
 
-    float getOutput()
+    double getOutput()
     {
         return(rescale(sequence[getPlaybackPosition()], 0.0, DRAW_AREA_HEIGHT, voltage_ranges[voltage_range_index][0], voltage_ranges[voltage_range_index][1]));
     }
 
-    void setValue(int index, float value)
+    void setValue(int index, double value)
     {
-        sequence[index] = value;
+        if(snap_division_index > 0)
+        {
+            double division = DRAW_AREA_HEIGHT / snap_divisions[snap_division_index];
+            sequence[index] = division * roundf(value / division);
+        }
+        else
+        {
+            sequence[index] = value;
+        }
     }
 
     void shiftLeft()
     {
-        float temp = sequence[0];
+        double temp = sequence[0];
         for(unsigned int i=0; i < this->sequence_length-1; i++)
         {
             sequence[i] = sequence[i+1];
@@ -136,7 +150,7 @@ struct VoltageSequencer : Sequencer
 
     void shiftRight()
     {
-        float temp = sequence[this->sequence_length - 1];
+        double temp = sequence[this->sequence_length - 1];
 
         for(unsigned int i=this->sequence_length-1; i>0; i--)
         {
@@ -182,7 +196,7 @@ struct GateSequencer : Sequencer
 
     void shiftLeft()
     {
-        float temp = sequence[0];
+        double temp = sequence[0];
         for(unsigned int i=0; i < this->sequence_length-1; i++)
         {
             sequence[i] = sequence[i+1];
@@ -192,7 +206,7 @@ struct GateSequencer : Sequencer
 
     void shiftRight()
     {
-        float temp = sequence[this->sequence_length - 1];
+        double temp = sequence[this->sequence_length - 1];
 
         for(unsigned int i=this->sequence_length-1; i>0; i--)
         {
@@ -240,7 +254,7 @@ struct DigitalSequencer : Module
     int sequencer_step_inputs[NUMBER_OF_SEQUENCERS];
 
     dsp::PulseGenerator gateOutputPulseGenerators[NUMBER_OF_SEQUENCERS];
-    float sample_rate;
+    double sample_rate;
 
     bool sequencer_1_button_is_triggered;
     bool sequencer_2_button_is_triggered;
@@ -253,8 +267,14 @@ struct DigitalSequencer : Module
         "0.0 to 10.0",
         "-10.0 to 10.0",
         "0.0 to 5.0",
-        "-5.0 to 5.0"
+        "-5.0 to 5.0",
+        "0.0 to 3.0",
+        "-3.0 to 3.0",
+        "0.0 to 1.0",
+        "-1.0 to 1.0"
     };
+
+    std::string snap_division_names[NUMBER_OF_SNAP_DIVISIONS] = { "None", "8", "10", "12", "16", "24", "32", "36" };
 
 	enum ParamIds {
         SEQUENCE_SELECTION_KNOB,
@@ -362,6 +382,7 @@ struct DigitalSequencer : Module
 	}
 
     /*
+        ==================================================================================================================================================
                                  ___                 _
                                 / / |               | |
           ___  __ ___   _____  / /| | ___   __ _  __| |
@@ -369,6 +390,7 @@ struct DigitalSequencer : Module
         \__ \ (_| |\ V /  __// /  | | (_) | (_| | (_| |
         |___/\__,_| \_/ \___/_/   |_|\___/ \__,_|\__,_|
 
+        ==================================================================================================================================================
     */
 
 	json_t *dataToJson() override
@@ -438,6 +460,17 @@ struct DigitalSequencer : Module
         }
         json_object_set(json_root, "voltage_ranges", sequencer_voltage_range_json_array);
         json_decref(sequencer_voltage_range_json_array);
+
+        //
+        // Save sequencer snap index selections
+        //
+        json_t *sequencer_snap_json_array = json_array();
+        for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
+        {
+            json_array_append_new(sequencer_snap_json_array, json_integer(this->voltage_sequencers[sequencer_number].snap_division_index));
+        }
+        json_object_set(json_root, "snap_divisions", sequencer_snap_json_array);
+        json_decref(sequencer_snap_json_array);
 
 		return json_root;
 	}
@@ -516,6 +549,22 @@ struct DigitalSequencer : Module
             json_array_foreach(voltage_ranges_json_array, sequencer_number, voltage_range_json)
             {
                 this->voltage_sequencers[sequencer_number].voltage_range_index = json_integer_value(voltage_range_json);
+            }
+        }
+
+        //
+        // Load snap divisions
+        //
+        json_t *snap_divions_json_array = json_object_get(json_root, "snap_divisions");
+
+        if(snap_divions_json_array)
+        {
+            size_t sequencer_number;
+            json_t *snap_divion_json;
+
+            json_array_foreach(snap_divions_json_array, sequencer_number, snap_divion_json)
+            {
+                this->voltage_sequencers[sequencer_number].snap_division_index = json_integer_value(snap_divion_json);
             }
         }
 	}
@@ -658,7 +707,7 @@ struct DigitalSequencerDisplay : TransparentWidget
 {
     DigitalSequencer *module;
 	Vec drag_position;
-    float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
+    double bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
 
 	void onDragStart(const event::DragStart &e) override
     {
@@ -714,7 +763,7 @@ struct DigitalSequencerDisplay : TransparentWidget
         return(keypress(e, GLFW_KEY_DOWN));
     }
 
-    void drawVerticalGuildes(NVGcontext *vg, float height)
+    void drawVerticalGuildes(NVGcontext *vg, double height)
     {
         for(unsigned int i=1; i < 8; i++)
         {
@@ -726,7 +775,7 @@ struct DigitalSequencerDisplay : TransparentWidget
         }
     }
 
-    void drawBlueOverlay(NVGcontext *vg, float width, float height)
+    void drawBlueOverlay(NVGcontext *vg, double width, double height)
     {
         nvgBeginPath(vg);
         nvgRect(vg, 0, 0, width, height);
@@ -734,7 +783,7 @@ struct DigitalSequencerDisplay : TransparentWidget
         nvgFill(vg);
     }
 
-    void drawBar(NVGcontext *vg, float position, float height, float container_height, NVGcolor color)
+    void drawBar(NVGcontext *vg, double position, double height, double container_height, NVGcolor color)
     {
         nvgBeginPath(vg);
         nvgRect(vg, (position * bar_width) + (position * BAR_HORIZONTAL_PADDING), container_height - height, bar_width, height);
@@ -746,9 +795,9 @@ struct DigitalSequencerDisplay : TransparentWidget
 struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
 {
     bool draw_tooltip = false;
-    float draw_tooltip_index = -1.0;
-    float draw_tooltip_y = -1.0;
-    float tooltip_value = 0.0;
+    double draw_tooltip_index = -1.0;
+    double draw_tooltip_y = -1.0;
+    double tooltip_value = 0.0;
 
 	DigitalSequencerPatternDisplay()
 	{
@@ -771,8 +820,8 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
 
 		if(module)
 		{
-            float range_low = voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][0];
-            float range_high = voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][1];
+            double range_low = voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][0];
+            double range_high = voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][1];
 
             if(range_low < 0 && range_high > 0) draw_from_center = true;
 
@@ -822,7 +871,7 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
                 // This calculation for y takes advance of the fact that all
                 // ranges that would have the 0-guide visible are symmetric, so
                 // it will need updating if non-symmetric ranges are added.
-                float y = DRAW_AREA_HEIGHT / 2.0;
+                double y = DRAW_AREA_HEIGHT / 2.0;
 
                 nvgBeginPath(vg);
                 nvgRect(vg, 1, y, (DRAW_AREA_WIDTH - 2), 1.0);
@@ -833,7 +882,7 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
 		}
         else // Draw a demo sequence so that the sequencer looks nice in the library selector
         {
-            float demo_sequence[32] = {100.0,100.0,93.0,80.0,67.0,55.0,47.0,44.0,43.0,44.0,50.0,69.0,117.0,137.0,166,170,170,164,148,120,105,77,65,41,28,23,22,22,28,48,69,94};
+            double demo_sequence[32] = {100.0,100.0,93.0,80.0,67.0,55.0,47.0,44.0,43.0,44.0,50.0,69.0,117.0,137.0,166,170,170,164,148,120,105,77,65,41,28,23,22,22,28,48,69,94};
 
             for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
 			{
@@ -869,9 +918,9 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
     {
         nvgSave(vg);
 
-        float x_offset = 3.0;
-        float y = std::max(60.0f, draw_tooltip_y);
-        float x = ((draw_tooltip_index * bar_width) + (draw_tooltip_index * BAR_HORIZONTAL_PADDING)) + bar_width + x_offset;
+        double x_offset = 3.0;
+        double y = std::max(60.0, draw_tooltip_y);
+        double x = ((draw_tooltip_index * bar_width) + (draw_tooltip_index * BAR_HORIZONTAL_PADDING)) + bar_width + x_offset;
 
         if(draw_tooltip_index > 26) x = x - bar_width - TOOLTIP_WIDTH - (x_offset * 2) - BAR_HORIZONTAL_PADDING;
         y = DRAW_AREA_HEIGHT - y + 30;
@@ -905,7 +954,7 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
     //
     void editBar(Vec mouse_position)
 	{
-        float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
+        double bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
 		int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
 		int clicked_y = DRAW_AREA_HEIGHT - mouse_position.y;
 
@@ -918,15 +967,14 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
         draw_tooltip = true;
         draw_tooltip_index = clicked_bar_x_index;
         draw_tooltip_y = clicked_y;
-        tooltip_value = roundf((clicked_y / DRAW_AREA_HEIGHT) * 1000) / 100;
+        tooltip_value = module->selected_voltage_sequencer->getOutput(clicked_bar_x_index);
 	}
 
     void onButton(const event::Button &e) override
     {
-        e.consume(this);
-
 		if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
 		{
+            e.consume(this);
 			drag_position = e.pos;
 			this->editBar(e.pos);
 		}
@@ -935,7 +983,7 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
 	void onDragMove(const event::DragMove &e) override
     {
 		TransparentWidget::onDragMove(e);
-        float zoom = std::pow(2.f, settings::zoom);
+        double zoom = std::pow(2.f, settings::zoom);
 		drag_position = drag_position.plus(e.mouseDelta.div(zoom));
 		editBar(drag_position);
 	}
@@ -957,11 +1005,12 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
         if(keypressUp(e))
         {
             int bar_x_index = e.pos.x / (bar_width + BAR_HORIZONTAL_PADDING);
-            float value = module->selected_voltage_sequencer->getValue(bar_x_index);
+            double value = module->selected_voltage_sequencer->getValue(bar_x_index);
 
             // (.01 * (214 / 10)), where 214 is the bar height and 10 is the max voltage
             value = value + (.01 * (214.0 / 10.0));
-            value = clamp(value, 0.0, DRAW_AREA_HEIGHT);
+            // value = clamp(value, 0.0, DRAW_AREA_HEIGHT);
+            if (value > DRAW_AREA_HEIGHT) value = DRAW_AREA_HEIGHT;
 
             module->selected_voltage_sequencer->setValue(bar_x_index, value);
 
@@ -974,11 +1023,12 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
         if(keypressDown(e))
         {
             int bar_x_index = e.pos.x / (bar_width + BAR_HORIZONTAL_PADDING);
-            float value = module->selected_voltage_sequencer->getValue(bar_x_index);
+            double value = module->selected_voltage_sequencer->getValue(bar_x_index);
 
             // (.01 * (214 / 10)), where 214 is the bar height and 10 is the max voltage
             value = value - (.01 * (214.0 / 10.0));
-            value = clamp(value, 0.0, DRAW_AREA_HEIGHT);
+            // value = clamp(value, 0.0, DRAW_AREA_HEIGHT);
+            if (value > DRAW_AREA_HEIGHT) value = DRAW_AREA_HEIGHT;
 
             module->selected_voltage_sequencer->setValue(bar_x_index, value);
 
@@ -1000,7 +1050,7 @@ struct DigitalSequencerPatternDisplay : DigitalSequencerDisplay
 struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
 {
     bool mouse_lock = false;
-    float bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
+    double bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
     int old_drag_bar_x = -1;
     bool trigger_edit_value = false;
 
@@ -1013,7 +1063,7 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
 	{
 		const auto vg = args.vg;
         int value;
-        float value_height;
+        double value_height;
         NVGcolor bar_color;
 
 		nvgSave(vg);
@@ -1117,7 +1167,7 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
     {
 		TransparentWidget::onDragMove(e);
 
-        float zoom = std::pow(2.f, settings::zoom);
+        double zoom = std::pow(2.f, settings::zoom);
 		drag_position = drag_position.plus(e.mouseDelta.div(zoom));
 
         int drag_bar_x_index = getIndexFromX(drag_position.x);
@@ -1129,15 +1179,6 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
             old_drag_bar_x = drag_bar_x_index;
         }
 	}
-
-    /*
-	void editBar(Vec mouse_position)
-	{
-		int clicked_bar_x_index = clamp(mouse_position.x / (barWidth() + BAR_HORIZONTAL_PADDING), 0, MAX_SEQUENCER_STEPS - 1);
-
-        module->selected_gate_sequencer->setValue(clicked_bar_x_index, ! module->selected_gate_sequencer->getValue(clicked_bar_x_index));
-	}
-    */
 
     void onHoverKey(const event::HoverKey &e) override
     {
@@ -1161,12 +1202,12 @@ struct DigitalSequencerGatesDisplay : DigitalSequencerDisplay
         }
     }
 
-    int getIndexFromX(float x)
+    int getIndexFromX(double x)
     {
         return(x / (barWidth() + BAR_HORIZONTAL_PADDING));
     }
 
-    float barWidth()
+    double barWidth()
     {
         return((DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING);
     }
@@ -1199,9 +1240,9 @@ struct DigitalSequencerWidget : ModuleWidget
 		gates_display->module = module;
 		addChild(gates_display);
 
-        float button_spacing = 9.6; // 9.1
-        float button_group_x = 48.0;
-        float button_group_y = 103.0;
+        double button_spacing = 9.6; // 9.1
+        double button_group_x = 48.0;
+        double button_group_y = 103.0;
         // Sequence 1 button
         addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x, button_group_y)), module, DigitalSequencer::SEQUENCER_1_BUTTON));
 		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x, button_group_y)), module, DigitalSequencer::SEQUENCER_1_LIGHT));
@@ -1260,6 +1301,44 @@ struct DigitalSequencerWidget : ModuleWidget
         addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(173, 119.309)), module, DigitalSequencer::SEQ6_GATE_OUTPUT));
 	}
 
+    //
+    // INPUT SNAP MENUS
+    //
+
+    struct InputSnapValueItem : MenuItem {
+        DigitalSequencer *module;
+        int snap_division_index = 0;
+        int sequencer_number = 0;
+
+        void onAction(const event::Action &e) override {
+            module->voltage_sequencers[sequencer_number].snap_division_index = snap_division_index;
+        }
+    };
+
+    struct InputSnapItem : MenuItem {
+		DigitalSequencer *module;
+        int sequencer_number = 0;
+
+		Menu *createChildMenu() override {
+			Menu *menu = new Menu;
+
+            for (unsigned int i=0; i < NUMBER_OF_SNAP_DIVISIONS; i++)
+            {
+                InputSnapValueItem *input_snap_value_item = createMenuItem<InputSnapValueItem>(module->snap_division_names[i], CHECKMARK(module->voltage_sequencers[sequencer_number].snap_division_index == i));
+    			input_snap_value_item->module = module;
+    			input_snap_value_item->snap_division_index = i;
+                input_snap_value_item->sequencer_number = this->sequencer_number;
+    			menu->addChild(input_snap_value_item);
+            }
+
+			return menu;
+		}
+	};
+
+    //
+    // OUTPUT RANGE MENUS
+    //
+
     struct OutputRangeValueItem : MenuItem {
         DigitalSequencer *module;
         int range_index = 0;
@@ -1302,9 +1381,18 @@ struct DigitalSequencerWidget : ModuleWidget
 			output_range_item->module = module;
 			menu->addChild(output_range_item);
 
+            InputSnapItem *input_snap_item = createMenuItem<InputSnapItem>("Snap", RIGHT_ARROW);
+            input_snap_item->sequencer_number = this->sequencer_number;
+			input_snap_item->module = module;
+			menu->addChild(input_snap_item);
+
 			return menu;
 		}
 	};
+
+    struct AllSequencersItem : MenuItem {
+
+    };
 
 	void appendContextMenu(Menu *menu) override
 	{
@@ -1315,6 +1403,14 @@ struct DigitalSequencerWidget : ModuleWidget
 		menu->addChild(new MenuEntry); // For spacing only
         menu->addChild(createMenuLabel("Sequencer Settings"));
 
+        // Add "all" sequencer settings
+        /*
+        AllSequencersItem *all_sequencer_items;
+        all_sequencer_items = createMenuItem<AllSequencersItem>("All Sequencers", RIGHT_ARROW);
+        menu->addChild(all_sequencer_items);
+        */
+
+        // Add individual sequencer settings
         SequencerItem *sequencer_items[6];
 
         for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
