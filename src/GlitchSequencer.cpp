@@ -1,7 +1,6 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "settings.hpp"
-#include <vector>
 #include "cmath"
 
 #define MAX_SEQUENCER_STEPS 64
@@ -41,6 +40,7 @@ struct CellularAutomatonSequencer
     };
 
     bool state[SEQUENCER_ROWS][SEQUENCER_COLUMNS];
+    bool next[SEQUENCER_ROWS][SEQUENCER_COLUMNS];
 
     // constructor
     CellularAutomatonSequencer()
@@ -49,7 +49,42 @@ struct CellularAutomatonSequencer
         {
             for(unsigned int column = 0; column < SEQUENCER_COLUMNS; column++)
             {
-                state[row][column] = 0;
+                state[row][column] = pattern[row][column];
+            }
+        }
+    }
+
+    void step()
+    {
+        for(unsigned int row = 1; row < SEQUENCER_ROWS - 1; row++)
+        {
+            for(unsigned int column = 1; column < SEQUENCER_COLUMNS - 1; column++)
+            {
+                unsigned int neighbors = 0;
+
+                // Calculate number of neighbors
+                if(state[row-1][column-1]) neighbors++;
+                if(state[row-1][column]) neighbors++;
+                if(state[row-1][column+1]) neighbors++;
+                if(state[row][column-1]) neighbors++;
+                if(state[row][column+1]) neighbors++;
+                if(state[row+1][column-1]) neighbors++;
+                if(state[row+1][column]) neighbors++;
+                if(state[row+1][column+1]) neighbors++;
+
+                // Apply game of life rules
+                if(state[row][column] && neighbors < 2) next[row][column] = 0;
+                else if(state[row][column] && neighbors > 3) next[row][column] = 0;
+                else if(state[row][column] && (neighbors == 2 || neighbors == 3)) next[row][column] = 1;
+                else if(state[row][column] == 0 && neighbors == 3) next[row][column] = 1;
+            }
+        }
+
+        for(unsigned int row = 1; row < SEQUENCER_ROWS - 1; row++)
+        {
+            for(unsigned int column = 1; column < SEQUENCER_COLUMNS - 1; column++)
+            {
+                state[row][column] = next[row][column];
             }
         }
     }
@@ -59,6 +94,8 @@ struct CellularAutomatonSequencer
 struct GlitchSequencer : Module
 {
     CellularAutomatonSequencer sequencer;
+    dsp::SchmittTrigger stepTrigger;
+    bool edit_mode = false;
 
 	enum ParamIds {
         LENGTH_KNOB,
@@ -67,7 +104,6 @@ struct GlitchSequencer : Module
         SEQUENCER_3_BUTTON,
         SEQUENCER_4_BUTTON,
         SEQUENCER_5_BUTTON,
-        SEQUENCER_6_BUTTON,
         NUM_PARAMS
 	};
 	enum InputIds {
@@ -81,7 +117,6 @@ struct GlitchSequencer : Module
         GATE_OUTPUT_3,
         GATE_OUTPUT_4,
         GATE_OUTPUT_5,
-        GATE_OUTPUT_6,
 		NUM_OUTPUTS
 	};
 	enum LightIds {
@@ -90,7 +125,6 @@ struct GlitchSequencer : Module
         SEQUENCER_3_LIGHT,
         SEQUENCER_4_LIGHT,
         SEQUENCER_5_LIGHT,
-        SEQUENCER_6_LIGHT,
 		NUM_LIGHTS
 	};
 
@@ -107,7 +141,6 @@ struct GlitchSequencer : Module
         configParam(SEQUENCER_3_BUTTON, 0.f, 1.f, 0.f, "Sequence3Button");
         configParam(SEQUENCER_4_BUTTON, 0.f, 1.f, 0.f, "Sequence4Button");
         configParam(SEQUENCER_5_BUTTON, 0.f, 1.f, 0.f, "Sequence5Button");
-        configParam(SEQUENCER_6_BUTTON, 0.f, 1.f, 0.f, "Sequence6Button");
 	}
 
     json_t *dataToJson() override
@@ -122,6 +155,12 @@ struct GlitchSequencer : Module
 
 	void process(const ProcessArgs &args) override
 	{
+        bool step_trigger = stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f));
+
+        if(step_trigger)
+        {
+            sequencer.step();
+        }
 	}
 };
 
@@ -136,7 +175,7 @@ struct CellularAutomatonDisplay : TransparentWidget
 
 	CellularAutomatonDisplay()
 	{
-		// box.size = Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
+		box.size = Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
 	}
 
 	void draw(const DrawArgs &args) override
@@ -163,7 +202,9 @@ struct CellularAutomatonDisplay : TransparentWidget
                     nvgBeginPath(vg);
                     nvgRect(vg, (column * CELL_WIDTH) + (column * CELL_PADDING), (row * CELL_HEIGHT) + (row * CELL_PADDING), CELL_WIDTH, CELL_HEIGHT);
 
-                    if(module->sequencer.pattern[row][column])
+                    bool cell_is_alive = (module->edit_mode) ? module->sequencer.pattern[row][column] : module->sequencer.state[row][column];
+
+                    if(cell_is_alive)
                     {
                         nvgFillColor(vg, nvgRGB(255, 255, 255));
                     }
@@ -199,7 +240,7 @@ struct CellularAutomatonDisplay : TransparentWidget
                 this->mouse_lock = true;
 
                 int row, column;
-                tie(row, column)  = getRowAndColumnFromVec(e.pos);
+                tie(row, column) = getRowAndColumnFromVec(e.pos);
 
                 // Store the value that's being set for later in case the user
                 // drags to set ("paints") additional triggers
@@ -234,6 +275,24 @@ struct CellularAutomatonDisplay : TransparentWidget
             old_row = row;
             old_column = column;
         }
+	}
+
+    void onEnter(const event::Enter &e) override
+    {
+        TransparentWidget::onEnter(e);
+        this->module->edit_mode = true;
+        DEBUG("On enter called");
+    }
+
+    void onLeave(const event::Leave &e) override
+    {
+        TransparentWidget::onLeave(e);
+        this->module->edit_mode = false;
+    }
+
+    void onHover(const event::Hover& e) override {
+		TransparentWidget::onHover(e);
+		e.consume(this);
 	}
 };
 
