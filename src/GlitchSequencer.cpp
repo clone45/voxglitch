@@ -254,15 +254,22 @@ struct CellularAutomatonDisplay : TransparentWidget
                     nvgBeginPath(vg);
                     nvgRect(vg, (column * CELL_WIDTH) + (column * CELL_PADDING), (row * CELL_HEIGHT) + (row * CELL_PADDING), CELL_WIDTH, CELL_HEIGHT);
 
-                    bool cell_is_alive = (module->edit_mode) ? module->sequencer.pattern[row][column] : module->sequencer.state[row][column];
+                    // bool cell_is_alive = (module->edit_mode) ? module->sequencer.pattern[row][column] : module->sequencer.state[row][column];
 
-                    if(cell_is_alive)
+                    // Default color for inactive square
+                    nvgFillColor(vg, nvgRGB(55, 55, 55));
+
+                    // When in edit mode, the pattern that's being edited will be bright white
+                    // and the underlying animation will continue to be shown but at a dim gray
+                    if(module->edit_mode)
                     {
-                        nvgFillColor(vg, nvgRGB(255, 255, 255));
+                        if(module->sequencer.state[row][column]) nvgFillColor(vg, nvgRGB(75, 75, 75));
+                        if(module->sequencer.pattern[row][column]) nvgFillColor(vg, nvgRGB(255, 255, 255));
                     }
+                    // When in playback mode, draw active cells in bright white
                     else
                     {
-                        nvgFillColor(vg, nvgRGB(55, 55, 55));
+                        if(module->sequencer.state[row][column]) nvgFillColor(vg, nvgRGB(255, 255, 255));
                     }
 
                     nvgFill(vg);
@@ -272,6 +279,7 @@ struct CellularAutomatonDisplay : TransparentWidget
 
 		nvgRestore(vg);
 	}
+
 
     std::pair<int, int> getRowAndColumnFromVec(Vec position)
     {
