@@ -3,7 +3,7 @@
 #include "settings.hpp"
 #include "cmath"
 
-#define MAX_SEQUENCER_STEPS 64
+#define MAX_SEQUENCE_LENGTH 64
 #define SEQUENCER_ROWS 16
 #define SEQUENCER_COLUMNS 16
 
@@ -20,6 +20,9 @@ using namespace std;
 
 struct CellularAutomatonSequencer
 {
+    unsigned int sequence_position = 0;
+    unsigned int length = 0;
+
     bool pattern[SEQUENCER_ROWS][SEQUENCER_COLUMNS] = {
         { 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
         { 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
@@ -45,6 +48,9 @@ struct CellularAutomatonSequencer
     // constructor
     CellularAutomatonSequencer()
     {
+        clearPattern(&state);
+        clearPattern(&next);
+
         for(unsigned int row = 0; row < SEQUENCER_ROWS; row++)
         {
             for(unsigned int column = 0; column < SEQUENCER_COLUMNS; column++)
@@ -52,9 +58,30 @@ struct CellularAutomatonSequencer
                 state[row][column] = pattern[row][column];
             }
         }
+
+        // copyPattern(&state, &pattern);
     }
 
     void step()
+    {
+        sequence_position ++;
+
+        if(sequence_position >= length)
+        {
+            restart_sequence();
+        }
+        else
+        {
+            calculate_next_state();
+        }
+    }
+
+    void restart_sequence()
+    {
+        copyPattern(&state, &next);  // dst < src
+    }
+
+    void calculate_next_state()
     {
         for(unsigned int row = 1; row < SEQUENCER_ROWS - 1; row++)
         {
@@ -80,13 +107,34 @@ struct CellularAutomatonSequencer
             }
         }
 
-        for(unsigned int row = 1; row < SEQUENCER_ROWS - 1; row++)
+        copyPattern(&state, &next); // dst < src
+    }
+
+    void copyPattern(bool (*dst)[SEQUENCER_ROWS][SEQUENCER_COLUMNS], bool (*src)[SEQUENCER_ROWS][SEQUENCER_COLUMNS])
+    {
+        for(unsigned int row = 0; row < SEQUENCER_ROWS; row++)
         {
-            for(unsigned int column = 1; column < SEQUENCER_COLUMNS - 1; column++)
+            for(unsigned int column = 0; column < SEQUENCER_COLUMNS; column++)
             {
-                state[row][column] = next[row][column];
+                (*dst)[row][column] = (*src)[row][column];
             }
         }
+    }
+
+    void clearPattern(bool (*pattern)[SEQUENCER_ROWS][SEQUENCER_COLUMNS])
+    {
+        for(unsigned int row = 0; row < SEQUENCER_ROWS; row++)
+        {
+            for(unsigned int column = 0; column < SEQUENCER_COLUMNS; column++)
+            {
+                (*pattern)[row][column] = 0;
+            }
+        }
+    }
+
+    void setLength(unsigned int length)
+    {
+        this->length = length;
     }
 };
 
@@ -135,7 +183,7 @@ struct GlitchSequencer : Module
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 
-        configParam(LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "LengthKnob");
+        configParam(LENGTH_KNOB, 1, MAX_SEQUENCE_LENGTH, MAX_SEQUENCE_LENGTH, "LengthKnob");
         configParam(SEQUENCER_1_BUTTON, 0.f, 1.f, 0.f, "Sequence1Button");
         configParam(SEQUENCER_2_BUTTON, 0.f, 1.f, 0.f, "Sequence2Button");
         configParam(SEQUENCER_3_BUTTON, 0.f, 1.f, 0.f, "Sequence3Button");
@@ -155,6 +203,8 @@ struct GlitchSequencer : Module
 
 	void process(const ProcessArgs &args) override
 	{
+        sequencer.setLength(params[LENGTH_KNOB].getValue());
+
         bool step_trigger = stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f));
 
         if(step_trigger)
