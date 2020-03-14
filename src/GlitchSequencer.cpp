@@ -3,7 +3,7 @@
 #include "settings.hpp"
 #include "cmath"
 
-#define MAX_SEQUENCE_LENGTH 64
+#define MAX_SEQUENCE_LENGTH 32
 #define SEQUENCER_ROWS 16
 #define SEQUENCER_COLUMNS 16
 
@@ -20,7 +20,7 @@ using namespace std;
 
 struct CellularAutomatonSequencer
 {
-    unsigned int sequence_position = 0;
+    unsigned int position = 0;
     unsigned int length = 0;
 
     bool pattern[SEQUENCER_ROWS][SEQUENCER_COLUMNS] = {
@@ -64,9 +64,9 @@ struct CellularAutomatonSequencer
 
     void step()
     {
-        sequence_position ++;
+        position ++;
 
-        if(sequence_position >= length)
+        if(position >= length)
         {
             restart_sequence();
         }
@@ -78,7 +78,9 @@ struct CellularAutomatonSequencer
 
     void restart_sequence()
     {
-        copyPattern(&state, &next);  // dst < src
+        position = 0;
+        copyPattern(&state, &pattern);  // dst < src
+        clearPattern(&next);
     }
 
     void calculate_next_state()
@@ -279,6 +281,15 @@ struct CellularAutomatonDisplay : TransparentWidget
         return {row, column};
     }
 
+    void setSequencerCell(unsigned int row, unsigned int column, bool value)
+    {
+        module->sequencer.pattern[row][column] = this->cell_edit_value;
+
+        // If the sequencer is at the first step, also update the current "state"
+        // The first "state" of the sequencer should always mirror the pattern
+        if(module->sequencer.position == 0) module->sequencer.state[row][column] = this->cell_edit_value;
+    }
+
     void onButton(const event::Button &e) override
     {
         e.consume(this);
@@ -296,8 +307,8 @@ struct CellularAutomatonDisplay : TransparentWidget
                 // drags to set ("paints") additional triggers
                 this->cell_edit_value = ! module->sequencer.pattern[row][column];
 
-                // Set the trigger value in the sequencer
-                module->sequencer.pattern[row][column] = this->cell_edit_value;
+                // Set the cell value in the sequencer
+                this->setSequencerCell(row, column, this->cell_edit_value);
 
                 // Store the initial drag position
                 drag_position = e.pos;
@@ -321,7 +332,8 @@ struct CellularAutomatonDisplay : TransparentWidget
 
         if((row != old_row) || (column != old_column))
         {
-            module->sequencer.pattern[row][column] = this->cell_edit_value;
+            this->setSequencerCell(row, column, this->cell_edit_value);
+
             old_row = row;
             old_column = column;
         }
