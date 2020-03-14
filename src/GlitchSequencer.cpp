@@ -3,7 +3,7 @@
 #include "settings.hpp"
 #include "cmath"
 
-#define MAX_SEQUENCE_LENGTH 32
+#define MAX_SEQUENCE_LENGTH 64
 #define SEQUENCER_ROWS 16
 #define SEQUENCER_COLUMNS 16
 
@@ -15,6 +15,11 @@
 #define CELL_WIDTH 16.95
 #define CELL_HEIGHT 16.95
 #define CELL_PADDING 0.4
+
+#define PLAY_MODE 0
+#define EDIT_SEED_MODE 1
+#define EDIT_TRIIGERS_MODE 2
+#define EDIT_LENGTH_MODE 3
 
 using namespace std;
 
@@ -29,12 +34,12 @@ struct CellularAutomatonSequencer
         { 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
         { 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
         { 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
-        { 0,0,0,0, 0,0,1,1, 0,1,0,0, 0,0,0,0 },
-        { 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+        { 0,0,0,0, 0,0,0,0, 0,1,0,0, 0,0,0,0 },
+        { 0,0,0,0, 0,0,0,1, 0,0,0,0, 0,0,0,0 },
         { 0,0,0,0, 0,0,1,1, 1,1,0,0, 0,0,0,0 },
         { 0,0,0,0, 0,0,0,1, 1,0,0,0, 0,0,0,0 },
-        { 0,0,0,0, 0,1,1,0, 0,0,0,0, 0,0,0,0 },
-        { 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
+        { 0,0,0,0, 0,0,1,0, 0,0,0,0, 0,0,0,0 },
+        { 0,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0 },
         { 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
         { 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
         { 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
@@ -145,7 +150,7 @@ struct GlitchSequencer : Module
 {
     CellularAutomatonSequencer sequencer;
     dsp::SchmittTrigger stepTrigger;
-    bool edit_mode = false;
+    bool mode = PLAY_MODE;
 
 	enum ParamIds {
         LENGTH_KNOB,
@@ -185,7 +190,7 @@ struct GlitchSequencer : Module
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 
-        configParam(LENGTH_KNOB, 1, MAX_SEQUENCE_LENGTH, MAX_SEQUENCE_LENGTH, "LengthKnob");
+        configParam(LENGTH_KNOB, 1, MAX_SEQUENCE_LENGTH, 16, "LengthKnob");
         configParam(SEQUENCER_1_BUTTON, 0.f, 1.f, 0.f, "Sequence1Button");
         configParam(SEQUENCER_2_BUTTON, 0.f, 1.f, 0.f, "Sequence2Button");
         configParam(SEQUENCER_3_BUTTON, 0.f, 1.f, 0.f, "Sequence3Button");
@@ -261,16 +266,36 @@ struct CellularAutomatonDisplay : TransparentWidget
 
                     // When in edit mode, the pattern that's being edited will be bright white
                     // and the underlying animation will continue to be shown but at a dim gray
-                    if(module->edit_mode)
+                    switch(module->mode)
                     {
-                        if(module->sequencer.state[row][column]) nvgFillColor(vg, nvgRGB(75, 75, 75));
-                        if(module->sequencer.pattern[row][column]) nvgFillColor(vg, nvgRGB(255, 255, 255));
+                        case PLAY_MODE:
+                            if(module->sequencer.state[row][column]) nvgFillColor(vg, nvgRGB(255, 255, 255));
+                            break;
+
+                        case EDIT_SEED_MODE:
+                            if(module->sequencer.state[row][column]) nvgFillColor(vg, nvgRGB(75, 75, 75));
+                            if(module->sequencer.pattern[row][column]) nvgFillColor(vg, nvgRGB(255, 255, 255));
+                            break;
                     }
-                    // When in playback mode, draw active cells in bright white
-                    else
-                    {
-                        if(module->sequencer.state[row][column]) nvgFillColor(vg, nvgRGB(255, 255, 255));
-                    }
+
+                    nvgFill(vg);
+                }
+            }
+        }
+        // Paint static content for library display
+        else
+        {
+            CellularAutomatonSequencer ca;
+
+            for(unsigned int row=0; row < SEQUENCER_ROWS; row++)
+            {
+                for(unsigned int column=0; column < SEQUENCER_COLUMNS; column++)
+                {
+                    nvgBeginPath(vg);
+                    nvgRect(vg, (column * CELL_WIDTH) + (column * CELL_PADDING), (row * CELL_HEIGHT) + (row * CELL_PADDING), CELL_WIDTH, CELL_HEIGHT);
+
+                    nvgFillColor(vg, nvgRGB(55, 55, 55)); // Default color for inactive square
+                    if(ca.pattern[row][column]) nvgFillColor(vg, nvgRGB(255, 255, 255));
 
                     nvgFill(vg);
                 }
@@ -350,14 +375,14 @@ struct CellularAutomatonDisplay : TransparentWidget
     void onEnter(const event::Enter &e) override
     {
         TransparentWidget::onEnter(e);
-        this->module->edit_mode = true;
+        this->module->mode = EDIT_SEED_MODE;
         DEBUG("On enter called");
     }
 
     void onLeave(const event::Leave &e) override
     {
         TransparentWidget::onLeave(e);
-        this->module->edit_mode = false;
+        this->module->mode = PLAY_MODE;
     }
 
     void onHover(const event::Hover& e) override {
@@ -366,6 +391,40 @@ struct CellularAutomatonDisplay : TransparentWidget
 	}
 };
 
+struct LengthReadoutDisplay : TransparentWidget
+{
+    GlitchSequencer *module;
+    std::shared_ptr<Font> font;
+
+    LengthReadoutDisplay()
+	{
+        font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+	}
+
+	void draw(const DrawArgs &args) override
+	{
+        const auto vg = args.vg;
+
+        nvgSave(vg);
+
+		std::string text_to_display = "16";
+
+		if(module)
+		{
+			text_to_display = std::to_string(module->sequencer.length);
+		}
+
+		nvgFontSize(vg, 12);
+		nvgFontFaceId(vg, font->handle);
+        nvgTextAlign(vg, NVG_ALIGN_CENTER);
+		nvgTextLetterSpacing(vg, -1);
+		nvgFillColor(vg, nvgRGB(3, 3, 3));
+		nvgText(vg, 5, 5, text_to_display.c_str(), NULL);
+
+		nvgRestore(vg);
+
+    }
+};
 
 struct GlitchSequencerWidget : ModuleWidget
 {
@@ -416,6 +475,11 @@ struct GlitchSequencerWidget : ModuleWidget
 		ca_display->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
 		ca_display->module = module;
 		addChild(ca_display);
+
+        LengthReadoutDisplay *length_readout_display = new LengthReadoutDisplay();
+        length_readout_display->box.pos = mm2px(Vec(30.0, 122.0));
+        length_readout_display->module = module;
+        addChild(length_readout_display);
 	}
 
 	void appendContextMenu(Menu *menu) override
