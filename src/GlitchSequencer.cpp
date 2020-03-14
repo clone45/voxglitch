@@ -1,7 +1,6 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "settings.hpp"
-#include "dr_wav.h"
 #include <vector>
 #include "cmath"
 
@@ -129,6 +128,11 @@ struct GlitchSequencer : Module
 struct CellularAutomatonDisplay : TransparentWidget
 {
     GlitchSequencer *module;
+    Vec drag_position;
+    bool mouse_lock = false;
+    bool cell_edit_value = true;
+    int old_row = -1;
+    int old_column = -1;
 
 	CellularAutomatonDisplay()
 	{
@@ -174,6 +178,62 @@ struct CellularAutomatonDisplay : TransparentWidget
         }
 
 		nvgRestore(vg);
+	}
+
+    std::pair<int, int> getRowAndColumnFromVec(Vec position)
+    {
+        int row = position.y / (CELL_HEIGHT + CELL_PADDING);
+        int column = position.x / (CELL_WIDTH + CELL_PADDING);
+
+        return {row, column};
+    }
+
+    void onButton(const event::Button &e) override
+    {
+        e.consume(this);
+
+		if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
+		{
+            if(this->mouse_lock == false)
+            {
+                this->mouse_lock = true;
+
+                int row, column;
+                tie(row, column)  = getRowAndColumnFromVec(e.pos);
+
+                // Store the value that's being set for later in case the user
+                // drags to set ("paints") additional triggers
+                this->cell_edit_value = ! module->sequencer.pattern[row][column];
+
+                // Set the trigger value in the sequencer
+                module->sequencer.pattern[row][column] = this->cell_edit_value;
+
+                // Store the initial drag position
+                drag_position = e.pos;
+            }
+		}
+        else if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_RELEASE)
+		{
+            this->mouse_lock = false;
+		}
+	}
+
+    void onDragMove(const event::DragMove &e) override
+    {
+		TransparentWidget::onDragMove(e);
+
+        double zoom = std::pow(2.f, settings::zoom);
+		drag_position = drag_position.plus(e.mouseDelta.div(zoom));
+
+        int row, column;
+        tie(row, column)  = getRowAndColumnFromVec(drag_position);
+
+        if((row != old_row) || (column != old_column))
+        {
+            module->sequencer.pattern[row][column] = this->cell_edit_value;
+            old_row = row;
+            old_column = column;
+        }
 	}
 };
 
