@@ -1,6 +1,4 @@
-// TODO: Implement reset input
-// TODO: Save/Load everything
-// TODO: blue theme?
+// TODO: show seed pattern under playback pattern
 
 #include "plugin.hpp"
 #include "osdialog.h"
@@ -157,6 +155,9 @@ struct CellularAutomatonSequencer
         copyPattern(&state, &seed);
     }
 
+    // step()
+    // Step the sequencer and return, as separate booleans, if any of the five
+    // trigger groups have been triggered.
     std::tuple<bool, bool, bool, bool, bool> step()
     {
         bool t1=false, t2=false, t3=false, t4=false, t5=false;
@@ -266,6 +267,61 @@ struct CellularAutomatonSequencer
     {
         this->length = length;
     }
+
+    //
+    // unsigned int packPattern(pointer to a pattern)
+    //
+    // Used to compress the boolean array into an integer for saving to a patch
+
+    std::string packPattern(bool (*pattern)[SEQUENCER_ROWS][SEQUENCER_COLUMNS])
+    {
+        std::string packed_pattern_data = "";
+
+        for(unsigned int row = 0; row < SEQUENCER_ROWS; row++)
+        {
+            for(unsigned int column = 0; column < SEQUENCER_COLUMNS; column++)
+            {
+                if((*pattern)[row][column] == 1)
+                {
+                    packed_pattern_data = packed_pattern_data + '1';
+                }
+                else
+                {
+                    packed_pattern_data = packed_pattern_data + '0';
+                }
+            }
+        }
+
+        return(packed_pattern_data);
+    }
+
+    //
+    // void unpackPattern(pointer to a pattern)
+    //
+    // Used to uncompress the integer created from packPattern when loading
+    // a patch.
+
+    void unpackPattern(std::string packed_pattern_data, bool (*pattern)[SEQUENCER_ROWS][SEQUENCER_COLUMNS])
+    {
+        unsigned int string_index = 0;
+
+        for(unsigned int row = 0; row < SEQUENCER_ROWS; row++)
+        {
+            for(unsigned int column = 0; column < SEQUENCER_COLUMNS; column++)
+            {
+                if(packed_pattern_data[string_index] == '0')
+                {
+                    (*pattern)[row][column] = 0;
+                }
+                else
+                {
+                    (*pattern)[row][column] = 1;
+                }
+
+                string_index++;
+            }
+        }
+    }
 };
 
 
@@ -346,11 +402,70 @@ struct GlitchSequencer : Module
     json_t *dataToJson() override
     {
         json_t *root = json_object();
+
+        //
+        // Prepare seed and trigger patterns for saving
+        //
+
+        std::string packed_seed_pattern = sequencer.packPattern(&sequencer.seed);
+
+        std::string packed_trigger_patterns[5];
+        for(unsigned int i=0; i<NUMBER_OF_TRIGGER_GROUPS; i++)
+        {
+            packed_trigger_patterns[i] = sequencer.packPattern(&sequencer.triggers[i]);
+        }
+
+        //
+        // Save seed pattern
+        //
+		json_object_set_new(root, "seed_pattern", json_string(packed_seed_pattern.c_str()));
+
+
+        //
+        // Save trigger patterns
+        //
+
+        json_t *trigger_groups_json_array = json_array();
+
+		for(int i=0; i<NUMBER_OF_TRIGGER_GROUPS; i++)
+		{
+			json_array_append_new(trigger_groups_json_array, json_string(packed_trigger_patterns[i].c_str()));
+        }
+
+        json_object_set(root, "trigger_group_patterns", trigger_groups_json_array);
+        json_decref(trigger_groups_json_array);
+
+        // Done
     	return root;
     }
 
     void dataFromJson(json_t *root) override
     {
+        // Load seed_pattern
+        json_t *loaded_seed_pattern_json = json_object_get(root, ("seed_pattern"));
+		if(loaded_seed_pattern_json) sequencer.unpackPattern(json_string_value(loaded_seed_pattern_json), &sequencer.seed);
+
+        // It's necessary to restart the sequence because it copies the seed
+        // into the current state.  Otherwise, the old default seed would still
+        // be used for the first loop of the sequence.
+        sequencer.restart_sequence();
+
+        //
+        // load trigger group patterns
+        //
+
+        json_t *trigger_group_json_array = json_object_get(root, "trigger_group_patterns");
+
+		if(trigger_group_json_array)
+		{
+			size_t i;
+			json_t *loaded_trigger_pattern_json;
+
+			json_array_foreach(trigger_group_json_array, i, loaded_trigger_pattern_json)
+			{
+                sequencer.unpackPattern(json_string_value(loaded_trigger_pattern_json), &sequencer.triggers[i]);
+			}
+		}
     }
 
     void toggleTriggerGroup(int index)
