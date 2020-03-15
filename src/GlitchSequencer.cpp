@@ -6,6 +6,7 @@
 #define MAX_SEQUENCE_LENGTH 64
 #define SEQUENCER_ROWS 16
 #define SEQUENCER_COLUMNS 16
+#define NUMBER_OF_TRIGGER_GROUPS 5
 
 #define DRAW_AREA_WIDTH 277.4
 #define DRAW_AREA_HEIGHT 277.4
@@ -152,13 +153,18 @@ struct GlitchSequencer : Module
     dsp::SchmittTrigger stepTrigger;
     bool mode = PLAY_MODE;
 
+    dsp::SchmittTrigger trigger_group_button_schmitt_trigger[5];
+    bool trigger_button_is_triggered[5];
+    unsigned int trigger_group_buttons[5];
+    int selected_trigger_group_index = -1; // -1 means "none selected"
+
 	enum ParamIds {
         LENGTH_KNOB,
-        SEQUENCER_1_BUTTON,
-        SEQUENCER_2_BUTTON,
-        SEQUENCER_3_BUTTON,
-        SEQUENCER_4_BUTTON,
-        SEQUENCER_5_BUTTON,
+        TRIGGER_GROUP_1_BUTTON,
+        TRIGGER_GROUP_2_BUTTON,
+        TRIGGER_GROUP_3_BUTTON,
+        TRIGGER_GROUP_4_BUTTON,
+        TRIGGER_GROUP_5_BUTTON,
         NUM_PARAMS
 	};
 	enum InputIds {
@@ -175,11 +181,11 @@ struct GlitchSequencer : Module
 		NUM_OUTPUTS
 	};
 	enum LightIds {
-        SEQUENCER_1_LIGHT,
-        SEQUENCER_2_LIGHT,
-        SEQUENCER_3_LIGHT,
-        SEQUENCER_4_LIGHT,
-        SEQUENCER_5_LIGHT,
+        TRIGGER_GROUP_1_LIGHT,
+        TRIGGER_GROUP_2_LIGHT,
+        TRIGGER_GROUP_3_LIGHT,
+        TRIGGER_GROUP_4_LIGHT,
+        TRIGGER_GROUP_5_LIGHT,
 		NUM_LIGHTS
 	};
 
@@ -191,11 +197,17 @@ struct GlitchSequencer : Module
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 
         configParam(LENGTH_KNOB, 1, MAX_SEQUENCE_LENGTH, 16, "LengthKnob");
-        configParam(SEQUENCER_1_BUTTON, 0.f, 1.f, 0.f, "Sequence1Button");
-        configParam(SEQUENCER_2_BUTTON, 0.f, 1.f, 0.f, "Sequence2Button");
-        configParam(SEQUENCER_3_BUTTON, 0.f, 1.f, 0.f, "Sequence3Button");
-        configParam(SEQUENCER_4_BUTTON, 0.f, 1.f, 0.f, "Sequence4Button");
-        configParam(SEQUENCER_5_BUTTON, 0.f, 1.f, 0.f, "Sequence5Button");
+        configParam(TRIGGER_GROUP_1_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup1Button");
+        configParam(TRIGGER_GROUP_2_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup2Button");
+        configParam(TRIGGER_GROUP_3_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup3Button");
+        configParam(TRIGGER_GROUP_4_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup4Button");
+        configParam(TRIGGER_GROUP_5_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup5Button");
+
+        trigger_group_buttons[0] = TRIGGER_GROUP_1_BUTTON;
+        trigger_group_buttons[1] = TRIGGER_GROUP_2_BUTTON;
+        trigger_group_buttons[2] = TRIGGER_GROUP_3_BUTTON;
+        trigger_group_buttons[3] = TRIGGER_GROUP_4_BUTTON;
+        trigger_group_buttons[4] = TRIGGER_GROUP_5_BUTTON;
 	}
 
     json_t *dataToJson() override
@@ -208,16 +220,38 @@ struct GlitchSequencer : Module
     {
     }
 
+    void toggleTriggerGroup(int index)
+    {
+        if(selected_trigger_group_index == index)
+        {
+            selected_trigger_group_index = -1;
+        }
+        else
+        {
+            selected_trigger_group_index = index;
+        }
+    }
+
 	void process(const ProcessArgs &args) override
 	{
         sequencer.setLength(params[LENGTH_KNOB].getValue());
 
-        bool step_trigger = stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f));
+        for(unsigned int i=0; i < NUMBER_OF_TRIGGER_GROUPS; i++)
+        {
+            trigger_button_is_triggered[i] = trigger_group_button_schmitt_trigger[i].process(params[trigger_group_buttons[i]].getValue());
+            if(trigger_button_is_triggered[i]) toggleTriggerGroup(i);
+        }
 
-        if(step_trigger)
+        if(stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
         {
             sequencer.step();
         }
+
+        lights[TRIGGER_GROUP_1_LIGHT].setBrightness(selected_trigger_group_index == 0);
+        lights[TRIGGER_GROUP_2_LIGHT].setBrightness(selected_trigger_group_index == 1);
+        lights[TRIGGER_GROUP_3_LIGHT].setBrightness(selected_trigger_group_index == 2);
+        lights[TRIGGER_GROUP_4_LIGHT].setBrightness(selected_trigger_group_index == 3);
+        lights[TRIGGER_GROUP_5_LIGHT].setBrightness(selected_trigger_group_index == 4);
 	}
 };
 
@@ -449,20 +483,20 @@ struct GlitchSequencerWidget : ModuleWidget
         addParam(createParamCentered<Trimpot>(mm2px(Vec(10 + (13.544 * 2), inputs_y)), module, GlitchSequencer::LENGTH_KNOB));
 
         // Sequence 1 button
-        addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x, button_group_y)), module, GlitchSequencer::SEQUENCER_1_BUTTON));
-		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x, button_group_y)), module, GlitchSequencer::SEQUENCER_1_LIGHT));
+        addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x, button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_1_BUTTON));
+		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x, button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_1_LIGHT));
         // Sequence 2 button
-        addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y)), module, GlitchSequencer::SEQUENCER_2_BUTTON));
-		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y)), module, GlitchSequencer::SEQUENCER_2_LIGHT));
+        addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_2_BUTTON));
+		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_2_LIGHT));
         // Sequence 3 button
-        addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y)), module, GlitchSequencer::SEQUENCER_3_BUTTON));
-		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y)), module, GlitchSequencer::SEQUENCER_3_LIGHT));
+        addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_3_BUTTON));
+		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_3_LIGHT));
         // Sequence 4 button
-        addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y)), module, GlitchSequencer::SEQUENCER_4_BUTTON));
-		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y)), module, GlitchSequencer::SEQUENCER_4_LIGHT));
+        addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_4_BUTTON));
+		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_4_LIGHT));
         // Sequence 5 button
-        addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y)), module, GlitchSequencer::SEQUENCER_5_BUTTON));
-		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y)), module, GlitchSequencer::SEQUENCER_5_LIGHT));
+        addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_5_BUTTON));
+		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_5_LIGHT));
 
         float y = button_group_y + 10;
         addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(button_group_x, y)), module, GlitchSequencer::GATE_OUTPUT_1));
