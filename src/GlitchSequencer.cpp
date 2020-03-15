@@ -307,15 +307,18 @@ struct CellularAutomatonDisplay : TransparentWidget
                             break;
 
                         case EDIT_SEED_MODE:
-                            if(module->sequencer.state[row][column]) nvgFillColor(vg, nvgRGB(75, 75, 75));
+                            if(module->sequencer.state[row][column]) nvgFillColor(vg, nvgRGB(65, 65, 65));
                             if(module->sequencer.seed[row][column]) nvgFillColor(vg, nvgRGB(255, 255, 255));
                             break;
 
                         case EDIT_TRIGGERS_MODE:
                             if(module->selected_trigger_group_index >= 0)
                             {
-                                if(module->sequencer.state[row][column]) nvgFillColor(vg, nvgRGB(75, 75, 75));
-                                if(module->sequencer.triggers[module->selected_trigger_group_index][row][column]) nvgFillColor(vg, nvgRGB(255, 255, 255));
+                                if(module->sequencer.state[row][column]) nvgFillColor(vg, nvgRGB(65, 65, 65));
+                                bool cell_contains_trigger = module->sequencer.triggers[module->selected_trigger_group_index][row][column];
+                                bool is_triggered = module->sequencer.state[row][column];
+                                if(cell_contains_trigger) nvgFillColor(vg, nvgRGB(140, 140, 140));
+                                if(cell_contains_trigger && is_triggered) nvgFillColor(vg, nvgRGB(255, 255, 255));
                             }
                             break;
                     }
