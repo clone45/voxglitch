@@ -1,4 +1,6 @@
 // TODO: show seed pattern under playback pattern
+// TODO: add ability to clear a pattern completely
+// TODO: pattern shift using arrow keys
 
 #include "plugin.hpp"
 #include "osdialog.h"
@@ -587,6 +589,7 @@ struct CellularAutomatonDisplay : TransparentWidget
                     switch(module->mode)
                     {
                         case PLAY_MODE:
+                            if(module->sequencer.seed[row][column]) nvgFillColor(vg, nvgRGB(80, 80, 80));
                             if(module->sequencer.state[row][column]) nvgFillColor(vg, nvgRGB(255, 255, 255));
                             break;
 
