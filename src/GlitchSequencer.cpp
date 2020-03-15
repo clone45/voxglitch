@@ -1,5 +1,6 @@
 // TODO: Implement reset input
 // TODO: Save/Load everything
+// TODO: blue theme?
 
 #include "plugin.hpp"
 #include "osdialog.h"
@@ -153,13 +154,6 @@ struct CellularAutomatonSequencer
         clearPattern(&state);
         clearPattern(&next);
 
-        /*
-        for(unsigned int i=0; i<NUMBER_OF_TRIGGER_GROUPS; i++)
-        {
-            clearPattern(&triggers[i]);
-        }
-        */
-
         copyPattern(&state, &seed);
     }
 
@@ -179,6 +173,11 @@ struct CellularAutomatonSequencer
         }
 
         return {t1, t2, t3, t4, t5 };
+    }
+
+    void reset()
+    {
+        restart_sequence();
     }
 
     void restart_sequence()
@@ -273,15 +272,18 @@ struct CellularAutomatonSequencer
 struct GlitchSequencer : Module
 {
     CellularAutomatonSequencer sequencer;
-    dsp::SchmittTrigger stepTrigger;
-    dsp::PulseGenerator gateOutputPulseGenerators[NUMBER_OF_TRIGGER_GROUPS];
-    unsigned int mode = PLAY_MODE;
 
+    dsp::SchmittTrigger stepTrigger;
+    dsp::SchmittTrigger resetTrigger;
     dsp::SchmittTrigger trigger_group_button_schmitt_trigger[5];
+    dsp::PulseGenerator gateOutputPulseGenerators[NUMBER_OF_TRIGGER_GROUPS];
+
+    unsigned int mode = PLAY_MODE;
     bool trigger_button_is_triggered[NUMBER_OF_TRIGGER_GROUPS];
     unsigned int trigger_group_buttons[NUMBER_OF_TRIGGER_GROUPS];
     unsigned int gate_outputs[NUMBER_OF_TRIGGER_GROUPS];
     int selected_trigger_group_index = -1; // -1 means "none selected"
+    long clock_ignore_on_reset = 0;
 
 	enum ParamIds {
         LENGTH_KNOB,
@@ -370,15 +372,31 @@ struct GlitchSequencer : Module
         bool t1=false, t2=false, t3=false, t4=false, t5=false;
         bool trigger_output_pulse = false;
 
+        // Set sequencer length based on LEN knob
         sequencer.setLength(params[LENGTH_KNOB].getValue());
 
+        // Process Reset input
+        if(resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+        {
+            // Set up a (reverse) counter so that the clock input will ignore
+            // incoming clock pulses for 1 millisecond after a reset input. This
+            // is to comply with VCV Rack's standards.  See section "Timing" at
+            // https://vcvrack.com/manual/VoltageStandards
+
+            clock_ignore_on_reset = (long) (args.sampleRate / 100);
+            stepTrigger.reset();
+            sequencer.reset();
+        }
+
+        // Process when the user presses one of the 5 buttons above the trigger outputs
         for(unsigned int i=0; i < NUMBER_OF_TRIGGER_GROUPS; i++)
         {
             trigger_button_is_triggered[i] = trigger_group_button_schmitt_trigger[i].process(params[trigger_group_buttons[i]].getValue());
             if(trigger_button_is_triggered[i]) toggleTriggerGroup(i);
         }
 
-        if(stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+        // Process Step Input
+        if((clock_ignore_on_reset == 0) && stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
         {
             tie(t1,t2,t3,t4,t5) = sequencer.step();
 
@@ -389,6 +407,7 @@ struct GlitchSequencer : Module
             if(t5) gateOutputPulseGenerators[4].trigger(0.01f);
         }
 
+        // Output gates
         for(unsigned int i=0; i < NUMBER_OF_TRIGGER_GROUPS; i++)
         {
             trigger_output_pulse = gateOutputPulseGenerators[i].process(1.0 / args.sampleRate);
@@ -400,6 +419,8 @@ struct GlitchSequencer : Module
         lights[TRIGGER_GROUP_3_LIGHT].setBrightness(selected_trigger_group_index == 2);
         lights[TRIGGER_GROUP_4_LIGHT].setBrightness(selected_trigger_group_index == 3);
         lights[TRIGGER_GROUP_5_LIGHT].setBrightness(selected_trigger_group_index == 4);
+
+        if (clock_ignore_on_reset > 0) clock_ignore_on_reset--;
 	}
 };
 
