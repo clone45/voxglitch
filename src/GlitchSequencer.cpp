@@ -19,7 +19,7 @@
 
 #define PLAY_MODE 0
 #define EDIT_SEED_MODE 1
-#define EDIT_TRIIGERS_MODE 2
+#define EDIT_TRIGGERS_MODE 2
 #define EDIT_LENGTH_MODE 3
 
 using namespace std;
@@ -29,7 +29,7 @@ struct CellularAutomatonSequencer
     unsigned int position = 0;
     unsigned int length = 0;
 
-    bool pattern[SEQUENCER_ROWS][SEQUENCER_COLUMNS] = {
+    bool seed[SEQUENCER_ROWS][SEQUENCER_COLUMNS] = {
         { 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
         { 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
         { 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
@@ -50,6 +50,7 @@ struct CellularAutomatonSequencer
 
     bool state[SEQUENCER_ROWS][SEQUENCER_COLUMNS];
     bool next[SEQUENCER_ROWS][SEQUENCER_COLUMNS];
+    bool triggers[NUMBER_OF_TRIGGER_GROUPS][SEQUENCER_ROWS][SEQUENCER_COLUMNS];
 
     // constructor
     CellularAutomatonSequencer()
@@ -57,15 +58,12 @@ struct CellularAutomatonSequencer
         clearPattern(&state);
         clearPattern(&next);
 
-        for(unsigned int row = 0; row < SEQUENCER_ROWS; row++)
+        for(unsigned int i=0; i<NUMBER_OF_TRIGGER_GROUPS; i++)
         {
-            for(unsigned int column = 0; column < SEQUENCER_COLUMNS; column++)
-            {
-                state[row][column] = pattern[row][column];
-            }
+            clearPattern(&triggers[i]);
         }
 
-        // copyPattern(&state, &pattern);
+        copyPattern(&state, &seed);
     }
 
     void step()
@@ -85,7 +83,7 @@ struct CellularAutomatonSequencer
     void restart_sequence()
     {
         position = 0;
-        copyPattern(&state, &pattern);  // dst < src
+        copyPattern(&state, &seed);  // dst < src
         clearPattern(&next);
     }
 
@@ -151,7 +149,7 @@ struct GlitchSequencer : Module
 {
     CellularAutomatonSequencer sequencer;
     dsp::SchmittTrigger stepTrigger;
-    bool mode = PLAY_MODE;
+    unsigned int mode = PLAY_MODE;
 
     dsp::SchmittTrigger trigger_group_button_schmitt_trigger[5];
     bool trigger_button_is_triggered[5];
@@ -225,10 +223,12 @@ struct GlitchSequencer : Module
         if(selected_trigger_group_index == index)
         {
             selected_trigger_group_index = -1;
+            mode = PLAY_MODE;
         }
         else
         {
             selected_trigger_group_index = index;
+            mode = EDIT_TRIGGERS_MODE;
         }
     }
 
@@ -308,7 +308,15 @@ struct CellularAutomatonDisplay : TransparentWidget
 
                         case EDIT_SEED_MODE:
                             if(module->sequencer.state[row][column]) nvgFillColor(vg, nvgRGB(75, 75, 75));
-                            if(module->sequencer.pattern[row][column]) nvgFillColor(vg, nvgRGB(255, 255, 255));
+                            if(module->sequencer.seed[row][column]) nvgFillColor(vg, nvgRGB(255, 255, 255));
+                            break;
+
+                        case EDIT_TRIGGERS_MODE:
+                            if(module->selected_trigger_group_index >= 0)
+                            {
+                                if(module->sequencer.state[row][column]) nvgFillColor(vg, nvgRGB(75, 75, 75));
+                                if(module->sequencer.triggers[module->selected_trigger_group_index][row][column]) nvgFillColor(vg, nvgRGB(255, 255, 255));
+                            }
                             break;
                     }
 
@@ -329,7 +337,7 @@ struct CellularAutomatonDisplay : TransparentWidget
                     nvgRect(vg, (column * CELL_WIDTH) + (column * CELL_PADDING), (row * CELL_HEIGHT) + (row * CELL_PADDING), CELL_WIDTH, CELL_HEIGHT);
 
                     nvgFillColor(vg, nvgRGB(55, 55, 55)); // Default color for inactive square
-                    if(ca.pattern[row][column]) nvgFillColor(vg, nvgRGB(255, 255, 255));
+                    if(ca.seed[row][column]) nvgFillColor(vg, nvgRGB(255, 255, 255));
 
                     nvgFill(vg);
                 }
@@ -350,7 +358,7 @@ struct CellularAutomatonDisplay : TransparentWidget
 
     void setSequencerCell(unsigned int row, unsigned int column, bool value)
     {
-        module->sequencer.pattern[row][column] = this->cell_edit_value;
+        module->sequencer.seed[row][column] = this->cell_edit_value;
 
         // If the sequencer is at the first step, also update the current "state"
         // The first "state" of the sequencer should always mirror the pattern
@@ -370,12 +378,23 @@ struct CellularAutomatonDisplay : TransparentWidget
                 int row, column;
                 tie(row, column) = getRowAndColumnFromVec(e.pos);
 
-                // Store the value that's being set for later in case the user
-                // drags to set ("paints") additional triggers
-                this->cell_edit_value = ! module->sequencer.pattern[row][column];
+                if(module->mode == EDIT_SEED_MODE)
+                {
+                    // Store the value that's being set for later in case the user
+                    // drags to set ("paints") additional triggers
+                    this->cell_edit_value = ! module->sequencer.seed[row][column];
 
-                // Set the cell value in the sequencer
-                this->setSequencerCell(row, column, this->cell_edit_value);
+                    // Set the cell value in the sequencer
+                    this->setSequencerCell(row, column, this->cell_edit_value);
+                }
+
+                if(module->mode == EDIT_TRIGGERS_MODE && module->selected_trigger_group_index >= 0)
+                {
+                    // Store the value that's being set for later in case the user
+                    // drags to set ("paints") additional triggers
+                    this->cell_edit_value = ! module->sequencer.triggers[module->selected_trigger_group_index][row][column];
+                    module->sequencer.triggers[module->selected_trigger_group_index][row][column] = this->cell_edit_value;
+                }
 
                 // Store the initial drag position
                 drag_position = e.pos;
@@ -399,7 +418,15 @@ struct CellularAutomatonDisplay : TransparentWidget
 
         if((row != old_row) || (column != old_column))
         {
-            this->setSequencerCell(row, column, this->cell_edit_value);
+            if(module->mode == EDIT_SEED_MODE)
+            {
+                this->setSequencerCell(row, column, this->cell_edit_value);
+            }
+
+            if(module->mode == EDIT_TRIGGERS_MODE && module->selected_trigger_group_index >= 0)
+            {
+                module->sequencer.triggers[module->selected_trigger_group_index][row][column] = this->cell_edit_value;
+            }
 
             old_row = row;
             old_column = column;
@@ -409,14 +436,13 @@ struct CellularAutomatonDisplay : TransparentWidget
     void onEnter(const event::Enter &e) override
     {
         TransparentWidget::onEnter(e);
-        this->module->mode = EDIT_SEED_MODE;
-        DEBUG("On enter called");
+        if(this->module->mode == PLAY_MODE) this->module->mode = EDIT_SEED_MODE;
     }
 
     void onLeave(const event::Leave &e) override
     {
         TransparentWidget::onLeave(e);
-        this->module->mode = PLAY_MODE;
+        if(this->module->mode == EDIT_SEED_MODE) this->module->mode = PLAY_MODE;
     }
 
     void onHover(const event::Hover& e) override {
