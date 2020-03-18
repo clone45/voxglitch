@@ -1,4 +1,3 @@
-// TODO: show seed pattern under playback pattern
 // TODO: add ability to clear a pattern completely
 // TODO: pattern shift using arrow keys
 
