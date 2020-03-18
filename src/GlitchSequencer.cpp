@@ -156,13 +156,11 @@ struct CellularAutomatonSequencer
         copyPattern(&state, &seed);
     }
 
-    // step()
     // Step the sequencer and return, as separate booleans, if any of the five
     // trigger groups have been triggered.
-    std::tuple<bool, bool, bool, bool, bool> step()
-    {
-        bool t1=false, t2=false, t3=false, t4=false, t5=false;
 
+    void step(bool *trigger_results)
+    {
         position ++;
 
         if(position >= length)
@@ -171,10 +169,8 @@ struct CellularAutomatonSequencer
         }
         else
         {
-            tie(t1,t2,t3,t4,t5) = calculate_next_state();
+            calculate_next_state(trigger_results);
         }
-
-        return {t1, t2, t3, t4, t5 };
     }
 
     void reset()
@@ -189,13 +185,11 @@ struct CellularAutomatonSequencer
         clearPattern(&next);
     }
 
-    std::tuple<bool, bool, bool, bool, bool> calculate_next_state()
+    void calculate_next_state(bool *trigger_results)
     {
-        bool group_triggered[NUMBER_OF_TRIGGER_GROUPS];
-
         for(unsigned int i=0; i<NUMBER_OF_TRIGGER_GROUPS; i++)
         {
-            group_triggered[i] = false;
+            trigger_results[i] = false;
         }
 
         for(unsigned int row = 1; row < SEQUENCER_ROWS - 1; row++)
@@ -225,21 +219,13 @@ struct CellularAutomatonSequencer
                 {
                     for(unsigned int i=0; i<NUMBER_OF_TRIGGER_GROUPS; i++)
                     {
-                        if(triggers[i][row][column]) group_triggered[i] = true;
+                        if(triggers[i][row][column]) trigger_results[i] = true;
                     }
                 }
             }
         }
 
         copyPattern(&state, &next); // dst < src
-
-        return {
-            group_triggered[0],
-            group_triggered[1],
-            group_triggered[2],
-            group_triggered[3],
-            group_triggered[4],
-        };
     }
 
     void copyPattern(bool (*dst)[SEQUENCER_ROWS][SEQUENCER_COLUMNS], bool (*src)[SEQUENCER_ROWS][SEQUENCER_COLUMNS])
@@ -341,6 +327,8 @@ struct GlitchSequencer : Module
     unsigned int gate_outputs[NUMBER_OF_TRIGGER_GROUPS];
     int selected_trigger_group_index = -1; // -1 means "none selected"
     long clock_ignore_on_reset = 0;
+
+    bool trigger_results[NUMBER_OF_TRIGGER_GROUPS];
 
 	enum ParamIds {
         LENGTH_KNOB,
@@ -485,7 +473,6 @@ struct GlitchSequencer : Module
 
 	void process(const ProcessArgs &args) override
 	{
-        bool t1=false, t2=false, t3=false, t4=false, t5=false;
         bool trigger_output_pulse = false;
 
         // Set sequencer length based on LEN knob
@@ -514,13 +501,12 @@ struct GlitchSequencer : Module
         // Process Step Input
         if((clock_ignore_on_reset == 0) && stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
         {
-            tie(t1,t2,t3,t4,t5) = sequencer.step();
+            sequencer.step(trigger_results);
 
-            if(t1) gateOutputPulseGenerators[0].trigger(0.01f);
-            if(t2) gateOutputPulseGenerators[1].trigger(0.01f);
-            if(t3) gateOutputPulseGenerators[2].trigger(0.01f);
-            if(t4) gateOutputPulseGenerators[3].trigger(0.01f);
-            if(t5) gateOutputPulseGenerators[4].trigger(0.01f);
+            for(unsigned int i=0; i < NUMBER_OF_TRIGGER_GROUPS; i++)
+            {
+                if(trigger_results[i]) gateOutputPulseGenerators[i].trigger(0.01f);
+            }
         }
 
         // Output gates
@@ -530,6 +516,7 @@ struct GlitchSequencer : Module
 		    outputs[gate_outputs[i]].setVoltage((trigger_output_pulse ? 10.0f : 0.0f));
         }
 
+        // Trigger group selection lights
         lights[TRIGGER_GROUP_1_LIGHT].setBrightness(selected_trigger_group_index == 0);
         lights[TRIGGER_GROUP_2_LIGHT].setBrightness(selected_trigger_group_index == 1);
         lights[TRIGGER_GROUP_3_LIGHT].setBrightness(selected_trigger_group_index == 2);
