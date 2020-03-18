@@ -13,6 +13,7 @@ extern Model *modelRepeater;
 extern Model *modelWavBank;
 extern Model *modelXY;
 extern Model *modelGhosts;
+extern Model *modelGlitchSequencer;
 extern Model *modelGoblins;
 extern Model *modelGrainEngine;
 extern Model *modelAutobreak;

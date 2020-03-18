@@ -26,6 +26,12 @@
         "tags": ["Sequencer"]
     },
     {
+        "slug": "glitchsequencer",
+        "name": "Glitch Sequencer",
+        "description": "Cellular Automaton Gate Sequencer",
+        "tags": ["Sequencer"]
+    },
+    {
         "slug": "ghosts",
         "name": "Ghosts",
         "description": "Granular synthesis sample player/scanner with looping grains.",

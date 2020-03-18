@@ -12,6 +12,7 @@ void init(Plugin* p) {
 	p->addModel(modelRepeater);
 	p->addModel(modelWavBank);
 	p->addModel(modelXY);
+    p->addModel(modelGlitchSequencer);
 	p->addModel(modelGhosts);
 	p->addModel(modelGoblins);
     p->addModel(modelGrainEngine);
