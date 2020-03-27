@@ -90,6 +90,7 @@ struct VoltageSequencer : Sequencer
     std::array<double, MAX_SEQUENCER_STEPS> sequence;
     unsigned int voltage_range_index = 0; // see voltage_ranges in DigitalSequencer.h
     unsigned int snap_division_index = 0;
+    bool sample_and_hold = false;
 
     // constructor
     VoltageSequencer()
@@ -472,6 +473,17 @@ struct DigitalSequencer : Module
         json_object_set(json_root, "snap_divisions", sequencer_snap_json_array);
         json_decref(sequencer_snap_json_array);
 
+        //
+        // Save sequencer sample and hold selections
+        //
+        json_t *sequencer_sh_json_array = json_array();
+        for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
+        {
+            json_array_append_new(sequencer_sh_json_array, json_integer(this->voltage_sequencers[sequencer_number].sample_and_hold));
+        }
+        json_object_set(json_root, "sample_and_hold", sequencer_sh_json_array);
+        json_decref(sequencer_sh_json_array);
+
 		return json_root;
 	}
 
@@ -565,6 +577,22 @@ struct DigitalSequencer : Module
             json_array_foreach(snap_divions_json_array, sequencer_number, snap_divion_json)
             {
                 this->voltage_sequencers[sequencer_number].snap_division_index = json_integer_value(snap_divion_json);
+            }
+        }
+
+        //
+        // Load Sample and Hold settings
+        //
+        json_t *sh_json_array = json_object_get(json_root, "sample_and_hold");
+
+        if(sh_json_array)
+        {
+            size_t sequencer_number;
+            json_t *sh_json;
+
+            json_array_foreach(sh_json_array, sequencer_number, sh_json)
+            {
+                this->voltage_sequencers[sequencer_number].sample_and_hold = json_integer_value(sh_json);
             }
         }
 	}
@@ -668,7 +696,14 @@ struct DigitalSequencer : Module
         // output values
         for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
         {
-            outputs[voltage_outputs[i]].setVoltage(voltage_sequencers[i].getOutput());
+            if(voltage_sequencers[i].sample_and_hold)
+            {
+                if(gate_sequencers[i].getValue()) outputs[voltage_outputs[i]].setVoltage(voltage_sequencers[i].getOutput());
+            }
+            else
+            {
+                outputs[voltage_outputs[i]].setVoltage(voltage_sequencers[i].getOutput());
+            }
         }
 
         // process trigger outputs
@@ -1301,6 +1336,17 @@ struct DigitalSequencerWidget : ModuleWidget
         addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(173, 119.309)), module, DigitalSequencer::SEQ6_GATE_OUTPUT));
 	}
 
+
+    // Sample and Hold values
+    struct SampleAndHoldItem : MenuItem {
+        DigitalSequencer *module;
+        int sequencer_number = 0;
+
+        void onAction(const event::Action &e) override {
+            module->voltage_sequencers[sequencer_number].sample_and_hold ^= true; // flip the value
+        }
+    };
+
     //
     // INPUT SNAP MENUS
     //
@@ -1385,6 +1431,11 @@ struct DigitalSequencerWidget : ModuleWidget
             input_snap_item->sequencer_number = this->sequencer_number;
 			input_snap_item->module = module;
 			menu->addChild(input_snap_item);
+
+            SampleAndHoldItem *sample_and_hold_item = createMenuItem<SampleAndHoldItem>("Sample & Hold", CHECKMARK(module->voltage_sequencers[sequencer_number].sample_and_hold));
+            sample_and_hold_item->sequencer_number = this->sequencer_number;
+			sample_and_hold_item->module = module;
+			menu->addChild(sample_and_hold_item);
 
 			return menu;
 		}
