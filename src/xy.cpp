@@ -16,4 +16,4 @@
 #include "XY/XYDisplay.hpp"
 #include "XY/XYWidget.hpp"
 
-Model* modelXY = createModel<XY, XYWidget>("XY");
+Model* modelXY = createModel<XY, XYWidget>("xy");
