@@ -1,6 +1,6 @@
 #pragma once
 #include <stack>
-#include "submodules.hpp"
+#include "../Common/submodules.hpp"
 #define REMOVAL_RAMP_ACCUMULATOR 0.01f
 
 struct Ghost
