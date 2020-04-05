@@ -100,6 +100,9 @@ struct CellularAutomatonDisplay : TransparentWidget
     int row = position.y / (CELL_HEIGHT + CELL_PADDING);
     int column = position.x / (CELL_WIDTH + CELL_PADDING);
 
+    row = clamp(row, 0, SEQUENCER_ROWS - 1);
+    column = clamp(column, 0, SEQUENCER_COLUMNS - 1);
+
     return {row, column};
   }
 
@@ -160,23 +163,30 @@ struct CellularAutomatonDisplay : TransparentWidget
     double zoom = std::pow(2.f, settings::zoom);
     drag_position = drag_position.plus(e.mouseDelta.div(zoom));
 
-    int row, column;
-    std::tie(row, column)  = getRowAndColumnFromVec(drag_position);
-
-    if((row != old_row) || (column != old_column))
+    if(isMouseInDrawArea(drag_position))
     {
-      if(module->mode == EDIT_SEED_MODE)
-      {
-        this->setSequencerCell(row, column, this->cell_edit_value);
-      }
+      int row, column;
+      std::tie(row, column) = getRowAndColumnFromVec(drag_position);
 
-      if(module->mode == EDIT_TRIGGERS_MODE && module->selected_trigger_group_index >= 0)
+      if((row != old_row) || (column != old_column))
       {
-        module->sequencer.triggers[module->selected_trigger_group_index][row][column] = this->cell_edit_value;
-      }
+        if(module->mode == EDIT_SEED_MODE)
+        {
+          this->setSequencerCell(row, column, this->cell_edit_value);
+        }
 
-      old_row = row;
-      old_column = column;
+        if(module->mode == EDIT_TRIGGERS_MODE && module->selected_trigger_group_index >= 0)
+        {
+          module->sequencer.triggers[module->selected_trigger_group_index][row][column] = this->cell_edit_value;
+        }
+
+        old_row = row;
+        old_column = column;
+      }
+    }
+    else
+    {
+      this->mouse_lock = false;
     }
   }
 
@@ -195,5 +205,14 @@ struct CellularAutomatonDisplay : TransparentWidget
   void onHover(const event::Hover& e) override {
     TransparentWidget::onHover(e);
     e.consume(this);
+  }
+
+  bool isMouseInDrawArea(Vec position)
+  {
+    if(position.x < 0) return(false);
+    if(position.y < 0) return(false);
+    if(position.x >= DRAW_AREA_WIDTH) return(false);
+    if(position.y >= DRAW_AREA_HEIGHT) return(false);
+    return(true);
   }
 };
