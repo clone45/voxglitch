@@ -56,6 +56,12 @@
         "tags": ["Sampler"]
     },
     {
+        "slug": "scatter",
+        "name": "Scatter",
+        "description": "Sample player for overlapping or staggered playback.  Good for multiple hand-claps.",
+        "tags": ["Sampler"]
+    },
+    {
         "slug": "wavbank",
         "name": "Wav Bank",
         "description": "Sample player that can load and switch between all .wav files in a folder.",

@@ -1,0 +1,13 @@
+//
+// Voxglitch "Scatter" module for VCV Rack
+//
+
+#include "plugin.hpp"
+#include "osdialog.h"
+#include "Common/sample.hpp"
+
+#include "Scatter/defines.h"
+#include "Scatter/Scatter.hpp"
+#include "Scatter/ScatterWidget.hpp"
+
+Model* modelScatter = createModel<Scatter, ScatterWidget>("scatter");

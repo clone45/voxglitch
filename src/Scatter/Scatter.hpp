@@ -1,5 +1,11 @@
 struct Scatter : Module
 {
+  std::string root_dir;
+	std::string path;
+
+  Sample samples[NUMBER_OF_SAMPLES];
+	std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
+  
 	Scatter()
 	{
 
