@@ -8,6 +8,7 @@
 
 #include "Scatter/defines.h"
 #include "Scatter/Scatter.hpp"
+#include "Scatter/ScatterLoadSample.hpp"
 #include "Scatter/ScatterWidget.hpp"
 
 Model* modelScatter = createModel<Scatter, ScatterWidget>("scatter");
