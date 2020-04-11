@@ -8,9 +8,9 @@ struct ScatterWidget : ModuleWidget
     float group_y = 30;
     float row_padding = 11.5;
 
-    float triggers_column_x = 10;
-    float column_1_x = 29.58;
-    float column_2_x = 40.28;
+    float triggers_column_x = 9 + .5;
+    float column_1_x = 28.58 + .5;
+    float column_2_x = 39.28 + .5;
 
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(triggers_column_x, group_y + (row_padding * 0))), module, Scatter::TRIGGER_INPUT_1));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(triggers_column_x, group_y + (row_padding * 1))), module, Scatter::TRIGGER_INPUT_2));
