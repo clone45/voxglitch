@@ -1,6 +1,6 @@
-struct ScatterLoadSample : MenuItem
+struct SamplerX8LoadSample : MenuItem
 {
-	Scatter *module;
+	SamplerX8 *module;
 	unsigned int sample_number = 0;
 
 	void onAction(const event::Action &e) override
@@ -12,7 +12,6 @@ struct ScatterLoadSample : MenuItem
 		{
 			module->sample_players[sample_number].loadSample(std::string(path));
 			module->root_dir = std::string(path);
-			// module->loaded_filenames[sample_number] = module->samples[sample_number].filename;
       module->loaded_filenames[sample_number] = module->sample_players[sample_number].getFilename();
 			free(path);
 		}

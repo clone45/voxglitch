@@ -18,4 +18,4 @@ extern Model *modelGoblins;
 extern Model *modelGrainEngine;
 extern Model *modelAutobreak;
 extern Model *modelDigitalSequencer;
-extern Model *modelScatter;
+extern Model *modelSamplerX8;

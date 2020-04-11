@@ -1,4 +1,4 @@
-struct Scatter : Module
+struct SamplerX8 : Module
 {
   std::string root_dir;
 	std::string path;
@@ -46,7 +46,7 @@ struct Scatter : Module
 		NUM_LIGHTS
 	};
 
-	Scatter()
+	SamplerX8()
 	{
     sample_trigger_inputs[0] = TRIGGER_INPUT_1;
     sample_trigger_inputs[1] = TRIGGER_INPUT_2;
