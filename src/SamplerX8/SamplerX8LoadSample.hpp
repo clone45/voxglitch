@@ -12,6 +12,7 @@ struct SamplerX8LoadSample : MenuItem
 		{
 			module->sample_players[sample_number].loadSample(std::string(path));
 			module->root_dir = std::string(path);
+      // DEBUG(std::string(path).c_str());
       module->loaded_filenames[sample_number] = module->sample_players[sample_number].getFilename();
 			free(path);
 		}

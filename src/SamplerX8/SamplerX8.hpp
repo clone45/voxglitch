@@ -89,13 +89,26 @@ struct SamplerX8 : Module
 	{
 		json_t *root = json_object();
 
+    for(int i=0; i < NUMBER_OF_SAMPLES; i++)
+		{
+			json_object_set_new(root, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(sample_players[i].getPath().c_str()));
+		}
+
 		return root;
 	}
 
 	// Load module data
 	void dataFromJson(json_t *root) override
 	{
-
+    for(int i=0; i < NUMBER_OF_SAMPLES; i++)
+		{
+			json_t *loaded_sample_path = json_object_get(root, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
+			if (loaded_sample_path)
+			{
+				sample_players[i].loadSample(json_string_value(loaded_sample_path));
+				loaded_filenames[i] = sample_players[i].getFilename();
+			}
+		}
 	}
 
 	void process(const ProcessArgs &args) override

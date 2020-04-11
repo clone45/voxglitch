@@ -17,7 +17,6 @@ struct SamplePlayer
 
   void trigger()
   {
-    DEBUG("triggered");
     playback_position = 0;
     playing = true;
   }
@@ -51,5 +50,10 @@ struct SamplePlayer
   std::string getFilename()
   {
     return(sample.filename);
+  }
+
+  std::string getPath()
+  {
+    return(sample.path);
   }
 };
