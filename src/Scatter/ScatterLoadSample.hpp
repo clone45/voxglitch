@@ -10,9 +10,10 @@ struct ScatterLoadSample : MenuItem
 
 		if (path)
 		{
-			module->samples[sample_number].load(path, false);
+			module->sample_players[sample_number].loadSample(std::string(path));
 			module->root_dir = std::string(path);
-			module->loaded_filenames[sample_number] = module->samples[sample_number].filename;
+			// module->loaded_filenames[sample_number] = module->samples[sample_number].filename;
+      module->loaded_filenames[sample_number] = module->sample_players[sample_number].getFilename();
 			free(path);
 		}
 	}

@@ -5,6 +5,10 @@ struct ScatterWidget : ModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/scatter_front_panel.svg")));
 
+    // Cosmetic rack screws
+		addChild(createWidget<ScrewSilver>(Vec(15, 0)));
+		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
+
     float group_y = 30;
     float row_padding = 11.5;
 
