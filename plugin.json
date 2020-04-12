@@ -56,6 +56,12 @@
         "tags": ["Sampler"]
     },
     {
+        "slug": "samplerx8",
+        "name": "SamplerX8",
+        "description": "Eight stereo sample playback devices in one compact module.",
+        "tags": ["Sampler"]
+    },
+    {
         "slug": "wavbank",
         "name": "Wav Bank",
         "description": "Sample player that can load and switch between all .wav files in a folder.",
