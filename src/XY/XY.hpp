@@ -8,6 +8,14 @@ struct XY : Module
   dsp::SchmittTrigger reset_trigger;
   bool tablet_mode = false;
 
+  // Some people are using this module as an x/y controller and not using
+  // the recording/playback feature.  Previously, the position of the x/y
+  // controller was only saved on each incoming clock pulse.  This vector holds
+  // the value of the x/y position in the case where there's not a clock input
+  // so that it can be persisted between restarts.
+
+  Vec no_clk_position;
+
   enum ParamIds {
     RETRIGGER_SWITCH,
     PUNCH_SWITCH,
@@ -35,6 +43,9 @@ struct XY : Module
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
     configParam(RETRIGGER_SWITCH, 0.f, 1.f, 1.f, "Retrigger");
     configParam(PUNCH_SWITCH, 0.f, 1.f, 0.f, "Punch");
+
+    no_clk_position.x = 0;
+    no_clk_position.y = 0;
   }
 
   json_t *dataToJson() override
@@ -60,6 +71,10 @@ struct XY : Module
     //
     json_object_set_new(root, "tablet_mode", json_integer(tablet_mode));
 
+    // Save position when no clk input is hooked up
+    json_object_set_new(root, "no_clk_position_x", json_real(no_clk_position.x));
+    json_object_set_new(root, "no_clk_position_y", json_real(no_clk_position.y));
+
     return root;
   }
 
@@ -83,6 +98,15 @@ struct XY : Module
 
     json_t* tablet_mode_json = json_object_get(root, "tablet_mode");
     if (tablet_mode_json) tablet_mode = json_integer_value(tablet_mode_json);
+
+    json_t* no_clk_position_x_json = json_object_get(root, "no_clk_position_x");
+    json_t* no_clk_position_y_json = json_object_get(root, "no_clk_position_y");
+
+    if (no_clk_position_x_json && no_clk_position_y_json && (! inputs[CLK_INPUT].isConnected()))
+    {
+        drag_position.x = json_real_value(no_clk_position_x_json);
+        drag_position.y = json_real_value(no_clk_position_y_json);
+    }
   }
 
   void process(const ProcessArgs &args) override
@@ -165,6 +189,10 @@ struct XY : Module
     {
       outputs[X_OUTPUT].setVoltage((drag_position.x / DRAW_AREA_WIDTH_PT) * 10.0f);
       outputs[Y_OUTPUT].setVoltage(((DRAW_AREA_HEIGHT_PT - drag_position.y) / DRAW_AREA_HEIGHT_PT) * 10.0f);
+
+      // Store position for saving/loading
+      no_clk_position.x = drag_position.x;
+      no_clk_position.y = drag_position.y;
     }
   }
 
