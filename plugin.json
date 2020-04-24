@@ -44,6 +44,12 @@
         "tags": ["Granular", "Sampler"]
     },
     {
+        "slug": "grainblender",
+        "name": "Grain Blender",
+        "description": "Low level granular synthesis sample player with sample crossfading.",
+        "tags": ["Granular", "Sampler"]
+    },
+    {
         "slug": "grainengine",
         "name": "Grain Engine",
         "description": "Basic .wav player/scanner using granular synthesis",

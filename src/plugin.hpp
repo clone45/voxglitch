@@ -15,6 +15,7 @@ extern Model *modelXY;
 extern Model *modelGhosts;
 extern Model *modelGlitchSequencer;
 extern Model *modelGoblins;
+extern Model *modelGrainBlender;
 extern Model *modelGrainEngine;
 extern Model *modelAutobreak;
 extern Model *modelDigitalSequencer;
