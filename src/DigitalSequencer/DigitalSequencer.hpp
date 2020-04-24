@@ -12,6 +12,7 @@ struct DigitalSequencer : Module
   dsp::SchmittTrigger sequencer_6_button_trigger;
 
   long clock_ignore_on_reset = 0;
+  bool first_step = true;
   unsigned int tooltip_timer = 0;
 
   VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
@@ -429,6 +430,7 @@ struct DigitalSequencer : Module
       clock_ignore_on_reset = (long) (args.sampleRate / 100);
 
       stepTrigger.reset();
+      first_step = true;
 
       for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
       {
@@ -458,8 +460,15 @@ struct DigitalSequencer : Module
 
         if(step)
         {
-          voltage_sequencers[i].step();
-          gate_sequencers[i].step();
+          if(first_step == false)
+          {
+            voltage_sequencers[i].step();
+            gate_sequencers[i].step();
+          }
+          else
+          {
+              first_step = false;
+          }
           if(gate_sequencers[i].getValue()) gateOutputPulseGenerators[i].trigger(0.01f);
         }
       }
