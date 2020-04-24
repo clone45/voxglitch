@@ -153,6 +153,10 @@ struct DigitalSequencer : Module
     configParam(SEQUENCER_4_BUTTON, 0.f, 1.f, 0.f, "Sequence4Button");
     configParam(SEQUENCER_5_BUTTON, 0.f, 1.f, 0.f, "Sequence5Button");
     configParam(SEQUENCER_6_BUTTON, 0.f, 1.f, 0.f, "Sequence6Button");
+
+    // On boot, I seem to be getting some weird gate signals.  This keeps those
+    // from triggering an output pulse when the module first loads.
+    clock_ignore_on_reset = (long) (44100 / 100);
   }
 
   /*
