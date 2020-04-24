@@ -33,18 +33,13 @@ struct GrainBlenderWidget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 127.26, 50.489 - y_offset)), module, GrainBlender::PITCH_INPUT));
     addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 127.26, 50.489 - y_offset)), module, GrainBlender::PITCH_ATTN_KNOB));
 
-    // Amp Slope
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset + 127.26, 72.452 - y_offset)), module, GrainBlender::AMP_SLOPE_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 127.26, 72.452 - y_offset)), module, GrainBlender::AMP_SLOPE_INPUT));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 127.26, 72.452 - y_offset)), module, GrainBlender::AMP_SLOPE_ATTN_KNOB));
-
     // Length
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset + 127.26, 94.416 - y_offset)), module, GrainBlender::LENGTH_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 127.26, 94.416 - y_offset)), module, GrainBlender::LENGTH_INPUT));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 127.26, 94.416 - y_offset)), module, GrainBlender::LENGTH_ATTN_KNOB));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset + 127.26, 72.452 - y_offset)), module, GrainBlender::LENGTH_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 127.26, 72.452 - y_offset)), module, GrainBlender::LENGTH_INPUT));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 127.26, 72.452 - y_offset)), module, GrainBlender::LENGTH_ATTN_KNOB));
 
     // Len Mult Knob
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 127.26, 110)), module, GrainBlender::LEN_MULT_KNOB));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(200, 60)), module, GrainBlender::LEN_MULT_KNOB));
 
     // Trim
     addParam(createParamCentered<Trimpot>(mm2px(Vec(74.94 + 127.26, 103.043)), module, GrainBlender::TRIM_KNOB));

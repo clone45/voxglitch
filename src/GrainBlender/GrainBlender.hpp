@@ -1,15 +1,25 @@
+// Where I left off
+//
+// I've been copying elements from Goblins into Grain Blender to support multiple
+// samples.  The most recent of these updates is the load/save stuff.
+// I still need to update all the code that uses the single sample to start
+// using the array of samples.
+
 struct GrainBlender : Module
 {
   float spawn_rate_counter = 0;
   float step_amount = 0;
   float smooth_rate = 0;
+	unsigned int selected_sample_slot = 0;
 
   int step = 0;
   std::string root_dir;
   std::string path;
 
   GrainBlenderEx grain_blender_core;
-  Sample sample;
+
+  Sample samples[NUMBER_OF_SAMPLES];
+
   dsp::SchmittTrigger purge_trigger;
   dsp::SchmittTrigger purge_button_trigger;
   dsp::SchmittTrigger spawn_trigger;
@@ -27,9 +37,11 @@ struct GrainBlender : Module
     SAMPLE_PLAYBACK_POSITION_ATTN_KNOB,
     PITCH_KNOB,
     PITCH_ATTN_KNOB,
+    X_KNOB,
+    X_ATTN_KNOB,
+    Y_KNOB,
+    Y_ATTN_KNOB,
     TRIM_KNOB,
-    AMP_SLOPE_KNOB,
-    AMP_SLOPE_ATTN_KNOB,
     JITTER_KNOB,
     LEN_MULT_KNOB,
     PAN_SWITCH,
@@ -68,10 +80,12 @@ struct GrainBlender : Module
     configParam(SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionAttnKnob");
     configParam(PITCH_KNOB, -0.3f, 1.0f, 0.0f, "PitchKnob");
     configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "PitchAttnKnob");
+    configParam(X_KNOB, 0.0f, 1.0f, 0.0f, "XKnob");
+    configParam(X_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "XAttnKnob");
+    configParam(Y_KNOB, 0.0f, 1.0f, 0.0f, "YKnob");
+    configParam(Y_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "YAttnKnob");
     configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
     configParam(LEN_MULT_KNOB, 1.0f, 128.0f, 1.0f, "LenMultKnob");
-    configParam(AMP_SLOPE_KNOB, 0.0f, 1.0f, 0.0f, "AmpSlopeKnob");
-    configParam(AMP_SLOPE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "AmpSlopeAttnKnob");
     configParam(JITTER_KNOB, 0.f, 1.0f, 0.0f, "JitterKnob");
     configParam(PAN_SWITCH, 0.0f, 1.0f, 0.0f, "PanSwitch");
 
@@ -80,21 +94,29 @@ struct GrainBlender : Module
 
   json_t *dataToJson() override
   {
-    json_t *rootJ = json_object();
-    json_object_set_new(rootJ, "path", json_string(sample.path.c_str()));
-    return rootJ;
+    //json_t *rootJ = json_object();
+    //json_object_set_new(rootJ, "path", json_string(sample.path.c_str()));
+    //return rootJ;
+
+    json_t *root = json_object();
+		for(int i=0; i < NUMBER_OF_SAMPLES; i++)
+		{
+			json_object_set_new(root, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(samples[i].path.c_str()));
+		}
+		return root;
   }
 
-  void dataFromJson(json_t *rootJ) override
+  void dataFromJson(json_t *root) override
   {
-    json_t *loaded_path_json = json_object_get(rootJ, ("path"));
-
-    if(loaded_path_json)
-    {
-      this->path = json_string_value(loaded_path_json);
-      sample.load(path, false);
-      loaded_filename = sample.filename;
-    }
+    for(int i=0; i < NUMBER_OF_SAMPLES; i++)
+		{
+			json_t *loaded_sample_path = json_object_get(root, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
+			if (loaded_sample_path)
+			{
+				samples[i].load(json_string_value(loaded_sample_path), false);
+				loaded_filenames[i] = samples[i].filename;
+			}
+		}
   }
 
   float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
