@@ -19,6 +19,9 @@ struct GrainBlenderWidget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366 + 127.26, 65.759)), module, GrainBlender::PAN_INPUT));
     addParam(createParamCentered<CKSS>(mm2px(Vec(75.595 + 127.26, 65.759)), module, GrainBlender::PAN_SWITCH));
 
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(32.366 + 127.26, 65.759)), module, GrainBlender::AUDIO_INPUT));
+
+
     //
     // Main Left-side Knobs
     //
@@ -45,7 +48,6 @@ struct GrainBlenderWidget : ModuleWidget
     addParam(createParamCentered<Trimpot>(mm2px(Vec(74.94 + 127.26, 103.043)), module, GrainBlender::TRIM_KNOB));
 
     // WAV output
-
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(64.216 + 127.26, 114.702)), module, GrainBlender::AUDIO_OUTPUT_LEFT));
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(74.94 + 127.26, 114.702)), module, GrainBlender::AUDIO_OUTPUT_RIGHT));
 
@@ -55,22 +57,6 @@ struct GrainBlenderWidget : ModuleWidget
   {
     GrainBlender *module = dynamic_cast<GrainBlender*>(this->module);
     assert(module);
-
-    menu->addChild(new MenuEntry); // For spacing only
-    menu->addChild(createMenuLabel("Samples"));
-
-    //
-    // Add the sample slots to the right-click context menu
-    //
-
-    for(int i=0; i < NUMBER_OF_SAMPLES; i++)
-    {
-      GrainBlenderLoadSample *menu_item_load_sample = new GrainBlenderLoadSample();
-      menu_item_load_sample->sample_number = i;
-      menu_item_load_sample->text = std::to_string(i+1) + ": " + module->loaded_filenames[i];
-      menu_item_load_sample->module = module;
-      menu->addChild(menu_item_load_sample);
-    } 
   }
 
 };

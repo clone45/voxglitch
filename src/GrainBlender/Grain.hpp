@@ -7,7 +7,7 @@ struct Grain
     float playback_length;
 
     // sample_ptr points to the loaded sample in memory
-    Sample *sample_ptr;
+    AudioBuffer *buffer_ptr;
 
     // playback_position is similar to samplePos used in for samples.  However,
     // it's relative to the Grain's start_position rather than the sample
@@ -40,7 +40,7 @@ struct Grain
         // them to an int, which is much faster than using floor()
         sample_position = this->start_position + this->playback_position;
 
-        if(sample_position >= this->sample_ptr->total_sample_count)
+        if(sample_position >= this->buffer_ptr->length)
         {
             // NOTE: Ideally, the sample position should be reaching the total sample
             // count (or length) exactly as an applied amp envelope is reaching 0
@@ -48,8 +48,12 @@ struct Grain
         }
         else
         {
-            output_voltage_left  = this->sample_ptr->leftPlayBuffer[sample_position];
-            output_voltage_right = this->sample_ptr->rightPlayBuffer[sample_position];
+            // output_voltage_left  = this->buffer_ptr->leftPlayBuffer[sample_position];
+            // output_voltage_right = this->buffer_ptr->rightPlayBuffer[sample_position];
+
+            output_voltage_left  = this->buffer_ptr->getLeftValue(sample_position);
+            output_voltage_right = this->buffer_ptr->getRightValue(sample_position);
+
 
             // Apply amplitude slope
             int slope_index = (playback_position / playback_length) * 512.0;
