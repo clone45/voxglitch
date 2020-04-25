@@ -40,7 +40,7 @@ struct Grain
         // them to an int, which is much faster than using floor()
         sample_position = this->start_position + this->playback_position;
 
-        if(sample_position >= this->buffer_ptr->length)
+        if(sample_position >= this->buffer_ptr->getBufferSize())
         {
             // NOTE: Ideally, the sample position should be reaching the total sample
             // count (or length) exactly as an applied amp envelope is reaching 0

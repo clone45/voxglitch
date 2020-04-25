@@ -6,24 +6,27 @@
 struct AudioBuffer
 {
   unsigned int start = 0;
-	drwav_uint64 length = MAX_BUFFER_SIZE;
 	float leftPlayBuffer[MAX_BUFFER_SIZE];
 	float rightPlayBuffer[MAX_BUFFER_SIZE];
+  unsigned int buffer_size = MAX_BUFFER_SIZE;
+  bool frozen = false;
 
 	AudioBuffer()
 	{
-		// length = 0;
 	}
 
 	virtual ~AudioBuffer() {}
 
 	virtual void push(float left_audio, float right_audio)
 	{
-    start++;
-    if(start >= MAX_BUFFER_SIZE) start = 0;
+    if(! frozen)
+    {
+      start++;
+      if(start >= MAX_BUFFER_SIZE) start = 0;
 
-    leftPlayBuffer[start] = left_audio;
-    rightPlayBuffer[start] = right_audio;
+      leftPlayBuffer[start] = left_audio;
+      rightPlayBuffer[start] = right_audio;
+    }
 	};
 
   float getLeftValue(unsigned int sample_position)
@@ -38,5 +41,15 @@ struct AudioBuffer
     sample_position = ((sample_position + start) % MAX_BUFFER_SIZE);
     float output_voltage_right = rightPlayBuffer[sample_position];
     return(output_voltage_right);
+  }
+
+  void setBufferSize(unsigned int buffer_size)
+  {
+    this->buffer_size = buffer_size;
+  }
+
+  unsigned int getBufferSize()
+  {
+    return(this->buffer_size);
   }
 };

@@ -37,6 +37,7 @@ struct GrainBlender : Module
     JITTER_KNOB,
     LEN_MULT_KNOB,
     PAN_SWITCH,
+    FREEZE_SWITCH,
     NUM_PARAMS
   };
   enum InputIds {
@@ -47,6 +48,7 @@ struct GrainBlender : Module
     SPAWN_TRIGGER_INPUT,
     AMP_SLOPE_INPUT,
     PAN_INPUT,
+    FREEZE_INPUT,
     AUDIO_INPUT,
     NUM_INPUTS
   };
@@ -67,16 +69,17 @@ struct GrainBlender : Module
   GrainBlender()
   {
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-    configParam(LENGTH_KNOB, 0.0f, 1.0f, 0.5f, "GhostLengthKnob");
-    configParam(LENGTH_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "GhostLengthAttnKnob");
+    configParam(LENGTH_KNOB, 0.0f, 1.0f, 0.5f, "LengthKnob");
+    configParam(LENGTH_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "LengthAttnKnob");
     configParam(SAMPLE_PLAYBACK_POSITION_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionKnob");
     configParam(SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionAttnKnob");
-    configParam(PITCH_KNOB, -0.3f, 1.0f, 0.0f, "PitchKnob");
+    configParam(PITCH_KNOB, 0.0f, 2.0f, 0.0f, "PitchKnob");
     configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "PitchAttnKnob");
     configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
     configParam(LEN_MULT_KNOB, 1.0f, 128.0f, 1.0f, "LenMultKnob");
     configParam(JITTER_KNOB, 0.f, 1.0f, 0.0f, "JitterKnob");
     configParam(PAN_SWITCH, 0.0f, 1.0f, 0.0f, "PanSwitch");
+    configParam(FREEZE_SWITCH, 0.0f, 1.0f, 0.0f, "FreezeSwitch");
 
     jitter_divisor = static_cast <float> (RAND_MAX / 1024.0);
   }
@@ -107,13 +110,13 @@ struct GrainBlender : Module
 
     float length_multiplier = params[LEN_MULT_KNOB].getValue();
     float playback_length = calculate_inputs(LENGTH_INPUT, LENGTH_KNOB, LENGTH_ATTN_KNOB, 128) * length_multiplier;
-    float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, audio_buffer.length);
+    float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, MAX_BUFFER_SIZE);
 
     // Ensure that the inputs are within range
-    if(start_position >= (audio_buffer.length - playback_length)) start_position = audio_buffer.length - playback_length;
+    if(start_position >= (MAX_BUFFER_SIZE - playback_length)) start_position = MAX_BUFFER_SIZE - playback_length;
 
     // Shorten the playback length if it would result in playback passing the end of the sample data.
-    if(playback_length > (audio_buffer.length - start_position)) playback_length = audio_buffer.length - start_position;
+    if(playback_length > (MAX_BUFFER_SIZE - start_position)) playback_length = MAX_BUFFER_SIZE - start_position;
 
     //
     // Process Jitter input
@@ -151,12 +154,15 @@ struct GrainBlender : Module
       }
     }
 
+    // Process freeze input
+    audio_buffer.frozen = params[FREEZE_SWITCH].getValue();
+
     if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage()))
     {
       grain_blender_core.add(start_position, playback_length, pan, &audio_buffer);
     }
 
-    if (! grain_blender_core.isEmpty() && (audio_buffer.length > 0))
+    if (! grain_blender_core.isEmpty())
     {
       if(inputs[PITCH_INPUT].isConnected())
       {
