@@ -155,7 +155,14 @@ struct GrainBlender : Module
     }
 
     // Process freeze input
-    audio_buffer.frozen = params[FREEZE_SWITCH].getValue();
+    if(inputs[FREEZE_INPUT].isConnected())
+    {
+      audio_buffer.frozen = inputs[FREEZE_INPUT].getVoltage();
+    }
+    else
+    {
+      audio_buffer.frozen = params[FREEZE_SWITCH].getValue();
+    }
 
     if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage()))
     {
