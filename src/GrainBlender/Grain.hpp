@@ -15,11 +15,14 @@ struct Grain
     float playback_position = 0.0f;
     float pan = 0;
     unsigned int sample_position = 0;
+    unsigned int age = 0;
+    unsigned int lifespan = 0;
 
     float output_voltage_left = 0;
     float output_voltage_right = 0;
 
     bool erase_me = false;
+
 
     StereoPanSubModule panner;
 
@@ -34,7 +37,7 @@ struct Grain
 
     std::pair<float, float> getStereoOutput(float smooth_rate)
     {
-        if(playback_length == 0) return {0,0};
+        if(age == 0) return {0,0};
 
         // Note that we're adding two floating point numbers, then casting
         // them to an int, which is much faster than using floor()
@@ -56,7 +59,7 @@ struct Grain
 
 
             // Apply amplitude slope
-            int slope_index = (playback_position / playback_length) * 512.0;
+            int slope_index = (1.0 - ((float)age / (float)lifespan)) * 512.0;  // remember that age decrements instead of increments
             slope_index = clamp(slope_index, 0, 511);
             float slope_value = GRAIN_SLOPE[slope_index];
 
@@ -76,8 +79,7 @@ struct Grain
         {
             // Step the playback position forward.
             playback_position = playback_position + step_amount;
-            if(playback_position >= playback_length) erase_me = true;
+            if(! --age) erase_me = true;
         }
     }
-
 };

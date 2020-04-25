@@ -44,9 +44,6 @@ struct GrainBlenderWidget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 0, 72.452 - y_offset)), module, GrainBlender::LENGTH_INPUT));
     addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 0, 72.452 - y_offset)), module, GrainBlender::LENGTH_ATTN_KNOB));
 
-    // Len Mult Knob
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(33, 82)), module, GrainBlender::LEN_MULT_KNOB));
-
     // Trim
     addParam(createParamCentered<Trimpot>(mm2px(Vec(74.94 + 0, 103.043)), module, GrainBlender::TRIM_KNOB));
 

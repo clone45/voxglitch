@@ -20,17 +20,18 @@ struct GrainBlenderEx
         return(grain_queue.empty());
     }
 
-    virtual void add(float start_position, float playback_length, float pan, AudioBuffer *buffer_ptr)
+    virtual void add(float start_position, unsigned int lifespan, float pan, AudioBuffer *buffer_ptr)
     {
         if(grain_queue.size() > MAX_GRAINS) return;
-        if(playback_length == 0) return;
+        if(lifespan == 0) return;
 
         Grain grain;
 
         // Configure it for playback
         grain.start_position = start_position;
-        grain.playback_length = playback_length;
         grain.buffer_ptr = buffer_ptr;
+        grain.lifespan = lifespan;
+        grain.age = lifespan;
         grain.pan = pan;
 
         grain_queue.push_back(grain);

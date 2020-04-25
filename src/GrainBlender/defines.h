@@ -1,4 +1,5 @@
 #define MAX_GRAINS 200
+#define MAX_PITCH 128
 #define NUMBER_OF_SAMPLES 4
 
 double GRAIN_SLOPE[512] =

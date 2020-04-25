@@ -29,18 +29,24 @@ struct AudioBuffer
     }
 	};
 
+  unsigned int incrementPlaybackPosition(unsigned int sample_position)
+  {
+    sample_position = sample_position + start;
+    if(sample_position > MAX_BUFFER_SIZE) sample_position -= MAX_BUFFER_SIZE;
+    clamp(sample_position, 0, MAX_BUFFER_SIZE);
+    return(sample_position);
+  }
+
   float getLeftValue(unsigned int sample_position)
   {
-    sample_position = ((sample_position + start) % MAX_BUFFER_SIZE);
-    float output_voltage_left = leftPlayBuffer[sample_position];
-    return(output_voltage_left);
+    sample_position = incrementPlaybackPosition(sample_position);
+    return(leftPlayBuffer[sample_position]);
   }
 
   float getRightValue(unsigned int sample_position)
   {
-    sample_position = ((sample_position + start) % MAX_BUFFER_SIZE);
-    float output_voltage_right = rightPlayBuffer[sample_position];
-    return(output_voltage_right);
+    sample_position = incrementPlaybackPosition(sample_position);
+    return(rightPlayBuffer[sample_position]);
   }
 
   void setBufferSize(unsigned int buffer_size)

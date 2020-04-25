@@ -35,7 +35,6 @@ struct GrainBlender : Module
     PITCH_ATTN_KNOB,
     TRIM_KNOB,
     JITTER_KNOB,
-    LEN_MULT_KNOB,
     PAN_SWITCH,
     FREEZE_SWITCH,
     NUM_PARAMS
@@ -73,10 +72,9 @@ struct GrainBlender : Module
     configParam(LENGTH_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "LengthAttnKnob");
     configParam(SAMPLE_PLAYBACK_POSITION_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionKnob");
     configParam(SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionAttnKnob");
-    configParam(PITCH_KNOB, 0.0f, 2.0f, 0.0f, "PitchKnob");
-    configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "PitchAttnKnob");
+    configParam(PITCH_KNOB, -1.3f, 2.0f, 0.0f, "PitchKnob");
+    configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 0.20f, "PitchAttnKnob");
     configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
-    configParam(LEN_MULT_KNOB, 1.0f, 128.0f, 1.0f, "LenMultKnob");
     configParam(JITTER_KNOB, 0.f, 1.0f, 0.0f, "JitterKnob");
     configParam(PAN_SWITCH, 0.0f, 1.0f, 0.0f, "PanSwitch");
     configParam(FREEZE_SWITCH, 0.0f, 1.0f, 0.0f, "FreezeSwitch");
@@ -105,18 +103,20 @@ struct GrainBlender : Module
 
   void process(const ProcessArgs &args) override
   {
+    unsigned int max_window = args.sampleRate / 6;
     float audio = inputs[AUDIO_INPUT].getVoltage();
     audio_buffer.push(audio, audio);
 
-    float length_multiplier = params[LEN_MULT_KNOB].getValue();
-    float playback_length = calculate_inputs(LENGTH_INPUT, LENGTH_KNOB, LENGTH_ATTN_KNOB, 128) * length_multiplier;
+    float window = calculate_inputs(LENGTH_INPUT, LENGTH_KNOB, LENGTH_ATTN_KNOB, max_window);
     float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, MAX_BUFFER_SIZE);
 
+    start_position = clamp(start_position, 0.01f, (float)(MAX_BUFFER_SIZE - 1));
+
     // Ensure that the inputs are within range
-    if(start_position >= (MAX_BUFFER_SIZE - playback_length)) start_position = MAX_BUFFER_SIZE - playback_length;
+    // if(start_position >= (MAX_BUFFER_SIZE - max_window)) start_position = MAX_BUFFER_SIZE - max_window;
 
     // Shorten the playback length if it would result in playback passing the end of the sample data.
-    if(playback_length > (MAX_BUFFER_SIZE - start_position)) playback_length = MAX_BUFFER_SIZE - start_position;
+    // if(playback_length > (MAX_BUFFER_SIZE - start_position)) playback_length = MAX_BUFFER_SIZE - start_position;
 
     //
     // Process Jitter input
@@ -166,14 +166,14 @@ struct GrainBlender : Module
 
     if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage()))
     {
-      grain_blender_core.add(start_position, playback_length, pan, &audio_buffer);
+      grain_blender_core.add(start_position, window, pan, &audio_buffer);
     }
 
     if (! grain_blender_core.isEmpty())
     {
       if(inputs[PITCH_INPUT].isConnected())
       {
-        step_amount = (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
+        step_amount = (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 5.0f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
       }
       else
       {
