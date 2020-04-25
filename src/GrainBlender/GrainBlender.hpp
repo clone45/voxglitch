@@ -103,7 +103,7 @@ struct GrainBlender : Module
 
   void process(const ProcessArgs &args) override
   {
-    unsigned int max_window = args.sampleRate / 6;
+    unsigned int max_window = args.sampleRate / 2;
     float audio = inputs[AUDIO_INPUT].getVoltage();
     audio_buffer.push(audio, audio);
 
