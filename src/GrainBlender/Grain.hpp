@@ -1,17 +1,16 @@
 struct Grain
 {
     // Start Position is the offset into the sample where playback should start.
-    // It is set when the ghost is first created.
     float start_position;
 
-    // Playback length for the ghost, measuring in .. er.. ticks?
+    // Playback length for the grain, measuring in .. er.. ticks?
     float playback_length;
 
     // sample_ptr points to the loaded sample in memory
     Sample *sample_ptr;
 
     // playback_position is similar to samplePos used in for samples.  However,
-    // it's relative to the Ghost's start_position rather than the sample
+    // it's relative to the Grain's start_position rather than the sample
     // start position.
     float playback_position = 0.0f;
     float pan = 0;
@@ -22,8 +21,6 @@ struct Grain
 
     bool erase_me = false;
 
-    // StereoFadeOutSubModule stereo_fade_out;
-    // StereoFadeInSubModule stereo_fade_in;
     StereoPanSubModule panner;
 
     Grain()

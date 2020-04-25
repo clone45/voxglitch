@@ -57,12 +57,20 @@ struct GrainBlenderWidget : ModuleWidget
     assert(module);
 
     menu->addChild(new MenuEntry); // For spacing only
-    menu->addChild(createMenuLabel("Sample"));
+    menu->addChild(createMenuLabel("Samples"));
 
-    GrainBlenderLoadSample *menu_item_load_sample = new GrainBlenderLoadSample();
-    menu_item_load_sample->text = module->loaded_filename;
-    menu_item_load_sample->module = module;
-    menu->addChild(menu_item_load_sample);
+    //
+    // Add the sample slots to the right-click context menu
+    //
+
+    for(int i=0; i < NUMBER_OF_SAMPLES; i++)
+    {
+      GrainBlenderLoadSample *menu_item_load_sample = new GrainBlenderLoadSample();
+      menu_item_load_sample->sample_number = i;
+      menu_item_load_sample->text = std::to_string(i+1) + ": " + module->loaded_filenames[i];
+      menu_item_load_sample->module = module;
+      menu->addChild(menu_item_load_sample);
+    } 
   }
 
 };

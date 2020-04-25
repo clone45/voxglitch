@@ -7,6 +7,8 @@
 
 struct GrainBlender : Module
 {
+	std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
+
   float spawn_rate_counter = 0;
   float step_amount = 0;
   float smooth_rate = 0;
@@ -130,15 +132,25 @@ struct GrainBlender : Module
 
   void process(const ProcessArgs &args) override
   {
+    //
+		//  Set selected sample based on inputs.
+		//  This must happen before we calculate start_position
+
+		// selected_sample_slot = (unsigned int) calculate_inputs(SAMPLE_SELECT_INPUT, SAMPLE_SELECT_KNOB, SAMPLE_SELECT_ATTN_KNOB, NUMBER_OF_SAMPLES_FLOAT);
+		// selected_sample_slot = clamp(selected_sample_slot, 0, NUMBER_OF_SAMPLES - 1);
+		// Sample *selected_sample = &samples[selected_sample_slot];
+
+    Sample *selected_sample = &samples[0];
+
     float length_multiplier = params[LEN_MULT_KNOB].getValue();
     float playback_length = calculate_inputs(LENGTH_INPUT, LENGTH_KNOB, LENGTH_ATTN_KNOB, 128) * length_multiplier;
-    float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, sample.total_sample_count);
+    float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, selected_sample->total_sample_count);
 
     // Ensure that the inputs are within range
-    if(start_position >= (sample.total_sample_count - playback_length)) start_position = sample.total_sample_count - playback_length;
+    if(start_position >= (selected_sample->total_sample_count - playback_length)) start_position = selected_sample->total_sample_count - playback_length;
 
     // Shorten the playback length if it would result in playback passing the end of the sample data.
-    if(playback_length > (sample.total_sample_count - start_position)) playback_length = sample.total_sample_count - start_position;
+    if(playback_length > (selected_sample->total_sample_count - start_position)) playback_length = selected_sample->total_sample_count - start_position;
 
     //
     // Process Jitter input
@@ -178,21 +190,21 @@ struct GrainBlender : Module
 
     if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage()))
     {
-      grain_blender_core.add(start_position, playback_length, pan, &sample);
+      grain_blender_core.add(start_position, playback_length, pan, selected_sample);
     }
 
-    if (sample.loaded && grain_blender_core.isEmpty() == false)
+    if (selected_sample->loaded && grain_blender_core.isEmpty() == false)
     {
       // pre-calculate step amount and smooth rate. This is to reduce the amount of math needed
       // within each Ghost's getStereoOutput() and age() functions.
 
       if(inputs[PITCH_INPUT].isConnected())
       {
-        step_amount = (sample.sample_rate / args.sampleRate) + (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
+        step_amount = (selected_sample->sample_rate / args.sampleRate) + (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
       }
       else
       {
-        step_amount = (sample.sample_rate / args.sampleRate) + params[PITCH_KNOB].getValue();
+        step_amount = (selected_sample->sample_rate / args.sampleRate) + params[PITCH_KNOB].getValue();
       }
 
       smooth_rate = 128.0f / args.sampleRate;
