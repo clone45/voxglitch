@@ -448,6 +448,7 @@ struct DigitalSequencer : Module
       // Step ALL of the sequencers
       bool global_step_trigger = stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f));
       bool step;
+      bool reset_first_step = false;
 
       for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
       {
@@ -471,11 +472,13 @@ struct DigitalSequencer : Module
           }
           else
           {
-              first_step = false;
+            reset_first_step = true;
           }
           if(gate_sequencers[i].getValue()) gateOutputPulseGenerators[i].trigger(0.01f);
         }
       }
+      
+      if(reset_first_step == true) first_step = false;
     }
 
     // output values
