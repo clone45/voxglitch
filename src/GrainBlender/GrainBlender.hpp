@@ -103,17 +103,15 @@ struct GrainBlender : Module
 
   void process(const ProcessArgs &args) override
   {
-    unsigned int max_window = args.sampleRate / 2;
+    unsigned int max_window = args.sampleRate / 6;
     float audio = inputs[AUDIO_INPUT].getVoltage();
     audio_buffer.push(audio, audio);
 
     float window = calculate_inputs(LENGTH_INPUT, LENGTH_KNOB, LENGTH_ATTN_KNOB, max_window);
     float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, MAX_BUFFER_SIZE);
 
-    start_position = clamp(start_position, 0.01f, (float)(MAX_BUFFER_SIZE - 1));
-
     // Ensure that the inputs are within range
-    // if(start_position >= (MAX_BUFFER_SIZE - max_window)) start_position = MAX_BUFFER_SIZE - max_window;
+    if(start_position >= (MAX_BUFFER_SIZE - max_window)) start_position = MAX_BUFFER_SIZE - max_window;
 
     // Shorten the playback length if it would result in playback passing the end of the sample data.
     // if(playback_length > (MAX_BUFFER_SIZE - start_position)) playback_length = MAX_BUFFER_SIZE - start_position;
