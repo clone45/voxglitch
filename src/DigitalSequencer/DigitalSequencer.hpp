@@ -12,6 +12,7 @@ struct DigitalSequencer : Module
   dsp::SchmittTrigger sequencer_6_button_trigger;
 
   long clock_ignore_on_reset = 0;
+  bool first_step = true;
   unsigned int tooltip_timer = 0;
 
   VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
@@ -152,6 +153,10 @@ struct DigitalSequencer : Module
     configParam(SEQUENCER_4_BUTTON, 0.f, 1.f, 0.f, "Sequence4Button");
     configParam(SEQUENCER_5_BUTTON, 0.f, 1.f, 0.f, "Sequence5Button");
     configParam(SEQUENCER_6_BUTTON, 0.f, 1.f, 0.f, "Sequence6Button");
+
+    // On boot, I seem to be getting some weird gate signals.  This keeps those
+    // from triggering an output pulse when the module first loads.
+    clock_ignore_on_reset = (long) (44100 / 100);
   }
 
   /*
@@ -429,6 +434,7 @@ struct DigitalSequencer : Module
       clock_ignore_on_reset = (long) (args.sampleRate / 100);
 
       stepTrigger.reset();
+      first_step = true;
 
       for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
       {
@@ -442,6 +448,7 @@ struct DigitalSequencer : Module
       // Step ALL of the sequencers
       bool global_step_trigger = stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f));
       bool step;
+      bool reset_first_step = false;
 
       for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
       {
@@ -458,11 +465,20 @@ struct DigitalSequencer : Module
 
         if(step)
         {
-          voltage_sequencers[i].step();
-          gate_sequencers[i].step();
+          if(first_step == false)
+          {
+            voltage_sequencers[i].step();
+            gate_sequencers[i].step();
+          }
+          else
+          {
+            reset_first_step = true;
+          }
           if(gate_sequencers[i].getValue()) gateOutputPulseGenerators[i].trigger(0.01f);
         }
       }
+      
+      if(reset_first_step == true) first_step = false;
     }
 
     // output values
