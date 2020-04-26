@@ -27,6 +27,9 @@ struct GrainBlenderWidget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366 + 0, 85.805)), module, GrainBlender::FREEZE_INPUT));
     addParam(createParamCentered<CKSS>(mm2px(Vec(75.595 + 0, 85.805)), module, GrainBlender::FREEZE_SWITCH));
 
+    // Advanced controls
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(32, 82.576)), module, GrainBlender::MAX_GRAINS_KNOB));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(32, 92.592)), module, GrainBlender::SPAWN_THROTTLING_KNOB));
 
     //
     // Main Left-side Knobs

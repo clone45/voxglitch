@@ -11,7 +11,9 @@ struct GrainBlender : Module
   float step_amount = 0;
   float smooth_rate = 0;
 	unsigned int selected_sample_slot = 0;
-  long spawn_throttling = 0;
+  unsigned int spawn_throttling_countdown = 0;
+  unsigned int spawn_throttling = 0;
+  unsigned int max_grains = 400;
 
   AudioBuffer audio_buffer;
 
@@ -39,6 +41,8 @@ struct GrainBlender : Module
     JITTER_KNOB,
     PAN_SWITCH,
     FREEZE_SWITCH,
+    MAX_GRAINS_KNOB,
+    SPAWN_THROTTLING_KNOB,
     NUM_PARAMS
   };
   enum InputIds {
@@ -81,6 +85,8 @@ struct GrainBlender : Module
     configParam(JITTER_KNOB, 0.f, 1.0f, 0.0f, "JitterKnob");
     configParam(PAN_SWITCH, 0.0f, 1.0f, 0.0f, "PanSwitch");
     configParam(FREEZE_SWITCH, 0.0f, 1.0f, 0.0f, "FreezeSwitch");
+    configParam(MAX_GRAINS_KNOB, 0.0f, 1000.0f, 200.0f, "MaxGrains");
+    configParam(SPAWN_THROTTLING_KNOB, 0.0f, 5512.5, 4.0f, "SpawnThrottling");
 
     jitter_divisor = static_cast <float> (RAND_MAX / 1024.0);
   }
@@ -134,6 +140,13 @@ struct GrainBlender : Module
       start_position = start_position + r;
     }
 
+    // Process Max Grains knob
+    this->max_grains = params[MAX_GRAINS_KNOB].getValue();
+
+    // Process Spawn Throttling KNob
+    this->spawn_throttling = params[SPAWN_THROTTLING_KNOB].getValue();
+
+
     //
     // Process Pan input
     //
@@ -167,10 +180,10 @@ struct GrainBlender : Module
 
     if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage()))
     {
-      if(spawn_throttling == false)
+      if(spawn_throttling_countdown == 0)
       {
-        grain_blender_core.add(start_position, window, pan, &audio_buffer);
-        spawn_throttling = (long) (args.sampleRate / 100);
+        grain_blender_core.add(start_position, window, pan, &audio_buffer, max_grains);
+        spawn_throttling_countdown = spawn_throttling;
       }
     }
 
@@ -197,6 +210,6 @@ struct GrainBlender : Module
       outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_mix_output);
     }
 
-    if(spawn_throttling > 0) spawn_throttling--;
+    if(spawn_throttling_countdown > 0) spawn_throttling_countdown--;
   }
 };
