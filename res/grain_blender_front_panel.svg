@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="5.9822491"
-     inkscape:cy="188.9217"
+     inkscape:zoom="5.6"
+     inkscape:cx="120.38781"
+     inkscape:cy="354.56496"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -253,7 +253,7 @@
        aria-label="POSITION"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        id="text1271"
-       transform="translate(-1.800396)">
+       transform="translate(-1.800396,0.52916663)">
       <path
          d="m 102.51373,65.006676 q 0,0.28575 -0.15169,0.423334 -0.15169,0.134055 -0.44803,0.134055 h -0.36689 v 0.959556 h -0.30691 v -2.469445 h 0.66675 q 0.29986,0 0.45155,0.134056 0.15522,0.130528 0.15522,0.416278 z m -0.30691,-0.433916 q 0,-0.134056 -0.0635,-0.194028 -0.06,-0.05997 -0.19403,-0.05997 h -0.40217 v 0.980722 h 0.40217 q 0.13406,0 0.19403,-0.05997 0.0635,-0.0635 0.0635,-0.197556 z"
          style="stroke-width:0.26458332"
@@ -297,7 +297,7 @@
     </g>
     <g
        aria-label="PITCH"
-       transform="matrix(0.26458333,0,0,0.26458333,122.39335,53.070333)"
+       transform="matrix(0.26458333,0,0,0.26458333,122.39335,54.128667)"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.33333302px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
        id="flowRoot1275">
       <path
@@ -469,7 +469,7 @@
        aria-label="WINDOW"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        id="text923"
-       transform="translate(-127.26,-10)">
+       transform="translate(-127.26,-8.9416666)">
       <path
          d="m 229.19438,109.44773 -0.22225,1.00189 h -0.42334 l -0.11994,-2.46944 h 0.26105 l 0.10584,2.20486 0.2928,-1.16417 h 0.21873 l 0.29986,1.16417 0.10936,-2.20486 h 0.24341 l -0.11994,2.46944 h -0.4445 z"
          style="font-size:3.52777767px;stroke-width:0.26458332"
