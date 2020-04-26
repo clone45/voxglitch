@@ -1,9 +1,6 @@
 #define MAX_GRAINS 400
 #define MAX_PITCH 128
 
-// The lower the number, the longer the windows can be
-#define MAX_WINDOW_DIVISOR 2
-
 // 100 = conservative
 // 1000 = risky
 #define SPAN_THROTTLING 600

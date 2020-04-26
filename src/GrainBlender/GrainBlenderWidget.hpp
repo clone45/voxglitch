@@ -28,8 +28,9 @@ struct GrainBlenderWidget : ModuleWidget
     addParam(createParamCentered<CKSS>(mm2px(Vec(75.595 + 0, 85.805)), module, GrainBlender::FREEZE_SWITCH));
 
     // Advanced controls
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(32, 72.576)), module, GrainBlender::MAX_WINDOW_KNOB));
     addParam(createParamCentered<Trimpot>(mm2px(Vec(32, 82.576)), module, GrainBlender::MAX_GRAINS_KNOB));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(32, 92.592)), module, GrainBlender::SPAWN_THROTTLING_KNOB));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(32, 92.576)), module, GrainBlender::SPAWN_THROTTLING_KNOB));
 
     //
     // Main Left-side Knobs
@@ -41,14 +42,14 @@ struct GrainBlenderWidget : ModuleWidget
     addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 0, 28.526 - y_offset)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
 
     // Pitch
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset + 0, 50.489 - y_offset)), module, GrainBlender::PITCH_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 0, 50.489 - y_offset)), module, GrainBlender::PITCH_INPUT));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 0, 50.489 - y_offset)), module, GrainBlender::PITCH_ATTN_KNOB));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset + 0, 50.489 - 5 - y_offset)), module, GrainBlender::PITCH_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 0, 50.489 - 5 - y_offset)), module, GrainBlender::PITCH_INPUT));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 0, 50.489 - 5 - y_offset)), module, GrainBlender::PITCH_ATTN_KNOB));
 
-    // Length
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset + 0, 72.452 - y_offset)), module, GrainBlender::LENGTH_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 0, 72.452 - y_offset)), module, GrainBlender::LENGTH_INPUT));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 0, 72.452 - y_offset)), module, GrainBlender::LENGTH_ATTN_KNOB));
+    // Window
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset + 0, 72.452 - 10 - y_offset)), module, GrainBlender::LENGTH_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 0, 72.452 - 10 - y_offset)), module, GrainBlender::LENGTH_INPUT));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 0, 72.452 - 10 - y_offset)), module, GrainBlender::LENGTH_ATTN_KNOB));
 
     // Trim
     addParam(createParamCentered<Trimpot>(mm2px(Vec(74.94 + 0, 103.043)), module, GrainBlender::TRIM_KNOB));

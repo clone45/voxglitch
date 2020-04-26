@@ -10,6 +10,7 @@ struct GrainBlender : Module
   float spawn_rate_counter = 0;
   float step_amount = 0;
   float smooth_rate = 0;
+  float max_window_divisor = 4.0;
 	unsigned int selected_sample_slot = 0;
   unsigned int spawn_throttling_countdown = 0;
   unsigned int spawn_throttling = 0;
@@ -41,6 +42,7 @@ struct GrainBlender : Module
     JITTER_KNOB,
     PAN_SWITCH,
     FREEZE_SWITCH,
+    MAX_WINDOW_KNOB,
     MAX_GRAINS_KNOB,
     SPAWN_THROTTLING_KNOB,
     NUM_PARAMS
@@ -85,8 +87,9 @@ struct GrainBlender : Module
     configParam(JITTER_KNOB, 0.f, 1.0f, 0.0f, "JitterKnob");
     configParam(PAN_SWITCH, 0.0f, 1.0f, 0.0f, "PanSwitch");
     configParam(FREEZE_SWITCH, 0.0f, 1.0f, 0.0f, "FreezeSwitch");
+    configParam(MAX_WINDOW_KNOB, 128.0f, 8.0f, 8.0f, "MaxWindow");
     configParam(MAX_GRAINS_KNOB, 0.0f, 1000.0f, 200.0f, "MaxGrains");
-    configParam(SPAWN_THROTTLING_KNOB, 0.0f, 5512.5, 4.0f, "SpawnThrottling");
+    configParam(SPAWN_THROTTLING_KNOB, 0.0f, 500.0, 2.0f, "SpawnThrottling");
 
     jitter_divisor = static_cast <float> (RAND_MAX / 1024.0);
   }
@@ -112,10 +115,18 @@ struct GrainBlender : Module
 
   void process(const ProcessArgs &args) override
   {
-    unsigned int max_window = args.sampleRate / MAX_WINDOW_DIVISOR;
-    float audio = inputs[AUDIO_INPUT_LEFT].getVoltage();
-    audio_buffer.push(audio, audio);
+    audio_buffer.push(inputs[AUDIO_INPUT_LEFT].getVoltage(), inputs[AUDIO_INPUT_RIGHT].getVoltage());
 
+    // Process max_window input
+    max_window_divisor = params[MAX_WINDOW_KNOB].getValue();
+
+    // Process Max Grains knob
+    this->max_grains = params[MAX_GRAINS_KNOB].getValue();
+
+    // Process Spawn Throttling KNob
+    this->spawn_throttling = params[SPAWN_THROTTLING_KNOB].getValue();
+
+    unsigned int max_window = args.sampleRate / max_window_divisor;
     float window = calculate_inputs(LENGTH_INPUT, LENGTH_KNOB, LENGTH_ATTN_KNOB, max_window);
     float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, MAX_BUFFER_SIZE);
 
@@ -139,12 +150,6 @@ struct GrainBlender : Module
       float r = (static_cast <float> (rand()) / (RAND_MAX / spread)) - spread;
       start_position = start_position + r;
     }
-
-    // Process Max Grains knob
-    this->max_grains = params[MAX_GRAINS_KNOB].getValue();
-
-    // Process Spawn Throttling KNob
-    this->spawn_throttling = params[SPAWN_THROTTLING_KNOB].getValue();
 
 
     //
