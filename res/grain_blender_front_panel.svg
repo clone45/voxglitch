@@ -27,7 +27,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="2.8"
      inkscape:cx="87.911768"
-     inkscape:cy="102.15838"
+     inkscape:cy="130.72981"
      inkscape:document-units="mm"
      inkscape:current-layer="text922"
      showgrid="false"
@@ -567,17 +567,39 @@
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.17499995px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        id="text922"
        transform="translate(-4.5357143,-0.62366072)">
-      <text
-         xml:space="preserve"
+      <g
+         aria-label="AUDIO IN"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.17499995px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.07000434"
-         x="74.620338"
-         y="154.55966"
-         id="text956"><tspan
-           sodipodi:role="line"
-           id="tspan954"
-           x="74.620338"
-           y="154.55966"
-           style="font-size:3.52777767px;stroke-width:0.07000434">AUDIO IN</tspan></text>
+         id="text956">
+        <path
+           d="m 75.230644,153.93525 -0.137583,0.62441 h -0.313973 l 0.596195,-2.46944 h 0.405694 l 0.585611,2.46944 h -0.313972 l -0.134055,-0.62441 z m 0.631472,-0.26459 -0.289278,-1.34761 -0.28575,1.34761 z"
+           style="font-size:3.52777767px;stroke-width:0.07000434"
+           id="path958" />
+        <path
+           d="m 78.151864,153.95994 q 0,0.29986 -0.165805,0.45156 -0.162278,0.14816 -0.469195,0.14816 h -0.08819 q -0.306917,0 -0.472722,-0.14816 -0.162278,-0.1517 -0.162278,-0.45156 v -1.86972 h 0.306917 v 1.93675 q 0,0.10936 0.08114,0.18697 0.08114,0.0776 0.211667,0.0776 h 0.15875 q 0.130528,0 0.211667,-0.0776 0.08114,-0.0776 0.08114,-0.18697 v -1.93675 h 0.306916 z"
+           style="font-size:3.52777767px;stroke-width:0.07000434"
+           id="path960" />
+        <path
+           d="m 80.039446,154.00227 q 0,0.30339 -0.141111,0.43039 -0.137584,0.127 -0.458611,0.127 h -0.726723 v -2.46944 h 0.684389 q 0.3175,0 0.479778,0.13053 0.162278,0.127 0.162278,0.4198 z m -0.306917,-1.39347 q 0,-0.11642 -0.07055,-0.18344 -0.07056,-0.0706 -0.186973,-0.0706 h -0.455083 v 1.94028 h 0.451556 q 0.134055,0 0.197555,-0.06 0.0635,-0.0635 0.0635,-0.19756 z"
+           style="font-size:3.52777767px;stroke-width:0.07000434"
+           id="path962" />
+        <path
+           d="m 81.122694,154.30213 v -1.95438 h -0.3175 v -0.25753 h 0.941917 v 0.25753 h -0.3175 v 1.95438 h 0.3175 v 0.25753 h -0.941917 v -0.25753 z"
+           style="font-size:3.52777767px;stroke-width:0.07000434"
+           id="path964" />
+        <path
+           d="m 83.885164,153.95994 q 0,0.29986 -0.165805,0.45156 -0.162278,0.14816 -0.469195,0.14816 h -0.141111 q -0.306916,0 -0.472722,-0.14816 -0.162278,-0.1517 -0.162278,-0.45156 v -1.27 q 0,-0.29986 0.162278,-0.44803 0.165806,-0.15169 0.472722,-0.15169 h 0.141111 q 0.306917,0 0.469195,0.15169 0.165805,0.14817 0.165805,0.44803 z m -0.306916,-1.33703 q 0,-0.10936 -0.08114,-0.18697 -0.08114,-0.0776 -0.211667,-0.0776 h -0.211666 q -0.130528,0 -0.211667,0.0776 -0.08114,0.0776 -0.08114,0.18697 v 1.40406 q 0,0.10936 0.08114,0.18697 0.08114,0.0776 0.211667,0.0776 h 0.211666 q 0.130528,0 0.211667,-0.0776 0.08114,-0.0776 0.08114,-0.18697 z"
+           style="font-size:3.52777767px;stroke-width:0.07000434"
+           id="path966" />
+        <path
+           d="m 86.827772,154.30213 v -1.95438 h -0.3175 v -0.25753 h 0.941917 v 0.25753 h -0.3175 v 1.95438 h 0.3175 v 0.25753 h -0.941917 v -0.25753 z"
+           style="font-size:3.52777767px;stroke-width:0.07000434"
+           id="path968" />
+        <path
+           d="m 88.496632,154.55966 h -0.28575 v -2.46944 h 0.500944 l 0.557389,2.20839 v -2.20839 h 0.28575 v 2.46944 h -0.504472 l -0.553861,-2.20839 z"
+           style="font-size:3.52777767px;stroke-width:0.07000434"
+           id="path970" />
+      </g>
     </g>
     <path
        inkscape:connector-curvature="0"
