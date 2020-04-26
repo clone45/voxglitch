@@ -11,6 +11,7 @@ struct GrainBlender : Module
   float step_amount = 0;
   float smooth_rate = 0;
 	unsigned int selected_sample_slot = 0;
+  long spawn_throttling = 0;
 
   AudioBuffer audio_buffer;
 
@@ -103,7 +104,7 @@ struct GrainBlender : Module
 
   void process(const ProcessArgs &args) override
   {
-    unsigned int max_window = args.sampleRate / 6;
+    unsigned int max_window = args.sampleRate / 4;
     float audio = inputs[AUDIO_INPUT].getVoltage();
     audio_buffer.push(audio, audio);
 
@@ -113,8 +114,6 @@ struct GrainBlender : Module
     // Ensure that the inputs are within range
     if(start_position >= (MAX_BUFFER_SIZE - max_window)) start_position = MAX_BUFFER_SIZE - max_window;
 
-    // Shorten the playback length if it would result in playback passing the end of the sample data.
-    // if(playback_length > (MAX_BUFFER_SIZE - start_position)) playback_length = MAX_BUFFER_SIZE - start_position;
 
     //
     // Process Jitter input
@@ -164,7 +163,11 @@ struct GrainBlender : Module
 
     if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage()))
     {
-      grain_blender_core.add(start_position, window, pan, &audio_buffer);
+      if(spawn_throttling == false)
+      {
+        grain_blender_core.add(start_position, window, pan, &audio_buffer);
+        spawn_throttling = (long) (args.sampleRate / 1000);
+      }
     }
 
     if (! grain_blender_core.isEmpty())
@@ -189,5 +192,7 @@ struct GrainBlender : Module
       outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_mix_output);
       outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_mix_output);
     }
+
+    if(spawn_throttling > 0) spawn_throttling--;
   }
 };

@@ -1,4 +1,4 @@
-#define MAX_GRAINS 100
+#define MAX_GRAINS 300
 #define MAX_PITCH 128
 #define NUMBER_OF_SAMPLES 4
 
