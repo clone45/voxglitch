@@ -89,7 +89,7 @@ struct GrainBlender : Module
     configParam(FREEZE_SWITCH, 0.0f, 1.0f, 0.0f, "FreezeSwitch");
     configParam(MAX_WINDOW_KNOB, 128.0f, 8.0f, 8.0f, "MaxWindow");
     configParam(MAX_GRAINS_KNOB, 0.0f, 1000.0f, 200.0f, "MaxGrains");
-    configParam(SPAWN_THROTTLING_KNOB, 0.0f, 500.0, 2.0f, "SpawnThrottling");
+    configParam(SPAWN_THROTTLING_KNOB, 0.0f, 250.0, 2.0f, "SpawnThrottling");
 
     jitter_divisor = static_cast <float> (RAND_MAX / 1024.0);
   }
@@ -183,7 +183,7 @@ struct GrainBlender : Module
 
     is_spawn_cable_connected = inputs[SPAWN_TRIGGER_INPUT].isConnected() ? true : false;
 
-    if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage()))
+    if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage()) || is_spawn_cable_connected == false)
     {
       if(spawn_throttling_countdown == 0)
       {
