@@ -25,19 +25,19 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="166.09355"
-     inkscape:cy="261.78559"
+     inkscape:zoom="2.8"
+     inkscape:cx="87.911768"
+     inkscape:cy="102.15838"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="text922"
      showgrid="false"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
      inkscape:window-width="1920"
-     inkscape:window-height="1137"
-     inkscape:window-x="1912"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      units="mm"
@@ -81,7 +81,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -373,7 +373,7 @@
        aria-label="SPAWN"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        id="text936"
-       transform="translate(13.087032)">
+       transform="translate(-0.00850215,2e-6)">
       <path
          d="m 123.98301,65.923898 q 0,0.299862 -0.16581,0.451556 -0.16228,0.148167 -0.46919,0.148167 h -0.50095 V 66.25551 h 0.53622 q 0.13053,0 0.21167,-0.07761 0.0811,-0.07761 0.0811,-0.186972 v -0.366889 q 0,-0.105833 -0.0564,-0.169333 -0.0529,-0.06703 -0.16227,-0.06703 h -0.10584 q -0.26105,0 -0.41275,-0.151694 -0.15169,-0.155222 -0.15169,-0.448028 v -0.134056 q 0,-0.299861 0.16228,-0.448027 0.1658,-0.151695 0.47272,-0.151695 h 0.50447 v 0.268111 h -0.53975 q -0.13053,0 -0.21167,0.07761 -0.0811,0.07761 -0.0811,0.186973 v 0.268111 q 0,0.109361 0.0705,0.183444 0.0706,0.07056 0.18345,0.07056 h 0.10583 q 0.25047,0 0.38805,0.144639 0.14112,0.144639 0.14112,0.437444 z"
          style="stroke-width:0.26458332"
@@ -533,22 +533,6 @@
          id="path2395" />
     </g>
     <g
-       aria-label="IN"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       id="text2433"
-       transform="translate(-13.111051,2e-6)">
-      <path
-         d="m 139.1066,66.266093 v -1.954389 h -0.3175 v -0.257528 h 0.94192 v 0.257528 h -0.3175 v 1.954389 h 0.3175 v 0.257528 h -0.94192 v -0.257528 z"
-         style="font-size:3.52777767px;stroke-width:0.26458332"
-         id="path2435"
-         inkscape:connector-curvature="0" />
-      <path
-         d="m 140.77546,66.523621 h -0.28575 v -2.469445 h 0.50095 l 0.55739,2.208389 v -2.208389 h 0.28575 v 2.469445 h -0.50448 l -0.55386,-2.208389 z"
-         style="font-size:3.52777767px;stroke-width:0.26458332"
-         id="path2437"
-         inkscape:connector-curvature="0" />
-    </g>
-    <g
        aria-label="FREEZE"
        transform="scale(0.99999261,1.0000074)"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52775168px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
@@ -578,5 +562,27 @@
          style="font-size:3.52775168px;stroke-width:0.26458332"
          id="path2454" />
     </g>
+    <g
+       aria-label="INPUTS"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.17499995px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       id="text922"
+       transform="translate(-4.5357143,-0.62366072)">
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.17499995px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.07000434"
+         x="74.620338"
+         y="154.55966"
+         id="text956"><tspan
+           sodipodi:role="line"
+           id="tspan954"
+           x="74.620338"
+           y="154.55966"
+           style="font-size:3.52777767px;stroke-width:0.07000434">AUDIO IN</tspan></text>
+    </g>
+    <path
+       inkscape:connector-curvature="0"
+       id="path36629-4"
+       d="m 69.998515,155.4479 c -0.937344,0 -1.705561,0.58092 -1.705561,1.2937 v 9.93261 c 0,0.71101 0.768217,1.29369 1.705561,1.29369 h 20.751053 c 0.937344,0 1.705558,-0.58269 1.705558,-1.29369 v -9.93261 c 0,-0.71278 -0.768224,-1.2937 -1.705558,-1.2937 z m 0,0"
+       style="display:inline;fill:#808080;fill-opacity:0.24623114;fill-rule:nonzero;stroke:none;stroke-width:0.5237875" />
   </g>
 </svg>

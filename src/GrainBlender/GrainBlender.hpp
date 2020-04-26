@@ -18,6 +18,7 @@ struct GrainBlender : Module
   int step = 0;
   std::string root_dir;
   std::string path;
+  bool is_spawn_cable_connected = false;
 
   GrainBlenderEx grain_blender_core;
 
@@ -49,7 +50,8 @@ struct GrainBlender : Module
     AMP_SLOPE_INPUT,
     PAN_INPUT,
     FREEZE_INPUT,
-    AUDIO_INPUT,
+    AUDIO_INPUT_LEFT,
+    AUDIO_INPUT_RIGHT,
     NUM_INPUTS
   };
   enum OutputIds {
@@ -104,8 +106,8 @@ struct GrainBlender : Module
 
   void process(const ProcessArgs &args) override
   {
-    unsigned int max_window = args.sampleRate / 4;
-    float audio = inputs[AUDIO_INPUT].getVoltage();
+    unsigned int max_window = args.sampleRate / MAX_WINDOW_DIVISOR;
+    float audio = inputs[AUDIO_INPUT_LEFT].getVoltage();
     audio_buffer.push(audio, audio);
 
     float window = calculate_inputs(LENGTH_INPUT, LENGTH_KNOB, LENGTH_ATTN_KNOB, max_window);
@@ -161,12 +163,14 @@ struct GrainBlender : Module
       audio_buffer.frozen = params[FREEZE_SWITCH].getValue();
     }
 
+    is_spawn_cable_connected = inputs[SPAWN_TRIGGER_INPUT].isConnected() ? true : false;
+
     if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage()))
     {
       if(spawn_throttling == false)
       {
         grain_blender_core.add(start_position, window, pan, &audio_buffer);
-        spawn_throttling = (long) (args.sampleRate / 1000);
+        spawn_throttling = (long) (args.sampleRate / 100);
       }
     }
 

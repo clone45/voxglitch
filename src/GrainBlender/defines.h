@@ -1,6 +1,9 @@
-#define MAX_GRAINS 300
+#define MAX_GRAINS 400
 #define MAX_PITCH 128
 #define NUMBER_OF_SAMPLES 4
+
+// The lower the number, the longer the windows can be
+#define MAX_WINDOW_DIVISOR 2
 
 double GRAIN_SLOPE[512] =
 {

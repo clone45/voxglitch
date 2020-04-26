@@ -8,9 +8,12 @@ struct GrainBlenderWidget : ModuleWidget
     float y_offset = 1.8;
     float x_offset = -1.8;
 
+    PanelArt *panel_art = new PanelArt();
+    panel_art->module = module;
+    addChild(panel_art);
+
     // Spawn Trigger
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366 + 0, 25.974)), module, GrainBlender::AUDIO_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(75.595 + 0, 25.974)), module, GrainBlender::SPAWN_TRIGGER_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366 + 0, 25.974)), module, GrainBlender::SPAWN_TRIGGER_INPUT));
 
     // Jitter
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366 + 0, 45.713)), module, GrainBlender::JITTER_CV_INPUT));
@@ -47,7 +50,11 @@ struct GrainBlenderWidget : ModuleWidget
     // Trim
     addParam(createParamCentered<Trimpot>(mm2px(Vec(74.94 + 0, 103.043)), module, GrainBlender::TRIM_KNOB));
 
-    // WAV output
+    // Audio Input
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 114.702)), module, GrainBlender::AUDIO_INPUT_LEFT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(21, 114.702)), module, GrainBlender::AUDIO_INPUT_RIGHT));
+
+    // Audio Output
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(64.216 + 0, 114.702)), module, GrainBlender::AUDIO_OUTPUT_LEFT));
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(74.94 + 0, 114.702)), module, GrainBlender::AUDIO_OUTPUT_RIGHT));
 
