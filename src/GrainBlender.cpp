@@ -10,7 +10,9 @@
 #include "Common/submodules.hpp"
 
 #include "GrainBlender/defines.h"
+#include "GrainBlender/Contours.hpp"
 #include "GrainBlender/Grain.hpp"
+#include "GrainBlender/OverlapPolice.hpp"
 #include "GrainBlender/GrainBlenderEx.hpp"
 #include "GrainBlender/GrainBlender.hpp"
 #include "GrainBlender/PanelArt.hpp"

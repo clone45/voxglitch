@@ -31,13 +31,15 @@ struct AudioBuffer
 
   float getLeftValue(unsigned int sample_position)
   {
-    sample_position = ((sample_position + start) % MAX_BUFFER_SIZE);
+    sample_position = sample_position + start;
+    if(sample_position >= MAX_BUFFER_SIZE) sample_position = sample_position - MAX_BUFFER_SIZE;
     return(leftPlayBuffer[sample_position]);
   }
 
   float getRightValue(unsigned int sample_position)
   {
-    sample_position = ((sample_position + start) % MAX_BUFFER_SIZE);
+    sample_position = sample_position + start;
+    if(sample_position >= MAX_BUFFER_SIZE) sample_position = sample_position - MAX_BUFFER_SIZE;
     return(rightPlayBuffer[sample_position]);
   }
 

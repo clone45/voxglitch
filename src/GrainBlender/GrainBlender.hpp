@@ -8,13 +8,12 @@
 struct GrainBlender : Module
 {
   float spawn_rate_counter = 0;
-  float step_amount = 0;
+  float pitch = 0;
   float smooth_rate = 0;
   float max_window_divisor = 4.0;
 	unsigned int selected_sample_slot = 0;
   unsigned int spawn_throttling_countdown = 0;
-  unsigned int spawn_throttling = 0;
-  unsigned int max_grains = 400;
+  unsigned int max_grains = MAX_GRAINS;
 
   AudioBuffer audio_buffer;
 
@@ -32,8 +31,8 @@ struct GrainBlender : Module
   float jitter_divisor = 1;
 
   enum ParamIds {
-    LENGTH_KNOB,
-    LENGTH_ATTN_KNOB,
+    WINDOW_KNOB,
+    WINDOW_ATTN_KNOB,
     SAMPLE_PLAYBACK_POSITION_KNOB,
     SAMPLE_PLAYBACK_POSITION_ATTN_KNOB,
     PITCH_KNOB,
@@ -42,18 +41,19 @@ struct GrainBlender : Module
     JITTER_KNOB,
     PAN_SWITCH,
     FREEZE_SWITCH,
-    MAX_WINDOW_KNOB,
     MAX_GRAINS_KNOB,
     SPAWN_THROTTLING_KNOB,
+    CONTOUR_KNOB,
+    SPAWN_KNOB,
     NUM_PARAMS
   };
   enum InputIds {
     JITTER_CV_INPUT,
-    LENGTH_INPUT,
+    WINDOW_INPUT,
     SAMPLE_PLAYBACK_POSITION_INPUT,
     PITCH_INPUT,
     SPAWN_TRIGGER_INPUT,
-    AMP_SLOPE_INPUT,
+    CONTOUR_INPUT,
     PAN_INPUT,
     FREEZE_INPUT,
     AUDIO_INPUT_LEFT,
@@ -77,8 +77,8 @@ struct GrainBlender : Module
   GrainBlender()
   {
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-    configParam(LENGTH_KNOB, 0.0f, 1.0f, 0.5f, "LengthKnob");
-    configParam(LENGTH_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "LengthAttnKnob");
+    configParam(WINDOW_KNOB, WINDOW_KNOB_MIN, WINDOW_KNOB_MAX, WINDOW_KNOB_DEFAULT, "WindowKnob");
+    configParam(WINDOW_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "WindowAttnKnob");
     configParam(SAMPLE_PLAYBACK_POSITION_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionKnob");
     configParam(SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionAttnKnob");
     configParam(PITCH_KNOB, -1.3f, 2.0f, 0.0f, "PitchKnob");
@@ -87,9 +87,9 @@ struct GrainBlender : Module
     configParam(JITTER_KNOB, 0.f, 1.0f, 0.0f, "JitterKnob");
     configParam(PAN_SWITCH, 0.0f, 1.0f, 0.0f, "PanSwitch");
     configParam(FREEZE_SWITCH, 0.0f, 1.0f, 0.0f, "FreezeSwitch");
-    configParam(MAX_WINDOW_KNOB, 128.0f, 8.0f, 8.0f, "MaxWindow");
-    configParam(MAX_GRAINS_KNOB, 0.0f, 1000.0f, 200.0f, "MaxGrains");
-    configParam(SPAWN_THROTTLING_KNOB, 0.0f, 250.0, 2.0f, "SpawnThrottling");
+    configParam(MAX_GRAINS_KNOB, 0.0f, MAX_GRAINS, 100.0f, "MaxGrains");
+    configParam(CONTOUR_KNOB, 0.0f, 1.0f, 0.0f, "ContourKnob");
+    configParam(SPAWN_KNOB, 0.0f, 512.0f, 82.0f, "SpawnKnob");
 
     jitter_divisor = static_cast <float> (RAND_MAX / 1024.0);
   }
@@ -118,39 +118,63 @@ struct GrainBlender : Module
     audio_buffer.push(inputs[AUDIO_INPUT_LEFT].getVoltage(), inputs[AUDIO_INPUT_RIGHT].getVoltage());
 
     // Process max_window input
-    max_window_divisor = params[MAX_WINDOW_KNOB].getValue();
+    // max_window_divisor = params[MAX_WINDOW_KNOB].getValue();
 
     // Process Max Grains knob
     this->max_grains = params[MAX_GRAINS_KNOB].getValue();
 
-    // Process Spawn Throttling KNob
-    this->spawn_throttling = params[SPAWN_THROTTLING_KNOB].getValue();
+    unsigned int contour_index = params[CONTOUR_KNOB].getValue() * 9.0;
 
-    unsigned int max_window = args.sampleRate / max_window_divisor;
-    float window = calculate_inputs(LENGTH_INPUT, LENGTH_KNOB, LENGTH_ATTN_KNOB, max_window);
+
+    // float window_knob_value = calculate_inputs(WINDOW_INPUT, WINDOW_KNOB, WINDOW_ATTN_KNOB, WINDOW_KNOB_MAX);
+
+    float window_knob_value = params[WINDOW_KNOB].getValue();
+
+    // DEBUG("window knob value");
+    // DEBUG(std::to_string(window_knob_value).c_str());
+
+    // unsigned int window_length = args.sampleRate / window_knob_value;
+    unsigned int window_length = window_knob_value;
+
     float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, MAX_BUFFER_SIZE);
-
-    // Ensure that the inputs are within range
-    if(start_position >= (MAX_BUFFER_SIZE - max_window)) start_position = MAX_BUFFER_SIZE - max_window;
-
 
     //
     // Process Jitter input
     //
 
+    /*
+    float jitter = 0;
+    float jitter_spread = 0;
+
     if(inputs[JITTER_CV_INPUT].isConnected())
     {
-      float spread = params[JITTER_KNOB].getValue() * 64.0 * inputs[JITTER_CV_INPUT].getVoltage();
-      float r = (static_cast <float> (rand()) / (RAND_MAX / spread)) - spread;
-      start_position = start_position + r;
+      jitter_spread = params[JITTER_KNOB].getValue() * JITTER_SPREAD * inputs[JITTER_CV_INPUT].getVoltage();
     }
     else
     {
-      float spread = params[JITTER_KNOB].getValue() * 64.0;
-      float r = (static_cast <float> (rand()) / (RAND_MAX / spread)) - spread;
-      start_position = start_position + r;
+      jitter_spread = params[JITTER_KNOB].getValue() * JITTER_SPREAD;
     }
 
+    jitter = fmod(rand(), jitter_spread) - jitter_spread;
+
+
+    // DEBUG(std::to_string(window_knob_value).c_str());
+
+    // Ensure that the inputs are within range
+    start_position += jitter;
+        */
+    // start_position = fmod(start_position, MAX_BUFFER_SIZE - window_length);
+
+    /*
+    if((start_position + jitter) >= (MAX_BUFFER_SIZE - window_length))
+    {
+      start_position = (start_position + jitter) - (MAX_BUFFER_SIZE + window_length);
+    }
+    else
+    {
+      start_position += jitter;
+    }
+    */
 
     //
     // Process Pan input
@@ -187,26 +211,26 @@ struct GrainBlender : Module
     {
       if(spawn_throttling_countdown == 0)
       {
-        grain_blender_core.add(start_position, window, pan, &audio_buffer, max_grains);
-        spawn_throttling_countdown = spawn_throttling;
+        if(inputs[PITCH_INPUT].isConnected())
+        {
+          pitch = (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 5.0f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
+        }
+        else
+        {
+          pitch = params[PITCH_KNOB].getValue();
+        }
+
+        grain_blender_core.add(start_position, window_length, pan, &audio_buffer, max_grains, pitch);
+        spawn_throttling_countdown = params[SPAWN_KNOB].getValue();
       }
     }
 
     if (! grain_blender_core.isEmpty())
     {
-      if(inputs[PITCH_INPUT].isConnected())
-      {
-        step_amount = (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 5.0f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
-      }
-      else
-      {
-        step_amount = params[PITCH_KNOB].getValue();
-      }
-
       smooth_rate = 128.0f / args.sampleRate;
 
-      // Get the output from the graveyard and increase the age of each ghost
-      std::pair<float, float> stereo_output = grain_blender_core.process(smooth_rate, step_amount);
+      // Get the output and increase the age of each grain
+      std::pair<float, float> stereo_output = grain_blender_core.process(smooth_rate, contour_index);
       float left_mix_output = stereo_output.first * params[TRIM_KNOB].getValue();
       float right_mix_output = stereo_output.second  * params[TRIM_KNOB].getValue();
 

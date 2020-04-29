@@ -17,25 +17,19 @@ struct Grain
     unsigned int sample_position = 0;
     unsigned int age = 0;
     unsigned int lifespan = 0;
+    float pitch = 0;
 
     float output_voltage_left = 0;
     float output_voltage_right = 0;
-
     bool erase_me = false;
-
 
     StereoPanSubModule panner;
 
     Grain()
     {
-        // Since the fade out isn't processed until the sample playback is past
-        // a certain point, we can just trigger it now and it'll start working
-        // later.
-        // stereo_fade_out.trigger();
-        // stereo_fade_in.trigger();
     }
 
-    std::pair<float, float> getStereoOutput(float smooth_rate)
+    std::pair<float, float> getStereoOutput(unsigned int contour_selection)
     {
         if(age == 0) return {0,0};
 
@@ -53,18 +47,16 @@ struct Grain
         {
             // output_voltage_left  = this->buffer_ptr->leftPlayBuffer[sample_position];
             // output_voltage_right = this->buffer_ptr->rightPlayBuffer[sample_position];
-
             output_voltage_left  = this->buffer_ptr->getLeftValue(sample_position);
             output_voltage_right = this->buffer_ptr->getRightValue(sample_position);
-
 
             // Apply amplitude slope
             int slope_index = (1.0 - ((float)age / (float)lifespan)) * 512.0;  // remember that age decrements instead of increments
             slope_index = clamp(slope_index, 0, 511);
-            float slope_value = GRAIN_SLOPE[slope_index];
+            float slope_value = CONTOURS[contour_selection][slope_index];
 
-            output_voltage_left  = (slope_value / 256.0) * output_voltage_left;
-            output_voltage_right = (slope_value / 256.0) * output_voltage_right;
+            output_voltage_left  = slope_value * output_voltage_left;
+            output_voltage_right = slope_value * output_voltage_right;
 
             // Apply pan
             std::tie(output_voltage_left, output_voltage_right) = panner.process(output_voltage_left, output_voltage_right, pan);
@@ -73,13 +65,18 @@ struct Grain
         return {output_voltage_left, output_voltage_right};
     }
 
-    void step(float step_amount)
+    void step()
     {
         if(erase_me == false)
         {
             // Step the playback position forward.
-            playback_position = playback_position + step_amount;
+            playback_position = playback_position + pitch;
             if(! --age) erase_me = true;
         }
+    }
+
+    unsigned int getSamplePosition()
+    {
+      return(this->start_position + this->playback_position);
     }
 };
