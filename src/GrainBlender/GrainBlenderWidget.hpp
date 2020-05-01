@@ -13,8 +13,8 @@ struct GrainBlenderWidget : ModuleWidget
     addChild(panel_art);
 
     // Spawn Trigger
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366 + 0, 25.974)), module, GrainBlender::SPAWN_TRIGGER_INPUT));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(75.595 + 0, 25.974)), module, GrainBlender::SPAWN_KNOB));
+    // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366 + 0, 25.974)), module, GrainBlender::SPAWN_TRIGGER_INPUT));
+
 
     // Jitter
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366 + 0, 45.713)), module, GrainBlender::JITTER_CV_INPUT));
@@ -30,7 +30,7 @@ struct GrainBlenderWidget : ModuleWidget
 
     // Advanced controls
     // addParam(createParamCentered<Trimpot>(mm2px(Vec(32, 72.576)), module, GrainBlender::MAX_WINDOW_KNOB));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(32, 82.576)), module, GrainBlender::MAX_GRAINS_KNOB));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(32, 92.576)), module, GrainBlender::MAX_GRAINS_KNOB));
     addParam(createParamCentered<Trimpot>(mm2px(Vec(42, 92.576)), module, GrainBlender::CONTOUR_KNOB));
 
 
@@ -44,14 +44,18 @@ struct GrainBlenderWidget : ModuleWidget
     addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 0, 28.526 - y_offset)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
 
     // Pitch
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset + 0, 50.489 - 5 - y_offset)), module, GrainBlender::PITCH_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 0, 50.489 - 5 - y_offset)), module, GrainBlender::PITCH_INPUT));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 0, 50.489 - 5 - y_offset)), module, GrainBlender::PITCH_ATTN_KNOB));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset + 0, 50.489 - y_offset)), module, GrainBlender::PITCH_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 0, 50.489 - y_offset)), module, GrainBlender::PITCH_INPUT));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 0, 50.489 - y_offset)), module, GrainBlender::PITCH_ATTN_KNOB));
 
     // Window
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset + 0, 72.452 - 10 - y_offset)), module, GrainBlender::WINDOW_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 0, 72.452 - 10 - y_offset)), module, GrainBlender::WINDOW_INPUT));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 0, 72.452 - 10 - y_offset)), module, GrainBlender::WINDOW_ATTN_KNOB));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset + 0, 72.452 - y_offset)), module, GrainBlender::WINDOW_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 0, 72.452 - y_offset)), module, GrainBlender::WINDOW_INPUT));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 0, 72.452 - y_offset)), module, GrainBlender::WINDOW_ATTN_KNOB));
+
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset + 0, 94.415 - y_offset)), module, GrainBlender::SPAWN_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 0, 94.415 - y_offset)), module, GrainBlender::SPAWN_INPUT));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 0, 94.415 - y_offset)), module, GrainBlender::SPAWN_ATTN_KNOB));;
 
     // Trim
     addParam(createParamCentered<Trimpot>(mm2px(Vec(74.94 + 0, 103.043)), module, GrainBlender::TRIM_KNOB));

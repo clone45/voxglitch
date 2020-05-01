@@ -45,6 +45,7 @@ struct GrainBlender : Module
     SPAWN_THROTTLING_KNOB,
     CONTOUR_KNOB,
     SPAWN_KNOB,
+    SPAWN_ATTN_KNOB,
     NUM_PARAMS
   };
   enum InputIds {
@@ -58,6 +59,7 @@ struct GrainBlender : Module
     FREEZE_INPUT,
     AUDIO_INPUT_LEFT,
     AUDIO_INPUT_RIGHT,
+    SPAWN_INPUT,
     NUM_INPUTS
   };
   enum OutputIds {
@@ -89,7 +91,9 @@ struct GrainBlender : Module
     configParam(FREEZE_SWITCH, 0.0f, 1.0f, 0.0f, "FreezeSwitch");
     configParam(MAX_GRAINS_KNOB, 0.0f, MAX_GRAINS, 100.0f, "MaxGrains");
     configParam(CONTOUR_KNOB, 0.0f, 1.0f, 0.0f, "ContourKnob");
-    configParam(SPAWN_KNOB, 0.0f, 512.0f, 82.0f, "SpawnKnob");
+    // configParam(SPAWN_KNOB, 0.0f, 512.0f, 82.0f, "SpawnKnob");
+    configParam(SPAWN_KNOB, 0.0f, 1.0f, 1.0f, "SpawnKnob");
+    configParam(SPAWN_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SpawnAttnKnob");
 
     jitter_divisor = static_cast <float> (RAND_MAX / 1024.0);
   }
@@ -111,6 +115,15 @@ struct GrainBlender : Module
     float attenuator_value = params[attenuator_index].getValue();
 
     return(((input_value * scale) * attenuator_value) + (knob_value * scale));
+  }
+
+  float calculate_inputs(int input_index, int knob_index, int attenuator_index)
+  {
+    float input_value = inputs[input_index].getVoltage() / 10.0;
+    float knob_value = params[knob_index].getValue();
+    float attenuator_value = params[attenuator_index].getValue();
+
+    return((input_value * attenuator_value) + knob_value);
   }
 
   void process(const ProcessArgs &args) override
@@ -205,10 +218,10 @@ struct GrainBlender : Module
       audio_buffer.frozen = params[FREEZE_SWITCH].getValue();
     }
 
-    is_spawn_cable_connected = inputs[SPAWN_TRIGGER_INPUT].isConnected() ? true : false;
+    // is_spawn_cable_connected = inputs[SPAWN_TRIGGER_INPUT].isConnected() ? true : false;
 
-    if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage()) || is_spawn_cable_connected == false)
-    {
+    // if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage()) || is_spawn_cable_connected == false)
+    // {
       if(spawn_throttling_countdown == 0)
       {
         if(inputs[PITCH_INPUT].isConnected())
@@ -221,9 +234,16 @@ struct GrainBlender : Module
         }
 
         grain_blender_core.add(start_position, window_length, pan, &audio_buffer, max_grains, pitch);
-        spawn_throttling_countdown = params[SPAWN_KNOB].getValue();
+
+        float spawn_inputs_value = rescale(calculate_inputs(SPAWN_INPUT, SPAWN_KNOB, SPAWN_ATTN_KNOB, 1.0), 0.f, 1.f, 1.f, 512.f);
+        if (spawn_inputs_value < 0) spawn_inputs_value = 0;
+        spawn_throttling_countdown = spawn_inputs_value;
+
+        // if(spawn_throttling_countdown > 512 || spawn_throttling_countdown < 0) DEBUG(std::to_string(spawn_throttling_countdown).c_str());
+        // DEBUG(std::to_string(spawn_inputs_value).c_str());
       }
-    }
+
+    // }
 
     if (! grain_blender_core.isEmpty())
     {
