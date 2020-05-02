@@ -130,6 +130,15 @@ struct GrainBlender : Module
     return((input_value * attenuator_value) + knob_value);
   }
 
+  float process_position_modulation()
+  {
+    // add range knobs for these?
+    internal_modulation_oscillator.setFrequency((params[INTERNAL_MODULATION_FREQUENCY_KNOB].getValue() * 500.0) + 0.10);
+
+    // Always returns a number between 0.0 and 1.0
+    return(internal_modulation_oscillator.next() * params[INTERNAL_MODULATION_AMPLITUDE_KNOB].getValue());
+  }
+
   void process(const ProcessArgs &args) override
   {
     audio_buffer.push(inputs[AUDIO_INPUT_LEFT].getVoltage(), inputs[AUDIO_INPUT_RIGHT].getVoltage());
@@ -157,52 +166,43 @@ struct GrainBlender : Module
 
     if(inputs[SAMPLE_PLAYBACK_POSITION_INPUT].isConnected())
     {
-      start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, MAX_BUFFER_SIZE);
+      start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 1.0);
     }
     else
     {
-
-      internal_modulation_oscillator.setFrequency((params[INTERNAL_MODULATION_FREQUENCY_KNOB].getValue() * 500.0) + 0.10);
-      start_position = internal_modulation_oscillator.next() * ((float) MAX_BUFFER_SIZE / 4.0) * params[INTERNAL_MODULATION_AMPLITUDE_KNOB].getValue();
+      start_position = process_position_modulation();
     }
+
+    // rescale(start_position, 0.0, 1.0, 0.0, MAX_BUFFER_SIZE, maximum_jitter_offset);
+
 
     //
     // Process Jitter input
     //
 
-    /*
-    float jitter = 0;
     float jitter_spread = 0;
 
     if(inputs[JITTER_CV_INPUT].isConnected())
     {
-      jitter_spread = params[JITTER_KNOB].getValue() * JITTER_SPREAD * inputs[JITTER_CV_INPUT].getVoltage();
+      jitter_spread = params[JITTER_KNOB].getValue() * MAX_JITTER_SPREAD * inputs[JITTER_CV_INPUT].getVoltage();
     }
     else
     {
-      jitter_spread = params[JITTER_KNOB].getValue() * JITTER_SPREAD;
+      jitter_spread = params[JITTER_KNOB].getValue() * MAX_JITTER_SPREAD;
     }
 
-    jitter = fmod(rand(), jitter_spread) - jitter_spread;
+    // If jitter_spread is 124, then the jitter will be between -124 and 124.
+    float jitter = randomFloat(-1 * jitter_spread, jitter_spread);
 
+    // Make some room at the beginning and end of the possible range position to
+    // allow for the addition of the jitter without pushing the start_position out of
+    // range of the buffer size.  Also leave room for the window length so that
+    // none of the grains reaches the end of the buffer.
+    start_position = rescaleWithPadding(start_position, 0.0, 1.0, 0.0, MAX_BUFFER_SIZE, jitter_spread, jitter_spread + window_length);
+    start_position += jitter;
 
     // DEBUG(std::to_string(window_knob_value).c_str());
 
-    // Ensure that the inputs are within range
-    start_position += jitter;
-
-    // start_position = fmod(start_position, MAX_BUFFER_SIZE - window_length);
-
-
-    if((start_position + jitter) >= (MAX_BUFFER_SIZE - window_length))
-    {
-      start_position = (start_position + jitter) - (MAX_BUFFER_SIZE + window_length);
-    }
-    else
-    {
-      start_position += jitter;
-    }
-    */
 
     //
     // Process Pan input

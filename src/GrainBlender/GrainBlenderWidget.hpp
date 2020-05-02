@@ -72,8 +72,8 @@ struct GrainBlenderWidget : ModuleWidget
 
 
     // Modulation area
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(100 + 0, 85.805)), module, GrainBlender::INTERNAL_MODULATION_FREQUENCY_KNOB));
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(100 + 0, 94.415)), module, GrainBlender::INTERNAL_MODULATION_AMPLITUDE_KNOB));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(96 + 0, 85.805)), module, GrainBlender::INTERNAL_MODULATION_FREQUENCY_KNOB));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(96 + 0, 105)), module, GrainBlender::INTERNAL_MODULATION_AMPLITUDE_KNOB));
 
 
   }

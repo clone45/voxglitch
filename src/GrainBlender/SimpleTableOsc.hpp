@@ -32,16 +32,20 @@ struct SimpleTableOsc
     if(waveform == 0)
     {
       position = position + this->frequency;
-      index = position; // float to int conversion
-      index = index % MAX_TABLE_SIZE;
     }
 
     if(waveform == 1)
     {
       position = position - this->frequency;
-      index = position; // float to int conversion
-      index = index % MAX_TABLE_SIZE;
     }
+
+    // Roll over the position if necessary
+    if(position > MAX_TABLE_SIZE) position = position - MAX_TABLE_SIZE;
+    if(position < 0) position = position + MAX_TABLE_SIZE;
+
+    // Convert position to an integer and ensure it is in-bounds
+    index = position;
+    index = clamp(index, 0, MAX_TABLE_SIZE - 1);
 
     return(table[index]);
   }
