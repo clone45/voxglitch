@@ -16,6 +16,7 @@ struct GrainBlender : Module
   unsigned int max_grains = MAX_GRAINS;
 
   AudioBuffer audio_buffer;
+  SimpleTableOsc internal_modulation_oscillator;
 
   int step = 0;
   std::string root_dir;
@@ -46,6 +47,8 @@ struct GrainBlender : Module
     CONTOUR_KNOB,
     SPAWN_KNOB,
     SPAWN_ATTN_KNOB,
+    INTERNAL_MODULATION_FREQUENCY_KNOB,
+    INTERNAL_MODULATION_AMPLITUDE_KNOB,
     NUM_PARAMS
   };
   enum InputIds {
@@ -91,9 +94,10 @@ struct GrainBlender : Module
     configParam(FREEZE_SWITCH, 0.0f, 1.0f, 0.0f, "FreezeSwitch");
     configParam(MAX_GRAINS_KNOB, 0.0f, MAX_GRAINS, 100.0f, "MaxGrains");
     configParam(CONTOUR_KNOB, 0.0f, 1.0f, 0.0f, "ContourKnob");
-    // configParam(SPAWN_KNOB, 0.0f, 512.0f, 82.0f, "SpawnKnob");
     configParam(SPAWN_KNOB, 0.0f, 1.0f, 1.0f, "SpawnKnob");
     configParam(SPAWN_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SpawnAttnKnob");
+    configParam(INTERNAL_MODULATION_FREQUENCY_KNOB, 0.1f, 1.0f, 0.5f, "InternalModulateionFrequencyKnob");
+    configParam(INTERNAL_MODULATION_AMPLITUDE_KNOB, 0.1f, 1.0f, 0.5f, "InternalModulateionAmplitudeKnob");
 
     jitter_divisor = static_cast <float> (RAND_MAX / 1024.0);
   }
@@ -141,7 +145,7 @@ struct GrainBlender : Module
 
     // float window_knob_value = calculate_inputs(WINDOW_INPUT, WINDOW_KNOB, WINDOW_ATTN_KNOB, WINDOW_KNOB_MAX);
 
-    float window_knob_value = params[WINDOW_KNOB].getValue();
+    float window_knob_value = params[WINDOW_KNOB].getValue() + 60.0;
 
     // DEBUG("window knob value");
     // DEBUG(std::to_string(window_knob_value).c_str());
@@ -149,7 +153,18 @@ struct GrainBlender : Module
     // unsigned int window_length = args.sampleRate / window_knob_value;
     unsigned int window_length = window_knob_value;
 
-    float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, MAX_BUFFER_SIZE);
+    float start_position;
+
+    if(inputs[SAMPLE_PLAYBACK_POSITION_INPUT].isConnected())
+    {
+      start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, MAX_BUFFER_SIZE);
+    }
+    else
+    {
+
+      internal_modulation_oscillator.setFrequency((params[INTERNAL_MODULATION_FREQUENCY_KNOB].getValue() * 500.0) + 0.10);
+      start_position = internal_modulation_oscillator.next() * ((float) MAX_BUFFER_SIZE / 4.0) * params[INTERNAL_MODULATION_AMPLITUDE_KNOB].getValue();
+    }
 
     //
     // Process Jitter input
@@ -175,10 +190,10 @@ struct GrainBlender : Module
 
     // Ensure that the inputs are within range
     start_position += jitter;
-        */
+
     // start_position = fmod(start_position, MAX_BUFFER_SIZE - window_length);
 
-    /*
+
     if((start_position + jitter) >= (MAX_BUFFER_SIZE - window_length))
     {
       start_position = (start_position + jitter) - (MAX_BUFFER_SIZE + window_length);
@@ -238,9 +253,6 @@ struct GrainBlender : Module
         float spawn_inputs_value = rescale(calculate_inputs(SPAWN_INPUT, SPAWN_KNOB, SPAWN_ATTN_KNOB, 1.0), 0.f, 1.f, 1.f, 512.f);
         if (spawn_inputs_value < 0) spawn_inputs_value = 0;
         spawn_throttling_countdown = spawn_inputs_value;
-
-        // if(spawn_throttling_countdown > 512 || spawn_throttling_countdown < 0) DEBUG(std::to_string(spawn_throttling_countdown).c_str());
-        // DEBUG(std::to_string(spawn_inputs_value).c_str());
       }
 
     // }
@@ -252,7 +264,7 @@ struct GrainBlender : Module
       // Get the output and increase the age of each grain
       std::pair<float, float> stereo_output = grain_blender_core.process(smooth_rate, contour_index);
       float left_mix_output = stereo_output.first * params[TRIM_KNOB].getValue();
-      float right_mix_output = stereo_output.second  * params[TRIM_KNOB].getValue();
+      float right_mix_output = stereo_output.second * params[TRIM_KNOB].getValue();
 
       // Send audio to outputs
       outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_mix_output);

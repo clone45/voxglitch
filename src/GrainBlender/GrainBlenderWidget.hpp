@@ -8,9 +8,11 @@ struct GrainBlenderWidget : ModuleWidget
     float y_offset = 1.8;
     float x_offset = -1.8;
 
+    /*
     PanelArt *panel_art = new PanelArt();
     panel_art->module = module;
     addChild(panel_art);
+    */
 
     // Spawn Trigger
     // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366 + 0, 25.974)), module, GrainBlender::SPAWN_TRIGGER_INPUT));
@@ -68,6 +70,12 @@ struct GrainBlenderWidget : ModuleWidget
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(64.216 + 0, 114.702)), module, GrainBlender::AUDIO_OUTPUT_LEFT));
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(74.94 + 0, 114.702)), module, GrainBlender::AUDIO_OUTPUT_RIGHT));
 
+
+    // Modulation area
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(100 + 0, 85.805)), module, GrainBlender::INTERNAL_MODULATION_FREQUENCY_KNOB));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(100 + 0, 94.415)), module, GrainBlender::INTERNAL_MODULATION_AMPLITUDE_KNOB));
+
+
   }
 
   void appendContextMenu(Menu *menu) override
@@ -75,5 +83,6 @@ struct GrainBlenderWidget : ModuleWidget
     GrainBlender *module = dynamic_cast<GrainBlender*>(this->module);
     assert(module);
   }
+
 
 };
