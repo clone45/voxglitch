@@ -11,9 +11,9 @@ struct GrainBlender : Module
   float pitch = 0;
   float smooth_rate = 0;
   float max_window_divisor = 4.0;
-	unsigned int selected_sample_slot = 0;
   unsigned int spawn_throttling_countdown = 0;
   float max_grains = 0;
+  unsigned int selected_waveform = 0;
 
   AudioBuffer audio_buffer;
   SimpleTableOsc internal_modulation_oscillator;
@@ -166,6 +166,10 @@ struct GrainBlender : Module
     this->max_grains = calculate_inputs(GRAINS_INPUT, GRAINS_KNOB, GRAINS_ATTN_KNOB, MAX_GRAINS);
     // this->max_grains = 100;
 
+    // Process inputs for the selection of waveforms
+    selected_waveform = calculate_inputs(INTERNAL_MODULATION_WAVEFORM_INPUT, INTERNAL_MODULATION_WAVEFORM_KNOB, INTERNAL_MODULATION_WAVEFORM_ATTN_KNOB, 3.99);
+    internal_modulation_oscillator.setWaveform(selected_waveform);
+
     // unsigned int contour_index = params[CONTOUR_KNOB].getValue() * 9.0;
     unsigned int contour_index = 0;
 
@@ -287,5 +291,10 @@ struct GrainBlender : Module
     }
 
     if(spawn_throttling_countdown > 0) spawn_throttling_countdown--;
+
+    lights[INTERNAL_MODULATION_WAVEFORM_1_LED].setBrightness(selected_waveform == 0);
+    lights[INTERNAL_MODULATION_WAVEFORM_2_LED].setBrightness(selected_waveform == 1);
+    lights[INTERNAL_MODULATION_WAVEFORM_3_LED].setBrightness(selected_waveform == 2);
+    lights[INTERNAL_MODULATION_WAVEFORM_4_LED].setBrightness(selected_waveform == 3);
   }
 };

@@ -76,24 +76,24 @@ struct GrainBlenderWidget : ModuleWidget
     addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(111.719, 20)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_4_LED));
 
     // Modulation waveform selection inputs
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(98.489, 31)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_KNOB));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(95, 31)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_KNOB));
     addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 31)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_ATTN_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(115, 31)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(118, 31)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_INPUT));
 
     // Modulation LFO frequency
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(98.489, 51.638)), module, GrainBlender::INTERNAL_MODULATION_FREQUENCY_KNOB));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 54.638)), module, GrainBlender::INTERNAL_MODULATION_FREQUENCY_ATTN_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(115, 51.638)), module, GrainBlender::INTERNAL_MODULATION_FREQUENCY_INPUT));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(95, 51.638)), module, GrainBlender::INTERNAL_MODULATION_FREQUENCY_KNOB));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 51.638)), module, GrainBlender::INTERNAL_MODULATION_FREQUENCY_ATTN_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(118, 51.638)), module, GrainBlender::INTERNAL_MODULATION_FREQUENCY_INPUT));
 
     // Modulation LFO Amplitude
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(98.489, 51 + 20.638)), module, GrainBlender::INTERNAL_MODULATION_AMPLITUDE_KNOB));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 54 + 20.638)), module, GrainBlender::INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(115, 51 + 20.638)), module, GrainBlender::INTERNAL_MODULATION_AMPLITUDE_INPUT));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(95, 51 + 20.638)), module, GrainBlender::INTERNAL_MODULATION_AMPLITUDE_KNOB));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 51 + 20.638)), module, GrainBlender::INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(118, 51 + 20.638)), module, GrainBlender::INTERNAL_MODULATION_AMPLITUDE_INPUT));
 
-    // Position Override
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(98.489, 106)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_KNOB));
+    // Position Override.  x was 98.489
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(95, 106)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_KNOB));
     addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 106)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(115, 106)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(118, 106)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_INPUT));
 
   }
 
