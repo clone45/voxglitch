@@ -52,6 +52,8 @@ struct GrainBlender : Module
     INTERNAL_MODULATION_FREQUENCY_ATTN_KNOB,
     INTERNAL_MODULATION_AMPLITUDE_KNOB,
     INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB,
+    INTERNAL_MODULATION_WAVEFORM_KNOB,
+    INTERNAL_MODULATION_WAVEFORM_ATTN_KNOB,
     NUM_PARAMS
   };
   enum InputIds {
@@ -69,6 +71,7 @@ struct GrainBlender : Module
     SPAWN_INPUT,
     INTERNAL_MODULATION_FREQUENCY_INPUT,
     INTERNAL_MODULATION_AMPLITUDE_INPUT,
+    INTERNAL_MODULATION_WAVEFORM_INPUT,
     NUM_INPUTS
   };
   enum OutputIds {
@@ -79,6 +82,10 @@ struct GrainBlender : Module
   };
   enum LightIds {
     PURGE_LIGHT,
+    INTERNAL_MODULATION_WAVEFORM_1_LED,
+    INTERNAL_MODULATION_WAVEFORM_2_LED,
+    INTERNAL_MODULATION_WAVEFORM_3_LED,
+    INTERNAL_MODULATION_WAVEFORM_4_LED,
     NUM_LIGHTS
   };
 
@@ -107,6 +114,8 @@ struct GrainBlender : Module
     configParam(INTERNAL_MODULATION_FREQUENCY_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "InternalModulateionFrequencyAttnKnob");
     configParam(INTERNAL_MODULATION_AMPLITUDE_KNOB, 0.01f, 1.0f, 0.01f, "InternalModulateionAmplitudeKnob");
     configParam(INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "InternalModulateionAmplitudeKnob");
+    configParam(INTERNAL_MODULATION_WAVEFORM_KNOB, 0.01f, 1.0f, 0.01f, "InternalModulateionWaveformKnob");
+    configParam(INTERNAL_MODULATION_WAVEFORM_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "InternalModulateionWaveformKnob");
 
     jitter_divisor = static_cast <float> (RAND_MAX / 1024.0);
   }
