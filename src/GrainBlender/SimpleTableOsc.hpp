@@ -1,5 +1,5 @@
 #define MAX_TABLE_SIZE 22050
-#define NUMBER_OF_WAVEFORMS 4
+#define NUMBER_OF_WAVEFORMS 5
 #define MAX_OSC_VALUE 1.0
 
 // TODO: Frequency can poop out if it's modulated to roughly
@@ -20,9 +20,11 @@ struct SimpleTableOsc
     {
       // Computer values for table #0 (sawtooth wave)
       tables[0][i] = ((float) i / (float) MAX_TABLE_SIZE) * MAX_OSC_VALUE;
+
+      // Computer values for table #1 (inverted sawtooth wave)
       tables[1][i] = ((float) (MAX_TABLE_SIZE - i) / (float) MAX_TABLE_SIZE) * MAX_OSC_VALUE;
 
-      // Pre-calcuate table #1: Triangle wave
+      // Pre-calcuate table #2: Triangle wave
       if(i <= (MAX_TABLE_SIZE / 2))
       {
         tables[2][i] = ((float) (i * 2) / (float) MAX_TABLE_SIZE) * MAX_OSC_VALUE;
@@ -32,9 +34,12 @@ struct SimpleTableOsc
         tables[2][i] = tables[2][MAX_TABLE_SIZE - i];  // Very clever, Mr. Bond
       }
 
-      // Precalculate table #2: Sine wave
+      // Precalculate table #3: Sine wave
       tables[3][i] = ((MAX_OSC_VALUE / 2) * sin(angle)) + (MAX_OSC_VALUE / 2);
       angle += (2 * M_PI) / MAX_TABLE_SIZE;
+
+      //  Precalculate table #4: Double sawtooth wave
+      tables[4][i] = (i % 2) ? tables[0][i] : (tables[0][i] / 2.0);
     }
   }
 
@@ -45,7 +50,7 @@ struct SimpleTableOsc
 
   void setFrequency(float frequency)
   {
-    if(this->frequency != frequency) DEBUG_FLOAT(frequency);
+    // if(this->frequency != frequency) DEBUG_FLOAT(frequency);
     this->frequency = frequency;
   }
 

@@ -86,6 +86,7 @@ struct GrainBlender : Module
     INTERNAL_MODULATION_WAVEFORM_2_LED,
     INTERNAL_MODULATION_WAVEFORM_3_LED,
     INTERNAL_MODULATION_WAVEFORM_4_LED,
+    INTERNAL_MODULATION_WAVEFORM_5_LED,
     NUM_LIGHTS
   };
 
@@ -167,7 +168,7 @@ struct GrainBlender : Module
     // this->max_grains = 100;
 
     // Process inputs for the selection of waveforms
-    selected_waveform = calculate_inputs(INTERNAL_MODULATION_WAVEFORM_INPUT, INTERNAL_MODULATION_WAVEFORM_KNOB, INTERNAL_MODULATION_WAVEFORM_ATTN_KNOB, 3.99);
+    selected_waveform = calculate_inputs(INTERNAL_MODULATION_WAVEFORM_INPUT, INTERNAL_MODULATION_WAVEFORM_KNOB, INTERNAL_MODULATION_WAVEFORM_ATTN_KNOB, 4.99);
     internal_modulation_oscillator.setWaveform(selected_waveform);
 
     unsigned int contour_index = 0;
@@ -294,5 +295,6 @@ struct GrainBlender : Module
     lights[INTERNAL_MODULATION_WAVEFORM_2_LED].setBrightness(selected_waveform == 1);
     lights[INTERNAL_MODULATION_WAVEFORM_3_LED].setBrightness(selected_waveform == 2);
     lights[INTERNAL_MODULATION_WAVEFORM_4_LED].setBrightness(selected_waveform == 3);
+    lights[INTERNAL_MODULATION_WAVEFORM_5_LED].setBrightness(selected_waveform == 4);
   }
 };

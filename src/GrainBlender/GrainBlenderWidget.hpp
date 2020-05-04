@@ -74,6 +74,7 @@ struct GrainBlenderWidget : ModuleWidget
     addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(99.157, 20)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_2_LED));
     addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(105.438, 20)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_3_LED));
     addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(111.719, 20)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_4_LED));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(118, 20)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_5_LED));
 
     // Modulation waveform selection inputs
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(95, 31)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_KNOB));

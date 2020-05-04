@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="349.03111"
-     inkscape:cy="469.35471"
+     inkscape:zoom="7.919596"
+     inkscape:cx="411.48011"
+     inkscape:cy="424.99656"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -96,6 +96,13 @@
        position="62.140165,108.5"
        orientation="0,1"
        id="guide1009"
+       inkscape:locked="false"
+       inkscape:label=""
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="118,142.18739"
+       orientation="1,0"
+       id="guide1587"
        inkscape:locked="false"
        inkscape:label=""
        inkscape:color="rgb(0,0,255)" />
@@ -1065,5 +1072,26 @@
          style="display:inline;fill:none;stroke:#808080;stroke-width:1.5px;stroke-linecap:round;stroke-miterlimit:10"
          id="line1103-6" />
     </g>
+    <line
+       x1="180.57317"
+       y1="63.197166"
+       x2="184.27733"
+       y2="59.493"
+       style="fill:none;stroke:#808080;stroke-width:0.39687499px;stroke-linecap:round;stroke-miterlimit:10"
+       id="line854" />
+    <line
+       x1="184.27733"
+       y1="63.197166"
+       x2="184.27733"
+       y2="59.493"
+       style="fill:none;stroke:#808080;stroke-width:0.39687499px;stroke-linecap:round;stroke-miterlimit:10"
+       id="line856" />
+    <line
+       x1="180.57317"
+       y1="63.237011"
+       x2="184.13957"
+       y2="61.627926"
+       style="fill:none;stroke:#808080;stroke-width:0.39687499px;stroke-linecap:round;stroke-miterlimit:10"
+       id="line854-8" />
   </g>
 </svg>
