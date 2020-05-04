@@ -45,6 +45,7 @@ struct SimpleTableOsc
 
   void setFrequency(float frequency)
   {
+    if(this->frequency != frequency) DEBUG_FLOAT(frequency);
     this->frequency = frequency;
   }
 

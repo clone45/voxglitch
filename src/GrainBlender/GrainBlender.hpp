@@ -170,13 +170,11 @@ struct GrainBlender : Module
     selected_waveform = calculate_inputs(INTERNAL_MODULATION_WAVEFORM_INPUT, INTERNAL_MODULATION_WAVEFORM_KNOB, INTERNAL_MODULATION_WAVEFORM_ATTN_KNOB, 3.99);
     internal_modulation_oscillator.setWaveform(selected_waveform);
 
-    // unsigned int contour_index = params[CONTOUR_KNOB].getValue() * 9.0;
     unsigned int contour_index = 0;
-
-    // float window_knob_value = calculate_inputs(WINDOW_INPUT, WINDOW_KNOB, WINDOW_ATTN_KNOB, WINDOW_KNOB_MAX);
 
     // TODO: add CV controls to this
     float window_knob_value = params[WINDOW_KNOB].getValue() + 60.0;
+    // float window_knob_value = calculate_inputs(WINDOW_INPUT, WINDOW_KNOB, WINDOW_ATTN_KNOB, WINDOW_KNOB_MAX);
 
     // unsigned int window_length = args.sampleRate / window_knob_value;
     unsigned int window_length = window_knob_value;

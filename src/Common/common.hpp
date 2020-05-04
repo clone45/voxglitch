@@ -11,6 +11,11 @@ float randomFloat(float min, float max)
   return(min + r * (max - min));
 }
 
+void DEBUG_FLOAT(float value)
+{
+  DEBUG(std::to_string(value).c_str());
+}
+
 /*
 float wrapFloat(float number, float max)
 {
