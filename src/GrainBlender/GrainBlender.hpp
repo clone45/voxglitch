@@ -5,6 +5,9 @@
 // I still need to update all the code that uses the single sample to start
 // using the array of samples.
 
+//
+// TODO: I can crash it with external position input!
+//
 struct GrainBlender : Module
 {
   float spawn_rate_counter = 0;
@@ -137,6 +140,8 @@ struct GrainBlender : Module
     float knob_value = params[knob_index].getValue();
     float attenuator_value = params[attenuator_index].getValue();
 
+    input_value = clamp(input_value, 0.0, 1.0);
+
     return(((input_value * scale) * attenuator_value) + (knob_value * scale));
   }
 
@@ -146,8 +151,11 @@ struct GrainBlender : Module
     float knob_value = params[knob_index].getValue();
     float attenuator_value = params[attenuator_index].getValue();
 
+    input_value = clamp(input_value, 0.0, 1.0);
+
     return((input_value * attenuator_value) + knob_value);
   }
+
 
   float process_position_modulation()
   {
@@ -155,8 +163,9 @@ struct GrainBlender : Module
     float frequency = calculate_inputs(INTERNAL_MODULATION_FREQUENCY_INPUT, INTERNAL_MODULATION_FREQUENCY_KNOB, INTERNAL_MODULATION_FREQUENCY_ATTN_KNOB, 500.0);
     internal_modulation_oscillator.setFrequency(frequency + 0.10);
 
-    // Always returns a number between 0.0 and 1.0
-    return(internal_modulation_oscillator.next() * calculate_inputs(INTERNAL_MODULATION_AMPLITUDE_INPUT, INTERNAL_MODULATION_AMPLITUDE_KNOB, INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB, 1.0));
+    float modulation_amplitude = calculate_inputs(INTERNAL_MODULATION_AMPLITUDE_INPUT, INTERNAL_MODULATION_AMPLITUDE_KNOB, INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB);
+
+    return(internal_modulation_oscillator.next() * modulation_amplitude);
   }
 
   void process(const ProcessArgs &args) override
@@ -165,7 +174,6 @@ struct GrainBlender : Module
 
     // Process Max Grains knob
     this->max_grains = calculate_inputs(GRAINS_INPUT, GRAINS_KNOB, GRAINS_ATTN_KNOB, MAX_GRAINS);
-    // this->max_grains = 100;
 
     // Process inputs for the selection of waveforms
     selected_waveform = calculate_inputs(INTERNAL_MODULATION_WAVEFORM_INPUT, INTERNAL_MODULATION_WAVEFORM_KNOB, INTERNAL_MODULATION_WAVEFORM_ATTN_KNOB, 4.99);
@@ -174,6 +182,7 @@ struct GrainBlender : Module
     unsigned int contour_index = 0;
 
     // TODO: add CV controls to this
+    // TODO: also clamp this to the correct range
     float window_knob_value = params[WINDOW_KNOB].getValue() + 60.0;
     // float window_knob_value = calculate_inputs(WINDOW_INPUT, WINDOW_KNOB, WINDOW_ATTN_KNOB, WINDOW_KNOB_MAX);
 
@@ -184,15 +193,12 @@ struct GrainBlender : Module
 
     if(inputs[SAMPLE_PLAYBACK_POSITION_INPUT].isConnected())
     {
-      start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 1.0);
+      start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB);
     }
     else
     {
       start_position = process_position_modulation();
     }
-
-    // rescale(start_position, 0.0, 1.0, 0.0, MAX_BUFFER_SIZE, maximum_jitter_offset);
-
 
     //
     // Process Jitter input
@@ -259,6 +265,7 @@ struct GrainBlender : Module
       {
         if(inputs[PITCH_INPUT].isConnected())
         {
+          // This assumes a unipolar input.  Is that correct?
           pitch = (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 5.0f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
         }
         else
