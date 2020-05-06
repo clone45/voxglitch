@@ -7,9 +7,8 @@
 
 //
 // TODO: fix window modulation and set default knob value to around .0555
-// TODO: try to reduce playback delay by separating the start variable into
-//  "read_head" and "write_head", and have the read_head trail the write head
-// by some number
+// TODO: Fix issue where when overriding the internal LFO, the dry signal is
+//       present.
 //
 struct GrainBlender : Module
 {
@@ -25,6 +24,8 @@ struct GrainBlender : Module
   GrainBlenderEx grain_blender_core;
 
   dsp::SchmittTrigger spawn_trigger;
+
+  unsigned int buffering_counter = MAX_BUFFER_SIZE;
 
   enum ParamIds {
     WINDOW_KNOB,
@@ -84,6 +85,8 @@ struct GrainBlender : Module
     INTERNAL_MODULATION_WAVEFORM_5_LED,
     SPAWN_INDICATOR_LIGHT,
     EXT_CLK_INDICATOR_LIGHT,
+    BUFFERING_GREEN_LIGHT,
+    BUFFERING_RED_LIGHT,
     NUM_LIGHTS
   };
 
@@ -110,10 +113,10 @@ struct GrainBlender : Module
     configParam(SPAWN_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SpawnAttnKnob");
     configParam(INTERNAL_MODULATION_FREQUENCY_KNOB, 0.1f, 1.0f, 0.1f, "InternalModulateionFrequencyKnob");
     configParam(INTERNAL_MODULATION_FREQUENCY_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "InternalModulateionFrequencyAttnKnob");
-    configParam(INTERNAL_MODULATION_AMPLITUDE_KNOB, 0.01f, 1.0f, 0.01f, "InternalModulateionAmplitudeKnob");
-    configParam(INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "InternalModulateionAmplitudeKnob");
+    configParam(INTERNAL_MODULATION_AMPLITUDE_KNOB, 0.002f, 1.0f, 0.01f, "InternalModulateionAmplitudeKnob");
+    configParam(INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "InternalModulateionAmplitudeAttnKnob");
     configParam(INTERNAL_MODULATION_WAVEFORM_KNOB, 0.01f, 1.0f, 0.01f, "InternalModulateionWaveformKnob");
-    configParam(INTERNAL_MODULATION_WAVEFORM_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "InternalModulateionWaveformKnob");
+    configParam(INTERNAL_MODULATION_WAVEFORM_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "InternalModulateionWaveformAttnKnob");
   }
 
   json_t *dataToJson() override
@@ -298,5 +301,18 @@ struct GrainBlender : Module
     lights[INTERNAL_MODULATION_WAVEFORM_3_LED].setBrightness(selected_waveform == 2);
     lights[INTERNAL_MODULATION_WAVEFORM_4_LED].setBrightness(selected_waveform == 3);
     lights[INTERNAL_MODULATION_WAVEFORM_5_LED].setBrightness(selected_waveform == 4);
+
+    if(buffering_counter > 0)
+    {
+      buffering_counter--;
+      lights[BUFFERING_RED_LIGHT].setBrightness(1.0 - ((float) buffering_counter / (float) MAX_BUFFER_SIZE));
+
+      if(buffering_counter == 0)
+      {
+        lights[BUFFERING_RED_LIGHT].setBrightness(0.0);
+        lights[BUFFERING_GREEN_LIGHT].setBrightness(1.0);
+      }
+    }
   }
+
 };

@@ -61,10 +61,12 @@ struct GrainBlenderWidget : ModuleWidget
     // Audio Input
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 114.702)), module, GrainBlender::AUDIO_INPUT_LEFT));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(21, 114.702)), module, GrainBlender::AUDIO_INPUT_RIGHT));
+    addChild(createLightCentered<MediumLight<GreenRedLight>>(mm2px(Vec(32, 114.702)), module, GrainBlender::BUFFERING_GREEN_LIGHT));
 
     // Audio Output
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(64.216 + 0, 114.702)), module, GrainBlender::AUDIO_OUTPUT_LEFT));
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(74.94 + 0, 114.702)), module, GrainBlender::AUDIO_OUTPUT_RIGHT));
+
 
     // Modulation waveform
     addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(92.743 + 1.403, 20)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_1_LED));
