@@ -24,12 +24,9 @@ struct GrainBlender : Module
   int step = 0;
   std::string root_dir;
   std::string path;
-  bool is_spawn_cable_connected = false;
 
   GrainBlenderEx grain_blender_core;
 
-  dsp::SchmittTrigger purge_trigger;
-  dsp::SchmittTrigger purge_button_trigger;
   dsp::SchmittTrigger spawn_trigger;
 
   float jitter_divisor = 1;
@@ -90,6 +87,8 @@ struct GrainBlender : Module
     INTERNAL_MODULATION_WAVEFORM_3_LED,
     INTERNAL_MODULATION_WAVEFORM_4_LED,
     INTERNAL_MODULATION_WAVEFORM_5_LED,
+    SPAWN_INDICATOR_LIGHT,
+    EXT_CLK_INDICATOR_LIGHT,
     NUM_LIGHTS
   };
 
@@ -225,9 +224,6 @@ struct GrainBlender : Module
     start_position = rescaleWithPadding(start_position, 0.0, 1.0, 0.0, MAX_BUFFER_SIZE, jitter_spread, jitter_spread + window_length);
     start_position += jitter;
 
-    // DEBUG(std::to_string(window_knob_value).c_str());
-
-
     //
     // Process Pan input
     //
@@ -257,30 +253,36 @@ struct GrainBlender : Module
       audio_buffer.frozen = params[FREEZE_SWITCH].getValue();
     }
 
-    // is_spawn_cable_connected = inputs[SPAWN_TRIGGER_INPUT].isConnected() ? true : false;
+    if(inputs[PITCH_INPUT].isConnected())
+    {
+      // This assumes a unipolar input.  Is that correct?
+      pitch = (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 5.0f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
+    }
+    else
+    {
+      pitch = params[PITCH_KNOB].getValue();
+    }
 
-    // if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage()) || is_spawn_cable_connected == false)
-    // {
-      if(spawn_throttling_countdown == 0)
-      {
-        if(inputs[PITCH_INPUT].isConnected())
-        {
-          // This assumes a unipolar input.  Is that correct?
-          pitch = (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 5.0f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
-        }
-        else
-        {
-          pitch = params[PITCH_KNOB].getValue();
-        }
+    // If there's a cable connected to the spawn trigger input, it takes priority
+    // over the internal spwn rate.
+    if(inputs[SPAWN_TRIGGER_INPUT].isConnected())
+    {
+      if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage())) grain_blender_core.add(start_position, window_length, pan, &audio_buffer, max_grains, pitch);
 
-        grain_blender_core.add(start_position, window_length, pan, &audio_buffer, max_grains, pitch);
+      lights[SPAWN_INDICATOR_LIGHT].setBrightness(0);
+      lights[EXT_CLK_INDICATOR_LIGHT].setBrightness(1);
+    }
+    else if(spawn_throttling_countdown == 0)
+    {
+      grain_blender_core.add(start_position, window_length, pan, &audio_buffer, max_grains, pitch);
 
-        float spawn_inputs_value = rescale(calculate_inputs(SPAWN_INPUT, SPAWN_KNOB, SPAWN_ATTN_KNOB, 1.0), 1.f, 0.f, 1.f, 512.f);
-        if (spawn_inputs_value < 0) spawn_inputs_value = 0;
-        spawn_throttling_countdown = spawn_inputs_value;
-      }
+      float spawn_inputs_value = rescale(calculate_inputs(SPAWN_INPUT, SPAWN_KNOB, SPAWN_ATTN_KNOB, 1.0), 1.f, 0.f, 1.f, 512.f);
+      if (spawn_inputs_value < 0) spawn_inputs_value = 0;
+      spawn_throttling_countdown = spawn_inputs_value;
 
-    // }
+      lights[SPAWN_INDICATOR_LIGHT].setBrightness(1);
+      lights[EXT_CLK_INDICATOR_LIGHT].setBrightness(0);
+    }
 
     if (! grain_blender_core.isEmpty())
     {

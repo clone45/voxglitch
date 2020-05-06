@@ -14,6 +14,7 @@ struct PanelArt : TransparentWidget
 
 		if(module)
 		{
+      /*
 			if(module->is_spawn_cable_connected == false)
 			{
         internal_activity_indicator += 2;
@@ -24,6 +25,7 @@ struct PanelArt : TransparentWidget
         nvgFillColor(args.vg, nvgRGBA(200, 200, 200, 200));
         nvgFill(args.vg);
 			}
+      */
 		}
 
 		nvgRestore(args.vg);

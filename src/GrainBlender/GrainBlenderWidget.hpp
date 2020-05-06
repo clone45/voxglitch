@@ -14,10 +14,6 @@ struct GrainBlenderWidget : ModuleWidget
     addChild(panel_art);
     */
 
-    // Spawn Trigger
-    // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366 + 0, 25.974)), module, GrainBlender::SPAWN_TRIGGER_INPUT));
-
-
     // Jitter
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366 + 0, 45.713)), module, GrainBlender::JITTER_CV_INPUT));
     addParam(createParamCentered<Trimpot>(mm2px(Vec(75.595 + 0, 45.713)), module, GrainBlender::JITTER_KNOB));
@@ -30,8 +26,6 @@ struct GrainBlenderWidget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366 + 0, 85.805)), module, GrainBlender::FREEZE_INPUT));
     addParam(createParamCentered<CKSS>(mm2px(Vec(75.595 + 0, 85.805)), module, GrainBlender::FREEZE_SWITCH));
 
-
-
     //
     // Main Left-side Knobs
     //
@@ -40,6 +34,11 @@ struct GrainBlenderWidget : ModuleWidget
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset + 0, 28.526 - y_offset)), module, GrainBlender::SPAWN_KNOB));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 0, 28.526 - y_offset)), module, GrainBlender::SPAWN_INPUT));
     addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 0, 28.526 - y_offset)), module, GrainBlender::SPAWN_ATTN_KNOB));;
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(51, 28.526 - y_offset)), module, GrainBlender::SPAWN_INDICATOR_LIGHT));
+
+    // Spawn rate override
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, 28.526 - y_offset)), module, GrainBlender::SPAWN_TRIGGER_INPUT));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(70.4, 28.526 - y_offset)), module, GrainBlender::EXT_CLK_INDICATOR_LIGHT));
 
     // Grains
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 50.489 - y_offset)), module, GrainBlender::GRAINS_KNOB));
@@ -55,8 +54,6 @@ struct GrainBlenderWidget : ModuleWidget
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset + 0, 94.416 - y_offset)), module, GrainBlender::PITCH_KNOB));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 0, 94.416 - y_offset)), module, GrainBlender::PITCH_INPUT));
     addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 0, 94.416 - y_offset)), module, GrainBlender::PITCH_ATTN_KNOB));
-
-
 
     // Trim
     addParam(createParamCentered<Trimpot>(mm2px(Vec(74.94 + 0, 103.043)), module, GrainBlender::TRIM_KNOB));
@@ -93,12 +90,10 @@ struct GrainBlenderWidget : ModuleWidget
 
     // addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(106.975, 92.0)), module, GrainBlender::INTERNAL_MODULATION_BUFFER_OFFSET_KNOB));
 
-
-    // Position Override.  x was 98.489
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(95, 101)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_KNOB));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 101)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(118, 101)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_INPUT));
-
+    // Position Override
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(95, 103)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_KNOB));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 103)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(118, 103)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_INPUT));
   }
 
   void appendContextMenu(Menu *menu) override
