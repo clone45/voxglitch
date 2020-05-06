@@ -70,11 +70,11 @@ struct GrainBlenderWidget : ModuleWidget
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(74.94 + 0, 114.702)), module, GrainBlender::AUDIO_OUTPUT_RIGHT));
 
     // Modulation waveform
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(92.743, 20)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_1_LED));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(99.157, 20)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_2_LED));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(105.438, 20)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_3_LED));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(111.719, 20)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_4_LED));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(118, 20)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_5_LED));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(92.743 + 1.403, 20)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_1_LED));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(99.157 + 1.403, 20)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_2_LED));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(105.438 + 1.403, 20)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_3_LED));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(111.719 + 1.403, 20)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_4_LED));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(118 + 1.403, 20)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_5_LED));
 
     // Modulation waveform selection inputs
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(95, 31)), module, GrainBlender::INTERNAL_MODULATION_WAVEFORM_KNOB));
@@ -91,10 +91,13 @@ struct GrainBlenderWidget : ModuleWidget
     addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 51 + 20.638)), module, GrainBlender::INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(118, 51 + 20.638)), module, GrainBlender::INTERNAL_MODULATION_AMPLITUDE_INPUT));
 
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(106.975, 92.0)), module, GrainBlender::INTERNAL_MODULATION_OFFSET_KNOB));
+
+
     // Position Override.  x was 98.489
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(95, 106)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_KNOB));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 106)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(118, 106)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_INPUT));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(95, 118)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_KNOB));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 118)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(118, 118)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_INPUT));
 
   }
 
