@@ -19,11 +19,11 @@ struct AudioBuffer
 
 	virtual void push(float left_audio, float right_audio)
 	{
+    start++;
+    if(start >= MAX_BUFFER_SIZE) start = 0;
+
     if(! frozen)
     {
-      start++;
-      if(start >= MAX_BUFFER_SIZE) start = 0;
-
       leftPlayBuffer[start] = left_audio;
       rightPlayBuffer[start] = right_audio;
     }
