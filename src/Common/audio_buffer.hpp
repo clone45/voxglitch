@@ -5,11 +5,15 @@
 
 struct AudioBuffer
 {
-  unsigned int start = 0;
+  int read_head = 0;
+  int write_head = 0;
+
+  // unsigned int start = 0;
 	float leftPlayBuffer[MAX_BUFFER_SIZE];
 	float rightPlayBuffer[MAX_BUFFER_SIZE];
   unsigned int buffer_size = MAX_BUFFER_SIZE;
   bool frozen = false;
+  int sample_position = 0;
 
 	AudioBuffer()
 	{
@@ -19,28 +23,28 @@ struct AudioBuffer
 
 	virtual void push(float left_audio, float right_audio)
 	{
-    start++;
-    if(start >= MAX_BUFFER_SIZE) start = 0;
+    write_head++;
+    if(write_head >= MAX_BUFFER_SIZE) write_head = 0;
+
+    // I was fiddling this to see if I could get faster response time, but
+    // there's something fundamental that I think is keeping me from being
+    // able to get instant output.
+    //
+    // read_head = (write_head - 4000) % MAX_BUFFER_SIZE;
+
+    read_head = write_head;
 
     if(! frozen)
     {
-      leftPlayBuffer[start] = left_audio;
-      rightPlayBuffer[start] = right_audio;
+      leftPlayBuffer[write_head] = left_audio;
+      rightPlayBuffer[write_head] = right_audio;
     }
 	};
 
-  float getLeftValue(unsigned int sample_position)
+  std::pair<float, float> getStereoOutput(unsigned int sample_position)
   {
-    sample_position = sample_position + start;
-    if(sample_position >= MAX_BUFFER_SIZE) sample_position = sample_position - MAX_BUFFER_SIZE;
-    return(leftPlayBuffer[sample_position]);
-  }
-
-  float getRightValue(unsigned int sample_position)
-  {
-    sample_position = sample_position + start;
-    if(sample_position >= MAX_BUFFER_SIZE) sample_position = sample_position - MAX_BUFFER_SIZE;
-    return(rightPlayBuffer[sample_position]);
+    unsigned int index = (sample_position + read_head) % MAX_BUFFER_SIZE;
+    return {leftPlayBuffer[index], rightPlayBuffer[index]};
   }
 
   void setBufferSize(unsigned int buffer_size)

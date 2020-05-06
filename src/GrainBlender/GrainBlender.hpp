@@ -6,14 +6,15 @@
 // using the array of samples.
 
 //
-// TODO: I can crash it with external position input!
+// TODO: fix window modulation and set default knob value to around .0555
+// TODO: try to reduce playback delay by separating the start variable into
+//  "read_head" and "write_head", and have the read_head trail the write head
+// by some number
 //
 struct GrainBlender : Module
 {
-  float spawn_rate_counter = 0;
   float pitch = 0;
   float smooth_rate = 0;
-  float max_window_divisor = 4.0;
   unsigned int spawn_throttling_countdown = 0;
   float max_grains = 0;
   unsigned int selected_waveform = 0;
@@ -21,15 +22,9 @@ struct GrainBlender : Module
   AudioBuffer audio_buffer;
   SimpleTableOsc internal_modulation_oscillator;
 
-  int step = 0;
-  std::string root_dir;
-  std::string path;
-
   GrainBlenderEx grain_blender_core;
 
   dsp::SchmittTrigger spawn_trigger;
-
-  float jitter_divisor = 1;
 
   enum ParamIds {
     WINDOW_KNOB,
@@ -108,7 +103,7 @@ struct GrainBlender : Module
     configParam(JITTER_KNOB, 0.f, 1.0f, 0.0f, "JitterKnob");
     configParam(PAN_SWITCH, 0.0f, 1.0f, 0.0f, "PanSwitch");
     configParam(FREEZE_SWITCH, 0.0f, 1.0f, 0.0f, "FreezeSwitch");
-    configParam(GRAINS_KNOB, 0.0f, 1.0f, 0.5f, "GrainsKnob");
+    configParam(GRAINS_KNOB, 0.0f, 1.0f, 0.05f, "GrainsKnob");
     configParam(GRAINS_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "GrainsAttnKnob");
     configParam(CONTOUR_KNOB, 0.0f, 1.0f, 0.0f, "ContourKnob");
     configParam(SPAWN_KNOB, 0.0f, 1.0f, 0.7f, "SpawnKnob");
@@ -119,8 +114,6 @@ struct GrainBlender : Module
     configParam(INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "InternalModulateionAmplitudeKnob");
     configParam(INTERNAL_MODULATION_WAVEFORM_KNOB, 0.01f, 1.0f, 0.01f, "InternalModulateionWaveformKnob");
     configParam(INTERNAL_MODULATION_WAVEFORM_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "InternalModulateionWaveformKnob");
-
-    jitter_divisor = static_cast <float> (RAND_MAX / 1024.0);
   }
 
   json_t *dataToJson() override

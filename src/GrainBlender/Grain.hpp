@@ -47,8 +47,12 @@ struct Grain
         {
             // output_voltage_left  = this->buffer_ptr->leftPlayBuffer[sample_position];
             // output_voltage_right = this->buffer_ptr->rightPlayBuffer[sample_position];
-            output_voltage_left  = this->buffer_ptr->getLeftValue(sample_position);
-            output_voltage_right = this->buffer_ptr->getRightValue(sample_position);
+            /*
+            this->buffer_ptr->step(sample_position);
+            output_voltage_left  = this->buffer_ptr->getLeftValue();
+            output_voltage_right = this->buffer_ptr->getRightValue();
+            */
+            std::tie(output_voltage_left, output_voltage_right) = this->buffer_ptr->getStereoOutput(sample_position);
 
             // Apply amplitude slope
             int slope_index = (1.0 - ((float)age / (float)lifespan)) * 512.0;  // remember that age decrements instead of increments
