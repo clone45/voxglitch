@@ -91,13 +91,13 @@ struct GrainBlenderWidget : ModuleWidget
     addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 51 + 20.638)), module, GrainBlender::INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(118, 51 + 20.638)), module, GrainBlender::INTERNAL_MODULATION_AMPLITUDE_INPUT));
 
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(106.975, 92.0)), module, GrainBlender::INTERNAL_MODULATION_OFFSET_KNOB));
+    // addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(106.975, 92.0)), module, GrainBlender::INTERNAL_MODULATION_BUFFER_OFFSET_KNOB));
 
 
     // Position Override.  x was 98.489
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(95, 118)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_KNOB));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 118)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(118, 118)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_INPUT));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(95, 101)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_KNOB));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 101)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(118, 101)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_INPUT));
 
   }
 
