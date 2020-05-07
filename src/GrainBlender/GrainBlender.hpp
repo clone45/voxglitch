@@ -7,9 +7,11 @@
 
 //
 // TODO: fix window modulation and set default knob value to around .0555
-// TODO: Fix issue where when overriding the internal LFO, the dry signal is
-//       present.
 //
+// Note: Dealing with bug where max_grains can be more than the array holding
+// the grains is and is used as an index.
+
+
 struct GrainBlender : Module
 {
   float pitch = 0;
@@ -96,7 +98,7 @@ struct GrainBlender : Module
   GrainBlender()
   {
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-    configParam(WINDOW_KNOB, WINDOW_KNOB_MIN, WINDOW_KNOB_MAX, WINDOW_KNOB_DEFAULT, "WindowKnob");
+    configParam(WINDOW_KNOB, 0.0f, 1.0f, 1.0f, "WindowKnob");
     configParam(WINDOW_ATTN_KNOB, 0.0f, 1.0f, 0.00f, "WindowAttnKnob");
     configParam(SAMPLE_PLAYBACK_POSITION_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionKnob");
     configParam(SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionAttnKnob");
@@ -135,18 +137,20 @@ struct GrainBlender : Module
     float knob_value = rescale(params[knob_index].getValue(), 0.0, 1.0, low_range, high_range);
     float input_value = clamp(rescale(inputs[input_index].getVoltage(), -10.0, 10.0, low_range, high_range), low_range, high_range);
 
-    return((input_value * attenuator_value) + knob_value);
+    float output = clamp((input_value * attenuator_value) + knob_value, low_range, high_range);
+
+    return(output);
   }
 
-  float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
+  float calculate_inputs(int input_index, int knob_index, int attenuator_index, float high_range)
   {
     float input_value = inputs[input_index].getVoltage() / 10.0;
     float knob_value = params[knob_index].getValue();
     float attenuator_value = params[attenuator_index].getValue();
 
     input_value = clamp(input_value, 0.0, 1.0);
-
-    return(((input_value * scale) * attenuator_value) + (knob_value * scale));
+    float output = clamp(((input_value * high_range) * attenuator_value) + (knob_value * high_range), 0.0, high_range);
+    return(output);
   }
 
   float calculate_inputs(int input_index, int knob_index, int attenuator_index)
@@ -156,7 +160,6 @@ struct GrainBlender : Module
     float attenuator_value = params[attenuator_index].getValue();
 
     input_value = clamp(input_value, 0.0, 1.0);
-
     return((input_value * attenuator_value) + knob_value);
   }
 
@@ -187,8 +190,8 @@ struct GrainBlender : Module
 
     // TODO: add CV controls to this
     // TODO: also clamp this to the correct range
-    float window_knob_value = params[WINDOW_KNOB].getValue() + 60.0;
-    // float window_knob_value = calculate_inputs(WINDOW_INPUT, WINDOW_KNOB, WINDOW_ATTN_KNOB, WINDOW_KNOB_MAX);
+    // float window_knob_value = params[WINDOW_KNOB].getValue() + 60.0;
+    float window_knob_value = calculate_inputs(WINDOW_INPUT, WINDOW_KNOB, WINDOW_ATTN_KNOB, 1.0, 6400.0);
 
     // unsigned int window_length = args.sampleRate / window_knob_value;
     unsigned int window_length = window_knob_value;
