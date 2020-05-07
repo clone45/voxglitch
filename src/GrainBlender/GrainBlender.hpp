@@ -129,6 +129,15 @@ struct GrainBlender : Module
   {
   }
 
+  float calculate_inputs(int input_index, int knob_index, int attenuator_index, float low_range, float high_range)
+  {
+    float attenuator_value = params[attenuator_index].getValue();
+    float knob_value = rescale(params[knob_index].getValue(), 0.0, 1.0, low_range, high_range);
+    float input_value = clamp(rescale(inputs[input_index].getVoltage(), -10.0, 10.0, low_range, high_range), low_range, high_range);
+
+    return((input_value * attenuator_value) + knob_value);
+  }
+
   float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
   {
     float input_value = inputs[input_index].getVoltage() / 10.0;
@@ -152,7 +161,7 @@ struct GrainBlender : Module
   }
 
 
-  float process_position_modulation()
+  float process_internal_LFO_position_modulation()
   {
     // add range knobs for these?
     float frequency = calculate_inputs(INTERNAL_MODULATION_FREQUENCY_INPUT, INTERNAL_MODULATION_FREQUENCY_KNOB, INTERNAL_MODULATION_FREQUENCY_ATTN_KNOB, 500.0);
@@ -188,12 +197,16 @@ struct GrainBlender : Module
 
     if(inputs[SAMPLE_PLAYBACK_POSITION_INPUT].isConnected())
     {
-      start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB);
+      // Override start position
+      start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0, 1.0);
     }
     else
     {
-      start_position = process_position_modulation();
+      // Use internal LFO
+      start_position = process_internal_LFO_position_modulation();
     }
+
+    // At this point, start_position must be between 0.0 and 1.0
 
     //
     // Process Jitter input
