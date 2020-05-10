@@ -44,9 +44,9 @@
         "tags": ["Granular", "Sampler"]
     },
     {
-        "slug": "grainblender",
-        "name": "Grain Blender",
-        "description": "Low level granular synthesis sample player with sample crossfading.",
+        "slug": "grainfx",
+        "name": "Grain Fx",
+        "description": "Granular effects for incoming audio.",
         "tags": ["Granular", "Sampler"]
     },
     {

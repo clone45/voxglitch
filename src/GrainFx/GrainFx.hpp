@@ -1,4 +1,4 @@
-struct GrainBlender : Module
+struct GrainFx : Module
 {
   // Various internal variables
   float pitch = 0;
@@ -11,7 +11,7 @@ struct GrainBlender : Module
   // Structs
   AudioBuffer audio_buffer;
   SimpleTableOsc internal_modulation_oscillator;
-  GrainBlenderEx grain_blender_core;
+  GrainFxCore grain_fx_core;
 
   // Triggers
   dsp::SchmittTrigger spawn_trigger;
@@ -82,7 +82,7 @@ struct GrainBlender : Module
   //
   // Constructor
   //
-  GrainBlender()
+  GrainFx()
   {
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
     configParam(WINDOW_KNOB, 0.0f, 1.0f, 1.0f, "WindowKnob");
@@ -273,14 +273,14 @@ struct GrainBlender : Module
     // over the internal spwn rate.
     if(inputs[SPAWN_TRIGGER_INPUT].isConnected())
     {
-      if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage())) grain_blender_core.add(start_position, window_length, pan, &audio_buffer, max_grains, pitch);
+      if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage())) grain_fx_core.add(start_position, window_length, pan, &audio_buffer, max_grains, pitch);
 
       lights[SPAWN_INDICATOR_LIGHT].setBrightness(0);
       lights[EXT_CLK_INDICATOR_LIGHT].setBrightness(1);
     }
     else if(spawn_throttling_countdown == 0)
     {
-      grain_blender_core.add(start_position, window_length, pan, &audio_buffer, max_grains, pitch);
+      grain_fx_core.add(start_position, window_length, pan, &audio_buffer, max_grains, pitch);
 
       float spawn_inputs_value = rescale(calculate_inputs(SPAWN_INPUT, SPAWN_KNOB, SPAWN_ATTN_KNOB, 1.0), 1.f, 0.f, 1.f, 512.f);
       if (spawn_inputs_value < 0) spawn_inputs_value = 0;
@@ -290,12 +290,12 @@ struct GrainBlender : Module
       lights[EXT_CLK_INDICATOR_LIGHT].setBrightness(0);
     }
 
-    if (! grain_blender_core.isEmpty())
+    if (! grain_fx_core.isEmpty())
     {
       smooth_rate = 128.0f / args.sampleRate;
 
       // Get the output and increase the age of each grain
-      std::pair<float, float> stereo_output = grain_blender_core.process(smooth_rate, contour_index);
+      std::pair<float, float> stereo_output = grain_fx_core.process(smooth_rate, contour_index);
       float left_mix_output = stereo_output.first * params[TRIM_KNOB].getValue();
       float right_mix_output = stereo_output.second * params[TRIM_KNOB].getValue();
 

@@ -1,14 +1,14 @@
-struct GrainBlenderEx
+struct GrainFxCore
 {
     Grain grain_array[MAX_GRAINS + 1];
     Grain grain_array_tmp[MAX_GRAINS + 1];
     unsigned int grain_array_length = 0;
 
-    GrainBlenderEx()
+    GrainFxCore()
     {
     }
 
-    virtual ~GrainBlenderEx() {
+    virtual ~GrainFxCore() {
     }
 
     // Return number of active grains
