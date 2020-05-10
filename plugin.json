@@ -44,6 +44,12 @@
         "tags": ["Granular", "Sampler"]
     },
     {
+        "slug": "grainfx",
+        "name": "Grain Fx",
+        "description": "Granular effects for incoming audio.",
+        "tags": ["Granular", "Sampler"]
+    },
+    {
         "slug": "grainengine",
         "name": "Grain Engine",
         "description": "Basic .wav player/scanner using granular synthesis",

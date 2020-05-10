@@ -16,6 +16,7 @@ void init(Plugin* p) {
   p->addModel(modelGhosts);
   p->addModel(modelGoblins);
   p->addModel(modelGrainEngine);
+  p->addModel(modelGrainFx);
   p->addModel(modelAutobreak);
   p->addModel(modelDigitalSequencer);
   p->addModel(modelSamplerX8);

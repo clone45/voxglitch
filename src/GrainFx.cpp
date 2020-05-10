@@ -1,0 +1,21 @@
+//
+// Voxglitch "Grain Fx" module for VCV Rack
+//
+
+#include <stack>
+#include <vector>
+#include "plugin.hpp"
+#include "osdialog.h"
+#include "Common/common.hpp"
+#include "Common/audio_buffer.hpp"
+#include "Common/submodules.hpp"
+
+#include "GrainFx/defines.h"
+#include "GrainFx/Contours.hpp"
+#include "GrainFx/SimpleTableOsc.hpp"
+#include "GrainFx/Grain.hpp"
+#include "GrainFx/GrainFxCore.hpp"
+#include "GrainFx/GrainFx.hpp"
+#include "GrainFx/GrainFxWidget.hpp"
+
+Model* modelGrainFx = createModel<GrainFx, GrainFxWidget>("grainfx");
