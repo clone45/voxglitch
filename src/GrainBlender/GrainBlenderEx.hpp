@@ -1,6 +1,5 @@
 struct GrainBlenderEx
 {
-    // std::deque<Grain> grain_queue;
     Grain grain_array[MAX_GRAINS + 1];
     Grain grain_array_tmp[MAX_GRAINS + 1];
     unsigned int grain_array_length = 0;
@@ -30,7 +29,7 @@ struct GrainBlenderEx
 
         Grain grain;
 
-        // Configure it for playback
+        // Configure grain for playback
         grain.start_position = start_position;
         grain.buffer_ptr = buffer_ptr;
         grain.lifespan = lifespan;
@@ -47,15 +46,6 @@ struct GrainBlenderEx
         float left_mix_output = 0;
         float right_mix_output = 0;
         unsigned int grain_array_tmp_length = 0;
-
-        // unsigned int sample_position = 0;
-
-        // TODO: Try this.  Instead of a second loop to erase grains, how about
-        // maintaining two deque queues.  When a grain should not be removed,
-        // it's pushed on to the second queue.  Then the queues are swapped?
-
-        // And how about saying "fuck this" and not use a std::deque and instead
-        // use an array with the maximum number set as MAX_GRAINS?
 
         //
         // Process grains
@@ -78,17 +68,6 @@ struct GrainBlenderEx
 
         std::swap(grain_array, grain_array_tmp);
         grain_array_length = grain_array_tmp_length;
-
-        // overlap_police.reset();
-
-        // perform cleanup of grains ready for removal
-        /*
-        grain_queue.erase(std::remove_if(
-            grain_queue.begin(), grain_queue.end(),
-                [](const Grain& grain) {
-                    return grain.erase_me;
-                }), grain_queue.end());
-        */
 
         return {left_mix_output, right_mix_output};
     }

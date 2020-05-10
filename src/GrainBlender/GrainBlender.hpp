@@ -1,5 +1,3 @@
-// TODO: Add output for internal LFO
-
 struct GrainBlender : Module
 {
   // Various internal variables
