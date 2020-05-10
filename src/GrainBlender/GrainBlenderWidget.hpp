@@ -8,12 +8,6 @@ struct GrainBlenderWidget : ModuleWidget
     float y_offset = 1.8;
     float x_offset = -1.8;
 
-    /*
-    PanelArt *panel_art = new PanelArt();
-    panel_art->module = module;
-    addChild(panel_art);
-    */
-
     // Jitter
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366 + 0, 45.713)), module, GrainBlender::JITTER_CV_INPUT));
     addParam(createParamCentered<Trimpot>(mm2px(Vec(75.595 + 0, 45.713)), module, GrainBlender::JITTER_KNOB));
@@ -90,12 +84,16 @@ struct GrainBlenderWidget : ModuleWidget
     addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 51 + 20.638)), module, GrainBlender::INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(118, 51 + 20.638)), module, GrainBlender::INTERNAL_MODULATION_AMPLITUDE_INPUT));
 
+
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(118, 88)), module, GrainBlender::INTERNAL_MODULATION_OUTPUT));
+    addParam(createParamCentered<CKSS>(mm2px(Vec(105, 88)), module, GrainBlender::INTERNAL_MODULATION_OUTPUT_POLARITY_SWITCH));
+
     // addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(106.975, 92.0)), module, GrainBlender::INTERNAL_MODULATION_BUFFER_OFFSET_KNOB));
 
     // Position Override
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(95, 103)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_KNOB));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 103)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(118, 103)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_INPUT));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(95, 114.702)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_KNOB));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 114.702)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(118, 114.702)), module, GrainBlender::SAMPLE_PLAYBACK_POSITION_INPUT));
   }
 
   void appendContextMenu(Menu *menu) override

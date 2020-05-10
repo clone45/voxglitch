@@ -1,33 +1,22 @@
-// Where I left off
-//
-// I've been copying elements from Goblins into Grain Blender to support multiple
-// samples.  The most recent of these updates is the load/save stuff.
-// I still need to update all the code that uses the single sample to start
-// using the array of samples.
-
-//
-// TODO: fix window modulation and set default knob value to around .0555
-//
-// Note: Dealing with bug where max_grains can be more than the array holding
-// the grains is and is used as an index.
-
+// TODO: Add output for internal LFO
 
 struct GrainBlender : Module
 {
+  // Various internal variables
   float pitch = 0;
   float smooth_rate = 0;
   unsigned int spawn_throttling_countdown = 0;
   float max_grains = 0;
   unsigned int selected_waveform = 0;
+  unsigned int buffering_counter = MAX_BUFFER_SIZE;
 
+  // Structs
   AudioBuffer audio_buffer;
   SimpleTableOsc internal_modulation_oscillator;
-
   GrainBlenderEx grain_blender_core;
 
+  // Triggers
   dsp::SchmittTrigger spawn_trigger;
-
-  unsigned int buffering_counter = MAX_BUFFER_SIZE;
 
   enum ParamIds {
     WINDOW_KNOB,
@@ -43,7 +32,6 @@ struct GrainBlender : Module
     GRAINS_KNOB,
     GRAINS_ATTN_KNOB,
     SPAWN_THROTTLING_KNOB,
-    CONTOUR_KNOB,
     SPAWN_KNOB,
     SPAWN_ATTN_KNOB,
     INTERNAL_MODULATION_FREQUENCY_KNOB,
@@ -52,6 +40,7 @@ struct GrainBlender : Module
     INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB,
     INTERNAL_MODULATION_WAVEFORM_KNOB,
     INTERNAL_MODULATION_WAVEFORM_ATTN_KNOB,
+    INTERNAL_MODULATION_OUTPUT_POLARITY_SWITCH,
     NUM_PARAMS
   };
   enum InputIds {
@@ -75,7 +64,7 @@ struct GrainBlender : Module
   enum OutputIds {
     AUDIO_OUTPUT_LEFT,
     AUDIO_OUTPUT_RIGHT,
-    DEBUG_OUTPUT,
+    INTERNAL_MODULATION_OUTPUT,
     NUM_OUTPUTS
   };
   enum LightIds {
@@ -110,7 +99,6 @@ struct GrainBlender : Module
     configParam(FREEZE_SWITCH, 0.0f, 1.0f, 0.0f, "FreezeSwitch");
     configParam(GRAINS_KNOB, 0.0f, 1.0f, 0.05f, "GrainsKnob");
     configParam(GRAINS_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "GrainsAttnKnob");
-    configParam(CONTOUR_KNOB, 0.0f, 1.0f, 0.0f, "ContourKnob");
     configParam(SPAWN_KNOB, 0.0f, 1.0f, 0.7f, "SpawnKnob");
     configParam(SPAWN_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SpawnAttnKnob");
     configParam(INTERNAL_MODULATION_FREQUENCY_KNOB, 0.1f, 1.0f, 0.1f, "InternalModulateionFrequencyKnob");
@@ -119,6 +107,7 @@ struct GrainBlender : Module
     configParam(INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "InternalModulateionAmplitudeAttnKnob");
     configParam(INTERNAL_MODULATION_WAVEFORM_KNOB, 0.01f, 1.0f, 0.01f, "InternalModulateionWaveformKnob");
     configParam(INTERNAL_MODULATION_WAVEFORM_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "InternalModulateionWaveformAttnKnob");
+    configParam(INTERNAL_MODULATION_OUTPUT_POLARITY_SWITCH, 0.0f, 1.0f, 0.0f, "InternalModulationOutputPolaritySwitch");
   }
 
   json_t *dataToJson() override
@@ -164,19 +153,18 @@ struct GrainBlender : Module
   }
 
 
-  float process_internal_LFO_position_modulation()
+  float process_internal_LFO_position_modulation(float modulation_amplitude)
   {
     // add range knobs for these?
     float frequency = calculate_inputs(INTERNAL_MODULATION_FREQUENCY_INPUT, INTERNAL_MODULATION_FREQUENCY_KNOB, INTERNAL_MODULATION_FREQUENCY_ATTN_KNOB, 500.0);
     internal_modulation_oscillator.setFrequency(frequency + 0.10);
-
-    float modulation_amplitude = calculate_inputs(INTERNAL_MODULATION_AMPLITUDE_INPUT, INTERNAL_MODULATION_AMPLITUDE_KNOB, INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB);
 
     return(internal_modulation_oscillator.next() * modulation_amplitude);
   }
 
   void process(const ProcessArgs &args) override
   {
+    // Read incoming audio into buffer
     audio_buffer.push(inputs[AUDIO_INPUT_LEFT].getVoltage(), inputs[AUDIO_INPUT_RIGHT].getVoltage());
 
     // Process Max Grains knob
@@ -188,9 +176,7 @@ struct GrainBlender : Module
 
     unsigned int contour_index = 0;
 
-    // TODO: add CV controls to this
-    // TODO: also clamp this to the correct range
-    // float window_knob_value = params[WINDOW_KNOB].getValue() + 60.0;
+    // Process window (width of the grains) inputs
     float window_knob_value = calculate_inputs(WINDOW_INPUT, WINDOW_KNOB, WINDOW_ATTN_KNOB, 1.0, 6400.0);
 
     // unsigned int window_length = args.sampleRate / window_knob_value;
@@ -206,10 +192,20 @@ struct GrainBlender : Module
     else
     {
       // Use internal LFO
-      start_position = process_internal_LFO_position_modulation();
+      float modulation_amplitude = calculate_inputs(INTERNAL_MODULATION_AMPLITUDE_INPUT, INTERNAL_MODULATION_AMPLITUDE_KNOB, INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB);
+      start_position = process_internal_LFO_position_modulation(modulation_amplitude);
+
+      if(params[INTERNAL_MODULATION_OUTPUT_POLARITY_SWITCH].getValue() == 1) // Unipolar
+      {
+        outputs[INTERNAL_MODULATION_OUTPUT].setVoltage(rescale(start_position, 0.0, 1.0, 0.0, 10.0));
+      }
+      else // bipolar
+      {
+        outputs[INTERNAL_MODULATION_OUTPUT].setVoltage(rescale(start_position, 0.0, 1.0, 0.0, 10.0) - (5 * modulation_amplitude));
+      }
     }
 
-    // At this point, start_position must be between 0.0 and 1.0
+    // At this point, start_position must be and should be between 0.0 and 1.0
 
     //
     // Process Jitter input
@@ -312,12 +308,15 @@ struct GrainBlender : Module
 
     if(spawn_throttling_countdown > 0) spawn_throttling_countdown--;
 
+    // Indicate selected waveform
     lights[INTERNAL_MODULATION_WAVEFORM_1_LED].setBrightness(selected_waveform == 0);
     lights[INTERNAL_MODULATION_WAVEFORM_2_LED].setBrightness(selected_waveform == 1);
     lights[INTERNAL_MODULATION_WAVEFORM_3_LED].setBrightness(selected_waveform == 2);
     lights[INTERNAL_MODULATION_WAVEFORM_4_LED].setBrightness(selected_waveform == 3);
     lights[INTERNAL_MODULATION_WAVEFORM_5_LED].setBrightness(selected_waveform == 4);
 
+    // Indicate when buffering is happening by turning on a red LED.  Change
+    // to green when buffering has completed.
     if(buffering_counter > 0)
     {
       buffering_counter--;
