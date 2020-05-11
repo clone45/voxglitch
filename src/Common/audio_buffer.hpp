@@ -8,10 +8,8 @@ struct AudioBuffer
   int read_head = 0;
   int write_head = 0;
 
-  // unsigned int start = 0;
 	float leftPlayBuffer[MAX_BUFFER_SIZE];
 	float rightPlayBuffer[MAX_BUFFER_SIZE];
-  unsigned int buffer_size = MAX_BUFFER_SIZE;
   bool frozen = false;
   int sample_position = 0;
 
@@ -47,13 +45,8 @@ struct AudioBuffer
     return {leftPlayBuffer[index], rightPlayBuffer[index]};
   }
 
-  void setBufferSize(unsigned int buffer_size)
-  {
-    this->buffer_size = buffer_size;
-  }
-
   unsigned int getBufferSize()
   {
-    return(this->buffer_size);
+    return(MAX_BUFFER_SIZE);
   }
 };
