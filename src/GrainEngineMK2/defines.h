@@ -1,0 +1,4 @@
+#define MAX_GRAINS 140
+#define MAX_PITCH 128
+
+#define MAX_JITTER_SPREAD 3000.0
