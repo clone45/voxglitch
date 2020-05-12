@@ -11,7 +11,6 @@
 #include "Common/submodules.hpp"
 
 #include "GrainFx/defines.h"
-#include "GrainFx/Contours.hpp"
 #include "GrainFx/SimpleTableOsc.hpp"
 #include "GrainFx/Grain.hpp"
 #include "GrainFx/GrainFxCore.hpp"

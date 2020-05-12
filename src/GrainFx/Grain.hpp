@@ -9,6 +9,9 @@ struct Grain
     // sample_ptr points to the loaded sample in memory
     AudioBuffer *buffer_ptr;
 
+    // Eventually use inheritance to purge this sloppy pointer passing
+    Common * common;
+
     // playback_position is similar to samplePos used in for samples.  However,
     // it's relative to the Grain's start_position rather than the sample
     // start position.
@@ -57,7 +60,7 @@ struct Grain
             // Apply amplitude slope
             int slope_index = (1.0 - ((float)age / (float)lifespan)) * 512.0;  // remember that age decrements instead of increments
             slope_index = clamp(slope_index, 0, 511);
-            float slope_value = CONTOURS[contour_selection][slope_index];
+            float slope_value = common->CONTOURS[contour_selection][slope_index];
 
             output_voltage_left  = slope_value * output_voltage_left;
             output_voltage_right = slope_value * output_voltage_right;

@@ -3,6 +3,7 @@ struct GrainEngineMK2Core
     Grain grain_array[MAX_GRAINS + 1];
     Grain grain_array_tmp[MAX_GRAINS + 1];
     unsigned int grain_array_length = 0;
+    Common *common;
 
     GrainEngineMK2Core()
     {
@@ -22,7 +23,7 @@ struct GrainEngineMK2Core
         return(grain_array_length == 0);
     }
 
-    virtual void add(float start_position, unsigned int lifespan, float pan, AudioBuffer *buffer_ptr, unsigned int max_grains, float pitch)
+    virtual void add(float start_position, unsigned int lifespan, float pan, Sample *sample_ptr, unsigned int max_grains, float pitch)
     {
         if(grain_array_length > max_grains) return;
         if(lifespan == 0) return;
@@ -31,11 +32,12 @@ struct GrainEngineMK2Core
 
         // Configure grain for playback
         grain.start_position = start_position;
-        grain.buffer_ptr = buffer_ptr;
+        grain.sample_ptr = sample_ptr;
         grain.lifespan = lifespan;
         grain.age = lifespan;
         grain.pan = pan;
         grain.pitch = pitch;
+        grain.common = common;
 
         grain_array[grain_array_length] = grain;
         grain_array_length ++;

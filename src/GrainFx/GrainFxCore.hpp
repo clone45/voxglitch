@@ -3,6 +3,7 @@ struct GrainFxCore
     Grain grain_array[MAX_GRAINS + 1];
     Grain grain_array_tmp[MAX_GRAINS + 1];
     unsigned int grain_array_length = 0;
+    Common *common;
 
     GrainFxCore()
     {
@@ -36,6 +37,7 @@ struct GrainFxCore
         grain.age = lifespan;
         grain.pan = pan;
         grain.pitch = pitch;
+        grain.common = common;
 
         grain_array[grain_array_length] = grain;
         grain_array_length ++;

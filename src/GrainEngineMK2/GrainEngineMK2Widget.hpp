@@ -16,9 +16,6 @@ struct GrainEngineMK2Widget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366 + 0, 65.759)), module, GrainEngineMK2::PAN_INPUT));
     addParam(createParamCentered<CKSS>(mm2px(Vec(75.595 + 0, 65.759)), module, GrainEngineMK2::PAN_SWITCH));
 
-    // Freeze
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366 + 0, 85.805)), module, GrainEngineMK2::FREEZE_INPUT));
-    addParam(createParamCentered<CKSS>(mm2px(Vec(75.595 + 0, 85.805)), module, GrainEngineMK2::FREEZE_SWITCH));
 
     //
     // Main Left-side Knobs
@@ -53,9 +50,11 @@ struct GrainEngineMK2Widget : ModuleWidget
     addParam(createParamCentered<Trimpot>(mm2px(Vec(74.94 + 0, 103.043)), module, GrainEngineMK2::TRIM_KNOB));
 
     // Audio Input
+    /*
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 114.702)), module, GrainEngineMK2::AUDIO_INPUT_LEFT));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(21, 114.702)), module, GrainEngineMK2::AUDIO_INPUT_RIGHT));
     addChild(createLightCentered<MediumLight<GreenRedLight>>(mm2px(Vec(32, 114.702)), module, GrainEngineMK2::BUFFERING_GREEN_LIGHT));
+    */
 
     // Audio Output
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(64.216 + 0, 114.702)), module, GrainEngineMK2::AUDIO_OUTPUT_LEFT));
@@ -100,7 +99,13 @@ struct GrainEngineMK2Widget : ModuleWidget
   {
     GrainEngineMK2 *module = dynamic_cast<GrainEngineMK2*>(this->module);
     assert(module);
+
+    menu->addChild(new MenuEntry); // For spacing only
+    menu->addChild(createMenuLabel("Sample"));
+
+    GrainEngineMK2LoadSample *menu_item_load_sample = new GrainEngineMK2LoadSample();
+    menu_item_load_sample->text = module->loaded_filename;
+    menu_item_load_sample->module = module;
+    menu->addChild(menu_item_load_sample);
   }
-
-
 };
