@@ -12,7 +12,6 @@
 #include "Common/submodules.hpp"
 
 #include "GrainEngineMK2/defines.h"
-#include "GrainEngineMK2/SimpleTableOsc.hpp"
 #include "GrainEngineMK2/Grain.hpp"
 #include "GrainEngineMK2/GrainEngineMK2Core.hpp"
 #include "GrainEngineMK2/GrainEngineMK2.hpp"

@@ -12,7 +12,7 @@ struct GrainEngineMK2 : Module
   // Structs
   Sample sample;
   Common common;
-  SimpleTableOsc internal_modulation_oscillator;
+  // SimpleTableOsc internal_modulation_oscillator;
   GrainEngineMK2Core grain_engine_mk2_core;
 
   // Triggers
@@ -33,13 +33,6 @@ struct GrainEngineMK2 : Module
     SPAWN_THROTTLING_KNOB,
     SPAWN_KNOB,
     SPAWN_ATTN_KNOB,
-    INTERNAL_MODULATION_FREQUENCY_KNOB,
-    INTERNAL_MODULATION_FREQUENCY_ATTN_KNOB,
-    INTERNAL_MODULATION_AMPLITUDE_KNOB,
-    INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB,
-    INTERNAL_MODULATION_WAVEFORM_KNOB,
-    INTERNAL_MODULATION_WAVEFORM_ATTN_KNOB,
-    INTERNAL_MODULATION_OUTPUT_POLARITY_SWITCH,
     NUM_PARAMS
   };
   enum InputIds {
@@ -52,9 +45,6 @@ struct GrainEngineMK2 : Module
     PAN_INPUT,
     GRAINS_INPUT,
     SPAWN_INPUT,
-    INTERNAL_MODULATION_FREQUENCY_INPUT,
-    INTERNAL_MODULATION_AMPLITUDE_INPUT,
-    INTERNAL_MODULATION_WAVEFORM_INPUT,
     NUM_INPUTS
   };
   enum OutputIds {
@@ -65,11 +55,6 @@ struct GrainEngineMK2 : Module
   };
   enum LightIds {
     PURGE_LIGHT,
-    INTERNAL_MODULATION_WAVEFORM_1_LED,
-    INTERNAL_MODULATION_WAVEFORM_2_LED,
-    INTERNAL_MODULATION_WAVEFORM_3_LED,
-    INTERNAL_MODULATION_WAVEFORM_4_LED,
-    INTERNAL_MODULATION_WAVEFORM_5_LED,
     SPAWN_INDICATOR_LIGHT,
     EXT_CLK_INDICATOR_LIGHT,
     NUM_LIGHTS
@@ -94,13 +79,6 @@ struct GrainEngineMK2 : Module
     configParam(GRAINS_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "GrainsAttnKnob");
     configParam(SPAWN_KNOB, 0.0f, 1.0f, 0.7f, "SpawnKnob");
     configParam(SPAWN_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SpawnAttnKnob");
-    configParam(INTERNAL_MODULATION_FREQUENCY_KNOB, 0.0f, 1.0f, 0.1f, "InternalModulateionFrequencyKnob");
-    configParam(INTERNAL_MODULATION_FREQUENCY_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "InternalModulateionFrequencyAttnKnob");
-    configParam(INTERNAL_MODULATION_AMPLITUDE_KNOB, 0.002f, 1.0f, 0.01f, "InternalModulateionAmplitudeKnob");
-    configParam(INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "InternalModulateionAmplitudeAttnKnob");
-    configParam(INTERNAL_MODULATION_WAVEFORM_KNOB, 0.01f, 1.0f, 0.01f, "InternalModulateionWaveformKnob");
-    configParam(INTERNAL_MODULATION_WAVEFORM_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "InternalModulateionWaveformAttnKnob");
-    configParam(INTERNAL_MODULATION_OUTPUT_POLARITY_SWITCH, 0.0f, 1.0f, 0.0f, "InternalModulationOutputPolaritySwitch");
 
     grain_engine_mk2_core.common = &common;
   }
@@ -117,11 +95,19 @@ struct GrainEngineMK2 : Module
 
   float calculate_inputs(int input_index, int knob_index, int attenuator_index, float low_range, float high_range)
   {
+    float output;
     float attenuator_value = params[attenuator_index].getValue();
     float knob_value = rescale(params[knob_index].getValue(), 0.0, 1.0, low_range, high_range);
-    float input_value = clamp(rescale(inputs[input_index].getVoltage(), -10.0, 10.0, low_range, high_range), low_range, high_range);
 
-    float output = clamp((input_value * attenuator_value) + knob_value, low_range, high_range);
+    if(inputs[input_index].isConnected())
+    {
+      float input_value = clamp(rescale(inputs[input_index].getVoltage(), -10.0, 10.0, low_range, high_range), low_range, high_range);
+      output = clamp((input_value * attenuator_value) + knob_value, low_range, high_range);
+    }
+    else
+    {
+      output = clamp(knob_value, low_range, high_range);
+    }
 
     return(output);
   }
@@ -131,9 +117,17 @@ struct GrainEngineMK2 : Module
     float input_value = inputs[input_index].getVoltage() / 10.0;
     float knob_value = params[knob_index].getValue();
     float attenuator_value = params[attenuator_index].getValue();
+    float output;
 
-    input_value = clamp(input_value, 0.0, 1.0);
-    float output = clamp(((input_value * high_range) * attenuator_value) + (knob_value * high_range), 0.0, high_range);
+    if(inputs[input_index].isConnected())
+    {
+      input_value = clamp(input_value, 0.0, 1.0);
+      output = clamp(((input_value * high_range) * attenuator_value) + (knob_value * high_range), 0.0, high_range);
+    }
+    else
+    {
+      output = clamp((knob_value * high_range), 0.0, high_range);
+    }
     return(output);
   }
 
@@ -147,25 +141,25 @@ struct GrainEngineMK2 : Module
     return((input_value * attenuator_value) + knob_value);
   }
 
-
+/*
   float process_internal_LFO_position_modulation(float modulation_amplitude)
   {
     // add range knobs for these?
-    float frequency = calculate_inputs(INTERNAL_MODULATION_FREQUENCY_INPUT, INTERNAL_MODULATION_FREQUENCY_KNOB, INTERNAL_MODULATION_FREQUENCY_ATTN_KNOB, 0.0, 1.0);
-    frequency = rescale(frequency, 0.0, 1.0, 0.000001, 0.5);
+    float frequency = calculate_inputs(INTERNAL_MODULATION_FREQUENCY_INPUT, INTERNAL_MODULATION_FREQUENCY_KNOB, INTERNAL_MODULATION_FREQUENCY_ATTN_KNOB, 0.0, 6.0);
+    // frequency = rescale(frequency, 0.0, 1.0, 0.0, 6.0);
+    // frequency = frequency * frequency;  // give a nice slope
+    // common.DEBUG_FLOAT(frequency);
+
     internal_modulation_oscillator.setFrequency(frequency);
 
     return(internal_modulation_oscillator.next() * modulation_amplitude);
   }
+*/
 
   void process(const ProcessArgs &args) override
   {
     // Process Max Grains knob
     this->max_grains = calculate_inputs(GRAINS_INPUT, GRAINS_KNOB, GRAINS_ATTN_KNOB, MAX_GRAINS);
-
-    // Process inputs for the selection of waveforms
-    selected_waveform = calculate_inputs(INTERNAL_MODULATION_WAVEFORM_INPUT, INTERNAL_MODULATION_WAVEFORM_KNOB, INTERNAL_MODULATION_WAVEFORM_ATTN_KNOB, 4.99);
-    internal_modulation_oscillator.setWaveform(selected_waveform);
 
     unsigned int contour_index = 0;
 
@@ -175,28 +169,7 @@ struct GrainEngineMK2 : Module
     // unsigned int window_length = args.sampleRate / window_knob_value;
     unsigned int window_length = window_knob_value;
 
-    float start_position;
-
-    if(inputs[SAMPLE_PLAYBACK_POSITION_INPUT].isConnected())
-    {
-      // Override start position
-      start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0, 1.0);
-    }
-    else
-    {
-      // Use internal LFO
-      float modulation_amplitude = calculate_inputs(INTERNAL_MODULATION_AMPLITUDE_INPUT, INTERNAL_MODULATION_AMPLITUDE_KNOB, INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB);
-      start_position = process_internal_LFO_position_modulation(modulation_amplitude);
-
-      if(params[INTERNAL_MODULATION_OUTPUT_POLARITY_SWITCH].getValue() == 1) // Unipolar
-      {
-        outputs[INTERNAL_MODULATION_OUTPUT].setVoltage(rescale(start_position, 0.0, 1.0, 0.0, 10.0));
-      }
-      else // bipolar
-      {
-        outputs[INTERNAL_MODULATION_OUTPUT].setVoltage(rescale(start_position, 0.0, 1.0, 0.0, 10.0) - (5 * modulation_amplitude));
-      }
-    }
+    float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0, 1.0);
 
     // At this point, start_position must be and should be between 0.0 and 1.0
 
@@ -292,12 +265,6 @@ struct GrainEngineMK2 : Module
 
     if(spawn_throttling_countdown > 0) spawn_throttling_countdown--;
 
-    // Indicate selected waveform
-    lights[INTERNAL_MODULATION_WAVEFORM_1_LED].setBrightness(selected_waveform == 0);
-    lights[INTERNAL_MODULATION_WAVEFORM_2_LED].setBrightness(selected_waveform == 1);
-    lights[INTERNAL_MODULATION_WAVEFORM_3_LED].setBrightness(selected_waveform == 2);
-    lights[INTERNAL_MODULATION_WAVEFORM_4_LED].setBrightness(selected_waveform == 3);
-    lights[INTERNAL_MODULATION_WAVEFORM_5_LED].setBrightness(selected_waveform == 4);
   }
 
 };
