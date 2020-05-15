@@ -46,24 +46,22 @@ struct GrainEngineMK2Widget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 0, 94.416 - y_offset)), module, GrainEngineMK2::PITCH_INPUT));
     addParam(createParamCentered<Trimpot>(mm2px(Vec(26 + 0, 94.416 - y_offset)), module, GrainEngineMK2::PITCH_ATTN_KNOB));
 
+    // Position
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 116.634 - y_offset)), module, GrainEngineMK2::SAMPLE_PLAYBACK_POSITION_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 116.634 - y_offset)), module, GrainEngineMK2::SAMPLE_PLAYBACK_POSITION_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 116.634 - y_offset)), module, GrainEngineMK2::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
+
     // Trim
     addParam(createParamCentered<Trimpot>(mm2px(Vec(74.94 + 0, 103.043)), module, GrainEngineMK2::TRIM_KNOB));
-
-    // Audio Input
-    /*
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 114.702)), module, GrainEngineMK2::AUDIO_INPUT_LEFT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(21, 114.702)), module, GrainEngineMK2::AUDIO_INPUT_RIGHT));
-    addChild(createLightCentered<MediumLight<GreenRedLight>>(mm2px(Vec(32, 114.702)), module, GrainEngineMK2::BUFFERING_GREEN_LIGHT));
-    */
 
     // Audio Output
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(64.216 + 0, 114.702)), module, GrainEngineMK2::AUDIO_OUTPUT_LEFT));
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(74.94 + 0, 114.702)), module, GrainEngineMK2::AUDIO_OUTPUT_RIGHT));
 
     // Position Override
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(95, 114.702)), module, GrainEngineMK2::SAMPLE_PLAYBACK_POSITION_KNOB));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 114.702)), module, GrainEngineMK2::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(118, 114.702)), module, GrainEngineMK2::SAMPLE_PLAYBACK_POSITION_INPUT));
+    // addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(95, 114.702)), module, GrainEngineMK2::SAMPLE_PLAYBACK_POSITION_KNOB));
+    // addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 114.702)), module, GrainEngineMK2::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
+    // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(118, 114.702)), module, GrainEngineMK2::SAMPLE_PLAYBACK_POSITION_INPUT));
   }
 
   void appendContextMenu(Menu *menu) override
