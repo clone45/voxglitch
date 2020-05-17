@@ -22,8 +22,9 @@ struct GrainEngineMK2 : Module
   enum ParamIds {
     WINDOW_KNOB,
     WINDOW_ATTN_KNOB,
-    SAMPLE_PLAYBACK_POSITION_KNOB,
-    SAMPLE_PLAYBACK_POSITION_ATTN_KNOB,
+    POSITION_KNOB,
+    POSITION_ATTN_KNOB,
+    POSITION_FINE_ATTN_KNOB,
     PITCH_KNOB,
     PITCH_ATTN_KNOB,
     TRIM_KNOB,
@@ -39,7 +40,8 @@ struct GrainEngineMK2 : Module
   enum InputIds {
     JITTER_CV_INPUT,
     WINDOW_INPUT,
-    SAMPLE_PLAYBACK_POSITION_INPUT,
+    POSITION_INPUT,
+    POSITION_FINE_INPUT,
     PITCH_INPUT,
     SPAWN_TRIGGER_INPUT,
     CONTOUR_INPUT,
@@ -69,8 +71,9 @@ struct GrainEngineMK2 : Module
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
     configParam(WINDOW_KNOB, 0.0f, 1.0f, 1.0f, "WindowKnob");
     configParam(WINDOW_ATTN_KNOB, 0.0f, 1.0f, 0.00f, "WindowAttnKnob");
-    configParam(SAMPLE_PLAYBACK_POSITION_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionKnob");
-    configParam(SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionAttnKnob");
+    configParam(POSITION_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionKnob");
+    configParam(POSITION_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionAttnKnob");
+    configParam(POSITION_FINE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PositionFineAttnKnob");
     configParam(PITCH_KNOB, -1.0f, 2.0f, 1.0f, "PitchKnob");
     configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PitchAttnKnob");
     configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
@@ -164,9 +167,20 @@ struct GrainEngineMK2 : Module
     // unsigned int window_length = args.sampleRate / window_knob_value;
     unsigned int window_length = window_knob_value;
 
-    float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0, 1.0);
+    float start_position = calculate_inputs(POSITION_INPUT, POSITION_KNOB, POSITION_ATTN_KNOB, 0.0, 1.0);
 
     // At this point, start_position must be and should be between 0.0 and 1.0
+
+    // Process fine position input
+
+    float position_fine = 0;
+
+    if(inputs[POSITION_FINE_INPUT].isConnected())
+    {
+      position_fine = inputs[POSITION_FINE_INPUT].getVoltage() / 10.0; // -1 to 1
+      position_fine = clamp(position_fine, -1.0, 1.0);
+      position_fine = position_fine * MAX_POSITION_FINE * params[POSITION_FINE_ATTN_KNOB].getValue();
+    }
 
     //
     // Process Jitter input
@@ -190,8 +204,17 @@ struct GrainEngineMK2 : Module
     // allow for the addition of the jitter without pushing the start_position out of
     // range of the buffer size.  Also leave room for the window length so that
     // none of the grains reaches the end of the buffer.
-    start_position = common.rescaleWithPadding(start_position, 0.0, 1.0, 0.0, sample.total_sample_count, jitter_spread, jitter_spread + window_length);
+    // start_position = common.rescaleWithPadding(start_position, 0.0, 1.0, 0.0, sample.total_sample_count, jitter_spread + MAX_POSITION_FINE, jitter_spread + MAX_POSITION_FINE + window_length);
+
+    start_position = start_position * sample.total_sample_count;
     start_position += jitter;
+    start_position += position_fine;
+
+    // start_position will now (hopefully) be between sample start and sample end time,
+    // but might be out of bounds, which is OK.
+
+    // if(start_position < 0) start_position = 0;
+    // if(start_position >= (sample.total_sample_count + window_length)) start_position = sample.total_sample_count - window_length - 1;
 
     //
     // Process Pan input
