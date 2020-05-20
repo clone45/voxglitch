@@ -24,6 +24,11 @@ struct GrainEngineMK2Widget : ModuleWidget
     float vrule_b_4 = 69.632;
     float vrule_b_5 = 89.702;
 
+    float vrule_c_1 = 21.448;
+    float vrule_c_2 = 35.969;
+    float vrule_c_3 = 50.491;
+    float vrule_c_4 = 65.012;
+
     // Position
 		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(vrule_a_1, hrule1)), module, GrainEngineMK2::POSITION_COARSE_KNOB));
 
@@ -36,8 +41,21 @@ struct GrainEngineMK2Widget : ModuleWidget
     addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_a_4, hrule1)), module, GrainEngineMK2::POSITION_FINE_ATTN_KNOB));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_a_4, hrule2)), module, GrainEngineMK2::POSITION_FINE_INPUT));
 
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_a_5, hrule1)), module, GrainEngineMK2::JITTER_KNOB));    
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_a_5, hrule1)), module, GrainEngineMK2::JITTER_KNOB));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_a_5, hrule2)), module, GrainEngineMK2::JITTER_CV_INPUT));
+
+    // Spawn input
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_c_1, hrule6)), module, GrainEngineMK2::SPAWN_TRIGGER_INPUT));
+
+    // Pan input
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_c_3, hrule6)), module, GrainEngineMK2::PAN_INPUT));
+
+    // Trim knob
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_c_4, hrule6)), module, GrainEngineMK2::TRIM_KNOB));
+
+    // Audio Output
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(79.816, hrule6)), module, GrainEngineMK2::AUDIO_OUTPUT_LEFT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(90.54, hrule6)), module, GrainEngineMK2::AUDIO_OUTPUT_RIGHT));
 
 
     /*
@@ -89,12 +107,7 @@ struct GrainEngineMK2Widget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_b_5, hrule5)), module, GrainEngineMK2::SAMPLE_INPUT));
     */
 
-    // Trim
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(74.94, 103.043)), module, GrainEngineMK2::TRIM_KNOB));
 
-    // Audio Output
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(64.216, 114.702)), module, GrainEngineMK2::AUDIO_OUTPUT_LEFT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(74.94, 114.702)), module, GrainEngineMK2::AUDIO_OUTPUT_RIGHT));
 
     // Position Override
     // addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(95, 114.702)), module, GrainEngineMK2::POSITION_KNOB));
