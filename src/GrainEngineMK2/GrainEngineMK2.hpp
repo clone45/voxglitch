@@ -159,6 +159,7 @@ struct GrainEngineMK2 : Module
 
   void process(const ProcessArgs &args) override
   {
+    /*
     // Process Max Grains knob
     this->max_grains = calculate_inputs(GRAINS_INPUT, GRAINS_KNOB, GRAINS_ATTN_KNOB, MAX_GRAINS);
 
@@ -285,7 +286,7 @@ struct GrainEngineMK2 : Module
     }
 
     if(spawn_throttling_countdown > 0) spawn_throttling_countdown--;
-
+    */
   }
 
 };
