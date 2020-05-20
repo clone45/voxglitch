@@ -22,8 +22,9 @@ struct GrainEngineMK2 : Module
   enum ParamIds {
     WINDOW_KNOB,
     WINDOW_ATTN_KNOB,
-    POSITION_KNOB,
-    POSITION_ATTN_KNOB,
+    POSITION_COARSE_KNOB,
+    POSITION_COARSE_ATTN_KNOB,
+    POSITION_MEDIUM_ATTN_KNOB,
     POSITION_FINE_ATTN_KNOB,
     PITCH_KNOB,
     PITCH_ATTN_KNOB,
@@ -40,7 +41,8 @@ struct GrainEngineMK2 : Module
   enum InputIds {
     JITTER_CV_INPUT,
     WINDOW_INPUT,
-    POSITION_INPUT,
+    POSITION_COARSE_INPUT,
+    POSITION_MEDIUM_INPUT,
     POSITION_FINE_INPUT,
     PITCH_INPUT,
     SPAWN_TRIGGER_INPUT,
@@ -71,8 +73,9 @@ struct GrainEngineMK2 : Module
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
     configParam(WINDOW_KNOB, 0.0f, 1.0f, 1.0f, "WindowKnob");
     configParam(WINDOW_ATTN_KNOB, 0.0f, 1.0f, 0.00f, "WindowAttnKnob");
-    configParam(POSITION_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionKnob");
-    configParam(POSITION_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionAttnKnob");
+    configParam(POSITION_COARSE_KNOB, 0.0f, 1.0f, 0.0f, "PositionCourseKnob");
+    configParam(POSITION_MEDIUM_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PositionMediumAttnKnob");
+    configParam(POSITION_COARSE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PositionCourseAttnKnob");
     configParam(POSITION_FINE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PositionFineAttnKnob");
     configParam(PITCH_KNOB, -1.0f, 2.0f, 1.0f, "PitchKnob");
     configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PitchAttnKnob");
@@ -167,7 +170,7 @@ struct GrainEngineMK2 : Module
     // unsigned int window_length = args.sampleRate / window_knob_value;
     unsigned int window_length = window_knob_value;
 
-    float start_position = calculate_inputs(POSITION_INPUT, POSITION_KNOB, POSITION_ATTN_KNOB, 0.0, 1.0);
+    float start_position = calculate_inputs(POSITION_COARSE_INPUT, POSITION_COARSE_KNOB, POSITION_COARSE_ATTN_KNOB, 0.0, 1.0);
 
     // At this point, start_position must be and should be between 0.0 and 1.0
 

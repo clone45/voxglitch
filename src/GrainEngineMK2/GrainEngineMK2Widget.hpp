@@ -3,57 +3,91 @@ struct GrainEngineMK2Widget : ModuleWidget
   GrainEngineMK2Widget(GrainEngineMK2* module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/grain_engine_mk2_front_panel.svg")));
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/grain_engine_mk2_front_panel_r2.svg")));
 
-    float y_offset = 1.8;
-    float x_offset = -1.8;
+    float hrule1 = 128.5 - 104.035;
+    float hrule2 = 128.5 - 92.415;
+    float hrule3 = 128.5 - 63.689;
+    float hrule4 = 128.5 - 49.515;
+    float hrule5 = 128.5 - 38.034;
+    float hrule6 = 128.5 - 11.977;
 
+    float vrule_a_1 = 15.903;
+    float vrule_a_2 = 37.278;
+    float vrule_a_3 = 53.263;
+    float vrule_a_4 = 69.249;
+    float vrule_a_5 = 85.234;
+
+    float vrule_b_1 = 9.421;
+    float vrule_b_2 = 29.491;
+    float vrule_b_3 = 49.562;
+    float vrule_b_4 = 69.632;
+    float vrule_b_5 = 89.702;
+
+    // Position
+		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(vrule_a_1, hrule1)), module, GrainEngineMK2::POSITION_COARSE_KNOB));
+
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_a_2, hrule1)), module, GrainEngineMK2::POSITION_COARSE_ATTN_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_a_2, hrule2)), module, GrainEngineMK2::POSITION_COARSE_INPUT));
+
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_a_3, hrule1)), module, GrainEngineMK2::POSITION_MEDIUM_ATTN_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_a_3, hrule2)), module, GrainEngineMK2::POSITION_MEDIUM_INPUT));
+
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_a_4, hrule1)), module, GrainEngineMK2::POSITION_FINE_ATTN_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_a_4, hrule2)), module, GrainEngineMK2::POSITION_FINE_INPUT));
+
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_a_5, hrule1)), module, GrainEngineMK2::JITTER_KNOB));    
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_a_5, hrule2)), module, GrainEngineMK2::JITTER_CV_INPUT));
+
+
+    /*
     // Jitter
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, 45.713)), module, GrainEngineMK2::JITTER_CV_INPUT));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(75.595, 45.713)), module, GrainEngineMK2::JITTER_KNOB));
 
     // Pan
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, 65.759)), module, GrainEngineMK2::PAN_INPUT));
-    addParam(createParamCentered<CKSS>(mm2px(Vec(75.595, 65.759)), module, GrainEngineMK2::PAN_SWITCH));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, hrule3)), module, GrainEngineMK2::PAN_INPUT));
+    addParam(createParamCentered<CKSS>(mm2px(Vec(75.595, hrule3)), module, GrainEngineMK2::PAN_SWITCH));
 
+    // Spawn rate override
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, hrule1)), module, GrainEngineMK2::SPAWN_TRIGGER_INPUT));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(70.4, hrule1)), module, GrainEngineMK2::EXT_CLK_INDICATOR_LIGHT));
+
+
+
+    // Position Fine input
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, hrule2)), module, GrainEngineMK2::POSITION_FINE_INPUT));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(75.595, hrule2)), module, GrainEngineMK2::POSITION_FINE_ATTN_KNOB));
+    */
 
     //
-    // Main Left-side Knobs
+    // Control inputs in the center area of the module
     //
 
     // Spawn rate
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 28.526 - y_offset)), module, GrainEngineMK2::SPAWN_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 28.526 - y_offset)), module, GrainEngineMK2::SPAWN_INPUT));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 28.526 - y_offset)), module, GrainEngineMK2::SPAWN_ATTN_KNOB));;
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(51, 28.526 - y_offset)), module, GrainEngineMK2::SPAWN_INDICATOR_LIGHT));
-
-    // Spawn rate override
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, 28.526 - y_offset)), module, GrainEngineMK2::SPAWN_TRIGGER_INPUT));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(70.4, 28.526 - y_offset)), module, GrainEngineMK2::EXT_CLK_INDICATOR_LIGHT));
-
-    // Grains
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 50.489 - y_offset)), module, GrainEngineMK2::GRAINS_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 50.489 - y_offset)), module, GrainEngineMK2::GRAINS_INPUT));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 50.489 - y_offset)), module, GrainEngineMK2::GRAINS_ATTN_KNOB));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(vrule_b_1, hrule3)), module, GrainEngineMK2::SPAWN_KNOB));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_b_1, hrule4)), module, GrainEngineMK2::SPAWN_ATTN_KNOB));;
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_b_1, hrule5)), module, GrainEngineMK2::SPAWN_INPUT));
 
     // Window
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 72.452 - y_offset)), module, GrainEngineMK2::WINDOW_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 72.452 - y_offset)), module, GrainEngineMK2::WINDOW_INPUT));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 72.452 - y_offset)), module, GrainEngineMK2::WINDOW_ATTN_KNOB));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(vrule_b_2, hrule3)), module, GrainEngineMK2::WINDOW_KNOB));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_b_2, hrule4)), module, GrainEngineMK2::WINDOW_ATTN_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_b_2, hrule5)), module, GrainEngineMK2::WINDOW_INPUT));
+
+    // Grains
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(vrule_b_3, hrule3)), module, GrainEngineMK2::GRAINS_KNOB));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_b_3, hrule4)), module, GrainEngineMK2::GRAINS_ATTN_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_b_3, hrule5)), module, GrainEngineMK2::GRAINS_INPUT));
 
     // Pitch
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 94.416 - y_offset)), module, GrainEngineMK2::PITCH_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 94.416 - y_offset)), module, GrainEngineMK2::PITCH_INPUT));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 94.416 - y_offset)), module, GrainEngineMK2::PITCH_ATTN_KNOB));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(vrule_b_4, hrule3)), module, GrainEngineMK2::PITCH_KNOB));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_b_4, hrule4)), module, GrainEngineMK2::PITCH_ATTN_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_b_4, hrule5)), module, GrainEngineMK2::PITCH_INPUT));
 
-    // Position
-		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 116.634 - y_offset)), module, GrainEngineMK2::POSITION_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 116.634 - y_offset)), module, GrainEngineMK2::POSITION_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 116.634 - y_offset)), module, GrainEngineMK2::POSITION_ATTN_KNOB));
-
-    // Position Fine input
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, 94.416 - y_offset)), module, GrainEngineMK2::POSITION_FINE_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(75.595, 94.416 - y_offset)), module, GrainEngineMK2::POSITION_FINE_ATTN_KNOB));
+    // Sample
+    /*
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(vrule_b_5, hrule3)), module, GrainEngineMK2::SAMPLE_KNOB));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_b_5, hrule4)), module, GrainEngineMK2::SAMPLE_ATTN_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_b_5, hrule5)), module, GrainEngineMK2::SAMPLE_INPUT));
+    */
 
     // Trim
     addParam(createParamCentered<Trimpot>(mm2px(Vec(74.94, 103.043)), module, GrainEngineMK2::TRIM_KNOB));
