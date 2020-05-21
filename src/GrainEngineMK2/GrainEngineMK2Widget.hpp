@@ -85,12 +85,6 @@ struct GrainEngineMK2Widget : ModuleWidget
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(vrule_b_5, hrule3)), module, GrainEngineMK2::SAMPLE_KNOB));
     addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_b_5, hrule4)), module, GrainEngineMK2::SAMPLE_ATTN_KNOB));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_b_5, hrule5)), module, GrainEngineMK2::SAMPLE_INPUT));
-
-
-    // Position Override
-    // addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(95, 114.702)), module, GrainEngineMK2::POSITION_KNOB));
-    // addParam(createParamCentered<Trimpot>(mm2px(Vec(107, 114.702)), module, GrainEngineMK2::POSITION_ATTN_KNOB));
-    // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(118, 114.702)), module, GrainEngineMK2::POSITION_INPUT));
   }
 
   void appendContextMenu(Menu *menu) override
@@ -99,11 +93,19 @@ struct GrainEngineMK2Widget : ModuleWidget
     assert(module);
 
     menu->addChild(new MenuEntry); // For spacing only
-    menu->addChild(createMenuLabel("Sample"));
+    menu->addChild(createMenuLabel("Samples"));
 
-    GrainEngineMK2LoadSample *menu_item_load_sample = new GrainEngineMK2LoadSample();
-    menu_item_load_sample->text = module->loaded_filename;
-    menu_item_load_sample->module = module;
-    menu->addChild(menu_item_load_sample);
+		//
+		// Add the sample slots to the right-click context menu
+		//
+
+		for(int i=0; i < NUMBER_OF_SAMPLES; i++)
+		{
+			GrainEngineMK2LoadSample *menu_item_load_sample = new GrainEngineMK2LoadSample();
+			menu_item_load_sample->sample_number = i;
+			menu_item_load_sample->text = std::to_string(i+1) + ": " + module->loaded_filenames[i];
+			menu_item_load_sample->module = module;
+			menu->addChild(menu_item_load_sample);
+		}
   }
 };

@@ -1,20 +1,20 @@
 struct GrainEngineMK2 : Module
 {
   // Various internal variables
+  unsigned int selected_sample_slot = 0;
   float pitch = 0;
   float smooth_rate = 0;
   int spawn_throttling_countdown = 0;
   float max_grains = 0;
   unsigned int selected_waveform = 0;
-	std::string loaded_filename = "[ EMPTY ]";
+	std::string loaded_filenames[NUMBER_OF_SAMPLES];
 	std::string root_dir;
 	std::string path;
 
   // Structs
-  Sample sample;
+  Sample samples[NUMBER_OF_SAMPLES];
   Sample *selected_sample;
   Common common;
-  // SimpleTableOsc internal_modulation_oscillator;
   GrainEngineMK2Core grain_engine_mk2_core;
 
   // Triggers
@@ -90,24 +90,31 @@ struct GrainEngineMK2 : Module
     configParam(SAMPLE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SampleAttnKnob");
 
     grain_engine_mk2_core.common = &common;
+    std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
   }
 
   json_t *dataToJson() override
 	{
-		json_t *rootJ = json_object();
-		json_object_set_new(rootJ, "path", json_string(sample.path.c_str()));
-		return rootJ;
+		json_t *root = json_object();
+
+    for(int i=0; i < NUMBER_OF_SAMPLES; i++)
+		{
+			json_object_set_new(root, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(samples[i].path.c_str()));
+		}
+
+		return root;
 	}
 
 	void dataFromJson(json_t *rootJ) override
 	{
-		json_t *loaded_path_json = json_object_get(rootJ, ("path"));
-
-		if(loaded_path_json)
+    for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
-			this->path = json_string_value(loaded_path_json);
-			sample.load(path, false);
-			loaded_filename = sample.filename;
+			json_t *loaded_sample_path = json_object_get(rootJ, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
+			if (loaded_sample_path)
+			{
+				samples[i].load(json_string_value(loaded_sample_path), false);
+				loaded_filenames[i] = samples[i].filename;
+			}
 		}
 	}
 
@@ -161,7 +168,13 @@ struct GrainEngineMK2 : Module
 
   void process(const ProcessArgs &args) override
   {
-    selected_sample = &sample;
+    //
+		//  Set selected sample based on inputs.
+		//  This must happen before we calculate start_position
+
+		selected_sample_slot = (unsigned int) calculate_inputs(SAMPLE_INPUT, SAMPLE_KNOB, SAMPLE_ATTN_KNOB, NUMBER_OF_SAMPLES_FLOAT);
+		selected_sample_slot = clamp(selected_sample_slot, 0, NUMBER_OF_SAMPLES - 1);
+		Sample *selected_sample = &samples[selected_sample_slot];
 
     if(! selected_sample->loaded) return;
 
@@ -180,7 +193,9 @@ struct GrainEngineMK2 : Module
 
     // At this point, start_position must be and should be between 0.0 and 1.0
 
-    // Process fine position input
+    //
+    // Process fine and medium position inputs
+    //
 
     float position_fine = 0;
     float position_medium = 0;
@@ -256,8 +271,7 @@ struct GrainEngineMK2 : Module
       pitch = params[PITCH_KNOB].getValue();
     }
 
-    // If there's a cable connected to the spawn trigger input, it takes priority
-    // over the internal spwn rate.
+    // If there's a cable connected to the spawn trigger input, it takes priority over the internal spwn rate.
     if(inputs[SPAWN_TRIGGER_INPUT].isConnected())
     {
       if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage())) grain_engine_mk2_core.add(start_position, window_length, pan, selected_sample, max_grains, pitch);
@@ -286,7 +300,6 @@ struct GrainEngineMK2 : Module
     }
 
     if(spawn_throttling_countdown > 0) spawn_throttling_countdown--;
-
   }
 
 };
