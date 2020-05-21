@@ -15,12 +15,17 @@ struct GrainEngineMK2Core
     // Return number of active grains
     virtual int size()
     {
-        return(grain_array_length);
+      return(grain_array_length);
     }
 
     virtual bool isEmpty()
     {
-        return(grain_array_length == 0);
+      return(grain_array_length == 0);
+    }
+
+    void purge()
+    {
+      grain_array_length = 0;
     }
 
     virtual void add(float start_position, unsigned int lifespan, float pan, Sample *sample_ptr, unsigned int max_grains, float pitch)

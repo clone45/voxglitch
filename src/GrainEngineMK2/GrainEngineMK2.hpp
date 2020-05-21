@@ -3,7 +3,7 @@ struct GrainEngineMK2 : Module
   // Various internal variables
   float pitch = 0;
   float smooth_rate = 0;
-  unsigned int spawn_throttling_countdown = 0;
+  int spawn_throttling_countdown = 0;
   float max_grains = 0;
   unsigned int selected_waveform = 0;
 	std::string loaded_filename = "[ EMPTY ]";
@@ -12,6 +12,7 @@ struct GrainEngineMK2 : Module
 
   // Structs
   Sample sample;
+  Sample *selected_sample;
   Common common;
   // SimpleTableOsc internal_modulation_oscillator;
   GrainEngineMK2Core grain_engine_mk2_core;
@@ -36,10 +37,12 @@ struct GrainEngineMK2 : Module
     SPAWN_THROTTLING_KNOB,
     SPAWN_KNOB,
     SPAWN_ATTN_KNOB,
+    SAMPLE_KNOB,
+    SAMPLE_ATTN_KNOB,
     NUM_PARAMS
   };
   enum InputIds {
-    JITTER_CV_INPUT,
+    JITTER_INPUT,
     WINDOW_INPUT,
     POSITION_COARSE_INPUT,
     POSITION_MEDIUM_INPUT,
@@ -50,18 +53,15 @@ struct GrainEngineMK2 : Module
     PAN_INPUT,
     GRAINS_INPUT,
     SPAWN_INPUT,
+    SAMPLE_INPUT,
     NUM_INPUTS
   };
   enum OutputIds {
     AUDIO_OUTPUT_LEFT,
     AUDIO_OUTPUT_RIGHT,
-    INTERNAL_MODULATION_OUTPUT,
     NUM_OUTPUTS
   };
   enum LightIds {
-    PURGE_LIGHT,
-    SPAWN_INDICATOR_LIGHT,
-    EXT_CLK_INDICATOR_LIGHT,
     NUM_LIGHTS
   };
 
@@ -74,8 +74,8 @@ struct GrainEngineMK2 : Module
     configParam(WINDOW_KNOB, 0.0f, 1.0f, 1.0f, "WindowKnob");
     configParam(WINDOW_ATTN_KNOB, 0.0f, 1.0f, 0.00f, "WindowAttnKnob");
     configParam(POSITION_COARSE_KNOB, 0.0f, 1.0f, 0.0f, "PositionCourseKnob");
-    configParam(POSITION_MEDIUM_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PositionMediumAttnKnob");
     configParam(POSITION_COARSE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PositionCourseAttnKnob");
+    configParam(POSITION_MEDIUM_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PositionMediumAttnKnob");
     configParam(POSITION_FINE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PositionFineAttnKnob");
     configParam(PITCH_KNOB, -1.0f, 2.0f, 1.0f, "PitchKnob");
     configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PitchAttnKnob");
@@ -86,6 +86,8 @@ struct GrainEngineMK2 : Module
     configParam(GRAINS_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "GrainsAttnKnob");
     configParam(SPAWN_KNOB, 0.0f, 1.0f, 0.7f, "SpawnKnob");
     configParam(SPAWN_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SpawnAttnKnob");
+    configParam(SAMPLE_KNOB, 0.0f, 1.0f, 0.7f, "SampleKnob");
+    configParam(SAMPLE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SampleAttnKnob");
 
     grain_engine_mk2_core.common = &common;
   }
@@ -159,7 +161,10 @@ struct GrainEngineMK2 : Module
 
   void process(const ProcessArgs &args) override
   {
-    /*
+    selected_sample = &sample;
+
+    if(! selected_sample->loaded) return;
+
     // Process Max Grains knob
     this->max_grains = calculate_inputs(GRAINS_INPUT, GRAINS_KNOB, GRAINS_ATTN_KNOB, MAX_GRAINS);
 
@@ -178,6 +183,7 @@ struct GrainEngineMK2 : Module
     // Process fine position input
 
     float position_fine = 0;
+    float position_medium = 0;
 
     if(inputs[POSITION_FINE_INPUT].isConnected())
     {
@@ -186,15 +192,22 @@ struct GrainEngineMK2 : Module
       position_fine = position_fine * MAX_POSITION_FINE * params[POSITION_FINE_ATTN_KNOB].getValue();
     }
 
+    if(inputs[POSITION_MEDIUM_INPUT].isConnected())
+    {
+      position_medium = inputs[POSITION_MEDIUM_INPUT].getVoltage() / 10.0; // -1 to 1
+      position_medium = clamp(position_medium, -1.0, 1.0);
+      position_medium = position_medium * MAX_POSITION_MEDIUM * params[POSITION_MEDIUM_ATTN_KNOB].getValue();
+    }
+
     //
     // Process Jitter input
     //
 
     float jitter_spread = 0;
 
-    if(inputs[JITTER_CV_INPUT].isConnected())
+    if(inputs[JITTER_INPUT].isConnected())
     {
-      jitter_spread = params[JITTER_KNOB].getValue() * MAX_JITTER_SPREAD * inputs[JITTER_CV_INPUT].getVoltage();
+      jitter_spread = params[JITTER_KNOB].getValue() * MAX_JITTER_SPREAD * inputs[JITTER_INPUT].getVoltage();
     }
     else
     {
@@ -210,15 +223,8 @@ struct GrainEngineMK2 : Module
     // none of the grains reaches the end of the buffer.
     // start_position = common.rescaleWithPadding(start_position, 0.0, 1.0, 0.0, sample.total_sample_count, jitter_spread + MAX_POSITION_FINE, jitter_spread + MAX_POSITION_FINE + window_length);
 
-    start_position = start_position * sample.total_sample_count;
-    start_position += jitter;
-    start_position += position_fine;
-
-    // start_position will now (hopefully) be between sample start and sample end time,
-    // but might be out of bounds, which is OK.
-
-    // if(start_position < 0) start_position = 0;
-    // if(start_position >= (sample.total_sample_count + window_length)) start_position = sample.total_sample_count - window_length - 1;
+    start_position = start_position * selected_sample->total_sample_count;
+    start_position += (jitter + position_fine + position_medium);
 
     //
     // Process Pan input
@@ -254,21 +260,15 @@ struct GrainEngineMK2 : Module
     // over the internal spwn rate.
     if(inputs[SPAWN_TRIGGER_INPUT].isConnected())
     {
-      if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage())) grain_engine_mk2_core.add(start_position, window_length, pan, &sample, max_grains, pitch);
-
-      lights[SPAWN_INDICATOR_LIGHT].setBrightness(0);
-      lights[EXT_CLK_INDICATOR_LIGHT].setBrightness(1);
+      if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage())) grain_engine_mk2_core.add(start_position, window_length, pan, selected_sample, max_grains, pitch);
     }
     else if(spawn_throttling_countdown == 0)
     {
-      grain_engine_mk2_core.add(start_position, window_length, pan, &sample, max_grains, pitch);
+      grain_engine_mk2_core.add(start_position, window_length, pan, selected_sample, max_grains, pitch);
 
       float spawn_inputs_value = rescale(calculate_inputs(SPAWN_INPUT, SPAWN_KNOB, SPAWN_ATTN_KNOB, 1.0), 1.f, 0.f, 0.f, 512.f);
       if (spawn_inputs_value < 0) spawn_inputs_value = 0;
       spawn_throttling_countdown = spawn_inputs_value;
-
-      lights[SPAWN_INDICATOR_LIGHT].setBrightness(1);
-      lights[EXT_CLK_INDICATOR_LIGHT].setBrightness(0);
     }
 
     if (! grain_engine_mk2_core.isEmpty())
@@ -286,7 +286,7 @@ struct GrainEngineMK2 : Module
     }
 
     if(spawn_throttling_countdown > 0) spawn_throttling_countdown--;
-    */
+
   }
 
 };

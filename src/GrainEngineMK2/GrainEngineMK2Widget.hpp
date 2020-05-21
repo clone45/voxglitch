@@ -42,10 +42,10 @@ struct GrainEngineMK2Widget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_a_4, hrule2)), module, GrainEngineMK2::POSITION_FINE_INPUT));
 
     addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_a_5, hrule1)), module, GrainEngineMK2::JITTER_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_a_5, hrule2)), module, GrainEngineMK2::JITTER_CV_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_a_5, hrule2)), module, GrainEngineMK2::JITTER_INPUT));
 
     // Spawn input
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_c_1, hrule6)), module, GrainEngineMK2::SPAWN_TRIGGER_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_c_2, hrule6)), module, GrainEngineMK2::SPAWN_TRIGGER_INPUT));
 
     // Pan input
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_c_3, hrule6)), module, GrainEngineMK2::PAN_INPUT));
@@ -56,25 +56,6 @@ struct GrainEngineMK2Widget : ModuleWidget
     // Audio Output
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(79.816, hrule6)), module, GrainEngineMK2::AUDIO_OUTPUT_LEFT));
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(90.54, hrule6)), module, GrainEngineMK2::AUDIO_OUTPUT_RIGHT));
-
-
-    /*
-    // Jitter
-
-    // Pan
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, hrule3)), module, GrainEngineMK2::PAN_INPUT));
-    addParam(createParamCentered<CKSS>(mm2px(Vec(75.595, hrule3)), module, GrainEngineMK2::PAN_SWITCH));
-
-    // Spawn rate override
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, hrule1)), module, GrainEngineMK2::SPAWN_TRIGGER_INPUT));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(70.4, hrule1)), module, GrainEngineMK2::EXT_CLK_INDICATOR_LIGHT));
-
-
-
-    // Position Fine input
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, hrule2)), module, GrainEngineMK2::POSITION_FINE_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(75.595, hrule2)), module, GrainEngineMK2::POSITION_FINE_ATTN_KNOB));
-    */
 
     //
     // Control inputs in the center area of the module
@@ -101,12 +82,9 @@ struct GrainEngineMK2Widget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_b_4, hrule5)), module, GrainEngineMK2::PITCH_INPUT));
 
     // Sample
-    /*
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(vrule_b_5, hrule3)), module, GrainEngineMK2::SAMPLE_KNOB));
     addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_b_5, hrule4)), module, GrainEngineMK2::SAMPLE_ATTN_KNOB));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_b_5, hrule5)), module, GrainEngineMK2::SAMPLE_INPUT));
-    */
-
 
 
     // Position Override
