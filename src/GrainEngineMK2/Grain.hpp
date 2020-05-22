@@ -40,7 +40,7 @@ struct Grain
         // Note that we're adding two floating point numbers, then casting
         // them to an int, which is much faster than using floor()
         sample_position = (this->start_position + this->playback_position);
-        sample_position = sample_position % this->sample_ptr->total_sample_count;
+        sample_position %= this->sample_ptr->total_sample_count;
 
         output_voltage_left  = this->sample_ptr->leftPlayBuffer[sample_position];
         output_voltage_right = this->sample_ptr->rightPlayBuffer[sample_position];

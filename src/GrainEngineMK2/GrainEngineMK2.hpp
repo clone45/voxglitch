@@ -10,6 +10,7 @@ struct GrainEngineMK2 : Module
 	std::string loaded_filenames[NUMBER_OF_SAMPLES];
 	std::string root_dir;
 	std::string path;
+  float pan = 0;
 
   // Structs
   Sample samples[NUMBER_OF_SAMPLES];
@@ -31,10 +32,8 @@ struct GrainEngineMK2 : Module
     PITCH_ATTN_KNOB,
     TRIM_KNOB,
     JITTER_KNOB,
-    PAN_SWITCH,
     GRAINS_KNOB,
     GRAINS_ATTN_KNOB,
-    SPAWN_THROTTLING_KNOB,
     SPAWN_KNOB,
     SPAWN_ATTN_KNOB,
     SAMPLE_KNOB,
@@ -49,7 +48,6 @@ struct GrainEngineMK2 : Module
     POSITION_FINE_INPUT,
     PITCH_INPUT,
     SPAWN_TRIGGER_INPUT,
-    CONTOUR_INPUT,
     PAN_INPUT,
     GRAINS_INPUT,
     SPAWN_INPUT,
@@ -81,7 +79,6 @@ struct GrainEngineMK2 : Module
     configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PitchAttnKnob");
     configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
     configParam(JITTER_KNOB, 0.f, 1.0f, 0.5f, "JitterKnob");
-    configParam(PAN_SWITCH, 0.0f, 1.0f, 0.0f, "PanSwitch");
     configParam(GRAINS_KNOB, 0.0f, 1.0f, 0.5f, "GrainsKnob");
     configParam(GRAINS_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "GrainsAttnKnob");
     configParam(SPAWN_KNOB, 0.0f, 1.0f, 0.7f, "SpawnKnob");
@@ -241,26 +238,10 @@ struct GrainEngineMK2 : Module
     start_position = start_position * selected_sample->total_sample_count;
     start_position += (jitter + position_fine + position_medium);
 
-    //
     // Process Pan input
-    //
+    if(inputs[PAN_INPUT].isConnected()) pan = (inputs[PAN_INPUT].getVoltage() / 10.0);
 
-    float pan = 0;
-    if(inputs[PAN_INPUT].isConnected())
-    {
-      if(params[PAN_SWITCH].getValue() == 1) // unipolar
-      {
-        // Incoming pan signal is unipolar.  Convert it to bipolar.
-        pan = (inputs[PAN_INPUT].getVoltage() / 5.0) - 1;
-      }
-      else // bipolar
-      {
-        // Incoming pan signal is bipolar.  No conversion necessary.
-        pan = (inputs[PAN_INPUT].getVoltage() / 10.0);
-      }
-    }
-
-
+    // Process Pitch input
     if(inputs[PITCH_INPUT].isConnected())
     {
       // This assumes a unipolar input.  Is that correct?
@@ -280,7 +261,7 @@ struct GrainEngineMK2 : Module
     {
       grain_engine_mk2_core.add(start_position, window_length, pan, selected_sample, max_grains, pitch);
 
-      float spawn_inputs_value = rescale(calculate_inputs(SPAWN_INPUT, SPAWN_KNOB, SPAWN_ATTN_KNOB, 1.0), 1.f, 0.f, 0.f, 512.f);
+      float spawn_inputs_value = rescale(calculate_inputs(SPAWN_INPUT, SPAWN_KNOB, SPAWN_ATTN_KNOB, 1.0), 1.f, 0.f, 0.f, 2096.f);
       if (spawn_inputs_value < 0) spawn_inputs_value = 0;
       spawn_throttling_countdown = spawn_inputs_value;
     }
