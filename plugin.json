@@ -56,6 +56,12 @@
         "tags": ["Granular", "Sampler"]
     },
     {
+        "slug": "GrainEngineMK2",
+        "name": "Grain Engine MK2",
+        "description": "Granular syntesis based .wav player",
+        "tags": ["Granular", "Sampler"]
+    },
+    {
         "slug": "repeater",
         "name": "Repeater",
         "description": "Looping sample player with playback offset control.",

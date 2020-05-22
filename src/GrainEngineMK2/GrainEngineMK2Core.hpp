@@ -1,29 +1,34 @@
-struct GrainFxCore
+struct GrainEngineMK2Core
 {
     Grain grain_array[MAX_GRAINS + 1];
     Grain grain_array_tmp[MAX_GRAINS + 1];
     unsigned int grain_array_length = 0;
     Common *common;
 
-    GrainFxCore()
+    GrainEngineMK2Core()
     {
     }
 
-    virtual ~GrainFxCore() {
+    virtual ~GrainEngineMK2Core() {
     }
 
     // Return number of active grains
     virtual int size()
     {
-        return(grain_array_length);
+      return(grain_array_length);
     }
 
     virtual bool isEmpty()
     {
-        return(grain_array_length == 0);
+      return(grain_array_length == 0);
     }
 
-    virtual void add(float start_position, unsigned int lifespan, float pan, AudioBuffer *buffer_ptr, unsigned int max_grains, float pitch)
+    void purge()
+    {
+      grain_array_length = 0;
+    }
+
+    virtual void add(float start_position, unsigned int lifespan, float pan, Sample *sample_ptr, unsigned int max_grains, float pitch)
     {
         if(grain_array_length > max_grains) return;
         if(lifespan == 0) return;
@@ -32,7 +37,7 @@ struct GrainFxCore
 
         // Configure grain for playback
         grain.start_position = start_position;
-        grain.buffer_ptr = buffer_ptr;
+        grain.sample_ptr = sample_ptr;
         grain.lifespan = lifespan;
         grain.age = lifespan;
         grain.pan = pan;

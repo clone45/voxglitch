@@ -12,6 +12,7 @@ struct GrainFx : Module
   AudioBuffer audio_buffer;
   SimpleTableOsc internal_modulation_oscillator;
   GrainFxCore grain_fx_core;
+  Common common;
 
   // Triggers
   dsp::SchmittTrigger spawn_trigger;
@@ -106,6 +107,8 @@ struct GrainFx : Module
     configParam(INTERNAL_MODULATION_WAVEFORM_KNOB, 0.01f, 1.0f, 0.01f, "InternalModulateionWaveformKnob");
     configParam(INTERNAL_MODULATION_WAVEFORM_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "InternalModulateionWaveformAttnKnob");
     configParam(INTERNAL_MODULATION_OUTPUT_POLARITY_SWITCH, 0.0f, 1.0f, 0.0f, "InternalModulationOutputPolaritySwitch");
+
+    grain_fx_core.common = &common;
   }
 
   json_t *dataToJson() override
@@ -221,13 +224,13 @@ struct GrainFx : Module
     }
 
     // If jitter_spread is 124, then the jitter will be between -124 and 124.
-    float jitter = randomFloat(-1 * jitter_spread, jitter_spread);
+    float jitter = common.randomFloat(-1 * jitter_spread, jitter_spread);
 
     // Make some room at the beginning and end of the possible range position to
     // allow for the addition of the jitter without pushing the start_position out of
     // range of the buffer size.  Also leave room for the window length so that
     // none of the grains reaches the end of the buffer.
-    start_position = rescaleWithPadding(start_position, 0.0, 1.0, 0.0, MAX_BUFFER_SIZE, jitter_spread, jitter_spread + window_length);
+    start_position = common.rescaleWithPadding(start_position, 0.0, 1.0, 0.0, MAX_BUFFER_SIZE, jitter_spread, jitter_spread + window_length);
     start_position += jitter;
 
     //

@@ -22,7 +22,6 @@ struct DigitalSequencer : Module
   GateSequencer *selected_gate_sequencer;
 
   int selected_sequencer_index = 0;
-  // int previously_selected_sequencer_index = -1;
   int voltage_outputs[NUMBER_OF_SEQUENCERS];
   int gate_outputs[NUMBER_OF_SEQUENCERS];
   int sequencer_step_inputs[NUMBER_OF_SEQUENCERS];
@@ -477,7 +476,7 @@ struct DigitalSequencer : Module
           if(gate_sequencers[i].getValue()) gateOutputPulseGenerators[i].trigger(0.01f);
         }
       }
-      
+
       if(reset_first_step == true) first_step = false;
     }
 
