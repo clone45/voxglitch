@@ -79,7 +79,7 @@ struct WavBank : Module
 			if (rack::string::lowercase(rack::string::filenameExtension(entry)) == "wav")
 			{
 				Sample new_sample;
-				new_sample.load(entry, false);
+				new_sample.load(entry);
 				this->samples.push_back(new_sample);
 			}
 		}

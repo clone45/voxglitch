@@ -9,7 +9,7 @@ struct Autobreak : Module
   // This value is stepped and repositioned when jumping around in a breakbeat.
   // This value is then used to figure out the actual_playback_position based
   // on the sample's length.
-  
+
   float theoretical_playback_position = 0;
 
   // incrementing_bpm_counter counts from 0 to the number of samples required
@@ -98,7 +98,7 @@ struct Autobreak : Module
       json_t *loaded_sample_path = json_object_get(json_root, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
       if (loaded_sample_path)
       {
-        samples[i].load(json_string_value(loaded_sample_path), false);
+        samples[i].load(json_string_value(loaded_sample_path));
         loaded_filenames[i] = samples[i].filename;
       }
     }

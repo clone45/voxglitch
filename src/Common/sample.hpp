@@ -1,86 +1,107 @@
 #pragma once
 
-#include "dr_wav.h"
+#include "AudioFile.h"
 
 struct Sample
 {
 	std::string path;
 	std::string filename;
-	drwav_uint64 total_sample_count;
 	bool loading;
+  unsigned int total_sample_count;
 	std::vector<float> leftPlayBuffer;
 	std::vector<float> rightPlayBuffer;
 	unsigned int sample_rate;
 	unsigned int channels;
 	bool loaded = false;
+  AudioFile<float> audioFile;
+  unsigned int audio_buffer_size = 0;
 
 	Sample()
 	{
 		leftPlayBuffer.resize(0);
 		rightPlayBuffer.resize(0);
-		total_sample_count = 0;
 		loading = false;
 		filename = "[ empty ]";
 		path = "";
 		sample_rate = 0;
 		channels = 0;
+
+    audioFile.setNumChannels(2);
+    audioFile.setSampleRate(44100);
 	}
 
 	virtual ~Sample() {}
 
-	virtual void load(std::string path, bool loadAsMono = true)
+	virtual void load(std::string path)
 	{
-		this->loaded = false;
-		this->loading = true;
+    float left;
+    float right;
 
-		unsigned int reported_channels;
-		unsigned int reported_sample_rate;
-		drwav_uint64 reported_total_sample_count;
-		float *pSampleData;
+    if(! audioFile.load(path))
+    {
+      this->loading = false;
+      this->loaded = false;
+      return;
+    }
 
-		pSampleData = drwav_open_and_read_file_f32(path.c_str(), &reported_channels, &reported_sample_rate, &reported_total_sample_count);
+    // TODO: check if file loaded, otherwise
+    //   this->loading = false;
+    //   this->loaded = false;
+    //   return
 
-		if (pSampleData != NULL)
-		{
-			// I'm aware that the "this" pointer isn't necessary here, but I wanted to include
-			// it just to make the code as clear as possible.
+    int sampleRate = audioFile.getSampleRate();
+    int numSamples = audioFile.getNumSamplesPerChannel();
+    int numChannels = audioFile.getNumChannels();
+    // int bitDepth = audioFile.getBitDepth();
 
-			this->channels = reported_channels;
-			this->sample_rate = reported_sample_rate;
-			this->leftPlayBuffer.clear();
-			this->rightPlayBuffer.clear();
+    this->channels = numChannels;
+    this->sample_rate = sampleRate;
+    this->leftPlayBuffer.clear();
+    this->rightPlayBuffer.clear();
 
-			if(this->channels > 1 && ! loadAsMono)
-			{
-				// Load stereo sample into playback vectors
-				for (unsigned int i=0; i < reported_total_sample_count; i = i + this->channels)
-				{
-					this->leftPlayBuffer.push_back(pSampleData[i]);
-					this->rightPlayBuffer.push_back(pSampleData[i+1]);
-				}
-			}
-			else
-			{
-				for (unsigned int i=0; i < reported_total_sample_count; i = i + this->channels)
-				{
-					this->leftPlayBuffer.push_back(pSampleData[i]);
-					this->rightPlayBuffer.push_back(pSampleData[i]);
-				}
-			}
+    for (int i = 0; i < numSamples; i++)
+    {
+      if(numChannels == 2)
+      {
+        left = audioFile.samples[0][i];  // [channel][sample_index]
+        right = audioFile.samples[1][i];
+      }
+      else if(numChannels == 1)
+      {
+        left = audioFile.samples[0][i];
+        right = left;
+      }
 
-			drwav_free(pSampleData);
+      this->leftPlayBuffer.push_back(left);
+      this->rightPlayBuffer.push_back(right);
+    }
 
-			this->total_sample_count = leftPlayBuffer.size();
-			this->filename = rack::string::filename(path);
-			this->path = path;
+    this->total_sample_count = leftPlayBuffer.size();
+    this->filename = rack::string::filename(path);
+    this->path = path;
 
-			this->loading = false;
-			this->loaded = true;
-		}
-		else
-		{
-			this->loading = false;
-			this->loaded = false;
-		}
+    this->loading = false;
+    this->loaded = true;
 	};
+
+  // Where to put recording code and how to save it?
+  void initialize_recording()
+  {
+    // Samples is of type AudioBuffer, where AudioBuffer is defined as
+    // typedef std::vector<std::vector<T> > AudioBuffer;
+    audioFile.samples[0].resize(0);
+    audioFile.samples[1].resize(0);
+  }
+
+  void record_audio(float left, float right)
+  {
+    audioFile.samples[0].push_back(left);
+    audioFile.samples[1].push_back(right);
+  }
+
+  void save_recorded_audio(std::string path)
+  {
+    audioFile.save(path);
+  }
+
 };

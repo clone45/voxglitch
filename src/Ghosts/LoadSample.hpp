@@ -9,7 +9,7 @@ struct GhostsLoadSample : MenuItem
 
 		if(path)
 		{
-			module->sample.load(path, false);
+			module->sample.load(path);
 			module->root_dir = std::string(path);
 			module->loaded_filename = module->sample.filename;
 			free(path);

@@ -40,7 +40,7 @@ struct SamplePlayer
 
   void loadSample(std::string path)
   {
-    sample.load(path, false);
+    sample.load(path);
   }
 
   std::string getFilename()

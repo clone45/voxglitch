@@ -93,7 +93,7 @@ struct Goblins : Module
 			json_t *loaded_sample_path = json_object_get(rootJ, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
 			if (loaded_sample_path)
 			{
-				samples[i].load(json_string_value(loaded_sample_path), false);
+				samples[i].load(json_string_value(loaded_sample_path));
 				loaded_filenames[i] = samples[i].filename;
 			}
 		}

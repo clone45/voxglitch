@@ -93,7 +93,7 @@ struct Ghosts : Module
 		if(loaded_path_json)
 		{
 			this->path = json_string_value(loaded_path_json);
-			sample.load(path, false);
+			sample.load(path);
 			loaded_filename = sample.filename;
 		}
 	}

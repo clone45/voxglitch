@@ -63,6 +63,9 @@ struct GrainEngineMK2 : Module
     NUM_LIGHTS
   };
 
+  float leftMessages[2][8] = {};
+
+
   //
   // Constructor
   //
@@ -88,6 +91,9 @@ struct GrainEngineMK2 : Module
 
     grain_engine_mk2_core.common = &common;
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
+
+    leftExpander.producerMessage = leftMessages[0];
+    leftExpander.consumerMessage = leftMessages[1];
   }
 
   json_t *dataToJson() override
@@ -109,7 +115,7 @@ struct GrainEngineMK2 : Module
 			json_t *loaded_sample_path = json_object_get(rootJ, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
 			if (loaded_sample_path)
 			{
-				samples[i].load(json_string_value(loaded_sample_path), false);
+				samples[i].load(json_string_value(loaded_sample_path));
 				loaded_filenames[i] = samples[i].filename;
 			}
 		}
@@ -165,6 +171,8 @@ struct GrainEngineMK2 : Module
 
   void process(const ProcessArgs &args) override
   {
+    this->processExpander();
+
     //
 		//  Set selected sample based on inputs.
 		//  This must happen before we calculate start_position
@@ -281,6 +289,23 @@ struct GrainEngineMK2 : Module
     }
 
     if(spawn_throttling_countdown > 0) spawn_throttling_countdown--;
+  }
+
+  void processExpander()
+  {
+    if (leftExpander.module && leftExpander.module->model == modelGrainEngineMK2Expander) {
+      leftExpander.messageFlipRequested = true;
+      /*
+      // Get message from right expander
+      float *message = (float*) rightExpander.module->leftExpander.producerMessage;
+      // Write message
+      for (int i = 0; i < 8; i++) {
+        message[i] = inputs[i].getVoltage() / 10.f;
+      }
+      // Flip messages at the end of the timestep
+      rightExpander.module->leftExpander.messageFlipRequested = true;
+      */
+    }
   }
 
 };
