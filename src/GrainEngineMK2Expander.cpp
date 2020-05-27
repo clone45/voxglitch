@@ -7,6 +7,7 @@
 #include "osdialog.h"
 #include "Common/common.hpp"
 #include "Common/sample.hpp"
+#include "Common/GrainEngineExpanderMessage.hpp"
 
 #include "GrainEngineMK2Expander/GrainEngineMK2Expander.hpp"
 #include "GrainEngineMK2Expander/GrainEngineMK2ExpanderWidget.hpp"

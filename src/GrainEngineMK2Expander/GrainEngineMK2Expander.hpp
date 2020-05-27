@@ -28,19 +28,15 @@ struct GrainEngineMK2Expander : Module
   }
 
 	void process(const ProcessArgs &args) override {
+
 		if (rightExpander.module && rightExpander.module->model == modelGrainEngineMK2)
     {
-      // Send a message to the GrainEngineMK2 on the right
-      /*
-      float *buffer = (float*) rightExpander.module->leftExpander.producerMessage;
-      buffer[0] = 1.f;
-      */
+
       if(record_start_trigger.process(inputs[RECORD_START_INPUT].getVoltage()))
       {
         sample.initialize_recording();
         recording = true;
       }
-
 
       if(recording)
       {
@@ -51,8 +47,16 @@ struct GrainEngineMK2Expander : Module
 
       if(record_stop_trigger.process(inputs[RECORD_STOP_INPUT].getVoltage()))
       {
-        sample.save_recorded_audio("test.wav");
+        std::string path = "test.wav";
+        sample.save_recorded_audio(path);
         recording = false;
+
+        // Send a message to the GrainEngineMK2 on the right to load the
+        // newly saved .wav file.
+        GrainEngineExpanderMessage *buffer = (GrainEngineExpanderMessage *) rightExpander.module->leftExpander.producerMessage;
+        buffer->path = path;
+        buffer->sample_slot = 0;
+        buffer->message_received = false;
       }
 		}
 		else

@@ -63,8 +63,8 @@ struct GrainEngineMK2 : Module
     NUM_LIGHTS
   };
 
-  float leftMessages[2][8] = {};
-
+  GrainEngineExpanderMessage *producer_message = new GrainEngineExpanderMessage;
+  GrainEngineExpanderMessage *consumer_message = new GrainEngineExpanderMessage;
 
   //
   // Constructor
@@ -92,8 +92,8 @@ struct GrainEngineMK2 : Module
     grain_engine_mk2_core.common = &common;
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 
-    leftExpander.producerMessage = leftMessages[0];
-    leftExpander.consumerMessage = leftMessages[1];
+    leftExpander.producerMessage = producer_message;
+    leftExpander.consumerMessage = consumer_message;
   }
 
   json_t *dataToJson() override
@@ -293,18 +293,28 @@ struct GrainEngineMK2 : Module
 
   void processExpander()
   {
-    if (leftExpander.module && leftExpander.module->model == modelGrainEngineMK2Expander) {
-      leftExpander.messageFlipRequested = true;
-      /*
-      // Get message from right expander
-      float *message = (float*) rightExpander.module->leftExpander.producerMessage;
-      // Write message
-      for (int i = 0; i < 8; i++) {
-        message[i] = inputs[i].getVoltage() / 10.f;
+    if (leftExpander.module && leftExpander.module->model == modelGrainEngineMK2Expander)
+    {
+      // Receive message from expander
+      GrainEngineExpanderMessage *buffer = (GrainEngineExpanderMessage *) leftExpander.producerMessage;
+
+      if(buffer->message_received == false)
+      {
+        // Set the received flag so we don't process the message every single frame
+        buffer->message_received = true;
+
+        // Retrieve the path name
+        std::string path = buffer->path;
+
+        // Retrieve the sample slot
+        unsigned int sample_slot = buffer->sample_slot;
+
+        // Load the sample into the sample slot
+        this->samples[sample_slot].load(path);
+  			this->loaded_filenames[sample_slot] = this->samples[sample_slot].filename;
       }
-      // Flip messages at the end of the timestep
-      rightExpander.module->leftExpander.messageFlipRequested = true;
-      */
+
+      leftExpander.messageFlipRequested = true;
     }
   }
 
