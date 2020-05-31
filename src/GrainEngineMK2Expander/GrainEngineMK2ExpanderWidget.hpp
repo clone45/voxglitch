@@ -13,8 +13,8 @@ struct GrainEngineMK2ExpanderWidget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(20, 30)), module, GrainEngineMK2Expander::AUDIO_IN_LEFT));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(30, 30)), module, GrainEngineMK2Expander::AUDIO_IN_RIGHT));
 
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(20, 100)), module, GrainEngineMK2Expander::PASSTHROUGH_LEFT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(30, 100)), module, GrainEngineMK2Expander::PASSTHROUGH_RIGHT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(9.878, 114.702)), module, GrainEngineMK2Expander::PASSTHROUGH_LEFT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(20.602, 114.702)), module, GrainEngineMK2Expander::PASSTHROUGH_RIGHT));
   }
 
   void appendContextMenu(Menu *menu) override
