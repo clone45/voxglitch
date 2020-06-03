@@ -1,6 +1,6 @@
 ## Digital Sequencer
 
-![DigitalSequencer](C:/Code/voxglitch/docs/images/digital-sequencer-front-panel-1.png)
+![DigitalSequencer](images/digital-sequencer-front-panel-1.png)
 
 Digital Sequencer is a variable length CV/Gate sequencer - times six!  It has both a master step input and individual step inputs for each of the six sequencers.  Additionally, it supports a variety of output ranges and snap input settings per sequencer.  It's especially useful if you need a lot of modulation in your patch.
 
