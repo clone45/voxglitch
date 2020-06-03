@@ -1,6 +1,6 @@
 ## XY Controller
 
-![XY](C:/Code/voxglitch/docs/images/xy-front-panel-01.png)
+![XY](images/xy-front-panel-01.png)
 
 XY is a CV output generator with built in gesture recording.  Visuals are based on a Reaktor patch whose name eludes me.
 
@@ -18,4 +18,4 @@ XY is a CV output generator with built in gesture recording.  Visuals are based 
 
 ### Example Usage
 
-![XY Example Usage](C:/Code/voxglitch/docs/images/xy-sample-patch-01.png)
+![XY Example Usage](images/xy-sample-patch-01.png)
