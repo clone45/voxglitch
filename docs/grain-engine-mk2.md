@@ -1,6 +1,6 @@
 ## Grain Engine MK2
 
-<img src="images\grain-engine-mk2\grain-engine-mk2-front-panel-v2.png" alt="grain-engine-mk2-front-panel-v2" style="zoom:80%;" />
+<img src="images\grain-engine-mk2\grain-engine-mk2-front-panel-v2.png" alt="grain-engine-mk2-front-panel-v2" style="zoom:50%;" />
 
 Grain Engine MK2 is a Granular Synthesis based sample player.  If you're completely new to Granular Synthesis, I would highly recommend that you watch this YouTube video: https://www.youtube.com/watch?v=BWHKKd75V8g.  The first 6 minutes of this video do a wonderful job at introducing the concept of Granular Synthesis.
 
@@ -99,7 +99,7 @@ To load a sample into Grain Engine MK2, right-click on the front panel and selec
 
 The SAMPLE inputs are used to select which sample is playing.  Empty samples *are* selectable but make no sound.
 
-<img src="images\grain-engine-mk2\sample-inputs.png" alt="sample-inputs" style="zoom:60%;" />
+<img src="images\grain-engine-mk2\sample-inputs.png" alt="sample-inputs" style="zoom:30%;" />
 
 
 
