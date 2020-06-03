@@ -93,7 +93,7 @@ The GRAINS inputs set the maximum number of grains allowed to exist at any one t
 
 To load a sample into Grain Engine MK2, right-click on the front panel and select the sample slot where you'd like to load the sample.  You will be presented with a file selector dialog box.  Currently only .wav files are supported.
 
-<img src="images\grain-engine-mk2\loading-samples.png" alt="loading-samples" style="zoom:40%;" />
+<img src="images\grain-engine-mk2\loading-samples.png" alt="loading-samples" style="zoom:20%;" />
 
 #### Selecting Samples
 
