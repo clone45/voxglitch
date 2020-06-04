@@ -22,4 +22,6 @@ Auotbreak turns an ordinary drum loop into a break beat.  Load up to 5 8-bar dru
 2. Attach a clock input to CLOCK IN running at 16th notes.  Use 8th notes or 32nd notes if the sample is playing too quickly or too slowly.
 3. Attach an external sequencer (such as the Autodafe SEQ16) to the SEQUENCE input and use the sequencer to adjust the breakbeat pattern.
 
+### Video Tutorial
 
+https://studio.youtube.com/video/yWape_7qzJU/edit
