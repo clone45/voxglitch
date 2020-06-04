@@ -24,4 +24,4 @@ Auotbreak turns an ordinary drum loop into a break beat.  Load up to 5 8-bar dru
 
 ### Video Tutorial
 
-https://studio.youtube.com/video/yWape_7qzJU/edit
+https://youtu.be/yWape_7qzJU
