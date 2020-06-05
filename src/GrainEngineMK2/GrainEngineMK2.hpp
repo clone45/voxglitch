@@ -86,7 +86,7 @@ struct GrainEngineMK2 : Module
     configParam(GRAINS_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "GrainsAttnKnob");
     configParam(SPAWN_KNOB, 0.0f, 1.0f, 0.7f, "SpawnKnob");
     configParam(SPAWN_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SpawnAttnKnob");
-    configParam(SAMPLE_KNOB, 0.0f, 1.0f, 0.7f, "SampleKnob");
+    configParam(SAMPLE_KNOB, 0.0f, 1.0f, 0.0f, "SampleKnob");
     configParam(SAMPLE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SampleAttnKnob");
 
     grain_engine_mk2_core.common = &common;
