@@ -5,16 +5,23 @@ struct GrainEngineMK2ExpanderWidget : ModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/grain_engine_mk2_expander_front_panel.svg")));
 
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(20, 50)), module, GrainEngineMK2Expander::RECORD_START_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(20, 60)), module, GrainEngineMK2Expander::RECORD_STOP_INPUT));
+    float col_1 = 9.878;
+    float col_2 = 20.602;
 
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(20, 76)), module, GrainEngineMK2Expander::SAMPLE_SLOT_INPUT));
+    float row_1 = 35.612;  // 35.612 - 6.264 =
+    float row_2 = 55.204;
+    float row_3 = 74.796;
+    float row_4 = 94.388;  // Label position: 94.388 - 6.264 = 88.122
 
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(20, 30)), module, GrainEngineMK2Expander::AUDIO_IN_LEFT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(30, 30)), module, GrainEngineMK2Expander::AUDIO_IN_RIGHT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(col_1, row_1)), module, GrainEngineMK2Expander::AUDIO_IN_LEFT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(col_2, row_1)), module, GrainEngineMK2Expander::AUDIO_IN_RIGHT));
 
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(9.878, 114.702)), module, GrainEngineMK2Expander::PASSTHROUGH_LEFT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(20.602, 114.702)), module, GrainEngineMK2Expander::PASSTHROUGH_RIGHT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(col_1, row_2)), module, GrainEngineMK2Expander::RECORD_START_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(col_1, row_3)), module, GrainEngineMK2Expander::RECORD_STOP_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(col_1, row_4)), module, GrainEngineMK2Expander::SAMPLE_SLOT_INPUT));
+
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(col_1, 114.702)), module, GrainEngineMK2Expander::PASSTHROUGH_LEFT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(col_2, 114.702)), module, GrainEngineMK2Expander::PASSTHROUGH_RIGHT));
   }
 
   void appendContextMenu(Menu *menu) override
