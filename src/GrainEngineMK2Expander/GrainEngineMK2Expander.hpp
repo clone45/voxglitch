@@ -10,6 +10,7 @@ struct GrainEngineMK2Expander : Module
   enum ParamIds {
     RECORD_START_BUTTON_PARAM,
     RECORD_STOP_BUTTON_PARAM,
+    SAMPLE_SLOT_KNOB_PARAM,
     NUM_PARAMS
   };
   enum InputIds {
@@ -36,6 +37,7 @@ struct GrainEngineMK2Expander : Module
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
     configParam(RECORD_START_BUTTON_PARAM, 0.f, 1.f, 0.f, "RecordStartButtonParam");
     configParam(RECORD_STOP_BUTTON_PARAM, 0.f, 1.f, 0.f, "RecordEndButtonParam");
+    configParam(SAMPLE_SLOT_KNOB_PARAM, 0.f, 1.f, 0.f, "SampleSlotKnobParam");
   }
 
 	void process(const ProcessArgs &args) override {
@@ -50,19 +52,26 @@ struct GrainEngineMK2Expander : Module
       sample_slot = clamp(sample_slot, 0, 4);
 
       bool start_recording = record_start_button_trigger.process(params[RECORD_START_BUTTON_PARAM].getValue()) || record_start_input_trigger.process(inputs[RECORD_START_INPUT].getVoltage());
-
-      if(start_recording)
-      {
-        sample.initialize_recording();
-        recording = true;
-      }
-
-      if(recording)
-      {
-        sample.record_audio(left, right);
-      }
-
       bool stop_recording = record_stop_button_trigger.process(params[RECORD_STOP_BUTTON_PARAM].getValue()) || record_stop_input_trigger.process(inputs[RECORD_STOP_INPUT].getVoltage());
+
+      if(recording && start_recording)
+      {
+        stop_recording = true;
+      }
+
+      if(! stop_recording)
+      {
+        if(start_recording)
+        {
+          sample.initialize_recording();
+          recording = true;
+        }
+
+        if(recording)
+        {
+          sample.record_audio(left, right);
+        }
+      }
 
       if(stop_recording)
       {
