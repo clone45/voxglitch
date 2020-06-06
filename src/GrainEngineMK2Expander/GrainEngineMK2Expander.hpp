@@ -1,11 +1,15 @@
 struct GrainEngineMK2Expander : Module
 {
-  dsp::SchmittTrigger record_start_trigger;
-  dsp::SchmittTrigger record_stop_trigger;
+  dsp::SchmittTrigger record_start_input_trigger;
+  dsp::SchmittTrigger record_stop_input_trigger;
+  dsp::SchmittTrigger record_start_button_trigger;
+  dsp::SchmittTrigger record_stop_button_trigger;
   bool recording = false;
   Sample sample;
 
   enum ParamIds {
+    RECORD_START_BUTTON_PARAM,
+    RECORD_STOP_BUTTON_PARAM,
     NUM_PARAMS
   };
   enum InputIds {
@@ -22,12 +26,16 @@ struct GrainEngineMK2Expander : Module
     NUM_OUTPUTS
   };
   enum LightIds {
+    RECORDING_LIGHT,
+    STOPPED_LIGHT,
     NUM_LIGHTS
   };
 
   GrainEngineMK2Expander()
   {
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+    configParam(RECORD_START_BUTTON_PARAM, 0.f, 1.f, 0.f, "RecordStartButtonParam");
+    configParam(RECORD_STOP_BUTTON_PARAM, 0.f, 1.f, 0.f, "RecordEndButtonParam");
   }
 
 	void process(const ProcessArgs &args) override {
@@ -41,7 +49,9 @@ struct GrainEngineMK2Expander : Module
 
       sample_slot = clamp(sample_slot, 0, 4);
 
-      if(record_start_trigger.process(inputs[RECORD_START_INPUT].getVoltage()))
+      bool start_recording = record_start_button_trigger.process(params[RECORD_START_BUTTON_PARAM].getValue()) || record_start_input_trigger.process(inputs[RECORD_START_INPUT].getVoltage());
+
+      if(start_recording)
       {
         sample.initialize_recording();
         recording = true;
@@ -52,7 +62,9 @@ struct GrainEngineMK2Expander : Module
         sample.record_audio(left, right);
       }
 
-      if(record_stop_trigger.process(inputs[RECORD_STOP_INPUT].getVoltage()))
+      bool stop_recording = record_stop_button_trigger.process(params[RECORD_STOP_BUTTON_PARAM].getValue()) || record_stop_input_trigger.process(inputs[RECORD_STOP_INPUT].getVoltage());
+
+      if(stop_recording)
       {
         std::string path = "grain_engine_" + random_string(12) + ".wav";
         sample.save_recorded_audio(path);
@@ -67,11 +79,16 @@ struct GrainEngineMK2Expander : Module
 
       outputs[PASSTHROUGH_LEFT].setVoltage(left);
       outputs[PASSTHROUGH_RIGHT].setVoltage(right);
+
+      lights[RECORDING_LIGHT].setBrightness(recording == true);
+      lights[STOPPED_LIGHT].setBrightness(recording == false);
 		}
 		else
     {
 			// No Grain Engine MK2 to the right, so do nothing
 		}
+
+
 	}
 
   std::string random_string( size_t length )

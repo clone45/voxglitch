@@ -18,6 +18,12 @@ struct GrainEngineMK2ExpanderWidget : ModuleWidget
 
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(col_1, row_2)), module, GrainEngineMK2Expander::RECORD_START_INPUT));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(col_1, row_3)), module, GrainEngineMK2Expander::RECORD_STOP_INPUT));
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(col_2, row_2)), module, GrainEngineMK2Expander::RECORD_START_BUTTON_PARAM));
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(col_2, row_3)), module, GrainEngineMK2Expander::RECORD_STOP_BUTTON_PARAM));
+    addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(col_2, row_2)), module, GrainEngineMK2Expander::RECORDING_LIGHT));
+    addChild(createLightCentered<MediumLight<YellowLight>>(mm2px(Vec(col_2, row_3)), module, GrainEngineMK2Expander::STOPPED_LIGHT));
+
+
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(col_1, row_4)), module, GrainEngineMK2Expander::SAMPLE_SLOT_INPUT));
 
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(col_1, 114.702)), module, GrainEngineMK2Expander::PASSTHROUGH_LEFT));
