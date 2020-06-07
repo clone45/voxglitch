@@ -13,8 +13,7 @@ struct Sample
 	unsigned int sample_rate;
 	unsigned int channels;
 	bool loaded = false;
-  AudioFile<float> audioFile;
-  unsigned int audio_buffer_size = 0;
+  AudioFile<float> audioFile; // For loading samples and saving samples
 
 	Sample()
 	{
@@ -87,16 +86,26 @@ struct Sample
   // Where to put recording code and how to save it?
   void initialize_recording()
   {
-    // Samples is of type AudioBuffer, where AudioBuffer is defined as
-    // typedef std::vector<std::vector<T> > AudioBuffer;
+    // Clear out audioFile data.  audioFile represents the .wav file information
+    // that can be loaded or saved.  In this case, we're going to be saving incoming
+    // audio pretty soon.
     audioFile.samples[0].resize(0);
     audioFile.samples[1].resize(0);
+
+    // Also clear out the sample audio information
+    this->leftPlayBuffer.resize(0);
+    this->rightPlayBuffer.resize(0);
   }
 
   void record_audio(float left, float right)
   {
+    // Store incoming audio both in the audioFile for saving and in the sample for playback
     audioFile.samples[0].push_back(left);
     audioFile.samples[1].push_back(right);
+    this->leftPlayBuffer.push_back(left);
+    this->rightPlayBuffer.push_back(right);
+
+    total_sample_count = leftPlayBuffer.size();
   }
 
   void save_recorded_audio(std::string path)

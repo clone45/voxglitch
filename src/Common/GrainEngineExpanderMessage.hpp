@@ -2,7 +2,8 @@
 
 struct GrainEngineExpanderMessage
 {
-	std::string path;
+	// std::string path;
   unsigned int sample_slot = 0;
   bool message_received = false;
+  Sample *sample = NULL;
 };

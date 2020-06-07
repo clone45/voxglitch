@@ -13,7 +13,7 @@ struct GrainEngineMK2 : Module
   float pan = 0;
 
   // Structs
-  Sample samples[NUMBER_OF_SAMPLES];
+  Sample *samples[NUMBER_OF_SAMPLES];
   Sample *selected_sample;
   Common common;
   GrainEngineMK2Core grain_engine_mk2_core;
@@ -92,8 +92,22 @@ struct GrainEngineMK2 : Module
     grain_engine_mk2_core.common = &common;
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 
+    for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
+    {
+      samples[i] = new Sample();
+    }
+
     leftExpander.producerMessage = producer_message;
     leftExpander.consumerMessage = consumer_message;
+  }
+
+  ~GrainEngineMK2()
+  {
+    for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
+    {
+      delete samples[i];
+      samples[i] = NULL;
+    }
   }
 
   json_t *dataToJson() override
@@ -102,7 +116,7 @@ struct GrainEngineMK2 : Module
 
     for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
-			json_object_set_new(root, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(samples[i].path.c_str()));
+			json_object_set_new(root, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(samples[i]->path.c_str()));
 		}
 
 		return root;
@@ -115,8 +129,8 @@ struct GrainEngineMK2 : Module
 			json_t *loaded_sample_path = json_object_get(rootJ, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
 			if (loaded_sample_path)
 			{
-				samples[i].load(json_string_value(loaded_sample_path));
-				loaded_filenames[i] = samples[i].filename;
+				samples[i]->load(json_string_value(loaded_sample_path));
+				loaded_filenames[i] = samples[i]->filename;
 			}
 		}
 	}
@@ -179,7 +193,7 @@ struct GrainEngineMK2 : Module
 
 		selected_sample_slot = (unsigned int) calculate_inputs(SAMPLE_INPUT, SAMPLE_KNOB, SAMPLE_ATTN_KNOB, NUMBER_OF_SAMPLES_FLOAT);
 		selected_sample_slot = clamp(selected_sample_slot, 0, NUMBER_OF_SAMPLES - 1);
-		Sample *selected_sample = &samples[selected_sample_slot];
+		Sample *selected_sample = samples[selected_sample_slot];
 
     if(! selected_sample->loaded) return;
 
@@ -239,8 +253,8 @@ struct GrainEngineMK2 : Module
 
     // Make some room at the beginning and end of the possible range position to
     // allow for the addition of the jitter without pushing the start_position out of
-    // range of the buffer size.  Also leave room for the window length so that
-    // none of the grains reaches the end of the buffer.
+    // range of the expander_message size.  Also leave room for the window length so that
+    // none of the grains reaches the end of the expander_message.
     // start_position = common.rescaleWithPadding(start_position, 0.0, 1.0, 0.0, sample.total_sample_count, jitter_spread + MAX_POSITION_FINE, jitter_spread + MAX_POSITION_FINE + window_length);
 
     start_position = start_position * selected_sample->total_sample_count;
@@ -296,22 +310,36 @@ struct GrainEngineMK2 : Module
     if (leftExpander.module && leftExpander.module->model == modelGrainEngineMK2Expander)
     {
       // Receive message from expander
-      GrainEngineExpanderMessage *buffer = (GrainEngineExpanderMessage *) leftExpander.producerMessage;
+      GrainEngineExpanderMessage *expander_message = (GrainEngineExpanderMessage *) leftExpander.producerMessage;
 
-      if(buffer->message_received == false)
+      if(expander_message->message_received == false)
       {
         // Set the received flag so we don't process the message every single frame
-        buffer->message_received = true;
+        expander_message->message_received = true;
 
-        // Retrieve the path name
-        std::string path = buffer->path;
+        if(expander_message->sample != NULL)
+        {
+          // Retrieve the path name
+          // std::string path = expander_message->path;
+          // std::string filename = expander_message->filename;
 
-        // Retrieve the sample slot
-        unsigned int sample_slot = buffer->sample_slot;
+          // Retrieve the sample slot
+          unsigned int sample_slot = expander_message->sample_slot;
+          sample_slot = clamp(sample_slot, 0, 4);
 
-        // Load the sample into the sample slot
-        this->samples[sample_slot].load(path);
-  			this->loaded_filenames[sample_slot] = this->samples[sample_slot].filename;
+          // Retrieve the sample pointer
+
+          Sample *old_sample = this->samples[sample_slot];
+          this->samples[sample_slot] = expander_message->sample;
+          delete old_sample;
+
+          // Load the sample into the sample slot
+          // this->samples[sample_slot]->load(path);
+    			this->loaded_filenames[sample_slot] = this->samples[sample_slot]->filename;
+
+          this->samples[sample_slot]->loading = false;
+          this->samples[sample_slot]->loaded = true;
+        }
       }
 
       leftExpander.messageFlipRequested = true;
