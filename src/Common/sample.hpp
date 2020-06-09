@@ -29,9 +29,13 @@ struct Sample
     audioFile.setSampleRate(44100);
 	}
 
-	virtual ~Sample() {}
+  ~Sample()
+  {
+    this->leftPlayBuffer.resize(0);
+    this->rightPlayBuffer.resize(0);
+  }
 
-	virtual void load(std::string path)
+	void load(std::string path)
 	{
     float left;
     float right;
@@ -43,15 +47,9 @@ struct Sample
       return;
     }
 
-    // TODO: check if file loaded, otherwise
-    //   this->loading = false;
-    //   this->loaded = false;
-    //   return
-
     int sampleRate = audioFile.getSampleRate();
     int numSamples = audioFile.getNumSamplesPerChannel();
     int numChannels = audioFile.getNumChannels();
-    // int bitDepth = audioFile.getBitDepth();
 
     this->channels = numChannels;
     this->sample_rate = sampleRate;
@@ -87,8 +85,7 @@ struct Sample
   void initialize_recording()
   {
     // Clear out audioFile data.  audioFile represents the .wav file information
-    // that can be loaded or saved.  In this case, we're going to be saving incoming
-    // audio pretty soon.
+    // that can be loaded or saved.  In this case, we're going to be saving incoming audio pretty soon.
     audioFile.samples[0].resize(0);
     audioFile.samples[1].resize(0);
 
@@ -102,6 +99,7 @@ struct Sample
     // Store incoming audio both in the audioFile for saving and in the sample for playback
     audioFile.samples[0].push_back(left);
     audioFile.samples[1].push_back(right);
+
     this->leftPlayBuffer.push_back(left);
     this->rightPlayBuffer.push_back(right);
 

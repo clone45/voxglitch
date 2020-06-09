@@ -15,6 +15,7 @@ struct GrainEngineMK2 : Module
   // Structs
   Sample *samples[NUMBER_OF_SAMPLES];
   Sample *selected_sample;
+
   Common common;
   GrainEngineMK2Core grain_engine_mk2_core;
 
@@ -105,8 +106,8 @@ struct GrainEngineMK2 : Module
   {
     for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
     {
-      delete samples[i];
-      samples[i] = NULL;
+      // delete samples[i];
+      // samples[i] = NULL;
     }
   }
 
@@ -314,32 +315,18 @@ struct GrainEngineMK2 : Module
 
       if(expander_message->message_received == false)
       {
+        // Retrieve the path name
+        std::string path = expander_message->path;
+        std::string filename = expander_message->filename;
+
+        // Retrieve the sample slot
+        unsigned int sample_slot = expander_message->sample_slot;
+        sample_slot = clamp(sample_slot, 0, 4);
+        this->samples[sample_slot]->load(path + filename);
+  			this->loaded_filenames[sample_slot] = this->samples[sample_slot]->filename;
+
         // Set the received flag so we don't process the message every single frame
         expander_message->message_received = true;
-
-        if(expander_message->sample != NULL)
-        {
-          // Retrieve the path name
-          // std::string path = expander_message->path;
-          // std::string filename = expander_message->filename;
-
-          // Retrieve the sample slot
-          unsigned int sample_slot = expander_message->sample_slot;
-          sample_slot = clamp(sample_slot, 0, 4);
-
-          // Retrieve the sample pointer
-
-          Sample *old_sample = this->samples[sample_slot];
-          this->samples[sample_slot] = expander_message->sample;
-          delete old_sample;
-
-          // Load the sample into the sample slot
-          // this->samples[sample_slot]->load(path);
-    			this->loaded_filenames[sample_slot] = this->samples[sample_slot]->filename;
-
-          this->samples[sample_slot]->loading = false;
-          this->samples[sample_slot]->loaded = true;
-        }
       }
 
       leftExpander.messageFlipRequested = true;

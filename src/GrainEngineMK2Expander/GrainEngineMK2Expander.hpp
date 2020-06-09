@@ -28,8 +28,6 @@ struct GrainEngineMK2Expander : Module
 
   Sample *sample = new Sample();
 
-  // Sample sample;
-
   enum ParamIds {
     RECORD_START_BUTTON_PARAM,
     RECORD_STOP_BUTTON_PARAM,
@@ -57,8 +55,8 @@ struct GrainEngineMK2Expander : Module
 
   ~GrainEngineMK2Expander()
   {
-    delete sample;
-    sample = NULL;
+    // delete sample;
+    // sample = NULL;
   }
 
   GrainEngineMK2Expander()
@@ -86,9 +84,11 @@ struct GrainEngineMK2Expander : Module
 
 	void process(const ProcessArgs &args) override {
 
+    // Send a message to the GrainEngineMK2 "mother" on the right to load the newly saved .wav file
+    // Notice that no sample data is passed to the GrainEngineMK2.  That may change.
+
 		if (rightExpander.module && rightExpander.module->model == modelGrainEngineMK2)
     {
-
       float left = inputs[AUDIO_IN_LEFT].getVoltage();
       float right = inputs[AUDIO_IN_RIGHT].getVoltage();
 
@@ -116,6 +116,8 @@ struct GrainEngineMK2Expander : Module
 
       if(stop_recording)
       {
+        recording = false;
+
         unsigned int sample_slot = inputs[SAMPLE_SLOT_INPUT].getVoltage() / 2;
         sample_slot += params[SAMPLE_SLOT_KNOB_PARAM].getValue();
         sample_slot = clamp(sample_slot, 0, 4);
@@ -124,21 +126,17 @@ struct GrainEngineMK2Expander : Module
         sample->filename = "grain_engine_" + patch_uuid + "_s" + std::to_string(sample_slot) + ".wav";
         sample->path = "";
 
+        // Moving this below save_recorded_audio does not fix the bug that I'm currently troubleshooting
+        GrainEngineExpanderMessage *message_to_grain_engine = (GrainEngineExpanderMessage *) rightExpander.module->leftExpander.producerMessage;
+        message_to_grain_engine->sample_slot = sample_slot;
+        message_to_grain_engine->filename = sample->filename;
+        message_to_grain_engine->path = sample->path;
 
-        // Send a message to the GrainEngineMK2 "mother" on the right to load the newly saved .wav file
-        // Notice that no sample data is passed to the GrainEngineMK2.  That may change.
-        GrainEngineExpanderMessage *message_to_mother = (GrainEngineExpanderMessage *) rightExpander.module->leftExpander.producerMessage;
-        // message_to_mother->path = path;
-        message_to_mother->sample_slot = sample_slot;
-        message_to_mother->message_received = false;
-        message_to_mother->sample = sample;
-
-        // Save recorded audio.  Note that this is done after the sample information
-        // is passed to the mother
+        // Save recorded audio.  Note that this is done after the sample information is passed to the mother
         sample->save_recorded_audio(sample->path + sample->filename);
         sample = new Sample();  // the old sample will be deleted by the mother module
 
-        recording = false;
+        message_to_grain_engine->message_received = false;
       }
 
       outputs[PASSTHROUGH_LEFT].setVoltage(left);
@@ -151,8 +149,6 @@ struct GrainEngineMK2Expander : Module
     {
 			// No Grain Engine MK2 to the right, so do nothing
 		}
-
-
 	}
 
   std::string random_string( size_t length )
