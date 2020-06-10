@@ -118,7 +118,7 @@ struct GrainEngineMK2Expander : Module
       {
         recording = false;
 
-        unsigned int sample_slot = inputs[SAMPLE_SLOT_INPUT].getVoltage() / 2;
+        unsigned int sample_slot = inputs[SAMPLE_SLOT_INPUT].getVoltage();
         sample_slot += params[SAMPLE_SLOT_KNOB_PARAM].getValue();
         sample_slot = clamp(sample_slot, 0, 4);
 
