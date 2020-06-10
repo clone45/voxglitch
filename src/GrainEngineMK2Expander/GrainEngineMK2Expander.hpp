@@ -147,7 +147,9 @@ struct GrainEngineMK2Expander : Module
 		}
 		else
     {
-			// No Grain Engine MK2 to the right, so do nothing
+			// No Grain Engine MK2 to the right
+      lights[RECORDING_LIGHT].setBrightness(false);
+      lights[STOPPED_LIGHT].setBrightness(false);
 		}
 	}
 

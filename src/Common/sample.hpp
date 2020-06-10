@@ -2,14 +2,48 @@
 
 #include "AudioFile.h"
 
+// TODO: allow playback to continue while new sample is loading, then
+// crossfade between the old sample and new sample before ditching the
+// old sample data.  To do this, I'll need to add a new function for
+// fetching sample data.  Right now, most modules directly access leftPlayBuffer
+// and rightPlayBuffer.
+
+struct SampleAudioBuffer
+{
+  std::vector<float> left_buffer;
+	std::vector<float> right_buffer;
+
+  void clear()
+  {
+    left_buffer.resize(0);
+    right_buffer.resize(0);
+  }
+
+  void push_back(float audio_left, float audio_right)
+  {
+    left_buffer.push_back(audio_left);
+    right_buffer.push_back(audio_right);
+  }
+
+  unsigned int size()
+  {
+    return(left_buffer.size());
+  }
+
+  std::pair<float, float> read(unsigned int index)
+  {
+    if((index >= left_buffer.size()) || (index >= right_buffer.size())) return {0.0, 0.0};
+    return {left_buffer[index], right_buffer[index]};
+  }
+};
+
 struct Sample
 {
 	std::string path;
 	std::string filename;
 	bool loading;
-  unsigned int total_sample_count;
-	std::vector<float> leftPlayBuffer;
-	std::vector<float> rightPlayBuffer;
+  unsigned int sample_length = 0;
+  SampleAudioBuffer sample_audio_buffer;
 	unsigned int sample_rate;
 	unsigned int channels;
 	bool loaded = false;
@@ -17,8 +51,7 @@ struct Sample
 
 	Sample()
 	{
-		leftPlayBuffer.resize(0);
-		rightPlayBuffer.resize(0);
+    sample_audio_buffer.clear();
 		loading = false;
 		filename = "[ empty ]";
 		path = "";
@@ -31,19 +64,24 @@ struct Sample
 
   ~Sample()
   {
-    this->leftPlayBuffer.resize(0);
-    this->rightPlayBuffer.resize(0);
+    sample_audio_buffer.clear();
   }
 
 	void load(std::string path)
 	{
-    float left;
-    float right;
+    this->loading = true;
+    this->loaded = false;
+
+    DEBUG("Voxglitch: Sample loading started");
+
+    float left = 0;
+    float right = 0;
 
     if(! audioFile.load(path))
     {
       this->loading = false;
       this->loaded = false;
+      DEBUG("Voxglitch error: Sample failed to load.");
       return;
     }
 
@@ -53,8 +91,7 @@ struct Sample
 
     this->channels = numChannels;
     this->sample_rate = sampleRate;
-    this->leftPlayBuffer.clear();
-    this->rightPlayBuffer.clear();
+    sample_audio_buffer.clear();
 
     for (int i = 0; i < numSamples; i++)
     {
@@ -69,16 +106,19 @@ struct Sample
         right = left;
       }
 
-      this->leftPlayBuffer.push_back(left);
-      this->rightPlayBuffer.push_back(right);
+      // this->leftPlayBuffer.push_back(left);
+      // this->rightPlayBuffer.push_back(right);
+      sample_audio_buffer.push_back(left, right);
     }
 
-    this->total_sample_count = leftPlayBuffer.size();
+    this->sample_length = sample_audio_buffer.size();
     this->filename = rack::string::filename(path);
     this->path = path;
 
     this->loading = false;
     this->loaded = true;
+
+    DEBUG("Voxglitch: Sample loading completed");
 	};
 
   // Where to put recording code and how to save it?
@@ -90,8 +130,8 @@ struct Sample
     audioFile.samples[1].resize(0);
 
     // Also clear out the sample audio information
-    this->leftPlayBuffer.resize(0);
-    this->rightPlayBuffer.resize(0);
+    sample_audio_buffer.clear();
+    sample_length = 0;
   }
 
   void record_audio(float left, float right)
@@ -100,15 +140,26 @@ struct Sample
     audioFile.samples[0].push_back(left);
     audioFile.samples[1].push_back(right);
 
-    this->leftPlayBuffer.push_back(left);
-    this->rightPlayBuffer.push_back(right);
+    // this->leftPlayBuffer.push_back(left);
+    // this->rightPlayBuffer.push_back(right);
 
-    total_sample_count = leftPlayBuffer.size();
+    sample_audio_buffer.push_back(left, right);
+    sample_length = sample_audio_buffer.size();
   }
 
   void save_recorded_audio(std::string path)
   {
     audioFile.save(path);
+  }
+
+  std::pair<float, float> read(unsigned int index)
+  {
+    return(sample_audio_buffer.read(index));
+  }
+
+  unsigned int size()
+  {
+    return(sample_length);
   }
 
 };

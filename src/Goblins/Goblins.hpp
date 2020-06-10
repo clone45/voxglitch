@@ -123,7 +123,7 @@ struct Goblins : Module
 
 		float spawn_rate = calculate_inputs(SPAWN_RATE_INPUT, SPAWN_RATE_KNOB, SPAWN_RATE_ATTN_KNOB, MAX_SPAWN_RATE);
 		float playback_length = calculate_inputs(PLAYBACK_LENGTH_INPUT, PLAYBACK_LENGTH_KNOB, PLAYBACK_LENGTH_ATTN_KNOB, (args.sampleRate / 8));
-		float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, selected_sample->total_sample_count);
+		float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, selected_sample->size());
 
 		// Ensure that the inputs are within range
 		spawn_rate = clamp(spawn_rate, 0.0f, MAX_SPAWN_RATE);
@@ -155,7 +155,7 @@ struct Goblins : Module
             countryside.erase(countryside.begin());
 		}
 
-		if ((! selected_sample->loading) && (selected_sample->total_sample_count > 0))
+		if ((! selected_sample->loading) && (selected_sample->size() > 0))
 		{
 			float left_mix_output = 0;
 			float right_mix_output = 0;

@@ -1,7 +1,7 @@
 struct GrainEngineMK2Core
 {
-    Grain grain_array[MAX_GRAINS + 1];
-    Grain grain_array_tmp[MAX_GRAINS + 1];
+    Grain grain_array[MAX_GRAINS];
+    Grain grain_array_tmp[MAX_GRAINS];
     unsigned int grain_array_length = 0;
     Common *common;
 
@@ -74,7 +74,8 @@ struct GrainEngineMK2Core
         }
 
         std::swap(grain_array, grain_array_tmp);
-        grain_array_length = grain_array_tmp_length;
+        grain_array_length = grain_array_tmp_length;  // I suspect this is it
+
 
         return {left_mix_output, right_mix_output};
     }

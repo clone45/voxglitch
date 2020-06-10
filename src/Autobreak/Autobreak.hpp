@@ -36,6 +36,9 @@ struct Autobreak : Module
   dsp::SchmittTrigger resetTrigger;
   dsp::SchmittTrigger clockTrigger;
 
+  float left_output  = 0;
+  float right_output = 0;
+
   enum ParamIds {
     WAV_KNOB,
     WAV_ATTN_KNOB,
@@ -165,20 +168,22 @@ struct Autobreak : Module
       }
     }
 
-    if (selected_sample->loaded && (selected_sample->total_sample_count > 0))
+    if (selected_sample->loaded && (selected_sample->size() > 0))
     {
       // 60.0 is for conversion from minutes to seconds
       // 8.0 is for 8 beats (2 bars) of loops, which is a typical drum loop length
       float samples_to_play_per_loop = ((60.0 / bpm) * args.sampleRate) * 8.0;
 
-      actual_playback_position = clamp(actual_playback_position, 0.0, selected_sample->total_sample_count - 1);
+      actual_playback_position = clamp(actual_playback_position, 0.0, selected_sample->size() - 1);
 
-      float left_output  = GAIN  * selected_sample->leftPlayBuffer[(int)actual_playback_position];
-      float right_output = GAIN  * selected_sample->rightPlayBuffer[(int)actual_playback_position];
+      // float left_output  = GAIN  * selected_sample->leftPlayBuffer[(int)actual_playback_position];
+      // float right_output = GAIN  * selected_sample->rightPlayBuffer[(int)actual_playback_position];
+
+      std::tie(left_output, right_output) = selected_sample->read((int)actual_playback_position);
 
       // Handle smoothing
       float smooth_rate = (128.0f / args.sampleRate);
-      std::tie(left_output, right_output) = loop_smooth.process(left_output, right_output, smooth_rate);
+      std::tie(left_output, right_output) = loop_smooth.process(left_output * GAIN, right_output * GAIN, smooth_rate);
 
       // Output audio
       outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_output);
@@ -210,7 +215,7 @@ struct Autobreak : Module
       }
 
       // Map the theoretical playback position to the actual sample playback position
-      actual_playback_position = ((float) theoretical_playback_position / samples_to_play_per_loop) * selected_sample->total_sample_count;
+      actual_playback_position = ((float) theoretical_playback_position / samples_to_play_per_loop) * selected_sample->size();
 
       //
       // Increment the bpm counter, which goes from 0 to the number of samples

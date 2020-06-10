@@ -256,9 +256,9 @@ struct GrainEngineMK2 : Module
     // allow for the addition of the jitter without pushing the start_position out of
     // range of the expander_message size.  Also leave room for the window length so that
     // none of the grains reaches the end of the expander_message.
-    // start_position = common.rescaleWithPadding(start_position, 0.0, 1.0, 0.0, sample.total_sample_count, jitter_spread + MAX_POSITION_FINE, jitter_spread + MAX_POSITION_FINE + window_length);
+    // start_position = common.rescaleWithPadding(start_position, 0.0, 1.0, 0.0, sample.size(), jitter_spread + MAX_POSITION_FINE, jitter_spread + MAX_POSITION_FINE + window_length);
 
-    start_position = start_position * selected_sample->total_sample_count;
+    start_position = start_position * selected_sample->size();
     start_position += (jitter + position_fine + position_medium);
 
     // Process Pan input
@@ -276,6 +276,7 @@ struct GrainEngineMK2 : Module
     }
 
     // If there's a cable connected to the spawn trigger input, it takes priority over the internal spwn rate.
+
     if(inputs[SPAWN_TRIGGER_INPUT].isConnected())
     {
       if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage())) grain_engine_mk2_core.add(start_position, window_length, pan, selected_sample, max_grains, pitch);
@@ -289,6 +290,9 @@ struct GrainEngineMK2 : Module
       spawn_throttling_countdown = spawn_inputs_value;
     }
 
+    //
+    // Get output from the grain engine
+    //
     if (! grain_engine_mk2_core.isEmpty())
     {
       smooth_rate = 128.0f / args.sampleRate;
