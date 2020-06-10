@@ -22,7 +22,7 @@ Grain Engine MK2 is the next iteration of the older Grain Engine module.
 
 ## How it works
 
-Grain Engine MK2 requires at least one .wav file loaded into one of the 5 sample slots.  Unlike a traditional sample player, Grain Engine MK2 doesn't play samples forwards or backwards.  It plays "grains", which are very small slices of the sample waveform.  These grains are like bubbles in sparkling water:  They come into being, last for a while, then end.  In Grain Engine, you can control when the grains are created (RATE), where in the sample they begin playing (POSITION), and a few other attributes, such as pitch and pan. 
+Grain Engine MK2 requires at least one .wav file loaded into one of the 5 sample slots.  Unlike a traditional sample player, Grain Engine MK2 doesn't play samples forwards or backwards.  It plays "grains", which are very small slices of the sample waveform.  These grains are like bubbles in sparkling water:  They come into being, last for a while, then end.  In Grain Engine, you can control how often the grains are created (RATE), where in the sample they begin playing (POSITION), and a few other attributes, such as pitch and pan. 
 
 ### All About Grains
 
