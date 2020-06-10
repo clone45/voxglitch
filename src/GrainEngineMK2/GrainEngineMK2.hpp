@@ -1,3 +1,17 @@
+struct LoadQueue {
+  bool sample_queued_for_loading = false;
+  std::string path = "";
+  std::string filename = "";
+  unsigned int sample_number = 0;
+
+  void queue_sample_for_loading(std::string path, unsigned int sample_number)
+  {
+    this->sample_queued_for_loading = true;
+    this->path = path;
+    this->sample_number = sample_number;
+  }
+};
+
 struct GrainEngineMK2 : Module
 {
   // Various internal variables
@@ -11,6 +25,9 @@ struct GrainEngineMK2 : Module
 	std::string root_dir;
 	std::string path;
   float pan = 0;
+  LoadQueue load_queue;
+  StereoFadeOutSubModule fade_out_on_load;
+  StereoFadeInSubModule fade_in_after_load;
 
   // Structs
   Sample *samples[NUMBER_OF_SAMPLES];
@@ -66,6 +83,8 @@ struct GrainEngineMK2 : Module
 
   GrainEngineExpanderMessage *producer_message = new GrainEngineExpanderMessage;
   GrainEngineExpanderMessage *consumer_message = new GrainEngineExpanderMessage;
+
+
 
   //
   // Constructor
@@ -302,6 +321,30 @@ struct GrainEngineMK2 : Module
       float left_mix_output = stereo_output.first * params[TRIM_KNOB].getValue();
       float right_mix_output = stereo_output.second * params[TRIM_KNOB].getValue();
 
+      if(load_queue.sample_queued_for_loading)
+      {
+        std::tie(left_mix_output, right_mix_output) = fade_out_on_load.process(left_mix_output, right_mix_output, 0.01f);
+
+        if(! fade_out_on_load.fading) // fading is complete
+        {
+          // dequeue the request.  We're going to process it right now!
+          load_queue.sample_queued_for_loading = false;
+
+          // Load the sample!
+          samples[load_queue.sample_number]->load(load_queue.path);
+    			root_dir = std::string(load_queue.path);
+          path = load_queue.path;
+    			loaded_filenames[load_queue.sample_number] = samples[load_queue.sample_number]->filename;
+
+          DEBUG("Loading sample after fade out");
+          DEBUG(load_queue.path.c_str());
+
+          fade_in_after_load.trigger();
+        }
+      }
+
+      std::tie(left_mix_output, right_mix_output) = fade_in_after_load.process(left_mix_output, right_mix_output, 0.01f);
+
       // Send audio to outputs
       outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_mix_output);
       outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_mix_output);
@@ -320,7 +363,7 @@ struct GrainEngineMK2 : Module
       if(expander_message->message_received == false)
       {
         // Retrieve the path name
-        std::string path = expander_message->path;
+        // std::string path = expander_message->path;
         std::string filename = expander_message->filename;
 
         if(filename != "")
@@ -328,8 +371,14 @@ struct GrainEngineMK2 : Module
           // Retrieve the sample slot
           unsigned int sample_slot = expander_message->sample_slot;
           sample_slot = clamp(sample_slot, 0, 4);
-          this->samples[sample_slot]->load(path + filename);
-    			this->loaded_filenames[sample_slot] = this->samples[sample_slot]->filename;
+
+          // DEBUG("queuing sample loading:");
+          // DEBUG(filename.c_str());
+
+          load_queue.queue_sample_for_loading(filename, sample_slot);
+          fade_out_on_load.trigger();
+          // this->samples[sample_slot]->load(path + filename);
+    			// this->loaded_filenames[sample_slot] = this->samples[sample_slot]->filename;
         }
 
         // Set the received flag so we don't process the message every single frame

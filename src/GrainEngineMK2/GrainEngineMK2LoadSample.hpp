@@ -10,9 +10,12 @@ struct GrainEngineMK2LoadSample : MenuItem
 
 		if(path)
 		{
-			module->samples[sample_number]->load(path);
-			module->root_dir = std::string(path);
-			module->loaded_filenames[sample_number] = module->samples[sample_number]->filename;
+      module->load_queue.queue_sample_for_loading(std::string(path), sample_number);
+      module->fade_out_on_load.trigger();
+
+			// module->samples[sample_number]->load(path);
+			// module->root_dir = std::string(path);
+			// module->loaded_filenames[sample_number] = module->samples[sample_number]->filename;
 			free(path);
 		}
 	}

@@ -2,12 +2,6 @@
 
 #include "AudioFile.h"
 
-// TODO: allow playback to continue while new sample is loading, then
-// crossfade between the old sample and new sample before ditching the
-// old sample data.  To do this, I'll need to add a new function for
-// fetching sample data.  Right now, most modules directly access leftPlayBuffer
-// and rightPlayBuffer.
-
 struct SampleAudioBuffer
 {
   std::vector<float> left_buffer;
@@ -42,11 +36,13 @@ struct Sample
 	std::string path;
 	std::string filename;
 	bool loading;
+  bool loaded = false;
+  bool queued_for_loading = false;
+  std::string queued_path = "";
   unsigned int sample_length = 0;
   SampleAudioBuffer sample_audio_buffer;
 	unsigned int sample_rate;
 	unsigned int channels;
-	bool loaded = false;
   AudioFile<float> audioFile; // For loading samples and saving samples
 
 	Sample()
@@ -67,8 +63,8 @@ struct Sample
     sample_audio_buffer.clear();
   }
 
-	void load(std::string path)
-	{
+  void load(std::string path)
+  {
     this->loading = true;
     this->loaded = false;
 
@@ -106,8 +102,6 @@ struct Sample
         right = left;
       }
 
-      // this->leftPlayBuffer.push_back(left);
-      // this->rightPlayBuffer.push_back(right);
       sample_audio_buffer.push_back(left, right);
     }
 
@@ -117,8 +111,6 @@ struct Sample
 
     this->loading = false;
     this->loaded = true;
-
-    DEBUG("Voxglitch: Sample loading completed");
 	};
 
   // Where to put recording code and how to save it?
@@ -139,9 +131,6 @@ struct Sample
     // Store incoming audio both in the audioFile for saving and in the sample for playback
     audioFile.samples[0].push_back(left);
     audioFile.samples[1].push_back(right);
-
-    // this->leftPlayBuffer.push_back(left);
-    // this->rightPlayBuffer.push_back(right);
 
     sample_audio_buffer.push_back(left, right);
     sample_length = sample_audio_buffer.size();
