@@ -323,11 +323,14 @@ struct GrainEngineMK2 : Module
         std::string path = expander_message->path;
         std::string filename = expander_message->filename;
 
-        // Retrieve the sample slot
-        unsigned int sample_slot = expander_message->sample_slot;
-        sample_slot = clamp(sample_slot, 0, 4);
-        this->samples[sample_slot]->load(path + filename);
-  			this->loaded_filenames[sample_slot] = this->samples[sample_slot]->filename;
+        if(filename != "")
+        {
+          // Retrieve the sample slot
+          unsigned int sample_slot = expander_message->sample_slot;
+          sample_slot = clamp(sample_slot, 0, 4);
+          this->samples[sample_slot]->load(path + filename);
+    			this->loaded_filenames[sample_slot] = this->samples[sample_slot]->filename;
+        }
 
         // Set the received flag so we don't process the message every single frame
         expander_message->message_received = true;
