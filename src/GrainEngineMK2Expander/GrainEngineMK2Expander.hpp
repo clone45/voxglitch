@@ -1,3 +1,5 @@
+#include <filesystem>
+
 struct GrainEngineMK2Expander : Module
 {
   dsp::SchmittTrigger record_start_input_trigger;
@@ -6,25 +8,6 @@ struct GrainEngineMK2Expander : Module
   dsp::SchmittTrigger record_stop_button_trigger;
   std::string patch_uuid = "";
   bool recording = false;
-
-  // TODO: make this a Sample *, then after the audio is recorded, pass the
-  // Sample pointer to GrainEngineMK2.  GrainEngineMK2 will then free its
-  // sample at that slot and point to this new one.
-
-  // Step #1: expander module passes path, sample_slot, message_received flag, and Sample pointer to GEMK2
-  // Step #2: GEMK2 ditches its current saple at sample_slot and points to the new one
-  // Step #3: GEMK2 puts the sample path string in it's array of loaded paths so it can be displayed in the right-click menu
-  // Step #4: expander module must write the sample contents out the the file so that it be loaded by GEMK2 on reboot
-  //          ^ this may cause a short delay in the expander, but I don't see that as a big issue
-  // Q: If the path is set, should it be reused?  Won't this start to create a bunch of temp files on the user's drive?
-  //    ^ possible solution: The expander create a UUID for itself on startup if one doesn't already exist.
-  //      The UUID is used in the sample path, like expander_[uuid]_s1.wav (for slot 1).  This should work?
-  //
-  // Sample passing:
-  // - when a recording has been stopped, a pointer to the Sample holding the sample data is passed to the mother module
-  // - in the expander, a new sample is initiated and the internal pointer is set to the new sample
-  // - when the mother module receives a sample pointer, it assigns one of the sample sloat sample pointers to this new one and __deletes the old one__
-  //   ^ this is to keep from ending up with the everybody pointing to the sample sample instance
 
   Sample *sample = new Sample();
 
@@ -53,18 +36,33 @@ struct GrainEngineMK2Expander : Module
     NUM_LIGHTS
   };
 
-  ~GrainEngineMK2Expander()
-  {
-    // delete sample;
-    // sample = NULL;
-  }
-
+  // Constructor
   GrainEngineMK2Expander()
   {
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
     configParam(RECORD_START_BUTTON_PARAM, 0.f, 1.f, 0.f, "RecordStartButtonParam");
     configParam(RECORD_STOP_BUTTON_PARAM, 0.f, 1.f, 0.f, "RecordEndButtonParam");
     configParam(SAMPLE_SLOT_KNOB_PARAM, 0.f, 4.f, 0.f, "SampleSlotKnobParam");
+
+    // Make sure that the folder where recorded audio is saved exists.  If not, create it.
+    std::string path = asset::user(WAV_FOLDER_NAME);
+
+    if(! system::isDirectory(path))
+    {
+      system::createDirectory(path);
+      DEBUG("creating path for sample storage");
+      DEBUG(path.c_str());
+    }
+    else
+    {
+      DEBUG("Using path: ");
+      DEBUG(path.c_str());
+    }
+  }
+
+  // Destructor
+  ~GrainEngineMK2Expander()
+  {
   }
 
   json_t *dataToJson() override
@@ -118,24 +116,26 @@ struct GrainEngineMK2Expander : Module
       {
         recording = false;
 
+        // Get sample slot for where GEMK2 should store the sample
         unsigned int sample_slot = inputs[SAMPLE_SLOT_INPUT].getVoltage();
         sample_slot += params[SAMPLE_SLOT_KNOB_PARAM].getValue();
         sample_slot = clamp(sample_slot, 0, 4);
 
+        // Build up a filename for the .wav file in the format grain_engine_[patch_uuid]_s[sample_slot].wave
         if(patch_uuid == "") patch_uuid = random_string(12);
-        sample->filename = "grain_engine_" + patch_uuid + "_s" + std::to_string(sample_slot) + ".wav";
-        sample->path = "";
+        std::string path = asset::user(WAV_FOLDER_NAME);
+        std::string filename = "grain_engine_" + patch_uuid + "_s" + std::to_string(sample_slot) + ".wav";
 
-        // Moving this below save_recorded_audio does not fix the bug that I'm currently troubleshooting
+        // Prepare message for sending to Grain Engine MK2
         GrainEngineExpanderMessage *message_to_grain_engine = (GrainEngineExpanderMessage *) rightExpander.module->leftExpander.producerMessage;
         message_to_grain_engine->sample_slot = sample_slot;
-        message_to_grain_engine->filename = sample->filename;
-        message_to_grain_engine->path = sample->path;
+        message_to_grain_engine->path = path;
+        message_to_grain_engine->filename = filename;
 
-        // Save recorded audio.  Note that this is done after the sample information is passed to the mother
-        sample->save_recorded_audio(sample->path + sample->filename);
-        sample = new Sample();  // the old sample will be deleted by the mother module
+        // Save the recorded audio to disk
+        sample->save_recorded_audio(path + "/" + filename);
 
+        // Tell Grain Engine MK2 that the message is ready for receiving
         message_to_grain_engine->message_received = false;
       }
 

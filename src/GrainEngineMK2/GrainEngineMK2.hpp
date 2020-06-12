@@ -1,14 +1,17 @@
-struct LoadQueue {
+struct LoadQueue
+{
   bool sample_queued_for_loading = false;
-  std::string path = "";
+  std::string path_to_file = "";
   std::string filename = "";
   unsigned int sample_number = 0;
 
-  void queue_sample_for_loading(std::string path, unsigned int sample_number)
+  void queue_sample_for_loading(std::string path_to_file, unsigned int sample_number)
   {
+    DEBUG("queue_sample_for_loading called");
     this->sample_queued_for_loading = true;
-    this->path = path;
+    this->path_to_file = path_to_file;
     this->sample_number = sample_number;
+    this->filename = filename;
   }
 };
 
@@ -205,8 +208,6 @@ struct GrainEngineMK2 : Module
 
   void process(const ProcessArgs &args) override
   {
-    this->processExpander();
-
     //
 		//  Set selected sample based on inputs.
 		//  This must happen before we calculate start_position
@@ -214,6 +215,31 @@ struct GrainEngineMK2 : Module
 		selected_sample_slot = (unsigned int) calculate_inputs(SAMPLE_INPUT, SAMPLE_KNOB, SAMPLE_ATTN_KNOB, NUMBER_OF_SAMPLES_FLOAT);
 		selected_sample_slot = clamp(selected_sample_slot, 0, NUMBER_OF_SAMPLES - 1);
 		Sample *selected_sample = samples[selected_sample_slot];
+
+    this->processExpander();
+
+    if(load_queue.sample_queued_for_loading)
+    {
+      // If either there's no loaded sample in the sample slot, or the fade out
+      // of the existing sample has completed then load the new sample and start fading in.
+      // if((fade_out_on_load.fading == false) || (samples[load_queue.sample_number]->loaded == false))
+      if((fade_out_on_load.fading == false) || (samples[load_queue.sample_number]->loaded == false))
+      {
+        // dequeue the request.  We're going to process it right now!
+        load_queue.sample_queued_for_loading = false;
+
+        // Load the sample!
+        DEBUG(("GrainEngineMK2 loading file " + load_queue.path_to_file + " into slot " + std::to_string(load_queue.sample_number)).c_str());
+        samples[load_queue.sample_number]->load(load_queue.path_to_file);
+        std::string path = samples[load_queue.sample_number]->path;
+
+        this->root_dir = path; // This is used by the widget class
+        this->path = path;     // This is used by the widget class
+        loaded_filenames[load_queue.sample_number] = samples[load_queue.sample_number]->filename;
+
+        fade_in_after_load.trigger();
+      }
+    }
 
     if(! selected_sample->loaded) return;
 
@@ -321,34 +347,15 @@ struct GrainEngineMK2 : Module
       float left_mix_output = stereo_output.first * params[TRIM_KNOB].getValue();
       float right_mix_output = stereo_output.second * params[TRIM_KNOB].getValue();
 
-      if(load_queue.sample_queued_for_loading)
-      {
-        std::tie(left_mix_output, right_mix_output) = fade_out_on_load.process(left_mix_output, right_mix_output, 0.01f);
-
-        if(! fade_out_on_load.fading) // fading is complete
-        {
-          // dequeue the request.  We're going to process it right now!
-          load_queue.sample_queued_for_loading = false;
-
-          // Load the sample!
-          samples[load_queue.sample_number]->load(load_queue.path);
-    			root_dir = std::string(load_queue.path);
-          path = load_queue.path;
-    			loaded_filenames[load_queue.sample_number] = samples[load_queue.sample_number]->filename;
-
-          DEBUG("Loading sample after fade out");
-          DEBUG(load_queue.path.c_str());
-
-          fade_in_after_load.trigger();
-        }
-      }
-
       std::tie(left_mix_output, right_mix_output) = fade_in_after_load.process(left_mix_output, right_mix_output, 0.01f);
+      if(fade_out_on_load.fading) std::tie(left_mix_output, right_mix_output) = fade_out_on_load.process(left_mix_output, right_mix_output, 0.01f);
 
       // Send audio to outputs
       outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_mix_output);
       outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_mix_output);
     }
+
+
 
     if(spawn_throttling_countdown > 0) spawn_throttling_countdown--;
   }
@@ -363,8 +370,8 @@ struct GrainEngineMK2 : Module
       if(expander_message->message_received == false)
       {
         // Retrieve the path name
-        // std::string path = expander_message->path;
         std::string filename = expander_message->filename;
+        std::string path = expander_message->path;
 
         if(filename != "")
         {
@@ -372,13 +379,12 @@ struct GrainEngineMK2 : Module
           unsigned int sample_slot = expander_message->sample_slot;
           sample_slot = clamp(sample_slot, 0, 4);
 
-          // DEBUG("queuing sample loading:");
-          // DEBUG(filename.c_str());
+          std::string path_to_file = path + "/" + filename;
 
-          load_queue.queue_sample_for_loading(filename, sample_slot);
+          DEBUG(("Queued sample for loading: " + path_to_file).c_str());
+
+          load_queue.queue_sample_for_loading(path_to_file, sample_slot);
           fade_out_on_load.trigger();
-          // this->samples[sample_slot]->load(path + filename);
-    			// this->loaded_filenames[sample_slot] = this->samples[sample_slot]->filename;
         }
 
         // Set the received flag so we don't process the message every single frame

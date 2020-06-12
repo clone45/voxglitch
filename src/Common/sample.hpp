@@ -68,16 +68,14 @@ struct Sample
     this->loading = true;
     this->loaded = false;
 
-    DEBUG("Voxglitch: Sample loading started");
-
     float left = 0;
     float right = 0;
 
     if(! audioFile.load(path))
     {
+      DEBUG(("Voxglitch sample.hpp::load() failed loading: " + path).c_str());
       this->loading = false;
       this->loaded = false;
-      DEBUG("Voxglitch error: Sample failed to load.");
       return;
     }
 
@@ -138,7 +136,10 @@ struct Sample
 
   void save_recorded_audio(std::string path)
   {
-    audioFile.save(path);
+    if(audioFile.save(path) != true)
+    {
+      DEBUG(("Voxglitch sample.hpp::save_recorded_audio() - issue saving file to: " + path).c_str());
+    }
   }
 
   std::pair<float, float> read(unsigned int index)
