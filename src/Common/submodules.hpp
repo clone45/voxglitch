@@ -123,10 +123,12 @@ struct StereoFadeOutSubModule
 struct StereoFadeInSubModule
 {
     float ramp = 1;
+    bool fading = false;
 
     void trigger()
     {
         ramp = 0;
+        fading = true;
     }
 
     std::pair<float, float> process(float left_voltage, float right_voltage, float rate)
@@ -140,7 +142,8 @@ struct StereoFadeInSubModule
         }
         else
         {
-            return {left_voltage, right_voltage};
+          fading = false;
+          return {left_voltage, right_voltage};
         }
     }
 };

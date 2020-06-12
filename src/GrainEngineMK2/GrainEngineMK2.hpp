@@ -222,7 +222,6 @@ struct GrainEngineMK2 : Module
     {
       // If either there's no loaded sample in the sample slot, or the fade out
       // of the existing sample has completed then load the new sample and start fading in.
-      // if((fade_out_on_load.fading == false) || (samples[load_queue.sample_number]->loaded == false))
       if((fade_out_on_load.fading == false) || (samples[load_queue.sample_number]->loaded == false))
       {
         // dequeue the request.  We're going to process it right now!
@@ -347,15 +346,13 @@ struct GrainEngineMK2 : Module
       float left_mix_output = stereo_output.first * params[TRIM_KNOB].getValue();
       float right_mix_output = stereo_output.second * params[TRIM_KNOB].getValue();
 
-      std::tie(left_mix_output, right_mix_output) = fade_in_after_load.process(left_mix_output, right_mix_output, 0.01f);
+      if(fade_in_after_load.fading) std::tie(left_mix_output, right_mix_output) = fade_in_after_load.process(left_mix_output, right_mix_output, 0.01f);
       if(fade_out_on_load.fading) std::tie(left_mix_output, right_mix_output) = fade_out_on_load.process(left_mix_output, right_mix_output, 0.01f);
 
       // Send audio to outputs
       outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_mix_output);
       outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_mix_output);
     }
-
-
 
     if(spawn_throttling_countdown > 0) spawn_throttling_countdown--;
   }
