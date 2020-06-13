@@ -79,7 +79,7 @@ struct WavBank : Module
 			if (rack::string::lowercase(rack::string::filenameExtension(entry)) == "wav")
 			{
 				Sample new_sample;
-				new_sample.load(entry, false);
+				new_sample.load(entry);
 				this->samples.push_back(new_sample);
 			}
 		}
@@ -143,15 +143,16 @@ struct WavBank : Module
 		}
 
 		// Loop
-		if(params[LOOP_SWITCH].getValue() && (samplePos >= selected_sample->total_sample_count)) samplePos = 0;
+		if(params[LOOP_SWITCH].getValue() && (samplePos >= selected_sample->size())) samplePos = 0;
 
-		if (triggered && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->total_sample_count > 0) && (samplePos < selected_sample->total_sample_count))
+		if (triggered && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->size() > 0) && (samplePos < selected_sample->size()))
 		{
 			float left_wav_output_voltage;
 			float right_wav_output_voltage;
 
 			if (samplePos >= 0)
 			{
+        /*
 				left_wav_output_voltage = GAIN  * selected_sample->leftPlayBuffer[(int)samplePos];
 				if(selected_sample->channels > 1)
 				{
@@ -161,18 +162,26 @@ struct WavBank : Module
 				{
 					right_wav_output_voltage = left_wav_output_voltage;
 				}
+        */
+        std::tie(left_wav_output_voltage, right_wav_output_voltage) = selected_sample->read((int)samplePos);
 			}
 			else
 			{
 				// What is this for?  Does it play the sample in reverse?  I think so.
-				left_wav_output_voltage = GAIN * selected_sample->leftPlayBuffer[floor(selected_sample->total_sample_count - 1 + samplePos)];
+        /*
+				left_wav_output_voltage = GAIN * selected_sample->leftPlayBuffer[floor(selected_sample->size() - 1 + samplePos)];
 				if(selected_sample->channels > 1) {
-					right_wav_output_voltage = GAIN * selected_sample->rightPlayBuffer[floor(selected_sample->total_sample_count - 1 + samplePos)];
+					right_wav_output_voltage = GAIN * selected_sample->rightPlayBuffer[floor(selected_sample->size() - 1 + samplePos)];
 				}
 				else {
 					right_wav_output_voltage = left_wav_output_voltage;
 				}
+        */
+        std::tie(left_wav_output_voltage, right_wav_output_voltage) = selected_sample->read(floor(selected_sample->size() - 1 + samplePos));
 			}
+
+      left_wav_output_voltage *= GAIN;
+      right_wav_output_voltage *= GAIN;
 
 			if(SMOOTH_ENABLED && (smooth_ramp < 1))
 			{

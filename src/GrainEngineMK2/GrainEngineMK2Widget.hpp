@@ -24,7 +24,7 @@ struct GrainEngineMK2Widget : ModuleWidget
     float vrule_b_4 = 69.632;
     float vrule_b_5 = 89.702;
 
-    float vrule_c_1 = 21.448;
+    // float vrule_c_1 = 21.448;
     float vrule_c_2 = 35.969;
     float vrule_c_3 = 50.491;
     float vrule_c_4 = 65.012;

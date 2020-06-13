@@ -9,8 +9,10 @@ struct SamplePlayer
 	std::pair<float, float> getStereoOutput()
 	{
     sample_position = playback_position; // convert float to int
-    if((playing == false) || (sample_position >= this->sample.total_sample_count) || (sample.loaded == false)) return { 0,0 };
-		return { this->sample.leftPlayBuffer[sample_position], this->sample.rightPlayBuffer[sample_position] };
+    if((playing == false) || (sample_position >= this->sample.size()) || (sample.loaded == false)) return { 0,0 };
+    float left; float right;
+    std::tie(left, right) = this->sample.read(sample_position);
+		return { left, right };
 	}
 
   void trigger()
@@ -34,13 +36,13 @@ struct SamplePlayer
   		playback_position = playback_position + step_amount;
 
       // If the playback position is past the playback length, end sample playback
-  		if(playback_position >= sample.total_sample_count) stop();
+  		if(playback_position >= sample.size()) stop();
     }
 	}
 
   void loadSample(std::string path)
   {
-    sample.load(path, false);
+    sample.load(path);
   }
 
   std::string getFilename()

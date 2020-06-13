@@ -92,7 +92,7 @@ struct GrainEngine : Module
 		if(loaded_path_json)
 		{
 			this->path = json_string_value(loaded_path_json);
-			sample.load(path, false);
+			sample.load(path);
 			loaded_filename = sample.filename;
 		}
 	}
@@ -110,14 +110,14 @@ struct GrainEngine : Module
 	{
         float length_multiplier = params[LEN_MULT_KNOB].getValue();
 		float playback_length = calculate_inputs(LENGTH_INPUT, LENGTH_KNOB, LENGTH_ATTN_KNOB, 128) * length_multiplier;
-		float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, sample.total_sample_count);
+		float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, sample.size());
         int amp_slope_selection = calculate_inputs(AMP_SLOPE_INPUT, AMP_SLOPE_KNOB, AMP_SLOPE_ATTN_KNOB, 9.0);
 
 		// Ensure that the inputs are within range
-		if(start_position >= (sample.total_sample_count - playback_length)) start_position = sample.total_sample_count - playback_length;
+		if(start_position >= (sample.size() - playback_length)) start_position = sample.size() - playback_length;
 
 		// Shorten the playback length if it would result in playback passing the end of the sample data.
-		if(playback_length > (sample.total_sample_count - start_position)) playback_length = sample.total_sample_count - start_position;
+		if(playback_length > (sample.size() - start_position)) playback_length = sample.size() - start_position;
 
         //
         // Process Jitter input

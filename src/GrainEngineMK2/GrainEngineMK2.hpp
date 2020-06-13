@@ -1,3 +1,20 @@
+struct LoadQueue
+{
+  bool sample_queued_for_loading = false;
+  std::string path_to_file = "";
+  std::string filename = "";
+  unsigned int sample_number = 0;
+
+  void queue_sample_for_loading(std::string path_to_file, unsigned int sample_number)
+  {
+    // DEBUG("queue_sample_for_loading called");
+    this->sample_queued_for_loading = true;
+    this->path_to_file = path_to_file;
+    this->sample_number = sample_number;
+    this->filename = filename;
+  }
+};
+
 struct GrainEngineMK2 : Module
 {
   // Various internal variables
@@ -11,10 +28,14 @@ struct GrainEngineMK2 : Module
 	std::string root_dir;
 	std::string path;
   float pan = 0;
+  LoadQueue load_queue;
+  StereoFadeOutSubModule fade_out_on_load;
+  StereoFadeInSubModule fade_in_after_load;
 
   // Structs
-  Sample samples[NUMBER_OF_SAMPLES];
+  Sample *samples[NUMBER_OF_SAMPLES];
   Sample *selected_sample;
+
   Common common;
   GrainEngineMK2Core grain_engine_mk2_core;
 
@@ -63,6 +84,11 @@ struct GrainEngineMK2 : Module
     NUM_LIGHTS
   };
 
+  GrainEngineExpanderMessage *producer_message = new GrainEngineExpanderMessage;
+  GrainEngineExpanderMessage *consumer_message = new GrainEngineExpanderMessage;
+
+
+
   //
   // Constructor
   //
@@ -88,6 +114,23 @@ struct GrainEngineMK2 : Module
 
     grain_engine_mk2_core.common = &common;
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
+
+    for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
+    {
+      samples[i] = new Sample();
+    }
+
+    leftExpander.producerMessage = producer_message;
+    leftExpander.consumerMessage = consumer_message;
+  }
+
+  ~GrainEngineMK2()
+  {
+    for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
+    {
+      // delete samples[i];
+      // samples[i] = NULL;
+    }
   }
 
   json_t *dataToJson() override
@@ -96,7 +139,7 @@ struct GrainEngineMK2 : Module
 
     for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
-			json_object_set_new(root, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(samples[i].path.c_str()));
+			json_object_set_new(root, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(samples[i]->path.c_str()));
 		}
 
 		return root;
@@ -109,8 +152,8 @@ struct GrainEngineMK2 : Module
 			json_t *loaded_sample_path = json_object_get(rootJ, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
 			if (loaded_sample_path)
 			{
-				samples[i].load(json_string_value(loaded_sample_path), false);
-				loaded_filenames[i] = samples[i].filename;
+				samples[i]->load(json_string_value(loaded_sample_path));
+				loaded_filenames[i] = samples[i]->filename;
 			}
 		}
 	}
@@ -171,7 +214,31 @@ struct GrainEngineMK2 : Module
 
 		selected_sample_slot = (unsigned int) calculate_inputs(SAMPLE_INPUT, SAMPLE_KNOB, SAMPLE_ATTN_KNOB, NUMBER_OF_SAMPLES_FLOAT);
 		selected_sample_slot = clamp(selected_sample_slot, 0, NUMBER_OF_SAMPLES - 1);
-		Sample *selected_sample = &samples[selected_sample_slot];
+		Sample *selected_sample = samples[selected_sample_slot];
+
+    this->processExpander();
+
+    if(load_queue.sample_queued_for_loading)
+    {
+      // If either there's no loaded sample in the sample slot, or the fade out
+      // of the existing sample has completed then load the new sample and start fading in.
+      if((fade_out_on_load.fading == false) || (samples[load_queue.sample_number]->loaded == false))
+      {
+        // dequeue the request.  We're going to process it right now!
+        load_queue.sample_queued_for_loading = false;
+
+        // Load the sample!
+        // DEBUG(("GrainEngineMK2 loading file " + load_queue.path_to_file + " into slot " + std::to_string(load_queue.sample_number)).c_str());
+        samples[load_queue.sample_number]->load(load_queue.path_to_file);
+        std::string path = samples[load_queue.sample_number]->path;
+
+        this->root_dir = path; // This is used by the widget class
+        this->path = path;     // This is used by the widget class
+        loaded_filenames[load_queue.sample_number] = samples[load_queue.sample_number]->filename;
+
+        fade_in_after_load.trigger();
+      }
+    }
 
     if(! selected_sample->loaded) return;
 
@@ -231,11 +298,11 @@ struct GrainEngineMK2 : Module
 
     // Make some room at the beginning and end of the possible range position to
     // allow for the addition of the jitter without pushing the start_position out of
-    // range of the buffer size.  Also leave room for the window length so that
-    // none of the grains reaches the end of the buffer.
-    // start_position = common.rescaleWithPadding(start_position, 0.0, 1.0, 0.0, sample.total_sample_count, jitter_spread + MAX_POSITION_FINE, jitter_spread + MAX_POSITION_FINE + window_length);
+    // range of the expander_message size.  Also leave room for the window length so that
+    // none of the grains reaches the end of the expander_message.
+    // start_position = common.rescaleWithPadding(start_position, 0.0, 1.0, 0.0, sample.size(), jitter_spread + MAX_POSITION_FINE, jitter_spread + MAX_POSITION_FINE + window_length);
 
-    start_position = start_position * selected_sample->total_sample_count;
+    start_position = start_position * selected_sample->size();
     start_position += (jitter + position_fine + position_medium);
 
     // Process Pan input
@@ -253,6 +320,7 @@ struct GrainEngineMK2 : Module
     }
 
     // If there's a cable connected to the spawn trigger input, it takes priority over the internal spwn rate.
+
     if(inputs[SPAWN_TRIGGER_INPUT].isConnected())
     {
       if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage())) grain_engine_mk2_core.add(start_position, window_length, pan, selected_sample, max_grains, pitch);
@@ -266,6 +334,9 @@ struct GrainEngineMK2 : Module
       spawn_throttling_countdown = spawn_inputs_value;
     }
 
+    //
+    // Get output from the grain engine
+    //
     if (! grain_engine_mk2_core.isEmpty())
     {
       smooth_rate = 128.0f / args.sampleRate;
@@ -275,12 +346,51 @@ struct GrainEngineMK2 : Module
       float left_mix_output = stereo_output.first * params[TRIM_KNOB].getValue();
       float right_mix_output = stereo_output.second * params[TRIM_KNOB].getValue();
 
+      if(fade_in_after_load.fading) std::tie(left_mix_output, right_mix_output) = fade_in_after_load.process(left_mix_output, right_mix_output, 0.01f);
+      if(fade_out_on_load.fading) std::tie(left_mix_output, right_mix_output) = fade_out_on_load.process(left_mix_output, right_mix_output, 0.01f);
+
       // Send audio to outputs
       outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_mix_output);
       outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_mix_output);
     }
 
     if(spawn_throttling_countdown > 0) spawn_throttling_countdown--;
+  }
+
+  void processExpander()
+  {
+    if (leftExpander.module && leftExpander.module->model == modelGrainEngineMK2Expander)
+    {
+      // Receive message from expander
+      GrainEngineExpanderMessage *expander_message = (GrainEngineExpanderMessage *) leftExpander.producerMessage;
+
+      if(expander_message->message_received == false)
+      {
+        // Retrieve the path name
+        std::string filename = expander_message->filename;
+        std::string path = expander_message->path;
+
+        if(filename != "")
+        {
+          // Retrieve the sample slot
+          unsigned int sample_slot = expander_message->sample_slot;
+          sample_slot = clamp(sample_slot, 0, 4);
+
+          std::string path_to_file = path + "/" + filename;
+
+          // Queue sample for loading
+          load_queue.queue_sample_for_loading(path_to_file, sample_slot);
+          fade_out_on_load.trigger();
+
+          // DEBUG(("Queued sample for loading: " + path_to_file).c_str());
+        }
+
+        // Set the received flag so we don't process the message every single frame
+        expander_message->message_received = true;
+      }
+
+      leftExpander.messageFlipRequested = true;
+    }
   }
 
 };

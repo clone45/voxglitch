@@ -21,10 +21,11 @@ struct Goblin
 		sample_position = this->start_position + this->playback_position;
 
 		// Wrap if the sample position is past the sample end point
-		if (sample_position >= this->sample_ptr->total_sample_count) sample_position = sample_position % this->sample_ptr->total_sample_count;
+		if (sample_position >= this->sample_ptr->size()) sample_position = sample_position % this->sample_ptr->size();
 
-        // Return the audio
-		return { this->sample_ptr->leftPlayBuffer[sample_position], this->sample_ptr->rightPlayBuffer[sample_position] };
+    float left; float right;
+    std::tie(left, right) = this->sample_ptr->read(sample_position);
+		return { left, right };
 	}
 
 	void age(float step_amount, float playback_length)

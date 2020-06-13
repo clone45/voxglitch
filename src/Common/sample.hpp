@@ -1,86 +1,158 @@
 #pragma once
 
-#include "dr_wav.h"
+#include "AudioFile.h"
+
+struct SampleAudioBuffer
+{
+  std::vector<float> left_buffer;
+	std::vector<float> right_buffer;
+
+  void clear()
+  {
+    left_buffer.resize(0);
+    right_buffer.resize(0);
+  }
+
+  void push_back(float audio_left, float audio_right)
+  {
+    left_buffer.push_back(audio_left);
+    right_buffer.push_back(audio_right);
+  }
+
+  unsigned int size()
+  {
+    return(left_buffer.size());
+  }
+
+  std::pair<float, float> read(unsigned int index)
+  {
+    if((index >= left_buffer.size()) || (index >= right_buffer.size())) return {0.0, 0.0};
+    return {left_buffer[index], right_buffer[index]};
+  }
+};
 
 struct Sample
 {
 	std::string path;
 	std::string filename;
-	drwav_uint64 total_sample_count;
 	bool loading;
-	std::vector<float> leftPlayBuffer;
-	std::vector<float> rightPlayBuffer;
+  bool loaded = false;
+  bool queued_for_loading = false;
+  std::string queued_path = "";
+  unsigned int sample_length = 0;
+  SampleAudioBuffer sample_audio_buffer;
 	unsigned int sample_rate;
 	unsigned int channels;
-	bool loaded = false;
+  AudioFile<float> audioFile; // For loading samples and saving samples
 
 	Sample()
 	{
-		leftPlayBuffer.resize(0);
-		rightPlayBuffer.resize(0);
-		total_sample_count = 0;
+    sample_audio_buffer.clear();
 		loading = false;
 		filename = "[ empty ]";
 		path = "";
 		sample_rate = 0;
 		channels = 0;
+
+    audioFile.setNumChannels(2);
+    audioFile.setSampleRate(44100);
 	}
 
-	virtual ~Sample() {}
+  ~Sample()
+  {
+    sample_audio_buffer.clear();
+  }
 
-	virtual void load(std::string path, bool loadAsMono = true)
-	{
-		this->loaded = false;
-		this->loading = true;
+  void load(std::string path)
+  {
+    this->loading = true;
+    this->loaded = false;
 
-		unsigned int reported_channels;
-		unsigned int reported_sample_rate;
-		drwav_uint64 reported_total_sample_count;
-		float *pSampleData;
+    float left = 0;
+    float right = 0;
 
-		pSampleData = drwav_open_and_read_file_f32(path.c_str(), &reported_channels, &reported_sample_rate, &reported_total_sample_count);
+    // If file fails to load, abandon operation
+    if(! audioFile.load(path))
+    {
+      this->loading = false;
+      this->loaded = false;
+      return;
+    }
 
-		if (pSampleData != NULL)
-		{
-			// I'm aware that the "this" pointer isn't necessary here, but I wanted to include
-			// it just to make the code as clear as possible.
+    // Read details about the loaded sample
+    int sampleRate = audioFile.getSampleRate();
+    int numSamples = audioFile.getNumSamplesPerChannel();
+    int numChannels = audioFile.getNumChannels();
 
-			this->channels = reported_channels;
-			this->sample_rate = reported_sample_rate;
-			this->leftPlayBuffer.clear();
-			this->rightPlayBuffer.clear();
+    this->channels = numChannels;
+    this->sample_rate = sampleRate;
+    sample_audio_buffer.clear();
 
-			if(this->channels > 1 && ! loadAsMono)
-			{
-				// Load stereo sample into playback vectors
-				for (unsigned int i=0; i < reported_total_sample_count; i = i + this->channels)
-				{
-					this->leftPlayBuffer.push_back(pSampleData[i]);
-					this->rightPlayBuffer.push_back(pSampleData[i+1]);
-				}
-			}
-			else
-			{
-				for (unsigned int i=0; i < reported_total_sample_count; i = i + this->channels)
-				{
-					this->leftPlayBuffer.push_back(pSampleData[i]);
-					this->rightPlayBuffer.push_back(pSampleData[i]);
-				}
-			}
+    for (int i = 0; i < numSamples; i++)
+    {
+      if(numChannels == 2)
+      {
+        left = audioFile.samples[0][i];  // [channel][sample_index]
+        right = audioFile.samples[1][i];
+      }
+      else if(numChannels == 1)
+      {
+        left = audioFile.samples[0][i];
+        right = left;
+      }
 
-			drwav_free(pSampleData);
+      sample_audio_buffer.push_back(left, right);
+    }
 
-			this->total_sample_count = leftPlayBuffer.size();
-			this->filename = rack::string::filename(path);
-			this->path = path;
+    // Store sample length and file information to this object for the reset
+    // of the patch to reference.
+    this->sample_length = sample_audio_buffer.size();
+    this->filename = rack::string::filename(path);
+    this->path = path;
 
-			this->loading = false;
-			this->loaded = true;
-		}
-		else
-		{
-			this->loading = false;
-			this->loaded = false;
-		}
+    this->loading = false;
+    this->loaded = true;
 	};
+
+  // Where to put recording code and how to save it?
+  void initialize_recording()
+  {
+    // Clear out audioFile data.  audioFile represents the .wav file information
+    // that can be loaded or saved.  In this case, we're going to be saving incoming audio pretty soon.
+    audioFile.samples[0].resize(0);
+    audioFile.samples[1].resize(0);
+
+    // Also clear out the sample audio information
+    sample_audio_buffer.clear();
+    sample_length = 0;
+  }
+
+  void record_audio(float left, float right)
+  {
+    // Store incoming audio both in the audioFile for saving and in the sample for playback
+    audioFile.samples[0].push_back(left);
+    audioFile.samples[1].push_back(right);
+
+    sample_audio_buffer.push_back(left, right);
+    sample_length = sample_audio_buffer.size();
+  }
+
+  void save_recorded_audio(std::string path)
+  {
+    if(audioFile.save(path) != true)
+    {
+      DEBUG(("Voxglitch sample.hpp::save_recorded_audio() - issue saving file to: " + path).c_str());
+    }
+  }
+
+  std::pair<float, float> read(unsigned int index)
+  {
+    return(sample_audio_buffer.read(index));
+  }
+
+  unsigned int size()
+  {
+    return(sample_length);
+  }
+
 };

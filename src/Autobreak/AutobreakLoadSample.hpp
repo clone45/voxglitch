@@ -10,7 +10,7 @@ struct AutobreakLoadSample : MenuItem
 
 		if (path)
 		{
-			module->samples[sample_number].load(path, false);
+			module->samples[sample_number].load(path);
 			module->root_dir = std::string(path);
 			module->loaded_filenames[sample_number] = module->samples[sample_number].filename;
 			free(path);

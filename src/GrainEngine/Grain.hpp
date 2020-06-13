@@ -43,7 +43,7 @@ struct Grain
         // them to an int, which is much faster than using floor()
         sample_position = this->start_position + this->playback_position;
 
-        if(sample_position >= this->sample_ptr->total_sample_count)
+        if(sample_position >= this->sample_ptr->size())
         {
             // NOTE: Ideally, the sample position should be reaching the total sample
             // count (or length) exactly as an applied amp envelope is reaching 0
@@ -51,8 +51,10 @@ struct Grain
         }
         else
         {
-            output_voltage_left  = this->sample_ptr->leftPlayBuffer[sample_position];
-            output_voltage_right = this->sample_ptr->rightPlayBuffer[sample_position];
+            // output_voltage_left  = this->sample_ptr->leftPlayBuffer[sample_position];
+            // output_voltage_right = this->sample_ptr->rightPlayBuffer[sample_position];
+
+            std::tie(output_voltage_left, output_voltage_right)  = this->sample_ptr->read(sample_position);
 
             // Apply amplitude slope
             int slope_index = (playback_position / playback_length) * 512.0;

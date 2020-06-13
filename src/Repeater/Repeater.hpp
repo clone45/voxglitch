@@ -154,7 +154,7 @@ struct Repeater : Module
 				if(step == 0)
 				{
 					isPlaying = true;
-					samplePos = calculate_inputs(POSITION_INPUT, POSITION_KNOB, POSITION_ATTN_KNOB, selected_sample->total_sample_count);
+					samplePos = calculate_inputs(POSITION_INPUT, POSITION_KNOB, POSITION_ATTN_KNOB, selected_sample->size());
 					smooth.trigger();
 					triggerOutputPulse.trigger(0.01f);
 				}
@@ -168,25 +168,31 @@ struct Repeater : Module
 		// If the sample has completed playing and the retrigger option is true,
 		// then restart sample playback.
 
-		if(retrigger && abs(floor(samplePos)) >= selected_sample->total_sample_count)
+		if(retrigger && abs(floor(samplePos)) >= selected_sample->size())
 		{
 			samplePos = 0;
 			smooth.trigger();
 		}
 
-		if (isPlaying && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->total_sample_count > 0) && ((abs(floor(samplePos)) < selected_sample->total_sample_count)))
+		if (isPlaying && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->size() > 0) && ((abs(floor(samplePos)) < selected_sample->size())))
 		{
 			float wav_output_voltage;
+      float left_output;
+      float right_output;
 
 			if (samplePos >= 0)
 			{
-				wav_output_voltage = GAIN  * selected_sample->leftPlayBuffer[floor(samplePos)];
+				// wav_output_voltage = GAIN  * selected_sample->leftPlayBuffer[floor(samplePos)];
+        std::tie(left_output, right_output) = selected_sample->read(floor(samplePos));
 			}
 			else
 			{
+        std::tie(left_output, right_output) = selected_sample->read(floor(selected_sample->size() - 1 + samplePos));
 				// What is this for?  Does it play the sample in reverse?  I think so.
-				wav_output_voltage = GAIN * selected_sample->leftPlayBuffer[floor(selected_sample->total_sample_count - 1 + samplePos)];
+				// wav_output_voltage = GAIN * selected_sample->leftPlayBuffer[floor(selected_sample->size() - 1 + samplePos)];
 			}
+
+      wav_output_voltage = GAIN * left_output;
 
 			// Apply smoothing
 			if(params[SMOOTH_SWITCH].getValue()) wav_output_voltage = smooth.process(wav_output_voltage, (128.0f / args.sampleRate));

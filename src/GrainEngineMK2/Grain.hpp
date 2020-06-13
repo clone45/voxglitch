@@ -35,15 +35,14 @@ struct Grain
 
     std::pair<float, float> getStereoOutput(unsigned int contour_selection)
     {
-        if(age == 0) return {0,0};
+        if(age == 0 || (this->sample_ptr->size() == 0)) return {0,0};
 
-        // Note that we're adding two floating point numbers, then casting
-        // them to an int, which is much faster than using floor()
+
+        // Note that we're adding two floating point numbers, then casting them to an int, which is much faster than using floor()
         sample_position = (this->start_position + this->playback_position);
-        sample_position %= this->sample_ptr->total_sample_count;
+        sample_position %= this->sample_ptr->size(); // be careful about division by 0 here
 
-        output_voltage_left  = this->sample_ptr->leftPlayBuffer[sample_position];
-        output_voltage_right = this->sample_ptr->rightPlayBuffer[sample_position];
+        std::tie(output_voltage_left, output_voltage_right)  = this->sample_ptr->read(sample_position);
 
         // Apply amplitude slope
         int slope_index = (1.0 - ((float)age / (float)lifespan)) * 512.0;  // remember that age decrements instead of increments

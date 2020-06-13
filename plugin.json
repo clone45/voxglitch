@@ -62,6 +62,12 @@
         "tags": ["Granular", "Sampler"]
     },
     {
+        "slug": "GrainEngineMK2Expander",
+        "name": "Grain Engine MK2 Expander",
+        "description": "External audio recorder expander for Grain Engine MK2",
+        "tags": ["Granular", "Sampler", "Expander"]
+    },
+    {
         "slug": "repeater",
         "name": "Repeater",
         "description": "Looping sample player with playback offset control.",

@@ -43,10 +43,12 @@ struct Ghost
         sample_position = this->start_position + this->playback_position;
 
         // Wrap if the sample position is past the sample end point
-        sample_position = sample_position % this->sample_ptr->total_sample_count;
+        sample_position = sample_position % this->sample_ptr->size();
 
-        output_voltage_left  = this->sample_ptr->leftPlayBuffer[sample_position];
-        output_voltage_right = this->sample_ptr->rightPlayBuffer[sample_position];
+        // output_voltage_left  = this->sample_ptr->leftPlayBuffer[sample_position];
+        // output_voltage_right = this->sample_ptr->rightPlayBuffer[sample_position];
+
+        std::tie(output_voltage_left, output_voltage_right) = this->sample_ptr->read((int) playback_position);
 
         // Smooth out transitions (or passthrough unmodified when not triggered)
         std::tie(output_voltage_left, output_voltage_right) = loop_smooth.process(output_voltage_left, output_voltage_right, smooth_rate);
