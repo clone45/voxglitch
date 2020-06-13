@@ -7,7 +7,7 @@ struct LoadQueue
 
   void queue_sample_for_loading(std::string path_to_file, unsigned int sample_number)
   {
-    DEBUG("queue_sample_for_loading called");
+    // DEBUG("queue_sample_for_loading called");
     this->sample_queued_for_loading = true;
     this->path_to_file = path_to_file;
     this->sample_number = sample_number;
@@ -228,7 +228,7 @@ struct GrainEngineMK2 : Module
         load_queue.sample_queued_for_loading = false;
 
         // Load the sample!
-        DEBUG(("GrainEngineMK2 loading file " + load_queue.path_to_file + " into slot " + std::to_string(load_queue.sample_number)).c_str());
+        // DEBUG(("GrainEngineMK2 loading file " + load_queue.path_to_file + " into slot " + std::to_string(load_queue.sample_number)).c_str());
         samples[load_queue.sample_number]->load(load_queue.path_to_file);
         std::string path = samples[load_queue.sample_number]->path;
 
@@ -378,10 +378,11 @@ struct GrainEngineMK2 : Module
 
           std::string path_to_file = path + "/" + filename;
 
-          DEBUG(("Queued sample for loading: " + path_to_file).c_str());
-
+          // Queue sample for loading
           load_queue.queue_sample_for_loading(path_to_file, sample_slot);
           fade_out_on_load.trigger();
+
+          // DEBUG(("Queued sample for loading: " + path_to_file).c_str());
         }
 
         // Set the received flag so we don't process the message every single frame

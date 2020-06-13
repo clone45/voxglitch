@@ -71,14 +71,15 @@ struct Sample
     float left = 0;
     float right = 0;
 
+    // If file fails to load, abandon operation
     if(! audioFile.load(path))
     {
-      DEBUG(("Voxglitch sample.hpp::load() failed loading: " + path).c_str());
       this->loading = false;
       this->loaded = false;
       return;
     }
 
+    // Read details about the loaded sample
     int sampleRate = audioFile.getSampleRate();
     int numSamples = audioFile.getNumSamplesPerChannel();
     int numChannels = audioFile.getNumChannels();
@@ -103,6 +104,8 @@ struct Sample
       sample_audio_buffer.push_back(left, right);
     }
 
+    // Store sample length and file information to this object for the reset
+    // of the patch to reference.
     this->sample_length = sample_audio_buffer.size();
     this->filename = rack::string::filename(path);
     this->path = path;
