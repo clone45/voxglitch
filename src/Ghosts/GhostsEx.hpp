@@ -48,7 +48,7 @@ struct Ghost
         // output_voltage_left  = this->sample_ptr->leftPlayBuffer[sample_position];
         // output_voltage_right = this->sample_ptr->rightPlayBuffer[sample_position];
 
-        std::tie(output_voltage_left, output_voltage_right) = this->sample_ptr->read((int) playback_position);
+        std::tie(output_voltage_left, output_voltage_right) = this->sample_ptr->read((unsigned int) sample_position);
 
         // Smooth out transitions (or passthrough unmodified when not triggered)
         std::tie(output_voltage_left, output_voltage_right) = loop_smooth.process(output_voltage_left, output_voltage_right, smooth_rate);
@@ -93,6 +93,7 @@ struct Ghost
 struct GhostsEx
 {
     std::deque<Ghost> graveyard;
+    unsigned int counter = 0;
 
     GhostsEx()
     {
@@ -125,6 +126,17 @@ struct GhostsEx
     virtual void add(float start_position, float playback_length, Sample *sample_ptr)
     {
         Ghost ghost;
+
+        /*
+        if(counter == 0)
+        {
+          counter = 44100;
+          DEBUG(("SS start_position: " + std::to_string(start_position)).c_str());
+        }
+        */
+
+        // DEBUG(("counter: " + std::to_string(counter)).c_str());
+        // counter++;
 
         // Configure it for playback
         ghost.start_position = start_position;

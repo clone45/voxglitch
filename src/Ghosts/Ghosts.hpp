@@ -15,6 +15,8 @@ struct Ghosts : Module
 
 	float jitter_divisor = 1;
 
+  unsigned int counter = 0;
+
 	// The filename of the loaded sample.  This is used to display the currently
 	// loaded sample in the right-click context menu.
 	std::string loaded_filename = "[ EMPTY ]";
@@ -121,6 +123,8 @@ struct Ghosts : Module
 		// Shorten the playback length if it would result in playback passing the end of the sample data.
 		if(playback_length > (sample.size() - start_position)) playback_length = sample.size() - start_position;
 
+
+
 		//
 		// This next conditional is a little tricky, so let me break it down...
 		//   If there's a cable in the Jitter CV Input, then apply jitter if the signal on that cable is greater than 0
@@ -144,9 +148,6 @@ struct Ghosts : Module
 			graveyard.markAllForRemoval();
 		}
 		lights[PURGE_LIGHT].setSmoothBrightness(purge_is_triggered, args.sampleTime);
-
-		// Remove any completely dead ghosts from the graveyard
-		// graveyard.cleanup();
 
 		// Add more ghosts!
 		if(spawn_rate_counter >= spawn_rate)
