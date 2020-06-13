@@ -24,7 +24,7 @@ struct Goblin
 		if (sample_position >= this->sample_ptr->size()) sample_position = sample_position % this->sample_ptr->size();
 
     float left; float right;
-    std::tie(left, right) = this->sample_ptr->read(sample_position);
+    std::tie(left, right) = this->sample_ptr->read((unsigned int) sample_position);
 		return { left, right };
 	}
 
