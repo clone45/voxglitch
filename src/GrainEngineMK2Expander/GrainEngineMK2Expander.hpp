@@ -1,5 +1,3 @@
-#include <filesystem>
-
 struct GrainEngineMK2Expander : Module
 {
   dsp::SchmittTrigger record_start_input_trigger;
