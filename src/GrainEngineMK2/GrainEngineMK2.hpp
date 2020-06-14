@@ -22,7 +22,7 @@ struct GrainEngineMK2 : Module
   float pitch = 0;
   float smooth_rate = 0;
   int spawn_throttling_countdown = 0;
-  float max_grains = 0;
+  unsigned int max_grains = 0;
   unsigned int selected_waveform = 0;
 	std::string loaded_filenames[NUMBER_OF_SAMPLES];
 	std::string root_dir;
@@ -55,8 +55,8 @@ struct GrainEngineMK2 : Module
     JITTER_KNOB,
     GRAINS_KNOB,
     GRAINS_ATTN_KNOB,
-    SPAWN_KNOB,
-    SPAWN_ATTN_KNOB,
+    RATE_KNOB,
+    RATE_ATTN_KNOB,
     SAMPLE_KNOB,
     SAMPLE_ATTN_KNOB,
     NUM_PARAMS
@@ -71,7 +71,7 @@ struct GrainEngineMK2 : Module
     SPAWN_TRIGGER_INPUT,
     PAN_INPUT,
     GRAINS_INPUT,
-    SPAWN_INPUT,
+    RATE_INPUT,
     SAMPLE_INPUT,
     NUM_INPUTS
   };
@@ -107,8 +107,8 @@ struct GrainEngineMK2 : Module
     configParam(JITTER_KNOB, 0.f, 1.0f, 0.5f, "JitterKnob");
     configParam(GRAINS_KNOB, 0.0f, 1.0f, 0.5f, "GrainsKnob");
     configParam(GRAINS_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "GrainsAttnKnob");
-    configParam(SPAWN_KNOB, 0.0f, 1.0f, 0.7f, "SpawnKnob");
-    configParam(SPAWN_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SpawnAttnKnob");
+    configParam(RATE_KNOB, 0.0f, 1.0f, 0.7f, "RateKnob");
+    configParam(RATE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "RateAttnKnob");
     configParam(SAMPLE_KNOB, 0.0f, 1.0f, 0.0f, "SampleKnob");
     configParam(SAMPLE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SampleAttnKnob");
 
@@ -244,6 +244,7 @@ struct GrainEngineMK2 : Module
 
     // Process Max Grains knob
     this->max_grains = calculate_inputs(GRAINS_INPUT, GRAINS_KNOB, GRAINS_ATTN_KNOB, MAX_GRAINS);
+    this->max_grains = clamp(this->max_grains, 0, MAX_GRAINS);
 
     unsigned int contour_index = 0;
 
@@ -329,9 +330,10 @@ struct GrainEngineMK2 : Module
     {
       grain_engine_mk2_core.add(start_position, window_length, pan, selected_sample, max_grains, pitch);
 
-      float spawn_inputs_value = rescale(calculate_inputs(SPAWN_INPUT, SPAWN_KNOB, SPAWN_ATTN_KNOB, 1.0), 1.f, 0.f, 0.f, 2096.f);
-      if (spawn_inputs_value < 0) spawn_inputs_value = 0;
-      spawn_throttling_countdown = spawn_inputs_value;
+      // scale value at RATE_INPUT (which goes from 0 to 1), to 0 to 2096
+      float rate_inputs_value = rescale(calculate_inputs(RATE_INPUT, RATE_KNOB, RATE_ATTN_KNOB, 1.0), 1.f, 0.f, 0.f, 2096.f);
+      if (rate_inputs_value < 0) rate_inputs_value = 0;
+      spawn_throttling_countdown = (unsigned int) clamp(rate_inputs_value, 0.0, 2096.0);
     }
 
     //
