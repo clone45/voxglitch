@@ -141,7 +141,7 @@ struct Sample
   {
     if(audioFile.save(path) != true)
     {
-      DEBUG(("Voxglitch sample.hpp::save_recorded_audio() - issue saving file to: " + path).c_str());
+      // DEBUG(("Voxglitch sample.hpp::save_recorded_audio() - issue saving file to: " + path).c_str());
     }
   }
 
