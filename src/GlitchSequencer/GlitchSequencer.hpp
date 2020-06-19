@@ -4,7 +4,7 @@ struct GlitchSequencer : Module
 
   dsp::SchmittTrigger stepTrigger;
   dsp::SchmittTrigger resetTrigger;
-  dsp::SchmittTrigger trigger_group_button_schmitt_trigger[5];
+  dsp::SchmittTrigger trigger_group_button_schmitt_trigger[8];
   dsp::PulseGenerator gateOutputPulseGenerators[NUMBER_OF_TRIGGER_GROUPS];
 
   unsigned int mode = PLAY_MODE;
@@ -23,6 +23,9 @@ struct GlitchSequencer : Module
     TRIGGER_GROUP_3_BUTTON,
     TRIGGER_GROUP_4_BUTTON,
     TRIGGER_GROUP_5_BUTTON,
+    TRIGGER_GROUP_6_BUTTON,
+    TRIGGER_GROUP_7_BUTTON,
+    TRIGGER_GROUP_8_BUTTON,
     NUM_PARAMS
   };
   enum InputIds {
@@ -36,6 +39,9 @@ struct GlitchSequencer : Module
     GATE_OUTPUT_3,
     GATE_OUTPUT_4,
     GATE_OUTPUT_5,
+    GATE_OUTPUT_6,
+    GATE_OUTPUT_7,
+    GATE_OUTPUT_8,
     NUM_OUTPUTS
   };
   enum LightIds {
@@ -44,6 +50,9 @@ struct GlitchSequencer : Module
     TRIGGER_GROUP_3_LIGHT,
     TRIGGER_GROUP_4_LIGHT,
     TRIGGER_GROUP_5_LIGHT,
+    TRIGGER_GROUP_6_LIGHT,
+    TRIGGER_GROUP_7_LIGHT,
+    TRIGGER_GROUP_8_LIGHT,
     NUM_LIGHTS
   };
 
@@ -60,18 +69,27 @@ struct GlitchSequencer : Module
     configParam(TRIGGER_GROUP_3_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup3Button");
     configParam(TRIGGER_GROUP_4_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup4Button");
     configParam(TRIGGER_GROUP_5_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup5Button");
+    configParam(TRIGGER_GROUP_6_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup6Button");
+    configParam(TRIGGER_GROUP_7_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup7Button");
+    configParam(TRIGGER_GROUP_8_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup8Button");
 
     trigger_group_buttons[0] = TRIGGER_GROUP_1_BUTTON;
     trigger_group_buttons[1] = TRIGGER_GROUP_2_BUTTON;
     trigger_group_buttons[2] = TRIGGER_GROUP_3_BUTTON;
     trigger_group_buttons[3] = TRIGGER_GROUP_4_BUTTON;
     trigger_group_buttons[4] = TRIGGER_GROUP_5_BUTTON;
+    trigger_group_buttons[5] = TRIGGER_GROUP_6_BUTTON;
+    trigger_group_buttons[6] = TRIGGER_GROUP_7_BUTTON;
+    trigger_group_buttons[7] = TRIGGER_GROUP_8_BUTTON;
 
     gate_outputs[0] = GATE_OUTPUT_1;
     gate_outputs[1] = GATE_OUTPUT_2;
     gate_outputs[2] = GATE_OUTPUT_3;
     gate_outputs[3] = GATE_OUTPUT_4;
     gate_outputs[4] = GATE_OUTPUT_5;
+    gate_outputs[5] = GATE_OUTPUT_6;
+    gate_outputs[6] = GATE_OUTPUT_7;
+    gate_outputs[7] = GATE_OUTPUT_8;
   }
 
   json_t *dataToJson() override
@@ -84,7 +102,7 @@ struct GlitchSequencer : Module
 
     std::string packed_seed_pattern = sequencer.packPattern(&sequencer.seed);
 
-    std::string packed_trigger_patterns[5];
+    std::string packed_trigger_patterns[NUMBER_OF_TRIGGER_GROUPS];
     for(unsigned int i=0; i<NUMBER_OF_TRIGGER_GROUPS; i++)
     {
       packed_trigger_patterns[i] = sequencer.packPattern(&sequencer.triggers[i]);
@@ -208,6 +226,9 @@ struct GlitchSequencer : Module
     lights[TRIGGER_GROUP_3_LIGHT].setBrightness(selected_trigger_group_index == 2);
     lights[TRIGGER_GROUP_4_LIGHT].setBrightness(selected_trigger_group_index == 3);
     lights[TRIGGER_GROUP_5_LIGHT].setBrightness(selected_trigger_group_index == 4);
+    lights[TRIGGER_GROUP_6_LIGHT].setBrightness(selected_trigger_group_index == 5);
+    lights[TRIGGER_GROUP_7_LIGHT].setBrightness(selected_trigger_group_index == 6);
+    lights[TRIGGER_GROUP_8_LIGHT].setBrightness(selected_trigger_group_index == 7);
 
     if (clock_ignore_on_reset > 0) clock_ignore_on_reset--;
   }
