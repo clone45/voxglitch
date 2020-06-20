@@ -21,13 +21,7 @@ struct CellularAutomatonDisplay : TransparentWidget
 
     if(module)
     {
-      // testing draw area
-      /*
-      nvgBeginPath(vg);
-      nvgRect(vg, 0, 0, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
-      nvgFillColor(vg, nvgRGBA(120, 20, 20, 100));
-      nvgFill(vg);
-      */
+
 
       for(unsigned int row=0; row < SEQUENCER_ROWS; row++)
       {
@@ -70,6 +64,14 @@ struct CellularAutomatonDisplay : TransparentWidget
           nvgFill(vg);
         }
       }
+      // Red overlay
+      /*
+      nvgBeginPath(vg);
+      nvgRect(vg, 0, 0, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
+      nvgFillColor(vg, nvgRGBA(120, 20, 20, 100));
+      nvgFill(vg);
+      */
+
     }
     // Paint static content for library display
     else
