@@ -5,7 +5,7 @@ struct GlitchSequencerWidget : ModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/glitch_sequencer_front_panel.svg")));
 
-    float button_spacing = 9.6; // 9.1
+    float button_spacing = 9.8; // 9.1
     float button_group_x = 53.0;
     float button_group_y = 109.0;
 
