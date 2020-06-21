@@ -5,6 +5,7 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "Common/sample.hpp"
+#include "Common/submodules.hpp"
 
 #include "SamplerX8/defines.h"
 #include "SamplerX8/SamplePlayer.hpp"

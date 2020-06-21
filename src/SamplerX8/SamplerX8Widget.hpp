@@ -14,6 +14,8 @@ struct SamplerX8Widget : ModuleWidget
 
     float triggers_column_x = 9.5;
     float volume_knobs_column_x = 21.0;
+    float pan_knobs_column_x = 31.0;
+
     float output_l_column = 29.08 + 15.24;
     float output_r_column = 39.78 + 15.24;
 
@@ -34,6 +36,16 @@ struct SamplerX8Widget : ModuleWidget
     addParam(createParamCentered<Trimpot>(mm2px(Vec(volume_knobs_column_x, group_y + (row_padding * 5))), module, SamplerX8::VOLUME_KNOB_6));
     addParam(createParamCentered<Trimpot>(mm2px(Vec(volume_knobs_column_x, group_y + (row_padding * 6))), module, SamplerX8::VOLUME_KNOB_7));
     addParam(createParamCentered<Trimpot>(mm2px(Vec(volume_knobs_column_x, group_y + (row_padding * 7))), module, SamplerX8::VOLUME_KNOB_8));
+
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(pan_knobs_column_x, group_y + (row_padding * 0))), module, SamplerX8::PAN_KNOB_1));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(pan_knobs_column_x, group_y + (row_padding * 1))), module, SamplerX8::PAN_KNOB_2));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(pan_knobs_column_x, group_y + (row_padding * 2))), module, SamplerX8::PAN_KNOB_3));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(pan_knobs_column_x, group_y + (row_padding * 3))), module, SamplerX8::PAN_KNOB_4));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(pan_knobs_column_x, group_y + (row_padding * 4))), module, SamplerX8::PAN_KNOB_5));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(pan_knobs_column_x, group_y + (row_padding * 5))), module, SamplerX8::PAN_KNOB_6));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(pan_knobs_column_x, group_y + (row_padding * 6))), module, SamplerX8::PAN_KNOB_7));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(pan_knobs_column_x, group_y + (row_padding * 7))), module, SamplerX8::PAN_KNOB_8));
+
 
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_l_column, group_y + (row_padding * 0))), module, SamplerX8::AUDIO_OUTPUT_1_LEFT));
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_r_column, group_y + (row_padding * 0))), module, SamplerX8::AUDIO_OUTPUT_1_RIGHT));
