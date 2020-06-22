@@ -13,8 +13,8 @@ struct SamplerX8Widget : ModuleWidget
     float row_padding = 10.2;
 
     float triggers_column_x = 9.5;
-    float volume_knobs_column_x = 21.0;
-    float pan_knobs_column_x = 31.0;
+    float volume_knobs_column_x = 20.5;
+    float pan_knobs_column_x = 30.5;
 
     float output_l_column = 29.08 + 15.24;
     float output_r_column = 39.78 + 15.24;
