@@ -10,7 +10,7 @@ struct GrainEngineMK2Widget : ModuleWidget
     float hrule3 = 128.5 - 63.689;
     float hrule4 = 128.5 - 49.515;
     float hrule5 = 128.5 - 38.034;
-    float hrule6 = 128.5 - 11.977;
+    float hrule6 = 114.702;
 
     float vrule_a_1 = 15.903;
     float vrule_a_2 = 37.278;

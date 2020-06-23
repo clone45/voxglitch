@@ -5,8 +5,28 @@ struct SamplerX8 : Module
   dsp::SchmittTrigger sample_triggers[NUMBER_OF_SAMPLES];
   float left_audio = 0;
   float right_audio = 0;
+  StereoPanSubModule stereo_pan_submodule;
 
   enum ParamIds {
+    // Enums for volumn knobs
+    VOLUME_KNOBS,
+    VOLUME_KNOB_1,
+    VOLUME_KNOB_2,
+    VOLUME_KNOB_3,
+    VOLUME_KNOB_4,
+    VOLUME_KNOB_5,
+    VOLUME_KNOB_6,
+    VOLUME_KNOB_7,
+    VOLUME_KNOB_8,
+    PAN_KNOBS,
+    PAN_KNOB_1,
+    PAN_KNOB_2,
+    PAN_KNOB_3,
+    PAN_KNOB_4,
+    PAN_KNOB_5,
+    PAN_KNOB_6,
+    PAN_KNOB_7,
+    PAN_KNOB_8,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -51,6 +71,9 @@ struct SamplerX8 : Module
 		AUDIO_OUTPUT_6_RIGHT = 13,
 		AUDIO_OUTPUT_7_RIGHT = 14,
 		AUDIO_OUTPUT_8_RIGHT = 15,
+
+    AUDIO_MIX_OUTPUT_LEFT,
+    AUDIO_MIX_OUTPUT_RIGHT,
 		NUM_OUTPUTS
 	};
 	enum LightIds {
@@ -60,6 +83,25 @@ struct SamplerX8 : Module
 	SamplerX8()
 	{
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+
+    configParam(VOLUME_KNOB_1, 0.0, 1.0, 1.0, "VolumeKnob1");
+    configParam(VOLUME_KNOB_2, 0.0, 1.0, 1.0, "VolumeKnob2");
+    configParam(VOLUME_KNOB_3, 0.0, 1.0, 1.0, "VolumeKnob3");
+    configParam(VOLUME_KNOB_4, 0.0, 1.0, 1.0, "VolumeKnob4");
+    configParam(VOLUME_KNOB_5, 0.0, 1.0, 1.0, "VolumeKnob5");
+    configParam(VOLUME_KNOB_6, 0.0, 1.0, 1.0, "VolumeKnob6");
+    configParam(VOLUME_KNOB_7, 0.0, 1.0, 1.0, "VolumeKnob7");
+    configParam(VOLUME_KNOB_8, 0.0, 1.0, 1.0, "VolumeKnob8");
+
+    configParam(PAN_KNOB_1, -1.0, 1.0, 0.0, "PanKnob1");
+    configParam(PAN_KNOB_2, -1.0, 1.0, 0.0, "PanKnob2");
+    configParam(PAN_KNOB_3, -1.0, 1.0, 0.0, "PanKnob3");
+    configParam(PAN_KNOB_4, -1.0, 1.0, 0.0, "PanKnob4");
+    configParam(PAN_KNOB_5, -1.0, 1.0, 0.0, "PanKnob5");
+    configParam(PAN_KNOB_6, -1.0, 1.0, 0.0, "PanKnob6");
+    configParam(PAN_KNOB_7, -1.0, 1.0, 0.0, "PanKnob7");
+    configParam(PAN_KNOB_8, -1.0, 1.0, 0.0, "PanKnob8");
+
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 
     for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
@@ -98,6 +140,9 @@ struct SamplerX8 : Module
 
 	void process(const ProcessArgs &args) override
 	{
+    float summed_output_left = 0;
+    float summed_output_right = 0;
+
     for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
     {
       // Process trigger inputs to start sample playback
@@ -105,11 +150,28 @@ struct SamplerX8 : Module
 
       // Send audio to outputs
       std::tie(left_audio, right_audio) = sample_players[i].getStereoOutput();
+
+      // Apply volume knobs
+      left_audio = (left_audio * params[VOLUME_KNOBS + i + 1].getValue());
+      right_audio = (right_audio * params[VOLUME_KNOBS + i + 1].getValue());
+
+      // Apply panning knobs
+      std::tie(left_audio, right_audio) = stereo_pan_submodule.process(left_audio, right_audio, params[PAN_KNOBS + i + 1].getValue());
+
+      // Output audio for the current sample
       outputs[i].setVoltage(left_audio);
       outputs[i + NUMBER_OF_SAMPLES].setVoltage(right_audio);
+
+      // Sum up the output for the mix L/R output
+      summed_output_left += left_audio;
+      summed_output_right += right_audio;
 
       // Step samples
       sample_players[i].step(args.sampleRate);
     }
+
+    // Output summed output
+    outputs[AUDIO_MIX_OUTPUT_LEFT].setVoltage(summed_output_left);
+    outputs[AUDIO_MIX_OUTPUT_RIGHT].setVoltage(summed_output_right);
   }
 };

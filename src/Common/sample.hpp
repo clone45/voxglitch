@@ -145,6 +145,16 @@ struct Sample
     }
   }
 
+  // read(unsigned int index)
+  //
+  // Usage:
+  // ======
+  // float left_audio;
+  // float right_audio;
+  // std::tie(left_audio, right_audio) = sample.getStereoOutput();
+  //
+  // Output is a float from 0.0 to 1.0
+
   std::pair<float, float> read(unsigned int index)
   {
     return(sample_audio_buffer.read(index));

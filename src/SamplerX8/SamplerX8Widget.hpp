@@ -10,11 +10,14 @@ struct SamplerX8Widget : ModuleWidget
 		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
 
     float group_y = 30;
-    float row_padding = 11.5;
+    float row_padding = 10.2;
 
-    float triggers_column_x = 9 + .5;
-    float column_1_x = 28.58 + .5;
-    float column_2_x = 39.28 + .5;
+    float triggers_column_x = 9.5;
+    float volume_knobs_column_x = 20.5;
+    float pan_knobs_column_x = 30.5;
+
+    float output_l_column = 29.08 + 15.24;
+    float output_r_column = 39.78 + 15.24;
 
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(triggers_column_x, group_y + (row_padding * 0))), module, SamplerX8::TRIGGER_INPUT_1));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(triggers_column_x, group_y + (row_padding * 1))), module, SamplerX8::TRIGGER_INPUT_2));
@@ -25,22 +28,44 @@ struct SamplerX8Widget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(triggers_column_x, group_y + (row_padding * 6))), module, SamplerX8::TRIGGER_INPUT_7));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(triggers_column_x, group_y + (row_padding * 7))), module, SamplerX8::TRIGGER_INPUT_8));
 
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(column_1_x, group_y + (row_padding * 0))), module, SamplerX8::AUDIO_OUTPUT_1_LEFT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(column_2_x, group_y + (row_padding * 0))), module, SamplerX8::AUDIO_OUTPUT_1_RIGHT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(column_1_x, group_y + (row_padding * 1))), module, SamplerX8::AUDIO_OUTPUT_2_LEFT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(column_2_x, group_y + (row_padding * 1))), module, SamplerX8::AUDIO_OUTPUT_2_RIGHT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(column_1_x, group_y + (row_padding * 2))), module, SamplerX8::AUDIO_OUTPUT_3_LEFT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(column_2_x, group_y + (row_padding * 2))), module, SamplerX8::AUDIO_OUTPUT_3_RIGHT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(column_1_x, group_y + (row_padding * 3))), module, SamplerX8::AUDIO_OUTPUT_4_LEFT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(column_2_x, group_y + (row_padding * 3))), module, SamplerX8::AUDIO_OUTPUT_4_RIGHT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(column_1_x, group_y + (row_padding * 4))), module, SamplerX8::AUDIO_OUTPUT_5_LEFT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(column_2_x, group_y + (row_padding * 4))), module, SamplerX8::AUDIO_OUTPUT_5_RIGHT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(column_1_x, group_y + (row_padding * 5))), module, SamplerX8::AUDIO_OUTPUT_6_LEFT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(column_2_x, group_y + (row_padding * 5))), module, SamplerX8::AUDIO_OUTPUT_6_RIGHT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(column_1_x, group_y + (row_padding * 6))), module, SamplerX8::AUDIO_OUTPUT_7_LEFT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(column_2_x, group_y + (row_padding * 6))), module, SamplerX8::AUDIO_OUTPUT_7_RIGHT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(column_1_x, group_y + (row_padding * 7))), module, SamplerX8::AUDIO_OUTPUT_8_LEFT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(column_2_x, group_y + (row_padding * 7))), module, SamplerX8::AUDIO_OUTPUT_8_RIGHT));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(volume_knobs_column_x, group_y + (row_padding * 0))), module, SamplerX8::VOLUME_KNOB_1));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(volume_knobs_column_x, group_y + (row_padding * 1))), module, SamplerX8::VOLUME_KNOB_2));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(volume_knobs_column_x, group_y + (row_padding * 2))), module, SamplerX8::VOLUME_KNOB_3));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(volume_knobs_column_x, group_y + (row_padding * 3))), module, SamplerX8::VOLUME_KNOB_4));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(volume_knobs_column_x, group_y + (row_padding * 4))), module, SamplerX8::VOLUME_KNOB_5));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(volume_knobs_column_x, group_y + (row_padding * 5))), module, SamplerX8::VOLUME_KNOB_6));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(volume_knobs_column_x, group_y + (row_padding * 6))), module, SamplerX8::VOLUME_KNOB_7));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(volume_knobs_column_x, group_y + (row_padding * 7))), module, SamplerX8::VOLUME_KNOB_8));
+
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(pan_knobs_column_x, group_y + (row_padding * 0))), module, SamplerX8::PAN_KNOB_1));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(pan_knobs_column_x, group_y + (row_padding * 1))), module, SamplerX8::PAN_KNOB_2));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(pan_knobs_column_x, group_y + (row_padding * 2))), module, SamplerX8::PAN_KNOB_3));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(pan_knobs_column_x, group_y + (row_padding * 3))), module, SamplerX8::PAN_KNOB_4));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(pan_knobs_column_x, group_y + (row_padding * 4))), module, SamplerX8::PAN_KNOB_5));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(pan_knobs_column_x, group_y + (row_padding * 5))), module, SamplerX8::PAN_KNOB_6));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(pan_knobs_column_x, group_y + (row_padding * 6))), module, SamplerX8::PAN_KNOB_7));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(pan_knobs_column_x, group_y + (row_padding * 7))), module, SamplerX8::PAN_KNOB_8));
+
+
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_l_column, group_y + (row_padding * 0))), module, SamplerX8::AUDIO_OUTPUT_1_LEFT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_r_column, group_y + (row_padding * 0))), module, SamplerX8::AUDIO_OUTPUT_1_RIGHT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_l_column, group_y + (row_padding * 1))), module, SamplerX8::AUDIO_OUTPUT_2_LEFT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_r_column, group_y + (row_padding * 1))), module, SamplerX8::AUDIO_OUTPUT_2_RIGHT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_l_column, group_y + (row_padding * 2))), module, SamplerX8::AUDIO_OUTPUT_3_LEFT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_r_column, group_y + (row_padding * 2))), module, SamplerX8::AUDIO_OUTPUT_3_RIGHT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_l_column, group_y + (row_padding * 3))), module, SamplerX8::AUDIO_OUTPUT_4_LEFT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_r_column, group_y + (row_padding * 3))), module, SamplerX8::AUDIO_OUTPUT_4_RIGHT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_l_column, group_y + (row_padding * 4))), module, SamplerX8::AUDIO_OUTPUT_5_LEFT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_r_column, group_y + (row_padding * 4))), module, SamplerX8::AUDIO_OUTPUT_5_RIGHT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_l_column, group_y + (row_padding * 5))), module, SamplerX8::AUDIO_OUTPUT_6_LEFT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_r_column, group_y + (row_padding * 5))), module, SamplerX8::AUDIO_OUTPUT_6_RIGHT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_l_column, group_y + (row_padding * 6))), module, SamplerX8::AUDIO_OUTPUT_7_LEFT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_r_column, group_y + (row_padding * 6))), module, SamplerX8::AUDIO_OUTPUT_7_RIGHT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_l_column, group_y + (row_padding * 7))), module, SamplerX8::AUDIO_OUTPUT_8_LEFT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_r_column, group_y + (row_padding * 7))), module, SamplerX8::AUDIO_OUTPUT_8_RIGHT));
+
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_l_column, 114.702)), module, SamplerX8::AUDIO_MIX_OUTPUT_LEFT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_r_column, 114.702)), module, SamplerX8::AUDIO_MIX_OUTPUT_RIGHT));
   }
 
 
