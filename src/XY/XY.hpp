@@ -7,6 +7,18 @@ struct XY : Module
   dsp::SchmittTrigger clkTrigger;
   dsp::SchmittTrigger reset_trigger;
   bool tablet_mode = false;
+  unsigned int voltage_range_index = 0;
+
+  std::string voltage_range_names[NUMBER_OF_VOLTAGE_RANGES] = {
+    "0.0 to 10.0",
+    "-10.0 to 10.0",
+    "0.0 to 5.0",
+    "-5.0 to 5.0",
+    "0.0 to 3.0",
+    "-3.0 to 3.0",
+    "0.0 to 1.0",
+    "-1.0 to 1.0"
+  };
 
   // Some people are using this module as an x/y controller and not using
   // the recording/playback feature.  Previously, the position of the x/y
@@ -75,6 +87,9 @@ struct XY : Module
     json_object_set_new(root, "no_clk_position_x", json_real(no_clk_position.x));
     json_object_set_new(root, "no_clk_position_y", json_real(no_clk_position.y));
 
+    // Save voltage range selection
+    json_object_set_new(root, "voltage_range", json_integer(voltage_range_index));
+
     return root;
   }
 
@@ -107,6 +122,9 @@ struct XY : Module
         drag_position.x = json_real_value(no_clk_position_x_json);
         drag_position.y = json_real_value(no_clk_position_y_json);
     }
+
+    json_t* voltage_range_index_json = json_object_get(root, "voltage_range");
+    if(voltage_range_index_json) voltage_range_index = json_integer_value(voltage_range_index_json);
   }
 
   void process(const ProcessArgs &args) override

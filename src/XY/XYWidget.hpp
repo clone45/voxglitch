@@ -33,6 +33,14 @@ struct XYWidget : ModuleWidget
     }
   };
 
+  struct RangeOption : MenuItem {
+    XY *module;
+
+    void onAction(const event::Action &e) override {
+      // module->tablet_mode ^= true; // flip the value
+    }
+  };
+
   void appendContextMenu(Menu *menu) override
   {
     XY *module = dynamic_cast<XY*>(this->module);
@@ -41,6 +49,12 @@ struct XYWidget : ModuleWidget
     menu->addChild(new MenuEntry); // For spacing only
     menu->addChild(createMenuLabel("Options"));
 
+    // Output range selection
+    RangeOption *range_option = createMenuItem<RangeOption>("Output Range", RIGHT_ARROW);
+    range_option->module = module;
+    menu->addChild(range_option);
+
+    // Tablet mode selection
     ClicklessOption *clickless_option = createMenuItem<ClicklessOption>("Tablet Mode", CHECKMARK(module->tablet_mode));
     clickless_option->module = module;
     menu->addChild(clickless_option);
