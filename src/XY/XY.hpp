@@ -7,6 +7,29 @@ struct XY : Module
   dsp::SchmittTrigger clkTrigger;
   dsp::SchmittTrigger reset_trigger;
   bool tablet_mode = false;
+  unsigned int voltage_range_index = 0;
+
+  std::string voltage_range_names[NUMBER_OF_VOLTAGE_RANGES] = {
+    "0.0 to 10.0",
+    "-10.0 to 10.0",
+    "0.0 to 5.0",
+    "-5.0 to 5.0",
+    "0.0 to 3.0",
+    "-3.0 to 3.0",
+    "0.0 to 1.0",
+    "-1.0 to 1.0"
+  };
+
+  double voltage_ranges[NUMBER_OF_VOLTAGE_RANGES][2] = {
+    { 0.0, 10.0 },
+    { -10.0, 10.0 },
+    { 0.0, 5.0 },
+    { -5.0, 5.0 },
+    { 0.0, 3.0 },
+    { -3.0, 3.0 },
+    { 0.0, 1.0},
+    { -1.0, 1.0}
+  };  
 
   // Some people are using this module as an x/y controller and not using
   // the recording/playback feature.  Previously, the position of the x/y
@@ -75,6 +98,9 @@ struct XY : Module
     json_object_set_new(root, "no_clk_position_x", json_real(no_clk_position.x));
     json_object_set_new(root, "no_clk_position_y", json_real(no_clk_position.y));
 
+    // Save voltage range selection
+    json_object_set_new(root, "voltage_range", json_integer(voltage_range_index));
+
     return root;
   }
 
@@ -107,6 +133,9 @@ struct XY : Module
         drag_position.x = json_real_value(no_clk_position_x_json);
         drag_position.y = json_real_value(no_clk_position_y_json);
     }
+
+    json_t* voltage_range_index_json = json_object_get(root, "voltage_range");
+    if(voltage_range_index_json) voltage_range_index = json_integer_value(voltage_range_index_json);
   }
 
   void process(const ProcessArgs &args) override
@@ -187,13 +216,18 @@ struct XY : Module
     }
     else // CLK input is not connected
     {
-      outputs[X_OUTPUT].setVoltage((drag_position.x / DRAW_AREA_WIDTH_PT) * 10.0f);
-      outputs[Y_OUTPUT].setVoltage(((DRAW_AREA_HEIGHT_PT - drag_position.y) / DRAW_AREA_HEIGHT_PT) * 10.0f);
+      outputs[X_OUTPUT].setVoltage(rescale_voltage(drag_position.x / DRAW_AREA_WIDTH_PT));
+      outputs[Y_OUTPUT].setVoltage(rescale_voltage((DRAW_AREA_HEIGHT_PT - drag_position.y) / DRAW_AREA_HEIGHT_PT));
 
       // Store position for saving/loading
       no_clk_position.x = drag_position.x;
       no_clk_position.y = drag_position.y;
     }
+  }
+
+  float rescale_voltage(float voltage)
+  {
+    return(rescale(voltage, 0.0, 1.0, voltage_ranges[voltage_range_index][0], voltage_ranges[voltage_range_index][1]));
   }
 
   void start_punch_recording()

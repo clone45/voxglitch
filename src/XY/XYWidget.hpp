@@ -33,6 +33,33 @@ struct XYWidget : ModuleWidget
     }
   };
 
+  struct OutputRangeValueItem : MenuItem {
+    XY *module;
+    int range_index = 0;
+
+    void onAction(const event::Action &e) override {
+      module->voltage_range_index = range_index;
+    }
+  };
+
+  struct RangeOption : MenuItem {
+    XY *module;
+
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      for (unsigned int i=0; i < NUMBER_OF_VOLTAGE_RANGES; i++)
+      {
+        OutputRangeValueItem *output_range_value_menu_item = createMenuItem<OutputRangeValueItem>(module->voltage_range_names[i], CHECKMARK(module->voltage_range_index == i));
+        output_range_value_menu_item->module = module;
+        output_range_value_menu_item->range_index = i;
+        menu->addChild(output_range_value_menu_item);
+      }
+
+      return menu;
+    }
+  };
+
   void appendContextMenu(Menu *menu) override
   {
     XY *module = dynamic_cast<XY*>(this->module);
@@ -41,6 +68,12 @@ struct XYWidget : ModuleWidget
     menu->addChild(new MenuEntry); // For spacing only
     menu->addChild(createMenuLabel("Options"));
 
+    // Output range selection
+    RangeOption *range_option = createMenuItem<RangeOption>("Output Range", RIGHT_ARROW);
+    range_option->module = module;
+    menu->addChild(range_option);
+
+    // Tablet mode selection
     ClicklessOption *clickless_option = createMenuItem<ClicklessOption>("Tablet Mode", CHECKMARK(module->tablet_mode));
     clickless_option->module = module;
     menu->addChild(clickless_option);
