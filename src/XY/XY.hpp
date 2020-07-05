@@ -20,6 +20,17 @@ struct XY : Module
     "-1.0 to 1.0"
   };
 
+  double voltage_ranges[NUMBER_OF_VOLTAGE_RANGES][2] = {
+    { 0.0, 10.0 },
+    { -10.0, 10.0 },
+    { 0.0, 5.0 },
+    { -5.0, 5.0 },
+    { 0.0, 3.0 },
+    { -3.0, 3.0 },
+    { 0.0, 1.0},
+    { -1.0, 1.0}
+  };  
+
   // Some people are using this module as an x/y controller and not using
   // the recording/playback feature.  Previously, the position of the x/y
   // controller was only saved on each incoming clock pulse.  This vector holds
@@ -205,13 +216,18 @@ struct XY : Module
     }
     else // CLK input is not connected
     {
-      outputs[X_OUTPUT].setVoltage((drag_position.x / DRAW_AREA_WIDTH_PT) * 10.0f);
-      outputs[Y_OUTPUT].setVoltage(((DRAW_AREA_HEIGHT_PT - drag_position.y) / DRAW_AREA_HEIGHT_PT) * 10.0f);
+      outputs[X_OUTPUT].setVoltage(rescale_voltage(drag_position.x / DRAW_AREA_WIDTH_PT));
+      outputs[Y_OUTPUT].setVoltage(rescale_voltage((DRAW_AREA_HEIGHT_PT - drag_position.y) / DRAW_AREA_HEIGHT_PT));
 
       // Store position for saving/loading
       no_clk_position.x = drag_position.x;
       no_clk_position.y = drag_position.y;
     }
+  }
+
+  float rescale_voltage(float voltage)
+  {
+    return(rescale(voltage, 0.0, 1.0, voltage_ranges[voltage_range_index][0], voltage_ranges[voltage_range_index][1]));
   }
 
   void start_punch_recording()
