@@ -33,11 +33,30 @@ struct XYWidget : ModuleWidget
     }
   };
 
+  struct OutputRangeValueItem : MenuItem {
+    XY *module;
+    int range_index = 0;
+
+    void onAction(const event::Action &e) override {
+      module->voltage_range_index = range_index;
+    }
+  };
+
   struct RangeOption : MenuItem {
     XY *module;
 
-    void onAction(const event::Action &e) override {
-      // module->tablet_mode ^= true; // flip the value
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      for (unsigned int i=0; i < NUMBER_OF_VOLTAGE_RANGES; i++)
+      {
+        OutputRangeValueItem *output_range_value_menu_item = createMenuItem<OutputRangeValueItem>(module->voltage_range_names[i], CHECKMARK(module->voltage_range_index == i));
+        output_range_value_menu_item->module = module;
+        output_range_value_menu_item->range_index = i;
+        menu->addChild(output_range_value_menu_item);
+      }
+
+      return menu;
     }
   };
 
