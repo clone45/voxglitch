@@ -261,6 +261,9 @@ struct DigitalSequencer : Module
     json_object_set(json_root, "sample_and_hold", sequencer_sh_json_array);
     json_decref(sequencer_sh_json_array);
 
+    // Save Legacy Reset mode
+    json_object_set_new(json_root, "legacy_reset", json_integer(legacy_reset));
+
     return json_root;
   }
 
@@ -372,6 +375,9 @@ struct DigitalSequencer : Module
         this->voltage_sequencers[sequencer_number].sample_and_hold = json_integer_value(sh_json);
       }
     }
+
+    json_t* legacy_reset_json = json_object_get(json_root, "legacy_reset");
+    if (legacy_reset_json) legacy_reset = json_integer_value(legacy_reset_json);
   }
 
 
