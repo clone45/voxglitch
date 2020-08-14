@@ -194,6 +194,14 @@ struct DigitalSequencerWidget : ModuleWidget
 
   };
 
+  struct LegacyResetOption : MenuItem {
+    DigitalSequencer *module;
+
+    void onAction(const event::Action &e) override {
+      module->legacy_reset ^= true; // flip the value
+    }
+  };
+
   void appendContextMenu(Menu *menu) override
   {
     DigitalSequencer *module = dynamic_cast<DigitalSequencer*>(this->module);
@@ -220,6 +228,11 @@ struct DigitalSequencerWidget : ModuleWidget
       sequencer_items[i]->sequencer_number = i;
       menu->addChild(sequencer_items[i]);
     }
+
+    // Reset behavior
+    LegacyResetOption *legacy_reset_option = createMenuItem<LegacyResetOption>("Legacy Reset", CHECKMARK(module->legacy_reset));
+    legacy_reset_option->module = module;
+    menu->addChild(legacy_reset_option);
   }
 
   void step() override {
