@@ -12,6 +12,7 @@ struct DigitalSequencer : Module
   dsp::SchmittTrigger sequencer_6_button_trigger;
 
   long clock_ignore_on_reset = 0;
+  bool legacy_reset = false;
   bool first_step = true;
   unsigned int tooltip_timer = 0;
 
@@ -260,6 +261,9 @@ struct DigitalSequencer : Module
     json_object_set(json_root, "sample_and_hold", sequencer_sh_json_array);
     json_decref(sequencer_sh_json_array);
 
+    // Save Legacy Reset mode
+    json_object_set_new(json_root, "legacy_reset", json_integer(legacy_reset));
+
     return json_root;
   }
 
@@ -371,6 +375,9 @@ struct DigitalSequencer : Module
         this->voltage_sequencers[sequencer_number].sample_and_hold = json_integer_value(sh_json);
       }
     }
+
+    json_t* legacy_reset_json = json_object_get(json_root, "legacy_reset");
+    if (legacy_reset_json) legacy_reset = json_integer_value(legacy_reset_json);
   }
 
 
@@ -442,11 +449,23 @@ struct DigitalSequencer : Module
         gate_sequencers[i].reset();
       }
     }
-    else if(clock_ignore_on_reset == 0)
+
+    //
+    // The legacy reset option in the context menu tells the module to accept
+    // clock signals immedately after resetting.  Reset signals are supposed to
+    // cause clock signals to be ignored for 1 millisecond, however, some older
+    // modules don't do that, so this flag helps with compatibility with older
+    // modules.
+    //
+    if(legacy_reset || clock_ignore_on_reset == 0)
     {
       // Step ALL of the sequencers
       bool global_step_trigger = stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f));
       bool step;
+
+      //
+      // reset_first_step ensures that the first step of the sequence is not skipped
+      // after a reset.  This functionality is disbled in legacy reset mode.
       bool reset_first_step = false;
 
       for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
@@ -464,7 +483,7 @@ struct DigitalSequencer : Module
 
         if(step)
         {
-          if(first_step == false)
+          if(legacy_reset || first_step == false)
           {
             voltage_sequencers[i].step();
             gate_sequencers[i].step();

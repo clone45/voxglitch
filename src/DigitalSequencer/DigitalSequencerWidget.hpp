@@ -46,12 +46,14 @@ struct DigitalSequencerWidget : ModuleWidget
     addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y)), module, DigitalSequencer::SEQUENCER_6_BUTTON));
     addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y)), module, DigitalSequencer::SEQUENCER_6_LIGHT));
 
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x, button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_1_LENGTH_KNOB));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_2_LENGTH_KNOB));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_3_LENGTH_KNOB));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_4_LENGTH_KNOB));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_5_LENGTH_KNOB));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_6_LENGTH_KNOB));
+    // addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x, button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_1_LENGTH_KNOB));
+
+    auto L1 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x, button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_1_LENGTH_KNOB); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
+    auto L2 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_2_LENGTH_KNOB); dynamic_cast<Knob*>(L2)->snap = true; addParam(L2);
+    auto L3 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_3_LENGTH_KNOB); dynamic_cast<Knob*>(L3)->snap = true; addParam(L3);
+    auto L4 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_4_LENGTH_KNOB); dynamic_cast<Knob*>(L4)->snap = true; addParam(L4);
+    auto L5 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_5_LENGTH_KNOB); dynamic_cast<Knob*>(L5)->snap = true; addParam(L5);
+    auto L6 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_6_LENGTH_KNOB); dynamic_cast<Knob*>(L6)->snap = true; addParam(L6);
 
     // 6 step inputs
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x, button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_1_STEP_INPUT));
@@ -190,6 +192,40 @@ struct DigitalSequencerWidget : ModuleWidget
     }
   };
 
+  struct ResetOnNextOption : MenuItem {
+    DigitalSequencer *module;
+
+    void onAction(const event::Action &e) override {
+      module->legacy_reset = false;
+    }
+  };
+
+  struct ResetInstantOption : MenuItem {
+    DigitalSequencer *module;
+
+    void onAction(const event::Action &e) override {
+      module->legacy_reset = true;
+    }
+  };
+
+  struct ResetModeItem : MenuItem {
+    DigitalSequencer *module;
+
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      ResetOnNextOption *reset_on_next = createMenuItem<ResetOnNextOption>("Next clock input.", CHECKMARK(! module->legacy_reset));
+      reset_on_next->module = module;
+      menu->addChild(reset_on_next);
+
+      ResetInstantOption *reset_instant = createMenuItem<ResetInstantOption>("Instant", CHECKMARK(module->legacy_reset));
+      reset_instant->module = module;
+      menu->addChild(reset_instant);
+
+      return menu;
+    }
+  };
+
   struct AllSequencersItem : MenuItem {
 
   };
@@ -220,6 +256,17 @@ struct DigitalSequencerWidget : ModuleWidget
       sequencer_items[i]->sequencer_number = i;
       menu->addChild(sequencer_items[i]);
     }
+
+    // Reset behavior
+    /*
+    LegacyResetOption *legacy_reset_option = createMenuItem<LegacyResetOption>("Legacy Reset", CHECKMARK(module->legacy_reset));
+    legacy_reset_option->module = module;
+    menu->addChild(legacy_reset_option);
+    */
+
+    ResetModeItem *reset_mode_item = createMenuItem<ResetModeItem>("Reset Mode", RIGHT_ARROW);
+    reset_mode_item->module = module;
+    menu->addChild(reset_mode_item);
   }
 
   void step() override {
