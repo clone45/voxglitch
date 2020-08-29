@@ -9,8 +9,6 @@
 // Special thanks to Marc Boulé for his help with reset trigger behavior.
 // Special thanks to the entire VCV Rack community for their support.
 //
-// TODO: Move font loading into global area
-// TODO: copy/paste between sequences
 
 #include "plugin.hpp"
 #include "osdialog.h"

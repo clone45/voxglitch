@@ -321,7 +321,6 @@ struct GrainEngineMK2 : Module
     }
 
     // If there's a cable connected to the spawn trigger input, it takes priority over the internal spwn rate.
-
     if(inputs[SPAWN_TRIGGER_INPUT].isConnected())
     {
       if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage())) grain_engine_mk2_core.add(start_position, window_length, pan, selected_sample, max_grains, pitch);
