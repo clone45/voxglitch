@@ -44,6 +44,16 @@ struct SamplerX8 : Module
     TRIGGER_INPUT_6 = 5,
     TRIGGER_INPUT_7 = 6,
     TRIGGER_INPUT_8 = 7,
+
+    POSITION_INPUT_1 = 8,
+    POSITION_INPUT_2 = 9,
+    POSITION_INPUT_3 = 10,
+    POSITION_INPUT_4 = 11,
+    POSITION_INPUT_5 = 12,
+    POSITION_INPUT_6 = 13,
+    POSITION_INPUT_7 = 14,
+    POSITION_INPUT_8 = 15,
+
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -146,7 +156,12 @@ struct SamplerX8 : Module
     for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
     {
       // Process trigger inputs to start sample playback
-      if (sample_triggers[i].process(rescale(inputs[i].getVoltage(), 0.0f, 10.0f, 0.f, 1.f))) sample_players[i].trigger();
+      if (sample_triggers[i].process(rescale(inputs[i].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+      {
+        unsigned int position_input_index = i + 8;
+        sample_players[i].trigger();
+        if(inputs[position_input_index].isConnected()) sample_players[i].setPositionFromInput(inputs[position_input_index].getVoltage());
+      }
 
       // Send audio to outputs
       std::tie(left_audio, right_audio) = sample_players[i].getStereoOutput();
