@@ -13,11 +13,12 @@ struct SamplerX8Widget : ModuleWidget
     float row_padding = 10.2;
 
     float triggers_column_x = 9.5;
-    float volume_knobs_column_x = 20.5;
-    float pan_knobs_column_x = 30.5;
+    float position_inputs_column_x = 10.5 + 10.16;
+    float volume_knobs_column_x = 20.5 + 10.16;
+    float pan_knobs_column_x = 30.5 + 10.16;
 
-    float output_l_column = 29.08 + 15.24;
-    float output_r_column = 39.78 + 15.24;
+    float output_l_column = 29.08 + 15.24 + 10.16;
+    float output_r_column = 39.78 + 15.24 + 10.16;
 
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(triggers_column_x, group_y + (row_padding * 0))), module, SamplerX8::TRIGGER_INPUT_1));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(triggers_column_x, group_y + (row_padding * 1))), module, SamplerX8::TRIGGER_INPUT_2));
@@ -27,6 +28,15 @@ struct SamplerX8Widget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(triggers_column_x, group_y + (row_padding * 5))), module, SamplerX8::TRIGGER_INPUT_6));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(triggers_column_x, group_y + (row_padding * 6))), module, SamplerX8::TRIGGER_INPUT_7));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(triggers_column_x, group_y + (row_padding * 7))), module, SamplerX8::TRIGGER_INPUT_8));
+
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(position_inputs_column_x, group_y + (row_padding * 0))), module, SamplerX8::POSITION_INPUT_1));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(position_inputs_column_x, group_y + (row_padding * 1))), module, SamplerX8::POSITION_INPUT_2));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(position_inputs_column_x, group_y + (row_padding * 2))), module, SamplerX8::POSITION_INPUT_3));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(position_inputs_column_x, group_y + (row_padding * 3))), module, SamplerX8::POSITION_INPUT_4));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(position_inputs_column_x, group_y + (row_padding * 4))), module, SamplerX8::POSITION_INPUT_5));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(position_inputs_column_x, group_y + (row_padding * 5))), module, SamplerX8::POSITION_INPUT_6));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(position_inputs_column_x, group_y + (row_padding * 6))), module, SamplerX8::POSITION_INPUT_7));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(position_inputs_column_x, group_y + (row_padding * 7))), module, SamplerX8::POSITION_INPUT_8));
 
     addParam(createParamCentered<Trimpot>(mm2px(Vec(volume_knobs_column_x, group_y + (row_padding * 0))), module, SamplerX8::VOLUME_KNOB_1));
     addParam(createParamCentered<Trimpot>(mm2px(Vec(volume_knobs_column_x, group_y + (row_padding * 1))), module, SamplerX8::VOLUME_KNOB_2));
