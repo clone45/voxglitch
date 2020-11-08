@@ -47,6 +47,10 @@ struct Grain
         // Apply amplitude slope
         int slope_index = (1.0 - ((float)age / (float)lifespan)) * 512.0;  // remember that age decrements instead of increments
         slope_index = clamp(slope_index, 0, 511);
+
+        // At the moment, this slope_index is always 1, so the contour selection doesn't make a difference.  I had
+        // at one time thought that offering differeing amplidue contours would be fun, but it ended up making
+        // so little difference that I removed this feature.
         float slope_value = common->CONTOURS[contour_selection][slope_index];
 
         output_voltage_left  = slope_value * output_voltage_left;
