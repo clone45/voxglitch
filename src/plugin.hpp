@@ -22,3 +22,4 @@ extern Model *modelGrainFx;
 extern Model *modelAutobreak;
 extern Model *modelDigitalSequencer;
 extern Model *modelSamplerX8;
+extern Model *modelByteBeat;
