@@ -11,6 +11,8 @@ struct ByteBeat : Module
   uint8_t clock_division_counter = 0;
   uint8_t clock_division = 2;
 
+  std::string math_equation;
+
   enum ParamIds {
     CLOCK_DIVISION_KNOB,
 		NUM_PARAMS
@@ -63,9 +65,14 @@ struct ByteBeat : Module
 
     clock_division = params[CLOCK_DIVISION_KNOB].getValue(); // float to int conversion happening here
 
-    float output = compute(t, p1, p2, p3);
+    // float output = compute(t, p1, p2, p3);
 
-    outputs[AUDIO_OUTPUT].setVoltage(output);
+    // Test out calcuator
+    int result = calculator::eval("(0 + ~(255 & 1000)*3) / -2");
+
+    // int result = 1;
+
+    outputs[AUDIO_OUTPUT].setVoltage(result);
   }
 
   float compute(uint32_t t, uint32_t p1, uint32_t p2, uint32_t p3)

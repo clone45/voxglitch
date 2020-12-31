@@ -24,6 +24,46 @@ struct ByteBeatWidget : ModuleWidget
 
     addParam(createParamCentered<Trimpot>(mm2px(Vec(volume_knobs_column_x, group_y + (row_padding * 0))), module, ByteBeat::CLOCK_DIVISION_KNOB));
 
-
+    /*
+    TextField* textField = createWidget<TextField>(mm2px(Vec(3.39962, 14.8373)));
+  	textField->box.size = mm2px(Vec(74.480, 102.753));
+  	addChild(textField);
+    */
+    EquationTextInput *equation_text_input = createWidget<EquationTextInput>(mm2px(Vec(3.39962, 14.8373)));
+    equation_text_input->module = module;
+    equation_text_input->box.size = mm2px(Vec(74.480, 20.753));
+    addChild(equation_text_input);
   }
+
+  struct EquationTextInput : TextField {
+  	// EquationDisplay* equationDisplay;
+  	Menu* menu;
+    ByteBeat *module;
+
+  	void onAction(const event::Action& e) override {
+  		TextField::onAction(e);
+  		//menu->requestDelete();
+      getAncestorOfType<ui::MenuOverlay>()->requestDelete();
+  	}
+  	void onChange(const event::Change& e) override {
+  		TextField::onChange(e);
+      module->math_equation = text;
+  	}
+  };
+
+  /*
+  struct TapeNameMenuItem : TextField {
+  	TapeNameDisplay* tapeNameDisplay;
+  	Menu* menu;
+
+  	void onAction(const event::Action& e) override {
+  		TextField::onAction(e);
+  		menu->requestDelete();
+  	}
+  	void onChange(const event::Change& e) override {
+  		TextField::onChange(e);
+  		tapeNameDisplay->text = text;
+  	}
+  };
+  */
 };
