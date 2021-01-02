@@ -11,7 +11,7 @@ struct ByteBeat : Module
   uint32_t e2;
   uint32_t e3;
 
-  uint8_t w;   // w is the output of the equation
+  uint8_t w = 0;   // w is the output of the equation
   uint8_t clock_division_counter = 0;
   uint8_t clock_division = 2;
 
@@ -96,7 +96,9 @@ struct ByteBeat : Module
     // w = matrix(e2,matrix(e1,t,p1),t>>p2) - matrix(e3,p3,t+w);
     // w = matrix(e1,t,p1) + (matrix(e2,p3,(div(t,4))) * p2) - matrix(e3,p3,t);
 
-    // Triangle Dance (10/10)
+    // w = sin((float) ( (float)t / 4294967296.1)) * 4096.0;
+
+    // Triangle Dash (10/10)
     w = t << (t>>  matrix(e1,(p1>>6), (3^t))  >> matrix(e2,(p2>>6), 3)) | matrix(e3,t>>(p3>>6), t>>3);
 
     // Digital Trash (9/10)
@@ -159,6 +161,7 @@ struct ByteBeat : Module
       case 10: return expression_10(a,b);
       case 11: return expression_11(a,b);
       case 12: return expression_12(a,b);
+      // case 13: return expression_13(a,b);
     }
     return 0;
   }
@@ -215,8 +218,7 @@ struct ByteBeat : Module
 
   uint32_t expression_11(uint32_t a, uint32_t b)
   {
-    if(a == 0) return(0);
-    return(sin(a) - sin(b));
+    return(a + w); // test this
   }
 
   uint32_t expression_12(uint32_t a, uint32_t b)
