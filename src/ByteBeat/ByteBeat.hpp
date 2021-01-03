@@ -74,12 +74,19 @@ struct ByteBeat : Module
 		NUM_LIGHTS
 	};
 
-  // Contructor:
-  // - Define all the config parameters.
+  // Contructor
+  //
+  // I usually narmalize all of my parameters to range from 0 to 1, then later
+  // map them to the correct values in my "calculate_inputs" helper functions
+
 	ByteBeat()
 	{
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
     configParam(EQUATION_KNOB, 0.0f, 1.0f, 0.0f, "EquationKnob");
+
+    configParam(PARAM_KNOB_1, 0.0f, 1.0f, 0.0f, "ParamKnob1");
+    configParam(PARAM_KNOB_2, 0.0f, 1.0f, 0.0f, "ParamKnob2");
+    configParam(PARAM_KNOB_3, 0.0f, 1.0f, 0.0f, "ParamKnob3");
 
     configParam(EXPRESSION_KNOB_1, 0.0f, 1.0f, 0.0f, "ExpressionKnob1");
     configParam(EXPRESSION_KNOB_2, 0.0f, 1.0f, 0.0f, "ExpressionKnob2");
