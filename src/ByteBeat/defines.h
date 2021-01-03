@@ -1,5 +1,9 @@
 #define NUMBER_OF_EXPRESSIONS 12
-#define NUMBER_OF_EQUATIONS 4
+
+// Be aware that the equations switch statement starts at 0.  So althought
+// the last equation might be numbered "42" in the switch/case statement,
+// that means that there are 43 equations and you should set NUMBER_OF_EQUATIONS to 43
+#define NUMBER_OF_EQUATIONS 8
 
 #define COLUMN_1 6.35
 #define COLUMN_2 12.7

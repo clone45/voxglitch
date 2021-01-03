@@ -7,18 +7,11 @@ struct ByteBeatWidget : ModuleWidget
 
     // Equation inputs
 
-    addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(COLUMN_3, ROW_3 AND_A_HALF_ROW)), module, ByteBeat::EQUATION_KNOB));
+    // addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(COLUMN_3, ROW_3 AND_A_HALF_ROW)), module, ByteBeat::EQUATION_KNOB));
+    auto L1 = createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(COLUMN_3, ROW_3 AND_A_HALF_ROW)), module, ByteBeat::EQUATION_KNOB); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
 
     // Expression inputs
 
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(COLUMN_8, ROW_3)), module, ByteBeat::EXPRESSION_KNOB_1));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_8, ROW_5)), module, ByteBeat::EXPRESSION_INPUT_1));
-
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(COLUMN_11, ROW_3)), module, ByteBeat::EXPRESSION_KNOB_2));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_11, ROW_5)), module, ByteBeat::EXPRESSION_INPUT_2));
-
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(COLUMN_14, ROW_3)), module, ByteBeat::EXPRESSION_KNOB_3));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_14, ROW_5)), module, ByteBeat::EXPRESSION_INPUT_3));
 
     // Parameter inputs
 
