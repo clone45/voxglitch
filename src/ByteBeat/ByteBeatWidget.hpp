@@ -7,7 +7,7 @@ struct ByteBeatWidget : ModuleWidget
 
     // Equation inputs
 
-    addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(COLUMN_3, ROW_3)), module, ByteBeat::EQUATION_KNOB));
+    addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(COLUMN_3, ROW_3 AND_A_HALF_ROW)), module, ByteBeat::EQUATION_KNOB));
 
     // Expression inputs
 

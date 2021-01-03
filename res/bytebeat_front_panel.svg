@@ -24,9 +24,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.8284271"
-     inkscape:cx="142.58162"
-     inkscape:cy="200.23809"
+     inkscape:zoom="5.6568542"
+     inkscape:cx="19.379155"
+     inkscape:cy="114.9458"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -523,6 +523,7 @@
          d="m 127.54621,102.82554 q 0,0.29986 -0.1658,0.45156 -0.16228,0.14816 -0.4692,0.14816 h -0.50094 v -0.26811 h 0.53622 q 0.13053,0 0.21167,-0.0776 0.0811,-0.0776 0.0811,-0.18697 v -0.36689 q 0,-0.10583 -0.0564,-0.16933 -0.0529,-0.067 -0.16228,-0.067 h -0.10583 q -0.26106,0 -0.41275,-0.1517 -0.1517,-0.15522 -0.1517,-0.44803 v -0.13405 q 0,-0.29986 0.16228,-0.44803 0.16581,-0.15169 0.47273,-0.15169 h 0.50447 v 0.26811 h -0.53975 q -0.13053,0 -0.21167,0.0776 -0.0811,0.0776 -0.0811,0.18697 v 0.26811 q 0,0.10936 0.0706,0.18345 0.0705,0.0705 0.18344,0.0705 h 0.10584 q 0.25047,0 0.38805,0.14464 0.14111,0.14464 0.14111,0.43745 z" />
     </g>
     <g
+       transform="translate(0,5.540995)"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.175px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0px;word-spacing:0px;display:inline;stroke-width:0.264583"
        id="text3218-2-9"
        aria-label="EQUATION">
@@ -580,5 +581,10 @@
          style="stroke-width:0.264583"
          d="m 87.339993,92.887205 v 0.257527 h -0.871359 v 0.807859 h 0.783165 v 0.257527 h -0.783165 v 0.888998 h 0.871359 v 0.257528 h -1.178275 v -2.469439 z" />
     </g>
+    <path
+       inkscape:connector-curvature="0"
+       id="path36629"
+       d="m 159.93133,154.22748 c 0,-0.4857 -0.58092,-0.88376 -1.2937,-0.88376 h -9.93261 c -0.711,0 -1.29369,0.39806 -1.29369,0.88376 v 10.75248 c 0,0.4857 0.58269,0.88376 1.29369,0.88376 h 9.93261 c 0.71278,0 1.2937,-0.39806 1.2937,-0.88376 z m 0,0"
+       style="display:inline;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.45562" />
   </g>
 </svg>

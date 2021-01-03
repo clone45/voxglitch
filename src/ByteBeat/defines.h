@@ -33,3 +33,4 @@
 #define ROW_14 112.4375
 #define ROW_15 120.46875
 #define ROW_16 128.5
+#define AND_A_HALF_ROW + 4.015625
