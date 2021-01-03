@@ -12,13 +12,19 @@ struct ByteBeat : Module
   uint32_t e3;
 
   uint8_t w = 0;   // w is the output of the equation
+
   uint8_t clock_division_counter = 0;
   uint8_t clock_division = 2;
 
-  std::string math_equation;
-
   enum ParamIds {
     CLOCK_DIVISION_KNOB,
+    EQUATION_KNOB,
+    EXPRESSION_KNOB_1,
+    EXPRESSION_KNOB_2,
+    EXPRESSION_KNOB_3,
+    PARAM_KNOB_1,
+    PARAM_KNOB_2,
+    PARAM_KNOB_3,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -42,6 +48,11 @@ struct ByteBeat : Module
 	ByteBeat()
 	{
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+    configParam(EQUATION_KNOB, 0.0f, 1.0f, 0.0f, "EquationKnob");
+
+    configParam(EXPRESSION_KNOB_1, 0.0f, 1.0f, 0.0f, "ExpressionKnob1");
+    configParam(EXPRESSION_KNOB_2, 0.0f, 1.0f, 0.0f, "ExpressionKnob2");
+    configParam(EXPRESSION_KNOB_3, 0.0f, 1.0f, 0.0f, "ExpressionKnob3");
 
     configParam(CLOCK_DIVISION_KNOB, 0.0f, 256.0f, 0.0f, "ClockDivisionKnob");  // 256 gives us the entire range.  Anything after that wraps
 	}
@@ -58,13 +69,34 @@ struct ByteBeat : Module
 	{
 	}
 
+  float calculate_inputs(int input_index, int knob_index, float maximum_value)
+  {
+    float input_value = inputs[input_index].getVoltage() / 10.0;
+    float knob_value = params[knob_index].getValue();
+    float output;
+
+    if(inputs[input_index].isConnected())
+    {
+      input_value = clamp(input_value, 0.0, 1.0);
+
+      // NUMBER_OF_EXPRESSIONS is defined in defines.h
+      output = clamp((input_value * maximum_value) + (knob_value * maximum_value), 0.0, maximum_value);
+    }
+    else
+    {
+      // NUMBER_OF_EXPRESSIONS is defined in defines.h
+      output = clamp(knob_value * maximum_value, 0.0, maximum_value);
+    }
+    return(output);
+  }
+
+
 	void process(const ProcessArgs &args) override
 	{
     //
-    // salve to clock and provide external clock
+    // TODO: slave to clock and provide external clock
+    // TODO: Allow override of "t" using external input
     //
-    //
-
 
     clock_division_counter ++;
     if(clock_division_counter >= clock_division)
@@ -73,23 +105,26 @@ struct ByteBeat : Module
       clock_division_counter = 0;
     }
 
-    p1 = (inputs[PARAM_INPUT_1].getVoltage() / 10.0) * 4096.0;
-    p2 = (inputs[PARAM_INPUT_2].getVoltage() / 10.0) * 4096.0;
-    p3 = (inputs[PARAM_INPUT_3].getVoltage() / 10.0) * 4096.0;
+    // FYI: float to uint32_t conversions are happening when assigning the input values to the p,e varaibles
 
-    e1 = (inputs[EXPRESSION_INPUT_1].getVoltage() / 10.0) * 12.0;  // last number is the number of subexpressions
-    e2 = (inputs[EXPRESSION_INPUT_2].getVoltage() / 10.0) * 12.0;
-    e3 = (inputs[EXPRESSION_INPUT_3].getVoltage() / 10.0) * 12.0;
+    uint32_t equation = params[EQUATION_KNOB].getValue() * NUMBER_OF_EQUATIONS;
+
+    p1 = calculate_inputs(PARAM_INPUT_1, PARAM_KNOB_1, 4096.0);
+    p2 = calculate_inputs(PARAM_INPUT_2, PARAM_KNOB_2, 4096.0);
+    p3 = calculate_inputs(PARAM_INPUT_3, PARAM_KNOB_3, 4096.0);
+
+    e1 = calculate_inputs(EXPRESSION_INPUT_1, EXPRESSION_KNOB_1, (float) NUMBER_OF_EXPRESSIONS); // float to uint32_t happening here
+    e2 = calculate_inputs(EXPRESSION_INPUT_2, EXPRESSION_KNOB_2, (float) NUMBER_OF_EXPRESSIONS);
+    e3 = calculate_inputs(EXPRESSION_INPUT_3, EXPRESSION_KNOB_3, (float) NUMBER_OF_EXPRESSIONS);
+
+    outputs[AUDIO_OUTPUT].setVoltage(compute(equation, t, p1, p2, p3, e1, e2, e3));
+    outputs[DEBUG_OUTPUT].setVoltage(e1);
 
     clock_division = params[CLOCK_DIVISION_KNOB].getValue(); // float to int conversion happening here
-
-    float output = compute(t, p1, p2, p3, e1, e2, e3);
-
-    outputs[DEBUG_OUTPUT].setVoltage(e1);
-    outputs[AUDIO_OUTPUT].setVoltage(output);
   }
 
-  float compute(uint32_t t, uint32_t p1, uint32_t p2, uint32_t p3, uint32_t e1, uint32_t e2, uint32_t e3)
+
+  float compute(uint32_t equation, uint32_t t, uint32_t p1, uint32_t p2, uint32_t p3, uint32_t e1, uint32_t e2, uint32_t e3)
   {
     // >> has precidence over mod
 
@@ -98,24 +133,32 @@ struct ByteBeat : Module
 
     // w = sin((float) ( (float)t / 4294967296.1)) * 4096.0;
 
-    // Triangle Dash (10/10)
-    w = t << (t>>  matrix(e1,(p1>>6), (3^t))  >> matrix(e2,(p2>>6), 3)) | matrix(e3,t>>(p3>>6), t>>3);
+    switch(equation) {
 
-    // Digital Trash (9/10)
-    // w = matrix(e1,t+w,p1) + (matrix(e2,p3,(div(t,w))) * p2) - matrix(e3,p3,t);
+      case 0: // Triangle Dash (rating: 8/10)
+        w = t << (t>>  matrix(e1,(p1>>6), (3^t))  >> matrix(e2,(p2>>6), 3)) | matrix(e3,t>>(p3>>6), t>>3);
+        break;
 
+      case 1: // Digital Trash (rating: 9/10)
+        w = matrix(e1,t+w,p1) + (matrix(e2,p3,(div(t,w))) * p2) - matrix(e3,p3,t);
+        break;
 
-    // w = (uint8_t) ((t>>(13 + p1)&t)*(t>>(p2)));
-    // w = div(((t^(p1>>3)-456)*(p2+1)),(((t>>(p3>>3))%14)+1))+(t*((182>>(t>>15)%16))&1);
+      case 2: // Alpha (no rating yet)
+        w = matrix(e1, ((t^(p1>>3)-456)*(p2+1)),(((t>>(p3>>3))%14)+1))+(t*((matrix(e1,182>>(t>>15),16)))&1);
+        break;
 
-    // Alpha
-    // w = div(((t^(p1>>3)-456)*(p2+1)),(((t>>(p3>>3))%14)+1))+(t*((182>>(t>>15)%16))&1);
-    // w = matrix(e1, ((t^(p1>>3)-456)*(p2+1)),(((t>>(p3>>3))%14)+1))+(t*((matrix(e1,182>>(t>>15),16)))&1);
+      case 3: // Omega (no rating yet)
+        w = (matrix(e3,(matrix(e1,t>>5,t<<((p3>>4)+1))>>4),p1-(matrix(e2,t,((1853>>(t>>(p2>>4))%15)))&1))>>(t>>12)%6)>>4;
+        break;
+
+      default:
+        w = 0;
+    }
+
+      // Unsorted experimental equations
+      //
 
     // w = ((p1^matrix(e1,t,(p2>>3))))-(t>>(matrix(e2,p3,2)))-matrix(e3,t,(t&p2));
-
-    // Omega
-    // w = (matrix(e3,(matrix(e1,t>>5,t<<((p3>>4)+1))>>4),p1-(matrix(e2,t,((1853>>(t>>(p2>>4))%15)))&1))>>(t>>12)%6)>>4;
 
     // Widerange
     // w = ((p1^matrix(e1,t,(p2>>3))))-(t>>(matrix(e2,p3,2)))-matrix(e3,t,(t&p2));
@@ -143,8 +186,6 @@ struct ByteBeat : Module
     if(b == 0) return(0);
     return(a % b);
   }
-
-
 
   uint32_t matrix(uint32_t expression_number, uint32_t a, uint32_t b)
   {
