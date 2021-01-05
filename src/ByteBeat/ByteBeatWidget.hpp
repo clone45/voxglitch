@@ -10,11 +10,7 @@ struct ByteBeatWidget : ModuleWidget
     // addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(COLUMN_3, ROW_3 AND_A_HALF_ROW)), module, ByteBeat::EQUATION_KNOB));
     auto L1 = createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(COLUMN_3, ROW_3 AND_A_HALF_ROW)), module, ByteBeat::EQUATION_KNOB); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
 
-    // Expression inputs
-
-
     // Parameter inputs
-
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(COLUMN_8, ROW_3)), module, ByteBeat::PARAM_KNOB_1));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_8, ROW_5)), module, ByteBeat::PARAM_INPUT_1));
 
