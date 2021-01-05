@@ -247,29 +247,3 @@ struct ByteBeat : Module
   }
 
 };
-
-/*
-    Unsorted experimental equations
-    ==========================================================================
-
-    // >> has precidence over mod
-
-    // audio_output = matrix(e2,matrix(e1,t,p1),t>>p2) - matrix(e3,p3,t+w);
-    // audio_output = matrix(e1,t,p1) + (matrix(e2,p3,(div(t,4))) * p2) - matrix(e3,p3,t);
-
-    // audio_output = sin((float) ( (float)t / 4294967296.1)) * 4096.0;
-
-    // audio_output = ((p1^matrix(e1,t,(p2>>3))))-(t>>(matrix(e2,p3,2)))-matrix(e3,t,(t&p2));
-
-    // Widerange
-    // audio_output = ((p1^matrix(e1,t,(p2>>3))))-(t>>(matrix(e2,p3,2)))-matrix(e3,t,(t&p2));
-
-    // Defender
-    // audio_output = ( mod((w-482+(w^(3456-p1))), (p2*t>>5&(1030-(p3<<2)))) );
-
-    // Maginfied
-    // audio_output = (mod((p1 & t), p3)) ^ div(t,p2);
-
-    // Light Reactor
-    // audio_output = mod((p1+t>>p2),12)|((mod(w,(p1+t>>p1%4)))+11+p3^t)>>(p3>>12);
-*/
