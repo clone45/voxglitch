@@ -9,28 +9,36 @@ struct AutobreakWidget : ModuleWidget
 		addChild(createWidget<ScrewSilver>(Vec(15, 0)));
 		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
 
-		float y_offset = -10;
+    float column_1 = 10; // left column
+    float column_2 = 30.121;
 
-		// Inputs for WAV selection
-		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(10, 38 + y_offset)), module, Autobreak::WAV_KNOB));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(10, 52 + y_offset)), module, Autobreak::WAV_ATTN_KNOB));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 63.5 + y_offset)), module, Autobreak::WAV_INPUT));
+    // These values match Ghosts
+    float row_1 = 26.726; // Top row
+    float row_2 = 48.689;
+    float row_3 = 70.652;
+    float row_35 = 85;
+    float row_4 = 100;
 
-		//
-		// Controls to the right of the sequencer
+    // Clock Input
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(column_1, row_1)), module, Autobreak::CLOCK_INPUT));
 
-		// Reset
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(30.121, 66.984)), module, Autobreak::RESET_INPUT));
+    // Reset
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(column_2, row_1)), module, Autobreak::RESET_INPUT));
 
-        // Sequence
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(30.121, 47.008)), module, Autobreak::SEQUENCE_INPUT));
+    // Sequence
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(column_1, row_2)), module, Autobreak::SEQUENCE_INPUT));
 
-        // Clock
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(30.121, 27.032)), module, Autobreak::CLOCK_INPUT));
+    // Ratchet input
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(column_2, row_2)), module, Autobreak::RATCHET_INPUT));
 
-        // Audio outputs
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(30.121, 104)), module, Autobreak::AUDIO_OUTPUT_LEFT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(30.121, 114.9)), module, Autobreak::AUDIO_OUTPUT_RIGHT));
+		// Inputs for SAMPLE selection
+		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(column_1, row_4)), module, Autobreak::WAV_KNOB));
+		addParam(createParamCentered<Trimpot>(mm2px(Vec(column_1, row_35)), module, Autobreak::WAV_ATTN_KNOB));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(column_1, row_3)), module, Autobreak::WAV_INPUT));
+
+    // Audio outputs
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(column_2, 104)), module, Autobreak::AUDIO_OUTPUT_LEFT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(column_2, 114.9)), module, Autobreak::AUDIO_OUTPUT_RIGHT));
 	}
 
 	void appendContextMenu(Menu *menu) override

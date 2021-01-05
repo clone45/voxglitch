@@ -12,10 +12,6 @@ struct Autobreak : Module
 
   float theoretical_playback_position = 0;
 
-  // incrementing_bpm_counter counts from 0 to the number of samples required
-  // to play a theoretical sample for 8 bars at a specific bpm.
-  unsigned int incrementing_bpm_counter = 0;
-
   // Pattern lock is a flag which, when true, stops the pattern from changing
   // due to changes in the pattern knob or the CV input.  This flag is set
   // to true when the user is actively editing the current pattern.
@@ -24,6 +20,7 @@ struct Autobreak : Module
   double bpm = 160;
   double timer_before = 0;
   bool clock_triggered = false;
+  bool ratchet_triggered = false;
 
   StereoSmoothSubModule loop_smooth;
 
@@ -35,6 +32,7 @@ struct Autobreak : Module
 
   dsp::SchmittTrigger resetTrigger;
   dsp::SchmittTrigger clockTrigger;
+  dsp::SchmittTrigger ratchetTrigger;
 
   float left_output  = 0;
   float right_output = 0;
@@ -49,6 +47,7 @@ struct Autobreak : Module
     RESET_INPUT,
     SEQUENCE_INPUT,
     WAV_INPUT,
+    RATCHET_INPUT,
     NUM_INPUTS
   };
   enum OutputIds {
@@ -150,6 +149,11 @@ struct Autobreak : Module
       clock_triggered = true;
     }
 
+    if (ratchetTrigger.process(inputs[RATCHET_INPUT].getVoltage()))
+    {
+      ratchet_triggered = true;
+    }
+
     //
     // Handle reset input
     //
@@ -161,7 +165,6 @@ struct Autobreak : Module
         // Reset counters
         actual_playback_position = 0;
         theoretical_playback_position = 0;
-        incrementing_bpm_counter = 0;
 
         // Smooth back into playback
         loop_smooth.trigger();
@@ -175,9 +178,6 @@ struct Autobreak : Module
       float samples_to_play_per_loop = ((60.0 / bpm) * args.sampleRate) * 8.0;
 
       actual_playback_position = clamp(actual_playback_position, 0.0, selected_sample->size() - 1);
-
-      // float left_output  = GAIN  * selected_sample->leftPlayBuffer[(int)actual_playback_position];
-      // float right_output = GAIN  * selected_sample->rightPlayBuffer[(int)actual_playback_position];
 
       std::tie(left_output, right_output) = selected_sample->read((int)actual_playback_position);
 
@@ -206,6 +206,21 @@ struct Autobreak : Module
 
         clock_triggered = false;
       }
+      else
+      {
+        if(ratchet_triggered)
+        {
+          float sequence_input_value = inputs[SEQUENCE_INPUT].getVoltage() / 10.0;
+          int breakbeat_location = (sequence_input_value * 16) - 1;
+          breakbeat_location = clamp(breakbeat_location, -1, 15);
+
+          if(breakbeat_location != -1)
+          {
+            theoretical_playback_position = breakbeat_location * (samples_to_play_per_loop / 16.0f);
+          }
+          ratchet_triggered = false;
+        }
+      }
 
       // Loop the theoretical_playback_position
       if(theoretical_playback_position >= samples_to_play_per_loop)
@@ -216,12 +231,6 @@ struct Autobreak : Module
 
       // Map the theoretical playback position to the actual sample playback position
       actual_playback_position = ((float) theoretical_playback_position / samples_to_play_per_loop) * selected_sample->size();
-
-      //
-      // Increment the bpm counter, which goes from 0 to the number of samples
-      // needed to play an entire loop of a theoretical sample at the bpm specified.
-      incrementing_bpm_counter = incrementing_bpm_counter + 1;
-      if(incrementing_bpm_counter > samples_to_play_per_loop) incrementing_bpm_counter = 0;
     }
   }
 };

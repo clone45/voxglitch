@@ -87,6 +87,14 @@ struct GrainEngineMK2Widget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_b_5, hrule5)), module, GrainEngineMK2::SAMPLE_INPUT));
   }
 
+  struct BipolarPitchOption : MenuItem {
+    GrainEngineMK2 *module;
+
+    void onAction(const event::Action &e) override {
+      module->bipolar_pitch_mode ^= true; // flip the value
+    }
+  };
+
   void appendContextMenu(Menu *menu) override
   {
     GrainEngineMK2 *module = dynamic_cast<GrainEngineMK2*>(this->module);
@@ -107,5 +115,10 @@ struct GrainEngineMK2Widget : ModuleWidget
 			menu_item_load_sample->module = module;
 			menu->addChild(menu_item_load_sample);
 		}
+
+    // Bipolar pitch mode selection
+    BipolarPitchOption *bipolar_pitch_option = createMenuItem<BipolarPitchOption>("Bipolar Pitch CV Input", CHECKMARK(module->bipolar_pitch_mode));
+    bipolar_pitch_option->module = module;
+    menu->addChild(bipolar_pitch_option);    
   }
 };

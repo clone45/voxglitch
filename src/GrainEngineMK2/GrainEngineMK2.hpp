@@ -31,6 +31,7 @@ struct GrainEngineMK2 : Module
   LoadQueue load_queue;
   StereoFadeOutSubModule fade_out_on_load;
   StereoFadeInSubModule fade_in_after_load;
+  bool bipolar_pitch_mode = false;
 
   // Structs
   Sample *samples[NUMBER_OF_SAMPLES];
@@ -142,20 +143,27 @@ struct GrainEngineMK2 : Module
 			json_object_set_new(root, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(samples[i]->path.c_str()));
 		}
 
+    // Save bipolar pitch mode
+    json_object_set_new(root, "bipolar_pitch_mode", json_integer(bipolar_pitch_mode));
+
 		return root;
 	}
 
-	void dataFromJson(json_t *rootJ) override
+	void dataFromJson(json_t *root) override
 	{
     for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
-			json_t *loaded_sample_path = json_object_get(rootJ, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
+			json_t *loaded_sample_path = json_object_get(root, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
 			if (loaded_sample_path)
 			{
 				samples[i]->load(json_string_value(loaded_sample_path));
 				loaded_filenames[i] = samples[i]->filename;
 			}
 		}
+
+    // Load bipolar pitch mode
+    json_t* bipolar_pitch_mode_json = json_object_get(root, "bipolar_pitch_mode");
+    if (bipolar_pitch_mode_json) bipolar_pitch_mode = json_integer_value(bipolar_pitch_mode_json);
 	}
 
   float calculate_inputs(int input_index, int knob_index, int attenuator_index, float low_range, float high_range)
@@ -215,6 +223,9 @@ struct GrainEngineMK2 : Module
 		selected_sample_slot = (unsigned int) calculate_inputs(SAMPLE_INPUT, SAMPLE_KNOB, SAMPLE_ATTN_KNOB, NUMBER_OF_SAMPLES_FLOAT);
 		selected_sample_slot = clamp(selected_sample_slot, 0, NUMBER_OF_SAMPLES - 1);
 		Sample *selected_sample = samples[selected_sample_slot];
+
+    // If there's an expander module attached, communicate with it and find
+    // out if there's a new sample that needs to be loaded.
 
     this->processExpander();
 
@@ -312,8 +323,17 @@ struct GrainEngineMK2 : Module
     // Process Pitch input
     if(inputs[PITCH_INPUT].isConnected())
     {
-      // This assumes a unipolar input.  Is that correct?
-      pitch = (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 5.0f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
+      if(bipolar_pitch_mode == true)
+      {
+        // Thank you to Guy Holford for his help on this.
+        pitch = (inputs[PITCH_INPUT].getVoltage() * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
+      }
+      else
+      {
+        // This may have not been the best way to handle pitch tracking, but I'm keeping it
+        // as the default so that I don't screw up people's existing patches.
+        pitch = (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 5.0f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
+      }
     }
     else
     {
