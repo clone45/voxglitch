@@ -3,7 +3,7 @@
 // Be aware that the equations switch statement starts at 0.  So althought
 // the last equation might be numbered "42" in the switch/case statement,
 // that means that there are 43 equations and you should set NUMBER_OF_EQUATIONS to 43
-#define NUMBER_OF_EQUATIONS 8
+#define NUMBER_OF_EQUATIONS 9
 #define MAX_CLOCK_DIVISION 256.0
 
 #define COLUMN_1 6.35

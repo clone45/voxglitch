@@ -81,9 +81,9 @@ struct ByteBeat : Module
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
     configParam(EQUATION_KNOB, 0.0f, NUMBER_OF_EQUATIONS - 1, 0.0f, "EquationKnob");
 
-    configParam(PARAM_KNOB_1, 0.0f, 1.0f, 0.0f, "ParamKnob1");
-    configParam(PARAM_KNOB_2, 0.0f, 1.0f, 0.0f, "ParamKnob2");
-    configParam(PARAM_KNOB_3, 0.0f, 1.0f, 0.0f, "ParamKnob3");
+    configParam(PARAM_KNOB_1, 0.0f, 128, 0.0f, "ParamKnob1");
+    configParam(PARAM_KNOB_2, 0.0f, 128, 0.0f, "ParamKnob2");
+    configParam(PARAM_KNOB_3, 0.0f, 128, 0.0f, "ParamKnob3");
 
     configParam(CLOCK_DIVISION_KNOB, 0.0f, 1.0f, 0.0f, "ClockDivisionKnob");  // 256 gives us the entire range.  Anything after that wraps
 	}
@@ -116,19 +116,37 @@ struct ByteBeat : Module
   {
     float input_value = inputs[input_index].getVoltage() / 10.0;
     float knob_value = params[knob_index].getValue();
+    float out = 0;
 
     if(inputs[input_index].isConnected())
     {
       input_value = clamp(input_value, 0.0, 1.0);
-      output = clamp((input_value * maximum_value) + (knob_value * maximum_value), 0.0, maximum_value);
+      out = clamp((input_value * maximum_value) + (knob_value * maximum_value), 0.0, maximum_value);
     }
     else
     {
-      output = clamp(knob_value * maximum_value, 0.0, maximum_value);
+      out = clamp(knob_value * maximum_value, 0.0, maximum_value);
     }
-    return(output);
+    return(out);
   }
 
+  float calculate_parameter_input(int input_index, int knob_index, float maximum_value)
+  {
+    float input_value = inputs[input_index].getVoltage() / 10.0; // ranges from 0 to 10
+    float knob_value = params[knob_index].getValue(); // ranges from 0 to 128
+    float out = 0;
+
+    if(inputs[input_index].isConnected())
+    {
+      input_value = clamp(input_value, 0.0, 1.0);
+      out = clamp((input_value * maximum_value) + knob_value, 0.0, maximum_value);
+    }
+    else
+    {
+      out = knob_value;
+    }
+    return(out);
+  }
 
 	void process(const ProcessArgs &args) override
 	{
@@ -152,11 +170,9 @@ struct ByteBeat : Module
 
     uint32_t equation = params[EQUATION_KNOB].getValue() + ((inputs[EQUATION_INPUT].getVoltage() / 10.0) * (float) NUMBER_OF_EQUATIONS);
 
-    // uint32_t equation = calculate_inputs(EQUATION_INPUT, EQUATION_KNOB, (float) NUMBER_OF_EQUATIONS);
-
-    p1 = calculate_inputs(PARAM_INPUT_1, PARAM_KNOB_1, 4096.0);
-    p2 = calculate_inputs(PARAM_INPUT_2, PARAM_KNOB_2, 4096.0);
-    p3 = calculate_inputs(PARAM_INPUT_3, PARAM_KNOB_3, 4096.0);
+    p1 = calculate_parameter_input(PARAM_INPUT_1, PARAM_KNOB_1, 128.0);
+    p2 = calculate_parameter_input(PARAM_INPUT_2, PARAM_KNOB_2, 128.0);
+    p3 = calculate_parameter_input(PARAM_INPUT_3, PARAM_KNOB_3, 128.0);
 
     // Send the equation, parameters, and expression selections to the "compute"
     // function.  The output of the "compute" function will be a float representing
@@ -228,8 +244,9 @@ struct ByteBeat : Module
         break;
 
       // Add next equation here.  Don't forget to increment NUMBER_OF_EQUATIONS in defines.h
-      case 8: //
-        // w =
+      case 8: // Decoherence
+        // w = ( (t>>6) & (t<<3) / (t*(t>>11)%(3+((t>>16)%22)))    );
+        w = ((t>>6) & div((t<<3),mod( (t*(t>>p1)),(p3+ mod((t>>16),p3) ))));
         break;
     }
 
