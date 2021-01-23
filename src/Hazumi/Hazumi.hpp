@@ -2,6 +2,8 @@
 
 struct Hazumi : Module
 {
+  HazumiSequencer hazumi_sequencer;
+
   enum ParamIds {
 		NUM_PARAMS
 	};

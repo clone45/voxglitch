@@ -1,3 +1,20 @@
+#define DRAW_AREA_WIDTH 60.000
+#define DRAW_AREA_HEIGHT 120.0
+#define DRAW_AREA_POSITION_X 3.820
+#define DRAW_AREA_POSITION_Y 4.250
+
+// Later I may have to subtract some width and hight to make room for padding
+// #define CELL_WIDTH 22.14
+// #define CELL_HEIGHT 22.14
+// #define CELL_PADDING 0.0
+
+#define CELL_WIDTH 21.5
+#define CELL_HEIGHT 21.5
+#define CELL_PADDING 0.64
+
+#define SEQUENCER_ROWS 16
+#define SEQUENCER_COLUMNS 8
+
 #define COLUMN_1 5.375
 #define COLUMN_2 10.750
 #define COLUMN_3 16.125
