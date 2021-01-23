@@ -26,15 +26,16 @@ struct HazumiSequencerDisplay : TransparentWidget
         for(unsigned int row=0; row < SEQUENCER_ROWS; row++)
         {
           nvgBeginPath(vg);
-          nvgRect(vg, (column * CELL_WIDTH) + (column * CELL_PADDING), (row * CELL_HEIGHT) + (row * CELL_PADDING), CELL_WIDTH, CELL_HEIGHT);
+          nvgRect(vg, (column * CELL_WIDTH) + (column * CELL_PADDING), ((SEQUENCER_ROWS - row - 1) * CELL_HEIGHT) + ((SEQUENCER_ROWS - row - 1) * CELL_PADDING), CELL_WIDTH, CELL_HEIGHT);
 
           // bool cell_is_alive = (module->edit_mode) ? module->sequencer.pattern[row][column] : module->sequencer.state[row][column];
 
           // Default color for inactive square
           nvgFillColor(vg, nvgRGB(200, 200, 200));
 
-
-          if(module->hazumi_sequencer.grid[column][row]) nvgFillColor(vg, nvgRGB(80, 80, 130));
+          // if(module->hazumi_sequencer.grid[column][row]) nvgFillColor(vg, nvgRGB(80, 80, 130));
+          if(module->hazumi_sequencer.ball_locations[column] > row) nvgFillColor(vg, nvgRGB(180, 180, 180));
+          if(module->hazumi_sequencer.ball_locations[column] == row) nvgFillColor(vg, nvgRGB(80, 80, 130));
 
           // When in edit mode, the pattern that's being edited will be bright white
           // and the underlying animation will continue to be shown but at a dim gray

@@ -1,6 +1,7 @@
 struct HazumiSequencer
 {
 
+  /*
   bool grid[SEQUENCER_COLUMNS][SEQUENCER_ROWS] = {
     { 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
     { 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
@@ -11,10 +12,11 @@ struct HazumiSequencer
     { 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
     { 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 },
   };
+  */
 
   // Start the balls at the bottom
   unsigned int ball_locations[8] = {
-    0,0,0,0,0,0,0,0
+    1,2,5,6,0,0,0,0
   };
 
   // 0 == down
@@ -33,6 +35,27 @@ struct HazumiSequencer
 
   void step()
   {
+    for(unsigned int i=0; i<8; i++)
+    {
+      if(ball_locations[i] == 0)
+      {
+          ball_directions[i] = 1;
+          ball_locations[i] += 1;
+      }
+      else if(ball_locations[i] == 15)
+      {
+        ball_directions[i] = 0;
+        ball_locations[i] -= 1;
+      }
+      else if(ball_directions[i] == 0)
+      {
+        ball_locations[i] -= 1;
+      }
+      else
+      {
+        ball_locations[i] += 1;
+      }
+    }
     /*
     position ++;
 

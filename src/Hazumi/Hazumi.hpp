@@ -4,10 +4,14 @@ struct Hazumi : Module
 {
   HazumiSequencer hazumi_sequencer;
 
+  dsp::SchmittTrigger stepTrigger;
+
   enum ParamIds {
 		NUM_PARAMS
 	};
 	enum InputIds {
+    STEP_INPUT,
+    RESET_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -39,6 +43,17 @@ struct Hazumi : Module
 
 	void process(const ProcessArgs &args) override
 	{
+    // Process Step Input
+    if(stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+    {
+      hazumi_sequencer.step();
 
+      /*
+      for(unsigned int i=0; i < NUMBER_OF_TRIGGER_GROUPS; i++)
+      {
+        if(trigger_results[i]) gateOutputPulseGenerators[i].trigger(0.01f);
+      }
+      */
+    }
   }
 };
