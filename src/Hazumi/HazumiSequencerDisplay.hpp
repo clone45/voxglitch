@@ -85,6 +85,8 @@ struct HazumiSequencerDisplay : TransparentWidget
 
           module->hazumi_sequencer.column_heights[column] = row;
 
+
+
           // DEBUG(std::to_string(column).c_str());
           // DEBUG(std::to_string(row).c_str());
 
