@@ -16,8 +16,9 @@ struct HazumiSequencerDisplay : TransparentWidget
     const auto vg = args.vg;
 
     // Save the drawing context to restore later
-
     nvgSave(vg);
+
+    // Debugging code for draw area, which often has to be set experimentally
     /*
     nvgBeginPath(vg);
     nvgRect(vg, 0, 0, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
@@ -40,7 +41,6 @@ struct HazumiSequencerDisplay : TransparentWidget
           row = clamp(row, 0, SEQUENCER_ROWS - 1);
           column = clamp(column, 0, SEQUENCER_COLUMNS - 1);
 
-          //       /*  *** The bug is somewhere in here
           if(module->hazumi_sequencer.column_heights[column] > row) nvgFillColor(vg, nvgRGB(200, 200, 200)); // paint height indicator
           if(module->hazumi_sequencer.ball_locations[column] == row) nvgFillColor(vg, nvgRGB(97, 143, 170));  // paint ball
 
@@ -49,9 +49,42 @@ struct HazumiSequencerDisplay : TransparentWidget
         }
       }
     }
+    //
     // Paint static content for library display
+    //
+    // !! BE CAREFUL: If you're making changes here, make sure that you're not
+    // editing the wrong piece of code        >>>>>> WARNING <<<<<<
+    //
     else
     {
+      unsigned int lib_ball_locations[8] = {
+        5,3,3,1,4,12,0,2
+      };
+
+      unsigned int lib_column_heights[8] = {
+        8,9,9,4,16,12,0,8
+      };
+
+      for(unsigned int column=0; column < SEQUENCER_COLUMNS; column++)
+      {
+        for(unsigned int row=0; row < SEQUENCER_ROWS; row++)
+        {
+          nvgBeginPath(vg);
+          nvgRect(vg, (column * CELL_WIDTH) + (column * CELL_PADDING), ((SEQUENCER_ROWS - row - 1) * CELL_HEIGHT) + ((SEQUENCER_ROWS - row - 1) * CELL_PADDING), CELL_WIDTH, CELL_HEIGHT);
+
+          // Default color for inactive square
+          nvgFillColor(vg, nvgRGB(220, 220, 220));
+
+          row = clamp(row, 0, SEQUENCER_ROWS - 1);
+          column = clamp(column, 0, SEQUENCER_COLUMNS - 1);
+
+          if(lib_column_heights[column] > row) nvgFillColor(vg, nvgRGB(200, 200, 200)); // paint height indicator
+          if(lib_ball_locations[column] == row) nvgFillColor(vg, nvgRGB(97, 143, 170));  // paint ball
+
+          nvgFill(vg);
+        }
+      }
+
     }
 
     nvgRestore(vg);
@@ -84,11 +117,6 @@ struct HazumiSequencerDisplay : TransparentWidget
           std::tie(row, column) = getRowAndColumnFromVec(e.pos);
 
           module->hazumi_sequencer.column_heights[column] = row;
-
-
-
-          // DEBUG(std::to_string(column).c_str());
-          // DEBUG(std::to_string(row).c_str());
 
           // Store the initial drag position
           drag_position = e.pos;
@@ -128,12 +156,6 @@ struct HazumiSequencerDisplay : TransparentWidget
       this->mouse_lock = false;
     }
   }
-/*
-  void onDragMove(const event::DragMove &e) override
-  {
-    TransparentWidget::onDragMove(e);
-  }
-*/
 
   void onEnter(const event::Enter &e) override
   {

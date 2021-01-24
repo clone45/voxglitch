@@ -3,11 +3,6 @@
 #define DRAW_AREA_POSITION_X 3.820
 #define DRAW_AREA_POSITION_Y 4.250
 
-// Later I may have to subtract some width and hight to make room for padding
-// #define CELL_WIDTH 22.14
-// #define CELL_HEIGHT 22.14
-// #define CELL_PADDING 0.0
-
 #define CELL_WIDTH 21.5
 #define CELL_HEIGHT 21.5
 #define CELL_PADDING 0.64

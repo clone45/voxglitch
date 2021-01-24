@@ -2,7 +2,7 @@ struct HazumiSequencer
 {
   // Start the balls at the bottom
   unsigned int ball_locations[8] = {
-    1,2,5,6,0,0,0,0
+    0,0,0,0,0,0,0,0
   };
 
   // 0 == down
@@ -12,7 +12,7 @@ struct HazumiSequencer
   };
 
   unsigned int column_heights[8] = {
-    4,8,12,16,10,2,15,15
+    1,1,1,1,1,1,1,1
   };
 
   // constructor
@@ -27,18 +27,8 @@ struct HazumiSequencer
   {
     for(unsigned int i=0; i<8; i++)
     {
-      // if (ball_locations[i] > 15) ball_locations[i] = 15;
-      // if (ball_locations[i] < 1) ball_locations[i] = 1;
-
-      // unsigned int h = column_heights[i];
-
-
-
       if(column_heights[i] == 1)
       {
-        // DEBUG(std::to_string(h).c_str());
-        DEBUG("got here");
-        // don't do anything
         ball_directions[i] = 1;
         ball_locations[i] = 0;
       }
@@ -66,9 +56,6 @@ struct HazumiSequencer
         ball_locations[i] += 1;
       }
 
-      // if (ball_locations[i] > 15) ball_locations[i] = 15;
-      // if (ball_locations[i] < 1) ball_locations[i] = 1;
-
       // After the ball has been moved, see if it's at the bottom of the
       // sequencer.  If so, set the corresponding trigger result.  If not,
       // clear the corresponding trigger result.
@@ -81,6 +68,15 @@ struct HazumiSequencer
         trigger_results[i] = false;
       }
     }
-
   }
+
+
+  void reset()
+  {
+    for(unsigned int i=0; i<8; i++)
+    {
+      ball_locations[i] = 0;
+    }
+  }
+
 };
