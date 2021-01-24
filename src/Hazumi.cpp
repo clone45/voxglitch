@@ -1,5 +1,6 @@
 #include "plugin.hpp"
 #include "osdialog.h"
+#include "settings.hpp"
 
 #include "Hazumi/defines.h"
 #include "Hazumi/HazumiSequencer.hpp"
