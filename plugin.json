@@ -74,6 +74,12 @@
         "tags": ["Granular", "Sampler", "Expander"]
     },
     {
+        "slug": "hazumi",
+        "name": "Hazumi",
+        "description": "Bouncing ball sequencer",
+        "tags": ["Sequencer"]
+    },
+    {
         "slug": "repeater",
         "name": "Repeater",
         "description": "Looping sample player with playback offset control.",

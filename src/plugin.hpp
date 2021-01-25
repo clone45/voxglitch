@@ -19,6 +19,7 @@ extern Model *modelGrainEngine;
 extern Model *modelGrainEngineMK2;
 extern Model *modelGrainEngineMK2Expander;
 extern Model *modelGrainFx;
+extern Model *modelHazumi;
 extern Model *modelAutobreak;
 extern Model *modelDigitalSequencer;
 extern Model *modelSamplerX8;
