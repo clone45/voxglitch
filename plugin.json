@@ -92,6 +92,12 @@
         "tags": ["Sampler"]
     },
     {
+        "slug": "stringed",
+        "name": "Stringed",
+        "description": "Strumming CV/Gate generator.",
+        "tags": ["Envelope Generator"]
+    },
+    {
         "slug": "wavbank",
         "name": "Wav Bank",
         "description": "Sample player that can load and switch between all .wav files in a folder.",
