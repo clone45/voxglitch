@@ -16,7 +16,6 @@
 //
 
 // TODO: slave to clock and provide external clock
-// TODO: Allow override of "t" using external input
 // TODO: change knobs so that they snap into position instead of being continuous.
 // TODO: Add reset input
 
@@ -25,6 +24,7 @@ struct ByteBeat : Module
   uint8_t w = 0;     // w is the output of the equations
   float output = 0;  // output is the audio output
 
+  float float_counter = 0.0
   uint32_t t;  // t is the time counter used in the equations
 
   // p1-p3 are variables used in equations.  These are values that the user
@@ -60,6 +60,8 @@ struct ByteBeat : Module
     PARAM_INPUT_3,
     EQUATION_INPUT,
     CLOCK_CV_INPUT,
+    T_INPUT,
+    SYNC_CLOCK_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -150,19 +152,31 @@ struct ByteBeat : Module
 
 	void process(const ProcessArgs &args) override
 	{
-    // clock_division = params[CLOCK_DIVISION_KNOB].getValue();
-    clock_division = calculate_inputs(CLOCK_CV_INPUT, CLOCK_DIVISION_KNOB, MAX_CLOCK_DIVISION); // float to int conversion happening here
-
-    // Use clock divider to control how quickly t is incremented.
-    // As I mentioned above, this is a temporary hack and will be replaced with
-    // more intelligent control over sample rate (pitch)
-
-    clock_division_counter ++;
-    if(clock_division_counter >= clock_division)
+    /*
+    if(inputs[T_INPUT].isConnected())
     {
-      t = t + 1;
-      clock_division_counter = 0;
+      t = inputs[T_INPUT].getVoltage() * 2048;
     }
+    else
+    {
+      // clock_division = params[CLOCK_DIVISION_KNOB].getValue();
+      clock_division = calculate_inputs(CLOCK_CV_INPUT, CLOCK_DIVISION_KNOB, MAX_CLOCK_DIVISION); // float to int conversion happening here
+
+      // Use clock divider to control how quickly t is incremented.
+      // As I mentioned above, this is a temporary hack and will be replaced with
+      // more intelligent control over sample rate (pitch)
+
+      clock_division_counter ++;
+      if(clock_division_counter >= clock_division)
+      {
+        t = t + 1;
+        clock_division_counter = 0;
+      }
+    }
+    */
+    float_counter += 0.1;
+    t = math
+
 
     //
     // Read equation, parameter, and expression inputs.
