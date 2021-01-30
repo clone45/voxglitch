@@ -30,6 +30,8 @@ struct Ghost
 
     float output_voltage_left = 0;
     float output_voltage_right = 0;
+    float pan = 0.0;
+    int pan_direction = 1.0;
 
     bool marked_for_removal = false;
     bool erase_me = false;
@@ -61,6 +63,9 @@ struct Ghost
             if(removal_smoothing_ramp >= 1) erase_me = true;
         }
 
+        output_voltage_left = output_voltage_left * pan;
+        output_voltage_right = output_voltage_right * (1.0 - pan);
+
         return {output_voltage_left, output_voltage_right};
     }
 
@@ -71,14 +76,17 @@ struct Ghost
             // Step the playback position forward.
             playback_position = playback_position + step_amount;
 
+            pan = pan + 0.0001;
+            if(pan > 1) pan = 0;
+
+            // pan = clamp(pan, 0.0, 1.0);
+
             // If the playback position is past the playback length, then wrap the playback position to the beginning
             if(playback_position >= playback_length)
             {
                 // fmod is modulus for floating point variables
                 playback_position = fmod(playback_position, playback_length);
 
-                // loop_smooth_left.trigger();
-                // loop_smooth_right.trigger();
                 loop_smooth.trigger();
             }
         }
