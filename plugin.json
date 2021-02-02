@@ -32,6 +32,12 @@
         "tags": ["Sequencer"]
     },
     {
+        "slug": "dualslope",
+        "name": "Dual Slope",
+        "description": "Drawable slope generator",
+        "tags": ["Envelope Generator"]
+    },
+    {
         "slug": "glitchsequencer",
         "name": "Glitch Sequencer",
         "description": "Cellular Automaton Gate Sequencer",
