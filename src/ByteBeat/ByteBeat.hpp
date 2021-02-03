@@ -152,7 +152,6 @@ struct ByteBeat : Module
 
 	void process(const ProcessArgs &args) override
 	{
-    /*
     if(inputs[T_INPUT].isConnected())
     {
       t = inputs[T_INPUT].getVoltage() * 2048;
@@ -173,10 +172,6 @@ struct ByteBeat : Module
         clock_division_counter = 0;
       }
     }
-    */
-    float_counter += 0.1;
-    t = math
-
 
     //
     // Read equation, parameter, and expression inputs.
