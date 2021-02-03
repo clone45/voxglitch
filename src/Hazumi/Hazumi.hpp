@@ -11,6 +11,8 @@ struct Hazumi : Module
   bool trigger_results[SEQUENCER_COLUMNS];
   unsigned int gate_outputs[SEQUENCER_COLUMNS];
 
+  std::string trigger_options_names[3] = { "Bottom", "Top", "Both" };
+
   enum ParamIds {
 		NUM_PARAMS
 	};

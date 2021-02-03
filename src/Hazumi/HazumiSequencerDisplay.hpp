@@ -6,6 +6,8 @@ struct HazumiSequencerDisplay : TransparentWidget
   int old_row = -1;
   int old_column = -1;
 
+  int alpha_fades[8] = {255,255,255,255,255,255,255,255};
+
   void HazumiDisplay()
   {
     box.size = Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
@@ -42,7 +44,26 @@ struct HazumiSequencerDisplay : TransparentWidget
           column = clamp(column, 0, SEQUENCER_COLUMNS - 1);
 
           if(module->hazumi_sequencer.column_heights[column] > row) nvgFillColor(vg, nvgRGB(200, 200, 200)); // paint height indicator
-          if(module->hazumi_sequencer.ball_locations[column] == row) nvgFillColor(vg, nvgRGB(97, 143, 170));  // paint ball
+
+          if(module->hazumi_sequencer.ball_locations[column] == row)
+          {
+            // nvgFillColor(vg, nvgRGB(97, 143, 170));  // paint ball
+
+            // If the ball has triggered an output, paint it brighter
+            if(module->hazumi_sequencer.stored_trigger_results[column] == true)
+            {
+              alpha_fades[column] = 160;
+              module->hazumi_sequencer.stored_trigger_results[column] = false;
+            }
+            nvgFillColor(vg, nvgRGBA(97, 143, 170, alpha_fades[column]));
+
+            // This assumes a consistent draw frequency. I should probably
+            // replace this with code that accurately fades out the alpha at
+            // a exact rate.
+            alpha_fades[column] += 6;
+
+            if(alpha_fades[column] > 255) alpha_fades[column] = 255;
+          }
 
           nvgFill(vg);
 
