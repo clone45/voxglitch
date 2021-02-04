@@ -1,3 +1,10 @@
+//
+// INTERESTING IDEA
+//
+// Add another layer of color which is all white with 100% opacity.  But
+// calculate "glow" based on surrounding colors and adjust the opacity to
+// brigten based on glow.
+
 struct HazumiSequencerDisplay : TransparentWidget
 {
   Hazumi *module;
