@@ -23,8 +23,6 @@ struct ByteBeat : Module
 {
   uint8_t w = 0;     // w is the output of the equations
   float output = 0;  // output is the audio output
-
-  float float_counter = 0.0
   uint32_t t;  // t is the time counter used in the equations
 
   // p1-p3 are variables used in equations.  These are values that the user
@@ -152,7 +150,6 @@ struct ByteBeat : Module
 
 	void process(const ProcessArgs &args) override
 	{
-    /*
     if(inputs[T_INPUT].isConnected())
     {
       t = inputs[T_INPUT].getVoltage() * 2048;
@@ -173,10 +170,6 @@ struct ByteBeat : Module
         clock_division_counter = 0;
       }
     }
-    */
-    float_counter += 0.1;
-    t = math
-
 
     //
     // Read equation, parameter, and expression inputs.
