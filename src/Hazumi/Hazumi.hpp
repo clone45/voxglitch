@@ -11,6 +11,8 @@ struct Hazumi : Module
   bool trigger_results[SEQUENCER_COLUMNS];
   unsigned int gate_outputs[SEQUENCER_COLUMNS];
 
+  std::string trigger_options_names[3] = { "Bottom", "Top", "Both" };
+
   enum ParamIds {
 		NUM_PARAMS
 	};
@@ -96,6 +98,18 @@ struct Hazumi : Module
     json_object_set(json_root, "column_heights", column_heights_json_array);
     json_decref(column_heights_json_array);
 
+    //
+    // Save trigger options
+    //
+
+    json_t *trigger_options_json_array = json_array();
+    for(int column_number=0; column_number < SEQUENCER_COLUMNS; column_number++)
+    {
+      json_array_append_new(trigger_options_json_array, json_integer(this->hazumi_sequencer.trigger_options[column_number]));
+    }
+    json_object_set(json_root, "trigger_options", trigger_options_json_array);
+    json_decref(trigger_options_json_array);
+
   	return json_root;
 	}
 
@@ -107,12 +121,12 @@ struct Hazumi : Module
     if(ball_locations_data)
     {
       size_t i;
-      json_t *location_json;
+      json_t *location_json = NULL;
       json_array_foreach(ball_locations_data, i, location_json)
       {
         this->hazumi_sequencer.ball_locations[i] = json_integer_value(location_json);
       }
-      // if(location_json) json_decref(location_json);
+      //if(location_json) json_decref(location_json);
     }
 
     // Load ball directions
@@ -120,12 +134,12 @@ struct Hazumi : Module
     if(ball_directions_data)
     {
       size_t i;
-      json_t *direction_json;
+      json_t *direction_json = NULL;
       json_array_foreach(ball_directions_data, i, direction_json)
       {
         this->hazumi_sequencer.ball_directions[i] = json_integer_value(direction_json);
       }
-      // if(direction_json) json_decref(direction_json);
+      //if(direction_json) json_decref(direction_json);
     }
 
     // Load column_heights
@@ -133,12 +147,25 @@ struct Hazumi : Module
     if(column_heights_data)
     {
       size_t i;
-      json_t *height_json;
+      json_t *height_json = NULL;
       json_array_foreach(column_heights_data, i, height_json)
       {
         this->hazumi_sequencer.column_heights[i] = json_integer_value(height_json);
       }
-      // if (height_json) json_decref(height_json);
+      //if (height_json) json_decref(height_json);
+    }
+
+    // Load trigger options data
+    json_t *trigger_options_data = json_object_get(json_root, "trigger_options");
+    if(trigger_options_data)
+    {
+      size_t i;
+      json_t *trigger_option_json = NULL;
+      json_array_foreach(trigger_options_data, i, trigger_option_json)
+      {
+        this->hazumi_sequencer.trigger_options[i] = json_integer_value(trigger_option_json);
+      }
+      //if (trigger_options_data) json_decref(trigger_options_data);
     }
 	}
 
