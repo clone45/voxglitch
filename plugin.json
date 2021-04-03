@@ -32,6 +32,12 @@
         "tags": ["Sequencer"]
     },
     {
+        "slug": "galacto",
+        "name": "Galacto",
+        "description": "Galacto Pitfighter",
+        "tags": ["Oscillator"]
+    },
+    {
         "slug": "glitchsequencer",
         "name": "Glitch Sequencer",
         "description": "Cellular Automaton Gate Sequencer",
