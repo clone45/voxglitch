@@ -7,8 +7,13 @@ struct GalactoWidget : ModuleWidget
 
     //
     // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_14, ROW_2)), module, Galacto::BUFFER_SIZE_INPUT));
-    addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(COLUMN_14, ROW_2)), module, Galacto::BUFFER_SIZE_KNOB));
+    addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(COLUMN_13, ROW_2)), module, Galacto::BUFFER_SIZE_KNOB));
     addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(COLUMN_15, ROW_2)), module, Galacto::FEEDBACK_KNOB));
+
+    addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(COLUMN_13, ROW_6)), module, Galacto::PARAM_KNOB_1));
+    addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(COLUMN_15, ROW_6)), module, Galacto::PARAM_KNOB_2));
+
+
     addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(COLUMN_3, ROW_2)), module, Galacto::EFFECT_KNOB));
 
     // Other
