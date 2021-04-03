@@ -10,6 +10,7 @@
 #include "Galacto/GalactoAudioBuffer.hpp"
 #include "Galacto/GalactoSamples.hpp"
 #include "Galacto/Galacto.hpp"
+#include "Galacto/GalactoEffectReadout.hpp"
 #include "Galacto/GalactoWidget.hpp"
 
 Model* modelGalacto = createModel<Galacto, GalactoWidget>("galacto");
