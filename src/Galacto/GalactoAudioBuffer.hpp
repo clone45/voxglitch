@@ -9,6 +9,7 @@ struct GalactoAudioBuffer
 
 	float playBuffer[MAX_BUFFER_SIZE];
   int sample_position = 0;
+  float feedback = 0.0;
 
   uint32_t buffer_size = 44100;
 
@@ -22,7 +23,19 @@ struct GalactoAudioBuffer
 	{
     write_head++;
     if(write_head >= buffer_size || write_head >= MAX_BUFFER_SIZE) write_head = 0;
-    playBuffer[write_head] = audio;
+
+    if(feedback == 0)
+    {
+      playBuffer[write_head] = audio;
+    }
+    else
+    {
+      float existing_audio = playBuffer[write_head];
+      float mixed_audio = (existing_audio * feedback) + (audio * (1.0 - feedback));
+      // float mixed_audio = (existing_audio * feedback);
+      playBuffer[write_head] = mixed_audio;
+    }
+
 	};
 
   float getOutput(int sample_position)
@@ -52,5 +65,10 @@ struct GalactoAudioBuffer
   void setBufferSize(uint32_t new_buffer_size)
   {
     buffer_size = new_buffer_size;
+  }
+
+  void setFeedback(float new_feedback)
+  {
+    feedback = new_feedback;
   }
 };
