@@ -6,21 +6,21 @@
 #define NUMBER_OF_EQUATIONS 9
 #define MAX_CLOCK_DIVISION 256.0
 
-#define COLUMN_1 6.35
-#define COLUMN_2 12.7
-#define COLUMN_3 19.05
-#define COLUMN_4 25.4
-#define COLUMN_5 31.75
-#define COLUMN_6 38.1
-#define COLUMN_7 44.45
-#define COLUMN_8 50.8
-#define COLUMN_9 57.15
-#define COLUMN_10 63.5
-#define COLUMN_11 69.85
-#define COLUMN_12 76.2
-#define COLUMN_13 82.55
-#define COLUMN_14 88.9
-#define COLUMN_15 95.25
+#define COLUMN_1 9.525
+#define COLUMN_2 19.050
+#define COLUMN_3 28.575
+#define COLUMN_4 38.100
+#define COLUMN_5 47.625
+#define COLUMN_6 57.150
+#define COLUMN_7 66.675
+#define COLUMN_8 76.200
+#define COLUMN_9 85.725
+#define COLUMN_10 95.250
+#define COLUMN_11 104.775
+#define COLUMN_12 114.300
+#define COLUMN_13 123.825
+#define COLUMN_14 133.350
+#define COLUMN_15 142.875
 
 #define ROW_1 8.03125
 #define ROW_2 16.0625

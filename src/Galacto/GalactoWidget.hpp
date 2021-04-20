@@ -5,20 +5,26 @@ struct GalactoWidget : ModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/galacto_front_panel.svg")));
 
+
     //
     // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_14, ROW_2)), module, Galacto::BUFFER_SIZE_INPUT));
-    addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(COLUMN_13, ROW_2)), module, Galacto::BUFFER_SIZE_KNOB));
-    addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(COLUMN_15, ROW_2)), module, Galacto::FEEDBACK_KNOB));
+    addParam(createParamCentered<RoundSmallBlackKnob>(mm2px(Vec(COLUMN_15, ROW_7 + 8)), module, Galacto::EFFECT_KNOB));
+    addParam(createParamCentered<RoundSmallBlackKnob>(mm2px(Vec(COLUMN_15, ROW_9 + 4)), module, Galacto::BUFFER_SIZE_KNOB));
+    addParam(createParamCentered<RoundSmallBlackKnob>(mm2px(Vec(COLUMN_15, ROW_11)), module, Galacto::FEEDBACK_KNOB));
+    addParam(createParamCentered<RoundSmallBlackKnob>(mm2px(Vec(COLUMN_15, ROW_13 - 4)), module, Galacto::PARAM_2_KNOB));
+    addParam(createParamCentered<RoundSmallBlackKnob>(mm2px(Vec(COLUMN_15, ROW_15 - 8)), module, Galacto::PARAM_2_KNOB));
 
-    addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(COLUMN_13, ROW_6)), module, Galacto::PARAM_KNOB_1));
-    addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(COLUMN_15, ROW_6)), module, Galacto::PARAM_KNOB_2));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_13 + 5, ROW_7 + 8)), module, Galacto::EFFECT_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_13 + 5, ROW_9 + 4)), module, Galacto::BUFFER_SIZE_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_13 + 5, ROW_11)), module, Galacto::FEEDBACK_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_13 + 5, ROW_13 - 4)), module, Galacto::PARAM_1_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_13 + 5, ROW_15 - 8)), module, Galacto::PARAM_2_INPUT));
 
 
-    addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(COLUMN_3, ROW_2)), module, Galacto::EFFECT_KNOB));
 
     // Other
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_14, ROW_6 - 4.2)), module, Galacto::AUDIO_INPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_15 + 21, ROW_6 - 4.2)), module, Galacto::AUDIO_OUTPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_1, ROW_15)), module, Galacto::AUDIO_INPUT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_3, ROW_15)), module, Galacto::AUDIO_OUTPUT));
 
     GalactoEffectReadout *effect_readout = new GalactoEffectReadout();
 		effect_readout->box.pos = mm2px(Vec(8, 64.3));
