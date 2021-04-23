@@ -20,9 +20,10 @@ struct GalactoWidget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_13 + 5, ROW_13 - 4)), module, Galacto::PARAM_1_INPUT));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_13 + 5, ROW_15 - 8)), module, Galacto::PARAM_2_INPUT));
 
+    // Purge button
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(COLUMN_15, ROW_1)), module, Galacto::PURGE_BUTTON));
 
-
-    // Other
+    // Inputs and outputs
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_1, ROW_15)), module, Galacto::AUDIO_INPUT));
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_3, ROW_15)), module, Galacto::AUDIO_OUTPUT));
 

@@ -14,6 +14,8 @@ struct Galacto : Module
 
   GalactoAudioBuffer galacto_audio_buffer;
 
+  dsp::SchmittTrigger purge_button_schmitt_trigger;
+
   float output = 0;  // output is the audio output
 
   uint32_t buffer_size = 0;
@@ -26,6 +28,7 @@ struct Galacto : Module
     EFFECT_KNOB,
     PARAM_1_KNOB,
     PARAM_2_KNOB,
+    PURGE_BUTTON,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -57,6 +60,8 @@ struct Galacto : Module
     configParam(BUFFER_SIZE_KNOB, 0.0f, 1.0f, 0.0f, "BufferSizeKnob");
     configParam(FEEDBACK_KNOB, 0.0f, 1.0f, 0.0f, "FeedbackKnob");
     configParam(EFFECT_KNOB, 0.0f, 1.0f, 0.0f, "EffectKnob");
+
+    galacto_audio_buffer.purge();
 	}
 
 	// Autosave module data.  VCV Rack decides when this should be called.
@@ -104,6 +109,9 @@ struct Galacto : Module
 	{
     float param_1_input = params[PARAM_1_KNOB].getValue(); // ranges from 0 to 1
     float param_2_input = params[PARAM_2_KNOB].getValue(); // ranges from 0 to 1
+
+    bool purge_button_is_triggered = purge_button_schmitt_trigger.process(params[PURGE_BUTTON].getValue());
+    if(purge_button_is_triggered) galacto_audio_buffer.purge();
 
     //
     // Read buffer and feedback knobs and apply them to the ring buffer
@@ -281,12 +289,6 @@ struct Galacto : Module
   {
     if(b == 0) return(0);
     return(a % b);
-  }
-
-  int32_t sample(int32_t t)
-  {
-    int st = t % (OHATMAZEO_SAMPLES-1);
-    return(OHATMAZEO[st] >> 4);
   }
 
 };

@@ -71,4 +71,12 @@ struct GalactoAudioBuffer
   {
     feedback = new_feedback;
   }
+
+  void purge()
+  {
+    for(unsigned int i=0; i < MAX_BUFFER_SIZE; i++)
+    {
+      playBuffer[i] = 0.0;
+    }
+  }
 };
