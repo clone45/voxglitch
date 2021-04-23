@@ -31,13 +31,23 @@ struct HazumiWidget : ModuleWidget
     int column = 0;
 
     void onAction(const event::Action &e) override {
-      module->hazumi_sequencer.trigger_options[column] = option;
+      if(column >= 0)
+      {
+        module->hazumi_sequencer.trigger_options[column] = option;
+      }
+      else
+      {
+        for(unsigned int i=0; i < 8; i++)
+        {
+          module->hazumi_sequencer.trigger_options[i] = option;
+        }
+      }
     }
   };
 
   struct TriggerOptionMenuItem : MenuItem {
     Hazumi *module;
-    unsigned int column = 0;
+    int column = 0;
 
     Menu *createChildMenu() override {
       Menu *menu = new Menu;
@@ -60,6 +70,21 @@ struct HazumiWidget : ModuleWidget
       trigger_option_value_item_2->option = TRIGGER_AT_BOTH;
       trigger_option_value_item_2->column = this->column;
       menu->addChild(trigger_option_value_item_2);
+
+      return menu;
+    }
+  };
+
+  struct SequencerItemAll : MenuItem {
+    Hazumi *module;
+
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      TriggerOptionMenuItem *trigger_option_menu_item = createMenuItem<TriggerOptionMenuItem>("Trigger Location", RIGHT_ARROW);
+      trigger_option_menu_item->column = -1; // -1 means "all" in this context
+      trigger_option_menu_item->module = module;
+      menu->addChild(trigger_option_menu_item);
 
       return menu;
     }
@@ -90,6 +115,11 @@ struct HazumiWidget : ModuleWidget
     menu->addChild(new MenuEntry); // For spacing only
     menu->addChild(createMenuLabel("Column Settings"));
 
+    SequencerItem *all_sequencer_items = createMenuItem<SequencerItem>("All Columns", RIGHT_ARROW);
+    all_sequencer_items->module = module;
+    all_sequencer_items->column = -1; // -1 means "all columns"
+    menu->addChild(all_sequencer_items);
+
     // Add individual sequencer settings
     SequencerItem *sequencer_items[8];
 
@@ -100,6 +130,7 @@ struct HazumiWidget : ModuleWidget
       sequencer_items[i]->column = i;
       menu->addChild(sequencer_items[i]);
     }
+
   }
 
 };
