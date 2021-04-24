@@ -1,6 +1,7 @@
 #pragma once
 
 #define MAX_BUFFER_SIZE 44100
+#define MIN_BUFFER_SIZE 10
 
 struct GalactoAudioBuffer
 {

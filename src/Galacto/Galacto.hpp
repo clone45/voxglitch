@@ -1,8 +1,8 @@
 //
-// NEXT: Add purge buffer
+// NEXT:
 // Use discrete inputs for sample selection
 // code in CV control
-//
+// Param 2 knob doesn't seem to be doing anything
 
 struct Galacto : Module
 {
@@ -11,6 +11,8 @@ struct Galacto : Module
   uint8_t previous = 0;
   int t = 0;
   unsigned int selected_effect = 0;
+  float param_1_input = 0.0;
+  float param_2_input = 0.0;
 
   GalactoAudioBuffer galacto_audio_buffer;
 
@@ -78,53 +80,31 @@ struct Galacto : Module
 	}
 
 
-  float calculate_attenuverter_input(int input_index, int knob_index, float min_value, float max_value)
+  float calculate_attenuverter_input(int input_index, int knob_index)
   {
-    float input_value = inputs[input_index].getVoltage(); // -10 to 10, normally
+    float input_value = inputs[input_index].getVoltage() / 10.0; // -1 to 1, normally
     float knob_value = params[knob_index].getValue(); // 0 to 1
 
-    // knob + CV input then clipped
-    // CV input ranging from -1 to 1
-
-    // TODO: Code this
-
-    /*
-    float input_value = inputs[input_index].getVoltage();
-    float knob_value = params[knob_index].getValue();
-    float out = 0;
-
-    if(inputs[input_index].isConnected())
-    {
-      out = clamp((input_value * knob_value), 0.0, maximum_value);
-    }
-    else
-    {
-      out = knob_value;
-    }
-    return(out);
-    */
+    return(knob_value + input_value);
   }
 
 	void process(const ProcessArgs &args) override
 	{
-    float param_1_input = params[PARAM_1_KNOB].getValue(); // ranges from 0 to 1
-    float param_2_input = params[PARAM_2_KNOB].getValue(); // ranges from 0 to 1
-
     bool purge_button_is_triggered = purge_button_schmitt_trigger.process(params[PURGE_BUTTON].getValue());
     if(purge_button_is_triggered) galacto_audio_buffer.purge();
 
     //
-    // Read buffer and feedback knobs and apply them to the ring buffer
+    // Read knobs and inputs
     //
-    buffer_size = params[BUFFER_SIZE_KNOB].getValue() * MAX_BUFFER_SIZE;
-    feedback = params[FEEDBACK_KNOB].getValue();
+    param_1_input = calculate_attenuverter_input(PARAM_1_INPUT, PARAM_1_KNOB); // ranges from 0 to 1
+    param_2_input = calculate_attenuverter_input(PARAM_2_INPUT, PARAM_2_KNOB); // ranges from 0 to 1
+    buffer_size = clamp((int) (calculate_attenuverter_input(BUFFER_SIZE_INPUT, BUFFER_SIZE_KNOB) * (float) MAX_BUFFER_SIZE), MIN_BUFFER_SIZE, MAX_BUFFER_SIZE);
+    feedback = clamp(calculate_attenuverter_input(FEEDBACK_INPUT, FEEDBACK_KNOB), 0.0, 1.0);
+    selected_effect = clamp((int) (calculate_attenuverter_input(EFFECT_INPUT,EFFECT_KNOB) * (float)NUMBER_OF_EFFECTS), 0, NUMBER_OF_EFFECTS);
 
+    // Set buffer attributes
     galacto_audio_buffer.setBufferSize(buffer_size);
     galacto_audio_buffer.setFeedback(feedback);
-
-    //
-
-    selected_effect = params[EFFECT_KNOB].getValue() * 7;
 
     float audio_input = inputs[AUDIO_INPUT].getVoltage();
     float output = 0.0;
@@ -203,8 +183,8 @@ struct Galacto : Module
   {
     t += 1;
 
-    uint32_t vp2 = p2 * 32.0;
     uint32_t vp1 = p1 * 32.0;
+    uint32_t vp2 = p2 * 32.0;
 
     offset = ((t*vp1)&div(t,vp2)) * .1;
 
@@ -218,8 +198,8 @@ struct Galacto : Module
   {
     t += 1;
 
-    uint32_t vp2 = p2 * 32.0;
     uint32_t vp1 = p1 * 32.0;
+    uint32_t vp2 = p2 * 32.0;
 
     // offset = (div(t,vp2),(t*vp1)) * .1;
 
