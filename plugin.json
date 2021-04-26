@@ -80,6 +80,12 @@
         "tags": ["Sequencer"]
     },
     {
+        "slug": "looper",
+        "name": "Looper",
+        "description": "Bare minimum sample looper",
+        "tags": ["Sampler"]
+    },
+    {
         "slug": "repeater",
         "name": "Repeater",
         "description": "Looping sample player with playback offset control.",
