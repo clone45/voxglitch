@@ -1,3 +1,5 @@
+// Refresh icon curtesy of "Trendy" from the Noun Project
+
 struct Looper : Module
 {
 	std::string loaded_filename = "[ EMPTY ]";
