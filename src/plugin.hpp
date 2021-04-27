@@ -25,3 +25,4 @@ extern Model *modelAutobreak;
 extern Model *modelDigitalSequencer;
 extern Model *modelSamplerX8;
 extern Model *modelByteBeat;
+extern Model *modelLooper;
