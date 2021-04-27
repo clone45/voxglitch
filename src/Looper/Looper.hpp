@@ -7,6 +7,7 @@ struct Looper : Module
   dsp::SchmittTrigger resetTrigger;
   float left_audio = 0;
   float right_audio = 0;
+  std::string root_dir;
 
   enum ParamIds {
 		NUM_PARAMS
