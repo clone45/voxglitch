@@ -38,4 +38,62 @@ struct LooperWaveformDisplay : TransparentWidget
     nvgRestore(vg);
   }
 
+  void onButton(const event::Button &e) override
+  {
+    if(isMouseInDrawArea(e.pos))
+    {
+      if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
+      {
+        e.consume(this);
+
+        // Open dialog box and prompt user for sample
+    		const std::string dir = module->root_dir.empty() ? "" : module->root_dir;
+    		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("Wav:wav"));
+
+    		if (path)
+    		{
+          module->root_dir = std::string(path);
+    			module->sample_player.loadSample(std::string(path));
+          module->loaded_filename = module->sample_player.getFilename();
+    			free(path);
+
+          module->sample_player.loadSample(std::string(path));
+    		}
+
+      }
+    }
+  }
+
+  bool isMouseInDrawArea(Vec position)
+  {
+    if(position.x < 0) return(false);
+    if(position.y < 0) return(false);
+    if(position.x >= DRAW_AREA_WIDTH) return(false);
+    if(position.y >= DRAW_AREA_HEIGHT) return(false);
+    return(true);
+  }
+
+  void onDragMove(const event::DragMove &e) override
+  {
+    TransparentWidget::onDragMove(e);
+  }
+
+  void onEnter(const event::Enter &e) override
+  {
+    TransparentWidget::onEnter(e);
+  }
+
+  void onLeave(const event::Leave &e) override
+  {
+    TransparentWidget::onLeave(e);
+  }
+
+  void onHover(const event::Hover& e) override {
+    TransparentWidget::onHover(e);
+  }
+
+  void step() override {
+    TransparentWidget::step();
+  }
+
 };
