@@ -8,7 +8,8 @@ struct GalactoWidget : ModuleWidget
 
     //
     // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_14, ROW_2)), module, Galacto::BUFFER_SIZE_INPUT));
-    addParam(createParamCentered<RoundSmallBlackKnob>(mm2px(Vec(COLUMN_15, ROW_7 + 8)), module, Galacto::EFFECT_KNOB));
+    // addParam(createParamCentered<RoundSmallBlackKnob>(mm2px(Vec(COLUMN_15, ROW_7 + 8)), module, Galacto::EFFECT_KNOB));
+    add_snapping_parameter_knob(COLUMN_15, ROW_7 + 8, Galacto::EFFECT_KNOB);
     addParam(createParamCentered<RoundSmallBlackKnob>(mm2px(Vec(COLUMN_15, ROW_9 + 4)), module, Galacto::BUFFER_SIZE_KNOB));
     addParam(createParamCentered<RoundSmallBlackKnob>(mm2px(Vec(COLUMN_15, ROW_11)), module, Galacto::FEEDBACK_KNOB));
     addParam(createParamCentered<RoundSmallBlackKnob>(mm2px(Vec(COLUMN_15, ROW_13 - 4)), module, Galacto::PARAM_1_KNOB));
@@ -36,12 +37,10 @@ struct GalactoWidget : ModuleWidget
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_15 + 21, ROW_1)), module, Galacto::DEBUG_OUTPUT));
   }
 
-  /*
   void add_snapping_parameter_knob(float column, float row, int index)
   {
-    auto P = createParamCentered<RoundBlackKnob>(mm2px(Vec(column, row)), module, index);
+    auto P = createParamCentered<RoundSmallBlackKnob>(mm2px(Vec(column, row)), module, index);
     dynamic_cast<Knob*>(P)->snap = true;
     addParam(P);
   }
-  */
 };

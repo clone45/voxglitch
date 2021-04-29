@@ -61,7 +61,7 @@ struct Galacto : Module
 
     configParam(BUFFER_SIZE_KNOB, 0.0f, 1.0f, 0.0f, "BufferSizeKnob");
     configParam(FEEDBACK_KNOB, 0.0f, 1.0f, 0.0f, "FeedbackKnob");
-    configParam(EFFECT_KNOB, 0.0f, 1.0f, 0.0f, "EffectKnob");
+    configParam(EFFECT_KNOB, 0.0f, 7.0f, 0.0f, "EffectKnob");
 
     galacto_audio_buffer.purge();
 	}
@@ -100,7 +100,8 @@ struct Galacto : Module
     param_2_input = calculate_attenuverter_input(PARAM_2_INPUT, PARAM_2_KNOB); // ranges from 0 to 1
     buffer_size = clamp((int) (calculate_attenuverter_input(BUFFER_SIZE_INPUT, BUFFER_SIZE_KNOB) * (float) MAX_BUFFER_SIZE), MIN_BUFFER_SIZE, MAX_BUFFER_SIZE);
     feedback = clamp(calculate_attenuverter_input(FEEDBACK_INPUT, FEEDBACK_KNOB), 0.0, 1.0);
-    selected_effect = clamp((int) (calculate_attenuverter_input(EFFECT_INPUT,EFFECT_KNOB) * (float)NUMBER_OF_EFFECTS), 0, NUMBER_OF_EFFECTS);
+
+    selected_effect = clamp((int) (( params[EFFECT_INPUT].getValue() * (float)NUMBER_OF_EFFECTS) + params[EFFECT_KNOB].getValue()), 0, NUMBER_OF_EFFECTS);
 
     // Set buffer attributes
     galacto_audio_buffer.setBufferSize(buffer_size);
@@ -245,13 +246,16 @@ struct Galacto : Module
   {
     t += 1;
 
-    uint32_t vp1 = p1 * 128;
-    uint32_t vp2 = p2 * 15;
+    uint32_t vp1 = p1 * 5000;
+    uint32_t vp2 = p2 * 6000;
 
-    offset = 1;
+    offset = sin(float(t/8.0) / vp1) * buffer_size;
+    offset += sin(float(t/32.0) / vp2) * buffer_size;
 
-    float output = galacto_audio_buffer.getOutput(t + offset);
 
+    float output = galacto_audio_buffer.getOutput(offset);
+
+    // return(output);
     return(output);
   }
 
