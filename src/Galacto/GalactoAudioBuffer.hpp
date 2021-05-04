@@ -73,6 +73,11 @@ struct GalactoAudioBuffer
     feedback = new_feedback;
   }
 
+  unsigned int getWriteHead()
+  {
+    return(write_head);
+  }
+
   void purge()
   {
     for(unsigned int i=0; i < MAX_BUFFER_SIZE; i++)
