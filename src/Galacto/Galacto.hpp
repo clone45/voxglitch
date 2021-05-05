@@ -32,6 +32,7 @@ struct Galacto : Module
 		NUM_PARAMS
 	};
 	enum InputIds {
+    AUDIO_INPUT_LEFT,
     AUDIO_INPUT,
     EFFECT_INPUT,
     BUFFER_SIZE_INPUT,
