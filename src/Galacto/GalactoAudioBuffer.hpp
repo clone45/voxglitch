@@ -33,7 +33,6 @@ struct GalactoAudioBuffer
     {
       float existing_audio = playBuffer[write_head];
       float mixed_audio = (existing_audio * feedback) + (audio * (1.0 - feedback));
-      // float mixed_audio = (existing_audio * feedback);
       playBuffer[write_head] = mixed_audio;
     }
 

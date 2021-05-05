@@ -26,18 +26,16 @@ struct GalactoWidget : ModuleWidget
 
     // Inputs and outputs
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_1, ROW_13 AND_A_HALF_ROW)), module, Galacto::AUDIO_INPUT_LEFT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_1, ROW_15)), module, Galacto::AUDIO_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_1, ROW_15)), module, Galacto::AUDIO_INPUT_RIGHT));
 
-
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_3, ROW_15)), module, Galacto::AUDIO_OUTPUT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_3, ROW_13 AND_A_HALF_ROW)), module, Galacto::AUDIO_OUTPUT_LEFT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_3, ROW_15)), module, Galacto::AUDIO_OUTPUT_RIGHT));
 
     GalactoEffectReadout *effect_readout = new GalactoEffectReadout();
 		effect_readout->box.pos = mm2px(Vec(8, 64.3));
 		effect_readout->box.size = Vec(200, 30); // bounding box of the widget
 		effect_readout->module = module;
 		addChild(effect_readout);
-
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_15 + 21, ROW_1)), module, Galacto::DEBUG_OUTPUT));
   }
 
   void add_snapping_parameter_knob(float column, float row, int index)

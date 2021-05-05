@@ -12,11 +12,12 @@ struct Galacto : Module
   float param_1_input = 0.0;
   float param_2_input = 0.0;
 
-  GalactoAudioBuffer audio_buffer;
+  GalactoStereoAudioBuffer audio_buffer;
 
   dsp::SchmittTrigger purge_button_schmitt_trigger;
 
-  float output = 0;  // output is the audio output
+  float left_audio = 0.0;
+  float right_audio = 0.0;
 
   uint32_t buffer_size = 0;
   float feedback = 0.0;
@@ -33,7 +34,7 @@ struct Galacto : Module
 	};
 	enum InputIds {
     AUDIO_INPUT_LEFT,
-    AUDIO_INPUT,
+    AUDIO_INPUT_RIGHT,
     EFFECT_INPUT,
     BUFFER_SIZE_INPUT,
     FEEDBACK_INPUT,
@@ -42,8 +43,8 @@ struct Galacto : Module
 		NUM_INPUTS
 	};
 	enum OutputIds {
-    AUDIO_OUTPUT,
-    DEBUG_OUTPUT,
+    AUDIO_OUTPUT_LEFT,
+    AUDIO_OUTPUT_RIGHT,
 		NUM_OUTPUTS
 	};
 	enum LightIds {
@@ -108,14 +109,16 @@ struct Galacto : Module
     audio_buffer.setBufferSize(buffer_size);
     audio_buffer.setFeedback(feedback);
 
-    float audio_input = inputs[AUDIO_INPUT].getVoltage();
-    float output = 0.0;
+    float audio_input_left = inputs[AUDIO_INPUT_LEFT].getVoltage();
+    float audio_input_right = inputs[AUDIO_INPUT_RIGHT].getVoltage();
+    // float output = 0.0;
 
-    audio_buffer.push(audio_input);
+    audio_buffer.push(audio_input_left, audio_input_right);
 
     t += 1;
 
     switch(selected_effect) {
+              /*
       case 0:
         output = fx_two_direction.process(this, t, param_1_input, param_2_input);
         // output = eye_1(param_1_input, param_2_input);
@@ -126,7 +129,7 @@ struct Galacto : Module
       case 2:
         output = fx_bytebeat_1.process(this,t, param_1_input, param_2_input);
         break;
-        /*
+
       case 3:
         output = eye_4(param_1_input, param_2_input);
         break;
@@ -141,12 +144,16 @@ struct Galacto : Module
         break;
         */
       case 7:
-        output = fx_slice_repeat.process(this,t, param_1_input, param_2_input);
+        std::tie(left_audio, right_audio) = fx_slice_repeat.process(this, t, param_1_input, param_2_input);
         break;
-
     }
 
-    outputs[AUDIO_OUTPUT].setVoltage(output);
+    outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_audio);
+    outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_audio);
+
+    // For testing, just output the raw input audio
+    // outputs[AUDIO_OUTPUT_LEFT].setVoltage(audio_input_left);
+    // outputs[AUDIO_OUTPUT_RIGHT].setVoltage(audio_input_right);
   }
 
   struct Effect
@@ -162,8 +169,13 @@ struct Galacto : Module
       if(b == 0) return(0);
       return(a % b);
     }
-  };
 
+    std::pair<float,float> mix(const std::pair<float,float> &a, const std::pair<float,float> &b)
+    {
+      return(std::make_pair(a.first + b.first, a.second + b.second));
+    }
+  };
+  /*
   struct FXTwoDirection : Effect
   {
     int offset = 0;
@@ -276,24 +288,30 @@ struct Galacto : Module
       return(galacto->audio_buffer.getOutput(t + offset));
     }
   } fx_dizzy;
+  */
 
   struct FXSliceRepeat : Effect
   {
     int divisor = 4;
     int window_size;
     int offset = -1;
+    float left_audio_1 = 0.0;
+    float right_audio_1 = 0.0;
+    float left_audio_2 = 0.0;
+    float right_audio_2 = 0.0;
 
-    float process(Galacto *galacto, int t, float p1, float p2)
+    std::pair<float, float> process(Galacto *galacto, int t, float p1, float p2)
     {
       divisor = int(p1 * 32.0);
       if(divisor <= 1) divisor = 2;
 
       window_size = galacto->buffer_size / divisor;
-
       if(++offset >= 0) offset = (-1 * window_size);
 
-      return(galacto->audio_buffer.getOutput(offset) + galacto->audio_buffer.getOutput(t));
+      return(mix(galacto->audio_buffer.valueAt(offset), galacto->audio_buffer.valueAt(t)));
+      // return(galacto->audio_buffer.valueAt(t));
     }
+
   } fx_slice_repeat;
 
   /*

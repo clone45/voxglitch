@@ -10,8 +10,6 @@ struct GalactoStereoAudioBuffer
 
 	float buffer_left[MAX_BUFFER_SIZE];
   float buffer_right[MAX_BUFFER_SIZE];
-
-  int sample_position = 0;
   float feedback = 0.0;
 
   uint32_t buffer_size = 44100;
@@ -37,18 +35,17 @@ struct GalactoStereoAudioBuffer
       float existing_audio_left = buffer_left[write_head];
       float existing_audio_right = buffer_right[write_head];
 
-      float mixed_audio_left = (existing_audio_left * feedback) + (existing_audio_left * (1.0 - feedback));
-      float mixed_audio_right = (existing_audio_right * feedback) + (existing_audio_right * (1.0 - feedback));
+      float mixed_audio_left = (existing_audio_left * feedback) + (audio_left * (1.0 - feedback));
+      float mixed_audio_right = (existing_audio_right * feedback) + (audio_right * (1.0 - feedback));
 
       // float mixed_audio = (existing_audio * feedback);
       buffer_left[write_head] = mixed_audio_left;
       buffer_right[write_head] = mixed_audio_right;
-
     }
 
 	};
 
-  std::pair<float, float> getOutput(int sample_position)
+  std::pair<float, float> valueAt(int sample_position)
   {
     if(buffer_size <= 0) buffer_size = 1;
     if(buffer_size > MAX_BUFFER_SIZE) buffer_size = MAX_BUFFER_SIZE - 1;
@@ -58,7 +55,7 @@ struct GalactoStereoAudioBuffer
 
     unsigned int index = sample_position % buffer_size;
 
-    if(index < sizeof(playBuffer)) // very paranoid!
+    if(index < sizeof(buffer_left)) // very paranoid!
     {
       output_left = buffer_left[index];
       output_right = buffer_right[index];
