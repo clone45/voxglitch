@@ -118,29 +118,27 @@ struct Galacto : Module
     t += 1;
 
     switch(selected_effect) {
-              /*
+
       case 0:
-        output = fx_two_direction.process(this, t, param_1_input, param_2_input);
-        // output = eye_1(param_1_input, param_2_input);
+        std::tie(left_audio, right_audio) = fx_two_direction.process(this, t, param_1_input, param_2_input);
         break;
       case 1:
-        output = fx_delays.process(this, t, param_1_input, param_2_input);
+        std::tie(left_audio, right_audio) = fx_delays.process(this, t, param_1_input, param_2_input);
         break;
       case 2:
-        output = fx_bytebeat_1.process(this,t, param_1_input, param_2_input);
+        std::tie(left_audio, right_audio) = fx_bytebeat_1.process(this,t, param_1_input, param_2_input);
+        break;
+      case 3:
+        std::tie(left_audio, right_audio) = fx_bytebeat_2.process(this,t, param_1_input, param_2_input);
         break;
 
-      case 3:
-        output = eye_4(param_1_input, param_2_input);
-        break;
       case 4:
-        output = eye_5(param_1_input, param_2_input);
+        std::tie(left_audio, right_audio) = fx_bytebeat_3.process(this,t, param_1_input, param_2_input);
         break;
+              /*
       case 5:
-        output = eye_6(param_1_input, param_2_input);
         break;
       case 6:
-        output = eye_7(param_1_input, param_2_input);
         break;
         */
       case 7:
@@ -175,28 +173,28 @@ struct Galacto : Module
       return(std::make_pair(a.first + b.first, a.second + b.second));
     }
   };
-  /*
+
   struct FXTwoDirection : Effect
   {
-    int offset = 0;
-
-    float process(Galacto *galacto, int t, float p1, float p2)
+    std::pair<float, float> process(Galacto *galacto, int t, float p1, float p2)
     {
       uint32_t vp1 = p1 * 8.0;
       if(vp1 == 0) vp1 = 1;
 
-      float output = galacto->audio_buffer.getOutput((galacto->buffer_size  / 2) - t) + galacto->audio_buffer.getOutput(t);
-
-      return(output);
+      return(mix(galacto->audio_buffer.valueAt((galacto->buffer_size / 2) - t), galacto->audio_buffer.valueAt(t)));
     }
   } fx_two_direction;
 
   struct FXDelays : Effect
   {
-    float process(Galacto *galacto, int t, float p1, float p2)
+    std::pair<float, float> process(Galacto *galacto, int t, float p1, float p2)
     {
-      float output = galacto->audio_buffer.getOutput(t) + galacto->audio_buffer.getOutput(t + (galacto->buffer_size / 2)) + galacto->audio_buffer.getOutput(t + (galacto->buffer_size / 4));
-      return(output);
+      return(
+        mix(
+          mix(galacto->audio_buffer.valueAt(t), galacto->audio_buffer.valueAt(t + (galacto->buffer_size / 2))),
+          galacto->audio_buffer.valueAt(t + (galacto->buffer_size / 4))
+        )
+      );
     }
   } fx_delays;
 
@@ -204,14 +202,13 @@ struct Galacto : Module
   {
     int offset = 0;
 
-    float process(Galacto *galacto, int t, float p1, float p2)
+    std::pair<float, float> process(Galacto *galacto, int t, float p1, float p2)
     {
       uint32_t vp2 = p2 * 16.0;
 
       offset = ((t*7)&div(t,vp2)) * .1;
 
-      float output = galacto->audio_buffer.getOutput(t + offset);
-      return(output);
+      return(galacto->audio_buffer.valueAt(t + offset));
     }
   } fx_bytebeat_1;
 
@@ -220,13 +217,13 @@ struct Galacto : Module
   {
     int offset = 0;
 
-    float process(Galacto *galacto, int t, float p1, float p2)
+    std::pair<float, float> process(Galacto *galacto, int t, float p1, float p2)
     {
       uint32_t vp1 = p1 * 32.0;
       uint32_t vp2 = p2 * 32.0;
 
       offset = ((t*vp1)&div(t,vp2)) * .1;
-      return(galacto->audio_buffer.getOutput(t + offset));
+      return(galacto->audio_buffer.valueAt(t + offset));
     }
   } fx_bytebeat_2;
 
@@ -235,16 +232,17 @@ struct Galacto : Module
   {
     int offset = 0;
 
-    float process(Galacto *galacto, int t, float p1, float p2)
+    std::pair<float, float> process(Galacto *galacto, int t, float p1, float p2)
     {
       uint32_t vp1 = p1 * 32.0;
       uint32_t vp2 = p2 * 32.0;
 
       offset = ((t >> vp1) & t) * (t>>vp2);
-      return(galacto->audio_buffer.getOutput(t + offset));
+      return(galacto->audio_buffer.valueAt(t + offset));
     }
   } fx_bytebeat_3;
 
+  /*
   struct FXBytebeat4 : Effect
   {
     int offset = 0;
@@ -255,7 +253,7 @@ struct Galacto : Module
       uint32_t vp2 = p2 * 32.0;
 
       offset = mod((( mod(t,((76 - (t>>vp2)) % 11))) * (t>>1)), (47-(t>>(4+vp1)) % 41)) * .7;
-      return(galacto->audio_buffer.getOutput(t + offset));
+      return(galacto->audio_buffer.valueAt(t + offset));
     }
   } fx_bytebeat_4;
 
@@ -269,7 +267,7 @@ struct Galacto : Module
       uint32_t vp2 = p2 * 32.0;
 
       offset = (vp1&t*(4|(7&t>>13))>>(1&-t>>vp2))+(127&t*(t>>11&t>>13)*(3&-t>>9));
-      return(galacto->audio_buffer.getOutput(t + offset));
+      return(galacto->audio_buffer.valueAt(t + offset));
     }
   } fx_bytebeat_5;
 
@@ -285,7 +283,7 @@ struct Galacto : Module
       offset = sin(float(t/8.0) / vp1) * galacto->buffer_size;
       offset += sin(float(t/32.0) / vp2) * galacto->buffer_size;
 
-      return(galacto->audio_buffer.getOutput(t + offset));
+      return(galacto->audio_buffer.valueAt(t + offset));
     }
   } fx_dizzy;
   */
@@ -295,21 +293,16 @@ struct Galacto : Module
     int divisor = 4;
     int window_size;
     int offset = -1;
-    float left_audio_1 = 0.0;
-    float right_audio_1 = 0.0;
-    float left_audio_2 = 0.0;
-    float right_audio_2 = 0.0;
 
     std::pair<float, float> process(Galacto *galacto, int t, float p1, float p2)
     {
-      divisor = int(p1 * 32.0);
+      divisor = int(p1 * 16.0);
       if(divisor <= 1) divisor = 2;
 
       window_size = galacto->buffer_size / divisor;
       if(++offset >= 0) offset = (-1 * window_size);
 
       return(mix(galacto->audio_buffer.valueAt(offset), galacto->audio_buffer.valueAt(t)));
-      // return(galacto->audio_buffer.valueAt(t));
     }
 
   } fx_slice_repeat;
