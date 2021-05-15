@@ -12,7 +12,6 @@ extern Plugin* pluginInstance;
 extern Model *modelRepeater;
 extern Model *modelWavBank;
 extern Model *modelXY;
-extern Model *modelGalacto;
 extern Model *modelGhosts;
 extern Model *modelGlitchSequencer;
 extern Model *modelGoblins;
