@@ -1,13 +1,15 @@
 //
 // NEXT:
 // freeze buffer input
+  /* 1024 sin array */
+
 
 struct Galacto : Module
 {
   uint8_t w = 0;     // w is the output of the equations
   int offset = 0;
   uint8_t previous = 0;
-  int t = 0;
+  unsigned int t = 0;
   unsigned int selected_effect = 0;
   float param_1_input = 0.0;
   float param_2_input = 0.0;
@@ -61,7 +63,7 @@ struct Galacto : Module
 
     configParam(BUFFER_SIZE_KNOB, 0.0f, 1.0f, 0.0f, "BufferSizeKnob");
     configParam(FEEDBACK_KNOB, 0.0f, 1.0f, 0.0f, "FeedbackKnob");
-    configParam(EFFECT_KNOB, 0, 7, 0, "EffectKnob");
+    configParam(EFFECT_KNOB, 0, 9, 0, "EffectKnob");
 
     audio_buffer.purge();
 	}
@@ -131,18 +133,23 @@ struct Galacto : Module
       case 3:
         std::tie(left_audio, right_audio) = fx_bytebeat_2.process(this,t, param_1_input, param_2_input);
         break;
-
       case 4:
         std::tie(left_audio, right_audio) = fx_bytebeat_3.process(this,t, param_1_input, param_2_input);
         break;
-              /*
       case 5:
+        std::tie(left_audio, right_audio) = fx_bytebeat_4.process(this,t, param_1_input, param_2_input);
         break;
       case 6:
+        std::tie(left_audio, right_audio) = fx_bytebeat_5.process(this,t, param_1_input, param_2_input);
         break;
-        */
       case 7:
         std::tie(left_audio, right_audio) = fx_slice_repeat.process(this, t, param_1_input, param_2_input);
+        break;
+      case 8:
+        std::tie(left_audio, right_audio) = fx_dizzy.process(this, t, param_1_input, param_2_input);
+        break;
+      case 9:
+        std::tie(left_audio, right_audio) = fx_wave_packing.process(this, t, param_1_input, param_2_input);
         break;
     }
 
@@ -172,11 +179,16 @@ struct Galacto : Module
     {
       return(std::make_pair(a.first + b.first, a.second + b.second));
     }
+
+    std::pair<float,float> subtract(const std::pair<float,float> &a, const std::pair<float,float> &b)
+    {
+      return(std::make_pair((a.first - b.first) * 2, a.second - b.second));
+    }
   };
 
   struct FXTwoDirection : Effect
   {
-    std::pair<float, float> process(Galacto *galacto, int t, float p1, float p2)
+    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
     {
       uint32_t vp1 = p1 * 8.0;
       if(vp1 == 0) vp1 = 1;
@@ -187,7 +199,7 @@ struct Galacto : Module
 
   struct FXDelays : Effect
   {
-    std::pair<float, float> process(Galacto *galacto, int t, float p1, float p2)
+    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
     {
       return(
         mix(
@@ -202,7 +214,7 @@ struct Galacto : Module
   {
     int offset = 0;
 
-    std::pair<float, float> process(Galacto *galacto, int t, float p1, float p2)
+    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
     {
       uint32_t vp2 = p2 * 16.0;
 
@@ -217,7 +229,7 @@ struct Galacto : Module
   {
     int offset = 0;
 
-    std::pair<float, float> process(Galacto *galacto, int t, float p1, float p2)
+    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
     {
       uint32_t vp1 = p1 * 32.0;
       uint32_t vp2 = p2 * 32.0;
@@ -232,7 +244,7 @@ struct Galacto : Module
   {
     int offset = 0;
 
-    std::pair<float, float> process(Galacto *galacto, int t, float p1, float p2)
+    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
     {
       uint32_t vp1 = p1 * 32.0;
       uint32_t vp2 = p2 * 32.0;
@@ -242,12 +254,12 @@ struct Galacto : Module
     }
   } fx_bytebeat_3;
 
-  /*
+  // CONSIDER REPLACING THIS ONE
   struct FXBytebeat4 : Effect
   {
     int offset = 0;
 
-    float process(Galacto *galacto, int t, float p1, float p2)
+    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
     {
       uint32_t vp1 = p1 * 32.0;
       uint32_t vp2 = p2 * 32.0;
@@ -257,16 +269,22 @@ struct Galacto : Module
     }
   } fx_bytebeat_4;
 
+
   struct FXBytebeat5 : Effect
   {
+    int previous_offset = 0;
+    int next_offset = 0;
     int offset = 0;
 
-    float process(Galacto *galacto, int t, float p1, float p2)
+    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
     {
       uint32_t vp1 = p1 * 32.0;
       uint32_t vp2 = p2 * 32.0;
 
-      offset = (vp1&t*(4|(7&t>>13))>>(1&-t>>vp2))+(127&t*(t>>11&t>>13)*(3&-t>>9));
+      next_offset = ( t * (( t>>4| t>>vp1 ) & vp2)) & (vp2+5);
+      offset = (previous_offset + next_offset) / 2;
+      next_offset = offset;
+
       return(galacto->audio_buffer.valueAt(t + offset));
     }
   } fx_bytebeat_5;
@@ -275,7 +293,7 @@ struct Galacto : Module
   {
     int offset = 0;
 
-    float process(Galacto *galacto, int t, float p1, float p2)
+    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
     {
       uint32_t vp1 = p1 * 5000;
       uint32_t vp2 = p2 * 6000;
@@ -286,7 +304,6 @@ struct Galacto : Module
       return(galacto->audio_buffer.valueAt(t + offset));
     }
   } fx_dizzy;
-  */
 
   struct FXSliceRepeat : Effect
   {
@@ -294,7 +311,7 @@ struct Galacto : Module
     int window_size;
     int offset = -1;
 
-    std::pair<float, float> process(Galacto *galacto, int t, float p1, float p2)
+    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
     {
       divisor = int(p1 * 16.0);
       if(divisor <= 1) divisor = 2;
@@ -306,6 +323,60 @@ struct Galacto : Module
     }
 
   } fx_slice_repeat;
+
+
+  struct FXWavePacking : Effect
+  {
+    unsigned int divisor = 4;
+    unsigned int phase = 2;
+    int offset = -1;
+
+    int period = 64;
+    int sin_index = 0;
+    float sin_amplitude = 0;
+
+    bool sin_is_playing = false;
+    std::pair<float, float> stereo_audio = { 0, 0 };
+
+    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
+    {
+      // HOW about flutter?  (sequenced muting)
+      divisor = int(p1 * 4096.0);
+      if(divisor < 12) divisor = 12;
+
+      phase = float(divisor) * p2;
+      if(phase < 1) phase = 1;
+
+      if(t%divisor < phase)
+      {
+        stereo_audio = galacto->audio_buffer.valueAt(t);
+      }
+      else
+      {
+        stereo_audio = { 0, 0 };
+      }
+
+      return(stereo_audio);
+    }
+
+  } fx_wave_packing;
+
+/*
+  struct FXBytebeat6 : Effect
+  {
+    int offset = 0;
+
+    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
+    {
+      uint32_t vp1 = p1 * 32.0;
+      uint32_t vp2 = p2 * 32.0;
+
+      // offset = (vp1&t*(4|(7&t>>13))>>(1&-t>>vp2))+(12&t*(t>>11&t>>13)*(3&-t>>9));
+      // offset =
+      return(galacto->audio_buffer.valueAt(t + offset));
+    }
+  } fx_bytebeat_6;
+*/
 
   /*
 
@@ -350,3 +421,29 @@ struct Galacto : Module
   //
 
 };
+
+
+/* 256 sin array
+
+0.000000, 0.024541, 0.049068, 0.073565, 0.098017, 0.122411, 0.146730, 0.170962, 0.195090, 0.219101, 0.242980, 0.266713, 0.290285, 0.313682,
+ 0.336890, 0.359895, 0.382683, 0.405241, 0.427555, 0.449611, 0.471397, 0.492898, 0.514103, 0.534998, 0.555570, 0.575808, 0.595699, 0.615232
+, 0.634393, 0.653173, 0.671559, 0.689541, 0.707107, 0.724247, 0.740951, 0.757209, 0.773010, 0.788346, 0.803208, 0.817585, 0.831470, 0.84485
+4, 0.857729, 0.870087, 0.881921, 0.893224, 0.903989, 0.914210, 0.923880, 0.932993, 0.941544, 0.949528, 0.956940, 0.963776, 0.970031, 0.9757
+02, 0.980785, 0.985278, 0.989177, 0.992480, 0.995185, 0.997290, 0.998795, 0.999699, 1.000000, 0.999699, 0.998795, 0.997290, 0.995185, 0.992
+480, 0.989177, 0.985278, 0.980785, 0.975702, 0.970031, 0.963776, 0.956940, 0.949528, 0.941544, 0.932993, 0.923880, 0.914210, 0.903989, 0.89
+3224, 0.881921, 0.870087, 0.857729, 0.844854, 0.831470, 0.817585, 0.803208, 0.788346, 0.773010, 0.757209, 0.740951, 0.724247, 0.707107, 0.6
+89541, 0.671559, 0.653173, 0.634393, 0.615232, 0.595699, 0.575808, 0.555570, 0.534998, 0.514103, 0.492898, 0.471397, 0.449611, 0.427555, 0.
+405241, 0.382683, 0.359895, 0.336890, 0.313682, 0.290285, 0.266713, 0.242980, 0.219101, 0.195090, 0.170962, 0.146730, 0.122411, 0.098017, 0
+.073565, 0.049068, 0.024541, 0.000000, -0.024541, -0.049068, -0.073565, -0.098017, -0.122411, -0.146730, -0.170962, -0.195090, -0.219101, -
+0.242980, -0.266713, -0.290285, -0.313682, -0.336890, -0.359895, -0.382683, -0.405241, -0.427555, -0.449611, -0.471397, -0.492898, -0.51410
+3, -0.534998, -0.555570, -0.575808, -0.595699, -0.615232, -0.634393, -0.653173, -0.671559, -0.689541, -0.707107, -0.724247, -0.740951, -0.7
+57209, -0.773010, -0.788346, -0.803208, -0.817585, -0.831470, -0.844854, -0.857729, -0.870087, -0.881921, -0.893224, -0.903989, -0.914210,
+-0.923880, -0.932993, -0.941544, -0.949528, -0.956940, -0.963776, -0.970031, -0.975702, -0.980785, -0.985278, -0.989177, -0.992480, -0.9951
+85, -0.997290, -0.998795, -0.999699, -1.000000, -0.999699, -0.998795, -0.997290, -0.995185, -0.992480, -0.989177, -0.985278, -0.980785, -0.
+975702, -0.970031, -0.963776, -0.956940, -0.949528, -0.941544, -0.932993, -0.923880, -0.914210, -0.903989, -0.893224, -0.881921, -0.870087,
+ -0.857729, -0.844854, -0.831470, -0.817585, -0.803208, -0.788346, -0.773010, -0.757209, -0.740951, -0.724247, -0.707107, -0.689541, -0.671
+559, -0.653173, -0.634393, -0.615232, -0.595699, -0.575808, -0.555570, -0.534998, -0.514103, -0.492898, -0.471397, -0.449611, -0.427555, -0
+.405241, -0.382683, -0.359895, -0.336890, -0.313682, -0.290285, -0.266713, -0.242980, -0.219101, -0.195090, -0.170962, -0.146730, -0.122411
+, -0.098017, -0.073565, -0.049068, -0.024541,
+
+*/
