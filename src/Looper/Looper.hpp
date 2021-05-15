@@ -43,7 +43,6 @@ struct Looper : Module
 		{
 			sample_player.loadSample(json_string_value(loaded_sample_path));
 			loaded_filename = sample_player.getFilename();
-      sample_player.trigger();
 		}
 	}
 
