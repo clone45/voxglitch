@@ -24,6 +24,9 @@ struct GalactoWidget : ModuleWidget
     // Purge button
     addParam(createParamCentered<LEDButton>(mm2px(Vec(COLUMN_15, ROW_1)), module, Galacto::PURGE_BUTTON));
 
+    // Drive knob
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(COLUMN_15, ROW_3)), module, Galacto::DRIVE_KNOB));
+
     // Inputs and outputs
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_1, ROW_13 AND_A_HALF_ROW)), module, Galacto::AUDIO_INPUT_LEFT));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_1, ROW_15)), module, Galacto::AUDIO_INPUT_RIGHT));
