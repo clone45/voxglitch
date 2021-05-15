@@ -14,7 +14,7 @@ struct LooperLoadSample : MenuItem
       module->loaded_filename = module->sample_player.getFilename();
 			free(path);
 
-      module->sample_player.loadSample(std::string(path));
+      // module->sample_player.loadSample(std::string(path));
 		}
 	}
 };

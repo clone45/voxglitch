@@ -43,6 +43,7 @@ struct SamplePlayer
   void loadSample(std::string path)
   {
     sample.load(path);
+    this->trigger();
   }
 
   void reset()

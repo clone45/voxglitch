@@ -57,7 +57,8 @@ struct LooperWaveformDisplay : TransparentWidget
           module->loaded_filename = module->sample_player.getFilename();
     			free(path);
 
-          module->sample_player.loadSample(std::string(path));
+          // Redundant and dangerous code
+          // module->sample_player.loadSample(std::string(path));
     		}
 
       }
