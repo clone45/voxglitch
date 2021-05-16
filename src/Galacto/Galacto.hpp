@@ -1,6 +1,7 @@
 //
-// NEXT:
-// Add gain knob
+// TODO:
+// * get sample modulation working
+// * look at how other modulation works right now.  Double check that it's working OK
 
 
 struct Galacto : Module
@@ -64,7 +65,7 @@ struct Galacto : Module
 
     configParam(BUFFER_SIZE_KNOB, 0.0f, 1.0f, 0.0f, "BufferSizeKnob");
     configParam(FEEDBACK_KNOB, 0.0f, 1.0f, 0.0f, "FeedbackKnob");
-    configParam(EFFECT_KNOB, 0, 9, 0, "EffectKnob");
+    configParam(EFFECT_KNOB, 0, 11, 0, "EffectKnob");
     configParam(DRIVE_KNOB, 1, 60, 1, "DriveKnob");
 
     audio_buffer.purge();
@@ -154,6 +155,12 @@ struct Galacto : Module
       case 9:
         std::tie(left_audio, right_audio) = fx_wave_packing.process(this, t, param_1_input, param_2_input);
         break;
+      case 10:
+        std::tie(left_audio, right_audio) = fx_smooth.process(this, t, param_1_input, param_2_input);
+        break;
+      case 11:
+        std::tie(left_audio, right_audio) = fx_fold.process(this, t, param_1_input, param_2_input);
+        break;
     }
 
     outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_audio * drive);
@@ -186,6 +193,27 @@ struct Galacto : Module
     std::pair<float,float> subtract(const std::pair<float,float> &a, const std::pair<float,float> &b)
     {
       return(std::make_pair((a.first - b.first) * 2, a.second - b.second));
+    }
+
+    std::pair<float,float> divide(const std::pair<float,float> &a, unsigned int divisor)
+    {
+      if(divisor == 0) divisor = 1;
+      return(std::make_pair(a.first / divisor, a.second / divisor));
+    }
+
+    // Folder code from Squinky Labs: https://github.com/squinkylabs/SquinkyVCV/blob/3a5fbaae4956737c77d0494b69149747c25726af/dsp/utils/AudioMath.h#L162
+    float fold(float x, float bounds)
+    {
+        float fold;
+        const float bias = (x < 0) ? (-1 * bounds) : bounds;
+        int phase = int((x + bias) / 2.f);
+        bool isEven = !(phase & 1);
+        if (isEven) {
+            fold = x - 2.f * phase;
+        } else {
+            fold = -x + 2.f * phase;
+        }
+        return fold;
     }
   };
 
@@ -364,22 +392,65 @@ struct Galacto : Module
 
   } fx_wave_packing;
 
-/*
-  struct FXBytebeat6 : Effect
+  struct FXSmooth : Effect
   {
-    int offset = 0;
+    int divisor = 32;
+    unsigned int window_size = 44010;
+    int offset = -1;
+    std::pair<float, float> stereo_audio = {0,0};
 
     std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
     {
-      uint32_t vp1 = p1 * 32.0;
-      uint32_t vp2 = p2 * 32.0;
 
-      // offset = (vp1&t*(4|(7&t>>13))>>(1&-t>>vp2))+(12&t*(t>>11&t>>13)*(3&-t>>9));
-      // offset =
-      return(galacto->audio_buffer.valueAt(t + offset));
+      // For this effect, the parameters need to be positive numbers
+      if(p1 < 0) p1 = 0;
+      if(p2 < 0) p2 = 0;
+
+      if(galacto->buffer_size > 16)
+      {
+        stereo_audio = galacto->audio_buffer.valueAt(t);
+        window_size = galacto->buffer_size / (int(p1 * 64)+1);
+        if(window_size < 1) window_size = 1;
+
+        divisor = int(p2*60) + 1;
+        if(divisor < 1) divisor = 1;
+
+        if((window_size/divisor) >= 1)
+        {
+          for(unsigned int i=1; i<window_size; i+=(window_size/divisor))
+          {
+            offset = (t-i) % galacto->buffer_size;
+            stereo_audio = mix(stereo_audio, galacto->audio_buffer.valueAt(offset));
+          }
+        }
+
+        stereo_audio = divide(stereo_audio, 8);
+        return(stereo_audio);
+      }
+      else
+      {
+        return(galacto->audio_buffer.valueAt(t));
+      }
+
     }
-  } fx_bytebeat_6;
-*/
+  } fx_smooth;
+
+
+  struct FXFold : Effect
+  {
+    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
+    {
+      std::pair<float, float> stereo_audio = {0,0};
+
+      float gain = (p1 * 20.0) + 1;
+      float bounds = p2 + 0.5; // ranges from .5 to 1.5
+      stereo_audio.first = fold(galacto->audio_buffer.valueAt(t).first * gain, bounds) / 2.0;
+      stereo_audio.second = fold(galacto->audio_buffer.valueAt(t).second * gain, bounds) / 2.0;
+
+      return(stereo_audio);
+    }
+  } fx_fold;
+
 
   /*
 
