@@ -65,7 +65,7 @@ struct Galacto : Module
 
     configParam(BUFFER_SIZE_KNOB, 0.0f, 1.0f, 0.0f, "BufferSizeKnob");
     configParam(FEEDBACK_KNOB, 0.0f, 1.0f, 0.0f, "FeedbackKnob");
-    configParam(EFFECT_KNOB, 0, 11, 0, "EffectKnob");
+    configParam(EFFECT_KNOB, 0, 12, 0, "EffectKnob");
     configParam(DRIVE_KNOB, 1, 60, 1, "DriveKnob");
 
     audio_buffer.purge();
@@ -160,6 +160,9 @@ struct Galacto : Module
         break;
       case 11:
         std::tie(left_audio, right_audio) = fx_fold.process(this, t, param_1_input, param_2_input);
+        break;
+      case 12:
+        std::tie(left_audio, right_audio) = fx_bytebeat_anxious.process(this, t, param_1_input, param_2_input);
         break;
     }
 
@@ -451,6 +454,54 @@ struct Galacto : Module
     }
   } fx_fold;
 
+
+  struct FXByteBeatAnxous : Effect
+  {
+    int offset = 0;
+
+    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
+    {
+      uint32_t vp1 = p1 * 50.0;
+      uint32_t vp2 = p2 * 300.0;
+
+      if(vp1 == 0) vp1 = 1;
+
+      offset = ((t/vp1)|t|((t>>1)&(t+(t>>(t*vp2)))))-(t/44100);
+
+      return(galacto->audio_buffer.valueAt(t + offset));
+    }
+  } fx_bytebeat_anxious;
+
+
+  struct FXByteLongPlay : Effect
+  {
+    int offset = 0;
+
+    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
+    {
+      uint32_t vp1 = p1 * 50.0;
+      uint32_t vp2 = p2 * 300.0;
+
+      if(vp1 == 0) vp1 = 1;
+
+      offset = ((t>>2)|(t>>2)) - ((t<<7)|(t/22)) + ((t>>4)+(t<<2))%101;
+
+      return(galacto->audio_buffer.valueAt(t + offset));
+    }
+  } fx_long_play;
+
+/*
+((t/43)|t|(t>>1)&t+(t>>(t)))-(t/44100)
+
+((t/43)|t|(t>>1)&t+(t>>(t*323.0)))-(t/44100)
+
+((t/43)|t|(t>>1)&t+(t>>(t+45)))+(t/44100)
+
+((t/43)|t|(t>>3)&t+(t>>(t+3)))+((t+66)/44100)
+
+
+((t/43)|t|(t>>3)&t-(t>>(t+3)))+((t+66)/44100)
+*/
 
   /*
 
