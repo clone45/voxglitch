@@ -298,7 +298,6 @@ struct Galacto : Module
     }
   } fx_bytebeat_1;
 
-  // Very similar to the one above, but with different ranges?
   struct FXBytebeat2 : Effect
   {
     int offset = 0;
@@ -308,7 +307,7 @@ struct Galacto : Module
       uint32_t vp1 = p1 * 32.0;
       uint32_t vp2 = p2 * 32.0;
 
-      offset = ((t*vp1)&div(t,vp2)) * .1;
+      offset = ((vp1&t^mod((t>>2), vp2))) * .1;
       return(galacto->audio_buffer.valueAt(t + offset));
     }
   } fx_bytebeat_2;
@@ -320,7 +319,7 @@ struct Galacto : Module
 
     std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
     {
-      uint32_t vp1 = p1 * 32.0;
+      uint32_t vp1 = p1 * 16.0;
       uint32_t vp2 = p2 * 32.0;
 
       offset = ((t >> vp1) & t) * (t>>vp2);

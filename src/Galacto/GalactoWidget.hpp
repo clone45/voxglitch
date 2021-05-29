@@ -29,20 +29,22 @@ struct GalactoWidget : ModuleWidget
     // addParam(createParamCentered<LEDButton>(mm2px(Vec(COLUMN_15, ROW_1)), module, Galacto::PURGE_BUTTON));
 
     // Drive knob
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(COLUMN_15, ROW_3)), module, Galacto::DRIVE_KNOB));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(COLUMN_3 + 2, ROW_15 + 1)), module, Galacto::DRIVE_KNOB));
 
     // Inputs and outputs
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_1, ROW_13 AND_A_HALF_ROW)), module, Galacto::AUDIO_INPUT_LEFT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_1, ROW_15)), module, Galacto::AUDIO_INPUT_RIGHT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_1 - 1, ROW_13 AND_A_HALF_ROW + 1)), module, Galacto::AUDIO_INPUT_LEFT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_1 - 1, ROW_15 + 1)), module, Galacto::AUDIO_INPUT_RIGHT));
 
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_3, ROW_13 AND_A_HALF_ROW)), module, Galacto::AUDIO_OUTPUT_LEFT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_3, ROW_15)), module, Galacto::AUDIO_OUTPUT_RIGHT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_3 - 9, ROW_13 AND_A_HALF_ROW + 1)), module, Galacto::AUDIO_OUTPUT_LEFT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_3 - 9, ROW_15 + 1)), module, Galacto::AUDIO_OUTPUT_RIGHT));
 
+    /*
     GalactoEffectReadout *effect_readout = new GalactoEffectReadout();
 		effect_readout->box.pos = mm2px(Vec(8, 64.3));
 		effect_readout->box.size = Vec(200, 30); // bounding box of the widget
 		effect_readout->module = module;
 		addChild(effect_readout);
+    */
   }
 
   void add_snapping_parameter_knob(float column, float row, int index)
