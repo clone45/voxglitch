@@ -2,6 +2,7 @@
 // TODO:
 // * get sample modulation working
 // * look at how other modulation works right now.  Double check that it's working OK
+// * Param 1,2 to first few effects
 
 
 struct Galacto : Module
@@ -65,7 +66,8 @@ struct Galacto : Module
 
     configParam(BUFFER_SIZE_KNOB, 0.0f, 1.0f, 0.0f, "BufferSizeKnob");
     configParam(FEEDBACK_KNOB, 0.0f, 1.0f, 0.0f, "FeedbackKnob");
-    configParam(EFFECT_KNOB, 0, 12, 0, "EffectKnob");
+    configParam(EFFECT_KNOB, 0, NUMBER_OF_EFFECTS, 0, "EffectKnob");
+    // configParam(EFFECT_KNOB, 0.0f, 1.0f, 0.0f, "EffectKnob");
     configParam(DRIVE_KNOB, 1, 60, 1, "DriveKnob");
 
     audio_buffer.purge();
@@ -85,12 +87,43 @@ struct Galacto : Module
 	}
 
 
-  float calculate_attenuverter_input(int input_index, int knob_index)
+  float attenuverter_input(int input_index, int knob_index)
   {
+    float output = 0.0;
     float input_value = inputs[input_index].getVoltage() / 10.0; // -1 to 1, normally
     float knob_value = params[knob_index].getValue(); // 0 to 1
 
-    return(knob_value + input_value);
+    if(inputs[input_index].isConnected())
+    {
+      output = clamp(input_value * knob_value, 0.0, 1.0);
+    }
+    else
+    {
+      output = knob_value;
+    }
+
+    return(output);
+  }
+
+  int snapped_attenuverter_input(int input_index, int knob_index, int min_value, int max_value)
+  {
+    // float input_value = inputs[input_index].getVoltage() / 10.0; // -1 to 1, normally
+    // float knob_value = params[knob_index].getValue(); // 0 to 1
+
+    int output = 0;
+
+    if(inputs[input_index].isConnected())
+    {
+      output = params[knob_index].getValue() * (inputs[input_index].getVoltage() / 10.0);
+    }
+    else
+    {
+      output = params[knob_index].getValue();
+    }
+
+    output = clamp(output, min_value, max_value);
+
+    return(output);
   }
 
 	void process(const ProcessArgs &args) override
@@ -101,14 +134,15 @@ struct Galacto : Module
     //
     // Read knobs and inputs
     //
-    param_1_input = calculate_attenuverter_input(PARAM_1_INPUT, PARAM_1_KNOB); // ranges from 0 to 1
-    param_2_input = calculate_attenuverter_input(PARAM_2_INPUT, PARAM_2_KNOB); // ranges from 0 to 1
-    buffer_size = clamp((int) (calculate_attenuverter_input(BUFFER_SIZE_INPUT, BUFFER_SIZE_KNOB) * (float) MAX_BUFFER_SIZE), MIN_BUFFER_SIZE, MAX_BUFFER_SIZE);
-    feedback = clamp(calculate_attenuverter_input(FEEDBACK_INPUT, FEEDBACK_KNOB), 0.0, 1.0);
+    selected_effect = snapped_attenuverter_input(EFFECT_INPUT, EFFECT_KNOB, 0, NUMBER_OF_EFFECTS);
+    param_1_input = attenuverter_input(PARAM_1_INPUT, PARAM_1_KNOB); // ranges from 0 to 1
+    param_2_input = attenuverter_input(PARAM_2_INPUT, PARAM_2_KNOB); // ranges from 0 to 1
+    buffer_size = clamp((int) (attenuverter_input(BUFFER_SIZE_INPUT, BUFFER_SIZE_KNOB) * (float) MAX_BUFFER_SIZE), MIN_BUFFER_SIZE, MAX_BUFFER_SIZE);
+    feedback = clamp(attenuverter_input(FEEDBACK_INPUT, FEEDBACK_KNOB), 0.0, 1.0);
     drive = params[DRIVE_KNOB].getValue();
 
     // selected_effect = clamp((int) (( /* params[EFFECT_INPUT].getValue() * (float)NUMBER_OF_EFFECTS) +*/ params[EFFECT_KNOB].getValue()), 0, NUMBER_OF_EFFECTS);
-    selected_effect = params[EFFECT_KNOB].getValue();
+
 
 
     // Set buffer attributes
@@ -224,10 +258,12 @@ struct Galacto : Module
   {
     std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
     {
-      uint32_t vp1 = p1 * 8.0;
-      if(vp1 == 0) vp1 = 1;
+      uint32_t vp1 = (p1 * 15.0) + 1;
 
-      return(mix(galacto->audio_buffer.valueAt((galacto->buffer_size / 2) - t), galacto->audio_buffer.valueAt(t)));
+      float vp2 = 1.0;
+      if(p2 > .1) vp2 = (p2 * 8.0) - 4.0;
+
+      return(mix(galacto->audio_buffer.valueAt((galacto->buffer_size / vp1) - t), galacto->audio_buffer.valueAt(t * vp2)));
     }
   } fx_two_direction;
 
@@ -235,10 +271,13 @@ struct Galacto : Module
   {
     std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
     {
+      uint32_t vp1 = (p1 * 6) + 1;
+      uint32_t vp2 = (p2 * 6) + 1;
+
       return(
         mix(
-          mix(galacto->audio_buffer.valueAt(t), galacto->audio_buffer.valueAt(t + (galacto->buffer_size / 2))),
-          galacto->audio_buffer.valueAt(t + (galacto->buffer_size / 4))
+          mix(galacto->audio_buffer.valueAt(t), galacto->audio_buffer.valueAt(t + (galacto->buffer_size / vp1))),
+          galacto->audio_buffer.valueAt(t + (galacto->buffer_size / vp2))
         )
       );
     }
@@ -250,9 +289,10 @@ struct Galacto : Module
 
     std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
     {
+      uint32_t vp1 = (p1 * 7.0) + 3;
       uint32_t vp2 = p2 * 16.0;
 
-      offset = ((t*7)&div(t,vp2)) * .1;
+      offset = ((t*vp1)&div(t,vp2)) * .1;
 
       return(galacto->audio_buffer.valueAt(t + offset));
     }

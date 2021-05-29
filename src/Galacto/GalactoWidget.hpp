@@ -1,9 +1,13 @@
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("Galacto");
+#endif
+
 struct GalactoWidget : ModuleWidget
 {
   GalactoWidget(Galacto* module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/galacto_front_panel.svg")));
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/galacto_front_panel_v2.svg")));
 
 
     //
@@ -21,8 +25,8 @@ struct GalactoWidget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_13 + 5, ROW_13 - 4)), module, Galacto::PARAM_1_INPUT));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_13 + 5, ROW_15 - 8)), module, Galacto::PARAM_2_INPUT));
 
-    // Purge button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(COLUMN_15, ROW_1)), module, Galacto::PURGE_BUTTON));
+    // Purge button  (removed.  This doesn't seem to be needed anymore)
+    // addParam(createParamCentered<LEDButton>(mm2px(Vec(COLUMN_15, ROW_1)), module, Galacto::PURGE_BUTTON));
 
     // Drive knob
     addParam(createParamCentered<Trimpot>(mm2px(Vec(COLUMN_15, ROW_3)), module, Galacto::DRIVE_KNOB));
@@ -47,4 +51,13 @@ struct GalactoWidget : ModuleWidget
     dynamic_cast<Knob*>(P)->snap = true;
     addParam(P);
   }
+
+  #ifdef _TIME_DRAWING
+      // Seq: avg = 399.650112, stddev = 78.684572 (us) Quota frac=2.397901
+      void draw(const DrawArgs &args) override
+      {
+          DrawLocker l(drawTimer);
+          ModuleWidget::draw(args);
+      }
+  #endif
 };
