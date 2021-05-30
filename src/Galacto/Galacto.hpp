@@ -1,9 +1,4 @@
-//
-// TODO:
-// * get sample modulation working
-// * look at how other modulation works right now.  Double check that it's working OK
-// * Param 1,2 to first few effects
-
+// TODO: rename and test
 
 struct Galacto : Module
 {
@@ -70,6 +65,7 @@ struct Galacto : Module
     // configParam(EFFECT_KNOB, 0.0f, 1.0f, 0.0f, "EffectKnob");
     configParam(DRIVE_KNOB, 1, 60, 1, "DriveKnob");
 
+    rack::random::init();
     audio_buffer.purge();
 	}
 
@@ -141,10 +137,6 @@ struct Galacto : Module
     feedback = clamp(attenuverter_input(FEEDBACK_INPUT, FEEDBACK_KNOB), 0.0, 1.0);
     drive = params[DRIVE_KNOB].getValue();
 
-    // selected_effect = clamp((int) (( /* params[EFFECT_INPUT].getValue() * (float)NUMBER_OF_EFFECTS) +*/ params[EFFECT_KNOB].getValue()), 0, NUMBER_OF_EFFECTS);
-
-
-
     // Set buffer attributes
     audio_buffer.setBufferSize(buffer_size);
     audio_buffer.setFeedback(feedback);
@@ -198,14 +190,13 @@ struct Galacto : Module
       case 12:
         std::tie(left_audio, right_audio) = fx_bytebeat_anxious.process(this, t, param_1_input, param_2_input);
         break;
+      case 13:
+        std::tie(left_audio, right_audio) = fx_long_play.process(this, t, param_1_input, param_2_input);
+        break;
     }
 
     outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_audio * drive);
     outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_audio * drive);
-
-    // For testing, just output the raw input audio
-    // outputs[AUDIO_OUTPUT_LEFT].setVoltage(audio_input_left);
-    // outputs[AUDIO_OUTPUT_RIGHT].setVoltage(audio_input_right);
   }
 
   struct Effect
@@ -254,6 +245,10 @@ struct Galacto : Module
     }
   };
 
+  //
+  // EFFECT #0
+  //
+
   struct FXTwoDirection : Effect
   {
     std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
@@ -266,6 +261,10 @@ struct Galacto : Module
       return(mix(galacto->audio_buffer.valueAt((galacto->buffer_size / vp1) - t), galacto->audio_buffer.valueAt(t * vp2)));
     }
   } fx_two_direction;
+
+  //
+  // EFFECT #1
+  //
 
   struct FXDelays : Effect
   {
@@ -283,6 +282,10 @@ struct Galacto : Module
     }
   } fx_delays;
 
+  //
+  // EFFECT #2
+  //
+
   struct FXBytebeat1 : Effect
   {
     int offset = 0;
@@ -298,6 +301,10 @@ struct Galacto : Module
     }
   } fx_bytebeat_1;
 
+  //
+  // EFFECT #3
+  //
+
   struct FXBytebeat2 : Effect
   {
     int offset = 0;
@@ -307,11 +314,14 @@ struct Galacto : Module
       uint32_t vp1 = p1 * 32.0;
       uint32_t vp2 = p2 * 32.0;
 
-      offset = ((vp1&t^mod((t>>2), vp2))) * .1;
+      offset = (((vp1&t)^mod((t>>2), vp2))) * .1;
       return(galacto->audio_buffer.valueAt(t + offset));
     }
   } fx_bytebeat_2;
 
+  //
+  // EFFECT #4
+  //
 
   struct FXBytebeat3 : Effect
   {
@@ -326,6 +336,10 @@ struct Galacto : Module
       return(galacto->audio_buffer.valueAt(t + offset));
     }
   } fx_bytebeat_3;
+
+  //
+  // EFFECT #5
+  //
 
   // CONSIDER REPLACING THIS ONE
   struct FXBytebeat4 : Effect
@@ -342,6 +356,9 @@ struct Galacto : Module
     }
   } fx_bytebeat_4;
 
+  //
+  // EFFECT #6
+  //
 
   struct FXBytebeat5 : Effect
   {
@@ -362,6 +379,10 @@ struct Galacto : Module
     }
   } fx_bytebeat_5;
 
+  //
+  // EFFECT #7
+  //
+
   struct FXDizzy : Effect
   {
     int offset = 0;
@@ -377,6 +398,10 @@ struct Galacto : Module
       return(galacto->audio_buffer.valueAt(t + offset));
     }
   } fx_dizzy;
+
+  //
+  // EFFECT #8
+  //
 
   struct FXSliceRepeat : Effect
   {
@@ -397,6 +422,9 @@ struct Galacto : Module
 
   } fx_slice_repeat;
 
+  //
+  // EFFECT #9
+  //
 
   struct FXWavePacking : Effect
   {
@@ -433,6 +461,10 @@ struct Galacto : Module
     }
 
   } fx_wave_packing;
+
+  //
+  // EFFECT #10
+  //
 
   struct FXSmooth : Effect
   {
@@ -477,6 +509,9 @@ struct Galacto : Module
     }
   } fx_smooth;
 
+  //
+  // EFFECT #11
+  //
 
   struct FXFold : Effect
   {
@@ -493,6 +528,9 @@ struct Galacto : Module
     }
   } fx_fold;
 
+  //
+  // EFFECT #12
+  //
 
   struct FXByteBeatAnxous : Effect
   {
@@ -511,6 +549,9 @@ struct Galacto : Module
     }
   } fx_bytebeat_anxious;
 
+  //
+  // EFFECT #13
+  //
 
   struct FXByteLongPlay : Effect
   {
@@ -518,70 +559,14 @@ struct Galacto : Module
 
     std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
     {
-      uint32_t vp1 = p1 * 50.0;
-      uint32_t vp2 = p2 * 300.0;
+      uint32_t vp1 = (p1 * 22.0) + 1;
+      p2 = p2 * .1;
 
-      if(vp1 == 0) vp1 = 1;
-
-      offset = ((t>>2)|(t>>2)) - ((t<<7)|(t/22)) + ((t>>4)+(t<<2))%101;
+      // offset = ((t>>2)|(t>>2)) - ((t<<7)|(t/22)) + ((t>>4)+(t<<2))%101;
+      offset = (((t>>2)|(t>>2)) - ((t<<7)|(t/vp1)) + ((t>>4)+(t<<2))%101) * p2;
 
       return(galacto->audio_buffer.valueAt(t + offset));
     }
   } fx_long_play;
-
-/*
-((t/43)|t|(t>>1)&t+(t>>(t)))-(t/44100)
-
-((t/43)|t|(t>>1)&t+(t>>(t*323.0)))-(t/44100)
-
-((t/43)|t|(t>>1)&t+(t>>(t+45)))+(t/44100)
-
-((t/43)|t|(t>>3)&t+(t>>(t+3)))+((t+66)/44100)
-
-
-((t/43)|t|(t>>3)&t-(t>>(t+3)))+((t+66)/44100)
-*/
-
-  /*
-
-
-
-  struct eye_9
-  {
-    int offset = 0;
-
-    float process(Galacto *g, float p1, float p2)
-    {
-      uint32_t vp1 = p1 * 5000;
-      uint32_t vp2 = p2 * 6000;
-
-      offset = sin(float(g->t/8.0) / vp1) * g->buffer_size;
-      offset += sin(float(g->t/32.0) / vp2) * g->buffer_size;
-
-
-      float output = g->audio_buffer.getOutput(offset);
-
-      // return(output);
-      return(output);
-    }
-  };
-  */
-
-  /*
-
-  eye_9
-
-  play from a sample position to sample position + 22040 or something.
-  then step forward that amount
-  then repeat
-  poor man's granular synthesis, or short repeater
-
-
-  */
-
-
-  //
-  // These are safe versions of / and %  that avoid division by 0 which crash VCV Rack
-  //
 
 };

@@ -1,9 +1,6 @@
 // #define _TIME_DRAWING 1
 
-// #define NUMBER_OF_EXPRESSIONS 12
-
-#define NUMBER_OF_EFFECTS 12
-#define MAX_CLOCK_DIVISION 256.0
+#define NUMBER_OF_EFFECTS 13
 
 #define COLUMN_1 9.525
 #define COLUMN_2 19.050
