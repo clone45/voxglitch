@@ -92,6 +92,12 @@
         "tags": ["Sampler"]
     },
     {
+        "slug": "satanonaut",
+        "name": "Satanonaut",
+        "description": "Based on the new comic Galacto Pitfighter: An alien entity hell-bent on mutilating your audio.",
+        "tags": ["Effect"]
+    },    
+    {
         "slug": "samplerx8",
         "name": "SamplerX8",
         "description": "Eight stereo sample playback devices in one compact module.",
