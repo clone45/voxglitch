@@ -8,11 +8,9 @@ Plugin* pluginInstance;
 void init(Plugin* p) {
   pluginInstance = p;
 
-  // Add modules here
-  p->addModel(modelRepeater);
-  p->addModel(modelWavBank);
-  p->addModel(modelXY);
-  p->addModel(modelGalacto);  
+  p->addModel(modelAutobreak);  
+  p->addModel(modelByteBeat);
+  p->addModel(modelDigitalSequencer);
   p->addModel(modelGlitchSequencer);
   p->addModel(modelGhosts);
   p->addModel(modelGoblins);
@@ -20,13 +18,11 @@ void init(Plugin* p) {
   p->addModel(modelGrainEngineMK2);
   p->addModel(modelGrainEngineMK2Expander);
   p->addModel(modelGrainFx);
-  p->addModel(modelAutobreak);
-  p->addModel(modelDigitalSequencer);
-  p->addModel(modelSamplerX8);
-  p->addModel(modelByteBeat);
   p->addModel(modelHazumi);
   p->addModel(modelLooper);
-
-  // Any other plugin initialization may go here.
-  // As an alternative, consider lazy-loading assets and lookup tables when your module is created to reduce startup times of Rack.
+  p->addModel(modelRepeater);
+  p->addModel(modelSamplerX8);
+  p->addModel(modelSatanonaut);
+  p->addModel(modelWavBank);
+  p->addModel(modelXY);
 }

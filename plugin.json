@@ -32,12 +32,6 @@
         "tags": ["Sequencer"]
     },
     {
-        "slug": "galacto",
-        "name": "Galacto",
-        "description": "Galacto Pitfighter",
-        "tags": ["Oscillator"]
-    },
-    {
         "slug": "glitchsequencer",
         "name": "Glitch Sequencer",
         "description": "Cellular Automaton Gate Sequencer",
@@ -97,6 +91,12 @@
         "description": "Looping sample player with playback offset control.",
         "tags": ["Sampler"]
     },
+    {
+        "slug": "satanonaut",
+        "name": "Satanonaut",
+        "description": "Based on the new comic Galacto Pitfighter: An alien entity hell-bent on mutilating your audio.",
+        "tags": ["Effect"]
+    },    
     {
         "slug": "samplerx8",
         "name": "SamplerX8",

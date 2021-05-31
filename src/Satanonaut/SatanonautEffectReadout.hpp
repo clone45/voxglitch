@@ -1,9 +1,9 @@
-struct GalactoEffectReadout : TransparentWidget
+struct SatanonautEffectReadout : TransparentWidget
 {
-	Galacto *module;
+	Satanonaut *module;
 	std::shared_ptr<Font> font;
 
-	GalactoEffectReadout()
+	SatanonautEffectReadout()
 	{
 		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
 	}

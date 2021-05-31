@@ -1,6 +1,4 @@
-// TODO: rename and test
-
-struct Galacto : Module
+struct Satanonaut : Module
 {
   uint8_t w = 0;     // w is the output of the equations
   int offset = 0;
@@ -10,7 +8,7 @@ struct Galacto : Module
   float param_1_input = 0.0;
   float param_2_input = 0.0;
 
-  GalactoStereoAudioBuffer audio_buffer;
+  SatanonautStereoAudioBuffer audio_buffer;
 
   dsp::SchmittTrigger purge_button_schmitt_trigger;
 
@@ -51,15 +49,15 @@ struct Galacto : Module
 		NUM_LIGHTS
 	};
 
-  // Galacto Contructor
-	Galacto()
+  // Satanonaut Contructor
+	Satanonaut()
 	{
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 
     configParam(PARAM_1_KNOB, 0.0f, 1.0f, 0.0f, "ParamKnob1");
     configParam(PARAM_2_KNOB, 0.0f, 1.0f, 0.0f, "ParamKnob2");
 
-    configParam(BUFFER_SIZE_KNOB, 0.0f, 1.0f, 0.0f, "BufferSizeKnob");
+    configParam(BUFFER_SIZE_KNOB, 0.0f, 1.0f, 1.0f, "BufferSizeKnob");
     configParam(FEEDBACK_KNOB, 0.0f, 1.0f, 0.0f, "FeedbackKnob");
     configParam(EFFECT_KNOB, 0, NUMBER_OF_EFFECTS, 0, "EffectKnob");
     // configParam(EFFECT_KNOB, 0.0f, 1.0f, 0.0f, "EffectKnob");
@@ -251,14 +249,14 @@ struct Galacto : Module
 
   struct FXTwoDirection : Effect
   {
-    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
+    std::pair<float, float> process(Satanonaut *satanonaut, unsigned int t, float p1, float p2)
     {
       uint32_t vp1 = (p1 * 15.0) + 1;
 
       float vp2 = 1.0;
       if(p2 > .1) vp2 = (p2 * 8.0) - 4.0;
 
-      return(mix(galacto->audio_buffer.valueAt((galacto->buffer_size / vp1) - t), galacto->audio_buffer.valueAt(t * vp2)));
+      return(mix(satanonaut->audio_buffer.valueAt((satanonaut->buffer_size / vp1) - t), satanonaut->audio_buffer.valueAt(t * vp2)));
     }
   } fx_two_direction;
 
@@ -268,15 +266,15 @@ struct Galacto : Module
 
   struct FXDelays : Effect
   {
-    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
+    std::pair<float, float> process(Satanonaut *satanonaut, unsigned int t, float p1, float p2)
     {
       uint32_t vp1 = (p1 * 6) + 1;
       uint32_t vp2 = (p2 * 6) + 1;
 
       return(
         mix(
-          mix(galacto->audio_buffer.valueAt(t), galacto->audio_buffer.valueAt(t + (galacto->buffer_size / vp1))),
-          galacto->audio_buffer.valueAt(t + (galacto->buffer_size / vp2))
+          mix(satanonaut->audio_buffer.valueAt(t), satanonaut->audio_buffer.valueAt(t + (satanonaut->buffer_size / vp1))),
+          satanonaut->audio_buffer.valueAt(t + (satanonaut->buffer_size / vp2))
         )
       );
     }
@@ -288,34 +286,40 @@ struct Galacto : Module
 
   struct FXBytebeat1 : Effect
   {
-    int offset = 0;
+    unsigned int offset = 0;
 
-    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
+    std::pair<float, float> process(Satanonaut *satanonaut, unsigned int t, float p1, float p2)
     {
-      uint32_t vp1 = (p1 * 7.0) + 3;
-      uint32_t vp2 = p2 * 16.0;
+      uint32_t vp1 = (p1 * 14.0) + 1;
+      uint32_t vp2 = (p2 * 4) + 3;
 
-      offset = ((t*vp1)&div(t,vp2)) * .1;
+      // offset = ((t*vp1)&div(t,vp2)) * .1;
+      offset = (((t>>2)|(t>>vp2)) - ((t<<7)|(t/vp1)) + ((t>>4)+(t<<2))%(offset + 1));
+      offset = offset * (p1 * .01);
 
-      return(galacto->audio_buffer.valueAt(t + offset));
+      return(satanonaut->audio_buffer.valueAt(t + offset));
     }
   } fx_bytebeat_1;
 
   //
   // EFFECT #3
   //
-
+  // This doesn't seem to do anything
   struct FXBytebeat2 : Effect
   {
     int offset = 0;
 
-    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
+    std::pair<float, float> process(Satanonaut *satanonaut, unsigned int t, float p1, float p2)
     {
-      uint32_t vp1 = p1 * 32.0;
-      uint32_t vp2 = p2 * 32.0;
+      uint32_t vp1 = p1 * 10991.0;
+      uint32_t vp2 = (p2 * 22000) + 1;
 
-      offset = (((vp1&t)^mod((t>>2), vp2))) * .1;
-      return(galacto->audio_buffer.valueAt(t + offset));
+      // offset = (((vp1&t)^mod((t>>2), vp2))) * .1;
+      // offset = ((t>>6) & div((t<<3),mod( (t*(t>>vp1)),(vp2+ mod((t>>16),vp2) ))));
+
+      offset = (vp1*(t/32)%vp2);
+
+      return(satanonaut->audio_buffer.valueAt(t + offset));
     }
   } fx_bytebeat_2;
 
@@ -327,13 +331,13 @@ struct Galacto : Module
   {
     int offset = 0;
 
-    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
+    std::pair<float, float> process(Satanonaut *satanonaut, unsigned int t, float p1, float p2)
     {
       uint32_t vp1 = p1 * 16.0;
       uint32_t vp2 = p2 * 32.0;
 
       offset = ((t >> vp1) & t) * (t>>vp2);
-      return(galacto->audio_buffer.valueAt(t + offset));
+      return(satanonaut->audio_buffer.valueAt(t + offset));
     }
   } fx_bytebeat_3;
 
@@ -346,13 +350,13 @@ struct Galacto : Module
   {
     int offset = 0;
 
-    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
+    std::pair<float, float> process(Satanonaut *satanonaut, unsigned int t, float p1, float p2)
     {
       uint32_t vp1 = p1 * 32.0;
       uint32_t vp2 = p2 * 32.0;
 
       offset = mod((( mod(t,((76 - (t>>vp2)) % 11))) * (t>>1)), (47-(t>>(4+vp1)) % 41)) * .7;
-      return(galacto->audio_buffer.valueAt(t + offset));
+      return(satanonaut->audio_buffer.valueAt(t + offset));
     }
   } fx_bytebeat_4;
 
@@ -366,7 +370,7 @@ struct Galacto : Module
     int next_offset = 0;
     int offset = 0;
 
-    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
+    std::pair<float, float> process(Satanonaut *satanonaut, unsigned int t, float p1, float p2)
     {
       uint32_t vp1 = p1 * 32.0;
       uint32_t vp2 = p2 * 32.0;
@@ -375,7 +379,7 @@ struct Galacto : Module
       offset = (previous_offset + next_offset) / 2;
       next_offset = offset;
 
-      return(galacto->audio_buffer.valueAt(t + offset));
+      return(satanonaut->audio_buffer.valueAt(t + offset));
     }
   } fx_bytebeat_5;
 
@@ -387,15 +391,15 @@ struct Galacto : Module
   {
     int offset = 0;
 
-    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
+    std::pair<float, float> process(Satanonaut *satanonaut, unsigned int t, float p1, float p2)
     {
       uint32_t vp1 = p1 * 5000;
       uint32_t vp2 = p2 * 6000;
 
-      offset = sin(float(t/8.0) / vp1) * galacto->buffer_size;
-      offset += sin(float(t/32.0) / vp2) * galacto->buffer_size;
+      offset = sin(float(t/8.0) / vp1) * satanonaut->buffer_size;
+      offset += sin(float(t/32.0) / vp2) * satanonaut->buffer_size;
 
-      return(galacto->audio_buffer.valueAt(t + offset));
+      return(satanonaut->audio_buffer.valueAt(t + offset));
     }
   } fx_dizzy;
 
@@ -409,15 +413,15 @@ struct Galacto : Module
     int window_size;
     int offset = -1;
 
-    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
+    std::pair<float, float> process(Satanonaut *satanonaut, unsigned int t, float p1, float p2)
     {
       divisor = int(p1 * 16.0);
       if(divisor <= 1) divisor = 2;
 
-      window_size = galacto->buffer_size / divisor;
+      window_size = satanonaut->buffer_size / divisor;
       if(++offset >= 0) offset = (-1 * window_size);
 
-      return(mix(galacto->audio_buffer.valueAt(offset), galacto->audio_buffer.valueAt(t)));
+      return(mix(satanonaut->audio_buffer.valueAt(offset), satanonaut->audio_buffer.valueAt(t)));
     }
 
   } fx_slice_repeat;
@@ -439,7 +443,7 @@ struct Galacto : Module
     bool sin_is_playing = false;
     std::pair<float, float> stereo_audio = { 0, 0 };
 
-    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
+    std::pair<float, float> process(Satanonaut *satanonaut, unsigned int t, float p1, float p2)
     {
       // HOW about flutter?  (sequenced muting)
       divisor = int(p1 * 4096.0);
@@ -450,7 +454,7 @@ struct Galacto : Module
 
       if(t%divisor < phase)
       {
-        stereo_audio = galacto->audio_buffer.valueAt(t);
+        stereo_audio = satanonaut->audio_buffer.valueAt(t);
       }
       else
       {
@@ -473,17 +477,17 @@ struct Galacto : Module
     int offset = -1;
     std::pair<float, float> stereo_audio = {0,0};
 
-    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
+    std::pair<float, float> process(Satanonaut *satanonaut, unsigned int t, float p1, float p2)
     {
 
       // For this effect, the parameters need to be positive numbers
       if(p1 < 0) p1 = 0;
       if(p2 < 0) p2 = 0;
 
-      if(galacto->buffer_size > 16)
+      if(satanonaut->buffer_size > 16)
       {
-        stereo_audio = galacto->audio_buffer.valueAt(t);
-        window_size = galacto->buffer_size / (int(p1 * 64)+1);
+        stereo_audio = satanonaut->audio_buffer.valueAt(t);
+        window_size = satanonaut->buffer_size / (int(p1 * 64)+1);
         if(window_size < 1) window_size = 1;
 
         divisor = int(p2*60) + 1;
@@ -493,8 +497,8 @@ struct Galacto : Module
         {
           for(unsigned int i=1; i<window_size; i+=(window_size/divisor))
           {
-            offset = (t-i) % galacto->buffer_size;
-            stereo_audio = mix(stereo_audio, galacto->audio_buffer.valueAt(offset));
+            offset = (t-i) % satanonaut->buffer_size;
+            stereo_audio = mix(stereo_audio, satanonaut->audio_buffer.valueAt(offset));
           }
         }
 
@@ -503,7 +507,7 @@ struct Galacto : Module
       }
       else
       {
-        return(galacto->audio_buffer.valueAt(t));
+        return(satanonaut->audio_buffer.valueAt(t));
       }
 
     }
@@ -512,19 +516,22 @@ struct Galacto : Module
   //
   // EFFECT #11
   //
-
   struct FXFold : Effect
   {
-    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
+    int offset = 0;
+
+    std::pair<float, float> process(Satanonaut *satanonaut, unsigned int t, float p1, float p2)
     {
-      std::pair<float, float> stereo_audio = {0,0};
+      int vp1 = (p1 * 50.0) - 25;
+      int vp2 = (p2 * 30.0) - 15;
 
-      float gain = (p1 * 20.0) + 1;
-      float bounds = p2 + 0.5; // ranges from .5 to 1.5
-      stereo_audio.first = fold(galacto->audio_buffer.valueAt(t).first * gain, bounds) / 2.0;
-      stereo_audio.second = fold(galacto->audio_buffer.valueAt(t).second * gain, bounds) / 2.0;
+      // if(vp1 == 0) vp1 = 1;
 
-      return(stereo_audio);
+      offset = (t-t+t*vp1)|(t&(t/44100))|div(t,vp2);
+
+      // offset = ((t/vp1)|t|((t>>1)&(t+(t>>(t*vp2)))))-(t/44100);
+
+      return(satanonaut->audio_buffer.valueAt(offset));
     }
   } fx_fold;
 
@@ -536,7 +543,7 @@ struct Galacto : Module
   {
     int offset = 0;
 
-    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
+    std::pair<float, float> process(Satanonaut *satanonaut, unsigned int t, float p1, float p2)
     {
       uint32_t vp1 = p1 * 50.0;
       uint32_t vp2 = p2 * 300.0;
@@ -545,7 +552,7 @@ struct Galacto : Module
 
       offset = ((t/vp1)|t|((t>>1)&(t+(t>>(t*vp2)))))-(t/44100);
 
-      return(galacto->audio_buffer.valueAt(t + offset));
+      return(satanonaut->audio_buffer.valueAt(t + offset));
     }
   } fx_bytebeat_anxious;
 
@@ -557,7 +564,7 @@ struct Galacto : Module
   {
     int offset = 0;
 
-    std::pair<float, float> process(Galacto *galacto, unsigned int t, float p1, float p2)
+    std::pair<float, float> process(Satanonaut *satanonaut, unsigned int t, float p1, float p2)
     {
       uint32_t vp1 = (p1 * 22.0) + 1;
       p2 = p2 * .1;
@@ -565,7 +572,7 @@ struct Galacto : Module
       // offset = ((t>>2)|(t>>2)) - ((t<<7)|(t/22)) + ((t>>4)+(t<<2))%101;
       offset = (((t>>2)|(t>>2)) - ((t<<7)|(t/vp1)) + ((t>>4)+(t<<2))%101) * p2;
 
-      return(galacto->audio_buffer.valueAt(t + offset));
+      return(satanonaut->audio_buffer.valueAt(t + offset));
     }
   } fx_long_play;
 

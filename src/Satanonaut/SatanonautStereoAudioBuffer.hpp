@@ -3,7 +3,7 @@
 #define MAX_BUFFER_SIZE 44100
 #define MIN_BUFFER_SIZE 10
 
-struct GalactoStereoAudioBuffer
+struct SatanonautStereoAudioBuffer
 {
   int read_head = 0;
   unsigned int write_head = 0;
@@ -14,11 +14,11 @@ struct GalactoStereoAudioBuffer
 
   uint32_t buffer_size = 44100;
 
-	GalactoStereoAudioBuffer()
+	SatanonautStereoAudioBuffer()
 	{
 	}
 
-	virtual ~GalactoStereoAudioBuffer() {}
+	virtual ~SatanonautStereoAudioBuffer() {}
 
 	virtual void push(float audio_left, float audio_right)
 	{
