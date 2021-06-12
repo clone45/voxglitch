@@ -121,14 +121,27 @@ struct GateSequencerDisplay : SequencerDisplay
     double zoom = std::pow(2.f, settings::zoom);
     drag_position = drag_position.plus(e.mouseDelta.div(zoom));
 
+    // int drag_bar_x_index = clamp(getIndexFromX(drag_position.x, 0, MAX_SEQUENCER_STEPS - 1);
+
+    // If the user drags past the edges, reset the drag action, otherwise
+    // it can get stuck.
+
     int drag_bar_x_index = getIndexFromX(drag_position.x);
 
-    if(drag_bar_x_index != old_drag_bar_x)
+    if(drag_bar_x_index < 0 || drag_bar_x_index > (MAX_SEQUENCER_STEPS - 1))
     {
-      // setTrigger(drag_bar_x_index, trigger_edit_value);
-      module->selected_gate_sequencer->setValue(drag_bar_x_index, trigger_edit_value);
-      old_drag_bar_x = drag_bar_x_index;
+      drag_bar_x_index = -1;
+      this->mouse_lock = false;
     }
+    else
+    {
+      if(drag_bar_x_index != old_drag_bar_x)
+      {
+        module->selected_gate_sequencer->setValue(drag_bar_x_index, trigger_edit_value);
+        old_drag_bar_x = drag_bar_x_index;
+      }
+    }
+
   }
 
   void onHoverKey(const event::HoverKey &e) override
