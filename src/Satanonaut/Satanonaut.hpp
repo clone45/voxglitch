@@ -99,6 +99,17 @@ struct Satanonaut : Module
     return(output);
   }
 
+  float standard_attenuverter_input(int input_index, int knob_index)
+  {
+    float output = 0.0;
+    float input_value = inputs[input_index].getVoltage() / 10.0; // -1 to 1, normally
+    float knob_value = (params[knob_index].getValue() * 2.0) - 1; // -1 to 1
+
+    output = clamp(input_value + knob_value, 0.0, 1.0);
+
+    return(output);
+  }
+
   int snapped_attenuverter_input(int input_index, int knob_index, int min_value, int max_value)
   {
     // float input_value = inputs[input_index].getVoltage() / 10.0; // -1 to 1, normally
