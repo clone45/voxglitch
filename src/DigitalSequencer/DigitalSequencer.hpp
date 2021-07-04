@@ -159,15 +159,20 @@ struct DigitalSequencer : Module
     clock_ignore_on_reset = (long) (44100 / 100);
   }
 
+  void onRandomize() override {
+    for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
+    {
+      for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
+      {
+        this->voltage_sequencers[sequencer_number].randomize();
+        this->gate_sequencers[sequencer_number].randomize();
+      }
+    }
+	}
+
   /*
   ==================================================================================================================================================
-  ___                 _
-  / / |               | |
-  ___  __ ___   _____  / /| | ___   __ _  __| |
-  / __|/ _` \ \ / / _ \ / / | |/ _ \ / _` |/ _` |
-  \__ \ (_| |\ V /  __// /  | | (_) | (_| | (_| |
-  |___/\__,_| \_/ \___/_/   |_|\___/ \__,_|\__,_|
-
+    SAVE & LOAD
   ==================================================================================================================================================
   */
 

@@ -14,6 +14,9 @@ struct SequencerDisplay : TransparentWidget
     TransparentWidget::onDragEnd(e);
   }
 
+
+  // Allow for changing between sequences using the number keys
+
   void step() override {
     TransparentWidget::step();
   }
