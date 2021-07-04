@@ -1,6 +1,14 @@
+class TrimpotNoRandom : public Trimpot
+{
+public:
+  void randomize() override {} // do nothing. base class would actually randomize
+};
+
+
 struct DigitalSequencerWidget : ModuleWidget
 {
   DigitalSequencer* module;
+
 
   DigitalSequencerWidget(DigitalSequencer* module)
   {
@@ -48,12 +56,12 @@ struct DigitalSequencerWidget : ModuleWidget
 
     // addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x, button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_1_LENGTH_KNOB));
 
-    auto L1 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x, button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_1_LENGTH_KNOB); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
-    auto L2 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_2_LENGTH_KNOB); dynamic_cast<Knob*>(L2)->snap = true; addParam(L2);
-    auto L3 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_3_LENGTH_KNOB); dynamic_cast<Knob*>(L3)->snap = true; addParam(L3);
-    auto L4 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_4_LENGTH_KNOB); dynamic_cast<Knob*>(L4)->snap = true; addParam(L4);
-    auto L5 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_5_LENGTH_KNOB); dynamic_cast<Knob*>(L5)->snap = true; addParam(L5);
-    auto L6 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_6_LENGTH_KNOB); dynamic_cast<Knob*>(L6)->snap = true; addParam(L6);
+    auto L1 = createParamCentered<TrimpotNoRandom>(mm2px(Vec(button_group_x, button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_1_LENGTH_KNOB); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
+    auto L2 = createParamCentered<TrimpotNoRandom>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_2_LENGTH_KNOB); dynamic_cast<Knob*>(L2)->snap = true; addParam(L2);
+    auto L3 = createParamCentered<TrimpotNoRandom>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_3_LENGTH_KNOB); dynamic_cast<Knob*>(L3)->snap = true; addParam(L3);
+    auto L4 = createParamCentered<TrimpotNoRandom>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_4_LENGTH_KNOB); dynamic_cast<Knob*>(L4)->snap = true; addParam(L4);
+    auto L5 = createParamCentered<TrimpotNoRandom>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_5_LENGTH_KNOB); dynamic_cast<Knob*>(L5)->snap = true; addParam(L5);
+    auto L6 = createParamCentered<TrimpotNoRandom>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_6_LENGTH_KNOB); dynamic_cast<Knob*>(L6)->snap = true; addParam(L6);
 
     // 6 step inputs
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x, button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_1_STEP_INPUT));
@@ -273,4 +281,30 @@ struct DigitalSequencerWidget : ModuleWidget
     ModuleWidget::step();
   }
 
+  //
+
+  // This isn't working yet because it conflicts with other click events
+  // defined in the sequencer displays
+  /*
+  void onHoverKey(const event::HoverKey &e) override
+  {
+      if (e.key >= GLFW_KEY_1 && e.key <= GLFW_KEY_6)
+      {
+
+        if(e.action == GLFW_PRESS)
+        {
+          unsigned int sequencer_number = e.key - 49;
+
+          // DEBUG(std::to_string(sequencer_number).c_str());
+          sequencer_number = clamp(sequencer_number,0,NUMBER_OF_SEQUENCERS-1);
+          module->selected_sequencer_index = sequencer_number;
+          e.consume(this);
+        }
+
+      }
+
+      // module->selected_voltage_sequencer->shiftRight();
+      // if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftRight();
+  }
+      */
 };

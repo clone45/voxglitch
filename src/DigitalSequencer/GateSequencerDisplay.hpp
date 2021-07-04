@@ -161,9 +161,13 @@ struct GateSequencerDisplay : SequencerDisplay
     // Randomize sequence by hovering over and pressing 'r'
     if(keypress(e, GLFW_KEY_R))
     {
-      module->selected_gate_sequencer->randomize();
-      if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_voltage_sequencer->randomize();
+      if((e.mods & RACK_MOD_MASK) != GLFW_MOD_CONTROL)
+      {
+        module->selected_gate_sequencer->randomize();
+        if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_voltage_sequencer->randomize();
+      }
     }
+    
   }
 
   int getIndexFromX(double x)
