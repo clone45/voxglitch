@@ -8,7 +8,7 @@ public:
 struct DigitalSequencerWidget : ModuleWidget
 {
   DigitalSequencer* module;
-
+  int copy_sequencer_index = -1;
 
   DigitalSequencerWidget(DigitalSequencer* module)
   {
@@ -282,12 +282,11 @@ struct DigitalSequencerWidget : ModuleWidget
   }
 
   //
-
-  // This isn't working yet because it conflicts with other click events
-  // defined in the sequencer displays
-  /*
+  // Handler for keypresses that affect the entire module
+  //
   void onHoverKey(const event::HoverKey &e) override
   {
+      // Switch between seuences using the number keys 1-6
       if (e.key >= GLFW_KEY_1 && e.key <= GLFW_KEY_6)
       {
 
@@ -303,8 +302,30 @@ struct DigitalSequencerWidget : ModuleWidget
 
       }
 
+      if ((e.key == GLFW_KEY_C) && ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL)) // Control-C
+      {
+        if(e.action == GLFW_PRESS)
+        {
+          copy_sequencer_index = module->selected_sequencer_index;
+          e.consume(this);
+        }
+      }
+
+      if ((e.key == GLFW_KEY_V) && ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL)) // Control-V
+      {
+        if(e.action == GLFW_PRESS)
+        {
+          if(copy_sequencer_index > -1)
+          {
+            module->copy(copy_sequencer_index, module->selected_sequencer_index);
+            e.consume(this);
+          }
+        }
+      }
+
+      ModuleWidget::onHoverKey(e);
+
       // module->selected_voltage_sequencer->shiftRight();
       // if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftRight();
   }
-      */
 };

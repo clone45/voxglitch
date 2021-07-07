@@ -31,34 +31,32 @@ struct SequencerDisplay : TransparentWidget
     TransparentWidget::onLeave(e);
   }
 
-  bool keypress(const event::HoverKey &e, int keycode)
-  {
-    if (e.key == keycode)
-    {
-      e.consume(this);
-      if(e.action == GLFW_PRESS) return(true);
-    }
-    return(false);
-  }
-
   bool keypressRight(const event::HoverKey &e)
   {
-    return(keypress(e, GLFW_KEY_RIGHT));
+    if(e.key == GLFW_KEY_RIGHT) e.consume(this);
+    if(e.key == GLFW_KEY_RIGHT && e.action == GLFW_PRESS) return true;
+    return false;
   }
 
   bool keypressLeft(const event::HoverKey &e)
   {
-    return(keypress(e, GLFW_KEY_LEFT));
+    if(e.key == GLFW_KEY_LEFT) e.consume(this);
+    if(e.key == GLFW_KEY_LEFT && e.action == GLFW_PRESS) return true;
+    return false;
   }
 
   bool keypressUp(const event::HoverKey &e)
   {
-    return(keypress(e, GLFW_KEY_UP));
+    if(e.key == GLFW_KEY_UP) e.consume(this);
+    if(e.key == GLFW_KEY_UP && e.action == GLFW_PRESS) return true;
+    return false;
   }
 
   bool keypressDown(const event::HoverKey &e)
   {
-    return(keypress(e, GLFW_KEY_DOWN));
+    if(e.key == GLFW_KEY_DOWN) e.consume(this);
+    if(e.key == GLFW_KEY_DOWN && e.action == GLFW_PRESS) return true;
+    return false;
   }
 
   void drawVerticalGuildes(NVGcontext *vg, double height)

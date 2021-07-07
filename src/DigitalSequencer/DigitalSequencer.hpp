@@ -170,6 +170,15 @@ struct DigitalSequencer : Module
     }
 	}
 
+  void copy(unsigned int src_sequencer_index, unsigned int dst_sequencer_index)
+  {
+    for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
+    {
+      this->voltage_sequencers[dst_sequencer_index].setValue(i,this->voltage_sequencers[src_sequencer_index].getValue(i));
+      this->gate_sequencers[dst_sequencer_index].setValue(i,this->gate_sequencers[src_sequencer_index].getValue(i));
+    }
+  }
+
   /*
   ==================================================================================================================================================
     SAVE & LOAD

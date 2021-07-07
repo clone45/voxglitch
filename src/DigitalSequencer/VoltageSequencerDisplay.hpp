@@ -245,8 +245,10 @@ struct VoltageSequencerDisplay : SequencerDisplay
     }
 
     // Randomize single sequence by hovering over and pressing 'r'
-    if(keypress(e, GLFW_KEY_R))
+
+    if(e.key == GLFW_KEY_R && e.action == GLFW_PRESS)
     {
+      // Do not randomize if CTRL-r is pressed.  That's for randomizing everything
       if((e.mods & RACK_MOD_MASK) != GLFW_MOD_CONTROL)
       {
         module->selected_voltage_sequencer->randomize();
