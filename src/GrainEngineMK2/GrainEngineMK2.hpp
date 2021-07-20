@@ -39,6 +39,8 @@ struct GrainEngineMK2 : Module
 
   Common common;
   GrainEngineMK2Core grain_engine_mk2_core;
+  float start_position = 0.0;
+  float draw_position = 0.0;
 
   // Triggers
   dsp::SchmittTrigger spawn_trigger;
@@ -265,7 +267,7 @@ struct GrainEngineMK2 : Module
     // unsigned int window_length = args.sampleRate / window_knob_value;
     unsigned int window_length = window_knob_value;
 
-    float start_position = calculate_inputs(POSITION_COARSE_INPUT, POSITION_COARSE_KNOB, POSITION_COARSE_ATTN_KNOB, 0.0, 1.0);
+    start_position = calculate_inputs(POSITION_COARSE_INPUT, POSITION_COARSE_KNOB, POSITION_COARSE_ATTN_KNOB, 0.0, 1.0);
 
     // At this point, start_position must be and should be between 0.0 and 1.0
 
@@ -377,6 +379,7 @@ struct GrainEngineMK2 : Module
     }
 
     if(spawn_throttling_countdown > 0) spawn_throttling_countdown--;
+    if(selected_sample->size() > 0) draw_position = start_position / selected_sample->size();
   }
 
   void processExpander()
