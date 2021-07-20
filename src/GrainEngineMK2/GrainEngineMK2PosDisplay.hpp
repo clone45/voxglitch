@@ -19,7 +19,11 @@ struct GrainEngineMK2PosDisplay : TransparentWidget
       if(module->draw_position < 0) module->draw_position = 0;
       if(module->draw_position > 1) module->draw_position = 1;
 
-      unsigned int x = module->draw_position * (DRAW_AREA_WIDTH - 2);
+      // unsigned int x = module->draw_position * (DRAW_AREA_WIDTH - 2);
+      // ^ this is incorrect.  Instead, if x >= DRAW_AREA_WIDTH, x = DRAW_AREA_WIDTH - 1
+
+      unsigned int x = module->draw_position * DRAW_AREA_WIDTH;
+      if (x >= DRAW_AREA_WIDTH) x = DRAW_AREA_WIDTH - 2;
 
       // Grey background
       nvgBeginPath(vg);
