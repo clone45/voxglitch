@@ -17,6 +17,7 @@
 #include "GrainEngineMK2/GrainEngineMK2Core.hpp"
 #include "GrainEngineMK2/GrainEngineMK2.hpp"
 #include "GrainEngineMK2/GrainEngineMK2LoadSample.hpp"
+#include "GrainEngineMK2/GrainEngineMK2PosDisplay.hpp"
 #include "GrainEngineMK2/GrainEngineMK2Widget.hpp"
 
 Model* modelGrainEngineMK2 = createModel<GrainEngineMK2, GrainEngineMK2Widget>("GrainEngineMK2");
