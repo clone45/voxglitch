@@ -255,5 +255,11 @@ struct VoltageSequencerDisplay : SequencerDisplay
         if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->randomize();
       }
     }
+
+    if(e.key == GLFW_KEY_ESCAPE && e.action == GLFW_PRESS)
+    {
+      module->selected_voltage_sequencer->clear();
+      if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->clear();
+    }
   }
 };
