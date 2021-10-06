@@ -15,6 +15,8 @@ struct DigitalSequencer : Module
   bool legacy_reset = false;
   bool first_step = true;
   bool frozen = false;
+  bool frozen_trigger_gate = false;
+
   unsigned int tooltip_timer = 0;
 
 
@@ -179,6 +181,11 @@ struct DigitalSequencer : Module
       this->voltage_sequencers[dst_sequencer_index].setValue(i,this->voltage_sequencers[src_sequencer_index].getValue(i));
       this->gate_sequencers[dst_sequencer_index].setValue(i,this->gate_sequencers[src_sequencer_index].getValue(i));
     }
+  }
+
+  void forceGateOut()
+  {
+    frozen_trigger_gate = true;
   }
 
   /*
@@ -555,18 +562,34 @@ struct DigitalSequencer : Module
         if(reset_first_step == true) first_step = false;
       }
 
-    } // END IF FROZEN
-
-    // output values
-    for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
-    {
-      if(voltage_sequencers[i].sample_and_hold)
+      // output values
+      for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
       {
-        if(gate_sequencers[i].getValue()) outputs[voltage_outputs[i]].setVoltage(voltage_sequencers[i].getOutput());
+        if(voltage_sequencers[i].sample_and_hold)
+        {
+          if(gate_sequencers[i].getValue()) outputs[voltage_outputs[i]].setVoltage(voltage_sequencers[i].getOutput());
+        }
+        else
+        {
+          outputs[voltage_outputs[i]].setVoltage(voltage_sequencers[i].getOutput());
+        }
       }
-      else
+    } // END IF NOT FROZEN
+
+    else // IF FROZEN
+    {
+      // output values
+      for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
       {
+        // Notice that this ignores sample + hold.  This is the main reason
+        // for duplicating this code between the frozen/not frozen IF statments.
         outputs[voltage_outputs[i]].setVoltage(voltage_sequencers[i].getOutput());
+      }
+
+      if(frozen_trigger_gate)
+      {
+        gateOutputPulseGenerators[selected_sequencer_index].trigger(0.01f);
+        frozen_trigger_gate = false;
       }
     }
 

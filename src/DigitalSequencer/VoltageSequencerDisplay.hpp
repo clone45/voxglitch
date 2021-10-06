@@ -267,5 +267,15 @@ struct VoltageSequencerDisplay : SequencerDisplay
         if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->randomize();
       }
     }
+
+
+    // Send a gate out at the currently selected sequence when pressing "g"
+    if(e.key == GLFW_KEY_G && e.action == GLFW_PRESS)
+    {
+      if((e.mods & RACK_MOD_MASK) != GLFW_MOD_CONTROL) // Ignore control-g
+      {
+        module->forceGateOut();
+      }
+    }
   }
 };
