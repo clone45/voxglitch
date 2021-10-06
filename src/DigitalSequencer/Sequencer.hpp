@@ -8,6 +8,14 @@ struct Sequencer
     sequence_playback_position = (sequence_playback_position + 1) % sequence_length;
   }
 
+  void setPosition(unsigned int position)
+  {
+    if(position < sequence_length)
+    {
+      sequence_playback_position = position;      
+    }
+  }
+
   void reset()
   {
     sequence_playback_position = 0;

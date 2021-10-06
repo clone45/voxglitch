@@ -1,10 +1,10 @@
 struct Grain
 {
     // Start Position is the offset into the sample where playback should start.
-    float start_position;
+    double start_position;
 
     // Playback length for the grain, measuring in .. er.. ticks?
-    float playback_length;
+    double playback_length;
 
     // sample_ptr points to the loaded sample in memory
     AudioBuffer *buffer_ptr;
@@ -15,12 +15,12 @@ struct Grain
     // playback_position is similar to samplePos used in for samples.  However,
     // it's relative to the Grain's start_position rather than the sample
     // start position.
-    float playback_position = 0.0f;
+    double playback_position = 0.0f;
     float pan = 0;
     unsigned int sample_position = 0;
     unsigned int age = 0;
     unsigned int lifespan = 0;
-    float pitch = 0;
+    double pitch = 0;
 
     float output_voltage_left = 0;
     float output_voltage_right = 0;

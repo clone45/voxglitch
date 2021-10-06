@@ -194,6 +194,18 @@ struct VoltageSequencerDisplay : SequencerDisplay
     editBar(drag_position);
   }
 
+  void onHover(const event::Hover &e) override
+  {
+    if(module->frozen)
+    {
+      int bar_x_index = e.pos.x / (bar_width + BAR_HORIZONTAL_PADDING);
+
+      // change step here
+      module->selected_voltage_sequencer->setPosition(bar_x_index);
+      module->selected_gate_sequencer->setPosition(bar_x_index);
+    }
+  }
+
   void onHoverKey(const event::HoverKey &e) override
   {
     if(keypressRight(e))

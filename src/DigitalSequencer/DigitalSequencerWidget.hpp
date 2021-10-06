@@ -302,6 +302,15 @@ struct DigitalSequencerWidget : ModuleWidget
 
       }
 
+      if ((e.key == GLFW_KEY_F) && ((e.mods & RACK_MOD_MASK) != GLFW_MOD_CONTROL)) // F (no ctrl)
+      {
+        if(e.action == GLFW_PRESS)
+        {
+          module->frozen = ! module->frozen;
+          e.consume(this);
+        }
+      }
+
       if ((e.key == GLFW_KEY_C) && ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL)) // Control-C
       {
         if(e.action == GLFW_PRESS)

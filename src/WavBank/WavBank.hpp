@@ -1,7 +1,7 @@
 struct WavBank : Module
 {
 	unsigned int selected_sample_slot = 0;
-	float samplePos = 0;
+	double samplePos = 0;
 	float smooth_ramp = 1;
 	float last_wave_output_voltage[2] = {0};
 	std::string rootDir;

@@ -39,7 +39,7 @@ struct GrainEngineMK2 : Module
 
   Common common;
   GrainEngineMK2Core grain_engine_mk2_core;
-  float start_position = 0.0;
+  double start_position = 0.0;
   float draw_position = 0.0;
 
   // Triggers
