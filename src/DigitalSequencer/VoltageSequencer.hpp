@@ -81,4 +81,9 @@ struct VoltageSequencer : Sequencer
       this->setValue(i, fmod(std::rand(), DRAW_AREA_HEIGHT));
     }
   }
+
+  void clear()
+  {
+    sequence.fill(0.0);
+  }
 };

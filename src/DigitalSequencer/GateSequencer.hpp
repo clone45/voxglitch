@@ -52,4 +52,9 @@ struct GateSequencer : Sequencer
       this->setValue(i, fmod(std::rand(), 2));
     }
   }
+
+  void clear()
+  {
+    sequence.fill(0.0);
+  }
 };
