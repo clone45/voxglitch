@@ -23,7 +23,7 @@ struct GrainFxCore
         return(grain_array_length == 0);
     }
 
-    virtual void add(float start_position, unsigned int lifespan, float pan, AudioBuffer *buffer_ptr, unsigned int max_grains, float pitch)
+    virtual void add(double start_position, unsigned int lifespan, double pan, AudioBuffer *buffer_ptr, unsigned int max_grains, double pitch)
     {
         if(grain_array_length > max_grains) return;
         if(lifespan == 0) return;

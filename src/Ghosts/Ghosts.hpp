@@ -1,7 +1,7 @@
 struct Ghosts : Module
 {
 	float spawn_rate_counter = 0;
-	float step_amount = 0;
+	double step_amount = 0;
 	float smooth_rate = 0;
 
 	int step = 0;
@@ -78,7 +78,7 @@ struct Ghosts : Module
 		configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
 		configParam(JITTER_SWITCH, 0.f, 1.f, 1.f, "Jitter");
 
-		jitter_divisor = static_cast <float> (RAND_MAX / 1024.0);
+		jitter_divisor = static_cast <double> (RAND_MAX / 1024.0);
 	}
 
 	json_t *dataToJson() override
@@ -137,7 +137,7 @@ struct Ghosts : Module
 
 		if(inputs[JITTER_CV_INPUT].isConnected() ? (inputs[JITTER_CV_INPUT].getVoltage() > 0) : params[JITTER_SWITCH].getValue())
 		{
-			float r = (static_cast <float> (rand()) / jitter_divisor) - 1024.0;
+			double r = (static_cast <double> (rand()) / jitter_divisor) - 1024.0;
 			start_position = start_position + r;
 		}
 

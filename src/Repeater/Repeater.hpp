@@ -1,7 +1,7 @@
 struct Repeater : Module
 {
 	unsigned int selected_sample_slot = 0;
-	float samplePos = 0;
+	double samplePos = 0;
 	int step = 0;
 	bool isPlaying = false;
 	SmoothSubModule smooth;

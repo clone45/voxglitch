@@ -194,6 +194,18 @@ struct VoltageSequencerDisplay : SequencerDisplay
     editBar(drag_position);
   }
 
+  void onHover(const event::Hover &e) override
+  {
+    if(module->frozen)
+    {
+      int bar_x_index = e.pos.x / (bar_width + BAR_HORIZONTAL_PADDING);
+
+      // change step here
+      module->selected_voltage_sequencer->setPosition(bar_x_index);
+      module->selected_gate_sequencer->setPosition(bar_x_index);
+    }
+  }
+
   void onHoverKey(const event::HoverKey &e) override
   {
     if(keypressRight(e))
@@ -253,6 +265,16 @@ struct VoltageSequencerDisplay : SequencerDisplay
       {
         module->selected_voltage_sequencer->randomize();
         if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->randomize();
+      }
+    }
+
+
+    // Send a gate out at the currently selected sequence when pressing "g"
+    if(e.key == GLFW_KEY_G && e.action == GLFW_PRESS)
+    {
+      if((e.mods & RACK_MOD_MASK) != GLFW_MOD_CONTROL) // Ignore control-g
+      {
+        module->forceGateOut();
       }
     }
 

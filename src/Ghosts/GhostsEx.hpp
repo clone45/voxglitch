@@ -7,10 +7,10 @@ struct Ghost
 {
     // Start Position is the offset into the sample where playback should start.
     // It is set when the ghost is first created.
-    float start_position;
+    double start_position;
 
     // Playback length for the ghost, measuring in .. er.. ticks?
-    float playback_length;
+    double playback_length;
 
     // sample_ptr points to the loaded sample in memory
     Sample *sample_ptr;
@@ -18,7 +18,7 @@ struct Ghost
     // playback_position is similar to samplePos used in for samples.  However,
     // it's relative to the Ghost's start_position rather than the sample
     // start position.
-    float playback_position = 0.0f;
+    double playback_position = 0.0;
 
     unsigned int sample_position = 0;
 
@@ -64,7 +64,7 @@ struct Ghost
         return {output_voltage_left, output_voltage_right};
     }
 
-    void step(float step_amount)
+    void step(double step_amount)
     {
         if(erase_me == false)
         {
@@ -77,8 +77,6 @@ struct Ghost
                 // fmod is modulus for floating point variables
                 playback_position = fmod(playback_position, playback_length);
 
-                // loop_smooth_left.trigger();
-                // loop_smooth_right.trigger();
                 loop_smooth.trigger();
             }
         }

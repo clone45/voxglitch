@@ -1,7 +1,7 @@
 struct GrainFx : Module
 {
   // Various internal variables
-  float pitch = 0;
+  double pitch = 0;
   float smooth_rate = 0;
   unsigned int spawn_throttling_countdown = 0;
   float max_grains = 0;
@@ -154,10 +154,10 @@ struct GrainFx : Module
   }
 
 
-  float process_internal_LFO_position_modulation(float modulation_amplitude)
+  double process_internal_LFO_position_modulation(double modulation_amplitude)
   {
     // add range knobs for these?
-    float frequency = calculate_inputs(INTERNAL_MODULATION_FREQUENCY_INPUT, INTERNAL_MODULATION_FREQUENCY_KNOB, INTERNAL_MODULATION_FREQUENCY_ATTN_KNOB, 500.0);
+    double frequency = calculate_inputs(INTERNAL_MODULATION_FREQUENCY_INPUT, INTERNAL_MODULATION_FREQUENCY_KNOB, INTERNAL_MODULATION_FREQUENCY_ATTN_KNOB, 500.0);
     internal_modulation_oscillator.setFrequency(frequency + 0.10);
 
     return(internal_modulation_oscillator.next() * modulation_amplitude);
@@ -193,7 +193,7 @@ struct GrainFx : Module
     else
     {
       // Use internal LFO
-      float modulation_amplitude = calculate_inputs(INTERNAL_MODULATION_AMPLITUDE_INPUT, INTERNAL_MODULATION_AMPLITUDE_KNOB, INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB);
+      double modulation_amplitude = calculate_inputs(INTERNAL_MODULATION_AMPLITUDE_INPUT, INTERNAL_MODULATION_AMPLITUDE_KNOB, INTERNAL_MODULATION_AMPLITUDE_ATTN_KNOB);
       start_position = process_internal_LFO_position_modulation(modulation_amplitude);
 
       if(params[INTERNAL_MODULATION_OUTPUT_POLARITY_SWITCH].getValue() == 1) // Unipolar
@@ -212,7 +212,7 @@ struct GrainFx : Module
     // Process Jitter input
     //
 
-    float jitter_spread = 0;
+    double jitter_spread = 0;
 
     if(inputs[JITTER_CV_INPUT].isConnected())
     {
@@ -224,7 +224,7 @@ struct GrainFx : Module
     }
 
     // If jitter_spread is 124, then the jitter will be between -124 and 124.
-    float jitter = common.randomFloat(-1 * jitter_spread, jitter_spread);
+    double jitter = common.randomFloat(-1 * jitter_spread, jitter_spread);
 
     // Make some room at the beginning and end of the possible range position to
     // allow for the addition of the jitter without pushing the start_position out of

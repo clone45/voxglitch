@@ -14,7 +14,11 @@ struct DigitalSequencer : Module
   long clock_ignore_on_reset = 0;
   bool legacy_reset = false;
   bool first_step = true;
+  bool frozen = false;
+  bool frozen_trigger_gate = false;
+
   unsigned int tooltip_timer = 0;
+
 
   VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
   VoltageSequencer *selected_voltage_sequencer;
@@ -66,6 +70,9 @@ struct DigitalSequencer : Module
     SEQUENCER_4_BUTTON,
     SEQUENCER_5_BUTTON,
     SEQUENCER_6_BUTTON,
+
+    FREEZE_TOGGLE,
+
     NUM_PARAMS
   };
   enum InputIds {
@@ -177,6 +184,11 @@ struct DigitalSequencer : Module
       this->voltage_sequencers[dst_sequencer_index].setValue(i,this->voltage_sequencers[src_sequencer_index].getValue(i));
       this->gate_sequencers[dst_sequencer_index].setValue(i,this->gate_sequencers[src_sequencer_index].getValue(i));
     }
+  }
+
+  void forceGateOut()
+  {
+    frozen_trigger_gate = true;
   }
 
   /*
@@ -415,12 +427,19 @@ struct DigitalSequencer : Module
     selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
     selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
 
+    //
+    // See if someone pressed one of the green sequence selection buttons
+    //
     sequencer_1_button_is_triggered = sequencer_1_button_trigger.process(params[SEQUENCER_1_BUTTON].getValue());
     sequencer_2_button_is_triggered = sequencer_2_button_trigger.process(params[SEQUENCER_2_BUTTON].getValue());
     sequencer_3_button_is_triggered = sequencer_3_button_trigger.process(params[SEQUENCER_3_BUTTON].getValue());
     sequencer_4_button_is_triggered = sequencer_4_button_trigger.process(params[SEQUENCER_4_BUTTON].getValue());
     sequencer_5_button_is_triggered = sequencer_5_button_trigger.process(params[SEQUENCER_5_BUTTON].getValue());
     sequencer_6_button_is_triggered = sequencer_6_button_trigger.process(params[SEQUENCER_6_BUTTON].getValue());
+
+    // If any of the green sequence buttons were pressed, set the index "selected_sequencer_index"
+    // which will be used to look up the selected voltage and gate sequencers from
+    // the voltage_sequencers[] and gate_sequencers[] arrays
 
     if(sequencer_1_button_is_triggered) selected_sequencer_index = 0;
     if(sequencer_2_button_is_triggered) selected_sequencer_index = 1;
@@ -429,12 +448,20 @@ struct DigitalSequencer : Module
     if(sequencer_5_button_is_triggered) selected_sequencer_index = 4;
     if(sequencer_6_button_is_triggered) selected_sequencer_index = 5;
 
+    //
+    // Set all of the sequence lengths by checking the corresponding knobs
+    //
+
     voltage_sequencers[0].setLength(clamp((int) params[SEQUENCER_1_LENGTH_KNOB].getValue(), 1, 32));
     voltage_sequencers[1].setLength(clamp((int) params[SEQUENCER_2_LENGTH_KNOB].getValue(), 1, 32));
     voltage_sequencers[2].setLength(clamp((int) params[SEQUENCER_3_LENGTH_KNOB].getValue(), 1, 32));
     voltage_sequencers[3].setLength(clamp((int) params[SEQUENCER_4_LENGTH_KNOB].getValue(), 1, 32));
     voltage_sequencers[4].setLength(clamp((int) params[SEQUENCER_5_LENGTH_KNOB].getValue(), 1, 32));
     voltage_sequencers[5].setLength(clamp((int) params[SEQUENCER_6_LENGTH_KNOB].getValue(), 1, 32));
+
+    //
+    // Do the same for the gate sequencers.  Both the voltage and corresponding gate sequencers
+    // are always the same length.
 
     gate_sequencers[0].setLength(clamp((int) params[SEQUENCER_1_LENGTH_KNOB].getValue(), 1, 32));
     gate_sequencers[1].setLength(clamp((int) params[SEQUENCER_2_LENGTH_KNOB].getValue(), 1, 32));
@@ -443,86 +470,129 @@ struct DigitalSequencer : Module
     gate_sequencers[4].setLength(clamp((int) params[SEQUENCER_5_LENGTH_KNOB].getValue(), 1, 32));
     gate_sequencers[5].setLength(clamp((int) params[SEQUENCER_6_LENGTH_KNOB].getValue(), 1, 32));
 
-    // On incoming RESET, reset the sequencers
-    if(resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+    //
+    // FROZEN, FROZEN, FROZEN  (coming soon)
+    //
+    // This is a pretty crazy IF statement.  It's saying, "If the frozen flag
+    // is FALSE, then don't step the sequencers"  Why would someone want to
+    // freeze the sequencers?  Freezing the sequencers can be used when editing
+    // sequences so you can hear your changes immediately.  In a traditional
+    // analog sequencer, when you adjust a voltage knob, you won't hear the
+    // change until the sequencer reaches that step.  That slows things down
+    // because you have to wait between updates to hear the changes.  When you
+    // freeze the sequencers, the step that you're editing is always sent to
+    // the outputs, making it easier to fine tune values.
+
+    if (frozen == false)
     {
-      // Set up a (reverse) counter so that the clock input will ignore
-      // incoming clock pulses for 1 millisecond after a reset input. This
-      // is to comply with VCV Rack's standards.  See section "Timing" at
-      // https://vcvrack.com/manual/VoltageStandards
 
-      clock_ignore_on_reset = (long) (args.sampleRate / 100);
-
-      stepTrigger.reset();
-      first_step = true;
-
-      for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
+      // On incoming RESET, reset the sequencers
+      if(resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
       {
-        sequencer_step_triggers[i].reset();
-        voltage_sequencers[i].reset();
-        gate_sequencers[i].reset();
-      }
-    }
+        // Set up a (reverse) counter so that the clock input will ignore
+        // incoming clock pulses for 1 millisecond after a reset input. This
+        // is to comply with VCV Rack's standards.  See section "Timing" at
+        // https://vcvrack.com/manual/VoltageStandards
 
-    //
-    // The legacy reset option in the context menu tells the module to accept
-    // clock signals immedately after resetting.  Reset signals are supposed to
-    // cause clock signals to be ignored for 1 millisecond, however, some older
-    // modules don't do that, so this flag helps with compatibility with older
-    // modules.
-    //
-    if(legacy_reset || clock_ignore_on_reset == 0)
-    {
-      // Step ALL of the sequencers
-      bool global_step_trigger = stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f));
-      bool step;
+        clock_ignore_on_reset = (long) (args.sampleRate / 100);
+
+        stepTrigger.reset();
+        first_step = true;
+
+        for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
+        {
+          sequencer_step_triggers[i].reset();
+          voltage_sequencers[i].reset();
+          gate_sequencers[i].reset();
+        }
+      }
 
       //
-      // reset_first_step ensures that the first step of the sequence is not skipped
-      // after a reset.  This functionality is disbled in legacy reset mode.
-      bool reset_first_step = false;
+      // The legacy reset option in the context menu tells the module to accept
+      // clock signals immedately after resetting.  Reset signals are supposed to
+      // cause clock signals to be ignored for 1 millisecond, however, some older
+      // modules don't do that, so this flag helps with compatibility with older
+      // modules.
+      //
+      if(legacy_reset || clock_ignore_on_reset == 0)
+      {
+        // Check to see if there's a pulse at the global step trigger input.
+        bool global_step_trigger = stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f));
+        bool step;
 
+        // reset_first_step ensures that the first step of the sequence is not skipped
+        // after a reset.  This functionality is disbled in legacy reset mode.
+        bool reset_first_step = false;
+
+        for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
+        {
+          step = false;
+
+          // This line is saying, "If there's a wire connected to the individual
+          // sequencer's step input, then it should override the global step
+          // trigger input for this specific sequencer"
+          if(inputs[sequencer_step_inputs[i]].isConnected() == false)
+          {
+            if(global_step_trigger) step = true;
+          }
+          else if (sequencer_step_triggers[i].process(rescale(inputs[sequencer_step_inputs[i]].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+          {
+            step = true;
+          }
+
+          if(step) // Step == true means, "step the sequencer forward one step"
+          {
+            // If legacy reset is true or it's not the first step of the sequence
+            // then go ahead and step the sequences.  Otherwise skip the first
+            // step.
+            if(legacy_reset || first_step == false)
+            {
+              voltage_sequencers[i].step();
+              gate_sequencers[i].step();
+            }
+            else
+            {
+              reset_first_step = true;
+            }
+
+            // If the gate sequence is TRUE, then start the pulse generator to
+            // output the gate signal.
+            if(gate_sequencers[i].getValue()) gateOutputPulseGenerators[i].trigger(0.01f);
+          }
+        }
+
+        // If the first step of the sequence was skipped, don't skip it again later on!
+        if(reset_first_step == true) first_step = false;
+      }
+
+      // output values
       for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
       {
-        step = false;
-
-        if(inputs[sequencer_step_inputs[i]].isConnected() == false)
+        if(voltage_sequencers[i].sample_and_hold)
         {
-          if(global_step_trigger) step = true;
+          if(gate_sequencers[i].getValue()) outputs[voltage_outputs[i]].setVoltage(voltage_sequencers[i].getOutput());
         }
-        else if (sequencer_step_triggers[i].process(rescale(inputs[sequencer_step_inputs[i]].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+        else
         {
-          step = true;
-        }
-
-        if(step)
-        {
-          if(legacy_reset || first_step == false)
-          {
-            voltage_sequencers[i].step();
-            gate_sequencers[i].step();
-          }
-          else
-          {
-            reset_first_step = true;
-          }
-          if(gate_sequencers[i].getValue()) gateOutputPulseGenerators[i].trigger(0.01f);
+          outputs[voltage_outputs[i]].setVoltage(voltage_sequencers[i].getOutput());
         }
       }
+    } // END IF NOT FROZEN
 
-      if(reset_first_step == true) first_step = false;
-    }
-
-    // output values
-    for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
+    else // IF FROZEN
     {
-      if(voltage_sequencers[i].sample_and_hold)
+      // output values
+      for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
       {
-        if(gate_sequencers[i].getValue()) outputs[voltage_outputs[i]].setVoltage(voltage_sequencers[i].getOutput());
-      }
-      else
-      {
+        // Notice that this ignores sample + hold.  This is the main reason
+        // for duplicating this code between the frozen/not frozen IF statments.
         outputs[voltage_outputs[i]].setVoltage(voltage_sequencers[i].getOutput());
+      }
+
+      if(frozen_trigger_gate)
+      {
+        gateOutputPulseGenerators[selected_sequencer_index].trigger(0.01f);
+        frozen_trigger_gate = false;
       }
     }
 
