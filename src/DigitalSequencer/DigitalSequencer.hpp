@@ -70,6 +70,9 @@ struct DigitalSequencer : Module
     SEQUENCER_4_BUTTON,
     SEQUENCER_5_BUTTON,
     SEQUENCER_6_BUTTON,
+
+    FREEZE_TOGGLE,
+
     NUM_PARAMS
   };
   enum InputIds {

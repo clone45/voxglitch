@@ -4,6 +4,14 @@ public:
   void randomize() override {} // do nothing. base class would actually randomize
 };
 
+/* Abandoning this front-panel control for now
+struct FreezeToggle : app::SvgSwitch {
+	FreezeToggle() {
+		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance,"res/freeze-button-off.svg")));
+    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/freeze-button-on.svg")));
+	};
+};
+*/
 
 struct DigitalSequencerWidget : ModuleWidget
 {
@@ -17,7 +25,7 @@ struct DigitalSequencerWidget : ModuleWidget
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_sequencer_front_panel.svg")));
 
     // Cosmetic rack screws
-    addChild(createWidget<ScrewSilver>(Vec(15, 0)));
+    // addChild(createWidget<ScrewSilver>(Vec(15, 0)));
     addChild(createWidget<ScrewSilver>(Vec(15, 365)));
     addChild(createWidget<ScrewSilver>(mm2px(Vec(171.5, 0))));
 
@@ -77,8 +85,6 @@ struct DigitalSequencerWidget : ModuleWidget
     // Reset
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 14.544, 114.893)), module, DigitalSequencer::RESET_INPUT));
 
-
-
     // 6 sequencer outputs
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(118, 108.224)), module, DigitalSequencer::SEQ1_CV_OUTPUT));
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(129, 108.224)), module, DigitalSequencer::SEQ2_CV_OUTPUT));
@@ -93,6 +99,8 @@ struct DigitalSequencerWidget : ModuleWidget
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(151, 119.309)), module, DigitalSequencer::SEQ4_GATE_OUTPUT));
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(162, 119.309)), module, DigitalSequencer::SEQ5_GATE_OUTPUT));
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(173, 119.309)), module, DigitalSequencer::SEQ6_GATE_OUTPUT));
+
+    // addParam(createParamCentered<FreezeToggle>(mm2px(Vec(180,40)), module, DigitalSequencer::FREEZE_TOGGLE));
   }
 
 
@@ -234,6 +242,26 @@ struct DigitalSequencerWidget : ModuleWidget
     }
   };
 
+  struct QuickKeyMenu : MenuItem {
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      menu->addChild(createMenuLabel("      f : Toggle Freeze Mode (for easy editing)"));
+      menu->addChild(createMenuLabel("      g : When frozen, press 'g' to send gate out"));
+      menu->addChild(createMenuLabel(""));
+      menu->addChild(createMenuLabel("      r : Randomize gate or voltage sequence"));
+      menu->addChild(createMenuLabel("      ↑ : Nudge up voltage for hovered step"));
+      menu->addChild(createMenuLabel("      ↓ : Nudge down voltage for hovered step"));
+      menu->addChild(createMenuLabel("      → : Shift hovered sequence to the right"));
+      menu->addChild(createMenuLabel("      ← : Shift hovered sequence to the left"));
+      menu->addChild(createMenuLabel("    1-6 : Quickly select active sequencer"));
+      menu->addChild(createMenuLabel("ctrl-c  : copy selected sequence"));
+      menu->addChild(createMenuLabel("ctrl-v  : paste selected sequence"));
+
+      return menu;
+    }
+  };
+
   struct AllSequencersItem : MenuItem {
 
   };
@@ -244,6 +272,8 @@ struct DigitalSequencerWidget : ModuleWidget
     assert(module);
 
     // Menu in development
+    menu->addChild(new MenuEntry); // For spacing only
+    menu->addChild(createMenuItem<QuickKeyMenu>("Quick Key Reference", RIGHT_ARROW));
     menu->addChild(new MenuEntry); // For spacing only
     menu->addChild(createMenuLabel("Sequencer Settings"));
 
