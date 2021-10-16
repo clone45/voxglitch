@@ -104,10 +104,10 @@ struct Sample
       sample_audio_buffer.push_back(left, right);
     }
 
-    // Store sample length and file information to this object for the reset
+    // Store sample length and file information to this object for the rest
     // of the patch to reference.
     this->sample_length = sample_audio_buffer.size();
-    this->filename = rack::string::filename(path);
+    this->filename = system::getFilename(path);
     this->path = path;
 
     this->loading = false;

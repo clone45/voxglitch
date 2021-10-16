@@ -161,6 +161,14 @@ struct DigitalSequencer : Module
     configParam(SEQUENCER_5_BUTTON, 0.f, 1.f, 0.f, "Sequence5Button");
     configParam(SEQUENCER_6_BUTTON, 0.f, 1.f, 0.f, "Sequence6Button");
 
+    // Disable randomize for trimpots
+    getParamQuantity(SEQUENCER_1_LENGTH_KNOB)->resetEnabled = false;
+    getParamQuantity(SEQUENCER_2_LENGTH_KNOB)->resetEnabled = false;
+    getParamQuantity(SEQUENCER_3_LENGTH_KNOB)->resetEnabled = false;
+    getParamQuantity(SEQUENCER_4_LENGTH_KNOB)->resetEnabled = false;
+    getParamQuantity(SEQUENCER_5_LENGTH_KNOB)->resetEnabled = false;
+    getParamQuantity(SEQUENCER_6_LENGTH_KNOB)->resetEnabled = false;
+
     // On boot, I seem to be getting some weird gate signals.  This keeps those
     // from triggering an output pulse when the module first loads.
     clock_ignore_on_reset = (long) (44100 / 100);
