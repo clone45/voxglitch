@@ -118,7 +118,7 @@ struct GateSequencerDisplay : SequencerDisplay
   {
     TransparentWidget::onDragMove(e);
 
-    double zoom = std::pow(2.f, settings::zoom);
+    double zoom = getAbsoluteZoom();
     drag_position = drag_position.plus(e.mouseDelta.div(zoom));
 
     // int drag_bar_x_index = clamp(getIndexFromX(drag_position.x, 0, MAX_SEQUENCER_STEPS - 1);

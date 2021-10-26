@@ -162,7 +162,7 @@ struct CellularAutomatonDisplay : TransparentWidget
   {
     TransparentWidget::onDragMove(e);
 
-    double zoom = std::pow(2.f, settings::zoom);
+    float zoom = getAbsoluteZoom();
     drag_position = drag_position.plus(e.mouseDelta.div(zoom));
 
     if(isMouseInDrawArea(drag_position))
