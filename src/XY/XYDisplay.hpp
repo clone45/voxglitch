@@ -170,7 +170,7 @@ struct XYDisplay : OpaqueWidget
   void onDragMove(const event::DragMove &e) override
   {
     OpaqueWidget::onDragMove(e);
-    float zoom = std::pow(2.f, settings::zoom);
+    float zoom = getAbsoluteZoom();
     this->module->drag_position = this->clampToDrawArea(this->module->drag_position.plus(e.mouseDelta.div(zoom)));
   }
 

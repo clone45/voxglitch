@@ -189,7 +189,7 @@ struct VoltageSequencerDisplay : SequencerDisplay
   void onDragMove(const event::DragMove &e) override
   {
     TransparentWidget::onDragMove(e);
-    double zoom = std::pow(2.f, settings::zoom);
+    float zoom = getAbsoluteZoom();
     drag_position = drag_position.plus(e.mouseDelta.div(zoom));
     editBar(drag_position);
   }
