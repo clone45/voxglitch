@@ -6,9 +6,13 @@ struct SamplerX8 : Module
   float left_audio = 0;
   float right_audio = 0;
   StereoPanSubModule stereo_pan_submodule;
+  dsp::SchmittTrigger mute_buttons_schmitt_triggers[NUMBER_OF_SAMPLES];
+  unsigned int mute_buttons[NUMBER_OF_SAMPLES];
+  unsigned int mute_lights[NUMBER_OF_SAMPLES];
+  bool mute_states[NUMBER_OF_SAMPLES];
 
   enum ParamIds {
-    // Enums for volumn knobs
+    // Enums for volume knobs
     VOLUME_KNOBS,
     VOLUME_KNOB_1,
     VOLUME_KNOB_2,
@@ -27,6 +31,14 @@ struct SamplerX8 : Module
     PAN_KNOB_6,
     PAN_KNOB_7,
     PAN_KNOB_8,
+    MUTE_BUTTON_1,
+    MUTE_BUTTON_2,
+    MUTE_BUTTON_3,
+    MUTE_BUTTON_4,
+    MUTE_BUTTON_5,
+    MUTE_BUTTON_6,
+    MUTE_BUTTON_7,
+    MUTE_BUTTON_8,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -87,6 +99,14 @@ struct SamplerX8 : Module
 		NUM_OUTPUTS
 	};
 	enum LightIds {
+    MUTE_BUTTON_1_LIGHT,
+    MUTE_BUTTON_2_LIGHT,
+    MUTE_BUTTON_3_LIGHT,
+    MUTE_BUTTON_4_LIGHT,
+    MUTE_BUTTON_5_LIGHT,
+    MUTE_BUTTON_6_LIGHT,
+    MUTE_BUTTON_7_LIGHT,
+    MUTE_BUTTON_8_LIGHT,
 		NUM_LIGHTS
 	};
 
@@ -112,12 +132,40 @@ struct SamplerX8 : Module
     configParam(PAN_KNOB_7, -1.0, 1.0, 0.0, "PanKnob7");
     configParam(PAN_KNOB_8, -1.0, 1.0, 0.0, "PanKnob8");
 
+    configParam(MUTE_BUTTON_1, 0.f, 1.f, 1.f, "MuteButton1");
+    configParam(MUTE_BUTTON_2, 0.f, 1.f, 1.f, "MuteButton2");
+    configParam(MUTE_BUTTON_3, 0.f, 1.f, 1.f, "MuteButton3");
+    configParam(MUTE_BUTTON_4, 0.f, 1.f, 1.f, "MuteButton4");
+    configParam(MUTE_BUTTON_5, 0.f, 1.f, 1.f, "MuteButton5");
+    configParam(MUTE_BUTTON_6, 0.f, 1.f, 1.f, "MuteButton6");
+    configParam(MUTE_BUTTON_7, 0.f, 1.f, 1.f, "MuteButton7");
+    configParam(MUTE_BUTTON_8, 0.f, 1.f, 1.f, "MuteButton8");
+
+    mute_buttons[0] = MUTE_BUTTON_1;
+    mute_buttons[1] = MUTE_BUTTON_2;
+    mute_buttons[2] = MUTE_BUTTON_3;
+    mute_buttons[3] = MUTE_BUTTON_4;
+    mute_buttons[4] = MUTE_BUTTON_5;
+    mute_buttons[5] = MUTE_BUTTON_6;
+    mute_buttons[6] = MUTE_BUTTON_7;
+    mute_buttons[7] = MUTE_BUTTON_8;
+
+    mute_lights[0] = MUTE_BUTTON_1_LIGHT;
+    mute_lights[1] = MUTE_BUTTON_2_LIGHT;
+    mute_lights[2] = MUTE_BUTTON_3_LIGHT;
+    mute_lights[3] = MUTE_BUTTON_4_LIGHT;
+    mute_lights[4] = MUTE_BUTTON_5_LIGHT;
+    mute_lights[5] = MUTE_BUTTON_6_LIGHT;
+    mute_lights[6] = MUTE_BUTTON_7_LIGHT;
+    mute_lights[7] = MUTE_BUTTON_8_LIGHT;
+
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 
     for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
     {
       SamplePlayer sample_player;
       sample_players.push_back(sample_player);
+      mute_states[i] = true;
     }
 	}
 
@@ -129,6 +177,11 @@ struct SamplerX8 : Module
     for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
 			json_object_set_new(root, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(sample_players[i].getPath().c_str()));
+		}
+
+    for(int i=0; i < NUMBER_OF_SAMPLES; i++)
+		{
+			json_object_set_new(root, ("mute_states_" + std::to_string(i+1)).c_str(), json_integer((unsigned int) mute_states[i]));
 		}
 
 		return root;
@@ -146,7 +199,14 @@ struct SamplerX8 : Module
 				loaded_filenames[i] = sample_players[i].getFilename();
 			}
 		}
+
+    for(int i=0; i < NUMBER_OF_SAMPLES; i++)
+		{
+			json_t *loaded_mute_value = json_object_get(root, ("mute_states_" +  std::to_string(i+1)).c_str());
+			if (loaded_mute_value) mute_states[i] = json_integer_value(loaded_mute_value);
+		}
 	}
+
 
 	void process(const ProcessArgs &args) override
 	{
@@ -163,6 +223,14 @@ struct SamplerX8 : Module
         if(inputs[position_input_index].isConnected()) sample_players[i].setPositionFromInput(inputs[position_input_index].getVoltage());
       }
 
+      // Process mute button
+      bool mute_button_is_triggered = mute_buttons_schmitt_triggers[i].process(params[mute_buttons[i]].getValue());
+      if(mute_button_is_triggered) mute_states[i] ^= true;
+
+
+      lights[mute_lights[i]].setBrightness(mute_states[i]);
+
+
       // Send audio to outputs
       std::tie(left_audio, right_audio) = sample_players[i].getStereoOutput();
 
@@ -174,16 +242,22 @@ struct SamplerX8 : Module
       std::tie(left_audio, right_audio) = stereo_pan_submodule.process(left_audio, right_audio, params[PAN_KNOBS + i + 1].getValue());
 
       // Output audio for the current sample
-      outputs[i].setVoltage(left_audio);
-      outputs[i + NUMBER_OF_SAMPLES].setVoltage(right_audio);
+      if(mute_states[i] == true)  // True means "play sample"
+      {
+        outputs[i].setVoltage(left_audio);
+        outputs[i + NUMBER_OF_SAMPLES].setVoltage(right_audio);
 
-      // Sum up the output for the mix L/R output
-      summed_output_left += left_audio;
-      summed_output_right += right_audio;
+        // Sum up the output for the mix L/R output
+        summed_output_left += left_audio;
+        summed_output_right += right_audio;
+      }
 
       // Step samples
       sample_players[i].step(args.sampleRate);
     }
+
+
+
 
     // Output summed output
     outputs[AUDIO_MIX_OUTPUT_LEFT].setVoltage(summed_output_left);
