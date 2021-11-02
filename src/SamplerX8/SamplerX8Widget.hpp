@@ -16,9 +16,10 @@ struct SamplerX8Widget : ModuleWidget
     float position_inputs_column_x = 10.5 + 10.16;
     float volume_knobs_column_x = 20.5 + 10.16;
     float pan_knobs_column_x = 30.5 + 10.16;
+    float mute_buttons_column_x = 40.5 + 10.16;
 
-    float output_l_column = 29.08 + 15.24 + 10.16;
-    float output_r_column = 39.78 + 15.24 + 10.16;
+    float output_l_column = 29.08 + 15.24 + 10.16 + 10.0;
+    float output_r_column = 39.78 + 15.24 + 10.16 + 10.0;
 
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(triggers_column_x, group_y + (row_padding * 0))), module, SamplerX8::TRIGGER_INPUT_1));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(triggers_column_x, group_y + (row_padding * 1))), module, SamplerX8::TRIGGER_INPUT_2));
@@ -56,6 +57,22 @@ struct SamplerX8Widget : ModuleWidget
     addParam(createParamCentered<Trimpot>(mm2px(Vec(pan_knobs_column_x, group_y + (row_padding * 6))), module, SamplerX8::PAN_KNOB_7));
     addParam(createParamCentered<Trimpot>(mm2px(Vec(pan_knobs_column_x, group_y + (row_padding * 7))), module, SamplerX8::PAN_KNOB_8));
 
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(mute_buttons_column_x, group_y + (row_padding * 0))), module, SamplerX8::MUTE_BUTTON_1));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(mute_buttons_column_x, group_y + (row_padding * 0))), module, SamplerX8::MUTE_BUTTON_1_LIGHT));
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(mute_buttons_column_x, group_y + (row_padding * 1))), module, SamplerX8::MUTE_BUTTON_2));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(mute_buttons_column_x, group_y + (row_padding * 1))), module, SamplerX8::MUTE_BUTTON_2_LIGHT));
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(mute_buttons_column_x, group_y + (row_padding * 2))), module, SamplerX8::MUTE_BUTTON_3));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(mute_buttons_column_x, group_y + (row_padding * 2))), module, SamplerX8::MUTE_BUTTON_3_LIGHT));
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(mute_buttons_column_x, group_y + (row_padding * 3))), module, SamplerX8::MUTE_BUTTON_4));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(mute_buttons_column_x, group_y + (row_padding * 3))), module, SamplerX8::MUTE_BUTTON_4_LIGHT));
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(mute_buttons_column_x, group_y + (row_padding * 4))), module, SamplerX8::MUTE_BUTTON_5));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(mute_buttons_column_x, group_y + (row_padding * 4))), module, SamplerX8::MUTE_BUTTON_5_LIGHT));
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(mute_buttons_column_x, group_y + (row_padding * 5))), module, SamplerX8::MUTE_BUTTON_6));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(mute_buttons_column_x, group_y + (row_padding * 5))), module, SamplerX8::MUTE_BUTTON_6_LIGHT));
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(mute_buttons_column_x, group_y + (row_padding * 6))), module, SamplerX8::MUTE_BUTTON_7));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(mute_buttons_column_x, group_y + (row_padding * 6))), module, SamplerX8::MUTE_BUTTON_7_LIGHT));
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(mute_buttons_column_x, group_y + (row_padding * 7))), module, SamplerX8::MUTE_BUTTON_8));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(mute_buttons_column_x, group_y + (row_padding * 7))), module, SamplerX8::MUTE_BUTTON_8_LIGHT));
 
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_l_column, group_y + (row_padding * 0))), module, SamplerX8::AUDIO_OUTPUT_1_LEFT));
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_r_column, group_y + (row_padding * 0))), module, SamplerX8::AUDIO_OUTPUT_1_RIGHT));
