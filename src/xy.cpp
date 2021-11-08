@@ -11,6 +11,7 @@
 #include <vector>
 #include "cmath"
 
+#include "Common/VoxglitchWidget.hpp"
 #include "XY/defines.h"
 #include "XY/XY.hpp"
 #include "XY/XYDisplay.hpp"

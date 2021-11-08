@@ -1,11 +1,11 @@
-struct XYDisplay : OpaqueWidget
+struct XYDisplay : VoxglitchWidget
 {
   XY *module;
   bool dragging = false;
   std::vector<Vec> fading_rectangles;
   NVGcolor rectangle_colors[30];
 
-  XYDisplay(XY *module): OpaqueWidget()
+  XYDisplay(XY *module): VoxglitchWidget()
   {
     this->module = module;
     box.size = Vec(DRAW_AREA_WIDTH_PT, DRAW_AREA_HEIGHT_PT);
@@ -23,97 +23,100 @@ struct XYDisplay : OpaqueWidget
     }
   }
 
-  void draw(const DrawArgs &args) override
+  void drawLayer(const DrawArgs& args, int layer) override
   {
-    OpaqueWidget::draw(args);
-    const auto vg = args.vg;
-
-    if(module)
+  	if (layer == 1)
     {
-      float now_x =this->module->drag_position.x;
-      float now_y = this->module->drag_position.y - DRAW_AREA_HEIGHT_PT;
-      float drag_y = this->module->drag_position.y;
+      VoxglitchWidget::draw(args);
+      const auto vg = args.vg;
 
-      nvgSave(vg);
-
-      // draw x,y lines, just because I think they look cool
-
-      nvgBeginPath(vg);
-      nvgStrokeWidth(vg, 0.5f);
-      nvgStrokeColor(vg, nvgRGBA(0xdd, 0xdd, 0xdd, 255));
-      nvgMoveTo(vg, now_x, 0);
-      nvgLineTo(vg, now_x, DRAW_AREA_HEIGHT_PT);
-      nvgStroke(vg);
-
-      nvgBeginPath(vg);
-      nvgStrokeWidth(vg, 0.5f);
-      nvgStrokeColor(vg, nvgRGBA(0xdd, 0xdd, 0xdd, 255));
-      nvgMoveTo(vg, 0, drag_y);
-      nvgLineTo(vg, DRAW_AREA_WIDTH_PT, drag_y);
-      nvgStroke(vg);
-
-      fading_rectangles.push_back(Vec(now_x, now_y));
-
-      if(fading_rectangles.size() > 30)
+      if(module)
       {
-        fading_rectangles.erase(fading_rectangles.begin());
-      }
+        float now_x =this->module->drag_position.x;
+        float now_y = this->module->drag_position.y - DRAW_AREA_HEIGHT_PT;
+        float drag_y = this->module->drag_position.y;
 
-      int i=0;
+        nvgSave(vg);
 
-      for(auto position: fading_rectangles)
-      {
-        float x = position.x;
-        float y = position.y;
+        // draw x,y lines, just because I think they look cool
 
-        // draw thing
         nvgBeginPath(vg);
-        nvgRect(vg, 0, DRAW_AREA_WIDTH_PT, x, y);
-        nvgFillColor(vg, rectangle_colors[i++]);
-        nvgFill(vg);
+        nvgStrokeWidth(vg, 0.5f);
+        nvgStrokeColor(vg, nvgRGBA(0xdd, 0xdd, 0xdd, 255));
+        nvgMoveTo(vg, now_x, 0);
+        nvgLineTo(vg, now_x, DRAW_AREA_HEIGHT_PT);
+        nvgStroke(vg);
+
+        nvgBeginPath(vg);
+        nvgStrokeWidth(vg, 0.5f);
+        nvgStrokeColor(vg, nvgRGBA(0xdd, 0xdd, 0xdd, 255));
+        nvgMoveTo(vg, 0, drag_y);
+        nvgLineTo(vg, DRAW_AREA_WIDTH_PT, drag_y);
+        nvgStroke(vg);
+
+        fading_rectangles.push_back(Vec(now_x, now_y));
+
+        if(fading_rectangles.size() > 30)
+        {
+          fading_rectangles.erase(fading_rectangles.begin());
+        }
+
+        int i=0;
+
+        for(auto position: fading_rectangles)
+        {
+          float x = position.x;
+          float y = position.y;
+
+          // draw thing
+          nvgBeginPath(vg);
+          nvgRect(vg, 0, DRAW_AREA_WIDTH_PT, x, y);
+          nvgFillColor(vg, rectangle_colors[i++]);
+          nvgFill(vg);
+        }
+
+        // FOR TESTING: Draw test rectable to see bounds of box
+        /*
+        nvgBeginPath(vg);
+        nvgStrokeColor(vg, nvgRGB(100, 120, 255));
+        nvgStrokeWidth(vg, 0.2f);
+        nvgFillColor(vg, nvgRGBA(0,0,0,0));
+        nvgRect(vg, 0, 0, DRAW_AREA_WIDTH_PT, DRAW_AREA_HEIGHT_PT);
+        nvgStroke(vg);
+        */
+
+        nvgRestore(vg);
       }
+      else
+      {
+        nvgSave(vg);
 
-      // FOR TESTING: Draw test rectable to see bounds of box
-      /*
-      nvgBeginPath(vg);
-      nvgStrokeColor(vg, nvgRGB(100, 120, 255));
-      nvgStrokeWidth(vg, 0.2f);
-      nvgFillColor(vg, nvgRGBA(0,0,0,0));
-      nvgRect(vg, 0, 0, DRAW_AREA_WIDTH_PT, DRAW_AREA_HEIGHT_PT);
-      nvgStroke(vg);
-      */
+        // draw preview for module browser
 
-      nvgRestore(vg);
-    }
-    else
-    {
-      nvgSave(vg);
+        // vertical line
+        nvgBeginPath(vg);
+        nvgStrokeWidth(vg, 0.5f);
+        nvgStrokeColor(vg, nvgRGBA(0xdd, 0xdd, 0xdd, 255));
+        nvgMoveTo(vg, 120, 0);
+        nvgLineTo(vg, 120, DRAW_AREA_HEIGHT_PT);
+        nvgStroke(vg);
 
-      // draw preview for module browser
+        // horizontal line
+        nvgBeginPath(vg);
+        nvgStrokeWidth(vg, 0.5f);
+        nvgStrokeColor(vg, nvgRGBA(0xdd, 0xdd, 0xdd, 255));
+        nvgMoveTo(vg, 0, 150);
+        nvgLineTo(vg, DRAW_AREA_WIDTH_PT, 150);
+        nvgStroke(vg);
 
-      // vertical line
-      nvgBeginPath(vg);
-      nvgStrokeWidth(vg, 0.5f);
-      nvgStrokeColor(vg, nvgRGBA(0xdd, 0xdd, 0xdd, 255));
-      nvgMoveTo(vg, 120, 0);
-      nvgLineTo(vg, 120, DRAW_AREA_HEIGHT_PT);
-      nvgStroke(vg);
+        // filled rectangle
+        nvgBeginPath(vg);
+        nvgRect(vg, 0, DRAW_AREA_WIDTH_PT, 120, -130);
+        nvgFillColor(vg, rectangle_colors[29]);
+        nvgFill(vg);
 
-      // horizontal line
-      nvgBeginPath(vg);
-      nvgStrokeWidth(vg, 0.5f);
-      nvgStrokeColor(vg, nvgRGBA(0xdd, 0xdd, 0xdd, 255));
-      nvgMoveTo(vg, 0, 150);
-      nvgLineTo(vg, DRAW_AREA_WIDTH_PT, 150);
-      nvgStroke(vg);
-
-      // filled rectangle
-      nvgBeginPath(vg);
-      nvgRect(vg, 0, DRAW_AREA_WIDTH_PT, 120, -130);
-      nvgFillColor(vg, rectangle_colors[29]);
-      nvgFill(vg);
-
-      nvgRestore(vg);
+        nvgRestore(vg);
+      }
     }
   }
 
@@ -157,25 +160,25 @@ struct XYDisplay : OpaqueWidget
 
   void onDragStart(const event::DragStart &e) override
   {
-    OpaqueWidget::onDragStart(e);
+    VoxglitchWidget::onDragStart(e);
     dragging = true;
   }
 
   void onDragEnd(const event::DragEnd &e) override
   {
-    OpaqueWidget::onDragEnd(e);
+    VoxglitchWidget::onDragEnd(e);
     dragging = false;
   }
 
   void onDragMove(const event::DragMove &e) override
   {
-    OpaqueWidget::onDragMove(e);
+    VoxglitchWidget::onDragMove(e);
     float zoom = getAbsoluteZoom();
     this->module->drag_position = this->clampToDrawArea(this->module->drag_position.plus(e.mouseDelta.div(zoom)));
   }
 
   void onHover(const event::Hover &e) override {
-    OpaqueWidget::onHover(e);
+    VoxglitchWidget::onHover(e);
     e.consume(this);
 
     if(this->module->tablet_mode)
@@ -185,6 +188,6 @@ struct XYDisplay : OpaqueWidget
   }
 
   void step() override {
-    OpaqueWidget::step();
+    VoxglitchWidget::step();
   }
 };

@@ -1,4 +1,4 @@
-struct SequencerDisplay : TransparentWidget
+struct SequencerDisplay : VoxglitchWidget
 {
   DigitalSequencer *module;
   Vec drag_position;

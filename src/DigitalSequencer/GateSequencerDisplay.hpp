@@ -10,79 +10,83 @@ struct GateSequencerDisplay : SequencerDisplay
     box.size = Vec(GATES_DRAW_AREA_WIDTH, GATES_DRAW_AREA_HEIGHT);
   }
 
-  void draw(const DrawArgs &args) override
+  void drawLayer(const DrawArgs& args, int layer) override
   {
-    const auto vg = args.vg;
-    int value;
-    double value_height;
-    NVGcolor bar_color;
-
-    nvgSave(vg);
-
-    if(module)
+  	if (layer == 1)
     {
-      for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
+      const auto vg = args.vg;
+      int value;
+      double value_height;
+      NVGcolor bar_color;
+
+      nvgSave(vg);
+
+      if(module)
       {
-        value = module->selected_gate_sequencer->getValue(i);
-
-        // Draw grey background bar
-        if(i < module->selected_gate_sequencer->getLength()) {
-          bar_color = nvgRGBA(60, 60, 64, 255);
-        }
-        else {
-          bar_color = nvgRGBA(45, 45, 45, 255);
-        }
-        drawBar(vg, i, GATE_BAR_HEIGHT, GATES_DRAW_AREA_HEIGHT, bar_color);
-
-        unsigned int playback_position = module->selected_gate_sequencer->getPlaybackPosition();
-
-        if(i == playback_position)
+        for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
         {
-          bar_color = nvgRGBA(255, 255, 255, 250);
-        }
-        else if(i < module->selected_gate_sequencer->getLength())
-        {
-          bar_color = nvgRGBA(255, 255, 255, 150);
-        }
-        else // dim bars past playback position
-        {
-          bar_color = nvgRGBA(255, 255, 255, 15);
-        }
+          value = module->selected_gate_sequencer->getValue(i);
 
-        value_height = (GATE_BAR_HEIGHT * value);
-        if(value_height > 0) drawBar(vg, i, value_height, GATES_DRAW_AREA_HEIGHT, bar_color);
+          // Draw grey background bar
+          if(i < module->selected_gate_sequencer->getLength()) {
+            // bar_color = nvgRGBA(60, 60, 64, 255);
+            bar_color = brightness(nvgRGBA(60, 60, 64, 255), settings::rackBrightness);
+          }
+          else {
+            // bar_color = nvgRGBA(45, 45, 45, 255);
+            bar_color = brightness(nvgRGBA(45, 45, 45, 255), settings::rackBrightness);
+          }
+          drawBar(vg, i, GATE_BAR_HEIGHT, GATES_DRAW_AREA_HEIGHT, bar_color);
 
-        // highlight active column
-        if(i == playback_position)
-        {
-          drawBar(vg, i, GATE_BAR_HEIGHT, GATES_DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
+          unsigned int playback_position = module->selected_gate_sequencer->getPlaybackPosition();
+
+          if(i == playback_position)
+          {
+            bar_color = nvgRGBA(255, 255, 255, 250);
+          }
+          else if(i < module->selected_gate_sequencer->getLength())
+          {
+            bar_color = nvgRGBA(255, 255, 255, 150);
+          }
+          else // dim bars past playback position
+          {
+            bar_color = nvgRGBA(255, 255, 255, 15);
+          }
+
+          value_height = (GATE_BAR_HEIGHT * value);
+          if(value_height > 0) drawBar(vg, i, value_height, GATES_DRAW_AREA_HEIGHT, bar_color);
+
+          // highlight active column
+          if(i == playback_position)
+          {
+            drawBar(vg, i, GATE_BAR_HEIGHT, GATES_DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
+          }
         }
       }
-    }
-    else // draw demo data for the module explorer
-    {
-      int demo_sequence[32] = {1,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,1,1,0,0,0,0};
-
-      for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
+      else // draw demo data for the module explorer
       {
-        value = demo_sequence[i];
+        int demo_sequence[32] = {1,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,1,1,0,0,0,0};
 
-        // Draw background grey bar
-        drawBar(vg, i, GATE_BAR_HEIGHT, GATES_DRAW_AREA_HEIGHT, nvgRGBA(60, 60, 64, 255));
+        for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
+        {
+          value = demo_sequence[i];
 
-        // Draw value bar
-        if (value > 0) drawBar(vg, i, (GATE_BAR_HEIGHT * value), GATES_DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 150));
+          // Draw background grey bar
+          drawBar(vg, i, GATE_BAR_HEIGHT, GATES_DRAW_AREA_HEIGHT, nvgRGBA(60, 60, 64, 255));
 
-        // highlight active column
-        if(i == 5) drawBar(vg, i, GATE_BAR_HEIGHT, GATES_DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
+          // Draw value bar
+          if (value > 0) drawBar(vg, i, (GATE_BAR_HEIGHT * value), GATES_DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 150));
+
+          // highlight active column
+          if(i == 5) drawBar(vg, i, GATE_BAR_HEIGHT, GATES_DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
+        }
       }
+
+      drawVerticalGuildes(vg, GATES_DRAW_AREA_HEIGHT);
+      drawBlueOverlay(vg, GATES_DRAW_AREA_WIDTH, GATES_DRAW_AREA_HEIGHT);
+
+      nvgRestore(vg);
     }
-
-    drawVerticalGuildes(vg, GATES_DRAW_AREA_HEIGHT);
-    drawBlueOverlay(vg, GATES_DRAW_AREA_WIDTH, GATES_DRAW_AREA_HEIGHT);
-
-    nvgRestore(vg);
-
   }
 
   void onButton(const event::Button &e) override

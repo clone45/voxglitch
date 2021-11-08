@@ -1,4 +1,4 @@
-struct CellularAutomatonDisplay : TransparentWidget
+struct CellularAutomatonDisplay : VoxglitchWidget
 {
   GlitchSequencer *module;
   Vec drag_position;
@@ -19,10 +19,104 @@ struct CellularAutomatonDisplay : TransparentWidget
     // Save the drawing context to restore later
     nvgSave(vg);
 
-    if(module)
+    if(!module)
+    {
+      CellularAutomatonSequencer ca;
+
+      for(unsigned int row=0; row < SEQUENCER_ROWS; row++)
+      {
+        for(unsigned int column=0; column < SEQUENCER_COLUMNS; column++)
+        {
+          nvgBeginPath(vg);
+          nvgRect(vg, (column * CELL_WIDTH) + (column * CELL_PADDING), (row * CELL_HEIGHT) + (row * CELL_PADDING), CELL_WIDTH, CELL_HEIGHT);
+
+          nvgFillColor(vg, nvgRGB(55, 55, 55)); // Default color for inactive square
+          if(ca.seed[row][column]) nvgFillColor(vg, nvgRGB(255, 255, 255));
+
+          nvgFill(vg);
+        }
+      }
+    }
+    nvgRestore(vg);
+  }
+
+  void drawLayer(const DrawArgs& args, int layer) override
+  {
+  	if (layer == 1)
     {
 
+      const auto vg = args.vg;
 
+      // Save the drawing context to restore later
+      nvgSave(vg);
+
+      if(module)
+      {
+        for(unsigned int row=0; row < SEQUENCER_ROWS; row++)
+        {
+          for(unsigned int column=0; column < SEQUENCER_COLUMNS; column++)
+          {
+            nvgBeginPath(vg);
+            nvgRect(vg, (column * CELL_WIDTH) + (column * CELL_PADDING), (row * CELL_HEIGHT) + (row * CELL_PADDING), CELL_WIDTH, CELL_HEIGHT);
+
+            // bool cell_is_alive = (module->edit_mode) ? module->sequencer.pattern[row][column] : module->sequencer.state[row][column];
+
+            // Default color for inactive square
+
+            float dim = settings::rackBrightness;
+            // unsigned int fill_color = 55.0 - ((1.0 - dim) * 55.0);
+
+            // nvgFillColor(vg, nvgRGB(fill_color, fill_color, fill_color));
+            nvgFillColor(vg, brightness(nvgRGB(55.0, 55.0, 55.0), dim));
+
+            // When in edit mode, the pattern that's being edited will be bright white
+            // and the underlying animation will continue to be shown but at a dim gray
+            switch(module->mode)
+            {
+              case PLAY_MODE:
+              if(module->sequencer.seed[row][column]) nvgFillColor(vg, nvgRGB(80, 80, 80));
+              if(module->sequencer.state[row][column]) nvgFillColor(vg, nvgRGB(255, 255, 255));
+              break;
+
+              case EDIT_SEED_MODE:
+              if(module->sequencer.state[row][column]) nvgFillColor(vg, nvgRGB(65, 65, 65));
+              if(module->sequencer.seed[row][column]) nvgFillColor(vg, nvgRGB(255, 255, 255));
+              break;
+
+              case EDIT_TRIGGERS_MODE:
+              if(module->selected_trigger_group_index >= 0)
+              {
+                if(module->sequencer.state[row][column]) nvgFillColor(vg, nvgRGB(65, 65, 65));
+                bool cell_contains_trigger = module->sequencer.triggers[module->selected_trigger_group_index][row][column];
+                bool is_triggered = module->sequencer.state[row][column];
+                if(cell_contains_trigger) nvgFillColor(vg, nvgRGB(140, 140, 140));
+                if(cell_contains_trigger && is_triggered) nvgFillColor(vg, nvgRGB(255, 255, 255));
+              }
+              break;
+            }
+
+            nvgFill(vg);
+          }
+        }
+      }
+
+      nvgRestore(vg);
+    }
+
+  	Widget::drawLayer(args, layer);
+  }
+
+
+/*
+  void draw(const DrawArgs &args) override
+  {
+    const auto vg = args.vg;
+
+    // Save the drawing context to restore later
+    nvgSave(vg);
+
+    if(module)
+    {
       for(unsigned int row=0; row < SEQUENCER_ROWS; row++)
       {
         for(unsigned int column=0; column < SEQUENCER_COLUMNS; column++)
@@ -33,7 +127,11 @@ struct CellularAutomatonDisplay : TransparentWidget
           // bool cell_is_alive = (module->edit_mode) ? module->sequencer.pattern[row][column] : module->sequencer.state[row][column];
 
           // Default color for inactive square
-          nvgFillColor(vg, nvgRGB(55, 55, 55));
+
+          float dim = settings::rackBrightness;
+          unsigned int fill_color = 55.0 - ((1.0 - dim) * 55.0);
+
+          nvgFillColor(vg, nvgRGB(20, 30, 40));
 
           // When in edit mode, the pattern that's being edited will be bright white
           // and the underlying animation will continue to be shown but at a dim gray
@@ -64,14 +162,6 @@ struct CellularAutomatonDisplay : TransparentWidget
           nvgFill(vg);
         }
       }
-      // Red overlay
-      /*
-      nvgBeginPath(vg);
-      nvgRect(vg, 0, 0, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
-      nvgFillColor(vg, nvgRGBA(120, 20, 20, 100));
-      nvgFill(vg);
-      */
-
     }
     // Paint static content for library display
     else
@@ -95,7 +185,7 @@ struct CellularAutomatonDisplay : TransparentWidget
 
     nvgRestore(vg);
   }
-
+*/
 
   std::pair<int, int> getRowAndColumnFromVec(Vec position)
   {

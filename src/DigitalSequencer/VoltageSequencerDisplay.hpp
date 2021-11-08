@@ -14,110 +14,119 @@ struct VoltageSequencerDisplay : SequencerDisplay
     box.size = Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT + 16);
   }
 
-  void draw(const DrawArgs &args) override
+  // void draw(const DrawArgs &args) override
+  // {
+
+  void drawLayer(const DrawArgs& args, int layer) override
   {
-    const auto vg = args.vg;
-    int value;
-    NVGcolor bar_color;
-    bool draw_from_center = false;
-
-    // Save the drawing context to restore later
-    nvgSave(vg);
-
-    if(module)
+  	if (layer == 1)
     {
-      double range_low = voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][0];
-      double range_high = voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][1];
 
-      if(range_low < 0 && range_high > 0) draw_from_center = true;
+      const auto vg = args.vg;
+      int value;
+      NVGcolor bar_color;
+      bool draw_from_center = false;
 
-      //
-      // Display the pattern
-      //
-      for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
+      // Save the drawing context to restore later
+      nvgSave(vg);
+
+      if(module)
       {
-        value = module->selected_voltage_sequencer->getValue(i);
+        double range_low = voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][0];
+        double range_high = voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][1];
 
-        // Draw grey background bar
-        if(i < module->selected_voltage_sequencer->getLength()) {
-          bar_color = nvgRGBA(60, 60, 64, 255);
-        }
-        else {
-          bar_color = nvgRGBA(45, 45, 45, 255);
-        }
+        if(range_low < 0 && range_high > 0) draw_from_center = true;
 
-        drawBar(vg, i, BAR_HEIGHT, DRAW_AREA_HEIGHT, bar_color);
-
-        if(i == module->selected_voltage_sequencer->getPlaybackPosition())
+        //
+        // Display the pattern
+        //
+        for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
         {
-          bar_color = nvgRGBA(255, 255, 255, 250);
-        }
-        else if(i < module->selected_voltage_sequencer->getLength())
-        {
-          bar_color = nvgRGBA(255, 255, 255, 150);
-        }
-        else
-        {
-          bar_color = nvgRGBA(255, 255, 255, 10);
+          value = module->selected_voltage_sequencer->getValue(i);
+
+          // Draw grey background bar
+          if(i < module->selected_voltage_sequencer->getLength()) {
+            // nvgFillColor(vg, brightness(nvgRGB(55.0, 55.0, 55.0), dim));
+            bar_color = brightness(nvgRGBA(60, 60, 64, 255), settings::rackBrightness);
+          }
+          else {
+            bar_color = brightness(nvgRGBA(45, 45, 45, 255), settings::rackBrightness);
+          }
+
+          drawBar(vg, i, BAR_HEIGHT, DRAW_AREA_HEIGHT, bar_color);
+
+          if(i == module->selected_voltage_sequencer->getPlaybackPosition())
+          {
+            bar_color = nvgRGBA(255, 255, 255, 250);
+          }
+          else if(i < module->selected_voltage_sequencer->getLength())
+          {
+            bar_color = nvgRGBA(255, 255, 255, 150);
+          }
+          else
+          {
+            bar_color = nvgRGBA(255, 255, 255, 10);
+          }
+
+          // Draw bars for the sequence values
+          if(value > 0) drawBar(vg, i, value, DRAW_AREA_HEIGHT, bar_color);
+
+          // Highlight the sequence playback column
+          if(i == module->selected_voltage_sequencer->getPlaybackPosition())
+          {
+            drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
+          }
         }
 
-        // Draw bars for the sequence values
-        if(value > 0) drawBar(vg, i, value, DRAW_AREA_HEIGHT, bar_color);
-
-        // Highlight the sequence playback column
-        if(i == module->selected_voltage_sequencer->getPlaybackPosition())
+        // Draw a horizontal 0-indicator if the range is not symmetrical
+        if(draw_from_center)
         {
-          drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
+          // This calculation for y takes advance of the fact that all
+          // ranges that would have the 0-guide visible are symmetric, so
+          // it will need updating if non-symmetric ranges are added.
+          double y = DRAW_AREA_HEIGHT / 2.0;
+
+          nvgBeginPath(vg);
+          nvgRect(vg, 1, y, (DRAW_AREA_WIDTH - 2), 1.0);
+          nvgFillColor(vg, nvgRGBA(240, 240, 255, 40));
+          nvgFill(vg);
+        }
+
+      }
+      else // Draw a demo sequence so that the sequencer looks nice in the library selector
+      {
+        double demo_sequence[32] = {100.0,100.0,93.0,80.0,67.0,55.0,47.0,44.0,43.0,44.0,50.0,69.0,117.0,137.0,166,170,170,164,148,120,105,77,65,41,28,23,22,22,28,48,69,94};
+
+        for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
+        {
+          // Draw blue background bars
+          drawBar(vg, i, BAR_HEIGHT, DRAW_AREA_HEIGHT, nvgRGBA(60, 60, 64, 255));
+
+          // Draw bar for value at i
+          drawBar(vg, i, demo_sequence[i], DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 150));
+
+          // Highlight active step
+          if(i == 5) drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
         }
       }
 
-      // Draw a horizontal 0-indicator if the range is not symmetrical
-      if(draw_from_center)
-      {
-        // This calculation for y takes advance of the fact that all
-        // ranges that would have the 0-guide visible are symmetric, so
-        // it will need updating if non-symmetric ranges are added.
-        double y = DRAW_AREA_HEIGHT / 2.0;
+      drawVerticalGuildes(vg, DRAW_AREA_HEIGHT);
+      drawBlueOverlay(vg, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
 
-        nvgBeginPath(vg);
-        nvgRect(vg, 1, y, (DRAW_AREA_WIDTH - 2), 1.0);
-        nvgFillColor(vg, nvgRGBA(240, 240, 255, 40));
-        nvgFill(vg);
+      if(module)
+      {
+        if(module->tooltip_timer > 0) draw_tooltip = true;
+
+        if(draw_tooltip)
+        {
+          drawTooltip(vg);
+          draw_tooltip = false;
+        }
       }
+
+      nvgRestore(vg);
 
     }
-    else // Draw a demo sequence so that the sequencer looks nice in the library selector
-    {
-      double demo_sequence[32] = {100.0,100.0,93.0,80.0,67.0,55.0,47.0,44.0,43.0,44.0,50.0,69.0,117.0,137.0,166,170,170,164,148,120,105,77,65,41,28,23,22,22,28,48,69,94};
-
-      for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
-      {
-        // Draw blue background bars
-        drawBar(vg, i, BAR_HEIGHT, DRAW_AREA_HEIGHT, nvgRGBA(60, 60, 64, 255));
-
-        // Draw bar for value at i
-        drawBar(vg, i, demo_sequence[i], DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 150));
-
-        // Highlight active step
-        if(i == 5) drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
-      }
-    }
-
-    drawVerticalGuildes(vg, DRAW_AREA_HEIGHT);
-    drawBlueOverlay(vg, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
-
-    if(module)
-    {
-      if(module->tooltip_timer > 0) draw_tooltip = true;
-
-      if(draw_tooltip)
-      {
-        drawTooltip(vg);
-        draw_tooltip = false;
-      }
-    }
-
-    nvgRestore(vg);
   }
 
   void drawTooltip(NVGcontext *vg)
