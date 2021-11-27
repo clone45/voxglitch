@@ -1,3 +1,7 @@
+//
+// TODO: Provide options for different window max and min
+//
+
 struct LoadQueue
 {
   bool sample_queued_for_loading = false;
@@ -48,10 +52,14 @@ struct GrainEngineMK2 : Module
   enum ParamIds {
     WINDOW_KNOB,
     WINDOW_ATTN_KNOB,
+    /*
     POSITION_COARSE_KNOB,
     POSITION_COARSE_ATTN_KNOB,
     POSITION_MEDIUM_ATTN_KNOB,
     POSITION_FINE_ATTN_KNOB,
+    */
+    POSITION_KNOB,
+    POSITION_ATTN_KNOB,
     PITCH_KNOB,
     PITCH_ATTN_KNOB,
     TRIM_KNOB,
@@ -67,9 +75,12 @@ struct GrainEngineMK2 : Module
   enum InputIds {
     JITTER_INPUT,
     WINDOW_INPUT,
+    /*
     POSITION_COARSE_INPUT,
     POSITION_MEDIUM_INPUT,
     POSITION_FINE_INPUT,
+    */
+    POSITION_INPUT,
     PITCH_INPUT,
     SPAWN_TRIGGER_INPUT,
     PAN_INPUT,
@@ -100,10 +111,14 @@ struct GrainEngineMK2 : Module
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
     configParam(WINDOW_KNOB, 0.0f, 1.0f, 1.0f, "WindowKnob");
     configParam(WINDOW_ATTN_KNOB, 0.0f, 1.0f, 0.00f, "WindowAttnKnob");
+    configParam(POSITION_KNOB, 0.0f, 1.0f, 0.0f, "PositionKnob");
+    configParam(POSITION_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PositionAttnKnob");
+    /*
     configParam(POSITION_COARSE_KNOB, 0.0f, 1.0f, 0.0f, "PositionCourseKnob");
     configParam(POSITION_COARSE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PositionCourseAttnKnob");
     configParam(POSITION_MEDIUM_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PositionMediumAttnKnob");
     configParam(POSITION_FINE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PositionFineAttnKnob");
+    */
     configParam(PITCH_KNOB, -1.0f, 2.0f, 1.0f, "PitchKnob");
     configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PitchAttnKnob");
     configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
@@ -129,11 +144,13 @@ struct GrainEngineMK2 : Module
 
   ~GrainEngineMK2()
   {
+    /*
     for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
     {
       // delete samples[i];
       // samples[i] = NULL;
     }
+    */
   }
 
   json_t *dataToJson() override
@@ -216,6 +233,18 @@ struct GrainEngineMK2 : Module
     return((input_value * attenuator_value) + knob_value);
   }
 
+  double calculate_start_position(int input_index, int knob_index, int attenuator_index)
+  {
+    double input_value = inputs[input_index].getVoltage() / 10.0;
+    double knob_value = params[knob_index].getValue();
+    double attenuator_value = params[attenuator_index].getValue();
+
+    if(input_value < 0.0) input_value = 0.0;
+    if(input_value > 1.0) input_value = 1.0;
+
+    return((input_value * attenuator_value) + knob_value);
+  }
+
   void process(const ProcessArgs &args) override
   {
     //
@@ -267,30 +296,10 @@ struct GrainEngineMK2 : Module
     // unsigned int window_length = args.sampleRate / window_knob_value;
     unsigned int window_length = window_knob_value;
 
-    start_position = calculate_inputs(POSITION_COARSE_INPUT, POSITION_COARSE_KNOB, POSITION_COARSE_ATTN_KNOB, 0.0, 1.0);
+    start_position = calculate_start_position(POSITION_INPUT, POSITION_KNOB, POSITION_ATTN_KNOB);
 
-    // At this point, start_position must be and should be between 0.0 and 1.0
-
-    //
-    // Process fine and medium position inputs
-    //
-
-    float position_fine = 0;
-    float position_medium = 0;
-
-    if(inputs[POSITION_FINE_INPUT].isConnected())
-    {
-      position_fine = inputs[POSITION_FINE_INPUT].getVoltage() / 10.0; // -1 to 1
-      position_fine = clamp(position_fine, -1.0, 1.0);
-      position_fine = position_fine * MAX_POSITION_FINE * params[POSITION_FINE_ATTN_KNOB].getValue();
-    }
-
-    if(inputs[POSITION_MEDIUM_INPUT].isConnected())
-    {
-      position_medium = inputs[POSITION_MEDIUM_INPUT].getVoltage() / 10.0; // -1 to 1
-      position_medium = clamp(position_medium, -1.0, 1.0);
-      position_medium = position_medium * MAX_POSITION_MEDIUM * params[POSITION_MEDIUM_ATTN_KNOB].getValue();
-    }
+    // Convert start_position from 0-1 to 0-[sample size]
+    start_position = start_position * selected_sample->size();
 
     //
     // Process Jitter input
@@ -306,18 +315,13 @@ struct GrainEngineMK2 : Module
     {
       jitter_spread = params[JITTER_KNOB].getValue() * MAX_JITTER_SPREAD;
     }
-
     // If jitter_spread is 124, then the jitter will be between -124 and 124.
-    float jitter = common.randomFloat(-1 * jitter_spread, jitter_spread);
 
-    // Make some room at the beginning and end of the possible range position to
-    // allow for the addition of the jitter without pushing the start_position out of
-    // range of the expander_message size.  Also leave room for the window length so that
-    // none of the grains reaches the end of the expander_message.
-    // start_position = common.rescaleWithPadding(start_position, 0.0, 1.0, 0.0, sample.size(), jitter_spread + MAX_POSITION_FINE, jitter_spread + MAX_POSITION_FINE + window_length);
+    if(jitter_spread > 0) start_position += common.randomFloat(-1 * jitter_spread, jitter_spread);
 
-    start_position = start_position * selected_sample->size();
-    start_position += (jitter + position_fine + position_medium);
+    // In Grain.hpp, it is ensured that start_position stays within the sample array length
+    // This is ensured again in sample.h
+    // Therefore, we don't jump through any hoops here to clamp the start_position
 
     // Process Pan input
     if(inputs[PAN_INPUT].isConnected()) pan = (inputs[PAN_INPUT].getVoltage() / 10.0);
@@ -342,7 +346,8 @@ struct GrainEngineMK2 : Module
       pitch = params[PITCH_KNOB].getValue();
     }
 
-    // If there's a cable connected to the spawn trigger input, it takes priority over the internal spwn rate.
+    // If there's a cable connected to the EXT CLOCK input, it takes priority over the internal clock
+    // "SPAWN_TRIGGER_INPUT" is a name carried over from the Ghosts module and should eventually be renamed
 
     if(inputs[SPAWN_TRIGGER_INPUT].isConnected())
     {
@@ -350,6 +355,7 @@ struct GrainEngineMK2 : Module
     }
     else if(spawn_throttling_countdown == 0)
     {
+      // This code controls the rate at which new grains are added
       grain_engine_mk2_core.add(start_position, window_length, pan, selected_sample, max_grains, pitch);
 
       // scale value at RATE_INPUT (which goes from 0 to 1), to 0 to 2096

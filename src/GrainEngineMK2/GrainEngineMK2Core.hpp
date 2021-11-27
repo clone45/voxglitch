@@ -28,7 +28,7 @@ struct GrainEngineMK2Core
       grain_array_length = 0;
     }
 
-    virtual void add(float start_position, unsigned int lifespan, float pan, Sample *sample_ptr, unsigned int max_grains, float pitch)
+    virtual void add(double start_position, unsigned int lifespan, float pan, Sample *sample_ptr, unsigned int max_grains, float pitch)
     {
         if(grain_array_length > max_grains || (grain_array_length >= (MAX_GRAINS - 1))) return;
         if(lifespan == 0) return;
