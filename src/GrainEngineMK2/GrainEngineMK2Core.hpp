@@ -45,6 +45,7 @@ struct GrainEngineMK2Core
         grain.common = common;
 
         grain_array[grain_array_length] = grain;
+
         grain_array_length ++;
     }
 
@@ -74,7 +75,7 @@ struct GrainEngineMK2Core
         }
 
         std::swap(grain_array, grain_array_tmp);
-        grain_array_length = grain_array_tmp_length;  // I suspect this is it
+        grain_array_length = grain_array_tmp_length;
 
 
         return {left_mix_output, right_mix_output};
