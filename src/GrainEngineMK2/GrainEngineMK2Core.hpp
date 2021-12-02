@@ -28,7 +28,7 @@ struct GrainEngineMK2Core
       grain_array_length = 0;
     }
 
-    virtual void add(float start_position, unsigned int lifespan, float pan, Sample *sample_ptr, unsigned int max_grains, float pitch)
+    virtual void add(double start_position, unsigned int lifespan, float pan, Sample *sample_ptr, unsigned int max_grains, float pitch)
     {
         if(grain_array_length > max_grains || (grain_array_length >= (MAX_GRAINS - 1))) return;
         if(lifespan == 0) return;
@@ -45,6 +45,7 @@ struct GrainEngineMK2Core
         grain.common = common;
 
         grain_array[grain_array_length] = grain;
+
         grain_array_length ++;
     }
 
@@ -74,7 +75,7 @@ struct GrainEngineMK2Core
         }
 
         std::swap(grain_array, grain_array_tmp);
-        grain_array_length = grain_array_tmp_length;  // I suspect this is it
+        grain_array_length = grain_array_tmp_length;
 
 
         return {left_mix_output, right_mix_output};

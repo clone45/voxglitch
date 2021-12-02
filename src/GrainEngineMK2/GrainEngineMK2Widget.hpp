@@ -3,7 +3,7 @@ struct GrainEngineMK2Widget : ModuleWidget
   GrainEngineMK2Widget(GrainEngineMK2* module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/grain_engine_mk2_front_panel_r2.svg")));
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/grain_engine_mk2_front_panel_r3.svg")));
 
     float hrule1 = 128.5 - 104.035;
     float hrule2 = 128.5 - 92.415;
@@ -30,16 +30,11 @@ struct GrainEngineMK2Widget : ModuleWidget
     float vrule_c_4 = 65.012;
 
     // Position
-		addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(vrule_a_1, hrule1)), module, GrainEngineMK2::POSITION_COARSE_KNOB));
+		// addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(vrule_a_1, hrule1)), module, GrainEngineMK2::POSITION_COARSE_KNOB));
 
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_a_2, hrule1)), module, GrainEngineMK2::POSITION_COARSE_ATTN_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_a_2, hrule2)), module, GrainEngineMK2::POSITION_COARSE_INPUT));
-
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_a_3, hrule1)), module, GrainEngineMK2::POSITION_MEDIUM_ATTN_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_a_3, hrule2)), module, GrainEngineMK2::POSITION_MEDIUM_INPUT));
-
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_a_4, hrule1)), module, GrainEngineMK2::POSITION_FINE_ATTN_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_a_4, hrule2)), module, GrainEngineMK2::POSITION_FINE_INPUT));
+    addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(vrule_a_1, hrule1)), module, GrainEngineMK2::POSITION_KNOB));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_a_2, hrule1)), module, GrainEngineMK2::POSITION_ATTN_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_a_3, hrule1)), module, GrainEngineMK2::POSITION_INPUT));
 
     addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_a_5, hrule1)), module, GrainEngineMK2::JITTER_KNOB));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_a_5, hrule2)), module, GrainEngineMK2::JITTER_INPUT));
@@ -90,7 +85,7 @@ struct GrainEngineMK2Widget : ModuleWidget
     GrainEngineMK2PosDisplay *pos_display = new GrainEngineMK2PosDisplay();
     pos_display->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
     pos_display->module = module;
-    addChild(pos_display);    
+    addChild(pos_display);
   }
 
   struct BipolarPitchOption : MenuItem {
