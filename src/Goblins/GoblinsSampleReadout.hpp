@@ -3,11 +3,6 @@ struct GoblinsSampleReadout : TransparentWidget
 	Goblins *module;
 	std::shared_ptr<Font> font;
 
-	GoblinsSampleReadout()
-	{
-		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
-	}
-
 	void draw(const DrawArgs &args) override
 	{
 		nvgSave(args.vg);
@@ -20,11 +15,14 @@ struct GoblinsSampleReadout : TransparentWidget
 			text_to_display.resize(41); // Truncate long text to fit in the display
 		}
 
-		nvgFontSize(args.vg, 13);
-		nvgFontFaceId(args.vg, font->handle);
-		nvgTextLetterSpacing(args.vg, 0);
-		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
-		nvgText(args.vg, 5, 5, text_to_display.c_str(), NULL);
+    std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+  	if (font) {
+  		nvgFontSize(args.vg, 13);
+  		nvgFontFaceId(args.vg, font->handle);
+  		nvgTextLetterSpacing(args.vg, 0);
+  		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+  		nvgText(args.vg, 5, 5, text_to_display.c_str(), NULL);
+    }
 
 		nvgRestore(args.vg);
 	}

@@ -5,11 +5,6 @@ struct WavBankReadout : TransparentWidget
 	std::shared_ptr<Font> font;
 	std::string text_to_display = "Right-Click to Load Samples";
 
-	WavBankReadout()
-	{
-		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
-	}
-
 	void draw(const DrawArgs &args) override
 	{
 		if(module)
@@ -24,11 +19,14 @@ struct WavBankReadout : TransparentWidget
 		}
 
 		// Set font information
-		nvgFontSize(args.vg, 13);
-		nvgFontFaceId(args.vg, font->handle);
-		nvgTextLetterSpacing(args.vg, 0);
-		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
-		nvgRotate(args.vg, text_rotation_angle);
+    std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+    if (font) {
+  		nvgFontSize(args.vg, 13);
+  		nvgFontFaceId(args.vg, font->handle);
+  		nvgTextLetterSpacing(args.vg, 0);
+  		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+  		nvgRotate(args.vg, text_rotation_angle);
+    }
 
 		// Print out the text
 		nvgText(args.vg, 5, 5, text_to_display.c_str(), NULL);

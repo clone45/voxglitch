@@ -3,11 +3,6 @@ struct Readout : TransparentWidget
 	Repeater *module;
 	std::shared_ptr<Font> font;
 
-	Readout()
-	{
-		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
-	}
-
 	void draw(const DrawArgs &args) override
 	{
 		nvgSave(args.vg);
@@ -32,10 +27,13 @@ struct Readout : TransparentWidget
 			}
 		}
 
-		nvgFontSize(args.vg, 13);
-		nvgFontFaceId(args.vg, font->handle);
-		nvgTextLetterSpacing(args.vg, 0);
-		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+    std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+  	if (font) {
+  		nvgFontSize(args.vg, 13);
+  		nvgFontFaceId(args.vg, font->handle);
+  		nvgTextLetterSpacing(args.vg, 0);
+  		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+    }
 
 		// void nvgTextBox(NVGcontext* ctx, float x, float y, float breakRowWidth, const char* string, const char* end);
 		nvgTextBox(args.vg, 5, 5, 700, text_to_display.c_str(), NULL);

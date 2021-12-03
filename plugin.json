@@ -1,7 +1,7 @@
 {
     "slug": "voxglitch",
     "name": "Voxglitch",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "license": "BSD-3-Clause",
     "brand": "Voxglitch",
     "author": "Bret Truchan",
@@ -47,7 +47,9 @@
         "slug": "goblins",
         "name": "Goblins",
         "description": "Antisocial .wav player/scanner using granular synthesis",
-        "tags": ["Granular", "Sampler"]
+        "tags": ["Granular", "Sampler"],
+        "deprecated": true,
+        "hidden": true
     },
     {
         "slug": "grainfx",
@@ -59,7 +61,9 @@
         "slug": "grainengine",
         "name": "Grain Engine",
         "description": "Basic .wav player/scanner using granular synthesis",
-        "tags": ["Granular", "Sampler"]
+        "tags": ["Granular", "Sampler"],
+        "deprecated": true,
+        "hidden": true
     },
     {
         "slug": "GrainEngineMK2",
