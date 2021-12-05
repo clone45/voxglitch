@@ -26,6 +26,12 @@
         "tags": ["Oscillator"]
     },
     {
+        "slug": "digitalprogrammer",
+        "name": "Digital Progammer",
+        "description": "(todo)",
+        "tags": ["Utility"]
+    },
+    {
         "slug": "digitalsequencer",
         "name": "Digital Sequencer",
         "description": "Six-in-one cv/gate sequencers with independent control over clock division and sequence length.",
