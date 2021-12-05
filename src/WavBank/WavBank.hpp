@@ -67,8 +67,8 @@ struct WavBank : Module
 		this->samples.clear();
 
 		// Load all .wav files found in the folder specified by 'path'
-
 		this->rootDir = std::string(path);
+
 		std::vector<std::string> dirList = system::getEntries(path);
 
 		// TODO: Decide on a maximum memory consuption allowed and abort if
@@ -76,7 +76,10 @@ struct WavBank : Module
 		// in the folder.  Also consider supporting MP3.
 		for (auto entry : dirList)
 		{
-			if (rack::string::lowercase(system::getExtension(entry)) == "wav")
+			if (
+        (rack::string::lowercase(system::getExtension(entry)) == "wav") ||
+        (rack::string::lowercase(system::getExtension(entry)) == ".wav")
+      )
 			{
 				Sample new_sample;
 				new_sample.load(entry);
