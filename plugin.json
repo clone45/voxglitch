@@ -1,7 +1,7 @@
 {
     "slug": "voxglitch",
     "name": "Voxglitch",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "license": "BSD-3-Clause",
     "brand": "Voxglitch",
     "author": "Bret Truchan",
@@ -27,8 +27,8 @@
     },
     {
         "slug": "digitalprogrammer",
-        "name": "Digital Progammer",
-        "description": "(todo)",
+        "name": "Digital Programmer",
+        "description": "Simple programmer",
         "tags": ["Utility"]
     },
     {

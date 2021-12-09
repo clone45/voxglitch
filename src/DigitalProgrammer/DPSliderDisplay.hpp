@@ -1,12 +1,22 @@
-struct DPSliderDisplay
+struct DPSliderDisplay : TransparentWidget
 {
-  DPSliderDisplay()
+  DigitalProgrammer *module;
+  double x = 0.0;
+  double y = 0.0;
+  double max_bar_height = 190;
+  DPSlider *slider;
+  Vec drag_position;
+
+  DPSliderDisplay(double x, double y, DPSlider *slider)
   {
     // The bounding box needs to be a little deeper than the visual
     // controls to allow mouse drags to indicate '0' (off) column heights,
     // which is why 16 is being added to the draw height to define the
     // bounding box.
-    box.size = Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT + 16);
+    // box.size = Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT + 16);
+    this->slider = slider;
+    this->x = x;
+    this->y = y;
   }
 
   void drawLayer(const DrawArgs& args, int layer) override
@@ -14,24 +24,27 @@ struct DPSliderDisplay
   	if (layer == 1)
     {
       const auto vg = args.vg;
-      int value;
-      NVGcolor bar_color;
 
       // Save the drawing context to restore later
       nvgSave(vg);
 
       if(module)
       {
-          bar_color = nvgRGBA(60, 60, 64, 255);
-          drawBar(vg, i, BAR_HEIGHT, DRAW_AREA_HEIGHT, bar_color);
-        }
-      }
-      else // Draw a demo sequence so that the sequencer looks nice in the library selector
-      {
-        // Draw placeholder graphics for Library
-      }
-      drawBlueOverlay(vg, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
+        // For testing, draw rect showing draw area
+        // -----------------------------------------
+        nvgBeginPath(vg);
+        nvgRect(vg, 0, 0, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
+        nvgFillColor(vg, nvgRGBA(120, 20, 20, 100));
+        nvgFill(vg);
+        // -----------------------------------------
 
+        // unsigned int column = 1;
+
+        double value = slider->getValue();
+
+        drawSliderBackground(vg, nvgRGBA(120, 120, 120, 255));
+        drawSlider(vg, value, nvgRGBA(60, 60, 64, 255));
+      }
       nvgRestore(vg);
     }
   }
@@ -44,10 +57,30 @@ struct DPSliderDisplay
     nvgFill(vg);
   }
 
-  void drawBar(NVGcontext *vg, double position, double height, double container_height, NVGcolor color)
+
+  void drawSliderBackground(NVGcontext *vg, NVGcolor color)
+  {
+    double x = 0;
+    double y = SLIDER_HEIGHT;
+
+    drawBar(vg, x, y, color);
+  }
+
+
+  void drawSlider(NVGcontext *vg, double value, NVGcolor color)
+  {
+    // Convert "value", which ranges from 0.0 to 1.0, to the high and low
+    // constraints of the slider.
+    double y = value * SLIDER_HEIGHT;
+
+    drawBar(vg, 0, y, color);
+  }
+
+
+  void drawBar(NVGcontext *vg, double x, double y, NVGcolor color)
   {
     nvgBeginPath(vg);
-    nvgRect(vg, (position * bar_width) + (position * BAR_HORIZONTAL_PADDING), container_height - height, bar_width, height);
+    nvgRect(vg, x, DRAW_AREA_HEIGHT - y, SLIDER_WIDTH, y);
     nvgFillColor(vg, color);
     nvgFill(vg);
   }
@@ -59,23 +92,32 @@ struct DPSliderDisplay
   // the sequencer value that the user has selected, then sets some variables
   // for drawing the tooltip in this struct's draw(..) method.
   //
-  /*
+
   void editBar(Vec mouse_position)
   {
-    double bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
-    int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
-    int clicked_y = DRAW_AREA_HEIGHT - mouse_position.y;
+    /*
+    double slider_width = (DRAW_AREA_WIDTH / NUMBER_OF_SLIDERS) - SLIDER_HORIZONTAL_PADDING;
+    int clicked_slider_x_index = mouse_position.x / (slider_width + SLIDER_HORIZONTAL_PADDING);
+    */
 
-    clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
-    clicked_y = clamp(clicked_y, 0, DRAW_AREA_HEIGHT);
+    // Note: This only works when the slider height is equal to the draw area
+    // height.  If it didn't there'd be more thinking to do.  Luckily it is.
+    double new_value = (SLIDER_HEIGHT - mouse_position.y) / SLIDER_HEIGHT;
+    if (new_value < 0) new_value = 0;
+    if (new_value > 1) new_value = 1;
+    // clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
+    // new_value = clamp(new_value, 0.0, 1.0);
 
-    module->selected_voltage_sequencer->setValue(clicked_bar_x_index, clicked_y);
+    // module->selected_voltage_sequencer->setValue(clicked_bar_x_index, clicked_y);
 
     // Tooltip drawing is done in the draw method
+    /*
     draw_tooltip = true;
     draw_tooltip_index = clicked_bar_x_index;
     draw_tooltip_y = clicked_y;
     tooltip_value = module->selected_voltage_sequencer->getOutput(clicked_bar_x_index);
+    */
+    this->slider->setValue(new_value);
   }
 
   void onButton(const event::Button &e) override
@@ -96,6 +138,7 @@ struct DPSliderDisplay
     editBar(drag_position);
   }
 
+/*
   void onHover(const event::Hover &e) override
   {
     if(module->frozen)

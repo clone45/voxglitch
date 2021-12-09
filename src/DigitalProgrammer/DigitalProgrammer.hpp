@@ -1,5 +1,21 @@
+/*
+
+Where I left off:
+
+The draw area for the slider is currently very wide.  That's certainly
+an option, and would be good if people wanted to draw slopes and stuff,
+but for a programmer, I actually do NOT want that behavior.  Next steps
+is to set the draw area width to match the slider width.  After that,
+it's probably time to add the additional sliders!
+
+*/
+
+
 struct DigitalProgrammer : Module
 {
+  // test
+
+  DPSlider sliders[NUMBER_OF_SLIDERS];
 
   enum ParamIds {
     EXAMPLE_KNOB,

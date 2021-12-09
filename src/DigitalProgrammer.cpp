@@ -7,7 +7,9 @@
 
 #include "DigitalProgrammer/defines.h"
 #include "Common/VoxglitchWidget.hpp"
+#include "DigitalProgrammer/DPSlider.hpp"
 #include "DigitalProgrammer/DigitalProgrammer.hpp"
+#include "DigitalProgrammer/DPSliderDisplay.hpp"
 #include "DigitalProgrammer/DigitalProgrammerWidget.hpp"
 
 Model* modelDigitalProgrammer = createModel<DigitalProgrammer, DigitalProgrammerWidget>("digitalprogrammer");
