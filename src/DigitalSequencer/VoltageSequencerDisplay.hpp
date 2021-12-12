@@ -4,6 +4,10 @@ struct VoltageSequencerDisplay : SequencerDisplay
   double draw_tooltip_index = -1.0;
   double draw_tooltip_y = -1.0;
   double tooltip_value = 0.0;
+  bool shift_key = false;
+
+  int previous_shift_sequence_column = 0;
+  int shift_sequence_column = 0;
 
   VoltageSequencerDisplay()
   {
@@ -185,13 +189,51 @@ struct VoltageSequencerDisplay : SequencerDisplay
     tooltip_value = module->selected_voltage_sequencer->getOutput(clicked_bar_x_index);
   }
 
+  void startShiftSequences(Vec mouse_position)
+  {
+    int clicked_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
+    this->previous_shift_sequence_column = clicked_column;
+    this->shift_sequence_column =clicked_column;
+  }
+
+  void dragShiftSequences(Vec mouse_position)
+  {
+    int drag_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
+    int shift_offset = drag_column - this->shift_sequence_column;
+
+    while(shift_offset < 0)
+    {
+      module->selected_gate_sequencer->shiftLeft();
+      module->selected_voltage_sequencer->shiftLeft();
+      shift_offset ++;
+    }
+
+    while(shift_offset > 0)
+    {
+      module->selected_gate_sequencer->shiftRight();
+      module->selected_voltage_sequencer->shiftRight();
+      shift_offset --;
+    }
+
+    this->shift_sequence_column = drag_column;
+  }
+
   void onButton(const event::Button &e) override
   {
     if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
     {
       e.consume(this);
       drag_position = e.pos;
-      this->editBar(e.pos);
+
+      if(this->shift_key == false)
+      {
+        this->editBar(e.pos);
+      }
+      else
+      {
+        startShiftSequences(drag_position);
+      }
+
     }
   }
 
@@ -200,7 +242,16 @@ struct VoltageSequencerDisplay : SequencerDisplay
     TransparentWidget::onDragMove(e);
     float zoom = getAbsoluteZoom();
     drag_position = drag_position.plus(e.mouseDelta.div(zoom));
-    editBar(drag_position);
+
+    if(this->shift_key == false)
+    {
+      editBar(drag_position);
+    }
+    else
+    {
+      dragShiftSequences(drag_position);
+    }
+
   }
 
   void onHover(const event::Hover &e) override
@@ -217,11 +268,35 @@ struct VoltageSequencerDisplay : SequencerDisplay
 
   void onHoverKey(const event::HoverKey &e) override
   {
+    this->shift_key = ((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT);
+
+    /*
+    if(e.key == GLFW_KEY_RIGHT) e.consume(this);
+    if(e.key == GLFW_KEY_RIGHT && e.action == GLFW_PRESS) return true;
+    return false;
+    */
+
+    // Keypress Right
+    /*
+    if (e.key == GLFW_KEY_RIGHT) // F (no ctrl)
+    {
+      if(e.action == GLFW_PRESS)
+      {
+        module->selected_voltage_sequencer->shiftRight();
+        if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftRight();
+        // module->frozen = ! module->frozen;
+        e.consume(this);
+      }
+    }
+    */
+
+    /*
     if(keypressRight(e))
     {
       module->selected_voltage_sequencer->shiftRight();
       if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftRight();
     }
+    */
 
     if(keypressLeft(e))
     {
