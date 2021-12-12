@@ -6,3 +6,7 @@
 // context menu for enabling and disabling smoothing.
 
 #define SMOOTH_ENABLED 1
+
+// Constants for trig_input_response_mode
+#define TRIGGER 0
+#define GATE 1
