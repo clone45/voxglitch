@@ -1,6 +1,6 @@
 ## Grain Engine MK2
 
-<img src="images\grain-engine-mk2\grain-engine-mk2-front-panel-v2.png" alt="grain-engine-mk2-front-panel-v2" style="zoom:50%;" />
+<img src="images\grain-engine-mk2\grain-engine-mk2-front-panel-v3.png" alt="grain-engine-mk2-front-panel-v2" style="zoom:75%;" />
 
 Grain Engine MK2 is a Granular Synthesis based sample player.  If you're completely new to Granular Synthesis, I would highly recommend that you watch this YouTube video: https://www.youtube.com/watch?v=BWHKKd75V8g.  The first 6 minutes of this video do a wonderful job at introducing the concept of Granular Synthesis.
 
@@ -14,7 +14,7 @@ Grain Engine MK2 is the next iteration of the older Grain Engine module.
 2. Connect the outputs (bottom right ports with the black outline) to an Audio-8 module
 3. Ensure that SAMPLE is turned all the way to the left
 4. Move the POSITION knob around manually.  You should hear parts of the loaded sample playing.  Once you have played around with it, return the POSITION knob to the far left position.
-5. Attach a LFO with a -10/+10 range to the COURSE input
+5. Attach a LFO with a -10/+10 range to the position input
 6. Done!  At this point, I would suggest that you explore the different controls and read more about the module below.
 7. Please reach out to me and let me know if you are enjoying my modules at clone45@gmail.com. 
 
@@ -40,34 +40,13 @@ POSITION is the most important attribute of a grain.  Position is the starting p
 
 It's (almost) essential to modulate grain position using LFOs, VCOs, or complex envelope generators.  Other granular synthesis engines do this for you, but I didn't want to make assumptions about how you want to control grain position.  If you don't modulate grain position, all of the grains will start playing back at the same position and sound, at best, like a wavetable playback module.
 
-Position is divided into Course, Medium, Fine, and Jitter controls.  An astute user of VCV Rack might realize that Course, Medium, and Fine could be collapsed into one simple "position" input.  After all, position is controlled internally using a floating point number with a fairly high precision.  And it's true!!  So why are there three inputs?  It's an incentive for you to use multiple modulation sources to control the position.  That's where the real fun begins, and I'd hate for you to miss out on it.
-
-<img src="images\grain-engine-mk2\grain-engine-position-controls.png" alt="grain-engine-position-controls" style="zoom:75%;" />
-
-Sure, you could have mixed a variety of LFO signals together before patching them to the POSITION input, but I felt that the chances would be much higher given the tantalizing separated inputs.  
-
-##### Course
-
-The course Position input spans the entire range of the sample.   All position inputs are bipolar by default.  (It's possible that I'll add the ability to change the input voltage range in the future.)
-
-* To address the start of a sample, supply a -10 voltage at the Course input and set the attenuator to maximum (clockwise);
-
-* To address the end of a sample,  supply a +10 voltage at the Course input and set the attenuator to maximum (clockwise);
-* Here's a video showing how to play through an entire sample: https://www.youtube.com/watch?v=7Dk3K8On8aI
-
-##### Medium
-
-The medium input adds -20,000 to 20,000 to the position, depending on the voltage and attenuator settings.  This value is somewhat arbitrary and may need some more development work in the future since it doesn't take into account sample rate.
-
-##### Fine
-
-The fine input adds -2,000 to 2,000 to the position, depending on the voltage and attenuator settings.  Similar to the Medium input, this range is somewhat arbitrary and may need some more development work in the future since it doesn't take into account sample rate.
+Modulating the Position in put is the key to success.  You could simply hook an LFO to the Position cv input, but you'll get far more interesting results by mixing together various LFOs and feeding the mixture into the Position input.  Experiment!
 
 
 
 #### Jitter
 
-The Jitter input offers a convenient way of introducing some random fluctuations in the overall position.  Applying Jitter makes the sound "lush" with a sense of reverb.  But *beware*!  If you want to create really weird sounds,  turn off Jitter.
+The Jitter input offers a convenient way of introducing some random fluctuations in the overall position.  Applying Jitter makes the sound "lush" with a sense of reverb.  But *beware*!  If you want to create really weird sounds, turn *off* Jitter.
 
 #### Window
 
@@ -115,6 +94,5 @@ The Grains input, although useful, doesn't put a hard-cap on the population.  Do
 
 * For best results, use .wave files between 2 seconds and 10 seconds long.  I've found that complex samples containing a variety of instruments, percussions, and vocals work best.
 * For ethereal atmospheres, increase Jitter, Grains, Window, and Rate, and modulate position with a very slow -10/+10 LFO (sawtooth & triangle work best).
-* For weirdness, turn off jitter and modulate course, medium, and fine with complex low frequency oscillators.  Get even weirder by modulating pitch with a VCO.  Maximum your weirdness by using a VCO square wave on the EXT CLK input.
-* JRModules Range LFO is a great modulation source for the COURSE position input.
-* Squinky Labs Functional VCO makes a fun modulation source for the MED/FINE position
+* For weirdness, turn off jitter and modulate the position input with complex low frequency oscillators.  Get even weirder by modulating pitch with a VCO.  Maximum your weirdness by using a VCO square wave on the EXT CLK input.
+* The JRModules Range LFO or Squinky Labs Functional VCO are great modulation sources for the position input.

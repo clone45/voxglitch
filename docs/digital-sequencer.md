@@ -25,13 +25,15 @@ Each sequence has variable length controlled by the LEN input, which ranges from
 
 ### The Mouse Interface
 
-Changing the sequence is as easy as drawing on the sequencers.  You can click and drag to adjust one or more values in the sequencer. 
+Changing the sequence is as easy as drawing on the sequencers.  You can click and drag to adjust values in the sequencer. 
 
 #### Shifting the Sequence
 
 It's possible to shift the currently selected sequence to the left or right by holding down the SHIFT key and dragging the sequence to the left or right.  This is handy if your sequence sounds great, but isn't aligned with the rest of your patch.
 
 ### Freeze Mode
+
+#### The F key
 
 I'm really excited about this feature.  Imagine that you're trying to fine-tune a sequence.  Perhaps step #5 isn't exactly where you need it.  Previously, your best recourse was the change step #5, then wait until the sequencer reached step 5 so you could hear how your change affected the patch.  Freeze mode lets you focus on the step that you need to tweak and hear the difference immediately.
 
