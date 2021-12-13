@@ -19,7 +19,7 @@ Auotbreak turns an ordinary drum loop into a break beat.  Load up to five 8-bar 
 
 ### Outputs
 
-* OUT - Left/Right stereo output
+* OUT - Left/Right stereo outputTri
 
 ### Minimal Usage
 
@@ -34,3 +34,9 @@ Auotbreak turns an ordinary drum loop into a break beat.  Load up to five 8-bar 
 ### Video Tutorial
 
 https://youtu.be/yWape_7qzJU
+
+
+
+### Options
+
+Trigger Mode & Gate Mode
