@@ -48,6 +48,7 @@ struct Autobreak : Module
     SEQUENCE_INPUT,
     WAV_INPUT,
     RATCHET_INPUT,
+    REVERSE_INPUT,
     NUM_INPUTS
   };
   enum OutputIds {
@@ -131,6 +132,7 @@ struct Autobreak : Module
 
     Sample *selected_sample = &samples[selected_sample_slot];
 
+
     //
     // Handle BPM detection
     //
@@ -190,7 +192,15 @@ struct Autobreak : Module
       outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_output);
 
       // Step the theoretical playback position
-      theoretical_playback_position = theoretical_playback_position + 1;
+      if(inputs[REVERSE_INPUT].getVoltage() >= 5)
+      {
+        theoretical_playback_position = theoretical_playback_position - 1;
+      }
+      else
+      {
+        theoretical_playback_position = theoretical_playback_position + 1;
+      }
+
 
       // Optionally jump to new breakbeat position
       if(clock_triggered)
@@ -228,6 +238,13 @@ struct Autobreak : Module
         theoretical_playback_position = 0;
         loop_smooth.trigger();
       }
+      else if (theoretical_playback_position < 0)
+      {
+        theoretical_playback_position = samples_to_play_per_loop;
+        loop_smooth.trigger();
+      }
+
+
 
       // Map the theoretical playback position to the actual sample playback position
       actual_playback_position = ((float) theoretical_playback_position / samples_to_play_per_loop) * selected_sample->size();
