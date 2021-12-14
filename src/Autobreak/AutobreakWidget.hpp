@@ -31,6 +31,9 @@ struct AutobreakWidget : ModuleWidget
     // Ratchet input
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(column_2, row_2)), module, Autobreak::RATCHET_INPUT));
 
+    // Ratchet input
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(column_2, row_3)), module, Autobreak::REVERSE_INPUT));
+
 		// Inputs for SAMPLE selection
 		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(column_1, row_4)), module, Autobreak::WAV_KNOB));
 		addParam(createParamCentered<Trimpot>(mm2px(Vec(column_1, row_35)), module, Autobreak::WAV_ATTN_KNOB));
