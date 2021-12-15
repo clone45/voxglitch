@@ -4,13 +4,14 @@ struct WavBank : Module
 	double samplePos = 0;
 	float smooth_ramp = 1;
 	float last_wave_output_voltage[2] = {0};
+  unsigned int trig_input_response_mode = TRIGGER;
 	std::string rootDir;
 	std::string path;
 
 	std::vector<Sample> samples;
 	dsp::SchmittTrigger playTrigger;
 
-	bool triggered = false;
+  bool playback = false;
 
 	enum ParamIds {
 		WAV_KNOB,
@@ -44,21 +45,28 @@ struct WavBank : Module
 		configParam(LOOP_SWITCH, 0.0f, 1.0f, 0.0f, "LoopSwitch");
 	}
 
+  // Save
 	json_t *dataToJson() override
 	{
-		json_t *rootJ = json_object();
-		json_object_set_new(rootJ, "path", json_string(this->path.c_str()));
-		return rootJ;
+		json_t *json_root = json_object();
+		json_object_set_new(json_root, "path", json_string(this->path.c_str()));
+    json_object_set_new(json_root, "trig_input_response_mode", json_integer(trig_input_response_mode));
+		return json_root;
 	}
 
-	void dataFromJson(json_t *rootJ) override
+  // Load
+	void dataFromJson(json_t *json_root) override
 	{
-		json_t *loaded_path_json = json_object_get(rootJ, ("path"));
+		json_t *loaded_path_json = json_object_get(json_root, ("path"));
 		if (loaded_path_json)
 		{
 			this->path = json_string_value(loaded_path_json);
 			this->load_samples_from_path(this->path.c_str());
 		}
+
+    // Load trigger input response mode
+    json_t* trig_input_response_mode_json = json_object_get(json_root, "trig_input_response_mode");
+    if (trig_input_response_mode_json) trig_input_response_mode = json_integer_value(trig_input_response_mode_json);    
 	}
 
 	void load_samples_from_path(const char *path)
@@ -67,8 +75,8 @@ struct WavBank : Module
 		this->samples.clear();
 
 		// Load all .wav files found in the folder specified by 'path'
-
 		this->rootDir = std::string(path);
+
 		std::vector<std::string> dirList = system::getEntries(path);
 
 		// TODO: Decide on a maximum memory consuption allowed and abort if
@@ -76,7 +84,10 @@ struct WavBank : Module
 		// in the folder.  Also consider supporting MP3.
 		for (auto entry : dirList)
 		{
-			if (rack::string::lowercase(system::getExtension(entry)) == "wav")
+			if (
+        (rack::string::lowercase(system::getExtension(entry)) == "wav") ||
+        (rack::string::lowercase(system::getExtension(entry)) == ".wav")
+      )
 			{
 				Sample new_sample;
 				new_sample.load(entry);
@@ -102,6 +113,9 @@ struct WavBank : Module
 		unsigned int wav_input_value = calculate_inputs(WAV_INPUT, WAV_KNOB, WAV_ATTN_KNOB, number_of_samples);
 		wav_input_value = clamp(wav_input_value, 0, number_of_samples - 1);
 
+    //
+    // If the sample has been changed.
+    //
 		if(wav_input_value != selected_sample_slot)
 		{
 			// Reset the smooth ramp if the selected sample has changed
@@ -115,7 +129,7 @@ struct WavBank : Module
 			// Set the selected sample
 			selected_sample_slot = wav_input_value;
 
-			triggered = false;
+      playback = false;
 		}
 
 		// Check to see if the selected sample slot refers to an existing sample.
@@ -126,57 +140,60 @@ struct WavBank : Module
 
 		if (inputs[TRIG_INPUT].isConnected())
 		{
-			//
-			// playTrigger is a SchmittTrigger object.  Here, the SchmittTrigger
-			// determines if a low-to-high transition happened at the TRIG_INPUT
-			//
-			if (playTrigger.process(inputs[TRIG_INPUT].getVoltage()))
-			{
-				samplePos = 0;
-				smooth_ramp = 0;
-				triggered = true;
-			}
+      if(trig_input_response_mode == TRIGGER)
+      {
+        // playTrigger is a SchmittTrigger object.  Here, the SchmittTrigger
+  			// determines if a low-to-high transition happened at the TRIG_INPUT
+
+  			if (playTrigger.process(inputs[TRIG_INPUT].getVoltage()))
+  			{
+  				samplePos = 0;
+  				smooth_ramp = 0;
+  				playback = true;
+  			}
+      }
+      else if(trig_input_response_mode == GATE)
+      {
+        // In gate mode, continue playing back the sample as long as the gate is high
+        // 5.0 volts is required for a gate high signal, but this is extra lenient
+        // as the standards say a 10.0 or higher signal should be accepted.
+        if(inputs[TRIG_INPUT].getVoltage() >= 5.0)
+        {
+          if(playback == false)
+          {
+            playback = true;
+            samplePos = 0;
+    				smooth_ramp = 0;
+          }
+        }
+        else
+        {
+          playback = false;
+          samplePos = 0;
+  				smooth_ramp = 0;
+        }
+      }
 		}
+    // If no cable is connected to the trigger input, then provide constant playback
 		else
 		{
-			triggered = true;
+			playback = true;
 		}
 
 		// Loop
 		if(params[LOOP_SWITCH].getValue() && (samplePos >= selected_sample->size())) samplePos = 0;
 
-		if (triggered && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->size() > 0) && (samplePos < selected_sample->size()))
+		if (playback && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->size() > 0) && (samplePos < selected_sample->size()))
 		{
 			float left_wav_output_voltage;
 			float right_wav_output_voltage;
 
 			if (samplePos >= 0)
 			{
-        /*
-				left_wav_output_voltage = GAIN  * selected_sample->leftPlayBuffer[(int)samplePos];
-				if(selected_sample->channels > 1)
-				{
-					right_wav_output_voltage = GAIN  * selected_sample->rightPlayBuffer[(int)samplePos];
-				}
-				else
-				{
-					right_wav_output_voltage = left_wav_output_voltage;
-				}
-        */
         std::tie(left_wav_output_voltage, right_wav_output_voltage) = selected_sample->read((int)samplePos);
 			}
 			else
 			{
-				// What is this for?  Does it play the sample in reverse?  I think so.
-        /*
-				left_wav_output_voltage = GAIN * selected_sample->leftPlayBuffer[floor(selected_sample->size() - 1 + samplePos)];
-				if(selected_sample->channels > 1) {
-					right_wav_output_voltage = GAIN * selected_sample->rightPlayBuffer[floor(selected_sample->size() - 1 + samplePos)];
-				}
-				else {
-					right_wav_output_voltage = left_wav_output_voltage;
-				}
-        */
         std::tie(left_wav_output_voltage, right_wav_output_voltage) = selected_sample->read(floor(selected_sample->size() - 1 + samplePos));
 			}
 
@@ -214,7 +231,11 @@ struct WavBank : Module
 		}
 		else
 		{
-			triggered = false; // Cancel current trigger
+      // This block of code gets run if the sample is loading, or there's no
+      // sample data, or most importantly, if the sample playback had ended
+      // and loop == false
+
+			playback = false; // Cancel current trigger
 			outputs[WAV_LEFT_OUTPUT].setVoltage(0);
 			outputs[WAV_RIGHT_OUTPUT].setVoltage(0);
 		}
