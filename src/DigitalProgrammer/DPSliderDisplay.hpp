@@ -1,22 +1,34 @@
+/*
+
+Probably the weirdest thing about this code is the absense of a DPSliderDisplay
+"x" position.  The x position relative to the containing box is always 0.0.
+Changing the x position of a slider on the panel is done in the widget, like:
+
+float x = 50.0;
+float y = 10.0;
+
+DPSliderDisplay *dp_slider_display = new DPSliderDisplay(&module->sliders[0]);
+dp_slider_display->setPosition(mm2px(Vec(x, y)));   <====== HERE
+dp_slider_display->setSize(Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT));
+dp_slider_display->module = module;
+addChild(dp_slider_display);
+
+*/
+
 struct DPSliderDisplay : TransparentWidget
 {
   DigitalProgrammer *module;
-  double x = 0.0;
-  double y = 0.0;
   double max_bar_height = 190;
   DPSlider *slider;
   Vec drag_position;
 
-  DPSliderDisplay(double x, double y, DPSlider *slider)
+  DPSliderDisplay(DPSlider *slider)
   {
     // The bounding box needs to be a little deeper than the visual
     // controls to allow mouse drags to indicate '0' (off) column heights,
     // which is why 16 is being added to the draw height to define the
     // bounding box.
-    // box.size = Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT + 16);
     this->slider = slider;
-    this->x = x;
-    this->y = y;
   }
 
   void drawLayer(const DrawArgs& args, int layer) override
@@ -42,8 +54,8 @@ struct DPSliderDisplay : TransparentWidget
 
         double value = slider->getValue();
 
-        drawSliderBackground(vg, nvgRGBA(120, 120, 120, 255));
-        drawSlider(vg, value, nvgRGBA(60, 60, 64, 255));
+        drawSliderBackground(vg, nvgRGBA(60, 60, 64, 255));   
+        drawSlider(vg, value, nvgRGBA(120, 120, 120, 255));
       }
       nvgRestore(vg);
     }
@@ -60,10 +72,10 @@ struct DPSliderDisplay : TransparentWidget
 
   void drawSliderBackground(NVGcontext *vg, NVGcolor color)
   {
-    double x = 0;
+    // double x = 0;
     double y = SLIDER_HEIGHT;
 
-    drawBar(vg, x, y, color);
+    drawBar(vg, y, color);
   }
 
 
@@ -73,14 +85,14 @@ struct DPSliderDisplay : TransparentWidget
     // constraints of the slider.
     double y = value * SLIDER_HEIGHT;
 
-    drawBar(vg, 0, y, color);
+    drawBar(vg, y, color);
   }
 
 
-  void drawBar(NVGcontext *vg, double x, double y, NVGcolor color)
+  void drawBar(NVGcontext *vg, double y, NVGcolor color)
   {
     nvgBeginPath(vg);
-    nvgRect(vg, x, DRAW_AREA_HEIGHT - y, SLIDER_WIDTH, y);
+    nvgRect(vg, 0.0, DRAW_AREA_HEIGHT - y, SLIDER_WIDTH, y);
     nvgFillColor(vg, color);
     nvgFill(vg);
   }
