@@ -19,16 +19,12 @@ struct DPSliderDisplay : TransparentWidget
 {
   DigitalProgrammer *module;
   double max_bar_height = 190;
-  DPSlider *slider;
   Vec drag_position;
+  unsigned int column = 0;
 
-  DPSliderDisplay(DPSlider *slider)
+  DPSliderDisplay(unsigned int column)
   {
-    // The bounding box needs to be a little deeper than the visual
-    // controls to allow mouse drags to indicate '0' (off) column heights,
-    // which is why 16 is being added to the draw height to define the
-    // bounding box.
-    this->slider = slider;
+    this->column = column;
   }
 
   void drawLayer(const DrawArgs& args, int layer) override
@@ -52,9 +48,9 @@ struct DPSliderDisplay : TransparentWidget
 
         // unsigned int column = 1;
 
-        double value = slider->getValue();
+        double value = module->sliders[module->selected_bank_index][column].getValue();
 
-        drawSliderBackground(vg, nvgRGBA(60, 60, 64, 255));   
+        drawSliderBackground(vg, nvgRGBA(60, 60, 64, 255));
         drawSlider(vg, value, nvgRGBA(120, 120, 120, 255));
       }
       nvgRestore(vg);
@@ -129,7 +125,7 @@ struct DPSliderDisplay : TransparentWidget
     draw_tooltip_y = clicked_y;
     tooltip_value = module->selected_voltage_sequencer->getOutput(clicked_bar_x_index);
     */
-    this->slider->setValue(new_value);
+    this->module->sliders[module->selected_bank_index][column].setValue(new_value);
   }
 
   void onButton(const event::Button &e) override

@@ -25,64 +25,66 @@ struct DigitalProgrammerWidget : ModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_programmer_front_panel.svg")));
 
+    // panel_x_position and panel_y_position specify where a slider should
+    // be displayed on the front panel relative to 0,0.
     float panel_x_position = 0;
     float panel_y_position = 0;
-    float margin_left = 7;
-    float horizontal_padding = 11.0;
+    float margin_left = 7;  // offset from the far-lefthand side of the panel
+    float horizontal_padding = 11.0; // Offset from the top of the panel
 
+    // Location of the inputs relative to the panel
+    float inputs_margin_left = 11.0;
+    float inputs_vertical_position = 120.0;
+
+    //
+    // Loop through each column and draw the slider and outputs
+    //
     for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)
     {
+      // Calculate where to put the slider
       panel_x_position = (column * horizontal_padding) + margin_left;
-      panel_y_position = 20.0;
+      panel_y_position = 7.0;
 
-      DPSliderDisplay *dp_slider_display = new DPSliderDisplay(&module->sliders[column]);
+      // Add slider widget
+      DPSliderDisplay *dp_slider_display = new DPSliderDisplay(column);
       dp_slider_display->setPosition(mm2px(Vec(panel_x_position, panel_y_position)));
       dp_slider_display->setSize(Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT));
       dp_slider_display->module = module;
       addChild(dp_slider_display);
 
+      // Add corresponding output
+      addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec((column * horizontal_padding) + inputs_margin_left, inputs_vertical_position)), module, column));
+
     }
 
-    float inputs_margin_left = 11.0;
-    float inputs_vertical_position = 10.0;
+    // Add bank lights
 
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec((0 * horizontal_padding) + inputs_margin_left, inputs_vertical_position)), module, DigitalProgrammer::CV_OUTPUT_0));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec((1 * horizontal_padding) + inputs_margin_left, inputs_vertical_position)), module, DigitalProgrammer::CV_OUTPUT_1));
+    // 1 through 4
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(150, 10)), module, DigitalProgrammer::BANK_1_BUTTON));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(150, 10)), module, DigitalProgrammer::BANK_1_LIGHT));
 
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec((2 * horizontal_padding) + inputs_margin_left, inputs_vertical_position)), module, DigitalProgrammer::CV_OUTPUT_2));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec((3 * horizontal_padding) + inputs_margin_left, inputs_vertical_position)), module, DigitalProgrammer::CV_OUTPUT_3));
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(160, 10)), module, DigitalProgrammer::BANK_2_BUTTON));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(160, 10)), module, DigitalProgrammer::BANK_2_LIGHT));
 
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec((4 * horizontal_padding) + inputs_margin_left, inputs_vertical_position)), module, DigitalProgrammer::CV_OUTPUT_4));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec((5 * horizontal_padding) + inputs_margin_left, inputs_vertical_position)), module, DigitalProgrammer::CV_OUTPUT_5));
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(170, 10)), module, DigitalProgrammer::BANK_3_BUTTON));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(170, 10)), module, DigitalProgrammer::BANK_3_LIGHT));
 
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec((6 * horizontal_padding) + inputs_margin_left, inputs_vertical_position)), module, DigitalProgrammer::CV_OUTPUT_6));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec((7 * horizontal_padding) + inputs_margin_left, inputs_vertical_position)), module, DigitalProgrammer::CV_OUTPUT_7));
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(180, 10)), module, DigitalProgrammer::BANK_4_BUTTON));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(180, 10)), module, DigitalProgrammer::BANK_4_LIGHT));
 
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec((8 * horizontal_padding) + inputs_margin_left, inputs_vertical_position)), module, DigitalProgrammer::CV_OUTPUT_8));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec((9 * horizontal_padding) + inputs_margin_left, inputs_vertical_position)), module, DigitalProgrammer::CV_OUTPUT_9));
+    // 5 through 7
 
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec((10 * horizontal_padding) + inputs_margin_left, inputs_vertical_position)), module, DigitalProgrammer::CV_OUTPUT_10));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec((11 * horizontal_padding) + inputs_margin_left, inputs_vertical_position)), module, DigitalProgrammer::CV_OUTPUT_11));
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(150, 20)), module, DigitalProgrammer::BANK_5_BUTTON));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(150, 20)), module, DigitalProgrammer::BANK_5_LIGHT));
 
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(160, 20)), module, DigitalProgrammer::BANK_6_BUTTON));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(160, 20)), module, DigitalProgrammer::BANK_6_LIGHT));
 
-/*
-    float panel_x_position = 16.0;
-    float panel_y_position = 10.0;
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(170, 20)), module, DigitalProgrammer::BANK_7_BUTTON));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(170, 20)), module, DigitalProgrammer::BANK_7_LIGHT));
 
-    DPSliderDisplay *dp_slider_display = new DPSliderDisplay(&module->sliders[0]);
-    dp_slider_display->setPosition(mm2px(Vec(panel_x_position, panel_y_position)));
-    dp_slider_display->setSize(Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT));
-    dp_slider_display->module = module;
-    addChild(dp_slider_display);
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(180, 20)), module, DigitalProgrammer::BANK_8_BUTTON));
+    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(180, 20)), module, DigitalProgrammer::BANK_8_LIGHT));
 
-    panel_x_position = 32.0;
-    panel_y_position = 10.0;
-
-    DPSliderDisplay *dp_slider_display_2 = new DPSliderDisplay(&module->sliders[1]);
-    dp_slider_display_2->setPosition(mm2px(Vec(panel_x_position, panel_y_position)));
-    dp_slider_display_2->setSize(Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT));
-    dp_slider_display_2->module = module;
-    addChild(dp_slider_display_2);
-*/
   }
 };
