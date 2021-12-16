@@ -26,9 +26,21 @@ struct DigitalProgrammer : Module
     NUM_INPUTS
   };
   enum OutputIds {
-    TEMP_OUTPUT,
+    CV_OUTPUT_0,
+    CV_OUTPUT_1,
+    CV_OUTPUT_2,
+    CV_OUTPUT_3,
+    CV_OUTPUT_4,
+    CV_OUTPUT_5,
+    CV_OUTPUT_6,
+    CV_OUTPUT_7,
+    CV_OUTPUT_8,
+    CV_OUTPUT_9,
+    CV_OUTPUT_10,
+    CV_OUTPUT_11,
     NUM_OUTPUTS
   };
+
   enum LightIds {
     NUM_LIGHTS
   };
