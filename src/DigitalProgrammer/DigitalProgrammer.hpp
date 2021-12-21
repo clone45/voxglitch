@@ -13,40 +13,15 @@ it's probably time to add the additional sliders!
 
 struct DigitalProgrammer : Module
 {
+  dsp::SchmittTrigger bank_button_triggers[NUMBER_OF_BANKS];
+  // bool bank_button_is_triggered[NUMBER_OF_BANKS];
 
-  dsp::SchmittTrigger bank_1_button_trigger;
-  dsp::SchmittTrigger bank_2_button_trigger;
-  dsp::SchmittTrigger bank_3_button_trigger;
-  dsp::SchmittTrigger bank_4_button_trigger;
-  dsp::SchmittTrigger bank_5_button_trigger;
-  dsp::SchmittTrigger bank_6_button_trigger;
-  dsp::SchmittTrigger bank_7_button_trigger;
-  dsp::SchmittTrigger bank_8_button_trigger;
-
-  bool bank_1_button_is_triggered;
-  bool bank_2_button_is_triggered;
-  bool bank_3_button_is_triggered;
-  bool bank_4_button_is_triggered;
-  bool bank_5_button_is_triggered;
-  bool bank_6_button_is_triggered;
-  bool bank_7_button_is_triggered;
-  bool bank_8_button_is_triggered;
-
-  unsigned int selected_bank_index = 0;
-
-  // test
+  int selected_bank = 0;
 
   DPSlider sliders[NUMBER_OF_BANKS][NUMBER_OF_SLIDERS];
 
   enum ParamIds {
-    BANK_1_BUTTON,
-    BANK_2_BUTTON,
-    BANK_3_BUTTON,
-    BANK_4_BUTTON,
-    BANK_5_BUTTON,
-    BANK_6_BUTTON,
-    BANK_7_BUTTON,
-    BANK_8_BUTTON,
+    ENUMS(BANK_BUTTONS, NUMBER_OF_BANKS),
     NUM_PARAMS
   };
   enum InputIds {
@@ -72,14 +47,7 @@ struct DigitalProgrammer : Module
   };
 
   enum LightIds {
-    BANK_1_LIGHT,
-    BANK_2_LIGHT,
-    BANK_3_LIGHT,
-    BANK_4_LIGHT,
-    BANK_5_LIGHT,
-    BANK_6_LIGHT,
-    BANK_7_LIGHT,
-    BANK_8_LIGHT,
+    ENUMS(BANK_LIGHTS, NUMBER_OF_BANKS),
     NUM_LIGHTS
   };
 
@@ -89,6 +57,19 @@ struct DigitalProgrammer : Module
   DigitalProgrammer()
   {
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+
+
+    for(int i=0; i<NUMBER_OF_BANKS; i++)
+    {
+      configSwitch(BANK_BUTTONS + i, 0.f, 1.f, 0.f, string::f("%d mute", i + 1));
+			//configInput(IN_INPUTS + i, string::f("Row %d", i + 1));
+		//	configOutput(OUT_OUTPUTS + i, string::f("Row %d", i + 1));
+    }
+
+    for(int i = 0; i < NUMBER_OF_BANKS; i++)
+    {
+      params[BANK_BUTTONS + i].setValue(0.0);
+    }
   }
 
 
@@ -168,48 +149,54 @@ struct DigitalProgrammer : Module
 
   */
 
+
   void process(const ProcessArgs &args) override
   {
+    /*
     // Handle bank seletion
     //
     // See if someone pressed one of the green sequence selection buttons
     //
-    bank_1_button_is_triggered = bank_1_button_trigger.process(params[BANK_1_BUTTON].getValue());
-    bank_2_button_is_triggered = bank_2_button_trigger.process(params[BANK_2_BUTTON].getValue());
-    bank_3_button_is_triggered = bank_3_button_trigger.process(params[BANK_3_BUTTON].getValue());
-    bank_4_button_is_triggered = bank_4_button_trigger.process(params[BANK_4_BUTTON].getValue());
-    bank_5_button_is_triggered = bank_5_button_trigger.process(params[BANK_5_BUTTON].getValue());
-    bank_6_button_is_triggered = bank_6_button_trigger.process(params[BANK_6_BUTTON].getValue());
-    bank_7_button_is_triggered = bank_7_button_trigger.process(params[BANK_7_BUTTON].getValue());
-    bank_8_button_is_triggered = bank_8_button_trigger.process(params[BANK_8_BUTTON].getValue());
+    for(unsigned int trigger_index=0; trigger_index < NUMBER_OF_BANKS; trigger_index++)
+    {
+      bank_button_is_triggered[trigger_index] = bank_button_triggers[trigger_index].process(params[trigger_index].getValue());
+    }
 
     // If any of the green sequence buttons were pressed, set the index "selected_bank_index"
     // which will be used to look up the selected voltage and gate sequencers from
     // the voltage_sequencers[] and gate_sequencers[] arrays
-
-    if(bank_1_button_is_triggered) selected_bank_index = 0;
-    if(bank_2_button_is_triggered) selected_bank_index = 1;
-    if(bank_3_button_is_triggered) selected_bank_index = 2;
-    if(bank_4_button_is_triggered) selected_bank_index = 3;
-    if(bank_5_button_is_triggered) selected_bank_index = 4;
-    if(bank_6_button_is_triggered) selected_bank_index = 5;
-    if(bank_7_button_is_triggered) selected_bank_index = 6;
-    if(bank_8_button_is_triggered) selected_bank_index = 7;
-
-    // Output values
-    for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)
+    for(unsigned int trigger_index=0; trigger_index < NUMBER_OF_BANKS; trigger_index++)
     {
-      outputs[column].setVoltage(sliders[selected_bank_index][column].getValue());
+      if(bank_button_is_triggered[trigger_index]) selected_bank_index = trigger_index;
+    }
+    */
+
+    // bool button_pressed = false;
+
+    for(int i = 0; i < NUMBER_OF_BANKS; i++)
+    {
+      // reference: sequencer_1_button_is_triggered = sequencer_1_button_trigger.process(params[SEQUENCER_1_BUTTON].getValue());
+
+      if(bank_button_triggers[i].process(params[BANK_BUTTONS + i].getValue()))
+      {
+        selected_bank = i;
+      }
     }
 
-    lights[BANK_1_LIGHT].setBrightness(selected_bank_index == 0);
-    lights[BANK_2_LIGHT].setBrightness(selected_bank_index == 1);
-    lights[BANK_3_LIGHT].setBrightness(selected_bank_index == 2);
-    lights[BANK_4_LIGHT].setBrightness(selected_bank_index == 3);
-    lights[BANK_5_LIGHT].setBrightness(selected_bank_index == 4);
-    lights[BANK_6_LIGHT].setBrightness(selected_bank_index == 5);
-    lights[BANK_7_LIGHT].setBrightness(selected_bank_index == 6);
-    lights[BANK_8_LIGHT].setBrightness(selected_bank_index == 7);
+
+    // DEBUG(std::to_string(params[0].getValue()).c_str());
+
+    // Output values
+    for(int column = 0; column < NUMBER_OF_SLIDERS; column ++)
+    {
+      outputs[column].setVoltage(sliders[selected_bank][column].getValue());
+    }
+
+    // Set brightness of lamps
+    for(int light_index=0; light_index < NUMBER_OF_BANKS; light_index++)
+    {
+      lights[BANK_LIGHTS + light_index].setBrightness(selected_bank == light_index);
+    }
   }
 
 };

@@ -41,14 +41,14 @@ struct DPSliderDisplay : TransparentWidget
         // For testing, draw rect showing draw area
         // -----------------------------------------
         nvgBeginPath(vg);
-        nvgRect(vg, 0, 0, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
+        nvgRect(vg, 0, 0, DRAW_AREA_WIDTH, SLIDER_HEIGHT);
         nvgFillColor(vg, nvgRGBA(120, 20, 20, 100));
         nvgFill(vg);
         // -----------------------------------------
 
         // unsigned int column = 1;
 
-        double value = module->sliders[module->selected_bank_index][column].getValue();
+        double value = module->sliders[module->selected_bank][column].getValue();
 
         drawSliderBackground(vg, nvgRGBA(60, 60, 64, 255));
         drawSlider(vg, value, nvgRGBA(120, 120, 120, 255));
@@ -88,7 +88,7 @@ struct DPSliderDisplay : TransparentWidget
   void drawBar(NVGcontext *vg, double y, NVGcolor color)
   {
     nvgBeginPath(vg);
-    nvgRect(vg, 0.0, DRAW_AREA_HEIGHT - y, SLIDER_WIDTH, y);
+    nvgRect(vg, 0.0, SLIDER_HEIGHT - y, SLIDER_WIDTH, y);
     nvgFillColor(vg, color);
     nvgFill(vg);
   }
@@ -125,7 +125,7 @@ struct DPSliderDisplay : TransparentWidget
     draw_tooltip_y = clicked_y;
     tooltip_value = module->selected_voltage_sequencer->getOutput(clicked_bar_x_index);
     */
-    this->module->sliders[module->selected_bank_index][column].setValue(new_value);
+    this->module->sliders[module->selected_bank][column].setValue(new_value);
   }
 
   void onButton(const event::Button &e) override

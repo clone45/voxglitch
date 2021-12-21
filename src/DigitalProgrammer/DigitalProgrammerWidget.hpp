@@ -48,7 +48,7 @@ struct DigitalProgrammerWidget : ModuleWidget
       // Add slider widget
       DPSliderDisplay *dp_slider_display = new DPSliderDisplay(column);
       dp_slider_display->setPosition(mm2px(Vec(panel_x_position, panel_y_position)));
-      dp_slider_display->setSize(Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT));
+      dp_slider_display->setSize(Vec(DRAW_AREA_WIDTH, SLIDER_HEIGHT));
       dp_slider_display->module = module;
       addChild(dp_slider_display);
 
@@ -60,6 +60,22 @@ struct DigitalProgrammerWidget : ModuleWidget
     // Add bank lights
 
     // 1 through 4
+    float bank_buttons_x[4] = {150.0, 160.0, 170.0, 180.0};
+    float bank_buttons_y[4] = {10.0, 20.0, 30.0, 40.0};
+    float x = 0;
+    float y = 0;
+
+    for(unsigned int bank_index = 0; bank_index < NUMBER_OF_BANKS; bank_index++)
+    {
+      x = bank_buttons_x[bank_index % 4];
+      y = bank_buttons_y[bank_index / 4];
+      addParam(createParamCentered<LEDButton>(mm2px(Vec(x,y)), module, bank_index));
+      addChild(createLightCentered<LargeLight<WhiteLight>>(mm2px(Vec(x, y)), module, bank_index));
+
+      // addParam(createParamCentered<MomentarySwitch<>>(mm2px(Vec(x, y)), module, DigitalProgrammer::BANK_BUTTONS + bank_index));
+    }
+
+    /*
     addParam(createParamCentered<LEDButton>(mm2px(Vec(150, 10)), module, DigitalProgrammer::BANK_1_BUTTON));
     addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(150, 10)), module, DigitalProgrammer::BANK_1_LIGHT));
 
@@ -85,6 +101,6 @@ struct DigitalProgrammerWidget : ModuleWidget
 
     addParam(createParamCentered<LEDButton>(mm2px(Vec(180, 20)), module, DigitalProgrammer::BANK_8_BUTTON));
     addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(180, 20)), module, DigitalProgrammer::BANK_8_LIGHT));
-
+    */
   }
 };
