@@ -24,4 +24,5 @@ extern Model *modelRepeater;
 extern Model *modelSamplerX8;
 extern Model *modelSatanonaut;
 extern Model *modelWavBank;
+extern Model *modelWavBankMC;
 extern Model *modelXY;

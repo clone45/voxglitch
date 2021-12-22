@@ -114,6 +114,12 @@
         "tags": ["Sampler"]
     },
     {
+        "slug": "wavbankmc",
+        "name": "Wav Bank MC",
+        "description": "Extended version of Wav Bank that supports multi-channel WAV files",
+        "tags": ["Sampler"]
+    },
+    {
         "slug": "xy",
         "name": "XY",
         "description": "CV output generator with built in gesture recording.",
