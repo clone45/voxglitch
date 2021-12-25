@@ -1,3 +1,7 @@
+//
+// TODO: fix pitch input to be 1v/octave
+// TODO: Playback crashes
+
 struct WavBankMC : Module
 {
 	unsigned int selected_sample_slot = 0;
@@ -8,7 +12,7 @@ struct WavBankMC : Module
 	std::string rootDir;
 	std::string path;
 
-	std::vector<Sample> samples;
+	std::vector<SampleMC> samples;
 	dsp::SchmittTrigger playTrigger;
 
   bool playback = false;
@@ -48,6 +52,7 @@ struct WavBankMC : Module
   // Save
 	json_t *dataToJson() override
 	{
+
 		json_t *json_root = json_object();
 		json_object_set_new(json_root, "path", json_string(this->path.c_str()));
     json_object_set_new(json_root, "trig_input_response_mode", json_integer(trig_input_response_mode));
@@ -72,6 +77,7 @@ struct WavBankMC : Module
 	void load_samples_from_path(const char *path)
 	{
 		// Clear out any old .wav files
+    // Reminder: this->samples is a vector, and vectors have a .clear() menthod.
 		this->samples.clear();
 
 		// Load all .wav files found in the folder specified by 'path'
@@ -81,19 +87,34 @@ struct WavBankMC : Module
 
 		// TODO: Decide on a maximum memory consuption allowed and abort if
 		// that amount of member would be exhausted by loading all of the files
-		// in the folder.  Also consider supporting MP3.
+		// in the folder.
 		for (auto entry : dirList)
 		{
 			if (
+        // Something happened in Rack 2 where the extension started to include
+        // the ".", so I decided to check for both versions, just in case.
         (rack::string::lowercase(system::getExtension(entry)) == "wav") ||
         (rack::string::lowercase(system::getExtension(entry)) == ".wav")
       )
 			{
-				Sample new_sample;
+        DEBUG(entry.c_str());
+
+        // Create new multi-channel sample.  This structure is defined in Common/sample_mc.hpp
+				SampleMC new_sample;
+
+        // Load the sample data from the disk
 				new_sample.load(entry);
+
+        DEBUG(new_sample.filename.c_str());
+
+        // Reminder: .push_back is a method of vectors that pushes the object
+        // to the end of a list.
 				this->samples.push_back(new_sample);
 			}
 		}
+
+    DEBUG("done loading files");
+
 	}
 
 	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
@@ -133,10 +154,10 @@ struct WavBankMC : Module
 		}
 
 		// Check to see if the selected sample slot refers to an existing sample.
-		// If not, return.  This could happen before any samples have been loaded.
+		// If not, return.  This edge case could happen before any samples have been loaded.
 		if(! (samples.size() > selected_sample_slot)) return;
 
-		Sample *selected_sample = &samples[selected_sample_slot];
+		SampleMC *selected_sample = &samples[selected_sample_slot];
 
 		if (inputs[TRIG_INPUT].isConnected())
 		{
@@ -185,17 +206,25 @@ struct WavBankMC : Module
 
 		if (playback && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->size() > 0) && (samplePos < selected_sample->size()))
 		{
-			float left_wav_output_voltage;
-			float right_wav_output_voltage;
+			float left_wav_output_voltage = 0;
+			float right_wav_output_voltage = 0;
 
+      /*
 			if (samplePos >= 0)
 			{
+        // Left off here.  Here's where things are going to get interesting.
         std::tie(left_wav_output_voltage, right_wav_output_voltage) = selected_sample->read((int)samplePos);
 			}
 			else
 			{
+        // What is this doing?  It looks like it's indexing backwards from the end of the sample if the samplePos is negative.
         std::tie(left_wav_output_voltage, right_wav_output_voltage) = selected_sample->read(floor(selected_sample->size() - 1 + samplePos));
 			}
+      */
+
+      // TODO: HERE's where it's crashing!
+      left_wav_output_voltage  = selected_sample->read(0, (int)samplePos);
+      right_wav_output_voltage = selected_sample->read(1, (int)samplePos);
 
       left_wav_output_voltage *= GAIN;
       right_wav_output_voltage *= GAIN;
@@ -205,7 +234,7 @@ struct WavBankMC : Module
 				float smooth_rate = (128.0f / args.sampleRate);  // A smooth rate of 128 seems to work best
 				smooth_ramp += smooth_rate;
 				left_wav_output_voltage = (last_wave_output_voltage[0] * (1 - smooth_ramp)) + (left_wav_output_voltage * smooth_ramp);
-				if(selected_sample->channels > 1) {
+				if(selected_sample->number_of_channels > 1) {
 					right_wav_output_voltage = (last_wave_output_voltage[1] * (1 - smooth_ramp)) + (right_wav_output_voltage * smooth_ramp);
 				}
 				else {
