@@ -1,6 +1,6 @@
 //
 // TODO: fix pitch input to be 1v/octave
-// TODO: Playback crashes
+//
 
 struct WavBankMC : Module
 {
@@ -30,8 +30,7 @@ struct WavBankMC : Module
 		NUM_INPUTS
 	};
 	enum OutputIds {
-		WAV_LEFT_OUTPUT,
-		WAV_RIGHT_OUTPUT,
+		POLY_WAV_OUTPUT,
 		NUM_OUTPUTS
 	};
 	enum LightIds {
@@ -97,15 +96,11 @@ struct WavBankMC : Module
         (rack::string::lowercase(system::getExtension(entry)) == ".wav")
       )
 			{
-        DEBUG(entry.c_str());
-
         // Create new multi-channel sample.  This structure is defined in Common/sample_mc.hpp
 				SampleMC new_sample;
 
         // Load the sample data from the disk
 				new_sample.load(entry);
-
-        DEBUG(new_sample.filename.c_str());
 
         // Reminder: .push_back is a method of vectors that pushes the object
         // to the end of a list.
@@ -206,8 +201,8 @@ struct WavBankMC : Module
 
 		if (playback && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->size() > 0) && (samplePos < selected_sample->size()))
 		{
-			float left_wav_output_voltage = 0;
-			float right_wav_output_voltage = 0;
+			// float left_wav_output_voltage = 0;
+			float output_voltage = 0;
 
       /*
 			if (samplePos >= 0)
@@ -222,31 +217,30 @@ struct WavBankMC : Module
 			}
       */
 
-      // TODO: HERE's where it's crashing!
-      left_wav_output_voltage  = selected_sample->read(0, (int)samplePos);
-      right_wav_output_voltage = selected_sample->read(1, (int)samplePos);
+      for (unsigned int channel = 0; channel < selected_sample->number_of_channels; channel++)
+      {
 
-      left_wav_output_voltage *= GAIN;
-      right_wav_output_voltage *= GAIN;
+        output_voltage  = selected_sample->read(channel, (int)samplePos);
+        output_voltage *= GAIN;
 
-			if(SMOOTH_ENABLED && (smooth_ramp < 1))
-			{
-				float smooth_rate = (128.0f / args.sampleRate);  // A smooth rate of 128 seems to work best
-				smooth_ramp += smooth_rate;
-				left_wav_output_voltage = (last_wave_output_voltage[0] * (1 - smooth_ramp)) + (left_wav_output_voltage * smooth_ramp);
-				if(selected_sample->number_of_channels > 1) {
-					right_wav_output_voltage = (last_wave_output_voltage[1] * (1 - smooth_ramp)) + (right_wav_output_voltage * smooth_ramp);
-				}
-				else {
-					right_wav_output_voltage = left_wav_output_voltage;
-				}
-			}
+        /*
+  			if(SMOOTH_ENABLED && (smooth_ramp < 1))
+  			{
+  				float smooth_rate = (128.0f / args.sampleRate);  // A smooth rate of 128 seems to work best
+  				smooth_ramp += smooth_rate;
+  				right_wav_output_voltage = (last_wave_output_voltage[0] * (1 - smooth_ramp)) + (right_wav_output_voltage * smooth_ramp);
+  			}
+        */
 
-			outputs[WAV_LEFT_OUTPUT].setVoltage(left_wav_output_voltage);
-			outputs[WAV_RIGHT_OUTPUT].setVoltage(right_wav_output_voltage);
+  			// outputs[WAV_LEFT_OUTPUT].setVoltage(left_wav_output_voltage);
+  			outputs[POLY_WAV_OUTPUT].setVoltage(output_voltage, channel);
 
-			last_wave_output_voltage[0] = left_wav_output_voltage;
-			last_wave_output_voltage[1] = right_wav_output_voltage;
+  			// last_wave_output_voltage[0] = right_wav_output_voltage;
+  			// last_wave_output_voltage[1] = right_wav_output_voltage;
+
+      }
+
+      outputs[POLY_WAV_OUTPUT].setChannels(selected_sample->number_of_channels);
 
 			// Increment sample offset (pitch)
 			if (inputs[PITCH_INPUT].isConnected())
@@ -265,8 +259,8 @@ struct WavBankMC : Module
       // and loop == false
 
 			playback = false; // Cancel current trigger
-			outputs[WAV_LEFT_OUTPUT].setVoltage(0);
-			outputs[WAV_RIGHT_OUTPUT].setVoltage(0);
+			// outputs[WAV_LEFT_OUTPUT].setVoltage(0);
+			outputs[POLY_WAV_OUTPUT].setVoltage(0);
 		}
 	}
 };

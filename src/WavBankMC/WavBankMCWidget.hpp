@@ -6,8 +6,8 @@ struct WavBankMCWidget : ModuleWidget
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/wav_bank_mc_front_panel.svg")));
 
 		// Cosmetic rack screws
-		addChild(createWidget<ScrewSilver>(Vec(15, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
+		// addChild(createWidget<ScrewSilver>(Vec(15, 0)));
+		// addChild(createWidget<ScrewSilver>(Vec(15, 365)));
 
 		// Input and label for the trigger input (which is labeled "CLK" on the front panel)
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.185, 25.535)), module, WavBankMC::TRIG_INPUT));
@@ -24,8 +24,8 @@ struct WavBankMCWidget : ModuleWidget
 		addChild(readout);
 
 		// WAV output
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 104)), module, WavBankMC::WAV_LEFT_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 114.9)), module, WavBankMC::WAV_RIGHT_OUTPUT));
+		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 104)), module, WavBankMC::WAV_LEFT_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 114.9)), module, WavBankMC::POLY_WAV_OUTPUT));
 	}
 
   //
