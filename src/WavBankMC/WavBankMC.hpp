@@ -5,7 +5,10 @@
 struct WavBankMC : Module
 {
 	unsigned int selected_sample_slot = 0;
-	double samplePos = 0;
+  // double samplePos = 0;
+	double playback_positions[NUMBER_OF_CHANNELS];
+  bool playback[NUMBER_OF_CHANNELS];
+
 	float smooth_ramp = 1;
 	float last_wave_output_voltage[2] = {0};
   unsigned int trig_input_response_mode = TRIGGER;
@@ -14,8 +17,6 @@ struct WavBankMC : Module
 
 	std::vector<SampleMC> samples;
 	dsp::SchmittTrigger playTrigger;
-
-  bool playback = false;
 
 	enum ParamIds {
 		WAV_KNOB,
@@ -46,6 +47,9 @@ struct WavBankMC : Module
 		configParam(WAV_KNOB, 0.0f, 1.0f, 0.0f, "SampleSelectKnob");
 		configParam(WAV_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "SampleSelectAttnKnob");
 		configParam(LOOP_SWITCH, 0.0f, 1.0f, 0.0f, "LoopSwitch");
+
+    reset_all_playback_positions();
+    set_all_playback_flags(false);
 	}
 
   // Save
@@ -72,6 +76,22 @@ struct WavBankMC : Module
     json_t* trig_input_response_mode_json = json_object_get(json_root, "trig_input_response_mode");
     if (trig_input_response_mode_json) trig_input_response_mode = json_integer_value(trig_input_response_mode_json);
 	}
+
+  void reset_all_playback_positions()
+  {
+    for(unsigned int i = 0; i < NUMBER_OF_CHANNELS; i++)
+    {
+      playback_positions[i] = 0.0;
+    }
+  }
+
+  void set_all_playback_flags(bool value)
+  {
+    for(unsigned int i = 0; i < NUMBER_OF_CHANNELS; i++)
+    {
+      playback[i] = value;
+    }
+  }
 
 	void load_samples_from_path(const char *path)
 	{
@@ -140,12 +160,14 @@ struct WavBankMC : Module
 			// Reset sample position so playback does not start at previous sample position
 			// TODO: Think this over.  Is it more flexible to allow people to changes
 			// samples without resetting the sample position?
-			samplePos = 0;
+      reset_all_playback_positions();
+			// samplePos = 0;
+
 
 			// Set the selected sample
 			selected_sample_slot = wav_input_value;
 
-      playback = false;
+      set_all_playback_flags(false);
 		}
 
 		// Check to see if the selected sample slot refers to an existing sample.
@@ -163,104 +185,63 @@ struct WavBankMC : Module
 
   			if (playTrigger.process(inputs[TRIG_INPUT].getVoltage()))
   			{
-  				samplePos = 0;
+  				reset_all_playback_positions();
+          set_all_playback_flags(true);
   				smooth_ramp = 0;
-  				playback = true;
   			}
-      }
-      else if(trig_input_response_mode == GATE)
-      {
-        // In gate mode, continue playing back the sample as long as the gate is high
-        // 5.0 volts is required for a gate high signal, but this is extra lenient
-        // as the standards say a 10.0 or higher signal should be accepted.
-        if(inputs[TRIG_INPUT].getVoltage() >= 5.0)
-        {
-          if(playback == false)
-          {
-            playback = true;
-            samplePos = 0;
-    				smooth_ramp = 0;
-          }
-        }
-        else
-        {
-          playback = false;
-          samplePos = 0;
-  				smooth_ramp = 0;
-        }
       }
 		}
     // If no cable is connected to the trigger input, then provide constant playback
 		else
 		{
-			playback = true;
+			set_all_playback_flags(true);
 		}
 
-		// Loop
-		if(params[LOOP_SWITCH].getValue() && (samplePos >= selected_sample->size())) samplePos = 0;
+		// If the loop mode is true, check each channel position.  If any are past
+    // the end of the sample, then reset them to 0.  (This reset might need
+    // some work to be more accurate by indexing a little from the start position
+    // based on the difference from the sample size and playback position.)
 
-		if (playback && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->size() > 0) && (samplePos < selected_sample->size()))
-		{
-			// float left_wav_output_voltage = 0;
-			float output_voltage = 0;
-
-      /*
-			if (samplePos >= 0)
-			{
-        // Left off here.  Here's where things are going to get interesting.
-        std::tie(left_wav_output_voltage, right_wav_output_voltage) = selected_sample->read((int)samplePos);
-			}
-			else
-			{
-        // What is this doing?  It looks like it's indexing backwards from the end of the sample if the samplePos is negative.
-        std::tie(left_wav_output_voltage, right_wav_output_voltage) = selected_sample->read(floor(selected_sample->size() - 1 + samplePos));
-			}
-      */
-
+		if(params[LOOP_SWITCH].getValue() == true)
+    {
       for (unsigned int channel = 0; channel < selected_sample->number_of_channels; channel++)
       {
-
-        output_voltage  = selected_sample->read(channel, (int)samplePos);
-        output_voltage *= GAIN;
-
-        /*
-  			if(SMOOTH_ENABLED && (smooth_ramp < 1))
-  			{
-  				float smooth_rate = (128.0f / args.sampleRate);  // A smooth rate of 128 seems to work best
-  				smooth_ramp += smooth_rate;
-  				right_wav_output_voltage = (last_wave_output_voltage[0] * (1 - smooth_ramp)) + (right_wav_output_voltage * smooth_ramp);
-  			}
-        */
-
-  			// outputs[WAV_LEFT_OUTPUT].setVoltage(left_wav_output_voltage);
-  			outputs[POLY_WAV_OUTPUT].setVoltage(output_voltage, channel);
-
-  			// last_wave_output_voltage[0] = right_wav_output_voltage;
-  			// last_wave_output_voltage[1] = right_wav_output_voltage;
-
+        // Note: All channels in a .wav file have the same length
+        if (playback_positions[channel] >= selected_sample->size()) playback_positions[channel] = 0;
       }
+    }
 
-      outputs[POLY_WAV_OUTPUT].setChannels(selected_sample->number_of_channels);
+    for (unsigned int channel = 0; channel < selected_sample->number_of_channels; channel++)
+    {
+      if (playback[channel] && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->size() > 0) && (playback_positions[channel] < selected_sample->size()))
+  		{
+          float output_voltage  = selected_sample->read(channel, (int)playback_positions[channel]);
+          output_voltage *= GAIN;
 
-			// Increment sample offset (pitch)
-			if (inputs[PITCH_INPUT].isConnected())
-			{
-				samplePos = samplePos + (selected_sample->sample_rate / args.sampleRate) + ((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f);
-			}
-			else
-			{
-				samplePos = samplePos + (selected_sample->sample_rate / args.sampleRate);
-			}
-		}
-		else
-		{
+    			outputs[POLY_WAV_OUTPUT].setVoltage(output_voltage, channel);
+
+          // Increment sample offset (pitch)
+    			if (inputs[PITCH_INPUT].isConnected())
+    			{
+            unsigned int pitch_input_channel = std::min((unsigned int) inputs[PITCH_INPUT].getChannels() - 1, channel);
+    				playback_positions[channel] += (selected_sample->sample_rate / args.sampleRate) + ((inputs[PITCH_INPUT].getVoltage(pitch_input_channel) / 10.0f) - 0.5f);
+    			}
+    			else
+    			{
+    				playback_positions[channel] += (selected_sample->sample_rate / args.sampleRate);
+    			}
+      }
       // This block of code gets run if the sample is loading, or there's no
       // sample data, or most importantly, if the sample playback had ended
       // and loop == false
+      else
+      {
+        playback[channel] = false; // Cancel current trigger
+        outputs[POLY_WAV_OUTPUT].setVoltage(0, channel);
+      }
+    } // end of foreach channel
 
-			playback = false; // Cancel current trigger
-			// outputs[WAV_LEFT_OUTPUT].setVoltage(0);
-			outputs[POLY_WAV_OUTPUT].setVoltage(0);
-		}
-	}
+    outputs[POLY_WAV_OUTPUT].setChannels(selected_sample->number_of_channels);
+
+  } // end of process loop
 };
