@@ -9,11 +9,19 @@ struct WavBankMC : Module
 	double playback_positions[NUMBER_OF_CHANNELS];
   bool playback[NUMBER_OF_CHANNELS];
 
+  float sample_time = 0;
 	float smooth_ramp = 1;
 	float last_wave_output_voltage[2] = {0};
   unsigned int trig_input_response_mode = TRIGGER;
 	std::string rootDir;
 	std::string path;
+
+  dsp::SchmittTrigger next_wav_cv_trigger;
+	dsp::SchmittTrigger next_wav_button_trigger;
+  dsp::SchmittTrigger prev_wav_cv_trigger;
+	dsp::SchmittTrigger prev_wav_button_trigger;
+
+  unsigned int number_of_samples = 0;
 
 	std::vector<SampleMC> samples;
 	dsp::SchmittTrigger playTrigger;
@@ -22,6 +30,8 @@ struct WavBankMC : Module
 		WAV_KNOB,
 		WAV_ATTN_KNOB,
 		LOOP_SWITCH,
+    NEXT_WAV_BUTTON_PARAM,
+    PREV_WAV_BUTTON_PARAM,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -29,6 +39,8 @@ struct WavBankMC : Module
 		WAV_INPUT,
 		VOLUME_INPUT,
 		PITCH_INPUT,
+    NEXT_WAV_TRIGGER_INPUT,
+    PREV_WAV_TRIGGER_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -36,6 +48,8 @@ struct WavBankMC : Module
 		NUM_OUTPUTS
 	};
 	enum LightIds {
+    NEXT_WAV_LIGHT,
+    PREV_WAV_LIGHT,
 		NUM_LIGHTS
 	};
 
@@ -48,6 +62,8 @@ struct WavBankMC : Module
 		configParam(WAV_KNOB, 0.0f, 1.0f, 0.0f, "SampleSelectKnob");
 		configParam(WAV_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "SampleSelectAttnKnob");
 		configParam(LOOP_SWITCH, 0.0f, 1.0f, 0.0f, "LoopSwitch");
+		configParam(NEXT_WAV_BUTTON_PARAM, 0.f, 1.f, 0.f, "NextWavButtonParam");
+    configParam(PREV_WAV_BUTTON_PARAM, 0.f, 1.f, 0.f, "PrevWavButtonParam");
 
     reset_all_playback_positions();
     set_all_playback_flags(false);
@@ -92,6 +108,60 @@ struct WavBankMC : Module
     {
       playback[i] = value;
     }
+  }
+
+  void process_wav_cv_input()
+  {
+    unsigned int wav_input_value = calculate_inputs(WAV_INPUT, WAV_KNOB, WAV_ATTN_KNOB, number_of_samples);
+
+		wav_input_value = clamp(wav_input_value, 0, number_of_samples - 1);
+
+    //
+    // If the sample has been changed.
+    //
+		if(wav_input_value != selected_sample_slot)
+		{
+			// Reset the smooth ramp if the selected sample has changed
+			smooth_ramp = 0;
+
+			// Reset sample position so playback does not start at previous sample position
+			// TODO: Think this over.  Is it more flexible to allow people to changes
+			// samples without resetting the sample position?
+      reset_all_playback_positions();
+			// samplePos = 0;
+
+
+			// Set the selected sample
+			selected_sample_slot = wav_input_value;
+
+      set_all_playback_flags(false);
+		}
+  }
+
+  void process_wav_navigation_buttons()
+  {
+    // TODO: finish this
+    bool next_wav_is_triggered = next_wav_cv_trigger.process(inputs[NEXT_WAV_TRIGGER_INPUT].getVoltage()) || next_wav_button_trigger.process(params[NEXT_WAV_BUTTON_PARAM].getValue());
+    if(next_wav_is_triggered)
+    {
+      selected_sample_slot = (selected_sample_slot + 1) % this->samples.size();
+    }
+    lights[NEXT_WAV_LIGHT].setSmoothBrightness(next_wav_is_triggered, this->sample_time);
+
+    // now do prev_wav_is_triggered
+    bool prev_wav_is_triggered = prev_wav_cv_trigger.process(inputs[PREV_WAV_TRIGGER_INPUT].getVoltage()) || prev_wav_button_trigger.process(params[PREV_WAV_BUTTON_PARAM].getValue());
+    if(prev_wav_is_triggered)
+    {
+      if(selected_sample_slot > 0)
+      {
+        selected_sample_slot -= 1;
+      }
+      else
+      {
+        selected_sample_slot = this->samples.size() - 1;
+      }
+    }
+    lights[PREV_WAV_LIGHT].setSmoothBrightness(prev_wav_is_triggered, this->sample_time);
   }
 
 	void load_samples_from_path(const char *path)
@@ -144,32 +214,22 @@ struct WavBankMC : Module
 
 	void process(const ProcessArgs &args) override
 	{
-		unsigned int number_of_samples = samples.size();
+		number_of_samples = samples.size();
+    sample_time = args.sampleTime;
 
-		// Read the input/knob for sample selection
-		unsigned int wav_input_value = calculate_inputs(WAV_INPUT, WAV_KNOB, WAV_ATTN_KNOB, number_of_samples);
-		wav_input_value = clamp(wav_input_value, 0, number_of_samples - 1);
+		// If there's a cable in the wav cv input, it has precendence over all
+    // other methods of selecting the .wav file.  If there isn't, then the
+    // selected wav file can be incremented, decremented, or reset using the
+    // corresponding buttons or inputs.
 
-    //
-    // If the sample has been changed.
-    //
-		if(wav_input_value != selected_sample_slot)
-		{
-			// Reset the smooth ramp if the selected sample has changed
-			smooth_ramp = 0;
-
-			// Reset sample position so playback does not start at previous sample position
-			// TODO: Think this over.  Is it more flexible to allow people to changes
-			// samples without resetting the sample position?
-      reset_all_playback_positions();
-			// samplePos = 0;
-
-
-			// Set the selected sample
-			selected_sample_slot = wav_input_value;
-
-      set_all_playback_flags(false);
-		}
+    if(inputs[WAV_INPUT].isConnected())
+    {
+      process_wav_cv_input();
+    }
+    else
+    {
+      process_wav_navigation_buttons();
+    }
 
 		// Check to see if the selected sample slot refers to an existing sample.
 		// If not, return.  This edge case could happen before any samples have been loaded.
