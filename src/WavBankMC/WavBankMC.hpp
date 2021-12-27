@@ -27,6 +27,7 @@ struct WavBankMC : Module
 	enum InputIds {
 		TRIG_INPUT,
 		WAV_INPUT,
+		VOLUME_INPUT,
 		PITCH_INPUT,
 		NUM_INPUTS
 	};
@@ -215,16 +216,20 @@ struct WavBankMC : Module
     {
       if (playback[channel] && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->size() > 0) && (playback_positions[channel] < selected_sample->size()))
   		{
-          float output_voltage  = selected_sample->read(channel, (int)playback_positions[channel]);
-          output_voltage *= GAIN;
+          float output_voltage = selected_sample->read(channel, (int)playback_positions[channel]);
+          float channel_volume = inputs[VOLUME_INPUT].getVoltage(channel);
+          output_voltage *= channel_volume;
 
     			outputs[POLY_WAV_OUTPUT].setVoltage(output_voltage, channel);
 
           // Increment sample offset (pitch)
     			if (inputs[PITCH_INPUT].isConnected())
     			{
-            unsigned int pitch_input_channel = std::min((unsigned int) inputs[PITCH_INPUT].getChannels() - 1, channel);
-    				playback_positions[channel] += (selected_sample->sample_rate / args.sampleRate) + ((inputs[PITCH_INPUT].getVoltage(pitch_input_channel) / 10.0f) - 0.5f);
+            // If there's a polyphonic cable at the pitch input with a channel
+            // that matches the sample's channel, then use that cable to control
+            // the pitch of the channel playback.
+            // unsigned int pitch_input_channel = std::min((unsigned int) inputs[PITCH_INPUT].getChannels() - 1, channel);
+    				playback_positions[channel] += (selected_sample->sample_rate / args.sampleRate) + ((inputs[PITCH_INPUT].getVoltage(channel) / 10.0f) - 0.5f);
     			}
     			else
     			{
