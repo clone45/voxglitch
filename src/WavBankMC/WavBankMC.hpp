@@ -10,8 +10,8 @@ struct WavBankMC : Module
   bool playback[NUMBER_OF_CHANNELS];
 
   float sample_time = 0;
-	float smooth_ramp = 1;
-	float last_wave_output_voltage[2] = {0};
+	float smooth_ramp[NUMBER_OF_CHANNELS] = {1};
+	float last_output_voltage[NUMBER_OF_CHANNELS] = {0};
   unsigned int trig_input_response_mode = TRIGGER;
 	std::string rootDir;
 	std::string path;
@@ -110,6 +110,19 @@ struct WavBankMC : Module
     }
   }
 
+  void start_smoothing(unsigned int channel)
+  {
+    smooth_ramp[channel] = 0;
+  }
+
+  void smooth_all_channels()
+  {
+    for(unsigned int channel = 0; channel < NUMBER_OF_CHANNELS; channel++)
+    {
+      start_smoothing(channel);
+    }
+  }
+
   void process_wav_cv_input()
   {
     unsigned int wav_input_value = calculate_inputs(WAV_INPUT, WAV_KNOB, WAV_ATTN_KNOB, number_of_samples);
@@ -122,7 +135,7 @@ struct WavBankMC : Module
 		if(wav_input_value != selected_sample_slot)
 		{
 			// Reset the smooth ramp if the selected sample has changed
-			smooth_ramp = 0;
+      smooth_all_channels();
 
 			// Reset sample position so playback does not start at previous sample position
 			// TODO: Think this over.  Is it more flexible to allow people to changes
@@ -216,6 +229,7 @@ struct WavBankMC : Module
 	{
 		number_of_samples = samples.size();
     sample_time = args.sampleTime;
+    float smooth_rate = (128.0f / args.sampleRate);
 
 		// If there's a cable in the wav cv input, it has precendence over all
     // other methods of selecting the .wav file.  If there isn't, then the
@@ -248,7 +262,7 @@ struct WavBankMC : Module
   			{
   				reset_all_playback_positions();
           set_all_playback_flags(true);
-  				smooth_ramp = 0;
+  				smooth_all_channels();
   			}
       }
 		}
@@ -268,7 +282,12 @@ struct WavBankMC : Module
       for (unsigned int channel = 0; channel < selected_sample->number_of_channels; channel++)
       {
         // Note: All channels in a .wav file have the same length
-        if (playback_positions[channel] >= selected_sample->size()) playback_positions[channel] = 0;
+        if (playback_positions[channel] >= selected_sample->size())
+        {
+          // playback_positions[channel] = 0;
+          playback_positions[channel] = (playback_positions[channel] - selected_sample->size());
+          start_smoothing(channel);
+        }
       }
     }
 
@@ -277,9 +296,38 @@ struct WavBankMC : Module
       if (playback[channel] && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->size() > 0) && (playback_positions[channel] < selected_sample->size()))
   		{
           float output_voltage = selected_sample->read(channel, (int)playback_positions[channel]);
-          float channel_volume = inputs[VOLUME_INPUT].getVoltage(channel);
+
+          //
+          // Volume control
+          //
+          float channel_volume = 1.0;
+          if(inputs[VOLUME_INPUT].isConnected())
+          {
+            // If the current channel has a volume input provided by the CV
+            // input at that channel, then use it.
+            if(channel < (unsigned int) inputs[VOLUME_INPUT].getChannels())
+            {
+              channel_volume = inputs[VOLUME_INPUT].getVoltage(channel);
+            }
+            // Otherwise use the volume of the first channel
+            else
+            {
+              channel_volume = inputs[VOLUME_INPUT].getVoltage(0);
+            }
+          }
           output_voltage *= channel_volume;
 
+          //
+          // Smoothing
+          //
+          if(SMOOTH_ENABLED && (smooth_ramp[channel] < 1))
+    			{
+    				smooth_ramp[channel] += smooth_rate;
+    				output_voltage = (last_output_voltage[channel] * (1 - smooth_ramp[channel])) + (output_voltage * smooth_ramp[channel]);
+    			}
+          last_output_voltage[channel] = output_voltage;
+
+          // Output the audio
     			outputs[POLY_WAV_OUTPUT].setVoltage(output_voltage, channel);
 
           // Increment sample offset (pitch)
