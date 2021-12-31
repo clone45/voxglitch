@@ -32,6 +32,7 @@ struct SampleMC
 {
 	std::string path;
 	std::string filename;
+	std::string display_name;
 	bool loading;
   bool loaded = false;
   bool queued_for_loading = false;
@@ -53,6 +54,7 @@ struct SampleMC
 	{
 		loading = false;
 		filename = "[ empty ]";
+    display_name = "[ empty ]";
 		path = "";
 		sample_rate = 0;
 		number_of_channels = 0;
@@ -107,6 +109,8 @@ struct SampleMC
     // of the patch to reference.
     this->sample_length = number_of_samples;
     this->filename = system::getFilename(path);
+    this->display_name = filename;
+    this->display_name.erase(this->display_name.length()-4); // remove the .wav extension
     this->path = path;
 
     this->loading = false;

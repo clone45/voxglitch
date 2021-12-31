@@ -1,6 +1,7 @@
 //
-// TODO: fix pitch input to be 1v/octave
-//
+// When stepping with the buttons, if the wav cv input is not connected, then
+// programmatically update the course knob to indicate the selected sample?
+// Then, could that knob still work when there's no cable connected?
 
 struct WavBankMC : Module
 {
@@ -8,6 +9,7 @@ struct WavBankMC : Module
   // double samplePos = 0;
 	double playback_positions[NUMBER_OF_CHANNELS];
   bool playback[NUMBER_OF_CHANNELS];
+  float previous_wav_knob_value = 0.0;
 
   float sample_time = 0;
 	float smooth_ramp[NUMBER_OF_CHANNELS] = {1};
@@ -22,9 +24,11 @@ struct WavBankMC : Module
 	dsp::SchmittTrigger prev_wav_button_trigger;
 
   unsigned int number_of_samples = 0;
+  bool smoothing = true;
 
 	std::vector<SampleMC> samples;
 	dsp::SchmittTrigger playTrigger;
+  unsigned int sample_change_mode = RESTART_PLAYBACK;
 
 	enum ParamIds {
 		WAV_KNOB,
@@ -67,6 +71,11 @@ struct WavBankMC : Module
 
     reset_all_playback_positions();
     set_all_playback_flags(false);
+
+    // This is a variable that helps us detect if there's been any knob
+    // movement, which is important if the user is trying to dial in a sample
+    // using the selection know while no CV input is present
+    previous_wav_knob_value = params[WAV_KNOB].getValue();
 	}
 
   // Save
@@ -75,7 +84,8 @@ struct WavBankMC : Module
 
 		json_t *json_root = json_object();
 		json_object_set_new(json_root, "path", json_string(this->path.c_str()));
-    json_object_set_new(json_root, "trig_input_response_mode", json_integer(trig_input_response_mode));
+    json_object_set_new(json_root, "sample_change_mode", json_integer(sample_change_mode));
+    json_object_set_new(json_root, "smoothing", json_integer(smoothing));
 		return json_root;
 	}
 
@@ -89,9 +99,14 @@ struct WavBankMC : Module
 			this->load_samples_from_path(this->path.c_str());
 		}
 
-    // Load trigger input response mode
-    json_t* trig_input_response_mode_json = json_object_get(json_root, "trig_input_response_mode");
-    if (trig_input_response_mode_json) trig_input_response_mode = json_integer_value(trig_input_response_mode_json);
+    // Load sample change mode
+    json_t* sample_change_mode_json = json_object_get(json_root, "sample_change_mode");
+    if (sample_change_mode_json) sample_change_mode = json_integer_value(sample_change_mode_json);
+
+    // Load smoothing
+    json_t* smoothing_json = json_object_get(json_root, "smoothing");
+    if (smoothing_json) smoothing = json_integer_value(smoothing_json);
+
 	}
 
   void reset_all_playback_positions()
@@ -123,58 +138,100 @@ struct WavBankMC : Module
     }
   }
 
+  void increment_selected_sample()
+  {
+    change_selected_sample((selected_sample_slot + 1) % this->samples.size());
+  }
+
+  void decrement_selected_sample()
+  {
+    if(selected_sample_slot > 0)
+    {
+      change_selected_sample(selected_sample_slot - 1);
+    }
+    else
+    {
+      change_selected_sample(this->samples.size() - 1);
+    }
+  }
+
+  void change_selected_sample(unsigned int new_sample_slot)
+  {
+    // Reset the smooth ramp if the selected sample has changed
+    smooth_all_channels();
+
+    // Reset sample position so playback does not start at previous sample position
+    // TODO: Think this over.  Is it more flexible to allow people to changes
+    // samples without resetting the sample position?
+    if(this->sample_change_mode == RESTART_PLAYBACK)
+    {
+      reset_all_playback_positions();
+      set_all_playback_flags(false);
+    }
+
+    // Set the selected sample
+    selected_sample_slot = new_sample_slot;
+  }
+
   void process_wav_cv_input()
   {
     unsigned int wav_input_value = calculate_inputs(WAV_INPUT, WAV_KNOB, WAV_ATTN_KNOB, number_of_samples);
 
 		wav_input_value = clamp(wav_input_value, 0, number_of_samples - 1);
+    previous_wav_knob_value = params[WAV_KNOB].getValue();
 
     //
     // If the sample has been changed.
     //
 		if(wav_input_value != selected_sample_slot)
 		{
-			// Reset the smooth ramp if the selected sample has changed
-      smooth_all_channels();
+      change_selected_sample(wav_input_value);
+		}
+  }
 
-			// Reset sample position so playback does not start at previous sample position
-			// TODO: Think this over.  Is it more flexible to allow people to changes
-			// samples without resetting the sample position?
-      reset_all_playback_positions();
-			// samplePos = 0;
+  void manual_wav_selection()
+  {
+    if(previous_wav_knob_value != params[WAV_KNOB].getValue())
+    {
+      process_wav_knob_selection();
+    }
+    else
+    {
+      process_wav_navigation_buttons();
+    }
+  }
 
+  void process_wav_knob_selection()
+  {
+    unsigned int wav_input_value = params[WAV_KNOB].getValue() * number_of_samples;
 
-			// Set the selected sample
-			selected_sample_slot = wav_input_value;
+		wav_input_value = clamp(wav_input_value, 0, number_of_samples - 1);
+    previous_wav_knob_value = params[WAV_KNOB].getValue();
 
-      set_all_playback_flags(false);
+    if(wav_input_value != selected_sample_slot)
+		{
+      change_selected_sample(wav_input_value);
 		}
   }
 
   void process_wav_navigation_buttons()
   {
-    // TODO: finish this
+    // If next_wav button is pressed, step to the next sample
     bool next_wav_is_triggered = next_wav_cv_trigger.process(inputs[NEXT_WAV_TRIGGER_INPUT].getVoltage()) || next_wav_button_trigger.process(params[NEXT_WAV_BUTTON_PARAM].getValue());
-    if(next_wav_is_triggered)
-    {
-      selected_sample_slot = (selected_sample_slot + 1) % this->samples.size();
-    }
+    if(next_wav_is_triggered) increment_selected_sample();
     lights[NEXT_WAV_LIGHT].setSmoothBrightness(next_wav_is_triggered, this->sample_time);
 
-    // now do prev_wav_is_triggered
+    // Now do prev_wav_is_triggered
     bool prev_wav_is_triggered = prev_wav_cv_trigger.process(inputs[PREV_WAV_TRIGGER_INPUT].getVoltage()) || prev_wav_button_trigger.process(params[PREV_WAV_BUTTON_PARAM].getValue());
-    if(prev_wav_is_triggered)
-    {
-      if(selected_sample_slot > 0)
-      {
-        selected_sample_slot -= 1;
-      }
-      else
-      {
-        selected_sample_slot = this->samples.size() - 1;
-      }
-    }
+    if(prev_wav_is_triggered) decrement_selected_sample();
     lights[PREV_WAV_LIGHT].setSmoothBrightness(prev_wav_is_triggered, this->sample_time);
+
+    // If either wav navigation button is detected, then set the WAV knob to
+    // match the currently selected sample
+    if(next_wav_is_triggered || prev_wav_is_triggered)
+    {
+      params[WAV_KNOB].setValue((float) selected_sample_slot / (float) number_of_samples);
+    }
   }
 
 	void load_samples_from_path(const char *path)
@@ -212,7 +269,7 @@ struct WavBankMC : Module
 			}
 		}
 
-    DEBUG("done loading files");
+    // DEBUG("done loading files");
 
 	}
 
@@ -242,7 +299,7 @@ struct WavBankMC : Module
     }
     else
     {
-      process_wav_navigation_buttons();
+      manual_wav_selection();
     }
 
 		// Check to see if the selected sample slot refers to an existing sample.
@@ -287,6 +344,7 @@ struct WavBankMC : Module
           // playback_positions[channel] = 0;
           playback_positions[channel] = (playback_positions[channel] - selected_sample->size());
           start_smoothing(channel);
+          // DEBUG("smooth on loop");
         }
       }
     }
@@ -320,10 +378,13 @@ struct WavBankMC : Module
           //
           // Smoothing
           //
-          if(SMOOTH_ENABLED && (smooth_ramp[channel] < 1))
+          if(this->smoothing && (smooth_ramp[channel] < 1))
     			{
     				smooth_ramp[channel] += smooth_rate;
     				output_voltage = (last_output_voltage[channel] * (1 - smooth_ramp[channel])) + (output_voltage * smooth_ramp[channel]);
+            // DEBUG("smooth");
+            // DEBUG(std::to_string(channel).c_str());
+            // DEBUG(std::to_string(output_voltage).c_str());
     			}
           last_output_voltage[channel] = output_voltage;
 

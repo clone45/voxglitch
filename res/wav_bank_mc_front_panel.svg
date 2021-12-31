@@ -17,6 +17,18 @@
   <defs
      id="defs10997">
     <rect
+       x="135.71074"
+       y="107.40962"
+       width="14.807217"
+       height="7.0397621"
+       id="rect1015" />
+    <rect
+       x="137.08936"
+       y="85.455983"
+       width="13.428593"
+       height="5.8896403"
+       id="rect985" />
+    <rect
        x="68.856198"
        y="151.49105"
        width="16.441965"
@@ -64,9 +76,9 @@
      showgrid="false"
      inkscape:current-layer="layer1"
      inkscape:document-units="mm"
-     inkscape:cy="262.74003"
-     inkscape:cx="409.81696"
-     inkscape:zoom="1.979899"
+     inkscape:cy="262.38587"
+     inkscape:cx="265.14447"
+     inkscape:zoom="2.8"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
      borderopacity="1.0"
@@ -75,80 +87,340 @@
      id="base">
     <sodipodi:guide
        inkscape:color="rgb(0,0,255)"
-       inkscape:label=""
-       inkscape:locked="false"
+       inkscape:label="ROW5"
+       inkscape:locked="true"
        id="guide887"
        orientation="0,1"
-       position="17.840241,83.788998" />
+       position="91.440001,108.42" />
     <sodipodi:guide
-       inkscape:locked="false"
+       inkscape:locked="true"
        id="guide902"
        orientation="0,1"
-       position="-1.0022607,112.38684" />
+       position="91.440001,124.484"
+       inkscape:label="ROW1"
+       inkscape:color="rgb(0,0,255)" />
     <sodipodi:guide
-       inkscape:locked="false"
+       inkscape:locked="true"
        id="guide905"
-       orientation="1,0"
-       position="0,125.61668" />
+       orientation="-1,0"
+       position="0,128.5"
+       inkscape:label="COL0"
+       inkscape:color="rgb(0,0,255)" />
     <sodipodi:guide
        inkscape:color="rgb(0,0,255)"
-       inkscape:label=""
-       inkscape:locked="false"
+       inkscape:label="COL1"
+       inkscape:locked="true"
        id="guide907"
-       orientation="1,0"
-       position="13.18192,71.744607" />
+       orientation="-1,0"
+       position="5.7150001,128.5" />
     <sodipodi:guide
-       inkscape:locked="false"
+       inkscape:locked="true"
        id="guide854"
-       orientation="1,0"
-       position="34.236375,25.767346" />
+       orientation="-1,0"
+       position="11.43,128.5"
+       inkscape:label="COL2"
+       inkscape:color="rgb(0,0,255)" />
     <sodipodi:guide
-       inkscape:locked="false"
+       inkscape:locked="true"
        id="guide1520"
        orientation="0,1"
-       position="-14.363095,101.86458" />
+       position="91.440001,116.452"
+       inkscape:label="ROW3"
+       inkscape:color="rgb(0,0,255)" />
     <sodipodi:guide
-       inkscape:locked="false"
+       inkscape:locked="true"
        id="guide1522"
        orientation="0,1"
-       position="-0.46772168,92.107762" />
+       position="91.440001,112.436"
+       inkscape:label="ROW4"
+       inkscape:color="rgb(0,0,255)" />
     <sodipodi:guide
-       inkscape:locked="false"
+       inkscape:locked="true"
        id="guide1524"
        orientation="0,1"
-       position="37.041667,107.25075" />
+       position="91.440001,120.468"
+       inkscape:label="ROW2"
+       inkscape:color="rgb(0,0,255)" />
     <sodipodi:guide
-       inkscape:locked="false"
+       inkscape:locked="true"
        id="guide5229"
        orientation="0,1"
-       position="20.505209,19.276786" />
+       position="91.440001,40.148001"
+       inkscape:label="ROW22"
+       inkscape:color="rgb(0,0,255)" />
     <sodipodi:guide
        inkscape:color="rgb(0,0,255)"
-       inkscape:label=""
-       inkscape:locked="false"
+       inkscape:label="ROW31"
+       inkscape:locked="true"
        id="guide3678"
        orientation="0,1"
-       position="25.513393,1.224" />
+       position="91.440001,4.0040001" />
     <sodipodi:guide
        inkscape:color="rgb(0,0,255)"
-       inkscape:label=""
-       inkscape:locked="false"
+       inkscape:label="COL3"
+       inkscape:locked="true"
        id="guide3680"
-       orientation="1,0"
-       position="44.478001,11.197545" />
+       orientation="-1,0"
+       position="17.145,128.5" />
     <sodipodi:guide
        inkscape:locked="false"
        id="guide1530"
        orientation="0,1"
-       position="13.896531,37.413738" />
+       position="91.440001,76.292001"
+       inkscape:label="ROW13"
+       inkscape:color="rgb(0,0,255)" />
     <sodipodi:guide
        id="guide1636"
-       orientation="0,-1"
-       position="22.843936,20.729539" />
+       orientation="0,1"
+       position="91.440001,44.164001"
+       inkscape:label="ROW21"
+       inkscape:locked="false"
+       inkscape:color="rgb(0,0,255)" />
     <sodipodi:guide
        id="guide949"
-       orientation="1,0"
-       position="80.036459,59.424852" />
+       orientation="-1,0"
+       position="40.005001,128.5"
+       inkscape:label="COL7"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="22.86,128.5"
+       orientation="-1,0"
+       id="guide950"
+       inkscape:label="COL4"
+       inkscape:locked="true"
+       inkscape:color="rgb(32,74,135)" />
+    <sodipodi:guide
+       position="28.575,128.5"
+       orientation="-1,0"
+       id="guide952"
+       inkscape:label="COL5"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="34.29,128.5"
+       orientation="-1,0"
+       id="guide954"
+       inkscape:label="COL6"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,138.1384"
+       orientation="-1,0"
+       id="guide956"
+       inkscape:label=""
+       inkscape:locked="false"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="45.720001,128.5"
+       orientation="-1,0"
+       id="guide1841"
+       inkscape:label="COL8"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="51.435001,128.5"
+       orientation="-1,0"
+       id="guide1843"
+       inkscape:label="COL9"
+       inkscape:locked="false"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="57.150001,128.5"
+       orientation="-1,0"
+       id="guide1845"
+       inkscape:label="COL10"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="62.865001,128.5"
+       orientation="-1,0"
+       id="guide1847"
+       inkscape:label="COL11"
+       inkscape:locked="false"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="68.580001,128.5"
+       orientation="-1,0"
+       id="guide1849"
+       inkscape:label="COL12"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="74.295001,128.5"
+       orientation="-1,0"
+       id="guide1851"
+       inkscape:label="COL13"
+       inkscape:locked="false"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="80.010001,128.5"
+       orientation="-1,0"
+       id="guide1853"
+       inkscape:label="COL14"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="85.725001,128.5"
+       orientation="-1,0"
+       id="guide1855"
+       inkscape:label="COL15"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,104.404"
+       orientation="0,1"
+       id="guide1857"
+       inkscape:label="ROW6"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,100.388"
+       orientation="0,1"
+       id="guide1859"
+       inkscape:label="ROW7"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,96.372001"
+       orientation="0,1"
+       id="guide1861"
+       inkscape:label="ROW8"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,92.356001"
+       orientation="0,1"
+       id="guide1863"
+       inkscape:label="ROW9"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,88.340001"
+       orientation="0,1"
+       id="guide1865"
+       inkscape:label="ROW10"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,80.308001"
+       orientation="0,1"
+       id="guide1867"
+       inkscape:label="ROW12"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,84.324001"
+       orientation="0,1"
+       id="guide1869"
+       inkscape:label="ROW11"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,72.276001"
+       orientation="0,1"
+       id="guide1871"
+       inkscape:label="ROW14"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,64.244001"
+       orientation="0,1"
+       id="guide1873"
+       inkscape:label="ROW16"
+       inkscape:locked="false"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,68.260001"
+       orientation="0,1"
+       id="guide1875"
+       inkscape:label="ROW15"
+       inkscape:locked="false"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,60.228001"
+       orientation="0,1"
+       id="guide1877"
+       inkscape:label="ROW17"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,56.212001"
+       orientation="0,1"
+       id="guide1879"
+       inkscape:label="ROW18"
+       inkscape:locked="false"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,52.196001"
+       orientation="0,1"
+       id="guide1881"
+       inkscape:label="ROW19"
+       inkscape:locked="false"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,48.180001"
+       orientation="0,1"
+       id="guide1883"
+       inkscape:label="ROW20"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,36.132"
+       orientation="0,1"
+       id="guide1885"
+       inkscape:label="ROW23"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,32.116"
+       orientation="0,1"
+       id="guide1887"
+       inkscape:label="ROW24"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,28.1"
+       orientation="0,1"
+       id="guide1889"
+       inkscape:label="ROW25"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,24.084"
+       orientation="0,1"
+       id="guide1891"
+       inkscape:label="ROW26"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,20.068"
+       orientation="0,1"
+       id="guide1893"
+       inkscape:label="ROW27"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,16.052"
+       orientation="0,1"
+       id="guide1895"
+       inkscape:label="ROW28"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,12.036"
+       orientation="0,1"
+       id="guide1897"
+       inkscape:label="ROW29"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="91.440001,8.0200001"
+       orientation="0,1"
+       id="guide1899"
+       inkscape:label="ROW30"
+       inkscape:locked="true"
+       inkscape:color="rgb(0,0,255)" />
   </sodipodi:namedview>
   <metadata
      id="metadata11000">
@@ -175,7 +447,7 @@
        inkscape:connector-curvature="0" />
     <path
        style="fill:#8aaec5;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.585474"
-       d="m 150.99402,156.3706 c 0,-0.4857 -0.58093,-0.88376 -1.29371,-0.88376 h -9.9326 c -0.711,0 -1.29369,0.39806 -1.29369,0.88376 v 10.75247 c 0,0.48571 0.58269,0.88377 1.29369,0.88377 h 9.9326 c 0.71278,0 1.29371,-0.39806 1.29371,-0.88377 z m 0,0"
+       d="m 151.06295,158.25838 c 0,-0.4857 -0.58093,-0.88376 -1.29371,-0.88376 h -9.9326 c -0.711,0 -1.29369,0.39806 -1.29369,0.88376 v 10.75247 c 0,0.48571 0.58269,0.88377 1.29369,0.88377 h 9.9326 c 0.71278,0 1.29371,-0.39806 1.29371,-0.88377 z m 0,0"
        id="path36629"
        inkscape:connector-curvature="0" />
     <text
@@ -199,7 +471,7 @@
        y="86.278252"
        id="text892" />
     <g
-       transform="translate(16.845326,-42.030403)"
+       transform="translate(15.113334,-39.408607)"
        id="g890">
       <path
          inkscape:connector-curvature="0"
@@ -218,7 +490,7 @@
          d="m 107.99964,125.58723 h 0.31045 l 0.42333,2.159 0.45508,-2.159 h 0.30339 l -0.55386,2.46945 h -0.4198 z" />
     </g>
     <g
-       transform="translate(16.810996,4.674551)"
+       transform="translate(15.013004,5.3267333)"
        id="g885">
       <path
          inkscape:connector-curvature="0"
@@ -250,26 +522,26 @@
        inkscape:connector-curvature="0"
        id="path1505"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       d="m 121.74961,65.743404 v -2.20133 h -0.56091 v -0.26811 h 1.42876 v 0.26811 h -0.56092 v 2.20133 z" />
+       d="m 119.95186,68.473063 v -2.20133 h -0.56091 v -0.26811 h 1.42876 v 0.26811 h -0.56092 v 2.20133 z" />
     <path
        inkscape:connector-curvature="0"
        id="path1507"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       d="m 123.4079,64.720354 v 1.02305 h -0.30692 v -2.46944 h 0.66323 q 0.29986,0 0.45155,0.13405 0.15522,0.13053 0.15522,0.41628 v 0.33867 q 0,0.39864 -0.3175,0.49741 l 0.49037,1.08303 h -0.33514 l -0.45509,-1.02305 z m 0.65617,-0.92781 q 0,-0.13405 -0.0635,-0.19403 -0.06,-0.06 -0.19403,-0.06 h -0.39864 v 0.91722 h 0.39864 q 0.13406,0 0.19403,-0.06 0.0635,-0.0635 0.0635,-0.19755 z" />
+       d="m 121.61015,67.450013 v 1.02305 h -0.30692 v -2.46944 h 0.66323 q 0.29986,0 0.45155,0.13405 0.15522,0.13053 0.15522,0.41628 v 0.33867 q 0,0.39864 -0.3175,0.49741 l 0.49037,1.08303 h -0.33514 l -0.45509,-1.02305 z m 0.65617,-0.92781 q 0,-0.13405 -0.0635,-0.19403 -0.06,-0.06 -0.19403,-0.06 h -0.39864 v 0.91722 h 0.39864 q 0.13406,0 0.19403,-0.06 0.0635,-0.0635 0.0635,-0.19755 z" />
     <path
        inkscape:connector-curvature="0"
        id="path1509"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       d="m 125.72234,65.743404 q -0.30691,0 -0.47272,-0.14816 -0.16228,-0.1517 -0.16228,-0.45156 v -1.27 q 0,-0.29986 0.16228,-0.44803 0.16581,-0.15169 0.47272,-0.15169 h 0.49742 v 0.26811 h -0.53269 q -0.13053,0 -0.21167,0.0776 -0.0811,0.0776 -0.0811,0.18697 v 1.40406 q 0,0.10936 0.0811,0.18697 0.0811,0.0776 0.21167,0.0776 h 0.34572 v -0.76553 h -0.30692 v -0.26458 h 0.59972 v 1.29822 z" />
+       d="m 123.92459,68.473063 q -0.30691,0 -0.47272,-0.14816 -0.16228,-0.1517 -0.16228,-0.45156 v -1.27 q 0,-0.29986 0.16228,-0.44803 0.16581,-0.15169 0.47272,-0.15169 h 0.49742 v 0.26811 h -0.53269 q -0.13053,0 -0.21167,0.0776 -0.0811,0.0776 -0.0811,0.18697 v 1.40406 q 0,0.10936 0.0811,0.18697 0.0811,0.0776 0.21167,0.0776 h 0.34572 v -0.76553 h -0.30692 v -0.26458 h 0.59972 v 1.29822 z" />
     <path
        inkscape:connector-curvature="0"
        id="path27-1-3"
-       d="m 123.69796,102.74213 c 0,-3.713484 0,-3.754754 0,-3.754754"
+       d="m 121.95577,103.39362 c 0,-3.07097 0,-3.1051 0,-3.1051"
        style="display:inline;fill:none;stroke:#000000;stroke-width:0.123628px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
     <path
        inkscape:connector-curvature="0"
        id="path27-1-3-3"
-       d="m 123.69488,114.89742 c 0,-3.58499 0,-3.62483 0,-3.62483"
+       d="m 121.95569,115.44162 c 0,-3.58499 0,-3.62483 0,-3.62483"
        style="display:inline;fill:none;stroke:#000000;stroke-width:0.12147px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
     <g
        transform="translate(4.7921748,0.11296302)"
@@ -326,7 +598,7 @@
        id="text1528"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
        aria-label="LOOP"
-       transform="translate(45.719994)">
+       transform="translate(43.972213)">
       <path
          id="path1536"
          style="stroke-width:0.264583"
@@ -495,7 +767,7 @@
     <g
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect1632)"
        id="text1630"
-       transform="translate(45.109837,-5.9152558)"
+       transform="translate(45.367655,-3.5203299)"
        aria-label="POLY AUDIO OUT">
       <path
          id="path1663"
@@ -548,7 +820,7 @@
     </g>
     <g
        aria-label="VOLUME"
-       transform="translate(70.29693,-69.312398)"
+       transform="translate(70.31193,-86.840637)"
        id="text941"
        style="font-size:4.23333px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect943)">
       <path
@@ -576,5 +848,78 @@
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
          id="path958" />
     </g>
+    <g
+       aria-label="NEXT"
+       transform="translate(3.9445116,28.155758)"
+       id="text983"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect985)">
+      <path
+         d="m 137.65429,88.666313 h -0.28575 v -2.469446 h 0.50094 l 0.55739,2.20839 v -2.20839 h 0.28575 v 2.469446 h -0.50447 l -0.55386,-2.208391 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
+         id="path989" />
+      <path
+         d="m 140.53318,86.196867 v 0.257528 h -0.87136 v 0.807861 h 0.78316 v 0.257528 h -0.78316 v 0.889001 h 0.87136 v 0.257528 h -1.17828 v -2.469446 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
+         id="path991" />
+      <path
+         d="m 141.40476,88.666313 h -0.33161 l 0.61383,-1.277057 -0.55739,-1.192389 h 0.33514 l 0.38806,0.836084 0.40216,-0.836084 h 0.32809 l -0.5715,1.188862 0.60678,1.280584 h -0.34573 l -0.42333,-0.927806 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
+         id="path993" />
+      <path
+         d="m 143.5922,88.666313 v -2.201335 h -0.56091 v -0.268111 h 1.42875 v 0.268111 h -0.56092 v 2.201335 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
+         id="path995" />
+    </g>
+    <path
+       style="display:inline;fill:none;stroke:#000000;stroke-width:0.123628px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 144.80295,103.39362 c 0,-3.07097 0,-3.1051 0,-3.1051"
+       id="path27-1-3-6"
+       inkscape:connector-curvature="0" />
+    <g
+       aria-label="PREV"
+       transform="translate(5.2565706,-22.08871)"
+       id="text1013"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect1015)">
+      <path
+         d="m 137.30197,109.10445 q 0,0.28575 -0.1517,0.42333 -0.15169,0.13405 -0.44803,0.13405 h -0.36689 v 0.95956 h -0.30691 v -2.46945 h 0.66675 q 0.29986,0 0.45155,0.13406 0.15523,0.13053 0.15523,0.41628 z m -0.30692,-0.43392 q 0,-0.13406 -0.0635,-0.19403 -0.06,-0.06 -0.19403,-0.06 h -0.40217 v 0.98072 h 0.40217 q 0.13406,0 0.19403,-0.06 0.0635,-0.0635 0.0635,-0.19756 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
+         id="path1034" />
+      <path
+         d="m 138.16649,109.59833 v 1.02306 h -0.30691 v -2.46945 h 0.66322 q 0.29986,0 0.45155,0.13406 0.15523,0.13053 0.15523,0.41628 v 0.33867 q 0,0.39863 -0.3175,0.49741 l 0.49036,1.08303 h -0.33514 l -0.45508,-1.02306 z m 0.65617,-0.9278 q 0,-0.13406 -0.0635,-0.19403 -0.06,-0.06 -0.19403,-0.06 h -0.39864 v 0.91722 h 0.39864 q 0.13406,0 0.19403,-0.06 0.0635,-0.0635 0.0635,-0.19756 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
+         id="path1036" />
+      <path
+         d="m 141.05597,108.15194 v 0.25753 h -0.87137 v 0.80786 h 0.78317 v 0.25753 h -0.78317 v 0.889 h 0.87137 v 0.25753 h -1.17828 v -2.46945 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
+         id="path1038" />
+      <path
+         d="m 141.61358,108.15194 h 0.31044 l 0.42333,2.15901 0.45509,-2.15901 h 0.30339 l -0.55387,2.46945 h -0.4198 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
+         id="path1040" />
+    </g>
+    <path
+       inkscape:connector-curvature="0"
+       id="path27-1-3-6-5"
+       d="m 144.80295,131.50562 c 0,-3.07097 0,-3.1051 0,-3.1051"
+       style="display:inline;fill:none;stroke:#000000;stroke-width:0.123628px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <circle
+       style="fill:#8aaec5;stroke-width:0.264999;stroke-linejoin:round;stroke-opacity:0.130919"
+       id="path1043"
+       cx="144.79984"
+       cy="75.281166"
+       r="5" />
+    <circle
+       r="5"
+       cy="163.6539"
+       cx="121.95296"
+       id="path1043-8"
+       style="display:inline;fill:#8aaec5;stroke-width:0.264999;stroke-linejoin:round;stroke-opacity:0.130919" />
+    <rect
+       y="47.169628"
+       x="64.792953"
+       height="128.5"
+       width="45.720001"
+       id="rect999"
+       style="fill:#121212;stroke-width:0.264999;stroke-linejoin:round;stroke-opacity:0.130919;fill-opacity:1" />
   </g>
 </svg>

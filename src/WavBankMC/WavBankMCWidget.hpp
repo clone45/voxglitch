@@ -9,51 +9,95 @@ struct WavBankMCWidget : ModuleWidget
 		// addChild(createWidget<ScrewSilver>(Vec(15, 0)));
 		// addChild(createWidget<ScrewSilver>(Vec(15, 365)));
 
-    float column_1 = 13.185;
-
-    float column_2 = 58.905;
-    float column_3 = 34.236;
-    float column_4 = 79.956;
-
-    float column_b = 10;
-    float bottom_row = 104.893;
 
 		// Input and label for the trigger input (which is labeled "CLK" on the front panel)
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(column_2, 25.535)), module, WavBankMC::TRIG_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(column_2, 46)), module, WavBankMC::WAV_INPUT));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COL10, ROW7)), module, WavBankMC::TRIG_INPUT));
 
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(column_2, 114.893)), module, WavBankMC::PITCH_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(column_4, 46)), module, WavBankMC::VOLUME_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COL10, ROW12)), module, WavBankMC::WAV_INPUT));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(COL10, ROW15)), module, WavBankMC::WAV_ATTN_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(COL10, ROW19)), module, WavBankMC::WAV_KNOB));
 
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(column_2, 60)), module, WavBankMC::WAV_ATTN_KNOB));
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(column_2, 75)), module, WavBankMC::WAV_KNOB));
-		addParam(createParamCentered<CKSS>(mm2px(Vec(column_2, 97)), module, WavBankMC::LOOP_SWITCH));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COL14, ROW7)), module, WavBankMC::VOLUME_INPUT));
+
+		addParam(createParamCentered<CKSS>(mm2px(Vec(COL10, ROW24)), module, WavBankMC::LOOP_SWITCH));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COL10, ROW29)), module, WavBankMC::PITCH_INPUT));
 
     // Next wav button and input
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(column_b, bottom_row)), module, WavBankMC::NEXT_WAV_TRIGGER_INPUT));
-		addParam(createParamCentered<LEDButton>(mm2px(Vec(column_b, bottom_row + 10)), module, WavBankMC::NEXT_WAV_BUTTON_PARAM));
-		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(column_b, bottom_row + 10)), module, WavBankMC::NEXT_WAV_LIGHT));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COL14, ROW19)), module, WavBankMC::NEXT_WAV_TRIGGER_INPUT));
+		addParam(createParamCentered<LEDButton>(mm2px(Vec(COL14, ROW22)), module, WavBankMC::NEXT_WAV_BUTTON_PARAM));
+		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(COL14, ROW22)), module, WavBankMC::NEXT_WAV_LIGHT));
 
     // Prev wav button and input
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(column_b + 15, bottom_row)), module, WavBankMC::PREV_WAV_TRIGGER_INPUT));
-		addParam(createParamCentered<LEDButton>(mm2px(Vec(column_b + 15, bottom_row + 10)), module, WavBankMC::PREV_WAV_BUTTON_PARAM));
-		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(column_b + 15, bottom_row + 10)), module, WavBankMC::PREV_WAV_LIGHT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COL14, ROW12)), module, WavBankMC::PREV_WAV_TRIGGER_INPUT));
+		addParam(createParamCentered<LEDButton>(mm2px(Vec(COL14, ROW15)), module, WavBankMC::PREV_WAV_BUTTON_PARAM));
+		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(COL14, ROW15)), module, WavBankMC::PREV_WAV_LIGHT));
 
 		WavBankMCReadout *readout = new WavBankMCReadout();
-		readout->box.pos = mm2px(Vec(2, 10));
+		readout->box.pos = mm2px(Vec(4, ROW1));
 		readout->box.size = Vec(110, 50); // bounding box of the widget
 		readout->module = module;
 		addChild(readout);
 
 		// WAV output
 		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 104)), module, WavBankMC::WAV_LEFT_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(column_4, 114.9)), module, WavBankMC::POLY_WAV_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COL14, ROW29)), module, WavBankMC::POLY_WAV_OUTPUT));
 	}
+
+  // SampleChangeMode on sample change
+  /*
+  struct SampleChangeModeMenuItem : MenuItem {
+    WavBankMC* module;
+    void onAction(const event::Action& e) override {
+      module->sample_change_mode = !(module->sample_change_mode);
+    }
+  };
+  */
+
+  struct RestartOption : MenuItem {
+    WavBankMC *module;
+    void onAction(const event::Action &e) override {
+      module->sample_change_mode = RESTART_PLAYBACK;
+    }
+  };
+
+  struct ContinualOption : MenuItem {
+    WavBankMC *module;
+    void onAction(const event::Action &e) override {
+      module->sample_change_mode = CONTINUAL_PLAYBACK;
+    }
+  };
+
+  struct SampleChangeModeMenu : MenuItem {
+    WavBankMC *module;
+
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      RestartOption *restart_option = createMenuItem<RestartOption>("Restart", CHECKMARK(module->sample_change_mode == RESTART_PLAYBACK));
+      restart_option->module = module;
+      menu->addChild(restart_option);
+
+      ContinualOption *continual_option = createMenuItem<ContinualOption>("Continual", CHECKMARK(module->sample_change_mode == CONTINUAL_PLAYBACK));
+      continual_option->module = module;
+      menu->addChild(continual_option);
+
+      return menu;
+    }
+  };
+
+  struct SmoothingMenuItem : MenuItem {
+    WavBankMC* module;
+    void onAction(const event::Action& e) override {
+      module->smoothing = !(module->smoothing);
+    }
+  };
+
+
 
   //
   // menu structure for selecting between different trigger input behaviors
   //
-
+  /*
   struct TriggerOption : MenuItem {
     WavBankMC *module;
 
@@ -87,7 +131,7 @@ struct WavBankMCWidget : ModuleWidget
       return menu;
     }
   };
-
+  */
   // }} End of trigger mode menu code
 
 
@@ -99,9 +143,20 @@ struct WavBankMCWidget : ModuleWidget
 		// For spacing only
 		menu->addChild(new MenuEntry);
 
+    /*
     TriggerModeMenu *trigger_mode_menu = createMenuItem<TriggerModeMenu>("Trigger Mode", RIGHT_ARROW);
     trigger_mode_menu->module = module;
     menu->addChild(trigger_mode_menu);
+    */
+
+		SampleChangeModeMenu* sample_change_mode_menu = createMenuItem<SampleChangeModeMenu>("Sample Change Behavior", RIGHT_ARROW);
+		sample_change_mode_menu->module = module;
+		menu->addChild(sample_change_mode_menu);
+
+    SmoothingMenuItem* smoothing_menu_item = createMenuItem<SmoothingMenuItem>("Smoothing");
+    smoothing_menu_item->rightText = CHECKMARK(module->smoothing == 1);
+    smoothing_menu_item->module = module;
+    menu->addChild(smoothing_menu_item);
 
 		// Add the "Select Directory Containing WAV Files" menu item
 		MenuItemLoadBankMC *menu_item_load_bank_mc = new MenuItemLoadBankMC();
