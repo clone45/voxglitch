@@ -33,8 +33,8 @@ struct WavBankMCWidget : ModuleWidget
 		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(COL14, ROW15)), module, WavBankMC::PREV_WAV_LIGHT));
 
 		WavBankMCReadout *readout = new WavBankMCReadout();
-		readout->box.pos = mm2px(Vec(4, ROW1));
-		readout->box.size = Vec(110, 50); // bounding box of the widget
+		readout->box.pos = mm2px(Vec(4, 3));
+		readout->box.size = Vec(READOUT_WIDTH, READOUT_HEIGHT); // bounding box of the widget
 		readout->module = module;
 		addChild(readout);
 

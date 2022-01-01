@@ -1,12 +1,10 @@
 //
-// When stepping with the buttons, if the wav cv input is not connected, then
-// programmatically update the course knob to indicate the selected sample?
-// Then, could that knob still work when there's no cable connected?
+// WavBankMC
+//
 
 struct WavBankMC : Module
 {
 	unsigned int selected_sample_slot = 0;
-  // double samplePos = 0;
 	double playback_positions[NUMBER_OF_CHANNELS];
   bool playback[NUMBER_OF_CHANNELS];
   float previous_wav_knob_value = 0.0;
@@ -273,6 +271,12 @@ struct WavBankMC : Module
 
 	}
 
+  // This is a helper function that's used by WavBankMCReadout
+  bool wav_input_not_connected()
+  {
+    return(! inputs[WAV_INPUT].isConnected());
+  }
+
 	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
 	{
 		float input_value = inputs[input_index].getVoltage() / 10.0;
@@ -341,10 +345,8 @@ struct WavBankMC : Module
         // Note: All channels in a .wav file have the same length
         if (playback_positions[channel] >= selected_sample->size())
         {
-          // playback_positions[channel] = 0;
           playback_positions[channel] = (playback_positions[channel] - selected_sample->size());
           start_smoothing(channel);
-          // DEBUG("smooth on loop");
         }
       }
     }

@@ -4,6 +4,11 @@ struct WavBankMCReadout : TransparentWidget
 	float text_rotation_angle = -M_PI / 2.0f;
 	std::shared_ptr<Font> font;
 	std::string text_to_display = "";
+  bool mouse_lock = false;
+  unsigned int window_start = 0;
+  unsigned int window_end = 0;
+  unsigned int hover_row = 0;
+  bool show_hover_effect = false;
 
 	void draw(const DrawArgs &args) override
 	{
@@ -14,14 +19,20 @@ struct WavBankMCReadout : TransparentWidget
   		nvgFontSize(args.vg, 10);
   		nvgFontFaceId(args.vg, font->handle);
   		nvgTextLetterSpacing(args.vg, 0);
-  		// nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
       nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 0xff));
-  		// nvgRotate(args.vg, text_rotation_angle);
     }
 
 		if(module)
 		{
 			text_to_display = "";
+
+      // For debugging
+      /*
+      nvgBeginPath(args.vg);
+      nvgRect(args.vg, 0, 0, READOUT_WIDTH, READOUT_HEIGHT);
+      nvgFillColor(args.vg, nvgRGBA(120, 20, 20, 100));
+      nvgFill(args.vg);
+      */
 
       /*
 			if(module->samples.size() > module->selected_sample_slot)
@@ -36,8 +47,8 @@ struct WavBankMCReadout : TransparentWidget
         // then we'll show a window into the sample list.  Here's where the
         // window start and end are computed.
 
-        unsigned int window_start = 0;
-        unsigned int window_end = module->samples.size();
+        window_start = 0;
+        window_end = module->samples.size();
 
         // If there are more samples than can naturally fit in the display, then
         // we'll do some extra work to scroll the panel list if necessary.
@@ -73,7 +84,7 @@ struct WavBankMCReadout : TransparentWidget
           text_to_display = module->samples[i].display_name;
           text_to_display.resize(22);
 
-          if(i == module->selected_sample_slot)
+          if(i == module->selected_sample_slot || (show_hover_effect && hover_row == i))
           {
             nvgFillColor(args.vg, nvgRGBA(255, 215, 20, 0xff));
           }
@@ -82,7 +93,7 @@ struct WavBankMCReadout : TransparentWidget
             nvgFillColor(args.vg, nvgRGBA(136, 116, 19, 0xff));
           }
 
-          nvgText(args.vg, 0, 4 + ((i - window_start) * 16), text_to_display.c_str(), NULL);
+          nvgText(args.vg, 0, 6.3 + ((i - window_start) * 16), text_to_display.c_str(), NULL);
         }
       }
 		}
@@ -130,5 +141,62 @@ struct WavBankMCReadout : TransparentWidget
         nvgText(args.vg, 0, 4 + (i * 16), text_to_display.c_str(), NULL);
       }
     }
-	}
+	} // end of draw method
+
+  void onButton(const event::Button &e) override
+  {
+    if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
+    {
+      e.consume(this);
+
+      if(this->mouse_lock == false)
+      {
+        unsigned int row = (e.pos.y / 360.0) * NUMBER_OF_SAMPLE_DISPLAY_ROWS;
+        if(module->wav_input_not_connected())
+        {
+          if((row + window_start) < module->number_of_samples)
+          {
+            module->selected_sample_slot = row + window_start;
+          }
+        }
+      }
+    }
+    else if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_RELEASE)
+    {
+      this->mouse_lock = false;
+    }
+  }
+
+  void onEnter(const event::Enter &e) override
+  {
+    TransparentWidget::onEnter(e);
+  }
+
+  void onLeave(const event::Leave &e) override
+  {
+    show_hover_effect = false;
+    DEBUG("left");
+    TransparentWidget::onLeave(e);
+  }
+
+  void onHover(const event::Hover& e) override {
+
+    if(module->wav_input_not_connected())
+    {
+      unsigned int row = (e.pos.y / 360.0) * NUMBER_OF_SAMPLE_DISPLAY_ROWS;
+
+      if((row + window_start) < module->number_of_samples)
+      {
+        show_hover_effect = true;
+        hover_row = row + window_start;
+      }
+    }
+    
+    e.consume(this);
+    TransparentWidget::onHover(e);
+  }
+
+  void step() override {
+    TransparentWidget::step();
+  }
 };

@@ -12,6 +12,7 @@ struct MenuItemLoadBankMC : MenuItem
 		{
 			wav_bank_mc_module->load_samples_from_path(path);
 			wav_bank_mc_module->path = path;
+      wav_bank_mc_module->selected_sample_slot = 0;
 		}
 
     free(path);
