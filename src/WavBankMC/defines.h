@@ -24,21 +24,39 @@
 
 // Column and row grid system
 #define COL0 0
-#define COL1 5.715
-#define COL2 11.43
-#define COL3 17.145
-#define COL4 22.86
-#define COL5 28.575
-#define COL6 34.29
-#define COL7 40.005
-#define COL8 45.72
-#define COL9 51.435
-#define COL10 57.15
-#define COL11 62.865
-#define COL12 68.58
-#define COL13 74.295
-#define COL14 80.01
-#define COL15 85.725
+#define COL1 3.175
+#define COL2 6.35
+#define COL3 9.525
+#define COL4 12.7
+#define COL5 15.875
+#define COL6 19.05
+#define COL7 22.225
+#define COL8 25.4
+#define COL9 28.575
+#define COL10 31.75
+#define COL11 34.925
+#define COL12 38.1
+#define COL13 41.275
+#define COL14 44.45
+#define COL15 47.625
+#define COL16 50.8
+#define COL17 53.975
+#define COL18 57.15
+#define COL19 60.325
+#define COL20 63.5
+#define COL21 66.675
+#define COL22 69.85
+#define COL23 73.025
+#define COL24 76.2
+#define COL25 79.375
+#define COL26 82.55
+#define COL27 85.725
+#define COL28 88.9
+#define COL29 92.075
+#define COL30 95.25
+#define COL31 98.425
+
+
 #define ROW0 0
 #define ROW1 4.016
 #define ROW2 8.032
@@ -77,15 +95,20 @@
 PHP rogram for generating define statements
 <?PHP
 
-  for($i = 0; $i < 16; $i++)
-  {
-    print("#define COL${i} " . ($i * 5.715) . "\n");
-  }
+$number_of_columns = 32;
+$number_of_rows = 32;
+$first_column_guide_position_x = 3.175;
+$first_row_guide_position_y = 4.016;
 
-  for($i = 0; $i < 32; $i++)
-  {
-    print("#define ROW${i} " . ($i * 4.016) . "\n");
-  }
+for($i = 0; $i < $number_of_columns; $i++)
+{
+  print("#define COL${i} " . ($i * $first_column_guide_position_x) . "\n");
+}
+
+for($i = 0; $i < $number_of_rows; $i++)
+{
+  print("#define ROW${i} " . ($i * $first_row_guide_position_y) . "\n");
+}
 
 ?>
 */

@@ -121,7 +121,7 @@ struct WavBankMCReadout : TransparentWidget
         "SO_MSIC_tom_boogieroto.wav",
         "SO_MSIC_tom_clearverb.wav",
         "SO_MSIC_tom_deepfake.wav",
-        "SO_MSIC_tom_discobug.wav"
+        "Thank_you_Zak_Forrest.wav"
       };
 
       for(unsigned int i = 0; i < 20; i++)
@@ -156,7 +156,8 @@ struct WavBankMCReadout : TransparentWidget
         {
           if((row + window_start) < module->number_of_samples)
           {
-            module->selected_sample_slot = row + window_start;
+            module->change_selected_sample(row + window_start);
+            module->set_wav_knob_position();
           }
         }
       }
@@ -175,7 +176,6 @@ struct WavBankMCReadout : TransparentWidget
   void onLeave(const event::Leave &e) override
   {
     show_hover_effect = false;
-    DEBUG("left");
     TransparentWidget::onLeave(e);
   }
 
@@ -191,7 +191,7 @@ struct WavBankMCReadout : TransparentWidget
         hover_row = row + window_start;
       }
     }
-    
+
     e.consume(this);
     TransparentWidget::onHover(e);
   }

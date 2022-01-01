@@ -228,7 +228,8 @@ struct WavBankMC : Module
     // match the currently selected sample
     if(next_wav_is_triggered || prev_wav_is_triggered)
     {
-      params[WAV_KNOB].setValue((float) selected_sample_slot / (float) number_of_samples);
+      set_wav_knob_position();
+      // params[WAV_KNOB].setValue((float) selected_sample_slot / (float) number_of_samples);
     }
   }
 
@@ -271,10 +272,15 @@ struct WavBankMC : Module
 
 	}
 
-  // This is a helper function that's used by WavBankMCReadout
+  // Helper functions used by WavBankMCReadout
   bool wav_input_not_connected()
   {
     return(! inputs[WAV_INPUT].isConnected());
+  }
+
+  void set_wav_knob_position()
+  {
+    params[WAV_KNOB].setValue((float) selected_sample_slot / (float) number_of_samples);
   }
 
 	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
