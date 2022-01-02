@@ -12,7 +12,7 @@ struct WavBankMC : Module
   float sample_time = 0;
 	float smooth_ramp[NUMBER_OF_CHANNELS] = {1};
 	float last_output_voltage[NUMBER_OF_CHANNELS] = {0};
-  unsigned int trig_input_response_mode = TRIGGER;
+  // unsigned int trig_input_response_mode = TRIGGER;
 	std::string rootDir;
 	std::string path;
 
@@ -20,12 +20,12 @@ struct WavBankMC : Module
 	dsp::SchmittTrigger next_wav_button_trigger;
   dsp::SchmittTrigger prev_wav_cv_trigger;
 	dsp::SchmittTrigger prev_wav_button_trigger;
+  dsp::SchmittTrigger trg_cv_trigger;
+  dsp::SchmittTrigger trg_button_trigger;
 
   unsigned int number_of_samples = 0;
   bool smoothing = true;
-
 	std::vector<SampleMC> samples;
-	dsp::SchmittTrigger playTrigger;
   unsigned int sample_change_mode = RESTART_PLAYBACK;
 
 	enum ParamIds {
@@ -34,6 +34,7 @@ struct WavBankMC : Module
 		LOOP_SWITCH,
     NEXT_WAV_BUTTON_PARAM,
     PREV_WAV_BUTTON_PARAM,
+    TRIG_INPUT_BUTTON_PARAM,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -46,12 +47,15 @@ struct WavBankMC : Module
 		NUM_INPUTS
 	};
 	enum OutputIds {
+    LEFT_WAV_OUTPUT,
+    RIGHT_WAV_OUTPUT,
 		POLY_WAV_OUTPUT,
 		NUM_OUTPUTS
 	};
 	enum LightIds {
     NEXT_WAV_LIGHT,
     PREV_WAV_LIGHT,
+    TRIG_LIGHT,
 		NUM_LIGHTS
 	};
 
@@ -66,6 +70,7 @@ struct WavBankMC : Module
 		configParam(LOOP_SWITCH, 0.0f, 1.0f, 0.0f, "LoopSwitch");
 		configParam(NEXT_WAV_BUTTON_PARAM, 0.f, 1.f, 0.f, "NextWavButtonParam");
     configParam(PREV_WAV_BUTTON_PARAM, 0.f, 1.f, 0.f, "PrevWavButtonParam");
+    configParam(TRIG_INPUT_BUTTON_PARAM, 0.f, 1.f, 0.f, "TrigInputButtonParam");
 
     reset_all_playback_positions();
     set_all_playback_flags(false);
@@ -212,9 +217,18 @@ struct WavBankMC : Module
 		}
   }
 
+  bool process_trg_input()
+  {
+    bool trg_is_triggered = trg_cv_trigger.process(inputs[TRIG_INPUT].getVoltage()) || trg_button_trigger.process(params[TRIG_INPUT_BUTTON_PARAM].getValue());
+    lights[TRIG_LIGHT].setSmoothBrightness(trg_is_triggered, this->sample_time);
+    return(trg_is_triggered);
+  }
+
   void process_wav_navigation_buttons()
   {
     // If next_wav button is pressed, step to the next sample
+
+    // LEFT OFF needing to copy this
     bool next_wav_is_triggered = next_wav_cv_trigger.process(inputs[NEXT_WAV_TRIGGER_INPUT].getVoltage()) || next_wav_button_trigger.process(params[NEXT_WAV_BUTTON_PARAM].getValue());
     if(next_wav_is_triggered) increment_selected_sample();
     lights[NEXT_WAV_LIGHT].setSmoothBrightness(next_wav_is_triggered, this->sample_time);
@@ -318,26 +332,20 @@ struct WavBankMC : Module
 
 		SampleMC *selected_sample = &samples[selected_sample_slot];
 
-		if (inputs[TRIG_INPUT].isConnected())
-		{
-      if(trig_input_response_mode == TRIGGER)
-      {
-        // playTrigger is a SchmittTrigger object.  Here, the SchmittTrigger
-  			// determines if a low-to-high transition happened at the TRIG_INPUT
+    // If either the TRG CV input is triggered or the corresponding button is
+    // pressed, then restart all playback positions and start playback.
+    if(process_trg_input())
+    {
+      reset_all_playback_positions();
+      set_all_playback_flags(true);
+      smooth_all_channels();
+    }
 
-  			if (playTrigger.process(inputs[TRIG_INPUT].getVoltage()))
-  			{
-  				reset_all_playback_positions();
-          set_all_playback_flags(true);
-  				smooth_all_channels();
-  			}
-      }
-		}
-    // If no cable is connected to the trigger input, then provide constant playback
-		else
-		{
-			set_all_playback_flags(true);
-		}
+    if(! inputs[TRIG_INPUT].isConnected())
+    {
+      set_all_playback_flags(true);
+    }
+
 
 		// If the loop mode is true, check each channel position.  If any are past
     // the end of the sample, then reset them to 0.  (This reset might need
@@ -390,14 +398,17 @@ struct WavBankMC : Module
     			{
     				smooth_ramp[channel] += smooth_rate;
     				output_voltage = (last_output_voltage[channel] * (1 - smooth_ramp[channel])) + (output_voltage * smooth_ramp[channel]);
-            // DEBUG("smooth");
-            // DEBUG(std::to_string(channel).c_str());
-            // DEBUG(std::to_string(output_voltage).c_str());
     			}
           last_output_voltage[channel] = output_voltage;
 
           // Output the audio
     			outputs[POLY_WAV_OUTPUT].setVoltage(output_voltage, channel);
+
+          if(channel == 0) outputs[LEFT_WAV_OUTPUT].setVoltage(output_voltage);
+          if(channel == 1) outputs[RIGHT_WAV_OUTPUT].setVoltage(output_voltage);
+
+          // Copy the left output to the right output if there's only 1 channel
+          if(selected_sample->number_of_channels == 1) outputs[RIGHT_WAV_OUTPUT].setVoltage(output_voltage);
 
           // Increment sample offset (pitch)
     			if (inputs[PITCH_INPUT].isConnected())
@@ -405,7 +416,6 @@ struct WavBankMC : Module
             // If there's a polyphonic cable at the pitch input with a channel
             // that matches the sample's channel, then use that cable to control
             // the pitch of the channel playback.
-            // unsigned int pitch_input_channel = std::min((unsigned int) inputs[PITCH_INPUT].getChannels() - 1, channel);
     				playback_positions[channel] += (selected_sample->sample_rate / args.sampleRate) + ((inputs[PITCH_INPUT].getVoltage(channel) / 10.0f) - 0.5f);
     			}
     			else

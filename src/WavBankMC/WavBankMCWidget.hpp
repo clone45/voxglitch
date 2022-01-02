@@ -12,12 +12,14 @@ struct WavBankMCWidget : ModuleWidget
     addParam(createParamCentered<Trimpot>(mm2px(Vec(COL18, ROW10)), module, WavBankMC::WAV_ATTN_KNOB));
 		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(COL18, ROW14)), module, WavBankMC::WAV_KNOB));
 
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COL18, ROW19)), module, WavBankMC::PITCH_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COL18, ROW19 + 1.0)), module, WavBankMC::PITCH_INPUT));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COL18, ROW24)), module, WavBankMC::VOLUME_INPUT));
 
 		addParam(createParamCentered<CKSS>(mm2px(Vec(COL18, ROW29)), module, WavBankMC::LOOP_SWITCH));
 
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COL24, ROW7)), module, WavBankMC::TRIG_INPUT));
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(COL28, ROW7)), module, WavBankMC::TRIG_INPUT_BUTTON_PARAM));
+		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(COL28, ROW7)), module, WavBankMC::TRIG_LIGHT));
 
     // Next wav button and input
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COL24, ROW12)), module, WavBankMC::NEXT_WAV_TRIGGER_INPUT));
@@ -37,7 +39,9 @@ struct WavBankMCWidget : ModuleWidget
 
 		// WAV output
 		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 104)), module, WavBankMC::WAV_LEFT_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COL28, ROW29)), module, WavBankMC::POLY_WAV_OUTPUT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COL24, ROW29)), module, WavBankMC::LEFT_WAV_OUTPUT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COL28, ROW29)), module, WavBankMC::RIGHT_WAV_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COL28, ROW24)), module, WavBankMC::POLY_WAV_OUTPUT));
 	}
 
   // SampleChangeMode on sample change
