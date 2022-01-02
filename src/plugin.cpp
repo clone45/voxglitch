@@ -8,7 +8,7 @@ Plugin* pluginInstance;
 void init(Plugin* p) {
   pluginInstance = p;
 
-  p->addModel(modelAutobreak);  
+  p->addModel(modelAutobreak);
   p->addModel(modelByteBeat);
   p->addModel(modelDigitalSequencer);
   p->addModel(modelGlitchSequencer);
@@ -24,5 +24,6 @@ void init(Plugin* p) {
   p->addModel(modelSamplerX8);
   p->addModel(modelSatanonaut);
   p->addModel(modelWavBank);
+  p->addModel(modelWavBankMC);  
   p->addModel(modelXY);
 }
