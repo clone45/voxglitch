@@ -110,6 +110,8 @@ struct SamplerX8 : Module
 		NUM_LIGHTS
 	};
 
+
+
 	SamplerX8()
 	{
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -255,9 +257,6 @@ struct SamplerX8 : Module
       // Step samples
       sample_players[i].step(args.sampleRate);
     }
-
-
-
 
     // Output summed output
     outputs[AUDIO_MIX_OUTPUT_LEFT].setVoltage(summed_output_left);

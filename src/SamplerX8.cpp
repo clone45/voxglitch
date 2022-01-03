@@ -11,6 +11,7 @@
 #include "SamplerX8/SamplePlayer.hpp"
 #include "SamplerX8/SamplerX8.hpp"
 #include "SamplerX8/SamplerX8LoadSample.hpp"
+#include "SamplerX8/SamplerX8LoadFolder.hpp"
 #include "SamplerX8/SamplerX8Widget.hpp"
 
 Model* modelSamplerX8 = createModel<SamplerX8, SamplerX8Widget>("samplerx8");

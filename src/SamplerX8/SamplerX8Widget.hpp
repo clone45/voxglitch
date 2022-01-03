@@ -95,14 +95,13 @@ struct SamplerX8Widget : ModuleWidget
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_r_column, 114.702)), module, SamplerX8::AUDIO_MIX_OUTPUT_RIGHT));
   }
 
-
   void appendContextMenu(Menu *menu) override
   {
     SamplerX8 *module = dynamic_cast<SamplerX8*>(this->module);
     assert(module);
 
     menu->addChild(new MenuEntry); // For spacing only
-    menu->addChild(createMenuLabel("Samples"));
+    menu->addChild(createMenuLabel("Load individual samples"));
 
     //
     // Add the sample slots to the right-click context menu
@@ -116,5 +115,13 @@ struct SamplerX8Widget : ModuleWidget
       menu_item_load_sample->module = module;
       menu->addChild(menu_item_load_sample);
     }
+
+    menu->addChild(new MenuEntry); // For spacing only
+    menu->addChild(createMenuLabel("Or.."));
+
+    SamplerX8LoadFolder *menu_item_load_folder = new SamplerX8LoadFolder();
+    menu_item_load_folder->text = "Load first 8 WAV files from a folder";
+    menu_item_load_folder->module = module;
+    menu->addChild(menu_item_load_folder);
   }
 };
