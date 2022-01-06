@@ -40,18 +40,18 @@ struct DPSliderDisplay : TransparentWidget
       {
         // For testing, draw rect showing draw area
         // -----------------------------------------
+        /*
         nvgBeginPath(vg);
         nvgRect(vg, 0, 0, DRAW_AREA_WIDTH, SLIDER_HEIGHT);
         nvgFillColor(vg, nvgRGBA(120, 20, 20, 100));
         nvgFill(vg);
+        */
         // -----------------------------------------
-
-        // unsigned int column = 1;
 
         double value = module->sliders[module->selected_bank][column].getValue();
 
-        drawSliderBackground(vg, nvgRGBA(60, 60, 64, 255));
-        drawSlider(vg, value, nvgRGBA(120, 120, 120, 255));
+        drawSliderBackground(vg, nvgRGBA(53, 64, 85, 255));
+        drawSlider(vg, value, nvgRGBA(156, 167, 185, 255));
       }
       nvgRestore(vg);
     }
@@ -103,20 +103,11 @@ struct DPSliderDisplay : TransparentWidget
 
   void editBar(Vec mouse_position)
   {
-    /*
-    double slider_width = (DRAW_AREA_WIDTH / NUMBER_OF_SLIDERS) - SLIDER_HORIZONTAL_PADDING;
-    int clicked_slider_x_index = mouse_position.x / (slider_width + SLIDER_HORIZONTAL_PADDING);
-    */
-
     // Note: This only works when the slider height is equal to the draw area
     // height.  If it didn't there'd be more thinking to do.  Luckily it is.
     double new_value = (SLIDER_HEIGHT - mouse_position.y) / SLIDER_HEIGHT;
     if (new_value < 0) new_value = 0;
     if (new_value > 1) new_value = 1;
-    // clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
-    // new_value = clamp(new_value, 0.0, 1.0);
-
-    // module->selected_voltage_sequencer->setValue(clicked_bar_x_index, clicked_y);
 
     // Tooltip drawing is done in the draw method
     /*
@@ -146,96 +137,4 @@ struct DPSliderDisplay : TransparentWidget
     editBar(drag_position);
   }
 
-/*
-  void onHover(const event::Hover &e) override
-  {
-    if(module->frozen)
-    {
-      int bar_x_index = e.pos.x / (bar_width + BAR_HORIZONTAL_PADDING);
-
-      // change step here
-      module->selected_voltage_sequencer->setPosition(bar_x_index);
-      module->selected_gate_sequencer->setPosition(bar_x_index);
-    }
-  }
-
-  void onHoverKey(const event::HoverKey &e) override
-  {
-    if(keypressRight(e))
-    {
-      module->selected_voltage_sequencer->shiftRight();
-      if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftRight();
-    }
-
-    if(keypressLeft(e))
-    {
-      module->selected_voltage_sequencer->shiftLeft();
-      if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftLeft();
-    }
-
-    if(keypressUp(e))
-    {
-      int bar_x_index = e.pos.x / (bar_width + BAR_HORIZONTAL_PADDING);
-      double value = module->selected_voltage_sequencer->getValue(bar_x_index);
-
-      // (.01 * (214 / 10)), where 214 is the bar height and 10 is the max voltage
-      value = value + (.01 * (214.0 / 10.0));
-      // value = clamp(value, 0.0, DRAW_AREA_HEIGHT);
-      if (value > DRAW_AREA_HEIGHT) value = DRAW_AREA_HEIGHT;
-
-      module->selected_voltage_sequencer->setValue(bar_x_index, value);
-
-      module->tooltip_timer = module->sample_rate * 2; // show tooltip for 2 seconds
-      tooltip_value = roundf((value / DRAW_AREA_HEIGHT) * 1000) / 100;
-      draw_tooltip_index = bar_x_index;
-      draw_tooltip_y = value;
-    }
-
-    if(keypressDown(e))
-    {
-      int bar_x_index = e.pos.x / (bar_width + BAR_HORIZONTAL_PADDING);
-      double value = module->selected_voltage_sequencer->getValue(bar_x_index);
-
-      // (.01 * (214 / 10)), where 214 is the bar height and 10 is the max voltage
-      value = value - (.01 * (214.0 / 10.0));
-      // value = clamp(value, 0.0, DRAW_AREA_HEIGHT);
-      if (value > DRAW_AREA_HEIGHT) value = DRAW_AREA_HEIGHT;
-
-      module->selected_voltage_sequencer->setValue(bar_x_index, value);
-
-      module->tooltip_timer = module->sample_rate * 2; // show tooltip for 2 seconds
-      tooltip_value = roundf((value / DRAW_AREA_HEIGHT) * 1000) / 100;
-      draw_tooltip_index = bar_x_index;
-      draw_tooltip_y = value;
-    }
-
-    // Randomize single sequence by hovering over and pressing 'r'
-
-    if(e.key == GLFW_KEY_R && e.action == GLFW_PRESS)
-    {
-      // Do not randomize if CTRL-r is pressed.  That's for randomizing everything
-      if((e.mods & RACK_MOD_MASK) != GLFW_MOD_CONTROL)
-      {
-        module->selected_voltage_sequencer->randomize();
-        if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->randomize();
-      }
-    }
-
-
-    // Send a gate out at the currently selected sequence when pressing "g"
-    if(e.key == GLFW_KEY_G && e.action == GLFW_PRESS)
-    {
-      if((e.mods & RACK_MOD_MASK) != GLFW_MOD_CONTROL) // Ignore control-g
-      {
-        module->forceGateOut();
-      }
-    }
-
-    if(e.key == GLFW_KEY_ESCAPE && e.action == GLFW_PRESS)
-    {
-      module->selected_voltage_sequencer->clear();
-      if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->clear();
-    }
-  }
-  */
 };

@@ -7,34 +7,34 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="203.2mm"
-   height="128.5mm"
-   viewBox="0 0 203.2 128.5"
-   version="1.1"
-   id="svg8"
+   sodipodi:docname="digital_programmer_front_panel.svg"
    inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
-   sodipodi:docname="digital_programmer_front_panel.svg">
+   id="svg8"
+   version="1.1"
+   viewBox="0 0 187.96001 128.5"
+   height="128.5mm"
+   width="187.96001mm">
   <defs
      id="defs2" />
   <sodipodi:namedview
-     id="base"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageopacity="1"
-     inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="453.56396"
-     inkscape:cy="185.84533"
-     inkscape:document-units="mm"
-     inkscape:current-layer="layer1"
-     inkscape:document-rotation="0"
+     inkscape:window-maximized="0"
+     inkscape:window-y="416"
+     inkscape:window-x="3120"
+     inkscape:window-height="1228"
+     inkscape:window-width="3277"
      showgrid="false"
-     inkscape:window-width="3840"
-     inkscape:window-height="2066"
-     inkscape:window-x="2869"
-     inkscape:window-y="-11"
-     inkscape:window-maximized="1" />
+     inkscape:document-rotation="0"
+     inkscape:current-layer="layer1"
+     inkscape:document-units="mm"
+     inkscape:cy="246.45448"
+     inkscape:cx="453.56396"
+     inkscape:zoom="1.979899"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="1"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -43,23 +43,35 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <g
-     inkscape:label="Layer 1"
+     id="layer1"
      inkscape:groupmode="layer"
-     id="layer1">
+     inkscape:label="Layer 1">
     <rect
-       style="fill:#808080;stroke-width:0;stroke-linejoin:round;stroke-opacity:0.130919"
-       id="rect833"
+       height="0"
+       width="0"
+       y="4.4099455"
        x="1.7372522"
-       y="4.4099455" />
+       id="rect833"
+       style="fill:#808080;stroke-width:0;stroke-linejoin:round;stroke-opacity:0.130919" />
     <path
-       inkscape:connector-curvature="0"
+       style="display:inline;fill:#e6e6e6;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.46019"
+       d="M 0,0 H 187.96 V 128.5 H 0 Z m 0,0"
        id="path33429"
-       d="M 0,0 H 203.2 V 128.5 H 0 Z m 0,0"
-       style="display:inline;fill:#e6e6e6;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.46019" />
+       inkscape:connector-curvature="0" />
+    <rect
+       style="display:inline;fill:#28282a;fill-opacity:1;stroke-width:0.463518"
+       id="rect438-7"
+       width="180.75999"
+       height="112.532"
+       x="3.5999999"
+       y="-116.132"
+       ry="1.2998186"
+       transform="scale(1,-1)"
+       rx="1.1518154" />
   </g>
 </svg>

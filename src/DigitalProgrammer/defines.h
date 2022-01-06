@@ -1,7 +1,7 @@
 // Constants for patterns
 #define DRAW_AREA_WIDTH 24.0
-#define NUMBER_OF_SLIDERS 12
-#define SLIDER_HEIGHT 280.0
+#define NUMBER_OF_SLIDERS 16
+#define SLIDER_HEIGHT 310.0
 #define SLIDER_WIDTH 24.0
 #define SLIDER_HORIZONTAL_PADDING .8
 #define DRAW_AREA_POSITION_X 9
