@@ -25,5 +25,6 @@ void init(Plugin* p) {
   p->addModel(modelSamplerX8);
   p->addModel(modelSatanonaut);
   p->addModel(modelWavBank);
+  p->addModel(modelWavBankMC);  
   p->addModel(modelXY);
 }
