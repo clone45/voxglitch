@@ -95,6 +95,7 @@ struct WavBankMC : Module
   // Load
 	void dataFromJson(json_t *json_root) override
 	{
+
 		json_t *loaded_path_json = json_object_get(json_root, ("path"));
 		if (loaded_path_json)
 		{
@@ -160,20 +161,24 @@ struct WavBankMC : Module
 
   void change_selected_sample(unsigned int new_sample_slot)
   {
-    // Reset the smooth ramp if the selected sample has changed
-    smooth_all_channels();
+    // if(this->samples.size() == 0) return;
+    // if(new_sample_slot >= this->samples.size()) return;
 
-    // Reset sample position so playback does not start at previous sample position
-    // TODO: Think this over.  Is it more flexible to allow people to changes
-    // samples without resetting the sample position?
-    if(this->sample_change_mode == RESTART_PLAYBACK)
+    if(this->samples.size() != 0)
     {
-      reset_all_playback_positions();
-      set_all_playback_flags(false);
+      // Reset the smooth ramp if the selected sample has changed
+      smooth_all_channels();
+
+      if(this->sample_change_mode == RESTART_PLAYBACK)
+      {
+        reset_all_playback_positions();
+        set_all_playback_flags(false);
+      }
+
+      // Set the selected sample
+      selected_sample_slot = new_sample_slot;
     }
 
-    // Set the selected sample
-    selected_sample_slot = new_sample_slot;
   }
 
   void process_wav_cv_input()
@@ -208,6 +213,8 @@ struct WavBankMC : Module
   {
     unsigned int wav_input_value = params[WAV_KNOB].getValue() * number_of_samples;
 
+    if(this->samples.size() == 0) return;
+
 		wav_input_value = clamp(wav_input_value, 0, number_of_samples - 1);
     previous_wav_knob_value = params[WAV_KNOB].getValue();
 
@@ -226,9 +233,9 @@ struct WavBankMC : Module
 
   void process_wav_navigation_buttons()
   {
-    // If next_wav button is pressed, step to the next sample
+    if(this->samples.size() == 0) return;
 
-    // LEFT OFF needing to copy this
+    // If next_wav button is pressed, step to the next sample
     bool next_wav_is_triggered = next_wav_cv_trigger.process(inputs[NEXT_WAV_TRIGGER_INPUT].getVoltage()) || next_wav_button_trigger.process(params[NEXT_WAV_BUTTON_PARAM].getValue());
     if(next_wav_is_triggered) increment_selected_sample();
     lights[NEXT_WAV_LIGHT].setSmoothBrightness(next_wav_is_triggered, this->sample_time);
@@ -308,6 +315,7 @@ struct WavBankMC : Module
 
 	void process(const ProcessArgs &args) override
 	{
+
 		number_of_samples = samples.size();
     sample_time = args.sampleTime;
     float smooth_rate = (128.0f / args.sampleRate);
@@ -328,7 +336,7 @@ struct WavBankMC : Module
 
 		// Check to see if the selected sample slot refers to an existing sample.
 		// If not, return.  This edge case could happen before any samples have been loaded.
-		if(! (samples.size() > selected_sample_slot)) return;
+		if(selected_sample_slot >= samples.size()) return;
 
 		SampleMC *selected_sample = &samples[selected_sample_slot];
 
@@ -436,4 +444,6 @@ struct WavBankMC : Module
     outputs[POLY_WAV_OUTPUT].setChannels(selected_sample->number_of_channels);
 
   } // end of process loop
+
+
 };
