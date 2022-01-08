@@ -31,6 +31,7 @@ struct DigitalProgrammer : Module
   enum OutputIds {
     // Take care here that the CV outputs MUST be the first modules in this
     // list because the widget addresses these by index starting at 0
+    /*
     CV_OUTPUT_0,
     CV_OUTPUT_1,
     CV_OUTPUT_2,
@@ -43,6 +44,8 @@ struct DigitalProgrammer : Module
     CV_OUTPUT_9,
     CV_OUTPUT_10,
     CV_OUTPUT_11,
+    */
+    ENUMS(CV_OUTPUTS, NUMBER_OF_SLIDERS),
     NUM_OUTPUTS
   };
 
