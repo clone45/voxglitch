@@ -10,6 +10,7 @@
 #include "DigitalProgrammer/DPSlider.hpp"
 #include "DigitalProgrammer/DigitalProgrammer.hpp"
 #include "DigitalProgrammer/DPSliderDisplay.hpp"
+#include "DigitalProgrammer/DPBankButtonDisplay.hpp"
 #include "DigitalProgrammer/DigitalProgrammerWidget.hpp"
 
 Model* modelDigitalProgrammer = createModel<DigitalProgrammer, DigitalProgrammerWidget>("digitalprogrammer");

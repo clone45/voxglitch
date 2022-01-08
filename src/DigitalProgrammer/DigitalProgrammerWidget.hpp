@@ -2,6 +2,15 @@ struct DigitalProgrammerWidget : ModuleWidget
 {
   DigitalProgrammer* module;
 
+  float bank_button_positions[24][2] = {
+    {189.56, 45.333}, {200.827, 45.333}, {212.093, 45.333}, {223.360, 45.333},
+    {189.56, 57.133}, {200.827, 57.133}, {212.093, 57.133}, {223.360, 57.133},
+    {189.56, 68.933}, {200.827, 68.933}, {212.093, 68.933}, {223.360, 68.933},
+    {189.56, 80.733}, {200.827, 80.733}, {212.093, 80.733}, {223.360, 80.733},
+    {189.56, 92.533}, {200.827, 92.533}, {212.093, 92.533}, {223.360, 92.533},
+    {189.56, 104.333}, {200.827, 104.333}, {212.093, 104.333}, {223.360, 104.333}    
+  };
+
   DigitalProgrammerWidget(DigitalProgrammer* module)
   {
     this->module = module;
@@ -47,16 +56,39 @@ struct DigitalProgrammerWidget : ModuleWidget
 
         // Add corresponding output
         addOutput(createOutput<PJ301MPort>(mm2px(Vec(panel_x_position, outputs_vertical_position)), module, column));
-
       }
+
+      // bank button
+      /*
+      (47.200 / 4) - (3 * 1.8) = 6.4 == estimated bank button width & height
+      estimated bank button location for 1st one:
+      x = 187.960 + 1.8 = 189.76
+      y = 48.941 - 1.8 = 47.141
+      */
+
+      for(unsigned int i = 0; i < NUMBER_OF_BANKS; i ++)
+      {
+        // calculation panel_x_position, panel_y_position
+        panel_x_position = bank_button_positions[i][0];
+        panel_y_position = bank_button_positions[i][1];
+
+        // Add button widget
+        DPBankButtonDisplay *dp_bank_button_display = new DPBankButtonDisplay(i);
+        dp_bank_button_display->setPosition(mm2px(Vec(panel_x_position, panel_y_position)));
+        // dp_bank_button_display->setSize(Vec(BANK_BUTTON_WIDTH, BANK_BUTTON_HEIGHT));
+        dp_bank_button_display->setSize(Vec(BANK_BUTTON_WIDTH, BANK_BUTTON_HEIGHT));
+        dp_bank_button_display->module = module;
+        addChild(dp_bank_button_display);
+      }
+
 
       // Add bank lights
 
       // float bank_buttons_x[4] = {150.0, 160.0, 170.0, 180.0};
       // float bank_buttons_y[4] = {10.0, 20.0, 30.0, 40.0};
 
-      float bank_buttons_x[2] = {180.0, 190.0};
-      float bank_buttons_y[8] = {10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0};
+      // float bank_buttons_x[2] = {180.0, 190.0};
+      // float bank_buttons_y[8] = {10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0};
 
       /*
       float x = 0;
