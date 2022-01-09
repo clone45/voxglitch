@@ -6,41 +6,29 @@ Special thanks to Andras Szabo (Firo Lightfog) for their creative input.
 
 */
 
-
 struct DigitalProgrammer : Module
 {
   dsp::SchmittTrigger bank_button_triggers[NUMBER_OF_BANKS];
-  // bool bank_button_is_triggered[NUMBER_OF_BANKS];
-
   unsigned int selected_bank = 0;
-
+  int mouse_over_bank = -1;
   DPSlider sliders[NUMBER_OF_BANKS][NUMBER_OF_SLIDERS];
+
+  dsp::SchmittTrigger bank_next_schmitt_trigger;
+  dsp::SchmittTrigger bank_prev_schmitt_trigger;
+  dsp::SchmittTrigger bank_reset_schmitt_trigger;
 
   enum ParamIds {
     ENUMS(BANK_BUTTONS, NUMBER_OF_BANKS),
     NUM_PARAMS
   };
   enum InputIds {
-    BANK_INPUT,
+    BANK_CV_INPUT,
+    BANK_NEXT_INPUT,
+    BANK_PREV_INPUT,
+    BANK_RESET_INPUT,
     NUM_INPUTS
   };
   enum OutputIds {
-    // Take care here that the CV outputs MUST be the first modules in this
-    // list because the widget addresses these by index starting at 0
-    /*
-    CV_OUTPUT_0,
-    CV_OUTPUT_1,
-    CV_OUTPUT_2,
-    CV_OUTPUT_3,
-    CV_OUTPUT_4,
-    CV_OUTPUT_5,
-    CV_OUTPUT_6,
-    CV_OUTPUT_7,
-    CV_OUTPUT_8,
-    CV_OUTPUT_9,
-    CV_OUTPUT_10,
-    CV_OUTPUT_11,
-    */
     ENUMS(CV_OUTPUTS, NUMBER_OF_SLIDERS),
     NUM_OUTPUTS
   };
@@ -56,19 +44,6 @@ struct DigitalProgrammer : Module
   DigitalProgrammer()
   {
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-
-
-    for(int i=0; i<NUMBER_OF_BANKS; i++)
-    {
-      configSwitch(BANK_BUTTONS + i, 0.f, 1.f, 0.f, string::f("%d mute", i + 1));
-			//configInput(IN_INPUTS + i, string::f("Row %d", i + 1));
-		//	configOutput(OUT_OUTPUTS + i, string::f("Row %d", i + 1));
-    }
-
-    for(int i = 0; i < NUMBER_OF_BANKS; i++)
-    {
-      params[BANK_BUTTONS + i].setValue(0.0);
-    }
   }
 
 
@@ -78,61 +53,45 @@ struct DigitalProgrammer : Module
   ==================================================================================================================================================
   */
 
-
   json_t *dataToJson() override
   {
     json_t *json_root = json_object();
-/*
-
-    //
-    // Save patterns
-    //
-
-    json_t *sequences_json_array = json_array();
-
-    for(int bank_number=0; bank_number<NUMBER_OF_SEQUENCERS; bank_number++)
-    {
-      json_t *pattern_json_array = json_array();
-
-      for(int i=0; i<MAX_bank_STEPS; i++)
-      {
-        json_array_append_new(pattern_json_array, json_integer(this->voltage_sequencers[bank_number].getValue(i)));
-      }
-
-      json_array_append_new(sequences_json_array, pattern_json_array);
-    }
-
-    json_object_set(json_root, "patterns", sequences_json_array);
-    json_decref(sequences_json_array);
-    */
     return json_root;
   }
 
   // Autoload settings
   void dataFromJson(json_t *json_root) override
   {
-  /*
-    //
-    // Load patterns
-    //
+  }
 
-    json_t *pattern_arrays_data = json_object_get(json_root, "patterns");
 
-    if(pattern_arrays_data)
+  void increment_bank()
+  {
+    if(selected_bank < (NUMBER_OF_BANKS - 1))
     {
-      size_t pattern_number;
-      json_t *json_pattern_array;
-
-      json_array_foreach(pattern_arrays_data, pattern_number, json_pattern_array)
-      {
-        for(int i=0; i<MAX_bank_STEPS; i++)
-        {
-          this->voltage_sequencers[pattern_number].setValue(i, json_integer_value(json_array_get(json_pattern_array, i)));
-        }
-      }
+      selected_bank++;
     }
-    */
+    else
+    {
+      selected_bank = 0;
+    }
+  }
 
+  void decrement_bank()
+  {
+    if(selected_bank > 0)
+    {
+      selected_bank--;
+    }
+    else
+    {
+      selected_bank = NUMBER_OF_BANKS - 1;
+    }
+  }
+
+  void reset_bank()
+  {
+    selected_bank = 0;
   }
 
 
@@ -151,50 +110,21 @@ struct DigitalProgrammer : Module
 
   void process(const ProcessArgs &args) override
   {
-    /*
-    // Handle bank seletion
-    //
-    // See if someone pressed one of the green sequence selection buttons
-    //
-    for(unsigned int trigger_index=0; trigger_index < NUMBER_OF_BANKS; trigger_index++)
+    if(inputs[BANK_CV_INPUT].isConnected())
     {
-      bank_button_is_triggered[trigger_index] = bank_button_triggers[trigger_index].process(params[trigger_index].getValue());
+      unsigned int bank_cv_value = (inputs[BANK_CV_INPUT].getVoltage() / 10.0) * NUMBER_OF_BANKS;
+      bank_cv_value = clamp(bank_cv_value, 0, NUMBER_OF_BANKS - 1);
+      this->selected_bank = bank_cv_value;
     }
 
-    // If any of the green sequence buttons were pressed, set the index "selected_bank_index"
-    // which will be used to look up the selected voltage and gate sequencers from
-    // the voltage_sequencers[] and gate_sequencers[] arrays
-    for(unsigned int trigger_index=0; trigger_index < NUMBER_OF_BANKS; trigger_index++)
-    {
-      if(bank_button_is_triggered[trigger_index]) selected_bank_index = trigger_index;
-    }
-    */
-
-    // bool button_pressed = false;
-
-    for(int i = 0; i < NUMBER_OF_BANKS; i++)
-    {
-      // reference: sequencer_1_button_is_triggered = sequencer_1_button_trigger.process(params[SEQUENCER_1_BUTTON].getValue());
-
-      if(bank_button_triggers[i].process(params[BANK_BUTTONS + i].getValue()))
-      {
-        selected_bank = i;
-      }
-    }
-
-
-    // DEBUG(std::to_string(params[0].getValue()).c_str());
+    if(bank_next_schmitt_trigger.process(inputs[BANK_NEXT_INPUT].getVoltage())) increment_bank();
+    if(bank_prev_schmitt_trigger.process(inputs[BANK_PREV_INPUT].getVoltage())) decrement_bank();
+    if(bank_reset_schmitt_trigger.process(inputs[BANK_RESET_INPUT].getVoltage())) reset_bank();
 
     // Output values
     for(int column = 0; column < NUMBER_OF_SLIDERS; column ++)
     {
       outputs[column].setVoltage(sliders[selected_bank][column].getValue());
-    }
-
-    // Set brightness of lamps
-    for(unsigned int light_index=0; light_index < NUMBER_OF_BANKS; light_index++)
-    {
-      lights[BANK_LIGHTS + light_index].setBrightness(selected_bank == light_index);
     }
   }
 

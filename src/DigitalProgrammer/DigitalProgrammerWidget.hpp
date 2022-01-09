@@ -58,14 +58,9 @@ struct DigitalProgrammerWidget : ModuleWidget
         addOutput(createOutput<PJ301MPort>(mm2px(Vec(panel_x_position, outputs_vertical_position)), module, column));
       }
 
-      // bank button
-      /*
-      (47.200 / 4) - (3 * 1.8) = 6.4 == estimated bank button width & height
-      estimated bank button location for 1st one:
-      x = 187.960 + 1.8 = 189.76
-      y = 48.941 - 1.8 = 47.141
-      */
-
+      //
+      // bank buttons
+      //
       for(unsigned int i = 0; i < NUMBER_OF_BANKS; i ++)
       {
         // calculation panel_x_position, panel_y_position
@@ -80,29 +75,12 @@ struct DigitalProgrammerWidget : ModuleWidget
         addChild(dp_bank_button_display);
       }
 
+      // bank controls
+      addInput(createInputCentered<PJ301MPort>(mm2px(Vec(193.162, 36.593)), module, DigitalProgrammer::BANK_CV_INPUT));
+      addInput(createInputCentered<PJ301MPort>(mm2px(Vec(205.383, 36.593)), module, DigitalProgrammer::BANK_NEXT_INPUT));
+      addInput(createInputCentered<PJ301MPort>(mm2px(Vec(217.612, 36.593)), module, DigitalProgrammer::BANK_PREV_INPUT));
+      addInput(createInputCentered<PJ301MPort>(mm2px(Vec(229.824, 36.593)), module, DigitalProgrammer::BANK_RESET_INPUT));
 
-      // Add bank lights
-
-      // float bank_buttons_x[4] = {150.0, 160.0, 170.0, 180.0};
-      // float bank_buttons_y[4] = {10.0, 20.0, 30.0, 40.0};
-
-      // float bank_buttons_x[2] = {180.0, 190.0};
-      // float bank_buttons_y[8] = {10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0};
-
-      /*
-      float x = 0;
-      float y = 0;
-
-      for(unsigned int bank_index = 0; bank_index < NUMBER_OF_BANKS; bank_index++)
-      {
-        x = bank_buttons_x[bank_index % 2];
-        y = bank_buttons_y[bank_index / 2];
-        // addParam(createParamCentered<LEDButton>(mm2px(Vec(x,y)), module, bank_index));
-        // addChild(createLightCentered<LargeLight<WhiteLight>>(mm2px(Vec(x, y)), module, bank_index));
-
-        // addParam(createParamCentered<MomentarySwitch<>>(mm2px(Vec(x, y)), module, DigitalProgrammer::BANK_BUTTONS + bank_index));
-      }
-      */
     }
   }
 };
