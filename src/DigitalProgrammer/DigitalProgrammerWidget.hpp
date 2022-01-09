@@ -75,6 +75,12 @@ struct DigitalProgrammerWidget : ModuleWidget
         addChild(dp_bank_button_display);
       }
 
+      // Poly add input
+      addInput(createInputCentered<PJ301MPort>(mm2px(Vec(202.404, 11.366)), module, DigitalProgrammer::POLY_ADD_INPUT));
+
+      // Poly output
+      addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(225.683, 11.366)), module, DigitalProgrammer::POLY_OUTPUT));
+
       // bank controls
       addInput(createInputCentered<PJ301MPort>(mm2px(Vec(193.162, 36.593)), module, DigitalProgrammer::BANK_CV_INPUT));
       addInput(createInputCentered<PJ301MPort>(mm2px(Vec(205.383, 36.593)), module, DigitalProgrammer::BANK_NEXT_INPUT));

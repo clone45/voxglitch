@@ -4,6 +4,9 @@ DigitalProgrammer
 By Bret Truchan
 Special thanks to Andras Szabo (Firo Lightfog) for their creative input.
 
+
+TODO: Mouse-over column highlighting
+
 */
 
 struct DigitalProgrammer : Module
@@ -28,10 +31,12 @@ struct DigitalProgrammer : Module
     BANK_NEXT_INPUT,
     BANK_PREV_INPUT,
     BANK_RESET_INPUT,
+    POLY_ADD_INPUT,
     NUM_INPUTS
   };
   enum OutputIds {
     ENUMS(CV_OUTPUTS, NUMBER_OF_SLIDERS),
+    POLY_OUTPUT,
     NUM_OUTPUTS
   };
 
@@ -123,11 +128,22 @@ struct DigitalProgrammer : Module
     if(bank_prev_schmitt_trigger.process(inputs[BANK_PREV_INPUT].getVoltage())) decrement_bank();
     if(bank_reset_schmitt_trigger.process(inputs[BANK_RESET_INPUT].getVoltage())) reset_bank();
 
+    inputs[POLY_ADD_INPUT].setChannels(NUMBER_OF_SLIDERS);
+
     // Output values
     for(int column = 0; column < NUMBER_OF_SLIDERS; column ++)
     {
-      outputs[column].setVoltage(sliders[selected_bank][column].getValue());
+      // Get voltage for the specific slider
+      float output_voltage = sliders[selected_bank][column].getValue();
+
+      // Add any value from the poly input
+      output_voltage += inputs[POLY_ADD_INPUT].getVoltage(column);
+
+      // Output voltage
+      outputs[column].setVoltage(output_voltage);
+      outputs[POLY_OUTPUT].setVoltage(output_voltage, column);
     }
+    outputs[POLY_OUTPUT].setChannels(NUMBER_OF_SLIDERS);
   }
 
 };
