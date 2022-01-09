@@ -87,6 +87,18 @@ struct DigitalProgrammerWidget : ModuleWidget
       addInput(createInputCentered<PJ301MPort>(mm2px(Vec(217.612, 36.593)), module, DigitalProgrammer::BANK_PREV_INPUT));
       addInput(createInputCentered<PJ301MPort>(mm2px(Vec(229.824, 36.593)), module, DigitalProgrammer::BANK_RESET_INPUT));
 
+      // copy/paste mode toggle
+      // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_INPUT));
+      addParam(createParamCentered<LEDButton>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_PARAM));
+      addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_LIGHT));
+
+      // add copy/paste label
+      CopyPasteLabel *copy_paste_label = new CopyPasteLabel();
+      copy_paste_label->setPosition(mm2px(Vec(198.5, 123.4)));
+      // dp_bank_button_display->setSize(Vec(BANK_BUTTON_WIDTH, BANK_BUTTON_HEIGHT));
+      copy_paste_label->module = module;
+      addChild(copy_paste_label);
+
     }
   }
 

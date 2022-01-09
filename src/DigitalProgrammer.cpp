@@ -9,6 +9,7 @@
 #include "Common/VoxglitchWidget.hpp"
 #include "DigitalProgrammer/DPSlider.hpp"
 #include "DigitalProgrammer/DigitalProgrammer.hpp"
+#include "DigitalProgrammer/CopyPasteLabel.hpp"
 #include "DigitalProgrammer/DPSliderDisplay.hpp"
 #include "DigitalProgrammer/DPBankButtonDisplay.hpp"
 #include "DigitalProgrammer/DigitalProgrammerWidget.hpp"

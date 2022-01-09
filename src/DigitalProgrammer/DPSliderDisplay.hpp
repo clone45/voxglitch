@@ -50,7 +50,14 @@ struct DPSliderDisplay : TransparentWidget
 
         double value = module->sliders[module->selected_bank][column].getValue();
 
-        drawSliderBackground(vg, nvgRGBA(53, 64, 85, 255));
+        if(module->is_moused_over_slider && (module->moused_over_slider == this->column))
+        {
+          drawSliderBackground(vg, nvgRGBA(66, 77, 97, 255));
+        }
+        else
+        {
+          drawSliderBackground(vg, nvgRGBA(53, 64, 85, 255));
+        }
         drawSlider(vg, value, nvgRGBA(156, 167, 185, 255));
       }
       nvgRestore(vg);
@@ -135,6 +142,27 @@ struct DPSliderDisplay : TransparentWidget
     float zoom = getAbsoluteZoom();
     drag_position = drag_position.plus(e.mouseDelta.div(zoom));
     editBar(drag_position);
+  }
+
+  void onEnter(const event::Enter &e) override
+  {
+    TransparentWidget::onEnter(e);
+  }
+
+  void onLeave(const event::Leave &e) override
+  {
+    module->is_moused_over_slider = false;
+    TransparentWidget::onLeave(e);
+  }
+
+  void onHover(const event::Hover& e) override {
+    e.consume(this);
+    module->is_moused_over_slider = true;
+    module->moused_over_slider = this->column;
+  }
+
+  void step() override {
+    TransparentWidget::step();
   }
 
 };

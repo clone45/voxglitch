@@ -1,6 +1,6 @@
 struct DPSlider
 {
-  double value = 0.4;
+  double value = 0.0;
 
   // constructor
   DPSlider()
