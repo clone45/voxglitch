@@ -83,4 +83,5 @@ struct DigitalProgrammerWidget : ModuleWidget
 
     }
   }
+
 };

@@ -10,7 +10,9 @@ struct DigitalProgrammer : Module
 {
   dsp::SchmittTrigger bank_button_triggers[NUMBER_OF_BANKS];
   unsigned int selected_bank = 0;
-  int mouse_over_bank = -1;
+  unsigned int mouse_over_bank = 0;
+  bool is_moused_over_bank = false;
+
   DPSlider sliders[NUMBER_OF_BANKS][NUMBER_OF_SLIDERS];
 
   dsp::SchmittTrigger bank_next_schmitt_trigger;
