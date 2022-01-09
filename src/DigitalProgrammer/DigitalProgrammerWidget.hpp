@@ -8,7 +8,7 @@ struct DigitalProgrammerWidget : ModuleWidget
     {189.56, 68.933}, {200.827, 68.933}, {212.093, 68.933}, {223.360, 68.933},
     {189.56, 80.733}, {200.827, 80.733}, {212.093, 80.733}, {223.360, 80.733},
     {189.56, 92.533}, {200.827, 92.533}, {212.093, 92.533}, {223.360, 92.533},
-    {189.56, 104.333}, {200.827, 104.333}, {212.093, 104.333}, {223.360, 104.333}    
+    {189.56, 104.333}, {200.827, 104.333}, {212.093, 104.333}, {223.360, 104.333}
   };
 
   DigitalProgrammerWidget(DigitalProgrammer* module)
@@ -75,7 +75,6 @@ struct DigitalProgrammerWidget : ModuleWidget
         // Add button widget
         DPBankButtonDisplay *dp_bank_button_display = new DPBankButtonDisplay(i);
         dp_bank_button_display->setPosition(mm2px(Vec(panel_x_position, panel_y_position)));
-        // dp_bank_button_display->setSize(Vec(BANK_BUTTON_WIDTH, BANK_BUTTON_HEIGHT));
         dp_bank_button_display->setSize(Vec(BANK_BUTTON_WIDTH, BANK_BUTTON_HEIGHT));
         dp_bank_button_display->module = module;
         addChild(dp_bank_button_display);

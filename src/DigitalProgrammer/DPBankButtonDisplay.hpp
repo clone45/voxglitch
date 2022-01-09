@@ -17,11 +17,14 @@ struct DPBankButtonDisplay : TransparentWidget
     {
       if (layer == 1)
       {
-        drawButton(vg, nvgRGBA(53, 64, 85, 255)); // draw background
-        // if module->selected_bank == button_id then highlight
-        // {
-        //    drawButton(vg, value, nvgRGBA(156, 167, 185, 255)); // draw forground
-        // }
+        if (module->selected_bank == button_index)
+        {
+          drawButton(vg, nvgRGBA(156, 167, 185, 255)); // draw forground
+        }
+        else
+        {
+          drawButton(vg, nvgRGBA(53, 64, 85, 255)); // draw background
+        }
       }
     }
 
@@ -41,11 +44,7 @@ struct DPBankButtonDisplay : TransparentWidget
     if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
     {
       e.consume(this);
-      // drag_position = e.pos;
-      // this->editBar(e.pos);
-
-      // set the active bank in the module
-      // no other steps should need to be taken
+      module->selected_bank = this->button_index;
     }
   } // end onButton
 }; // end struct

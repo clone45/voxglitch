@@ -12,7 +12,7 @@ struct DigitalProgrammer : Module
   dsp::SchmittTrigger bank_button_triggers[NUMBER_OF_BANKS];
   // bool bank_button_is_triggered[NUMBER_OF_BANKS];
 
-  int selected_bank = 0;
+  unsigned int selected_bank = 0;
 
   DPSlider sliders[NUMBER_OF_BANKS][NUMBER_OF_SLIDERS];
 
@@ -192,7 +192,7 @@ struct DigitalProgrammer : Module
     }
 
     // Set brightness of lamps
-    for(int light_index=0; light_index < NUMBER_OF_BANKS; light_index++)
+    for(unsigned int light_index=0; light_index < NUMBER_OF_BANKS; light_index++)
     {
       lights[BANK_LIGHTS + light_index].setBrightness(selected_bank == light_index);
     }
