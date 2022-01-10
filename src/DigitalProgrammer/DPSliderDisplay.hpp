@@ -104,13 +104,6 @@ struct DPSliderDisplay : TransparentWidget
       if (new_value < 0) new_value = 0;
       if (new_value > 1) new_value = 1;
 
-      // Tooltip drawing is done in the draw method
-      /*
-      draw_tooltip = true;
-      draw_tooltip_index = clicked_bar_x_index;
-      draw_tooltip_y = clicked_y;
-      tooltip_value = module->selected_voltage_sequencer->getOutput(clicked_bar_x_index);
-      */
       this->module->sliders[module->selected_bank][column].setValue(new_value);
     }
   }

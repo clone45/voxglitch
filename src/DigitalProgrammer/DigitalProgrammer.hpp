@@ -4,7 +4,7 @@ DigitalProgrammer
 By Bret Truchan
 Special thanks to Andras Szabo (Firo Lightfog) for their creative input.
 
-TODO: Give inputs and outputs friendly names
+TODO: draw values for user library
 
 */
 
@@ -19,6 +19,7 @@ struct DigitalProgrammer : Module
   unsigned int moused_over_slider = 0;
   bool is_moused_over_slider = false;
 
+  // Copy/paste tracking
   bool copy_paste_mode = false;
   unsigned int copy_bank_id = 0;
 
@@ -40,7 +41,6 @@ struct DigitalProgrammer : Module
     BANK_PREV_INPUT,
     BANK_RESET_INPUT,
     POLY_ADD_INPUT,
-    // COPY_MODE_INPUT,
     NUM_INPUTS
   };
   enum OutputIds {
@@ -94,7 +94,6 @@ struct DigitalProgrammer : Module
         json_array_append_new(sliders_json_array, json_real(sliders[bank_number][i].getValue()));
       }
       json_array_append_new(banks_json_array, sliders_json_array);
-      // json_decref(sliders_json_array);
     }
 
     json_object_set(json_root, "banks", banks_json_array);
@@ -125,8 +124,6 @@ struct DigitalProgrammer : Module
       {
         for(int i=0; i<NUMBER_OF_SLIDERS; i++)
         {
-          // this->voltage_sequencers[slider_number].setValue(i, json_integer_value(json_array_get(json_slider_array, i)));
-
           this->sliders[bank_number][i].setValue(json_real_value(json_array_get(json_slider_array, i)));
         }
       }
@@ -136,7 +133,6 @@ struct DigitalProgrammer : Module
     json_t* selected_bank_json = json_object_get(json_root, "selected_bank");
     if (selected_bank_json) this->selected_bank = json_integer_value(selected_bank_json);
   }
-
 
   void incrementBank()
   {
@@ -219,6 +215,7 @@ struct DigitalProgrammer : Module
       // Add any value from the poly input
       output_voltage += inputs[POLY_ADD_INPUT].getVoltage(column);
 
+      // Eventually, I may add per-channel scaling
       float scaled_output = output_voltage * 10.0;
 
       // Output voltage
@@ -226,6 +223,7 @@ struct DigitalProgrammer : Module
       outputs[POLY_OUTPUT].setVoltage(scaled_output, column); // range from 0 to 10v
     }
 
+    // output voltages and manage lights
     outputs[POLY_OUTPUT].setChannels(NUMBER_OF_SLIDERS);
     lights[COPY_MODE_LIGHT].setBrightness(copy_paste_mode == true);
   }

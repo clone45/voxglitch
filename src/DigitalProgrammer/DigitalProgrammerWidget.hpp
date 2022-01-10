@@ -21,17 +21,8 @@ struct DigitalProgrammerWidget : ModuleWidget
     // be displayed on the front panel relative to 0,0.
     float panel_x_position = 0;
     float panel_y_position = 0;
-    // float margin_left = 7;  // offset from the far-lefthand side of the panel
-    //float horizontal_padding = 11.0; // Offset from the top of the panel
 
-    // Location of the inputs relative to the panel
-    //float inputs_margin_left = 11.0;
     float outputs_vertical_position = 118.0;
-
-    // Slider's natural position, without any padding between groups of 4, is
-    // { 7, 18, 29, 40, 51, 62, 73, 84, 95, 106, 117, 128, 139, 150, 161, 172 };
-    // However, I'm going to add some padding to set each group apart a little big
-
     float slider_column_x[NUMBER_OF_SLIDERS] = { 7, 18, 29, 40, 51, 62, 73, 84, 95, 106, 117, 128, 139, 150, 161, 172 };
 
     if(module)
@@ -81,7 +72,7 @@ struct DigitalProgrammerWidget : ModuleWidget
     }
     else
     {
-      // float dummy_sliders = .. 
+      // float dummy_sliders = ..
     }
 
     for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)
@@ -107,10 +98,8 @@ struct DigitalProgrammerWidget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(229.824, 36.593)), module, DigitalProgrammer::BANK_RESET_INPUT));
 
     // copy/paste mode toggle
-    // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_INPUT));
     addParam(createParamCentered<LEDButton>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_PARAM));
     addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_LIGHT));
-
   }
 
 };
