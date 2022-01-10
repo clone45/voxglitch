@@ -10,6 +10,7 @@ void init(Plugin* p) {
 
   p->addModel(modelAutobreak);
   p->addModel(modelByteBeat);
+  p->addModel(modelDigitalProgrammer);  
   p->addModel(modelDigitalSequencer);
   p->addModel(modelGlitchSequencer);
   p->addModel(modelGhosts);

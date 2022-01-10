@@ -26,6 +26,12 @@
         "tags": ["Oscillator"]
     },
     {
+        "slug": "digitalprogrammer",
+        "name": "Digital Programmer",
+        "description": "16 channel polyphonic programmer with built-in bank memory slots",
+        "tags": ["Utility", "Polyphonic"]
+    },
+    {
         "slug": "digitalsequencer",
         "name": "Digital Sequencer",
         "description": "Six-in-one cv/gate sequencers with independent control over clock division and sequence length.",
@@ -117,7 +123,7 @@
         "slug": "wavbankmc",
         "name": "Wav Bank MC",
         "description": "Extended version of Wav Bank that supports multi-channel WAV files",
-        "tags": ["Sampler"]
+        "tags": ["Sampler", "Polyphonic"]
     },
     {
         "slug": "xy",
