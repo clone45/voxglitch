@@ -61,6 +61,11 @@ struct DigitalProgrammer : Module
   DigitalProgrammer()
   {
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+    configInput(POLY_ADD_INPUT, "Add To CV (poly)");
+    configInput(BANK_CV_INPUT, "CV control over selected bank");
+    configInput(BANK_NEXT_INPUT, "Step to the next bank");
+    configInput(BANK_PREV_INPUT, "Step to the previous bank");
+    configInput(BANK_RESET_INPUT, "Reset to the 1st bank");
   }
 
 
