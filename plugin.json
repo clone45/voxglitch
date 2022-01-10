@@ -28,8 +28,8 @@
     {
         "slug": "digitalprogrammer",
         "name": "Digital Programmer",
-        "description": "Simple programmer",
-        "tags": ["Utility"]
+        "description": "16 channel polyphonic programmer with built-in bank memory slots",
+        "tags": ["Utility", "Polyphonic"]
     },
     {
         "slug": "digitalsequencer",
@@ -123,7 +123,7 @@
         "slug": "wavbankmc",
         "name": "Wav Bank MC",
         "description": "Extended version of Wav Bank that supports multi-channel WAV files",
-        "tags": ["Sampler"]
+        "tags": ["Sampler", "Polyphonic"]
     },
     {
         "slug": "xy",
