@@ -4,8 +4,6 @@ DigitalProgrammer
 By Bret Truchan
 Special thanks to Andras Szabo (Firo Lightfog) for their creative input.
 
-TODO: draw values for user library
-
 */
 
 struct DigitalProgrammer : Module

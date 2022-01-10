@@ -9,37 +9,38 @@ struct DPBankButtonDisplay : TransparentWidget
     button_index = bank_button_index;
   }
 
-  void drawLayer(const DrawArgs& args, int layer) override
+  void draw(const DrawArgs& args) override
   {
     const auto vg = args.vg;
     nvgSave(vg);
 
     if(module)
     {
-      if(!module->copy_paste_mode) paste_highlight = false;
-
-      if (layer == 1)
+      if (module->selected_bank == button_index) {
+        drawButton(vg, nvgRGBA(156, 167, 185, 255)); // draw selected bright forground
+      }
+      else if (module->is_moused_over_bank && (module->mouse_over_bank == button_index) && module->copy_paste_mode) {
+        drawButton(vg, nvgRGBA(97, 86, 105, 255)); // draw special mouse-over highlight while in copy/paste mode
+      }
+      else if (module->is_moused_over_bank && (module->mouse_over_bank == button_index)) {
+        drawButton(vg, nvgRGBA(66, 77, 97, 255)); // draw mouse-over highlight
+        drawMiniMap(vg, nvgRGBA(156, 167, 185, 255));
+      }
+      else
       {
-        if (module->selected_bank == button_index) {
-          drawButton(vg, nvgRGBA(156, 167, 185, 255)); // draw selected bright forground
+        if(paste_highlight) {
+          drawButton(vg, nvgRGBA(97, 86, 105, 255)); // draw paste highlight for pasted banks
         }
-        else if (module->is_moused_over_bank && (module->mouse_over_bank == button_index) && module->copy_paste_mode) {
-          drawButton(vg, nvgRGBA(97, 86, 105, 255)); // draw special mouse-over highlight while in copy/paste mode
-        }
-        else if (module->is_moused_over_bank && (module->mouse_over_bank == button_index)) {
-          drawButton(vg, nvgRGBA(66, 77, 97, 255)); // draw mouse-over highlight
-          drawMiniMap(vg, nvgRGBA(156, 167, 185, 255));
-        }
-        else
-        {
-          if(paste_highlight) {
-            drawButton(vg, nvgRGBA(97, 86, 105, 255)); // draw paste highlight for pasted banks
-          }
-          else {
-            drawButton(vg, nvgRGBA(53, 64, 85, 255)); // draw background
-          }
+        else {
+          drawButton(vg, nvgRGBA(53, 64, 85, 255)); // draw background
         }
       }
+
+      if(!module->copy_paste_mode) paste_highlight = false;
+    }
+    else // for display in the user library
+    {
+      drawButton(vg, nvgRGBA(53, 64, 85, 255));
     }
 
     nvgRestore(vg);

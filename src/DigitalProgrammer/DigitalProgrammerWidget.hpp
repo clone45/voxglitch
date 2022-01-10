@@ -1,6 +1,6 @@
 struct DigitalProgrammerWidget : ModuleWidget
 {
-  DigitalProgrammer* module;
+  DigitalProgrammer* module = NULL;
 
   float bank_button_positions[24][2] = {
     {189.56, 45.333}, {200.827, 45.333}, {212.093, 45.333}, {223.360, 45.333},
@@ -25,55 +25,46 @@ struct DigitalProgrammerWidget : ModuleWidget
     float outputs_vertical_position = 118.0;
     float slider_column_x[NUMBER_OF_SLIDERS] = { 7, 18, 29, 40, 51, 62, 73, 84, 95, 106, 117, 128, 139, 150, 161, 172 };
 
-    if(module)
+    //
+    // Loop through each column and draw the slider and outputs
+    //
+    for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)
     {
-      //
-      // Loop through each column and draw the slider and outputs
-      //
-      for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)
-      {
-        // Calculate where to put the slider
-        // panel_x_position = (column * horizontal_padding) + margin_left;
-        panel_x_position = slider_column_x[column];
-        panel_y_position = 7.0;
+      // Calculate where to put the slider
+      // panel_x_position = (column * horizontal_padding) + margin_left;
+      panel_x_position = slider_column_x[column];
+      panel_y_position = 7.0;
 
-        // Add slider widget
-        DPSliderDisplay *dp_slider_display = new DPSliderDisplay(column);
-        dp_slider_display->setPosition(mm2px(Vec(panel_x_position, panel_y_position)));
-        dp_slider_display->setSize(Vec(DRAW_AREA_WIDTH, SLIDER_HEIGHT));
-        dp_slider_display->module = module;
-        addChild(dp_slider_display);
-      }
-
-      //
-      // bank buttons
-      //
-      for(unsigned int i = 0; i < NUMBER_OF_BANKS; i ++)
-      {
-        // calculation panel_x_position, panel_y_position
-        panel_x_position = bank_button_positions[i][0];
-        panel_y_position = bank_button_positions[i][1];
-
-        // Add button widget
-        DPBankButtonDisplay *dp_bank_button_display = new DPBankButtonDisplay(i);
-        dp_bank_button_display->setPosition(mm2px(Vec(panel_x_position, panel_y_position)));
-        dp_bank_button_display->setSize(Vec(BANK_BUTTON_WIDTH, BANK_BUTTON_HEIGHT));
-        dp_bank_button_display->module = module;
-        addChild(dp_bank_button_display);
-      }
-
-      // add copy/paste label
-      CopyPasteLabel *copy_paste_label = new CopyPasteLabel();
-      copy_paste_label->setPosition(mm2px(Vec(198.5, 123.4)));
-      // dp_bank_button_display->setSize(Vec(BANK_BUTTON_WIDTH, BANK_BUTTON_HEIGHT));
-      copy_paste_label->module = module;
-      addChild(copy_paste_label);
-
+      // Add slider widget
+      DPSliderDisplay *dp_slider_display = new DPSliderDisplay(column);
+      dp_slider_display->setPosition(mm2px(Vec(panel_x_position, panel_y_position)));
+      dp_slider_display->setSize(Vec(DRAW_AREA_WIDTH, SLIDER_HEIGHT));
+      dp_slider_display->module = module;
+      addChild(dp_slider_display);
     }
-    else
+
+    //
+    // bank buttons
+    //
+    for(unsigned int i = 0; i < NUMBER_OF_BANKS; i ++)
     {
-      // float dummy_sliders = ..
+      // calculation panel_x_position, panel_y_position
+      panel_x_position = bank_button_positions[i][0];
+      panel_y_position = bank_button_positions[i][1];
+
+      // Add button widget
+      DPBankButtonDisplay *dp_bank_button_display = new DPBankButtonDisplay(i);
+      dp_bank_button_display->setPosition(mm2px(Vec(panel_x_position, panel_y_position)));
+      dp_bank_button_display->setSize(Vec(BANK_BUTTON_WIDTH, BANK_BUTTON_HEIGHT));
+      dp_bank_button_display->module = module;
+      addChild(dp_bank_button_display);
     }
+
+    // add copy/paste label
+    CopyPasteLabel *copy_paste_label = new CopyPasteLabel();
+    copy_paste_label->setPosition(mm2px(Vec(198.5, 123.4)));
+    copy_paste_label->module = module;
+    addChild(copy_paste_label);
 
     for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)
     {
@@ -81,7 +72,7 @@ struct DigitalProgrammerWidget : ModuleWidget
       panel_x_position = slider_column_x[column];
       panel_y_position = 7.0;
 
-      // Add corresponding output
+      // Add output
       addOutput(createOutput<PJ301MPort>(mm2px(Vec(panel_x_position, outputs_vertical_position)), module, column));
     }
 

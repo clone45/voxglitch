@@ -25,42 +25,43 @@ struct DPSliderDisplay : TransparentWidget
   DPSliderDisplay(unsigned int column)
   {
     this->column = column;
+    box.size = Vec(SLIDER_HEIGHT, SLIDER_HEIGHT);
   }
 
-  void drawLayer(const DrawArgs& args, int layer) override
+  void draw(const DrawArgs& args) override
   {
-  	if (layer == 1)
+    const auto vg = args.vg;
+
+    // Save the drawing context to restore later
+    nvgSave(vg);
+
+    if(module)
     {
-      const auto vg = args.vg;
+      double value = module->sliders[module->selected_bank][column].getValue();
 
-      // Save the drawing context to restore later
-      nvgSave(vg);
-
-      if(module)
+      if(module->is_moused_over_slider && (module->moused_over_slider == this->column))
       {
-        double value = module->sliders[module->selected_bank][column].getValue();
-
-        if(module->is_moused_over_slider && (module->moused_over_slider == this->column))
-        {
-          // draw mouse-over background
-          drawSliderBackground(vg, nvgRGBA(66, 77, 97, 255));
-        }
-        else
-        {
-          // draw normal background
-          drawSliderBackground(vg, nvgRGBA(53, 64, 85, 255));
-        }
-        drawSlider(vg, value, nvgRGBA(156, 167, 185, 255));
+        // draw mouse-over background
+        drawSliderBackground(vg, nvgRGBA(66, 77, 97, 255));
       }
       else
       {
-        float value = (float) column / 16.0;
+        // draw normal background
         drawSliderBackground(vg, nvgRGBA(53, 64, 85, 255));
-        drawSlider(vg, value, nvgRGBA(156, 167, 185, 255));
       }
 
-      nvgRestore(vg);
+      // Draw slider value
+      drawSlider(vg, value, nvgRGBA(156, 167, 185, 255));
     }
+    else
+    {
+      DEBUG("got here <><><><><>");
+      drawSliderBackground(vg, nvgRGBA(66, 77, 97, 255));
+      drawSlider(vg, 0.6, nvgRGBA(156, 167, 185, 255));
+    }
+
+    nvgRestore(vg);
+
   }
 
   void drawSliderBackground(NVGcontext *vg, NVGcolor color)
