@@ -4,10 +4,7 @@ DigitalProgrammer
 By Bret Truchan
 Special thanks to Andras Szabo (Firo Lightfog) for their creative input.
 
-
 TODO: Give inputs and outputs friendly names
-TODO: set default output range
-TODO: saving and loading
 
 */
 
@@ -76,12 +73,63 @@ struct DigitalProgrammer : Module
   json_t *dataToJson() override
   {
     json_t *json_root = json_object();
+
+    //
+    //  Save all of the programmer data
+    //
+
+    json_t *banks_json_array = json_array();
+
+    for(int bank_number = 0; bank_number < NUMBER_OF_BANKS; bank_number++)
+    {
+      json_t *sliders_json_array = json_array();
+
+      for(int i = 0; i < NUMBER_OF_SLIDERS; i++)
+      {
+        json_array_append_new(sliders_json_array, json_real(sliders[bank_number][i].getValue()));
+      }
+      json_array_append_new(banks_json_array, sliders_json_array);
+      // json_decref(sliders_json_array);
+    }
+
+    json_object_set(json_root, "banks", banks_json_array);
+    json_decref(banks_json_array);
+
+    // Save the selected bank
+    json_object_set_new(json_root, "selected_bank", json_integer(this->selected_bank));
+
     return json_root;
   }
 
   // Autoload settings
   void dataFromJson(json_t *json_root) override
   {
+
+    //
+    //  Load all of the programmer data
+    //
+
+    json_t *banks_arrays_data = json_object_get(json_root, "banks");
+
+    if(banks_arrays_data)
+    {
+      size_t bank_number;
+      json_t *json_slider_array;
+
+      json_array_foreach(banks_arrays_data, bank_number, json_slider_array)
+      {
+        for(int i=0; i<NUMBER_OF_SLIDERS; i++)
+        {
+          // this->voltage_sequencers[slider_number].setValue(i, json_integer_value(json_array_get(json_slider_array, i)));
+
+          this->sliders[bank_number][i].setValue(json_real_value(json_array_get(json_slider_array, i)));
+        }
+      }
+    }
+
+    // load selected bank
+    json_t* selected_bank_json = json_object_get(json_root, "selected_bank");
+    if (selected_bank_json) this->selected_bank = json_integer_value(selected_bank_json);
   }
 
 
@@ -166,9 +214,11 @@ struct DigitalProgrammer : Module
       // Add any value from the poly input
       output_voltage += inputs[POLY_ADD_INPUT].getVoltage(column);
 
+      float scaled_output = output_voltage * 10.0;
+
       // Output voltage
-      outputs[column].setVoltage(output_voltage);
-      outputs[POLY_OUTPUT].setVoltage(output_voltage, column);
+      outputs[column].setVoltage(scaled_output);
+      outputs[POLY_OUTPUT].setVoltage(scaled_output, column); // range from 0 to 10v
     }
 
     outputs[POLY_OUTPUT].setChannels(NUMBER_OF_SLIDERS);

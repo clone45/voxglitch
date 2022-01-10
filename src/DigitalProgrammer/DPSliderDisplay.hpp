@@ -38,47 +38,34 @@ struct DPSliderDisplay : TransparentWidget
 
       if(module)
       {
-        // For testing, draw rect showing draw area
-        // -----------------------------------------
-        /*
-        nvgBeginPath(vg);
-        nvgRect(vg, 0, 0, DRAW_AREA_WIDTH, SLIDER_HEIGHT);
-        nvgFillColor(vg, nvgRGBA(120, 20, 20, 100));
-        nvgFill(vg);
-        */
-        // -----------------------------------------
-
         double value = module->sliders[module->selected_bank][column].getValue();
 
         if(module->is_moused_over_slider && (module->moused_over_slider == this->column))
         {
+          // draw mouse-over background
           drawSliderBackground(vg, nvgRGBA(66, 77, 97, 255));
         }
         else
         {
+          // draw normal background
           drawSliderBackground(vg, nvgRGBA(53, 64, 85, 255));
         }
         drawSlider(vg, value, nvgRGBA(156, 167, 185, 255));
       }
+      else
+      {
+        float value = (float) column / 16.0;
+        drawSliderBackground(vg, nvgRGBA(53, 64, 85, 255));
+        drawSlider(vg, value, nvgRGBA(156, 167, 185, 255));
+      }
+
       nvgRestore(vg);
     }
   }
 
-  void drawBlueOverlay(NVGcontext *vg, double width, double height)
-  {
-    nvgBeginPath(vg);
-    nvgRect(vg, 0, 0, width, height);
-    nvgFillColor(vg, nvgRGBA(0, 100, 255, 28));
-    nvgFill(vg);
-  }
-
-
   void drawSliderBackground(NVGcontext *vg, NVGcolor color)
   {
-    // double x = 0;
-    double y = SLIDER_HEIGHT;
-
-    drawBar(vg, y, color);
+    drawBar(vg, SLIDER_HEIGHT, color);
   }
 
 
@@ -87,7 +74,6 @@ struct DPSliderDisplay : TransparentWidget
     // Convert "value", which ranges from 0.0 to 1.0, to the high and low
     // constraints of the slider.
     double y = value * SLIDER_HEIGHT;
-
     drawBar(vg, y, color);
   }
 
@@ -110,20 +96,23 @@ struct DPSliderDisplay : TransparentWidget
 
   void editBar(Vec mouse_position)
   {
-    // Note: This only works when the slider height is equal to the draw area
-    // height.  If it didn't there'd be more thinking to do.  Luckily it is.
-    double new_value = (SLIDER_HEIGHT - mouse_position.y) / SLIDER_HEIGHT;
-    if (new_value < 0) new_value = 0;
-    if (new_value > 1) new_value = 1;
+    if(module)
+    {
+      // Note: This only works when the slider height is equal to the draw area
+      // height.  If it didn't there'd be more thinking to do.  Luckily it is.
+      double new_value = (SLIDER_HEIGHT - mouse_position.y) / SLIDER_HEIGHT;
+      if (new_value < 0) new_value = 0;
+      if (new_value > 1) new_value = 1;
 
-    // Tooltip drawing is done in the draw method
-    /*
-    draw_tooltip = true;
-    draw_tooltip_index = clicked_bar_x_index;
-    draw_tooltip_y = clicked_y;
-    tooltip_value = module->selected_voltage_sequencer->getOutput(clicked_bar_x_index);
-    */
-    this->module->sliders[module->selected_bank][column].setValue(new_value);
+      // Tooltip drawing is done in the draw method
+      /*
+      draw_tooltip = true;
+      draw_tooltip_index = clicked_bar_x_index;
+      draw_tooltip_y = clicked_y;
+      tooltip_value = module->selected_voltage_sequencer->getOutput(clicked_bar_x_index);
+      */
+      this->module->sliders[module->selected_bank][column].setValue(new_value);
+    }
   }
 
   void onButton(const event::Button &e) override
@@ -151,14 +140,19 @@ struct DPSliderDisplay : TransparentWidget
 
   void onLeave(const event::Leave &e) override
   {
-    module->is_moused_over_slider = false;
+    if(module) module->is_moused_over_slider = false;
     TransparentWidget::onLeave(e);
   }
 
   void onHover(const event::Hover& e) override {
+
     e.consume(this);
-    module->is_moused_over_slider = true;
-    module->moused_over_slider = this->column;
+
+    if(module)
+    {
+      module->is_moused_over_slider = true;
+      module->moused_over_slider = this->column;
+    }
   }
 
   void step() override {

@@ -36,7 +36,6 @@ struct DigitalProgrammerWidget : ModuleWidget
 
     if(module)
     {
-
       //
       // Loop through each column and draw the slider and outputs
       //
@@ -53,9 +52,6 @@ struct DigitalProgrammerWidget : ModuleWidget
         dp_slider_display->setSize(Vec(DRAW_AREA_WIDTH, SLIDER_HEIGHT));
         dp_slider_display->module = module;
         addChild(dp_slider_display);
-
-        // Add corresponding output
-        addOutput(createOutput<PJ301MPort>(mm2px(Vec(panel_x_position, outputs_vertical_position)), module, column));
       }
 
       //
@@ -75,23 +71,6 @@ struct DigitalProgrammerWidget : ModuleWidget
         addChild(dp_bank_button_display);
       }
 
-      // Poly add input
-      addInput(createInputCentered<PJ301MPort>(mm2px(Vec(202.404, 11.366)), module, DigitalProgrammer::POLY_ADD_INPUT));
-
-      // Poly output
-      addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(225.683, 11.366)), module, DigitalProgrammer::POLY_OUTPUT));
-
-      // bank controls
-      addInput(createInputCentered<PJ301MPort>(mm2px(Vec(193.162, 36.593)), module, DigitalProgrammer::BANK_CV_INPUT));
-      addInput(createInputCentered<PJ301MPort>(mm2px(Vec(205.383, 36.593)), module, DigitalProgrammer::BANK_NEXT_INPUT));
-      addInput(createInputCentered<PJ301MPort>(mm2px(Vec(217.612, 36.593)), module, DigitalProgrammer::BANK_PREV_INPUT));
-      addInput(createInputCentered<PJ301MPort>(mm2px(Vec(229.824, 36.593)), module, DigitalProgrammer::BANK_RESET_INPUT));
-
-      // copy/paste mode toggle
-      // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_INPUT));
-      addParam(createParamCentered<LEDButton>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_PARAM));
-      addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_LIGHT));
-
       // add copy/paste label
       CopyPasteLabel *copy_paste_label = new CopyPasteLabel();
       copy_paste_label->setPosition(mm2px(Vec(198.5, 123.4)));
@@ -100,6 +79,38 @@ struct DigitalProgrammerWidget : ModuleWidget
       addChild(copy_paste_label);
 
     }
+    else
+    {
+      // float dummy_sliders = .. 
+    }
+
+    for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)
+    {
+      // calculation panel_x_position, panel_y_position
+      panel_x_position = slider_column_x[column];
+      panel_y_position = 7.0;
+
+      // Add corresponding output
+      addOutput(createOutput<PJ301MPort>(mm2px(Vec(panel_x_position, outputs_vertical_position)), module, column));
+    }
+
+    // Poly add input
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(202.404, 11.366)), module, DigitalProgrammer::POLY_ADD_INPUT));
+
+    // Poly output
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(225.683, 11.366)), module, DigitalProgrammer::POLY_OUTPUT));
+
+    // bank controls
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(193.162, 36.593)), module, DigitalProgrammer::BANK_CV_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(205.383, 36.593)), module, DigitalProgrammer::BANK_NEXT_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(217.612, 36.593)), module, DigitalProgrammer::BANK_PREV_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(229.824, 36.593)), module, DigitalProgrammer::BANK_RESET_INPUT));
+
+    // copy/paste mode toggle
+    // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_INPUT));
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_PARAM));
+    addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_LIGHT));
+
   }
 
 };
