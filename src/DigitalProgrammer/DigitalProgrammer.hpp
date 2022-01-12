@@ -210,11 +210,11 @@ struct DigitalProgrammer : Module
       // Get voltage for the specific slider
       float output_voltage = sliders[selected_bank][column].getValue();
 
-      // Add any value from the poly input
-      output_voltage += inputs[POLY_ADD_INPUT].getVoltage(column);
-
       // Eventually, I may add per-channel scaling
       float scaled_output = output_voltage * 10.0;
+
+      // Add any value from the poly input
+      scaled_output += inputs[POLY_ADD_INPUT].getVoltage(column);
 
       // Output voltage
       outputs[column].setVoltage(scaled_output);
