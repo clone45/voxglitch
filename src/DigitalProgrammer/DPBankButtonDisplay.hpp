@@ -17,23 +17,26 @@ struct DPBankButtonDisplay : TransparentWidget
     if(module)
     {
       if (module->selected_bank == button_index) {
-        drawButton(vg, nvgRGBA(156, 167, 185, 255)); // draw selected bright forground
+        // drawButton(vg, nvgRGBA(156, 167, 185, 255)); // draw selected bright forground
+        drawMiniMap(vg, nvgRGBA(156, 167, 185, 255));
       }
       else if (module->is_moused_over_bank && (module->mouse_over_bank == button_index) && module->copy_paste_mode) {
         // drawButton(vg, nvgRGBA(97, 86, 105, 255)); // draw special mouse-over highlight while in copy/paste mode
         drawMiniMap(vg, nvgRGBA(97, 86, 105, 255));
       }
       else if (module->is_moused_over_bank && (module->mouse_over_bank == button_index)) {
-        drawButton(vg, nvgRGBA(66, 77, 97, 255)); // draw mouse-over highlight
+        // drawButton(vg, nvgRGBA(66, 77, 97, 255)); // draw mouse-over highlight
         drawMiniMap(vg, nvgRGBA(156, 167, 185, 255));
       }
       else
       {
         if(paste_highlight) {
-          drawButton(vg, nvgRGBA(97, 86, 105, 255)); // draw paste highlight for pasted banks
+          drawMiniMap(vg, nvgRGBA(97, 86, 105, 255));
+          // drawButton(vg, nvgRGBA(97, 86, 105, 255)); // draw paste highlight for pasted banks
         }
         else {
-          drawButton(vg, nvgRGBA(53, 64, 85, 255)); // draw background
+          drawMiniMap(vg, nvgRGBA(53, 64, 85, 255));
+          // drawButton(vg, nvgRGBA(53, 64, 85, 255)); // draw standard background
         }
       }
 

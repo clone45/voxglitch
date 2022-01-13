@@ -1,3 +1,7 @@
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("DigitalProgrammer");
+#endif
+
 struct DigitalProgrammerWidget : ModuleWidget
 {
   DigitalProgrammer* module = NULL;
