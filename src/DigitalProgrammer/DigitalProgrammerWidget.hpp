@@ -7,12 +7,12 @@ struct DigitalProgrammerWidget : ModuleWidget
   DigitalProgrammer* module = NULL;
 
   float bank_button_positions[24][2] = {
-    {189.56, 45.333}, {200.827, 45.333}, {212.093, 45.333}, {223.360, 45.333},
-    {189.56, 57.133}, {200.827, 57.133}, {212.093, 57.133}, {223.360, 57.133},
-    {189.56, 68.933}, {200.827, 68.933}, {212.093, 68.933}, {223.360, 68.933},
-    {189.56, 80.733}, {200.827, 80.733}, {212.093, 80.733}, {223.360, 80.733},
-    {189.56, 92.533}, {200.827, 92.533}, {212.093, 92.533}, {223.360, 92.533},
-    {189.56, 104.333}, {200.827, 104.333}, {212.093, 104.333}, {223.360, 104.333}
+    {189.56, 47.975}, {200.827, 47.975}, {212.093, 47.975}, {223.360, 47.975},
+    {189.56, 59.242}, {200.827, 59.242}, {212.093, 59.242}, {223.360, 59.242},
+    {189.56, 70.509}, {200.827, 70.509}, {212.093, 70.509}, {223.360, 70.509},
+    {189.56, 81.776}, {200.827, 81.776}, {212.093, 81.776}, {223.360, 81.776},
+    {189.56, 93.043}, {200.827, 93.043}, {212.093, 93.043}, {223.360, 93.043},
+    {189.56, 104.317}, {200.827, 104.317}, {212.093, 104.317}, {223.360, 104.317}
   };
 
   DigitalProgrammerWidget(DigitalProgrammer* module)
@@ -87,14 +87,80 @@ struct DigitalProgrammerWidget : ModuleWidget
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(225.683, 11.366)), module, DigitalProgrammer::POLY_OUTPUT));
 
     // bank controls
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(193.162, 36.593)), module, DigitalProgrammer::BANK_CV_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(205.383, 36.593)), module, DigitalProgrammer::BANK_NEXT_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(217.612, 36.593)), module, DigitalProgrammer::BANK_PREV_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(229.824, 36.593)), module, DigitalProgrammer::BANK_RESET_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(193.162, 36.593 + 2.642)), module, DigitalProgrammer::BANK_CV_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(205.383, 36.593 + 2.642)), module, DigitalProgrammer::BANK_NEXT_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(217.612, 36.593 + 2.642)), module, DigitalProgrammer::BANK_PREV_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(229.824, 36.593 + 2.642)), module, DigitalProgrammer::BANK_RESET_INPUT));
 
     // copy/paste mode toggle
     addParam(createParamCentered<LEDButton>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_PARAM));
     addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_LIGHT));
+  }
+
+  struct InputSnapValueItem : MenuItem {
+    DigitalProgrammer *module;
+    int snap_division_index = 0;
+    int slider_number = 0;
+
+    void onAction(const event::Action &e) override {
+      module->snap_settings[slider_number] = snap_division_index;
+    }
+  };
+
+  struct InputSnapItem : MenuItem {
+    DigitalProgrammer *module;
+    int slider_number = 0;
+
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      for (unsigned int i=0; i < NUMBER_OF_SNAP_DIVISIONS; i++)
+      {
+        InputSnapValueItem *input_snap_value_item = createMenuItem<InputSnapValueItem>(module->snap_division_names[i], CHECKMARK(module->snap_settings[slider_number] == i));
+        input_snap_value_item->module = module;
+        input_snap_value_item->snap_division_index = i;
+        input_snap_value_item->slider_number = this->slider_number;
+        menu->addChild(input_snap_value_item);
+      }
+
+      return menu;
+    }
+  };
+
+  struct SliderItem : MenuItem {
+    DigitalProgrammer *module;
+    unsigned int slider_number = 0;
+
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      InputSnapItem *input_snap_item = createMenuItem<InputSnapItem>("Snap", RIGHT_ARROW);
+      input_snap_item->slider_number = this->slider_number;
+      input_snap_item->module = module;
+      menu->addChild(input_snap_item);
+
+      return menu;
+    }
+  };
+
+  void appendContextMenu(Menu *menu) override
+  {
+    DigitalProgrammer *module = dynamic_cast<DigitalProgrammer*>(this->module);
+    assert(module);
+
+    menu->addChild(new MenuEntry); // For spacing only
+    menu->addChild(createMenuLabel("Slider Settings"));
+
+    // Add individual sequencer settings
+    SliderItem *slider_items[16];
+
+    for(unsigned int i=0; i < NUMBER_OF_SLIDERS; i++)
+    {
+      slider_items[i] = createMenuItem<SliderItem>("Slider #" + std::to_string(i + 1), RIGHT_ARROW);
+      slider_items[i]->module = module;
+      slider_items[i]->slider_number = i;
+      menu->addChild(slider_items[i]);
+    }
   }
 
 };

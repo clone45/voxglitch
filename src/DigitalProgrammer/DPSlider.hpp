@@ -1,7 +1,8 @@
 struct DPSlider
 {
   double value = 0.0;
-
+  unsigned int snap_division_index = 0;
+  
   // constructor
   DPSlider()
   {
