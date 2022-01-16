@@ -21,7 +21,15 @@ struct DigitalProgrammer : Module
   bool copy_paste_mode = false;
   unsigned int copy_bank_id = 0;
 
+  bool visualize_sums = true;
+  bool colorful_sliders = false;
+
+  PortWidget *output_ports[NUMBER_OF_SLIDERS];
+
+  unsigned int snap_settings[NUMBER_OF_SLIDERS] = {0};
   DPSlider sliders[NUMBER_OF_BANKS][NUMBER_OF_SLIDERS];
+
+  std::string snap_division_names[NUMBER_OF_SNAP_DIVISIONS] = { "None", "32", "16", "8", "4" };
 
   dsp::SchmittTrigger bank_next_schmitt_trigger;
   dsp::SchmittTrigger bank_prev_schmitt_trigger;
@@ -100,6 +108,9 @@ struct DigitalProgrammer : Module
     // Save the selected bank
     json_object_set_new(json_root, "selected_bank", json_integer(this->selected_bank));
 
+    // Save colorful slider mode
+    json_object_set_new(json_root, "colorful_sliders", json_integer(colorful_sliders));
+
     return json_root;
   }
 
@@ -130,6 +141,10 @@ struct DigitalProgrammer : Module
     // load selected bank
     json_t* selected_bank_json = json_object_get(json_root, "selected_bank");
     if (selected_bank_json) this->selected_bank = json_integer_value(selected_bank_json);
+
+    // Load colorful sliders option
+    json_t* colorful_slider_json = json_object_get(json_root, "colorful_sliders");
+    if (colorful_slider_json) colorful_sliders = json_integer_value(colorful_slider_json);
   }
 
   void incrementBank()

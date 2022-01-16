@@ -43,19 +43,23 @@ struct DPSliderDisplay : TransparentWidget
       {
         // draw mouse-over background
         drawSliderBackground(vg, nvgRGBA(66, 77, 97, 255));
+
+        NVGcolor fill_color = getSliderColor(nvgRGBA(156, 167, 185, 255));
+        drawSlider(vg, value, fill_color);
+        drawSlider(vg, value, nvgRGBA(255, 255, 255, 120));
       }
       else
       {
         // draw normal background
         drawSliderBackground(vg, nvgRGBA(53, 64, 85, 255));
+
+        NVGcolor fill_color = getSliderColor(nvgRGBA(156, 167, 185, 255));
+        drawSlider(vg, value, fill_color);
       }
 
-      // Draw slider value
-      drawSlider(vg, value, nvgRGBA(156, 167, 185, 255));
     }
     else
     {
-      DEBUG("got here <><><><><>");
       drawSliderBackground(vg, nvgRGBA(66, 77, 97, 255));
       drawSlider(vg, 0.6, nvgRGBA(156, 167, 185, 255));
     }
@@ -84,8 +88,38 @@ struct DPSliderDisplay : TransparentWidget
     nvgBeginPath(vg);
     nvgRect(vg, 0.0, SLIDER_HEIGHT - y, SLIDER_WIDTH, y);
     nvgFillColor(vg, color);
+
     nvgFill(vg);
   }
+
+  NVGcolor getSliderColor(NVGcolor default_color)
+  {
+    if(module && module->colorful_sliders)
+    {
+      // If no cable is connected, return the default color
+      if(! module->outputs[this->column].isConnected()) return default_color;
+
+      // If a cable is connected, find the top (stacked) cable and return it.
+      NVGcolor color = APP->scene->rack->getTopCable(module->output_ports[this->column])->color;
+      color.a = 1.0f;  // set alpha
+      return(color);
+    }
+    else // standard sliders
+    {
+      return(default_color);
+    }
+  }
+
+  /*
+  NVGcolor getColor(int i) {
+    if (!module->params[LA_216::PARAM_COLORS].getValue()) {
+      return i?SUBLIGHTREDTRANS:SUBLIGHTBLUETRANS;
+    }
+    NVGcolor col = APP->scene->rack->getTopCable(ports[i])->color;
+    col.a = 1.0f;
+    return col;
+  }
+  */
 
   //
   // void editBar(Vec mouse_position)
