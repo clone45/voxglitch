@@ -17,15 +17,17 @@ struct DPBankButtonDisplay : TransparentWidget
     if(module)
     {
       if (module->selected_bank == button_index) {
-        // drawMiniMap(vg, nvgRGBA(156, 167, 185, 255));
+        // Draw selected bank button
+        drawButton(vg, nvgRGBA(66, 77, 97, 255));
         drawMiniMap(vg, nvgRGBA(255, 255, 255, 255));
       }
       else if (module->is_moused_over_bank && (module->mouse_over_bank == button_index) && module->copy_paste_mode) {
         drawMiniMap(vg, nvgRGBA(97, 86, 105, 255)); // draw special mouse-over highlight while in copy/paste mode
       }
       else if (module->is_moused_over_bank && (module->mouse_over_bank == button_index)) {
-        // drawMiniMap(vg, nvgRGBA(156, 167, 185, 255)); // draw mouse-over highlight
-        drawMiniMap(vg, nvgRGBA(223, 224, 255, 251)); // draw mouse-over highlight
+        // draw mouse-over highlight
+        drawButton(vg, nvgRGBA(66, 77, 97, 255));
+        drawMiniMap(vg, nvgRGBA(255, 255, 255, 251));
       }
       else
       {
@@ -58,10 +60,13 @@ struct DPBankButtonDisplay : TransparentWidget
       float width = (BANK_BUTTON_WIDTH / NUMBER_OF_SLIDERS);
       float height = -1 * (slider_value * BANK_BUTTON_HEIGHT);
 
-      nvgBeginPath(vg);
-      nvgRect(vg, x, y, width, height);
-      nvgFillColor(vg, color);
-      nvgFill(vg);
+      if(height < 0)
+      {
+        nvgBeginPath(vg);
+        nvgRect(vg, x, y, width, height);
+        nvgFillColor(vg, color);
+        nvgFill(vg);
+      }
     }
   }
 

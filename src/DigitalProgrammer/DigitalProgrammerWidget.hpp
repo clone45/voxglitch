@@ -76,8 +76,13 @@ struct DigitalProgrammerWidget : ModuleWidget
       panel_x_position = slider_column_x[column];
       panel_y_position = 7.0;
 
-      // Add output
-      addOutput(createOutput<PJ301MPort>(mm2px(Vec(panel_x_position, outputs_vertical_position)), module, column));
+      // Add outputs
+      PortWidget *output_port = createOutput<PJ301MPort>(mm2px(Vec(panel_x_position, outputs_vertical_position)), module, column);
+      addOutput(output_port);
+
+      // Store pointer to outputs so that I can later fetch the cable informatiion
+      // (especially color) later.
+      if(module) module->output_ports[column] = output_port;
     }
 
     // Poly add input
@@ -143,8 +148,26 @@ struct DigitalProgrammerWidget : ModuleWidget
     }
   };
 
+  struct ColorfulSlidersMenuItem : MenuItem {
+    DigitalProgrammer* module;
+    void onAction(const event::Action& e) override {
+      module->colorful_sliders = !(module->colorful_sliders);
+    }
+  };
+
   void appendContextMenu(Menu *menu) override
   {
+    // Add a space
+		menu->addChild(new MenuEntry);
+
+    // Add colorful slider toggle
+    ColorfulSlidersMenuItem* colorful_sliders_menu_item = createMenuItem<ColorfulSlidersMenuItem>("Match Cable Colors");
+    colorful_sliders_menu_item->rightText = CHECKMARK(module->colorful_sliders == 1);
+    colorful_sliders_menu_item->module = module;
+    menu->addChild(colorful_sliders_menu_item);
+
+
+    /*
     DigitalProgrammer *module = dynamic_cast<DigitalProgrammer*>(this->module);
     assert(module);
 
@@ -161,6 +184,7 @@ struct DigitalProgrammerWidget : ModuleWidget
       slider_items[i]->slider_number = i;
       menu->addChild(slider_items[i]);
     }
+    */
   }
 
 };
