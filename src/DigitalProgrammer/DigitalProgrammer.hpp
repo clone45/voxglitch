@@ -184,6 +184,29 @@ struct DigitalProgrammer : Module
     }
   }
 
+  void onRandomize() override
+  {
+    for(unsigned int bank = 0; bank < NUMBER_OF_BANKS; bank++)
+    {
+      for(unsigned int slider = 0; slider < NUMBER_OF_SLIDERS; slider ++)
+      {
+        this->sliders[bank][slider].setValue((std::rand() % 100) / 100.0);
+      }
+    }
+  }
+
+    /*
+    for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
+    {
+      for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
+      {
+        this->voltage_sequencers[sequencer_number].randomize();
+        this->gate_sequencers[sequencer_number].randomize();
+      }
+    }
+    */
+	// }
+
   /*
 
   ______
