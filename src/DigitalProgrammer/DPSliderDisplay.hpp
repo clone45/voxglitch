@@ -22,6 +22,7 @@ struct DPSliderDisplay : TransparentWidget
   Vec drag_position;
   unsigned int column = 0;
 
+
   DPSliderDisplay(unsigned int column)
   {
     this->column = column;
@@ -55,6 +56,39 @@ struct DPSliderDisplay : TransparentWidget
 
         NVGcolor fill_color = getSliderColor(nvgRGBA(156, 167, 185, 255));
         drawSlider(vg, value, fill_color);
+
+        // Draw highlight for voltage additions
+
+        if(module->visualize_sums && module->add_input_voltages[column] != 0)
+        {
+          float sum_value = value + (module->add_input_voltages[column] / 10.0);
+          sum_value = clamp(sum_value, 0.0, 1.0);
+          drawSlider(vg, sum_value, nvgRGBA(30, 30, 30, 60));
+        }
+      }
+
+      // Draw label background
+      /*
+      nvgBeginPath(args.vg);
+      nvgRect(args.vg, 0.0, 110, SLIDER_WIDTH, -110);
+      nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 60));
+      nvgFill(vg);
+      */
+
+      // Draw label, if any
+      std::string to_display = module->labels[column];
+
+      if(to_display != "")
+      {
+        nvgFontSize(args.vg, 14);
+        nvgTextLetterSpacing(args.vg, 0);
+        nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+        nvgRotate(args.vg, -M_PI / 2.0f);
+        nvgTextAlign(args.vg, NVG_ALIGN_RIGHT);
+        float x_position = 16;
+        float y_position = -280;
+        float wrap_at = 275.0; // Just throw your hands in the air!  And wave them like you just don't
+        nvgTextBox(args.vg, y_position, x_position, wrap_at, to_display.c_str(), NULL);
       }
 
     }
@@ -109,17 +143,6 @@ struct DPSliderDisplay : TransparentWidget
       return(default_color);
     }
   }
-
-  /*
-  NVGcolor getColor(int i) {
-    if (!module->params[LA_216::PARAM_COLORS].getValue()) {
-      return i?SUBLIGHTREDTRANS:SUBLIGHTBLUETRANS;
-    }
-    NVGcolor col = APP->scene->rack->getTopCable(ports[i])->color;
-    col.a = 1.0f;
-    return col;
-  }
-  */
 
   //
   // void editBar(Vec mouse_position)

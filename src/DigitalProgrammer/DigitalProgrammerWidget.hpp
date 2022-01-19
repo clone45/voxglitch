@@ -100,6 +100,7 @@ struct DigitalProgrammerWidget : ModuleWidget
     // copy/paste mode toggle
     addParam(createParamCentered<LEDButton>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_PARAM));
     addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_LIGHT));
+
   }
 
   struct InputSnapValueItem : MenuItem {
@@ -155,6 +156,67 @@ struct DigitalProgrammerWidget : ModuleWidget
     }
   };
 
+  struct VisualizeSumsMenuItem : MenuItem {
+    DigitalProgrammer* module;
+    void onAction(const event::Action& e) override {
+      module->visualize_sums = !(module->visualize_sums);
+    }
+  };
+
+  struct labelTextField : TextField {
+
+    DigitalProgrammer *module;
+    unsigned int column = 0;
+
+    labelTextField(unsigned int column)
+    {
+      this->column = column;
+      this->box.pos.x = 30;
+      this->box.size.x = 160;
+      this->multiline = false;
+    }
+
+    void onChange(const event::Change& e) override {
+      module->labels[column] = text;
+    };
+
+  };
+
+  struct LabelsMenu : MenuItem {
+    DigitalProgrammer *module;
+
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      menu->addChild(new MenuEntry);
+
+      for(unsigned int i=0; i < NUMBER_OF_SLIDERS; i++)
+      {
+        auto holder = new rack::Widget;
+        holder->box.size.x = 200; // This value will determine the width of the menu
+        holder->box.size.y = 20;
+
+        auto lab = new rack::Label;
+        lab->text = std::to_string(i + 1) + ":";
+        lab->box.size = 40; // label box size determins the bounding box around #1, #2, #3 etc.
+        holder->addChild(lab);
+
+        auto textfield = new labelTextField(i);
+        textfield->module = module;
+        textfield->text = module->labels[i];
+        holder->addChild(textfield);
+
+        menu->addChild(holder);
+      }
+
+      menu->addChild(new MenuEntry);
+
+      return menu;
+    }
+  };
+
+
+
   void appendContextMenu(Menu *menu) override
   {
     // Add a space
@@ -165,6 +227,19 @@ struct DigitalProgrammerWidget : ModuleWidget
     colorful_sliders_menu_item->rightText = CHECKMARK(module->colorful_sliders == 1);
     colorful_sliders_menu_item->module = module;
     menu->addChild(colorful_sliders_menu_item);
+
+    // Add colorful slider toggle
+    VisualizeSumsMenuItem* visualize_sums_menu_item = createMenuItem<VisualizeSumsMenuItem>("Visualize Summed Voltages");
+    visualize_sums_menu_item->rightText = CHECKMARK(module->visualize_sums == 1);
+    visualize_sums_menu_item->module = module;
+    menu->addChild(visualize_sums_menu_item);
+
+    /*
+    LabelMenuItem * label_menu_item = createMenuItem<LabelMenuItem>("sample input");
+    label_menu_item->module = module;
+    menu->addChild(label_menu_item);
+    */
+    // menu->addChild(new LabelTextField());
 
 
     /*
@@ -185,6 +260,11 @@ struct DigitalProgrammerWidget : ModuleWidget
       menu->addChild(slider_items[i]);
     }
     */
+
+
+    LabelsMenu *labels_menu = createMenuItem<LabelsMenu>("Labels", RIGHT_ARROW);
+    labels_menu->module = module;
+    menu->addChild(labels_menu);
   }
 
 };

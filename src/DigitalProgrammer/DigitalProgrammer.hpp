@@ -21,15 +21,17 @@ struct DigitalProgrammer : Module
   bool copy_paste_mode = false;
   unsigned int copy_bank_id = 0;
 
-  bool visualize_sums = true;
+  bool visualize_sums = false;
   bool colorful_sliders = false;
 
   PortWidget *output_ports[NUMBER_OF_SLIDERS];
 
   unsigned int snap_settings[NUMBER_OF_SLIDERS] = {0};
   DPSlider sliders[NUMBER_OF_BANKS][NUMBER_OF_SLIDERS];
+  float add_input_voltages[NUMBER_OF_SLIDERS] = {0};
 
   std::string snap_division_names[NUMBER_OF_SNAP_DIVISIONS] = { "None", "32", "16", "8", "4" };
+  std::string labels[NUMBER_OF_SLIDERS] = {"","","","","","","","","","","","","","","",""};
 
   dsp::SchmittTrigger bank_next_schmitt_trigger;
   dsp::SchmittTrigger bank_prev_schmitt_trigger;
@@ -105,11 +107,25 @@ struct DigitalProgrammer : Module
     json_object_set(json_root, "banks", banks_json_array);
     json_decref(banks_json_array);
 
+    //
+    // Save the labels
+    //
+    json_t *labels_json_array = json_array();
+    for(int i = 0; i < NUMBER_OF_SLIDERS; i++)
+    {
+      json_array_append_new(labels_json_array, json_string(labels[i].c_str()));
+    }
+    json_object_set(json_root, "labels", labels_json_array);
+    json_decref(labels_json_array);
+
     // Save the selected bank
     json_object_set_new(json_root, "selected_bank", json_integer(this->selected_bank));
 
     // Save colorful slider mode
     json_object_set_new(json_root, "colorful_sliders", json_integer(colorful_sliders));
+
+    // Save visualize sums
+    json_object_set_new(json_root, "visualize_sums", json_integer(visualize_sums));
 
     return json_root;
   }
@@ -138,6 +154,27 @@ struct DigitalProgrammer : Module
       }
     }
 
+    //
+    // Load the labels
+    //
+    json_t *labels_json = json_object_get(json_root, "labels");
+
+    if(labels_json)
+    {
+      size_t i;
+      json_t *label_json;
+
+      json_array_foreach(labels_json, i, label_json)
+      {
+        labels[i] = json_string_value(label_json);
+        /*
+        float x = json_real_value(json_array_get(json_array_pair_xy, 0));
+        float y = json_real_value(json_array_get(json_array_pair_xy, 1));
+        recording_memory.push_back(Vec(x,y));
+        */
+      }
+    }
+
     // load selected bank
     json_t* selected_bank_json = json_object_get(json_root, "selected_bank");
     if (selected_bank_json) this->selected_bank = json_integer_value(selected_bank_json);
@@ -145,6 +182,9 @@ struct DigitalProgrammer : Module
     // Load colorful sliders option
     json_t* colorful_slider_json = json_object_get(json_root, "colorful_sliders");
     if (colorful_slider_json) colorful_sliders = json_integer_value(colorful_slider_json);
+
+    json_t* visualize_sums_json = json_object_get(json_root, "visualize_sums");
+    if (visualize_sums_json) visualize_sums = json_integer_value(visualize_sums_json);
   }
 
   void incrementBank()
@@ -195,18 +235,6 @@ struct DigitalProgrammer : Module
     }
   }
 
-    /*
-    for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
-    {
-      for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
-      {
-        this->voltage_sequencers[sequencer_number].randomize();
-        this->gate_sequencers[sequencer_number].randomize();
-      }
-    }
-    */
-	// }
-
   /*
 
   ______
@@ -252,7 +280,9 @@ struct DigitalProgrammer : Module
       float scaled_output = output_voltage * 10.0;
 
       // Add any value from the poly input
-      scaled_output += inputs[POLY_ADD_INPUT].getVoltage(column);
+      float add_input_voltage = inputs[POLY_ADD_INPUT].getVoltage(column);
+      this->add_input_voltages[column] = add_input_voltage;
+      scaled_output += add_input_voltage;
 
       // Output voltage
       outputs[column].setVoltage(scaled_output);
