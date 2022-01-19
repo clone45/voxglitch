@@ -77,17 +77,19 @@ struct DPSliderDisplay : TransparentWidget
 
       // Draw label, if any
       std::string to_display = module->labels[column];
-      // std::string to_display = "testing bigger value";
-      nvgFontSize(args.vg, 14);
-      nvgTextLetterSpacing(args.vg, 0);
-      nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
-      nvgRotate(args.vg, -M_PI / 2.0f);
-      nvgTextAlign(args.vg, NVG_ALIGN_RIGHT);
-      float x_position = 16;
-      float y_position = -110;
-      float wrap_at = 100.0;
-      nvgTextBox(args.vg, y_position, x_position, wrap_at, to_display.c_str(), NULL);
 
+      if(to_display != "")
+      {
+        nvgFontSize(args.vg, 14);
+        nvgTextLetterSpacing(args.vg, 0);
+        nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+        nvgRotate(args.vg, -M_PI / 2.0f);
+        nvgTextAlign(args.vg, NVG_ALIGN_RIGHT);
+        float x_position = 16;
+        float y_position = -280;
+        float wrap_at = 275.0; // Just throw your hands in the air!  And wave them like you just don't
+        nvgTextBox(args.vg, y_position, x_position, wrap_at, to_display.c_str(), NULL);
+      }
 
     }
     else

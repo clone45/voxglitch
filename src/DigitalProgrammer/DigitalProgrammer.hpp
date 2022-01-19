@@ -31,7 +31,7 @@ struct DigitalProgrammer : Module
   float add_input_voltages[NUMBER_OF_SLIDERS] = {0};
 
   std::string snap_division_names[NUMBER_OF_SNAP_DIVISIONS] = { "None", "32", "16", "8", "4" };
-  std::string labels[NUMBER_OF_SLIDERS] = {"not set"};
+  std::string labels[NUMBER_OF_SLIDERS] = {"","","","","","","","","","","","","","","",""};
 
   dsp::SchmittTrigger bank_next_schmitt_trigger;
   dsp::SchmittTrigger bank_prev_schmitt_trigger;
@@ -107,6 +107,17 @@ struct DigitalProgrammer : Module
     json_object_set(json_root, "banks", banks_json_array);
     json_decref(banks_json_array);
 
+    //
+    // Save the labels
+    //
+    json_t *labels_json_array = json_array();
+    for(int i = 0; i < NUMBER_OF_SLIDERS; i++)
+    {
+      json_array_append_new(labels_json_array, json_string(labels[i].c_str()));
+    }
+    json_object_set(json_root, "labels", labels_json_array);
+    json_decref(labels_json_array);
+
     // Save the selected bank
     json_object_set_new(json_root, "selected_bank", json_integer(this->selected_bank));
 
@@ -140,6 +151,27 @@ struct DigitalProgrammer : Module
         {
           this->sliders[bank_number][i].setValue(json_real_value(json_array_get(json_slider_array, i)));
         }
+      }
+    }
+
+    //
+    // Load the labels
+    //
+    json_t *labels_json = json_object_get(json_root, "labels");
+
+    if(labels_json)
+    {
+      size_t i;
+      json_t *label_json;
+
+      json_array_foreach(labels_json, i, label_json)
+      {
+        labels[i] = json_string_value(label_json);
+        /*
+        float x = json_real_value(json_array_get(json_array_pair_xy, 0));
+        float y = json_real_value(json_array_get(json_array_pair_xy, 1));
+        recording_memory.push_back(Vec(x,y));
+        */
       }
     }
 

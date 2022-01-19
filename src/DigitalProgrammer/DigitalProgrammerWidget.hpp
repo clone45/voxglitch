@@ -163,36 +163,6 @@ struct DigitalProgrammerWidget : ModuleWidget
     }
   };
 
-  /*
-  struct TextFieldMenuItem : TextField {
-  	TextFieldMenuItem();
-  	void onAction(const event::Action& e) override;
-  };
-  */
-
-  /*
-  struct LabelMenuItem : MenuItem {
-  	DigitalProgrammer* module;
-  	// void onChange(const event::Change& e) override;
-    LabelTextField()
-    {
-      box.size = Vec(20, 20);
-      multiline = false;
-    }
-  };
-  */
-  /*
-  struct LabelTextField : TextField {
-  	DigitalProgrammer* module;
-  	// void onChange(const event::Change& e) override;
-    LabelTextField()
-    {
-      box.size = Vec(20, 20);
-      multiline = false;
-    }
-  };
-  */
-
   struct labelTextField : TextField {
 
     DigitalProgrammer *module;
@@ -201,8 +171,8 @@ struct DigitalProgrammerWidget : ModuleWidget
     labelTextField(unsigned int column)
     {
       this->column = column;
-      this->box.pos.x = 60;
-      this->box.size.x = 110;
+      this->box.pos.x = 30;
+      this->box.size.x = 160;
       this->multiline = false;
     }
 
@@ -218,6 +188,8 @@ struct DigitalProgrammerWidget : ModuleWidget
     Menu *createChildMenu() override {
       Menu *menu = new Menu;
 
+      menu->addChild(new MenuEntry);
+
       for(unsigned int i=0; i < NUMBER_OF_SLIDERS; i++)
       {
         auto holder = new rack::Widget;
@@ -225,16 +197,19 @@ struct DigitalProgrammerWidget : ModuleWidget
         holder->box.size.y = 20;
 
         auto lab = new rack::Label;
-        lab->text = "Lx:";
-        lab->box.size = 70;
+        lab->text = std::to_string(i + 1) + ":";
+        lab->box.size = 40; // label box size determins the bounding box around #1, #2, #3 etc.
         holder->addChild(lab);
 
         auto textfield = new labelTextField(i);
         textfield->module = module;
+        textfield->text = module->labels[i];
         holder->addChild(textfield);
 
         menu->addChild(holder);
       }
+
+      menu->addChild(new MenuEntry);
 
       return menu;
     }
