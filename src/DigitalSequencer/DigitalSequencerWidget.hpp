@@ -274,8 +274,7 @@ struct DigitalSequencerWidget : ModuleWidget
     assert(module);
 
     // Menu in development
-    menu->addChild(new MenuEntry); // For spacing only
-    menu->addChild(createMenuItem<QuickKeyMenu>("Quick Key Reference", RIGHT_ARROW));
+
     menu->addChild(new MenuEntry); // For spacing only
     menu->addChild(createMenuLabel("Sequencer Settings"));
 
@@ -307,6 +306,9 @@ struct DigitalSequencerWidget : ModuleWidget
     ResetModeItem *reset_mode_item = createMenuItem<ResetModeItem>("Reset Mode", RIGHT_ARROW);
     reset_mode_item->module = module;
     menu->addChild(reset_mode_item);
+
+    menu->addChild(new MenuEntry); // For spacing only
+    menu->addChild(createMenuItem<QuickKeyMenu>("Quick Key Reference", RIGHT_ARROW));
   }
 
   void step() override {
