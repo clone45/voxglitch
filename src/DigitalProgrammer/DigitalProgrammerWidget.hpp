@@ -54,7 +54,7 @@ struct DigitalProgrammerWidget : ModuleWidget
     {
       // calculation panel_x_position, panel_y_position
       panel_x_position = bank_button_positions[i][0];
-      panel_y_position = bank_button_positions[i][1];
+      panel_y_position = bank_button_positions[i][1] - 5.45;
 
       // Add button widget
       DPBankButtonDisplay *dp_bank_button_display = new DPBankButtonDisplay(i);
@@ -65,10 +65,12 @@ struct DigitalProgrammerWidget : ModuleWidget
     }
 
     // add copy/paste label
+    /*
     CopyPasteLabel *copy_paste_label = new CopyPasteLabel();
     copy_paste_label->setPosition(mm2px(Vec(198.5, 123.4)));
     copy_paste_label->module = module;
     addChild(copy_paste_label);
+    */
 
     for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)
     {
@@ -92,14 +94,20 @@ struct DigitalProgrammerWidget : ModuleWidget
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(225.683, 11.366)), module, DigitalProgrammer::POLY_OUTPUT));
 
     // bank controls
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(193.162, 36.593 + 2.642)), module, DigitalProgrammer::BANK_CV_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(205.383, 36.593 + 2.642)), module, DigitalProgrammer::BANK_NEXT_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(217.612, 36.593 + 2.642)), module, DigitalProgrammer::BANK_PREV_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(229.824, 36.593 + 2.642)), module, DigitalProgrammer::BANK_RESET_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(193.162, 36.593 + 2.642 - 5.45)), module, DigitalProgrammer::BANK_CV_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(205.383, 36.593 + 2.642 - 5.45)), module, DigitalProgrammer::BANK_NEXT_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(217.612, 36.593 + 2.642 - 5.45)), module, DigitalProgrammer::BANK_PREV_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(229.824, 36.593 + 2.642 - 5.45)), module, DigitalProgrammer::BANK_RESET_INPUT));
 
     // copy/paste mode toggle
     addParam(createParamCentered<LEDButton>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_PARAM));
     addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_LIGHT));
+
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(205, 122)), module, DigitalProgrammer::CLEAR_MODE_PARAM));
+    addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(205, 122)), module, DigitalProgrammer::CLEAR_MODE_LIGHT));
+
+    addParam(createParamCentered<LEDButton>(mm2px(Vec(216.84, 122)), module, DigitalProgrammer::RANDOMIZE_MODE_PARAM));
+    addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(216.84, 122)), module, DigitalProgrammer::RANDOMIZE_MODE_LIGHT));
 
   }
 
