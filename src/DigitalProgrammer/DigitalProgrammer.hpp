@@ -21,6 +21,11 @@ struct DigitalProgrammer : Module
   bool copy_paste_mode = false;
   unsigned int copy_bank_id = 0;
 
+  // Other modes
+  bool clear_mode = false;
+  bool randomize_mode = false;
+
+  // Context menu options
   bool visualize_sums = false;
   bool colorful_sliders = false;
 
@@ -37,10 +42,14 @@ struct DigitalProgrammer : Module
   dsp::SchmittTrigger bank_prev_schmitt_trigger;
   dsp::SchmittTrigger bank_reset_schmitt_trigger;
   dsp::SchmittTrigger copy_mode_button_trigger;
+  dsp::SchmittTrigger clear_mode_button_trigger;
+  dsp::SchmittTrigger randomize_mode_button_trigger;
 
   enum ParamIds {
     ENUMS(BANK_BUTTONS, NUMBER_OF_BANKS),
     COPY_MODE_PARAM,
+    CLEAR_MODE_PARAM,
+    RANDOMIZE_MODE_PARAM,
     NUM_PARAMS
   };
   enum InputIds {
@@ -60,6 +69,8 @@ struct DigitalProgrammer : Module
   enum LightIds {
     ENUMS(BANK_LIGHTS, NUMBER_OF_BANKS),
     COPY_MODE_LIGHT,
+    CLEAR_MODE_LIGHT,
+    RANDOMIZE_MODE_LIGHT,
     NUM_LIGHTS
   };
 
@@ -224,6 +235,22 @@ struct DigitalProgrammer : Module
     }
   }
 
+  void clearBank(unsigned int bank_id)
+  {
+    for(int column = 0; column < NUMBER_OF_SLIDERS; column ++)
+    {
+      sliders[bank_id][column].setValue(0);
+    }
+  }
+
+  void randomizeBank(unsigned int bank_id)
+  {
+    for(unsigned int slider = 0; slider < NUMBER_OF_SLIDERS; slider ++)
+    {
+      this->sliders[bank_id][slider].setValue((std::rand() % 100) / 100.0);
+    }
+  }
+
   void onRandomize() override
   {
     for(unsigned int bank = 0; bank < NUMBER_OF_BANKS; bank++)
@@ -268,6 +295,24 @@ struct DigitalProgrammer : Module
     {
       copy_paste_mode = ! copy_paste_mode; // toggle off/on
       this->copy_bank_id = this->selected_bank;
+      clear_mode = false;
+      randomize_mode = false;
+    }
+
+    // Process clear mode button
+    if(clear_mode_button_trigger.process(params[CLEAR_MODE_PARAM].getValue()))
+    {
+      clear_mode = ! clear_mode; // toggle off/on
+      copy_paste_mode = false;
+      randomize_mode = false;
+    }
+
+    // Process randomize mode button
+    if(randomize_mode_button_trigger.process(params[RANDOMIZE_MODE_PARAM].getValue()))
+    {
+      randomize_mode = ! randomize_mode; // toggle off/on
+      copy_paste_mode = false;
+      clear_mode = false;
     }
 
     // Output values
@@ -291,7 +336,11 @@ struct DigitalProgrammer : Module
 
     // output voltages and manage lights
     outputs[POLY_OUTPUT].setChannels(NUMBER_OF_SLIDERS);
+
+    // Light up mode displays, if active
     lights[COPY_MODE_LIGHT].setBrightness(copy_paste_mode == true);
+    lights[CLEAR_MODE_LIGHT].setBrightness(clear_mode == true);
+    lights[RANDOMIZE_MODE_LIGHT].setBrightness(randomize_mode == true);
   }
 
 };
