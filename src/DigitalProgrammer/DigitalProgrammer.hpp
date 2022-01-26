@@ -2,8 +2,8 @@
 
 DigitalProgrammer
 By Bret Truchan
-Special thanks to Andras Szabo (Firo Lightfog) for their creative input.
-
+- Special thanks to Andras Szabo (Firo Lightfog) for their creative input.
+- Thank you to Guenon from the VCV Community for sharing their feedback.
 */
 
 struct DigitalProgrammer : Module
