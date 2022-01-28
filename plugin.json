@@ -38,6 +38,12 @@
         "tags": ["Sequencer"]
     },
     {
+        "slug": "digitalsequencerxp",
+        "name": "Digital Sequencer XP",
+        "description": "Polyphonic version of the Digital Sequencer.  Sixteen-in-one cv/gate sequencers with independent control over clock division and sequence length.",
+        "tags": ["Sequencer", "Polyphonic"]
+    },
+    {
         "slug": "glitchsequencer",
         "name": "Glitch Sequencer",
         "description": "Cellular Automaton Gate Sequencer",

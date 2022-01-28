@@ -12,6 +12,7 @@ extern Model *modelAutobreak;
 extern Model *modelByteBeat;
 extern Model *modelDigitalProgrammer;
 extern Model *modelDigitalSequencer;
+extern Model *modelDigitalSequencerXP;
 extern Model *modelGlitchSequencer;
 extern Model *modelGhosts;
 extern Model *modelGoblins;

@@ -1,15 +1,9 @@
-struct DigitalSequencer : Module
+struct DigitalSequencerXP : Module
 {
-  dsp::SchmittTrigger stepTrigger;
+  dsp::SchmittTrigger stepTriggers[NUMBER_OF_SEQUENCERS];
+  dsp::SchmittTrigger resetTriggers[NUMBER_OF_SEQUENCERS];
   dsp::SchmittTrigger sequencer_step_triggers[NUMBER_OF_SEQUENCERS];
-  dsp::SchmittTrigger resetTrigger;
-
-  dsp::SchmittTrigger sequencer_1_button_trigger;
-  dsp::SchmittTrigger sequencer_2_button_trigger;
-  dsp::SchmittTrigger sequencer_3_button_trigger;
-  dsp::SchmittTrigger sequencer_4_button_trigger;
-  dsp::SchmittTrigger sequencer_5_button_trigger;
-  dsp::SchmittTrigger sequencer_6_button_trigger;
+  dsp::SchmittTrigger sequencer_button_triggers[NUMBER_OF_SEQUENCERS];
 
   long clock_ignore_on_reset = 0;
   bool legacy_reset = false;
@@ -19,13 +13,15 @@ struct DigitalSequencer : Module
 
   unsigned int tooltip_timer = 0;
 
+  /*
   VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
   VoltageSequencer *selected_voltage_sequencer;
 
   GateSequencer gate_sequencers[NUMBER_OF_SEQUENCERS];
   GateSequencer *selected_gate_sequencer;
+  */
 
-  int selected_sequencer_index = 0;
+  unsigned int selected_sequencer_index = 0;
   int voltage_outputs[NUMBER_OF_SEQUENCERS];
   int gate_outputs[NUMBER_OF_SEQUENCERS];
   int sequencer_step_inputs[NUMBER_OF_SEQUENCERS];
@@ -33,12 +29,7 @@ struct DigitalSequencer : Module
   dsp::PulseGenerator gateOutputPulseGenerators[NUMBER_OF_SEQUENCERS];
   double sample_rate;
 
-  bool sequencer_1_button_is_triggered;
-  bool sequencer_2_button_is_triggered;
-  bool sequencer_3_button_is_triggered;
-  bool sequencer_4_button_is_triggered;
-  bool sequencer_5_button_is_triggered;
-  bool sequencer_6_button_is_triggered;
+  bool sequencer_button_is_triggered[NUMBER_OF_SEQUENCERS];
 
   std::string voltage_range_names[NUMBER_OF_VOLTAGE_RANGES] = {
     "0.0 to 10.0",
@@ -54,125 +45,46 @@ struct DigitalSequencer : Module
   std::string snap_division_names[NUMBER_OF_SNAP_DIVISIONS] = { "None", "8", "10", "12", "16", "24", "32", "36" };
 
   enum ParamIds {
-    SEQUENCE_SELECTION_KNOB,
-    SEQUENCER_1_LENGTH_KNOB,
-    SEQUENCER_2_LENGTH_KNOB,
-    SEQUENCER_3_LENGTH_KNOB,
-    SEQUENCER_4_LENGTH_KNOB,
-    SEQUENCER_5_LENGTH_KNOB,
-    SEQUENCER_6_LENGTH_KNOB,
-
-    SEQUENCE_START_KNOB,
-    SEQUENCER_1_BUTTON,
-    SEQUENCER_2_BUTTON,
-    SEQUENCER_3_BUTTON,
-    SEQUENCER_4_BUTTON,
-    SEQUENCER_5_BUTTON,
-    SEQUENCER_6_BUTTON,
-
+    SEQUENCER_BUTTONS_OFFSET,
+    ENUMS(SEQUENCER_BUTTONS, NUMBER_OF_SEQUENCERS),
     FREEZE_TOGGLE,
-
     NUM_PARAMS
   };
   enum InputIds {
-    CLOCK_INPUT,
     STEP_INPUT,
     RESET_INPUT,
-    SEQUENCER_1_STEP_INPUT,
-    SEQUENCER_2_STEP_INPUT,
-    SEQUENCER_3_STEP_INPUT,
-    SEQUENCER_4_STEP_INPUT,
-    SEQUENCER_5_STEP_INPUT,
-    SEQUENCER_6_STEP_INPUT,
+    LENGTH_INPUT,
     NUM_INPUTS
   };
   enum OutputIds {
-    CLOCK_OUTPUT,
-    END_OUTPUT,
-
-    SEQ1_CV_OUTPUT,
-    SEQ2_CV_OUTPUT,
-    SEQ3_CV_OUTPUT,
-    SEQ4_CV_OUTPUT,
-    SEQ5_CV_OUTPUT,
-    SEQ6_CV_OUTPUT,
-
-    SEQ1_GATE_OUTPUT,
-    SEQ2_GATE_OUTPUT,
-    SEQ3_GATE_OUTPUT,
-    SEQ4_GATE_OUTPUT,
-    SEQ5_GATE_OUTPUT,
-    SEQ6_GATE_OUTPUT,
-
+    POLY_CV_OUTPUT,
+    POLY_GATE_OUTPUT,
     NUM_OUTPUTS
   };
   enum LightIds {
-    SEQUENCER_1_LIGHT,
-    SEQUENCER_2_LIGHT,
-    SEQUENCER_3_LIGHT,
-    SEQUENCER_4_LIGHT,
-    SEQUENCER_5_LIGHT,
-    SEQUENCER_6_LIGHT,
+    SEQUENCER_LIGHTS_OFFSET,
+    ENUMS(SEQUENCER_LIGHTS, NUMBER_OF_SEQUENCERS),
     NUM_LIGHTS
   };
 
   //
   // Constructor
   //
-  DigitalSequencer()
+  DigitalSequencerXP()
   {
-    voltage_outputs[0] = SEQ1_CV_OUTPUT;
-    voltage_outputs[1] = SEQ2_CV_OUTPUT;
-    voltage_outputs[2] = SEQ3_CV_OUTPUT;
-    voltage_outputs[3] = SEQ4_CV_OUTPUT;
-    voltage_outputs[4] = SEQ5_CV_OUTPUT;
-    voltage_outputs[5] = SEQ6_CV_OUTPUT;
-
-    gate_outputs[0] = SEQ1_GATE_OUTPUT;
-    gate_outputs[1] = SEQ2_GATE_OUTPUT;
-    gate_outputs[2] = SEQ3_GATE_OUTPUT;
-    gate_outputs[3] = SEQ4_GATE_OUTPUT;
-    gate_outputs[4] = SEQ5_GATE_OUTPUT;
-    gate_outputs[5] = SEQ6_GATE_OUTPUT;
-
-    sequencer_step_inputs[0] = SEQUENCER_1_STEP_INPUT;
-    sequencer_step_inputs[1] = SEQUENCER_2_STEP_INPUT;
-    sequencer_step_inputs[2] = SEQUENCER_3_STEP_INPUT;
-    sequencer_step_inputs[3] = SEQUENCER_4_STEP_INPUT;
-    sequencer_step_inputs[4] = SEQUENCER_5_STEP_INPUT;
-    sequencer_step_inputs[5] = SEQUENCER_6_STEP_INPUT;
-
+    /*
     selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
     selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
 
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-    configParam(SEQUENCER_1_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "SequenceLengthKnob");
-    configParam(SEQUENCER_2_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer2LengthKnob");
-    configParam(SEQUENCER_3_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer3LengthKnob");
-    configParam(SEQUENCER_4_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer4LengthKnob");
-    configParam(SEQUENCER_5_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer5LengthKnob");
-    configParam(SEQUENCER_6_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer6LengthKnob");
-
-    configParam(SEQUENCER_1_BUTTON, 0.f, 1.f, 0.f, "Sequence1Button");
-    configParam(SEQUENCER_2_BUTTON, 0.f, 1.f, 0.f, "Sequence2Button");
-    configParam(SEQUENCER_3_BUTTON, 0.f, 1.f, 0.f, "Sequence3Button");
-    configParam(SEQUENCER_4_BUTTON, 0.f, 1.f, 0.f, "Sequence4Button");
-    configParam(SEQUENCER_5_BUTTON, 0.f, 1.f, 0.f, "Sequence5Button");
-    configParam(SEQUENCER_6_BUTTON, 0.f, 1.f, 0.f, "Sequence6Button");
-
-    // Disable randomize for trimpots
-    getParamQuantity(SEQUENCER_1_LENGTH_KNOB)->resetEnabled = false;
-    getParamQuantity(SEQUENCER_2_LENGTH_KNOB)->resetEnabled = false;
-    getParamQuantity(SEQUENCER_3_LENGTH_KNOB)->resetEnabled = false;
-    getParamQuantity(SEQUENCER_4_LENGTH_KNOB)->resetEnabled = false;
-    getParamQuantity(SEQUENCER_5_LENGTH_KNOB)->resetEnabled = false;
-    getParamQuantity(SEQUENCER_6_LENGTH_KNOB)->resetEnabled = false;
 
     // On boot, I seem to be getting some weird gate signals.  This keeps those
     // from triggering an output pulse when the module first loads.
     clock_ignore_on_reset = (long) (44100 / 100);
+    */
   }
 
+  /*
   void onRandomize() override {
     for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
     {
@@ -192,7 +104,7 @@ struct DigitalSequencer : Module
       this->gate_sequencers[dst_sequencer_index].setValue(i,this->gate_sequencers[src_sequencer_index].getValue(i));
     }
   }
-
+  */
   void forceGateOut()
   {
     frozen_trigger_gate = true;
@@ -206,8 +118,9 @@ struct DigitalSequencer : Module
 
   json_t *dataToJson() override
   {
-    json_t *json_root = json_object();
 
+    json_t *json_root = json_object();
+    /*
     //
     // Save patterns
     //
@@ -296,13 +209,14 @@ struct DigitalSequencer : Module
 
     // Save Legacy Reset mode
     json_object_set_new(json_root, "legacy_reset", json_integer(legacy_reset));
-
+    */
     return json_root;
   }
 
   // Autoload settings
   void dataFromJson(json_t *json_root) override
   {
+    /*
     //
     // Load patterns
     //
@@ -411,10 +325,11 @@ struct DigitalSequencer : Module
 
     json_t* legacy_reset_json = json_object_get(json_root, "legacy_reset");
     if (legacy_reset_json) legacy_reset = json_integer_value(legacy_reset_json);
+    */
   }
 
 
-  /*
+/*
 
   ______
   | ___ \
@@ -428,57 +343,66 @@ struct DigitalSequencer : Module
 
   void process(const ProcessArgs &args) override
   {
+    /*
     bool trigger_output_pulse = false;
     this->sample_rate = args.sampleRate;
 
     selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
     selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
+    */
+
+    bool sequencer_button_is_triggered[NUMBER_OF_SEQUENCERS];
+
+    for(unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
+    {
+      sequencer_button_triggers[i].process(params[i].getValue());
+    }
 
     //
     // See if someone pressed one of the green sequence selection buttons
     //
+    /*
     sequencer_1_button_is_triggered = sequencer_1_button_trigger.process(params[SEQUENCER_1_BUTTON].getValue());
     sequencer_2_button_is_triggered = sequencer_2_button_trigger.process(params[SEQUENCER_2_BUTTON].getValue());
     sequencer_3_button_is_triggered = sequencer_3_button_trigger.process(params[SEQUENCER_3_BUTTON].getValue());
     sequencer_4_button_is_triggered = sequencer_4_button_trigger.process(params[SEQUENCER_4_BUTTON].getValue());
     sequencer_5_button_is_triggered = sequencer_5_button_trigger.process(params[SEQUENCER_5_BUTTON].getValue());
     sequencer_6_button_is_triggered = sequencer_6_button_trigger.process(params[SEQUENCER_6_BUTTON].getValue());
+    */
 
-    // If any of the green sequence buttons were pressed, set the index "selected_sequencer_index"
-    // which will be used to look up the selected voltage and gate sequencers from
-    // the voltage_sequencers[] and gate_sequencers[] arrays
 
-    if(sequencer_1_button_is_triggered) selected_sequencer_index = 0;
-    if(sequencer_2_button_is_triggered) selected_sequencer_index = 1;
-    if(sequencer_3_button_is_triggered) selected_sequencer_index = 2;
-    if(sequencer_4_button_is_triggered) selected_sequencer_index = 3;
-    if(sequencer_5_button_is_triggered) selected_sequencer_index = 4;
-    if(sequencer_6_button_is_triggered) selected_sequencer_index = 5;
+
+    for(unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
+    {
+      // sequencer_button_is_triggered[i] = sequencer_button_triggers[i].process(params[SEQUENCER_BUTTON].getValue());
+      sequencer_button_is_triggered[i] = sequencer_button_triggers[i].process(params[SEQUENCER_BUTTONS_OFFSET + i].getValue());
+    }
 
     //
     // Set all of the sequence lengths by checking the corresponding knobs
     //
-
+    /*
     voltage_sequencers[0].setLength(clamp((int) params[SEQUENCER_1_LENGTH_KNOB].getValue(), 1, 32));
     voltage_sequencers[1].setLength(clamp((int) params[SEQUENCER_2_LENGTH_KNOB].getValue(), 1, 32));
     voltage_sequencers[2].setLength(clamp((int) params[SEQUENCER_3_LENGTH_KNOB].getValue(), 1, 32));
     voltage_sequencers[3].setLength(clamp((int) params[SEQUENCER_4_LENGTH_KNOB].getValue(), 1, 32));
     voltage_sequencers[4].setLength(clamp((int) params[SEQUENCER_5_LENGTH_KNOB].getValue(), 1, 32));
     voltage_sequencers[5].setLength(clamp((int) params[SEQUENCER_6_LENGTH_KNOB].getValue(), 1, 32));
-
+    */
     //
     // Do the same for the gate sequencers.  Both the voltage and corresponding gate sequencers
     // are always the same length.
-
+    /*
     gate_sequencers[0].setLength(clamp((int) params[SEQUENCER_1_LENGTH_KNOB].getValue(), 1, 32));
     gate_sequencers[1].setLength(clamp((int) params[SEQUENCER_2_LENGTH_KNOB].getValue(), 1, 32));
     gate_sequencers[2].setLength(clamp((int) params[SEQUENCER_3_LENGTH_KNOB].getValue(), 1, 32));
     gate_sequencers[3].setLength(clamp((int) params[SEQUENCER_4_LENGTH_KNOB].getValue(), 1, 32));
     gate_sequencers[4].setLength(clamp((int) params[SEQUENCER_5_LENGTH_KNOB].getValue(), 1, 32));
     gate_sequencers[5].setLength(clamp((int) params[SEQUENCER_6_LENGTH_KNOB].getValue(), 1, 32));
+    */
 
     //
-    // FROZEN, FROZEN, FROZEN  (coming soon)
+    // FROZEN, FROZEN, FROZEN
     //
     // This is a pretty crazy IF statement.  It's saying, "If the frozen flag
     // is FALSE, then don't step the sequencers"  Why would someone want to
@@ -492,7 +416,7 @@ struct DigitalSequencer : Module
 
     if (frozen == false)
     {
-
+      /*
       // On incoming RESET, reset the sequencers
       if(resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
       {
@@ -513,6 +437,7 @@ struct DigitalSequencer : Module
           gate_sequencers[i].reset();
         }
       }
+      */
 
       //
       // The legacy reset option in the context menu tells the module to accept
@@ -521,6 +446,7 @@ struct DigitalSequencer : Module
       // modules don't do that, so this flag helps with compatibility with older
       // modules.
       //
+      /*
       if(legacy_reset || clock_ignore_on_reset == 0)
       {
         // Check to see if there's a pulse at the global step trigger input.
@@ -571,8 +497,10 @@ struct DigitalSequencer : Module
         // If the first step of the sequence was skipped, don't skip it again later on!
         if(reset_first_step == true) first_step = false;
       }
+      */
 
       // output values
+      /*
       for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
       {
         if(voltage_sequencers[i].sample_and_hold)
@@ -584,10 +512,12 @@ struct DigitalSequencer : Module
           outputs[voltage_outputs[i]].setVoltage(voltage_sequencers[i].getOutput());
         }
       }
+      */
     } // END IF NOT FROZEN
 
     else // IF FROZEN
     {
+      /*
       // output values
       for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
       {
@@ -601,8 +531,10 @@ struct DigitalSequencer : Module
         gateOutputPulseGenerators[selected_sequencer_index].trigger(0.01f);
         frozen_trigger_gate = false;
       }
+      */
     }
 
+/*
     // process trigger outputs
     for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
     {
@@ -619,6 +551,12 @@ struct DigitalSequencer : Module
     lights[SEQUENCER_4_LIGHT].setBrightness(selected_sequencer_index == 3);
     lights[SEQUENCER_5_LIGHT].setBrightness(selected_sequencer_index == 4);
     lights[SEQUENCER_6_LIGHT].setBrightness(selected_sequencer_index == 5);
+*/
+    for(unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
+    {
+      lights[SEQUENCER_LIGHTS_OFFSET + i].setBrightness(selected_sequencer_index == i);
+    }
+
   }
 
 };
