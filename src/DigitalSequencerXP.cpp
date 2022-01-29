@@ -26,7 +26,7 @@ using namespace digital_sequencer_xp;
 #include "DigitalSequencerXP/DigitalSequencerXP.hpp"
 #include "DigitalSequencerXP/SequencerDisplay.hpp"
 #include "DigitalSequencerXP/VoltageSequencerDisplayXP.hpp"
-#include "DigitalSequencerXP/GateSequencerDisplay.hpp"
+#include "DigitalSequencerXP/GateSequencerDisplayXP.hpp"
 #include "DigitalSequencerXP/DigitalSequencerXPWidget.hpp"
 
 Model* modelDigitalSequencerXP = createModel<DigitalSequencerXP, DigitalSequencerXPWidget>("digitalsequencerxp");

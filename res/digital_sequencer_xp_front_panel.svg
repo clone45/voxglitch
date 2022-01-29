@@ -30,9 +30,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.8284274"
-     inkscape:cx="-28.040244"
-     inkscape:cy="263.34594"
+     inkscape:zoom="5.6568548"
+     inkscape:cx="644.1694"
+     inkscape:cy="396.94041"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -144,8 +144,15 @@
        inkscape:locked="false" />
     <sodipodi:guide
        id="guide933"
+       orientation="0,1"
+       position="165.1372,20.932416"
+       inkscape:label=""
+       inkscape:locked="false"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       id="guide926"
        orientation="0,-1"
-       position="14.882812,20.483865" />
+       position="164.67004,9.8467888" />
   </sodipodi:namedview>
   <metadata
      id="metadata11000">

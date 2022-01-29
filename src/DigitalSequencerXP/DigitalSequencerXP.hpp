@@ -340,10 +340,8 @@ struct DigitalSequencerXP : Module
 
   void process(const ProcessArgs &args) override
   {
-    /*
-    bool trigger_output_pulse = false;
     this->sample_rate = args.sampleRate;
-    */
+    bool trigger_output_pulse = false;
 
     //
     // Set the selected voltage and gate sequencers
@@ -405,7 +403,7 @@ struct DigitalSequencerXP : Module
         {
           stepTriggers[i].reset();
           voltage_sequencers[i].reset();
-          // gate_sequencers[i].reset();
+          gate_sequencers[i].reset();
         }
       }
 
@@ -444,7 +442,7 @@ struct DigitalSequencerXP : Module
 
             // If the gate sequence is TRUE, then start the pulse generator to
             // output the gate signal.
-            // if(gate_sequencers[i].getValue()) gateOutputPulseGenerators[i].trigger(0.01f);
+            if(gate_sequencers[i].getValue()) gateOutputPulseGenerators[i].trigger(0.01f);
           }
         }
 
@@ -454,27 +452,28 @@ struct DigitalSequencerXP : Module
 
 
       // output values
-      // TODO: restore this
-      /*
+      // TODO: restore this after we reintroduce the gate sequencers
       for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
       {
         if(voltage_sequencers[i].sample_and_hold)
         {
-          if(gate_sequencers[i].getValue()) outputs[voltage_outputs[i]].setVoltage(voltage_sequencers[i].getOutput());
+          if(gate_sequencers[i].getValue()) outputs[POLY_CV_OUTPUT].setVoltage(voltage_sequencers[i].getOutput(), i);
         }
         else
         {
-          outputs[voltage_outputs[i]].setVoltage(voltage_sequencers[i].getOutput());
+          outputs[POLY_CV_OUTPUT].setVoltage(voltage_sequencers[i].getOutput(), i);
         }
       }
-      */
+      outputs[POLY_CV_OUTPUT].setChannels(NUMBER_OF_SEQUENCERS);
 
       // Simplified output code which needs updating
+      /*
       for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
       {
         outputs[POLY_CV_OUTPUT].setVoltage(voltage_sequencers[i].getOutput(), i); // range from 0 to 10v
       }
       outputs[POLY_CV_OUTPUT].setChannels(NUMBER_OF_SEQUENCERS);
+      */
 
     } // END IF NOT FROZEN
 
@@ -497,21 +496,19 @@ struct DigitalSequencerXP : Module
       */
     }
 
-/*
     // process trigger outputs
     for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
     {
       trigger_output_pulse = gateOutputPulseGenerators[i].process(1.0 / args.sampleRate);
-      outputs[gate_outputs[i]].setVoltage((trigger_output_pulse ? 10.0f : 0.0f));
+      outputs[POLY_GATE_OUTPUT].setVoltage((trigger_output_pulse ? 10.0f : 0.0f), i);
     }
-*/
+    outputs[POLY_GATE_OUTPUT].setChannels(NUMBER_OF_SEQUENCERS);
+
+    // Adjust timers
     if (clock_ignore_on_reset > 0) clock_ignore_on_reset--;
     if (tooltip_timer > 0) tooltip_timer--;
 
-    //
     // Light up currently selected sequencer lamp
-    //
-
     for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
     {
       if(i == selected_sequencer_index)
@@ -559,7 +556,9 @@ struct DigitalSequencerXP : Module
         float length_input = inputs[POLY_LENGTH_INPUT].getVoltage(i);
         int length = ((length_input / 10.0) * 31) + 1;
         length = clamp(length, 1.0, 32.0);
+
         voltage_sequencers[i].setLength((int) length);
+        gate_sequencers[i].setLength((int) length);
       }
     }
   }

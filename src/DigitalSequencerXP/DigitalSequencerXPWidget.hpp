@@ -22,18 +22,16 @@ struct DigitalSequencerXPWidget : ModuleWidget
     addChild(createWidget<ScrewSilver>(mm2px(Vec(171.5, 0))));
 
     // Main voltage sequencer display
-
-
     VoltageSequencerDisplayXP *voltage_sequencer_display_xp = new VoltageSequencerDisplayXP();
     voltage_sequencer_display_xp->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
     voltage_sequencer_display_xp->module = module;
 
-    GateSequencerDisplay *gates_display = new GateSequencerDisplay();
+    GateSequencerDisplayXP *gates_display = new GateSequencerDisplayXP();
     gates_display->box.pos = mm2px(Vec(GATES_DRAW_AREA_POSITION_X, GATES_DRAW_AREA_POSITION_Y));
     gates_display->module = module;
 
     addChild(voltage_sequencer_display_xp);
-    // addChild(gates_display);
+    addChild(gates_display);
 
     double button_spacing = 9.6; // 9.1
     double vertical_button_spacing = 8;
@@ -55,50 +53,16 @@ struct DigitalSequencerXPWidget : ModuleWidget
     // addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x, button_group_y + 8.6)), module, DigitalSequencerXP::POLY_SEQUENCER_LENGTH_INPUT));
 
     // addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x, button_group_y + 8.6)), module, DigitalSequencerXP::SEQUENCER_1_LENGTH_KNOB));
-    /*
-    auto L1 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x, button_group_y + 8.6)), module, DigitalSequencerXP::SEQUENCER_1_LENGTH_KNOB); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
-    auto L2 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y + 8.6)), module, DigitalSequencerXP::SEQUENCER_2_LENGTH_KNOB); dynamic_cast<Knob*>(L2)->snap = true; addParam(L2);
-    auto L3 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y + 8.6)), module, DigitalSequencerXP::SEQUENCER_3_LENGTH_KNOB); dynamic_cast<Knob*>(L3)->snap = true; addParam(L3);
-    auto L4 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y + 8.6)), module, DigitalSequencerXP::SEQUENCER_4_LENGTH_KNOB); dynamic_cast<Knob*>(L4)->snap = true; addParam(L4);
-    auto L5 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y + 8.6)), module, DigitalSequencerXP::SEQUENCER_5_LENGTH_KNOB); dynamic_cast<Knob*>(L5)->snap = true; addParam(L5);
-    auto L6 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y + 8.6)), module, DigitalSequencerXP::SEQUENCER_6_LENGTH_KNOB); dynamic_cast<Knob*>(L6)->snap = true; addParam(L6);
 
-    // 6 step inputs
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x, button_group_y + 18.0)), module, DigitalSequencerXP::SEQUENCER_1_STEP_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y + 18.0)), module, DigitalSequencerXP::SEQUENCER_2_STEP_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y + 18.0)), module, DigitalSequencerXP::SEQUENCER_3_STEP_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y + 18.0)), module, DigitalSequencerXP::SEQUENCER_4_STEP_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y + 18.0)), module, DigitalSequencerXP::SEQUENCER_5_STEP_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y + 18.0)), module, DigitalSequencerXP::SEQUENCER_6_STEP_INPUT));
-
-    // Step
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 114.893)), module, DigitalSequencerXP::STEP_INPUT));
-    */
-    // Reset
-
+    // Inputs
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 114.893)), module, DigitalSequencerXP::POLY_STEP_INPUT));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 14.544, 114.893)), module, DigitalSequencerXP::POLY_LENGTH_INPUT));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 29.088, 114.893)), module, DigitalSequencerXP::RESET_INPUT));
 
-    // Poly CV output
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(173, 110)), module, DigitalSequencerXP::POLY_CV_OUTPUT));
+    // Poly CV and Gate outputs
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(173, 107.568)), module, DigitalSequencerXP::POLY_CV_OUTPUT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(173, 118.653)), module, DigitalSequencerXP::POLY_GATE_OUTPUT));
 
-    // 6 sequencer outputs
-    /*
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(118, 108.224)), module, DigitalSequencerXP::SEQ1_CV_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(129, 108.224)), module, DigitalSequencerXP::SEQ2_CV_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(140, 108.224)), module, DigitalSequencerXP::SEQ3_CV_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(151, 108.224)), module, DigitalSequencerXP::SEQ4_CV_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(162, 108.224)), module, DigitalSequencerXP::SEQ5_CV_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(173, 108.224)), module, DigitalSequencerXP::SEQ6_CV_OUTPUT));
-
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(118, 119.309)), module, DigitalSequencerXP::SEQ1_GATE_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(129, 119.309)), module, DigitalSequencerXP::SEQ2_GATE_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(140, 119.309)), module, DigitalSequencerXP::SEQ3_GATE_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(151, 119.309)), module, DigitalSequencerXP::SEQ4_GATE_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(162, 119.309)), module, DigitalSequencerXP::SEQ5_GATE_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(173, 119.309)), module, DigitalSequencerXP::SEQ6_GATE_OUTPUT));
-    */
     // addParam(createParamCentered<FreezeToggle>(mm2px(Vec(180,40)), module, DigitalSequencerXP::FREEZE_TOGGLE));
   }
 
