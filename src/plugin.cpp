@@ -12,7 +12,7 @@ void init(Plugin* p) {
   p->addModel(modelByteBeat);
   p->addModel(modelDigitalProgrammer);
   p->addModel(modelDigitalSequencer);
-  p->addModel(modelDigitalSequencerXP);  
+  p->addModel(modelDigitalSequencerXP);
   p->addModel(modelGlitchSequencer);
   p->addModel(modelGhosts);
   p->addModel(modelGoblins);

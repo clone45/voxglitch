@@ -6,15 +6,6 @@ public:
 };
 */
 
-/* Abandoning this front-panel control for now
-struct FreezeToggle : app::SvgSwitch {
-	FreezeToggle() {
-		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance,"res/freeze-button-off.svg")));
-    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/freeze-button-on.svg")));
-	};
-};
-*/
-
 struct DigitalSequencerXPWidget : ModuleWidget
 {
   DigitalSequencerXP* module;
@@ -27,48 +18,41 @@ struct DigitalSequencerXPWidget : ModuleWidget
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_sequencer_xp_front_panel.svg")));
 
     // Cosmetic rack screws
-    // addChild(createWidget<ScrewSilver>(Vec(15, 0)));
     addChild(createWidget<ScrewSilver>(Vec(15, 365)));
     addChild(createWidget<ScrewSilver>(mm2px(Vec(171.5, 0))));
 
     // Main voltage sequencer display
-    /*
-    VoltageSequencerDisplay *voltage_sequencer_display = new VoltageSequencerDisplay();
-    voltage_sequencer_display->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
-    voltage_sequencer_display->module = module;
-    addChild(voltage_sequencer_display);
+
+
+    VoltageSequencerDisplayXP *voltage_sequencer_display_xp = new VoltageSequencerDisplayXP();
+    voltage_sequencer_display_xp->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
+    voltage_sequencer_display_xp->module = module;
 
     GateSequencerDisplay *gates_display = new GateSequencerDisplay();
     gates_display->box.pos = mm2px(Vec(GATES_DRAW_AREA_POSITION_X, GATES_DRAW_AREA_POSITION_Y));
     gates_display->module = module;
-    addChild(gates_display);
-    */
+
+    addChild(voltage_sequencer_display_xp);
+    // addChild(gates_display);
 
     double button_spacing = 9.6; // 9.1
+    double vertical_button_spacing = 8;
     double button_group_x = 48.0;
     double button_group_y = 103.0;
 
-    /*
-    // Sequence 1 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x, button_group_y)), module, DigitalSequencerXP::SEQUENCER_1_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x, button_group_y)), module, DigitalSequencerXP::SEQUENCER_1_LIGHT));
-    // Sequence 2 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y)), module, DigitalSequencerXP::SEQUENCER_2_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y)), module, DigitalSequencerXP::SEQUENCER_2_LIGHT));
-    // Sequence 3 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y)), module, DigitalSequencerXP::SEQUENCER_3_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y)), module, DigitalSequencerXP::SEQUENCER_3_LIGHT));
-    // Sequence 4 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y)), module, DigitalSequencerXP::SEQUENCER_4_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y)), module, DigitalSequencerXP::SEQUENCER_4_LIGHT));
-    // Sequence 5 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y)), module, DigitalSequencerXP::SEQUENCER_5_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y)), module, DigitalSequencerXP::SEQUENCER_5_LIGHT));
-    // Sequence 6 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y)), module, DigitalSequencerXP::SEQUENCER_6_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y)), module, DigitalSequencerXP::SEQUENCER_6_LIGHT));
-    */
 
+    // Draw sequence buttons
+    int half_number_of_sequencers = NUMBER_OF_SEQUENCERS/2;
+
+    for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
+    {
+      float x_position = (button_group_x + (button_spacing * (i % half_number_of_sequencers)));
+      float y_position = button_group_y + (i/half_number_of_sequencers * vertical_button_spacing);
+      addParam(createParamCentered<LEDButton>(mm2px(Vec(x_position, y_position)), module, DigitalSequencerXP::SEQUENCER_BUTTONS + i));
+      addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(x_position, y_position)), module, DigitalSequencerXP::SEQUENCER_LIGHTS + i));
+    }
+
+    // addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x, button_group_y + 8.6)), module, DigitalSequencerXP::POLY_SEQUENCER_LENGTH_INPUT));
 
     // addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x, button_group_y + 8.6)), module, DigitalSequencerXP::SEQUENCER_1_LENGTH_KNOB));
     /*
@@ -89,10 +73,15 @@ struct DigitalSequencerXPWidget : ModuleWidget
 
     // Step
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 114.893)), module, DigitalSequencerXP::STEP_INPUT));
-
-    // Reset
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 14.544, 114.893)), module, DigitalSequencerXP::RESET_INPUT));
     */
+    // Reset
+
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 114.893)), module, DigitalSequencerXP::POLY_STEP_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 14.544, 114.893)), module, DigitalSequencerXP::POLY_LENGTH_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 29.088, 114.893)), module, DigitalSequencerXP::RESET_INPUT));
+
+    // Poly CV output
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(173, 110)), module, DigitalSequencerXP::POLY_CV_OUTPUT));
 
     // 6 sequencer outputs
     /*

@@ -31,12 +31,12 @@ struct VoltageSequencer : Sequencer
   // voltage range has been applied.
   double getOutput(int index)
   {
-    return(rescale(sequence[index], 0.0, DRAW_AREA_HEIGHT, voltage_ranges[voltage_range_index][0], voltage_ranges[voltage_range_index][1]));
+    return(rescale(sequence[index], 0.0, 1.0, voltage_ranges[voltage_range_index][0], voltage_ranges[voltage_range_index][1]));
   }
 
   double getOutput()
   {
-    return(rescale(sequence[getPlaybackPosition()], 0.0, DRAW_AREA_HEIGHT, voltage_ranges[voltage_range_index][0], voltage_ranges[voltage_range_index][1]));
+    return(rescale(sequence[getPlaybackPosition()], 0.0, 1.0, voltage_ranges[voltage_range_index][0], voltage_ranges[voltage_range_index][1]));
   }
 
   void setValue(int index, double value)
@@ -78,7 +78,7 @@ struct VoltageSequencer : Sequencer
   {
     for(unsigned int i=0; i < this->sequence_length; i++)
     {
-      this->setValue(i, fmod(std::rand(), DRAW_AREA_HEIGHT));
+      this->setValue(i, fmod(std::rand(), 1.0));
     }
   }
 

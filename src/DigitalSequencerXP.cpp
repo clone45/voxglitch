@@ -20,17 +20,13 @@
 using namespace digital_sequencer_xp;
 
 #include "Common/VoxglitchWidget.hpp"
-/*
 #include "DigitalSequencerXP/Sequencer.hpp"
 #include "DigitalSequencerXP/VoltageSequencer.hpp"
 #include "DigitalSequencerXP/GateSequencer.hpp"
-*/
 #include "DigitalSequencerXP/DigitalSequencerXP.hpp"
-/*
 #include "DigitalSequencerXP/SequencerDisplay.hpp"
-#include "DigitalSequencerXP/VoltageSequencerDisplay.hpp"
+#include "DigitalSequencerXP/VoltageSequencerDisplayXP.hpp"
 #include "DigitalSequencerXP/GateSequencerDisplay.hpp"
-*/
 #include "DigitalSequencerXP/DigitalSequencerXPWidget.hpp"
 
 Model* modelDigitalSequencerXP = createModel<DigitalSequencerXP, DigitalSequencerXPWidget>("digitalsequencerxp");
