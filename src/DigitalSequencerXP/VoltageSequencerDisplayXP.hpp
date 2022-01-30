@@ -114,7 +114,7 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
       }
 
       drawVerticalGuildes(vg, DRAW_AREA_HEIGHT);
-      drawBlueOverlay(vg, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
+      drawOverlay(vg, OVERLAY_WIDTH, DRAW_AREA_HEIGHT);
 
       if(module)
       {
@@ -211,14 +211,14 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
 
       while(shift_offset < 0)
       {
-        // module->selected_gate_sequencer->shiftLeft();
+        module->selected_gate_sequencer->shiftLeft();
         module->selected_voltage_sequencer->shiftLeft();
         shift_offset ++;
       }
 
       while(shift_offset > 0)
       {
-        // module->selected_gate_sequencer->shiftRight();
+        module->selected_gate_sequencer->shiftRight();
         module->selected_voltage_sequencer->shiftRight();
         shift_offset --;
       }
@@ -271,7 +271,7 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
 
       // change step here
       module->selected_voltage_sequencer->setPosition(bar_x_index);
-      // module->selected_gate_sequencer->setPosition(bar_x_index);
+      module->selected_gate_sequencer->setPosition(bar_x_index);
     }
   }
 
@@ -284,7 +284,7 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
     if(keypressLeft(e))
     {
       module->selected_voltage_sequencer->shiftLeft();
-      // if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftLeft();
+      if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftLeft();
     }
 
     if(keypressUp(e))
@@ -294,7 +294,6 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
 
       // (.01 * (214 / 10)), where 214 is the bar height and 10 is the max voltage
       value = value + (.01 * (214.0 / 10.0));
-      // value = clamp(value, 0.0, DRAW_AREA_HEIGHT);
       if (value > DRAW_AREA_HEIGHT) value = DRAW_AREA_HEIGHT;
 
       module->selected_voltage_sequencer->setValue(bar_x_index, value);
@@ -312,7 +311,6 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
 
       // (.01 * (214 / 10)), where 214 is the bar height and 10 is the max voltage
       value = value - (.01 * (214.0 / 10.0));
-      // value = clamp(value, 0.0, DRAW_AREA_HEIGHT);
       if (value > DRAW_AREA_HEIGHT) value = DRAW_AREA_HEIGHT;
 
       module->selected_voltage_sequencer->setValue(bar_x_index, value);
@@ -331,7 +329,7 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
       if((e.mods & RACK_MOD_MASK) != GLFW_MOD_CONTROL)
       {
         module->selected_voltage_sequencer->randomize();
-        // if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->randomize();
+        if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->randomize();
       }
     }
 
@@ -347,7 +345,7 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
     if(e.key == GLFW_KEY_ESCAPE && e.action == GLFW_PRESS)
     {
       module->selected_voltage_sequencer->clear();
-      // if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->clear();
+      if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->clear();
     }
   }
 

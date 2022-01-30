@@ -1,3 +1,7 @@
+//
+// TODO:
+//  * Add "mod" input and have it configurable
+
 struct DigitalSequencerXP : Module
 {
   dsp::SchmittTrigger stepTriggers[NUMBER_OF_SEQUENCERS];
@@ -51,6 +55,7 @@ struct DigitalSequencerXP : Module
     POLY_STEP_INPUT,
     POLY_LENGTH_INPUT,
     RESET_INPUT,
+    POLY_MOD_INPUT,
     NUM_INPUTS
   };
   enum OutputIds {
@@ -81,7 +86,6 @@ struct DigitalSequencerXP : Module
 
   }
 
-  /*
   void onRandomize() override {
     for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
     {
@@ -101,7 +105,7 @@ struct DigitalSequencerXP : Module
       this->gate_sequencers[dst_sequencer_index].setValue(i,this->gate_sequencers[src_sequencer_index].getValue(i));
     }
   }
-  */
+
   void forceGateOut()
   {
     frozen_trigger_gate = true;
@@ -117,7 +121,7 @@ struct DigitalSequencerXP : Module
   {
 
     json_t *json_root = json_object();
-    /*
+
     //
     // Save patterns
     //
@@ -130,7 +134,7 @@ struct DigitalSequencerXP : Module
 
       for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
       {
-        json_array_append_new(pattern_json_array, json_integer(this->voltage_sequencers[sequencer_number].getValue(i)));
+        json_array_append_new(pattern_json_array, json_real(this->voltage_sequencers[sequencer_number].getValue(i)));
       }
 
       json_array_append_new(sequences_json_array, pattern_json_array);
@@ -206,14 +210,14 @@ struct DigitalSequencerXP : Module
 
     // Save Legacy Reset mode
     json_object_set_new(json_root, "legacy_reset", json_integer(legacy_reset));
-    */
+
     return json_root;
   }
 
   // Autoload settings
   void dataFromJson(json_t *json_root) override
   {
-    /*
+
     //
     // Load patterns
     //
@@ -229,7 +233,7 @@ struct DigitalSequencerXP : Module
       {
         for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
         {
-          this->voltage_sequencers[pattern_number].setValue(i, json_integer_value(json_array_get(json_pattern_array, i)));
+          this->voltage_sequencers[pattern_number].setValue(i, json_real_value(json_array_get(json_pattern_array, i)));
         }
       }
     }
@@ -322,7 +326,6 @@ struct DigitalSequencerXP : Module
 
     json_t* legacy_reset_json = json_object_get(json_root, "legacy_reset");
     if (legacy_reset_json) legacy_reset = json_integer_value(legacy_reset_json);
-    */
   }
 
 
@@ -433,7 +436,7 @@ struct DigitalSequencerXP : Module
             if(legacy_reset || first_step == false)
             {
               voltage_sequencers[i].step();
-              // gate_sequencers[i].step();
+              gate_sequencers[i].step();
             }
             else
             {
@@ -466,26 +469,16 @@ struct DigitalSequencerXP : Module
       }
       outputs[POLY_CV_OUTPUT].setChannels(NUMBER_OF_SEQUENCERS);
 
-      // Simplified output code which needs updating
-      /*
-      for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
-      {
-        outputs[POLY_CV_OUTPUT].setVoltage(voltage_sequencers[i].getOutput(), i); // range from 0 to 10v
-      }
-      outputs[POLY_CV_OUTPUT].setChannels(NUMBER_OF_SEQUENCERS);
-      */
-
     } // END IF NOT FROZEN
 
     else // IF FROZEN
     {
-      /*
       // output values
       for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
       {
         // Notice that this ignores sample + hold.  This is the main reason
         // for duplicating this code between the frozen/not frozen IF statments.
-        outputs[voltage_outputs[i]].setVoltage(voltage_sequencers[i].getOutput());
+        outputs[POLY_CV_OUTPUT].setVoltage(voltage_sequencers[i].getOutput(), i);
       }
 
       if(frozen_trigger_gate)
@@ -493,10 +486,11 @@ struct DigitalSequencerXP : Module
         gateOutputPulseGenerators[selected_sequencer_index].trigger(0.01f);
         frozen_trigger_gate = false;
       }
-      */
     }
 
+    //
     // process trigger outputs
+    //
     for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
     {
       trigger_output_pulse = gateOutputPulseGenerators[i].process(1.0 / args.sampleRate);
@@ -504,7 +498,9 @@ struct DigitalSequencerXP : Module
     }
     outputs[POLY_GATE_OUTPUT].setChannels(NUMBER_OF_SEQUENCERS);
 
+    //
     // Adjust timers
+    //
     if (clock_ignore_on_reset > 0) clock_ignore_on_reset--;
     if (tooltip_timer > 0) tooltip_timer--;
 
@@ -542,8 +538,7 @@ struct DigitalSequencerXP : Module
       bool stepped = stepTriggers[0].process(rescale(inputs[POLY_STEP_INPUT].getVoltage(0), 0.0f, 10.0f, 0.f, 1.f));
 
       // Apply the value found in the previous step to channels 2, 3, 4, etc...
-      // Note that this for loop starts at "1", not "0"
-      for(unsigned int i = 1; i < NUMBER_OF_SEQUENCERS; i++) step[i] = stepped;
+      for(unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++) step[i] = stepped;
     }
   }
 

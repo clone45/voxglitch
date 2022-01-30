@@ -83,7 +83,7 @@ struct GateSequencerDisplayXP : SequencerDisplay
       }
 
       drawVerticalGuildes(vg, GATES_DRAW_AREA_HEIGHT);
-      drawBlueOverlay(vg, GATES_DRAW_AREA_WIDTH, GATES_DRAW_AREA_HEIGHT);
+      drawOverlay(vg, OVERLAY_WIDTH, GATES_DRAW_AREA_HEIGHT);
 
       nvgRestore(vg);
     }
@@ -169,6 +169,14 @@ struct GateSequencerDisplayXP : SequencerDisplay
       {
         module->selected_gate_sequencer->randomize();
         if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_voltage_sequencer->randomize();
+      }
+    }
+
+    if(e.key == GLFW_KEY_B && e.action == GLFW_PRESS)
+    {
+      if((e.mods & RACK_MOD_MASK) != GLFW_MOD_CONTROL)
+      {
+        module->selected_gate_sequencer->addGate();
       }
     }
 

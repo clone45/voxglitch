@@ -71,7 +71,7 @@ struct SequencerDisplay : VoxglitchWidget
     }
   }
 
-  void drawBlueOverlay(NVGcontext *vg, double width, double height)
+  void drawOverlay(NVGcontext *vg, double width, double height)
   {
     nvgBeginPath(vg);
     nvgRect(vg, 0, 0, width, height);

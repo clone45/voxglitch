@@ -53,6 +53,11 @@ struct GateSequencer : Sequencer
     }
   }
 
+  void addGate() // for realtime gate entry
+  {
+    sequence[sequence_playback_position] = ! sequence[sequence_playback_position];
+  }
+
   void clear()
   {
     sequence.fill(0.0);

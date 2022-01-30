@@ -34,9 +34,9 @@ struct DigitalSequencerXPWidget : ModuleWidget
     addChild(gates_display);
 
     double button_spacing = 9.6; // 9.1
-    double vertical_button_spacing = 8;
-    double button_group_x = 48.0;
-    double button_group_y = 103.0;
+    double vertical_button_spacing = 11.085;
+    double button_group_x = 72.0;
+    double button_group_y = 107.568;
 
 
     // Draw sequence buttons
@@ -50,23 +50,18 @@ struct DigitalSequencerXPWidget : ModuleWidget
       addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(x_position, y_position)), module, DigitalSequencerXP::SEQUENCER_LIGHTS + i));
     }
 
-    // addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x, button_group_y + 8.6)), module, DigitalSequencerXP::POLY_SEQUENCER_LENGTH_INPUT));
-
-    // addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x, button_group_y + 8.6)), module, DigitalSequencerXP::SEQUENCER_1_LENGTH_KNOB));
-
     // Inputs
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 114.893)), module, DigitalSequencerXP::POLY_STEP_INPUT));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 14.544, 114.893)), module, DigitalSequencerXP::POLY_LENGTH_INPUT));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 29.088, 114.893)), module, DigitalSequencerXP::RESET_INPUT));
+    // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 43.632, 114.893)), module, DigitalSequencerXP::POLY_MOD_INPUT));
 
     // Poly CV and Gate outputs
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(173, 107.568)), module, DigitalSequencerXP::POLY_CV_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(173, 118.653)), module, DigitalSequencerXP::POLY_GATE_OUTPUT));
-
-    // addParam(createParamCentered<FreezeToggle>(mm2px(Vec(180,40)), module, DigitalSequencerXP::FREEZE_TOGGLE));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(170.321, 107.568)), module, DigitalSequencerXP::POLY_CV_OUTPUT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(170.321, 118.653)), module, DigitalSequencerXP::POLY_GATE_OUTPUT));
   }
 
-  /*
+
   // Sample and Hold values
   struct SampleAndHoldItem : MenuItem {
     DigitalSequencerXP *module;
@@ -208,19 +203,11 @@ struct DigitalSequencerXPWidget : ModuleWidget
   struct QuickKeyMenu : MenuItem {
     Menu *createChildMenu() override {
       Menu *menu = new Menu;
-
-      menu->addChild(createMenuLabel("      f : Toggle Freeze Mode (for easy editing)"));
-      menu->addChild(createMenuLabel("      g : When frozen, press 'g' to send gate out"));
-      menu->addChild(createMenuLabel(""));
-      menu->addChild(createMenuLabel("      r : Randomize gate or voltage sequence"));
-      menu->addChild(createMenuLabel("      ↑ : Nudge up voltage for hovered step"));
-      menu->addChild(createMenuLabel("      ↓ : Nudge down voltage for hovered step"));
-      menu->addChild(createMenuLabel("      → : Shift hovered sequence to the right"));
-      menu->addChild(createMenuLabel("      ← : Shift hovered sequence to the left"));
-      menu->addChild(createMenuLabel("    1-6 : Quickly select active sequencer"));
-      menu->addChild(createMenuLabel("ctrl-c  : copy selected sequence"));
-      menu->addChild(createMenuLabel("ctrl-v  : paste selected sequence"));
-
+      menu->addChild(createMenuLabel("f: Toggle Freeze Mode (for easy editing)"));
+      menu->addChild(createMenuLabel("g: When frozen, press 'g' to send gate out"));
+      menu->addChild(createMenuLabel("r: Randomize current howevered sequencer"));
+      menu->addChild(createMenuLabel("shift-r: Randomize both active sequencers (CV/Gate)"));
+      menu->addChild(createMenuLabel("shift+drag : Shift hovered sequence left or right"));
       return menu;
     }
   };
@@ -234,13 +221,11 @@ struct DigitalSequencerXPWidget : ModuleWidget
     DigitalSequencerXP *module = dynamic_cast<DigitalSequencerXP*>(this->module);
     assert(module);
 
-    // Menu in development
-
     menu->addChild(new MenuEntry); // For spacing only
     menu->addChild(createMenuLabel("Sequencer Settings"));
 
     // Add individual sequencer settings
-    SequencerItem *sequencer_items[6];
+    SequencerItem *sequencer_items[NUMBER_OF_SEQUENCERS];
 
     for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
     {
@@ -267,22 +252,6 @@ struct DigitalSequencerXPWidget : ModuleWidget
   //
   void onHoverKey(const event::HoverKey &e) override
   {
-      // Switch between seuences using the number keys 1-6
-      if (e.key >= GLFW_KEY_1 && e.key <= GLFW_KEY_6)
-      {
-
-        if(e.action == GLFW_PRESS)
-        {
-          unsigned int sequencer_number = e.key - 49;
-
-          // DEBUG(std::to_string(sequencer_number).c_str());
-          sequencer_number = clamp(sequencer_number,0,NUMBER_OF_SEQUENCERS-1);
-          module->selected_sequencer_index = sequencer_number;
-          e.consume(this);
-        }
-
-      }
-
       if ((e.key == GLFW_KEY_F) && ((e.mods & RACK_MOD_MASK) != GLFW_MOD_CONTROL)) // F (no ctrl)
       {
         if(e.action == GLFW_PRESS)
@@ -291,7 +260,6 @@ struct DigitalSequencerXPWidget : ModuleWidget
           e.consume(this);
         }
       }
-
 
       if ((e.key == GLFW_KEY_C) && ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL)) // Control-C
       {
@@ -316,9 +284,6 @@ struct DigitalSequencerXPWidget : ModuleWidget
 
       ModuleWidget::onHoverKey(e);
 
-      // module->selected_voltage_sequencer->shiftRight();
-      // if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftRight();
-
   }
-  */
+
 };

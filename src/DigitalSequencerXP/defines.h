@@ -10,18 +10,21 @@ namespace digital_sequencer_xp
   const int DRAW_AREA_HEIGHT = 214;
   const float BAR_HEIGHT = 214.0;
   const float BAR_HORIZONTAL_PADDING = .8;
-  const float DRAW_AREA_POSITION_X = 9;
-  const float DRAW_AREA_POSITION_Y = 9.5;
+  const float DRAW_AREA_POSITION_X = 9.9;
+  const float DRAW_AREA_POSITION_Y = 9.5 + .9;
 
   // Constants for gate sequencer
   const float GATES_DRAW_AREA_WIDTH = 486.0;
   const float GATES_DRAW_AREA_HEIGHT = 16.0;
-  const float GATES_DRAW_AREA_POSITION_X = 9;
-  const float GATES_DRAW_AREA_POSITION_Y = 86;
+  const float GATES_DRAW_AREA_POSITION_X = 9.9;
+  const float GATES_DRAW_AREA_POSITION_Y = 86 + .9;
   const float GATE_BAR_HEIGHT = 16.0;
 
   const float TOOLTIP_WIDTH = 33.0;
   const float TOOLTIP_HEIGHT = 20.0;
+
+  const float OVERLAY_WIDTH = 479;
+
 
   double voltage_ranges[NUMBER_OF_VOLTAGE_RANGES][2] = {
     { 0.0, 10.0 },

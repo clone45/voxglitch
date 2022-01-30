@@ -43,7 +43,7 @@ struct VoltageSequencer : Sequencer
   {
     if(snap_division_index > 0)
     {
-      double division = DRAW_AREA_HEIGHT / snap_divisions[snap_division_index];
+      double division = 1 / snap_divisions[snap_division_index];
       sequence[index] = division * roundf(value / division);
     }
     else
@@ -78,7 +78,7 @@ struct VoltageSequencer : Sequencer
   {
     for(unsigned int i=0; i < this->sequence_length; i++)
     {
-      this->setValue(i, fmod(std::rand(), 1.0));
+      this->setValue(i, rand() / double(RAND_MAX));
     }
   }
 
