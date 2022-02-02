@@ -26,6 +26,12 @@
         "tags": ["Oscillator"]
     },
     {
+        "slug": "bytebender",
+        "name": "Byte Bender",
+        "description": "A malfunctioning experimental telepathy device",
+        "tags": ["Oscillator"]
+    },
+    {
         "slug": "digitalprogrammer",
         "name": "Digital Programmer",
         "description": "16 channel polyphonic programmer with built-in bank memory slots",
