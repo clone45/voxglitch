@@ -193,6 +193,11 @@ struct DigitalSequencer : Module
     }
   }
 
+  void setLengthKnobPosition(unsigned int value)
+  {
+    params[SEQUENCER_1_LENGTH_KNOB + selected_sequencer_index].setValue(value);
+  }
+
   void forceGateOut()
   {
     frozen_trigger_gate = true;

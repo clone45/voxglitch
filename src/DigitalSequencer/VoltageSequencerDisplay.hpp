@@ -5,6 +5,7 @@ struct VoltageSequencerDisplay : SequencerDisplay
   double draw_tooltip_y = -1.0;
   double tooltip_value = 0.0;
   bool shift_key = false;
+  bool ctrl_key = false;
 
   int previous_shift_sequence_column = 0;
   int shift_sequence_column = 0;
@@ -17,9 +18,6 @@ struct VoltageSequencerDisplay : SequencerDisplay
     // bounding box.
     box.size = Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT + 16);
   }
-
-  // void draw(const DrawArgs &args) override
-  // {
 
   void drawLayer(const DrawArgs& args, int layer) override
   {
@@ -196,6 +194,16 @@ struct VoltageSequencerDisplay : SequencerDisplay
     this->shift_sequence_column =clicked_column;
   }
 
+  void startControlSequence(Vec mouse_position)
+  {
+    int clicked_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
+    clicked_column = clamp(clicked_column, 0, MAX_SEQUENCER_STEPS);
+    module->setLengthKnobPosition(clicked_column);
+
+    // module->selected_gate_sequencer->setLength(clicked_column);
+    // module->selected_voltage_sequencer->setLength(clicked_column);
+  }
+
   void dragShiftSequences(Vec mouse_position)
   {
     int drag_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
@@ -218,6 +226,18 @@ struct VoltageSequencerDisplay : SequencerDisplay
     this->shift_sequence_column = drag_column;
   }
 
+  void dragControlSequence(Vec mouse_position)
+  {
+    if(module)
+    {
+      int drag_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
+      drag_column = clamp(drag_column, 0, MAX_SEQUENCER_STEPS);
+      module->setLengthKnobPosition(drag_column);
+      // module->selected_gate_sequencer->setLength(drag_column);
+      // module->selected_voltage_sequencer->setLength(drag_column);
+    }
+  }
+
   void onButton(const event::Button &e) override
   {
     if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
@@ -225,15 +245,18 @@ struct VoltageSequencerDisplay : SequencerDisplay
       e.consume(this);
       drag_position = e.pos;
 
-      if(this->shift_key == false)
-      {
-        this->editBar(e.pos);
-      }
-      else
+      if(this->shift_key == true)
       {
         startShiftSequences(drag_position);
       }
-
+      else if(this->ctrl_key == true)
+      {
+        startControlSequence(drag_position);
+      }
+      else
+      {
+        this->editBar(e.pos);
+      }
     }
   }
 
@@ -243,15 +266,18 @@ struct VoltageSequencerDisplay : SequencerDisplay
     float zoom = getAbsoluteZoom();
     drag_position = drag_position.plus(e.mouseDelta.div(zoom));
 
-    if(this->shift_key == false)
-    {
-      editBar(drag_position);
-    }
-    else
+    if(this->shift_key == true)
     {
       dragShiftSequences(drag_position);
     }
-
+    else if(this->ctrl_key == true)
+    {
+      dragControlSequence(drag_position);
+    }
+    else
+    {
+      editBar(drag_position);
+    }
   }
 
   void onHover(const event::Hover &e) override
@@ -264,39 +290,15 @@ struct VoltageSequencerDisplay : SequencerDisplay
       module->selected_voltage_sequencer->setPosition(bar_x_index);
       module->selected_gate_sequencer->setPosition(bar_x_index);
     }
+
+    TransparentWidget::onHover(e);
+    e.consume(this);
   }
 
   void onHoverKey(const event::HoverKey &e) override
   {
     this->shift_key = ((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT);
-
-    /*
-    if(e.key == GLFW_KEY_RIGHT) e.consume(this);
-    if(e.key == GLFW_KEY_RIGHT && e.action == GLFW_PRESS) return true;
-    return false;
-    */
-
-    // Keypress Right
-    /*
-    if (e.key == GLFW_KEY_RIGHT) // F (no ctrl)
-    {
-      if(e.action == GLFW_PRESS)
-      {
-        module->selected_voltage_sequencer->shiftRight();
-        if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftRight();
-        // module->frozen = ! module->frozen;
-        e.consume(this);
-      }
-    }
-    */
-
-    /*
-    if(keypressRight(e))
-    {
-      module->selected_voltage_sequencer->shiftRight();
-      if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftRight();
-    }
-    */
+    this->ctrl_key = ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL);
 
     if(keypressLeft(e))
     {
@@ -309,9 +311,7 @@ struct VoltageSequencerDisplay : SequencerDisplay
       int bar_x_index = e.pos.x / (bar_width + BAR_HORIZONTAL_PADDING);
       double value = module->selected_voltage_sequencer->getValue(bar_x_index);
 
-      // (.01 * (214 / 10)), where 214 is the bar height and 10 is the max voltage
       value = value + (.01 * (214.0 / 10.0));
-      // value = clamp(value, 0.0, DRAW_AREA_HEIGHT);
       if (value > DRAW_AREA_HEIGHT) value = DRAW_AREA_HEIGHT;
 
       module->selected_voltage_sequencer->setValue(bar_x_index, value);
@@ -327,9 +327,7 @@ struct VoltageSequencerDisplay : SequencerDisplay
       int bar_x_index = e.pos.x / (bar_width + BAR_HORIZONTAL_PADDING);
       double value = module->selected_voltage_sequencer->getValue(bar_x_index);
 
-      // (.01 * (214 / 10)), where 214 is the bar height and 10 is the max voltage
       value = value - (.01 * (214.0 / 10.0));
-      // value = clamp(value, 0.0, DRAW_AREA_HEIGHT);
       if (value > DRAW_AREA_HEIGHT) value = DRAW_AREA_HEIGHT;
 
       module->selected_voltage_sequencer->setValue(bar_x_index, value);
@@ -367,5 +365,11 @@ struct VoltageSequencerDisplay : SequencerDisplay
       module->selected_voltage_sequencer->clear();
       if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->clear();
     }
+  }
+
+  void onLeave(const LeaveEvent &e) override
+  {
+    shift_key = false;
+    ctrl_key = false;
   }
 };

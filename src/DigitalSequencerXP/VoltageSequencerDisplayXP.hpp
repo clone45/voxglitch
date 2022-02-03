@@ -241,24 +241,6 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
   {
     if(module)
     {
-
-            /*
-      int column_offset = drag_column - this->control_sequence_column;
-
-      while(shift_offset < 0)
-      {
-        module->selected_gate_sequencer->shiftLeft();
-        module->selected_voltage_sequencer->shiftLeft();
-        shift_offset ++;
-      }
-
-      while(shift_offset > 0)
-      {
-        module->selected_gate_sequencer->shiftRight();
-        module->selected_voltage_sequencer->shiftRight();
-        shift_offset --;
-      }
-      */
       int drag_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
       drag_column = clamp(drag_column, 0, MAX_SEQUENCER_STEPS);
       module->selected_gate_sequencer->setLength(drag_column);
@@ -285,7 +267,6 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
       {
         this->editBar(e.pos);
       }
-
     }
   }
 
@@ -307,7 +288,6 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
     {
       editBar(drag_position);
     }
-
   }
 
   void onHover(const event::Hover &e) override
