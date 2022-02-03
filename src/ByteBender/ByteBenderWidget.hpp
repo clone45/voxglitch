@@ -15,6 +15,10 @@ struct ByteBenderWidget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(70, 60)), module, ByteBender::INPUT_2B));
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(70, 70)), module, ByteBender::OUTPUT_2));
 
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(80, 50)), module, ByteBender::INPUT_3A));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(80, 60)), module, ByteBender::INPUT_3B));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(80, 70)), module, ByteBender::OUTPUT_3));
+
   }
 
   /*

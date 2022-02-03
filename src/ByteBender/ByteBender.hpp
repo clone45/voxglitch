@@ -1,8 +1,11 @@
 struct ByteBender : Module
 {
-  uint8_t w = 0;     // w is the output of the equations
   float output = 0;  // output is the audio output
-  uint32_t t;  // t is the time counter used in the equations
+  uint16_t t;  // t is the time counter used in the equations
+  float w;
+
+  float a;
+  float b;
 
   uint8_t clock_division_counter = 0;
   uint8_t clock_division = 2;
@@ -63,62 +66,44 @@ struct ByteBender : Module
     }
 
     outputClocks(t);
-    process_m1();
-    process_m2();
+
+    // Don't forget to add this!!
+    outputs[OUTPUT_1].setVoltage(process_m1()); // output is in the -5/+5v range
+    outputs[OUTPUT_2].setVoltage(process_m2()); // output is in the -5/+5v range
+    outputs[OUTPUT_3].setVoltage(process_m3()); // output is in the -5/+5v range
   }
 
-  uint32_t readInput(unsigned int input_index)
+  float process_m1()
   {
-    uint32_t low_value = 0;
-    uint32_t high_value = 0;
-    uint32_t value = 0;
-
-    low_value = (uint32_t) inputs[input_index].getVoltage(0);
-
-    if(inputs[input_index].getChannels() > 1)
-    {
-      high_value = (uint32_t) inputs[input_index].getVoltage(1);
-      value = low_value | (high_value << 16);
-    }
-    else
-    {
-      value = low_value;
-    }
-
-    return value;
+    a = inputs[INPUT_1A].getVoltage();
+    b = inputs[INPUT_1B].getVoltage();
+    return(sin(a + b));
   }
 
-  void process_m1()
+  float process_m2()
   {
-    uint32_t a = readInput(INPUT_1A);
-    uint32_t b = readInput(INPUT_1B);
-    w = a >> b;
-    if (w>0) outputs[OUTPUT_1].setVoltage(w);
+    a = inputs[INPUT_2A].getVoltage();
+    b = inputs[INPUT_2B].getVoltage();
+    return(a*b);
   }
 
-  void process_m2()
+  float process_m3()
   {
-    uint32_t a = readInput(INPUT_2A);
-    uint32_t b = readInput(INPUT_2B);
-    w = mod(a,b);
-    outputs[OUTPUT_2].setVoltage(w);
+    a = inputs[INPUT_3A].getVoltage();
+    b = inputs[INPUT_3B].getVoltage();
+    return(div(a,b));
   }
 
-  void outputClocks(uint32_t t)
+  void outputClocks(uint16_t t)
   {
-    uint16_t low = t & 65535;// isolate the first 16 bits
-    uint16_t high = t >> 16;
-
-    outputs[T1_OUTPUT].setVoltage(low, 0);
-    outputs[T1_OUTPUT].setVoltage(high, 1);
-    outputs[T1_OUTPUT].setChannels(2);
+    outputs[T1_OUTPUT].setVoltage(t);
   }
 
   //
   // These are safe versions of / and %  that avoid division by 0 which crash VCV Rack
   //
 
-  uint32_t div(uint32_t a, uint32_t b)
+  float div(float a, float b)
   {
     if(b == 0) return(0);
     return(a / b);
