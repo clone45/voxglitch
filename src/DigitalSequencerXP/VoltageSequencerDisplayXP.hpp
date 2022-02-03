@@ -1,6 +1,5 @@
 struct VoltageSequencerDisplayXP : SequencerDisplay
 {
-
   DigitalSequencerXP *module;
 
   bool draw_tooltip = false;
@@ -8,10 +7,13 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
   double draw_tooltip_y = -1.0;
   double tooltip_value = 0.0;
   bool shift_key = false;
+  bool ctrl_key = false;
 
   int previous_shift_sequence_column = 0;
   int shift_sequence_column = 0;
 
+  int previous_control_sequence_column = 0;
+  int control_sequence_column = 0;
 
   VoltageSequencerDisplayXP()
   {
@@ -202,6 +204,14 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
     this->shift_sequence_column = clicked_column;
   }
 
+  void startControlSequence(Vec mouse_position)
+  {
+    int clicked_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
+    clicked_column = clamp(clicked_column, 0, MAX_SEQUENCER_STEPS);
+    module->selected_gate_sequencer->setLength(clicked_column);
+    module->selected_voltage_sequencer->setLength(clicked_column);
+  }
+
   void dragShiftSequences(Vec mouse_position)
   {
     if(module)
@@ -227,6 +237,35 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
     }
   }
 
+  void dragControlSequence(Vec mouse_position)
+  {
+    if(module)
+    {
+
+            /*
+      int column_offset = drag_column - this->control_sequence_column;
+
+      while(shift_offset < 0)
+      {
+        module->selected_gate_sequencer->shiftLeft();
+        module->selected_voltage_sequencer->shiftLeft();
+        shift_offset ++;
+      }
+
+      while(shift_offset > 0)
+      {
+        module->selected_gate_sequencer->shiftRight();
+        module->selected_voltage_sequencer->shiftRight();
+        shift_offset --;
+      }
+      */
+      int drag_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
+      drag_column = clamp(drag_column, 0, MAX_SEQUENCER_STEPS);
+      module->selected_gate_sequencer->setLength(drag_column);
+      module->selected_voltage_sequencer->setLength(drag_column);
+    }
+  }
+
   void onButton(const event::Button &e) override
   {
     if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
@@ -234,13 +273,17 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
       e.consume(this);
       drag_position = e.pos;
 
-      if(this->shift_key == false)
+      if(this->shift_key == true)
       {
-        this->editBar(e.pos);
+        startShiftSequences(drag_position);
+      }
+      else if(this->ctrl_key == true)
+      {
+        startControlSequence(drag_position);
       }
       else
       {
-        startShiftSequences(drag_position);
+        this->editBar(e.pos);
       }
 
     }
@@ -252,13 +295,17 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
     float zoom = getAbsoluteZoom();
     drag_position = drag_position.plus(e.mouseDelta.div(zoom));
 
-    if(this->shift_key == false)
+    if(this->shift_key == true)
     {
-      editBar(drag_position);
+      dragShiftSequences(drag_position);
+    }
+    else if(this->ctrl_key == true)
+    {
+      dragControlSequence(drag_position);
     }
     else
     {
-      dragShiftSequences(drag_position);
+      editBar(drag_position);
     }
 
   }
@@ -273,6 +320,9 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
       module->selected_voltage_sequencer->setPosition(bar_x_index);
       module->selected_gate_sequencer->setPosition(bar_x_index);
     }
+
+    TransparentWidget::onHover(e);
+    e.consume(this);
   }
 
   void onHoverKey(const event::HoverKey &e) override
@@ -280,6 +330,7 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
     if(!module) return;
 
     this->shift_key = ((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT);
+    this->ctrl_key = ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL);
 
     if(keypressLeft(e))
     {
@@ -347,6 +398,12 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
       module->selected_voltage_sequencer->clear();
       if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->clear();
     }
+  }
+
+  void onLeave(const LeaveEvent &e) override
+  {
+    shift_key = false;
+    ctrl_key = false;
   }
 
 };

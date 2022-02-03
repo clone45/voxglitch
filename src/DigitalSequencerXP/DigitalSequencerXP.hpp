@@ -549,7 +549,7 @@ struct DigitalSequencerXP : Module
       if(i < (unsigned int) inputs[POLY_LENGTH_INPUT].getChannels()) // If there's an input controlling this sequencer
       {
         float length_input = inputs[POLY_LENGTH_INPUT].getVoltage(i);
-        int length = ((length_input / 10.0) * 31) + 1;
+        int length = ((length_input / 10.0) * 32) + 1;
         length = clamp(length, 1.0, 32.0);
 
         voltage_sequencers[i].setLength((int) length);

@@ -282,6 +282,19 @@ struct DigitalSequencerXPWidget : ModuleWidget
         }
       }
 
+      // Switch between seuences using the number keys 1-6
+      if (e.key >= GLFW_KEY_1 && e.key <= GLFW_KEY_8) // quick-select
+      {
+        if(e.action == GLFW_PRESS)
+        {
+          unsigned int sequencer_number = e.key - 49;
+          if ((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) sequencer_number += 8;
+          sequencer_number = clamp(sequencer_number,0,NUMBER_OF_SEQUENCERS-1);
+          module->selected_sequencer_index = sequencer_number;
+          e.consume(this);
+        }
+      }
+
       ModuleWidget::onHoverKey(e);
 
   }
