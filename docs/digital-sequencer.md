@@ -19,9 +19,11 @@ Digital Sequencer is a variable length CV/Gate sequencer - times six!  It has bo
 
 ### Selecting which sequence to edit
 
-There are 6 sequences in Digital Sequencer.  To select which sequence to edit, click on one of the 6 green LED buttons.
+There are 6 sequences in Digital Sequencer.  To select which sequence to edit, click on one of the 6 green LED buttons.  You may also use the number keys 1-6 while hovering your mouse over the module to select the active sequencer.
 
-Each sequence has variable length controlled by the LEN input, which ranges from 1 to 32.
+### Setting the sequence length
+
+Each sequence has variable length controlled by the corresponding LEN knob, which ranges from 1 to 32.  Another way to set the sequence length is to hold the CTRL key while dragging the mouse left and right in the voltage sequencer display.
 
 ### The Mouse Interface
 
