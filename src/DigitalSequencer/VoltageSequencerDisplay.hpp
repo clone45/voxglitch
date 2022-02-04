@@ -199,9 +199,6 @@ struct VoltageSequencerDisplay : SequencerDisplay
     int clicked_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
     clicked_column = clamp(clicked_column, 0, MAX_SEQUENCER_STEPS);
     module->setLengthKnobPosition(clicked_column);
-
-    // module->selected_gate_sequencer->setLength(clicked_column);
-    // module->selected_voltage_sequencer->setLength(clicked_column);
   }
 
   void dragShiftSequences(Vec mouse_position)
@@ -233,8 +230,6 @@ struct VoltageSequencerDisplay : SequencerDisplay
       int drag_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
       drag_column = clamp(drag_column, 0, MAX_SEQUENCER_STEPS);
       module->setLengthKnobPosition(drag_column);
-      // module->selected_gate_sequencer->setLength(drag_column);
-      // module->selected_voltage_sequencer->setLength(drag_column);
     }
   }
 

@@ -1,11 +1,3 @@
-/*
-class TrimpotNoRandom : public Trimpot
-{
-public:
-  void randomize() override {} // do nothing. base class would actually randomize
-};
-*/
-
 struct DigitalSequencerXPWidget : ModuleWidget
 {
   DigitalSequencerXP* module;
@@ -162,6 +154,24 @@ struct DigitalSequencerXPWidget : ModuleWidget
       sample_and_hold_item->module = module;
       menu->addChild(sample_and_hold_item);
 
+      // Add label input
+      auto holder = new rack::Widget;
+      holder->box.size.x = 220; // This value will determine the width of the menu
+      holder->box.size.y = 20;
+
+      auto lab = new rack::Label;
+      lab->text = "Label: ";
+      lab->box.size = 50; // label box size determins the bounding box around #1, #2, #3 etc.
+      holder->addChild(lab);
+
+      auto textfield = new labelTextField(sequencer_number);
+      textfield->module = module;
+      textfield->text = module->labels[sequencer_number];
+      holder->addChild(textfield);
+
+      menu->addChild(holder);
+
+
       return menu;
     }
   };
@@ -212,9 +222,59 @@ struct DigitalSequencerXPWidget : ModuleWidget
     }
   };
 
-  struct AllSequencersItem : MenuItem {
+  struct labelTextField : TextField {
+
+    DigitalSequencerXP *module;
+    unsigned int index = 0;
+
+    labelTextField(unsigned int index)
+    {
+      this->index = index;
+      this->box.pos.x = 50;
+      this->box.size.x = 160;
+      this->multiline = false;
+    }
+
+    void onChange(const event::Change& e) override {
+      module->labels[index] = text;
+    };
 
   };
+
+/*
+  struct LabelsMenu : MenuItem {
+    DigitalSequencerXP *module;
+
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      menu->addChild(new MenuEntry);
+
+      for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
+      {
+        auto holder = new rack::Widget;
+        holder->box.size.x = 200; // This value will determine the width of the menu
+        holder->box.size.y = 20;
+
+        auto lab = new rack::Label;
+        lab->text = std::to_string(i + 1) + ":";
+        lab->box.size = 40; // label box size determins the bounding box around #1, #2, #3 etc.
+        holder->addChild(lab);
+
+        auto textfield = new labelTextField(i);
+        textfield->module = module;
+        textfield->text = module->labels[i];
+        holder->addChild(textfield);
+
+        menu->addChild(holder);
+      }
+
+      menu->addChild(new MenuEntry);
+
+      return menu;
+    }
+  };
+*/
 
   void appendContextMenu(Menu *menu) override
   {
@@ -241,6 +301,11 @@ struct DigitalSequencerXPWidget : ModuleWidget
 
     menu->addChild(new MenuEntry); // For spacing only
     menu->addChild(createMenuItem<QuickKeyMenu>("Quick Key Reference", RIGHT_ARROW));
+
+    // Temporary labels menu position
+    // LabelsMenu *labels_menu = createMenuItem<LabelsMenu>("Labels", RIGHT_ARROW);
+    // labels_menu->module = module;
+    // menu->addChild(labels_menu);
   }
 
   void step() override {

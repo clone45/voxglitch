@@ -242,34 +242,6 @@ struct DigitalProgrammerWidget : ModuleWidget
     visualize_sums_menu_item->module = module;
     menu->addChild(visualize_sums_menu_item);
 
-    /*
-    LabelMenuItem * label_menu_item = createMenuItem<LabelMenuItem>("sample input");
-    label_menu_item->module = module;
-    menu->addChild(label_menu_item);
-    */
-    // menu->addChild(new LabelTextField());
-
-
-    /*
-    DigitalProgrammer *module = dynamic_cast<DigitalProgrammer*>(this->module);
-    assert(module);
-
-    menu->addChild(new MenuEntry); // For spacing only
-    menu->addChild(createMenuLabel("Slider Settings"));
-
-    // Add individual sequencer settings
-    SliderItem *slider_items[16];
-
-    for(unsigned int i=0; i < NUMBER_OF_SLIDERS; i++)
-    {
-      slider_items[i] = createMenuItem<SliderItem>("Slider #" + std::to_string(i + 1), RIGHT_ARROW);
-      slider_items[i]->module = module;
-      slider_items[i]->slider_number = i;
-      menu->addChild(slider_items[i]);
-    }
-    */
-
-
     LabelsMenu *labels_menu = createMenuItem<LabelsMenu>("Labels", RIGHT_ARROW);
     labels_menu->module = module;
     menu->addChild(labels_menu);

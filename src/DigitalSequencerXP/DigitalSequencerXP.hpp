@@ -31,6 +31,9 @@ struct DigitalSequencerXP : Module
   dsp::PulseGenerator gateOutputPulseGenerators[NUMBER_OF_SEQUENCERS];
   double sample_rate;
 
+  // There must be a better way...
+  std::string labels[NUMBER_OF_SEQUENCERS] = {"","","","","","","","","","","","","","","",""};
+
   bool sequencer_button_is_triggered[NUMBER_OF_SEQUENCERS];
 
   std::string voltage_range_names[NUMBER_OF_VOLTAGE_RANGES] = {
@@ -211,6 +214,17 @@ struct DigitalSequencerXP : Module
     // Save Legacy Reset mode
     json_object_set_new(json_root, "legacy_reset", json_integer(legacy_reset));
 
+    //
+    // Save the labels
+    //
+    json_t *labels_json_array = json_array();
+    for(int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
+    {
+      json_array_append_new(labels_json_array, json_string(labels[i].c_str()));
+    }
+    json_object_set(json_root, "labels", labels_json_array);
+    json_decref(labels_json_array);
+
     return json_root;
   }
 
@@ -324,8 +338,27 @@ struct DigitalSequencerXP : Module
       }
     }
 
+    //
+    // Load legacy reset flag
+    //
     json_t* legacy_reset_json = json_object_get(json_root, "legacy_reset");
     if (legacy_reset_json) legacy_reset = json_integer_value(legacy_reset_json);
+
+    //
+    // Load the labels
+    //
+    json_t *labels_json = json_object_get(json_root, "labels");
+
+    if(labels_json)
+    {
+      size_t i;
+      json_t *label_json;
+
+      json_array_foreach(labels_json, i, label_json)
+      {
+        labels[i] = json_string_value(label_json);
+      }
+    }
   }
 
 

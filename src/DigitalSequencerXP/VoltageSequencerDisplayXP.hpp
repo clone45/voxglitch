@@ -97,6 +97,21 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
           nvgFill(vg);
         }
 
+        // Draw label, if there is one
+        std::string to_display = module->labels[module->selected_sequencer_index];
+
+        if(to_display != "")
+        {
+          nvgFontSize(args.vg, 14);
+          nvgTextLetterSpacing(args.vg, 0);
+          nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+          nvgTextAlign(args.vg, NVG_ALIGN_CENTER);
+          float x_position = DRAW_AREA_HEIGHT / 2;
+          float y_position = 16;
+          float wrap_at = 275.0; // Just throw your hands in the air!  And wave them like you just don't 274.0
+          nvgTextBox(args.vg, x_position, y_position, wrap_at, to_display.c_str(), NULL);
+        }
+
       }
       else // Draw a demo sequence so that the sequencer looks nice in the library selector
       {

@@ -178,11 +178,6 @@ struct DigitalProgrammer : Module
       json_array_foreach(labels_json, i, label_json)
       {
         labels[i] = json_string_value(label_json);
-        /*
-        float x = json_real_value(json_array_get(json_array_pair_xy, 0));
-        float y = json_real_value(json_array_get(json_array_pair_xy, 1));
-        recording_memory.push_back(Vec(x,y));
-        */
       }
     }
 
