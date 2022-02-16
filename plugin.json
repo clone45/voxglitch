@@ -120,6 +120,12 @@
         "tags": ["Sampler"]
     },
     {
+        "slug": "scalar110",
+        "name": "Scalar 110",
+        "description": "Goove box",
+        "tags": ["Sampler"]
+    },
+    {
         "slug": "wavbank",
         "name": "Wav Bank",
         "description": "Sample player that can load and switch between all .wav files in a folder.",
