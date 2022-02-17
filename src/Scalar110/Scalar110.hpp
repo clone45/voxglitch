@@ -58,21 +58,6 @@ struct Scalar110 : Module
     selected_track = &tracks[0];
 	}
 
-  /*
-  void setParameters(unsigned int selected_step, Track *selected_track)
-  {
-    // TODO: INstead of copying the parameters into the local structure, how
-    // about just having a pointer to track_parameters that always points
-    // to one of the track's parameter structures, or something like that?
-    StepParams *track_parameters = selected_track->getParameters(selected_step);
-
-    for(unsigned int i=0; i<NUMBER_OF_PARAMETERS; i++)
-    {
-      parameters[i] = track_parameters->p[i];
-    }
-  }
-  */
-
 	// Autosave module data.  VCV Rack decides when this should be called.
 	json_t *dataToJson() override
 	{
@@ -118,14 +103,6 @@ struct Scalar110 : Module
       lights[STEP_LOCATION_LIGHTS + i].setBrightness(playback_step == i);
     }
 
-
-    // Set all of the parameter knobs to the values for the current step
-    // TODO: Maybe just do this if the selected track has changed
-    // setParameters(selected_step, selected_track);
-
-    //   selected_track->getParameters(selected_step, &step_parameters);
-    //   params[ENGINE_PARAMS + i].setValue(step_parameters.p[i]);
-
     //
     // Read all of the parameter knobs and assign them to the selected Track/Step
     for(unsigned int i = 0; i < NUMBER_OF_PARAMETERS; i++)
@@ -142,7 +119,7 @@ struct Scalar110 : Module
 
     //
     // compute output
-    //
+    // The return result from tne engine should be -5v to 5v
     std::tie(left_output, right_output) = selected_track->process();
 
     outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_output);

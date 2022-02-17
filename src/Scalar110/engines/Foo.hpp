@@ -7,6 +7,10 @@ namespace scalar_110
     uint8_t w = 0;
     uint32_t t = 0;
 
+    uint32_t p1 = 0;
+    uint32_t p2 = 0;
+    uint32_t p3 = 0;
+
     //
     // There should always be 8 parameters
     //
@@ -14,18 +18,17 @@ namespace scalar_110
     {
       t = t + 1;
 
-      uint32_t p1 = step_parameters->p[0] * 128.0;
-      uint32_t p2 = step_parameters->p[1] * 128.0;
-      uint32_t p3 = step_parameters->p[2] * 128.0;
-
       // todo: inroduce 't' and create the 8 knobs on the front panels
       w = ((mod(t,(p1+(mod(t,p2)))))^(t>>(p3>>5)))*2;
-      float output = (w / 256.0);
+      float output = ((w / 256.0) * 10.0) - 5.0;
       return { output, output };
     }
 
-    void trigger() override
+    void trigger(StepParams *step_parameters) override
     {
+      p1 = step_parameters->p[0] * 128.0;
+      p2 = step_parameters->p[1] * 128.0;
+      p3 = step_parameters->p[2] * 128.0;
       t = 0;
     }
 

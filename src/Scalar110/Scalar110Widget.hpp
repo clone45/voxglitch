@@ -29,6 +29,9 @@ struct Scalar110Widget : ModuleWidget
     addParam(createParamCentered<Trimpot>(mm2px(Vec(120,50)), module, Scalar110::ENGINE_PARAMS + 1));
     addParam(createParamCentered<Trimpot>(mm2px(Vec(140,50)), module, Scalar110::ENGINE_PARAMS + 2));
 
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(210, 114.702)), module, Scalar110::AUDIO_OUTPUT_LEFT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(220, 114.702)), module, Scalar110::AUDIO_OUTPUT_RIGHT));
+
   }
 
   void appendContextMenu(Menu *menu) override

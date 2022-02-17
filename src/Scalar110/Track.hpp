@@ -14,7 +14,7 @@ struct Track
 
     if (steps[playback_position])
     {
-      engine->trigger();
+      engine->trigger(& step_parameters[playback_position]);
     }
   }
 
