@@ -25,9 +25,14 @@ struct Scalar110Widget : ModuleWidget
 
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(50,50)), module, Scalar110::TRACK_SELECT_KNOB));
 
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(100,50)), module, Scalar110::ENGINE_PARAMS));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(120,50)), module, Scalar110::ENGINE_PARAMS + 1));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(140,50)), module, Scalar110::ENGINE_PARAMS + 2));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(100,50)), module, Scalar110::ENGINE_PARAMS));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(120,50)), module, Scalar110::ENGINE_PARAMS + 1));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(140,50)), module, Scalar110::ENGINE_PARAMS + 2));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(160,50)), module, Scalar110::ENGINE_PARAMS + 3));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(100,70)), module, Scalar110::ENGINE_PARAMS + 4));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(120,70)), module, Scalar110::ENGINE_PARAMS + 5));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(140,70)), module, Scalar110::ENGINE_PARAMS + 6));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(160,70)), module, Scalar110::ENGINE_PARAMS + 7));
 
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(210, 114.702)), module, Scalar110::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(220, 114.702)), module, Scalar110::AUDIO_OUTPUT_RIGHT));

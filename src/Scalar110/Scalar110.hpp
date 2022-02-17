@@ -11,7 +11,6 @@ struct Scalar110 : Module
   dsp::SchmittTrigger stepTrigger;
   Track tracks[NUMBER_OF_TRACKS];
   Track *selected_track;
-  // float parameters[6];
   unsigned int playback_step = 0;
   unsigned int selected_step = 0;
   StepParams step_parameters;

@@ -23,14 +23,6 @@ struct Track
     return(playback_position);
   }
 
-  void setParameters(unsigned int selected_step, StepParams *new_parameters)
-  {
-    for(unsigned int i=0; i<NUMBER_OF_PARAMETERS; i++)
-    {
-      this->step_parameters[selected_step].p[i] = new_parameters->p[i];
-    }
-  }
-
   StepParams *getParameters(unsigned int selected_step)
   {
     return(& this->step_parameters[selected_step]);
@@ -70,7 +62,7 @@ struct Track
     float left_output;
     float right_output;
 
-    std::tie(left_output, right_output) = this->engine->process(&step_parameters[this->playback_position]);
+    std::tie(left_output, right_output) = this->engine->process();
     return { left_output, right_output };
   }
 
