@@ -31,6 +31,11 @@ struct Track
     }
   }
 
+  StepParams *getParameters(unsigned int selected_step)
+  {
+    return(& this->step_parameters[selected_step]);
+  }
+
   void setPosition(unsigned int playback_position)
   {
     if(playback_position < NUMBER_OF_STEPS)
