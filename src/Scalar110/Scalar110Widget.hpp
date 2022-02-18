@@ -37,6 +37,18 @@ struct Scalar110Widget : ModuleWidget
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(210, 114.702)), module, Scalar110::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(220, 114.702)), module, Scalar110::AUDIO_OUTPUT_RIGHT));
 
+    for(unsigned int i=0; i<NUMBER_OF_PARAMETERS; i++)
+    {
+      float x_position = 100 + (i * 20);
+      float y_position = 40 + ((i/8) * 20);
+
+      LabelDisplay *label_display = new LabelDisplay();
+      label_display->box.pos = mm2px(Vec(x_position, y_position));
+      label_display->module = module;
+      label_display->knob_number = i;
+      addChild(label_display);
+    }
+
   }
 
   void appendContextMenu(Menu *menu) override

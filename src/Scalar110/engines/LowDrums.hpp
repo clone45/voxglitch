@@ -1,7 +1,7 @@
 // TODO
 namespace scalar_110
 {
-  struct Foo : Engine
+  struct LowDrums : Engine
   {
     std::string knob_labels[8] = {"Ratcht","Pan","Prob %","Speed","Offset","Level","",""};
     uint8_t w = 0;
@@ -13,7 +13,7 @@ namespace scalar_110
 
     float p[NUMBER_OF_PARAMETERS];
 
-    Foo() // constructor
+    LowDrums() // constructor
     {
       for(unsigned int i=0; i<NUMBER_OF_PARAMETERS; i++)
       {
@@ -50,11 +50,6 @@ namespace scalar_110
       return { output, output };
     }
 
-    std::string getKnobLabel(unsigned int knob_number) override
-    {
-      return(knob_labels[knob_number]);
-    }
-
     void trigger(StepParams *step_parameters) override
     {
       // p0 through p3 are variable values used in the equations
@@ -74,7 +69,7 @@ namespace scalar_110
     }
 
 
-    ~Foo() // destructor
+    ~LowDrums() // destructor
     {
       // do nothing
     }

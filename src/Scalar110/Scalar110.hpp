@@ -121,6 +121,7 @@ struct Scalar110 : Module
     // The return result from tne engine should be -5v to 5v
     std::tie(left_output, right_output) = selected_track->process();
 
+    // Output voltages at stereo outputs
     outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_output);
     outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_output);
 
