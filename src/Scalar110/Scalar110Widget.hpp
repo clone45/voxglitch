@@ -22,8 +22,9 @@ struct Scalar110Widget : ModuleWidget
       addChild(createLightCentered<SmallLight<RedLight>>(mm2px(Vec(button_group_x + (button_spacing * i), button_group_y - 6)), module, Scalar110::STEP_LOCATION_LIGHTS + i));
     }
 
-
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(50,50)), module, Scalar110::TRACK_SELECT_KNOB));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(50,80)), module, Scalar110::ENGINE_SELECT_KNOB));
+
 
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(100,50)), module, Scalar110::ENGINE_PARAMS));
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(120,50)), module, Scalar110::ENGINE_PARAMS + 1));
@@ -39,8 +40,8 @@ struct Scalar110Widget : ModuleWidget
 
     for(unsigned int i=0; i<NUMBER_OF_PARAMETERS; i++)
     {
-      float x_position = 100 + (i * 20);
-      float y_position = 40 + ((i/8) * 20);
+      float x_position = 100 + ((i%4) * 20);
+      float y_position = 42 + ((i/4) * 20);
 
       LabelDisplay *label_display = new LabelDisplay();
       label_display->box.pos = mm2px(Vec(x_position, y_position));

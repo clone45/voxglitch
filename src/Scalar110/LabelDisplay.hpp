@@ -24,7 +24,7 @@ struct LabelDisplay : TransparentWidget
       nvgTextAlign(vg, NVG_ALIGN_CENTER);
       nvgTextLetterSpacing(vg, -1);
       nvgFillColor(vg, nvgRGB(3, 3, 3));
-      nvgText(vg, 5, 5, text_to_display.c_str(), NULL);
+      nvgText(vg, 0, 0, text_to_display.c_str(), NULL);
   	}
 
     nvgRestore(vg);

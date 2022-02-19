@@ -1,8 +1,9 @@
 //
-// TODO: add outputs!
-// call process in engine
-// Listen to some sounds
-// Add per-step properties
+// Next: add engine select knob to allow for seleciton of low drums
+// See: https://github.com/VCVRack/Fundamental/blob/v1/src/Merge.cpp#L71
+// and: https://community.vcvrack.com/t/getting-started-with-rack-menu/8608
+// then test the kick drum
+
 
 struct Scalar110 : Module
 {
@@ -13,6 +14,7 @@ struct Scalar110 : Module
   Track *selected_track;
   unsigned int playback_step = 0;
   unsigned int selected_step = 0;
+  unsigned int engine = 0;
   StepParams step_parameters;
   float left_output;
   float right_output;
@@ -22,6 +24,7 @@ struct Scalar110 : Module
     ENUMS(STEP_SELECT_BUTTONS, NUMBER_OF_STEPS),
     ENUMS(ENGINE_PARAMS, NUMBER_OF_PARAMETERS),
     TRACK_SELECT_KNOB,
+    ENGINE_SELECT_KNOB,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -44,16 +47,20 @@ struct Scalar110 : Module
 	{
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 
-    for(unsigned int i=0; i<NUMBER_OF_PARAMETERS; i++)
+    for(unsigned int i=0; i < NUMBER_OF_STEPS; i++)
     {
-      // TODO: It's going to be important to figure out the defaults for the
-      // parameters per step and load them instead of setting them all to 0
       configParam(DRUM_PADS + i, 0.0, 1.0, 0.0, "drum_button_" + std::to_string(i));
       configParam(STEP_SELECT_BUTTONS + i, 0.0, 1.0, 0.0, "selected_step_" + std::to_string(i));
-      configParam(ENGINE_PARAMS + i, 0.0, 1.0, 1.0, "Parameter_" + std::to_string(i));
     }
 
-    tracks[0].engine = new Foo();
+    for(unsigned int i=0; i < NUMBER_OF_PARAMETERS; i++)
+    {
+      configParam(ENGINE_PARAMS + i, 0.0, 1.0, 1.0, "engine_parameter_" + std::to_string(i));
+    }
+
+    configParam(TRACK_SELECT_KNOB, 0.0, NUMBER_OF_TRACKS, 0.0, "Track");
+    configParam(ENGINE_SELECT_KNOB, 0.0, 2.0, 0.0, "Engine");
+
     selected_track = &tracks[0];
 	}
 
@@ -100,6 +107,19 @@ struct Scalar110 : Module
 
       // Show location
       lights[STEP_LOCATION_LIGHTS + i].setBrightness(playback_step == i);
+    }
+
+    // Read the engine selection knob
+
+    engine = params[ENGINE_SELECT_KNOB].getValue() * (NUMBER_OF_ENGINES - 1);
+
+    switch(engine) {
+      case 0:
+        selected_track->setEngine(new Foo());
+        break;
+      case 1: //
+        selected_track->setEngine(new LowDrums());
+        break;
     }
 
     //

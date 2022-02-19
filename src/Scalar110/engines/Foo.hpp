@@ -3,7 +3,7 @@ namespace scalar_110
 {
   struct Foo : Engine
   {
-    std::string knob_labels[8] = {"Ratcht","Pan","Prob %","Speed","Offset","Level","",""};
+    std::string knob_labels[8] = {"V1","V2","V3","Clk Div","Equation","","",""};
     uint8_t w = 0;
     uint32_t t = 0;
     uint32_t v[3];

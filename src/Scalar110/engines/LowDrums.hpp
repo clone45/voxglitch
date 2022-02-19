@@ -37,17 +37,18 @@ namespace scalar_110
 
       switch(selected_equation) {
 
-        case 0: // Exploratorium
-          w = ((mod(t,(v[1]+(mod(t,v[2])))))^(t>>(v[3]>>5)))*2;
-          break;
-
-        case 1: // Toner
-          w = ((t>>( mod((t>>12), (v[3]>>4)) ))+( mod((v[1]|t),v[2])))<<2;
+        case 0: // long kick
+          w = (((int)sqrt(t%0x2000)<<7&241)/60-1);
           break;
       }
 
       float output = ((w / 256.0) * 10.0) - 5.0;
       return { output, output };
+    }
+
+    std::string getKnobLabel(unsigned int knob_number) override
+    {
+      return(knob_labels[knob_number]);
     }
 
     void trigger(StepParams *step_parameters) override
