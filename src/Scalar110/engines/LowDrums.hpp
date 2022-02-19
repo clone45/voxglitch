@@ -3,13 +3,16 @@ namespace scalar_110
 {
   struct LowDrums : Engine
   {
-    std::string knob_labels[8] = {"Ratcht","Pan","Prob %","Speed","Offset","Level","",""};
+    // All engines should have these variables
+    std::string knob_labels[8] = {"Drum","","","","","","",""};
+
+    // Engine specific variables
     uint8_t w = 0;
     uint32_t t = 0;
     uint32_t v[3];
-    unsigned int clock_division = 0;
+    unsigned int clock_division = 4;
     unsigned int clock_division_counter = 0;
-    unsigned int selected_equation = 0;
+    unsigned int drum_selection = 0;
 
     float p[NUMBER_OF_PARAMETERS];
 
@@ -35,7 +38,7 @@ namespace scalar_110
 
       // t = t + 1;
 
-      switch(selected_equation) {
+      switch(drum_selection) {
 
         case 0: // long kick
           w = (((int)sqrt(t%0x2000)<<7&241)/60-1);
@@ -53,6 +56,7 @@ namespace scalar_110
 
     void trigger(StepParams *step_parameters) override
     {
+      /*
       // p0 through p3 are variable values used in the equations
       v[0] = step_parameters->p[0] * 128.0;
       v[1] = step_parameters->p[1] * 128.0;
@@ -62,8 +66,8 @@ namespace scalar_110
 
       // p[3] is the clock division
       clock_division = step_parameters->p[3] * 16;
-
-      selected_equation = step_parameters->p[4] * 2;
+      */
+      drum_selection = step_parameters->p[0] * 2;
 
       // Reset counter on trigger
       t = 0;

@@ -3,7 +3,10 @@ namespace scalar_110
 {
   struct Foo : Engine
   {
+    // All engines should have these variables
     std::string knob_labels[8] = {"V1","V2","V3","Clk Div","Equation","","",""};
+
+    // Engine specific variables
     uint8_t w = 0;
     uint32_t t = 0;
     uint32_t v[3];

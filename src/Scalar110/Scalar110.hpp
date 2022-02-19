@@ -14,7 +14,8 @@ struct Scalar110 : Module
   Track *selected_track;
   unsigned int playback_step = 0;
   unsigned int selected_step = 0;
-  unsigned int engine = 0;
+  unsigned int engine_index = 0;
+  unsigned int old_engine_index = 0;
   StepParams step_parameters;
   float left_output;
   float right_output;
@@ -62,7 +63,18 @@ struct Scalar110 : Module
     configParam(ENGINE_SELECT_KNOB, 0.0, 2.0, 0.0, "Engine");
 
     selected_track = &tracks[0];
+    selected_track->setEngine(new Foo());
 	}
+
+  void selectStep(unsigned int i)
+  {
+    selected_step = i;
+    for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
+    {
+      // set the knob positions for the selected step
+      params[ENGINE_PARAMS + parameter_number].setValue(selected_track->step_parameters[selected_step].p[parameter_number]);
+    }
+  }
 
 	// Autosave module data.  VCV Rack decides when this should be called.
 	json_t *dataToJson() override
@@ -78,25 +90,55 @@ struct Scalar110 : Module
 
 	void process(const ProcessArgs &args) override
 	{
+    // Read the engine selection knob
+    engine_index = params[ENGINE_SELECT_KNOB].getValue() * (NUMBER_OF_ENGINES - 1);
+
+    // If the engine selection has changed, then assign the newly selected
+    // engine to the currently selected track.
+    if(engine_index != old_engine_index)
+    {
+      switch(engine_index) {
+        case 0:
+          selected_track->setEngine(new Foo());
+          break;
+        case 1: //
+          selected_track->setEngine(new LowDrums());
+          break;
+        default:
+          selected_track->setEngine(new Foo());
+          break;
+      }
+      old_engine_index = engine_index;
+    }
+
     //
     // Handle drum pads, drum location, and drum selection interactions and
     // lights.
     //
-
     for(unsigned int i = 0; i < NUMBER_OF_STEPS; i++)
     {
       // Process drum pads
-      if(drum_pad_triggers[i].process(params[DRUM_PADS + i].getValue())) selected_track->toggleStep(i);
+      if(drum_pad_triggers[i].process(params[DRUM_PADS + i].getValue()))
+      {
+        // Toggle the drum pad
+        selected_track->toggleStep(i);
+
+        // Also set the step selection for convenience
+        selectStep(i);
+      }
 
       // Process step select triggers.
       if(step_select_triggers[i].process(params[STEP_SELECT_BUTTONS + i].getValue()))
       {
+        selectStep(i);
+        /*
         selected_step = i;
         for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
         {
           // set the knob positions for the selected step
           params[ENGINE_PARAMS + parameter_number].setValue(selected_track->step_parameters[selected_step].p[parameter_number]);
         }
+        */
       }
 
       // Light up drum pads
@@ -107,19 +149,6 @@ struct Scalar110 : Module
 
       // Show location
       lights[STEP_LOCATION_LIGHTS + i].setBrightness(playback_step == i);
-    }
-
-    // Read the engine selection knob
-
-    engine = params[ENGINE_SELECT_KNOB].getValue() * (NUMBER_OF_ENGINES - 1);
-
-    switch(engine) {
-      case 0:
-        selected_track->setEngine(new Foo());
-        break;
-      case 1: //
-        selected_track->setEngine(new LowDrums());
-        break;
     }
 
     //

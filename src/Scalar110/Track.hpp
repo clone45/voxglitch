@@ -5,7 +5,7 @@ struct Track
 {
   bool steps[NUMBER_OF_STEPS] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
   unsigned int playback_position = 0;
-  Engine *engine;
+  Engine *engine = new Foo();
   StepParams step_parameters[NUMBER_OF_STEPS];
 
   void step()
