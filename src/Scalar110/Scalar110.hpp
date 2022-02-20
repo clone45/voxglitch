@@ -1,4 +1,6 @@
 //
+// Next: Make track select work.  User a quantized knob
+//
 // Next: add engine select knob to allow for seleciton of low drums
 // See: https://github.com/VCVRack/Fundamental/blob/v1/src/Merge.cpp#L71
 // and: https://community.vcvrack.com/t/getting-started-with-rack-menu/8608
@@ -131,14 +133,6 @@ struct Scalar110 : Module
       if(step_select_triggers[i].process(params[STEP_SELECT_BUTTONS + i].getValue()))
       {
         selectStep(i);
-        /*
-        selected_step = i;
-        for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
-        {
-          // set the knob positions for the selected step
-          params[ENGINE_PARAMS + parameter_number].setValue(selected_track->step_parameters[selected_step].p[parameter_number]);
-        }
-        */
       }
 
       // Light up drum pads
