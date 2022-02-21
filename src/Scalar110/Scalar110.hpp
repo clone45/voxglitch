@@ -61,8 +61,11 @@ struct Scalar110 : Module
       configParam(ENGINE_PARAMS + i, 0.0, 1.0, 1.0, "engine_parameter_" + std::to_string(i));
     }
 
-    configParam(TRACK_SELECT_KNOB, 0.0, NUMBER_OF_TRACKS, 0.0, "Track");
+    configParam(TRACK_SELECT_KNOB, 0.0, NUMBER_OF_TRACKS - 1, 0.0, "Track");
+    paramQuantities[TRACK_SELECT_KNOB]->snapEnabled = true;
+
     configParam(ENGINE_SELECT_KNOB, 0.0, 2.0, 0.0, "Engine");
+    paramQuantities[ENGINE_SELECT_KNOB]->snapEnabled = true;
 
     selected_track = &tracks[0];
     selected_track->setEngine(new Foo());
@@ -81,19 +84,58 @@ struct Scalar110 : Module
 	// Autosave module data.  VCV Rack decides when this should be called.
 	json_t *dataToJson() override
 	{
-		json_t *root = json_object();
-		return root;
+		json_t *json_root = json_object();
+
+    // Save all drum pad selections
+    json_t *tracks_json_array = json_array();
+
+    for(int track_number=0; track_number<NUMBER_OF_TRACKS; track_number++)
+    {
+      json_t *patterns_json_array = json_array();
+
+      for(int i=0; i<NUMBER_OF_STEPS; i++)
+      {
+        json_array_append_new(patterns_json_array, json_integer(this->tracks[track_number].getValue(i)));
+      }
+
+      json_array_append_new(tracks_json_array, patterns_json_array);
+    }
+
+    json_object_set(json_root, "tracks", tracks_json_array);
+    json_decref(tracks_json_array);
+
+		return json_root;
 	}
 
 	// Load module data
-	void dataFromJson(json_t *root) override
+	void dataFromJson(json_t *json_root) override
 	{
+    //
+    // Load tracks
+    //
+
+    json_t *tracks_arrays_data = json_object_get(json_root, "tracks");
+
+    if(tracks_arrays_data)
+    {
+      size_t track_number;
+      json_t *json_pattern_array;
+
+      json_array_foreach(tracks_arrays_data, track_number, json_pattern_array)
+      {
+        for(int i=0; i<NUMBER_OF_STEPS; i++)
+        {
+          this->tracks[track_number].setValue(i, json_integer_value(json_array_get(json_pattern_array, i)));
+        }
+      }
+    }
 	}
 
 	void process(const ProcessArgs &args) override
 	{
     // Read the engine selection knob
     engine_index = params[ENGINE_SELECT_KNOB].getValue() * (NUMBER_OF_ENGINES - 1);
+    selected_track = &tracks[(int) params[TRACK_SELECT_KNOB].getValue()];
 
     // If the engine selection has changed, then assign the newly selected
     // engine to the currently selected track.

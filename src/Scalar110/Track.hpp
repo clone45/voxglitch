@@ -46,6 +46,11 @@ struct Track
     return(steps[i]);
   }
 
+  void setValue(unsigned int i, bool value)
+  {
+    steps[i] = value;
+  }
+
   void reset()
   {
     playback_position = 0;

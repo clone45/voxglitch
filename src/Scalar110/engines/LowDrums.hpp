@@ -53,6 +53,13 @@ namespace scalar_110
           }
           break;
 
+        // clean kick
+        // ((Math.sqrt(t%1634)<<6)&64)
+        // "tek" kick
+        // w = (((1250&t-17)>>6%t)*40) * (t<2000);
+        // w = ((50&t-177)>>356%t)*20; // noise hit if(t > 2000) stop_playback();
+        //
+
         case 1: // noise snare (finally working!!)
           float duration = 11025.0;
           if(t < duration)
@@ -64,6 +71,10 @@ namespace scalar_110
           }
           break;
 
+
+          // hihat #1: ((1000/(t)&28)&4241)*90
+          // hihat #2: (((5000/(t)&28)&4241)*90)*sin((t>>2)*sin((t>>1)))
+          // hihat #3: (((5000/(t)&22)&4281)*90)*sin((t>>3)*sin((t>>2)))
 
           // save this for an effect at the end
           //float audio = sin((t>>2)*sin((t>>4)));
