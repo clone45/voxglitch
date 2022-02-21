@@ -1,7 +1,7 @@
 //
-// Next: It looks like I've figured out the laoding parameters part.  Next
-// I need to save and load the selected engine per/track.  This should be
-// relatively straightforward
+// Next: I can't be saving engine by pointer only.  I have to mostly rely
+// on the engine number since that's what's loaded and saved.  I'm thinking
+// of moving the engine management into the track.
 
 
 struct Scalar110 : Module
@@ -72,7 +72,7 @@ struct Scalar110 : Module
     selected_track = &tracks[0];
 
     // TODO: Remove this line
-    selected_track->setEngine(new Foo());
+    selected_track->setEngine(0);
 	}
 
   void selectStep(unsigned int i)
@@ -94,6 +94,9 @@ struct Scalar110 : Module
     {
       params[ENGINE_PARAMS + parameter_number].setValue(selected_track->step_parameters[selected_step].p[parameter_number]);
     }
+
+    // Set the selected engine
+    params[ENGINE_SELECT_KNOB].setValue(selected_track->getEngine());
   }
 
   void refreshKnobs()
@@ -121,10 +124,11 @@ struct Scalar110 : Module
       for(int step_index=0; step_index<NUMBER_OF_STEPS; step_index++)
       {
         json_t *step_data = json_object();
-        json_object_set(step_data, "trigger_value", json_integer(this->tracks[track_number].getValue(step_index)));
+        json_object_set(step_data, "trigger", json_integer(this->tracks[track_number].getValue(step_index)));
+        // json_object_set(step_data, "engine", json_integer(this->tracks[track_number].getValue(step_index)));
 
         // I could have saved the parameters as named kay/value pairs, but there's going to be a LOT of them,
-        // so I'm being contientious and storing them in a minimal-format
+        // so I'm being conscientious and storing them in a minimal-format
         json_t *parameter_json_array = json_array();
         for(int parameter_index = 0; parameter_index < 4; parameter_index++)
         {
@@ -136,7 +140,11 @@ struct Scalar110 : Module
         json_array_append_new(steps_json_array, step_data);
       }
 
-      json_array_append_new(tracks_json_array, steps_json_array);
+      json_t *track_data = json_object();
+
+      json_object_set(track_data, "steps", steps_json_array);
+      json_object_set(track_data, "engine", json_integer(this->tracks[track_number].getEngine()));
+      json_array_append_new(tracks_json_array, track_data);
     }
     json_object_set(json_root, "tracks", tracks_json_array);
     json_decref(tracks_json_array);
@@ -155,33 +163,42 @@ struct Scalar110 : Module
 
     if(tracks_arrays_data)
     {
+      DEBUG("Got here");
+
       size_t track_index;
       size_t step_index;
       size_t parameter_index;
-      json_t *json_steps_array;
+      // json_t *json_steps_array;
       json_t *json_step_object;
+      json_t *json_track_object;
 
-      json_array_foreach(tracks_arrays_data, track_index, json_steps_array)
+      json_array_foreach(tracks_arrays_data, track_index, json_track_object)
       {
-        json_array_foreach(json_steps_array, step_index, json_step_object)
+        json_t *steps_json_array = json_object_get(json_track_object, "steps");
+        this->tracks[track_index].setEngine(json_integer_value(json_object_get(json_track_object, "engine")));
+
+        if(steps_json_array)
         {
-          // First, read the trigger state
-          this->tracks[track_index].setValue(step_index, json_integer_value(json_object_get(json_step_object, "trigger_value")));
-
-          // Secondly, read the parameters
-          json_t *parameter_json_array = json_object_get(json_step_object, "p");
-          json_t *parameter_array_data;
-
-          json_array_foreach(parameter_json_array, parameter_index, parameter_array_data)
+          json_array_foreach(steps_json_array, step_index, json_step_object)
           {
-            float parameter_value = json_real_value(parameter_array_data);
-            DEBUG(std::to_string(parameter_value).c_str());
-            this->tracks[track_index].setParameter(step_index, parameter_index, parameter_value);
+            // First, read the trigger state
+            this->tracks[track_index].setValue(step_index, json_integer_value(json_object_get(json_step_object, "trigger")));
+
+            // Secondly, read the parameters
+            json_t *parameter_json_array = json_object_get(json_step_object, "p");
+            json_t *parameter_array_data;
+
+            json_array_foreach(parameter_json_array, parameter_index, parameter_array_data)
+            {
+              float parameter_value = json_real_value(parameter_array_data);
+              // DEBUG(std::to_string(parameter_value).c_str());
+              this->tracks[track_index].setParameter(step_index, parameter_index, parameter_value);
+            }
           }
         }
       }
-      switchTrack(0);
     }
+
 
 	}
 
@@ -197,24 +214,7 @@ struct Scalar110 : Module
 
     // Read the engine selection knob
     engine_index = params[ENGINE_SELECT_KNOB].getValue() * (NUMBER_OF_ENGINES - 1);
-
-    // If the engine selection has changed, then assign the newly selected
-    // engine to the currently selected track.
-    if(engine_index != old_engine_index)
-    {
-      switch(engine_index) {
-        case 0:
-          selected_track->setEngine(new Foo());
-          break;
-        case 1: //
-          selected_track->setEngine(new LowDrums());
-          break;
-        default:
-          selected_track->setEngine(new Foo());
-          break;
-      }
-      old_engine_index = engine_index;
-    }
+    selected_track->setEngine(engine_index);
 
     //
     // Handle drum pads, drum location, and drum selection interactions and

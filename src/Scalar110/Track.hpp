@@ -6,6 +6,8 @@ struct Track
   bool steps[NUMBER_OF_STEPS] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
   unsigned int playback_position = 0;
   Engine *engine = new Foo();
+  unsigned int engine_index = 0; // must exist to save/load engine selection
+  unsigned int old_engine_index = 0;
   StepParams step_parameters[NUMBER_OF_STEPS];
 
   void step()
@@ -66,10 +68,35 @@ struct Track
     playback_position = 0;
   }
 
-  void setEngine(Engine *selected_engine)
+  // To do: Migrate all engine stuff over here
+  void setEngine(unsigned int engine_index)
   {
-    if(engine != NULL) delete engine;
-    engine = selected_engine;
+    this->engine_index = engine_index;
+
+    // If the engine selection has changed, then assign the newly selected
+    // engine to the currently selected track.
+    if(engine_index != old_engine_index)
+    {
+      if(engine != NULL) delete engine;
+
+      switch(engine_index) {
+        case 0:
+          engine = new Foo();
+          break;
+        case 1:
+          engine = new LowDrums();
+          break;
+        default:
+          engine = new Foo();
+          break;
+      }
+      old_engine_index = engine_index;
+    }
+  }
+
+  unsigned int getEngine()
+  {
+    return this->engine_index;
   }
 
   std::pair<float, float> process()
