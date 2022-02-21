@@ -32,36 +32,23 @@ namespace scalar_110
     {
       uint32_t sustain = 0;
       float output = 0.0;
+      float duration = 0;
 
       switch(drum_selection) {
 
         case 0: // long kick
           sustain = 0x7000;
-
           if(t < sustain) { // TODO: set sustain using parameter
-
             incrementT();
-
-            // For safe keeping: w = (((int)sqrt(t%0x2000)<<7&241)/60-1);
-            w = (((int)sqrt((t>>3)%sustain)<<7&241)/60-1);
-
-            // Convert bytebeat to audio range
-            output = ((w / 256.0) * 10.0) - 5.0;
+            output = bytebeatToAudio((((int)sqrt((t>>3)%sustain)<<7&241)/60-1));
           }
           else {
             output = 0; // This will result in a 0 output
           }
           break;
 
-        // clean kick
-        // ((Math.sqrt(t%1634)<<6)&64)
-        // "tek" kick
-        // w = (((1250&t-17)>>6%t)*40) * (t<2000);
-        // w = ((50&t-177)>>356%t)*20; // noise hit if(t > 2000) stop_playback();
-        //
-
         case 1: // noise snare (finally working!!)
-          float duration = 11025.0;
+          duration = 11025.0;
           if(t < duration)
           {
             incrementT();
@@ -71,10 +58,21 @@ namespace scalar_110
           }
           break;
 
+        case 2: // Hihat #1
+            incrementT();
+            output = bytebeatToAudio(((div(1000,t)&28)&4241)*90);
+          break;
 
-          // hihat #1: ((1000/(t)&28)&4241)*90
-          // hihat #2: (((5000/(t)&28)&4241)*90)*sin((t>>2)*sin((t>>1)))
-          // hihat #3: (((5000/(t)&22)&4281)*90)*sin((t>>3)*sin((t>>2)))
+        case 3: // Hihat #2
+            incrementT();
+            output = bytebeatToAudio((((div(1000,(t>>4))&22)&4281)*90)*sin((t>>3)*sin((t>>2))));
+          break;
+
+        case 4: // Zap
+            incrementT();
+            output = bytebeatToAudio(div(400000,(t>>4))&64);
+          break;
+
 
           // save this for an effect at the end
           //float audio = sin((t>>2)*sin((t>>4)));
@@ -85,6 +83,10 @@ namespace scalar_110
       return { output, output };
     }
 
+    float bytebeatToAudio(uint8_t w)
+    {
+      return(((w / 256.0) * 10.0) - 5.0);
+    }
 
 
     std::string getKnobLabel(unsigned int knob_number) override
@@ -115,7 +117,7 @@ namespace scalar_110
       // p[3] is the clock division
       clock_division = step_parameters->p[3] * 16;
       */
-      drum_selection = step_parameters->p[0] * 2;
+      drum_selection = step_parameters->p[0] * 4;
       v[0] = step_parameters->p[0] * 128.0;
       v[1] = step_parameters->p[1] * 128.0;
 

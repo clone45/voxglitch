@@ -1,10 +1,7 @@
 //
-// Next: Make track select work.  User a quantized knob
-//
-// Next: add engine select knob to allow for seleciton of low drums
-// See: https://github.com/VCVRack/Fundamental/blob/v1/src/Merge.cpp#L71
-// and: https://community.vcvrack.com/t/getting-started-with-rack-menu/8608
-// then test the kick drum
+// Next: It looks like I've figured out the laoding parameters part.  Next
+// I need to save and load the selected engine per/track.  This should be
+// relatively straightforward
 
 
 struct Scalar110 : Module
@@ -14,10 +11,12 @@ struct Scalar110 : Module
   dsp::SchmittTrigger stepTrigger;
   Track tracks[NUMBER_OF_TRACKS];
   Track *selected_track;
+  unsigned int track_index;
   unsigned int playback_step = 0;
   unsigned int selected_step = 0;
   unsigned int engine_index = 0;
   unsigned int old_engine_index = 0;
+  unsigned int old_track_index = 0;
   StepParams step_parameters;
   float left_output;
   float right_output;
@@ -61,13 +60,18 @@ struct Scalar110 : Module
       configParam(ENGINE_PARAMS + i, 0.0, 1.0, 1.0, "engine_parameter_" + std::to_string(i));
     }
 
+    // Configure track knob
     configParam(TRACK_SELECT_KNOB, 0.0, NUMBER_OF_TRACKS - 1, 0.0, "Track");
     paramQuantities[TRACK_SELECT_KNOB]->snapEnabled = true;
 
+    // Configure engine selection knob (to be replaced with menu?)
     configParam(ENGINE_SELECT_KNOB, 0.0, 2.0, 0.0, "Engine");
     paramQuantities[ENGINE_SELECT_KNOB]->snapEnabled = true;
 
+    // Set default selected track
     selected_track = &tracks[0];
+
+    // TODO: Remove this line
     selected_track->setEngine(new Foo());
 	}
 
@@ -81,26 +85,59 @@ struct Scalar110 : Module
     }
   }
 
+  void switchTrack(unsigned int track_index)
+  {
+    selected_track = &tracks[track_index];
+
+    // Set all of the parameter knobs of the selected step to the correct position
+    for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
+    {
+      params[ENGINE_PARAMS + parameter_number].setValue(selected_track->step_parameters[selected_step].p[parameter_number]);
+    }
+  }
+
+  void refreshKnobs()
+  {
+    // Set all of the parameter knobs of the selected step to the correct position
+    for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
+    {
+      params[ENGINE_PARAMS + parameter_number].setValue(selected_track->step_parameters[selected_step].p[parameter_number]);
+    }
+  }
+
 	// Autosave module data.  VCV Rack decides when this should be called.
 	json_t *dataToJson() override
 	{
 		json_t *json_root = json_object();
 
-    // Save all drum pad selections
+    //
+    // Save all track data
+    //
     json_t *tracks_json_array = json_array();
-
     for(int track_number=0; track_number<NUMBER_OF_TRACKS; track_number++)
     {
-      json_t *patterns_json_array = json_array();
+      json_t *steps_json_array = json_array();
 
-      for(int i=0; i<NUMBER_OF_STEPS; i++)
+      for(int step_index=0; step_index<NUMBER_OF_STEPS; step_index++)
       {
-        json_array_append_new(patterns_json_array, json_integer(this->tracks[track_number].getValue(i)));
+        json_t *step_data = json_object();
+        json_object_set(step_data, "trigger_value", json_integer(this->tracks[track_number].getValue(step_index)));
+
+        // I could have saved the parameters as named kay/value pairs, but there's going to be a LOT of them,
+        // so I'm being contientious and storing them in a minimal-format
+        json_t *parameter_json_array = json_array();
+        for(int parameter_index = 0; parameter_index < 4; parameter_index++)
+        {
+          json_array_append_new(parameter_json_array, json_real(this->tracks[track_number].getParameter(step_index,parameter_index)));
+        }
+
+        json_object_set(step_data, "p", parameter_json_array);
+
+        json_array_append_new(steps_json_array, step_data);
       }
 
-      json_array_append_new(tracks_json_array, patterns_json_array);
+      json_array_append_new(tracks_json_array, steps_json_array);
     }
-
     json_object_set(json_root, "tracks", tracks_json_array);
     json_decref(tracks_json_array);
 
@@ -111,31 +148,55 @@ struct Scalar110 : Module
 	void dataFromJson(json_t *json_root) override
 	{
     //
-    // Load tracks
+    // Load all track data
     //
 
     json_t *tracks_arrays_data = json_object_get(json_root, "tracks");
 
     if(tracks_arrays_data)
     {
-      size_t track_number;
-      json_t *json_pattern_array;
+      size_t track_index;
+      size_t step_index;
+      size_t parameter_index;
+      json_t *json_steps_array;
+      json_t *json_step_object;
 
-      json_array_foreach(tracks_arrays_data, track_number, json_pattern_array)
+      json_array_foreach(tracks_arrays_data, track_index, json_steps_array)
       {
-        for(int i=0; i<NUMBER_OF_STEPS; i++)
+        json_array_foreach(json_steps_array, step_index, json_step_object)
         {
-          this->tracks[track_number].setValue(i, json_integer_value(json_array_get(json_pattern_array, i)));
+          // First, read the trigger state
+          this->tracks[track_index].setValue(step_index, json_integer_value(json_object_get(json_step_object, "trigger_value")));
+
+          // Secondly, read the parameters
+          json_t *parameter_json_array = json_object_get(json_step_object, "p");
+          json_t *parameter_array_data;
+
+          json_array_foreach(parameter_json_array, parameter_index, parameter_array_data)
+          {
+            float parameter_value = json_real_value(parameter_array_data);
+            DEBUG(std::to_string(parameter_value).c_str());
+            this->tracks[track_index].setParameter(step_index, parameter_index, parameter_value);
+          }
         }
       }
+      switchTrack(0);
     }
+
 	}
 
 	void process(const ProcessArgs &args) override
 	{
+    // selected_track = &tracks[(int) params[TRACK_SELECT_KNOB].getValue()];
+    track_index = params[TRACK_SELECT_KNOB].getValue();
+    if(track_index != old_track_index)
+    {
+      switchTrack(track_index);
+      old_track_index = track_index;
+    }
+
     // Read the engine selection knob
     engine_index = params[ENGINE_SELECT_KNOB].getValue() * (NUMBER_OF_ENGINES - 1);
-    selected_track = &tracks[(int) params[TRACK_SELECT_KNOB].getValue()];
 
     // If the engine selection has changed, then assign the newly selected
     // engine to the currently selected track.

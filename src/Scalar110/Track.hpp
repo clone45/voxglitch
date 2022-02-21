@@ -28,6 +28,16 @@ struct Track
     return(& this->step_parameters[selected_step]);
   }
 
+  float getParameter(unsigned int selected_step, unsigned int parameter_number)
+  {
+    return(this->step_parameters[selected_step].p[parameter_number]);
+  }
+
+  void setParameter(unsigned int selected_step, unsigned int parameter_number, float value)
+  {
+    this->step_parameters[selected_step].p[parameter_number] = value;
+  }
+
   void setPosition(unsigned int playback_position)
   {
     if(playback_position < NUMBER_OF_STEPS)
