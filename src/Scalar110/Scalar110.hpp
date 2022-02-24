@@ -1,6 +1,10 @@
 //
 // Next: Add sample player engine?
-
+// Also: When clicking a parameter, make it the active parameter
+// Two ways of selected selected_parameter:
+// 1. change a parameter's value
+// 2. click on the parameter's name (with mouse-over color change)
+// Also use the background color as an active state!
 
 struct Scalar110 : Module
 {
@@ -15,10 +19,11 @@ struct Scalar110 : Module
   unsigned int engine_index = 0;
   unsigned int old_engine_index = 0;
   unsigned int old_track_index = 0;
+  unsigned int selected_parameter = 0;
   StepParams step_parameters;
   float left_output;
   float right_output;
-  
+
   // Sample related variables
   std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
 
@@ -75,6 +80,11 @@ struct Scalar110 : Module
     // TODO: Remove this line
     selected_track->setEngine(0);
 	}
+
+  void setParameterKnobPosition(unsigned int parameter_number, float position)
+  {
+    params[ENGINE_PARAMS + parameter_number].setValue(position);
+  }
 
   void selectStep(unsigned int i)
   {
@@ -205,12 +215,15 @@ struct Scalar110 : Module
 
 	void process(const ProcessArgs &args) override
 	{
+    bool track_switched = false;
+
     // selected_track = &tracks[(int) params[TRACK_SELECT_KNOB].getValue()];
     track_index = params[TRACK_SELECT_KNOB].getValue();
     if(track_index != old_track_index)
     {
       switchTrack(track_index);
       old_track_index = track_index;
+      track_switched = true;
     }
 
     // Read the engine selection knob
@@ -260,7 +273,16 @@ struct Scalar110 : Module
       // So this next line is setting the active playback step to the current
       // knob positions for the selected track.
       //
-      selected_track->step_parameters[selected_step].p[i] = params[ENGINE_PARAMS + i].getValue();
+      float new_parameter_value = params[ENGINE_PARAMS + i].getValue();
+      float current_parameter_value = selected_track->step_parameters[selected_step].p[i];
+
+      if(new_parameter_value != current_parameter_value)
+      {
+        selected_track->step_parameters[selected_step].p[i] = params[ENGINE_PARAMS + i].getValue();
+
+        // TODO: we might need to do this for engines as well??
+        if(! track_switched) selected_parameter = i;
+      }
     }
 
     //

@@ -41,7 +41,7 @@ struct Scalar110Widget : ModuleWidget
     for(unsigned int i=0; i<NUMBER_OF_PARAMETERS; i++)
     {
       float x_position = 100 + ((i%4) * 20);
-      float y_position = 42 + ((i/4) * 20);
+      float y_position = 41 + ((i/4) * 20);
 
       LabelDisplay *label_display = new LabelDisplay();
       label_display->box.pos = mm2px(Vec(x_position, y_position));

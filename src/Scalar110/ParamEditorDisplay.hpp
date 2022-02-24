@@ -2,7 +2,6 @@ struct ParamEditorDisplay : TransparentWidget
 {
   Scalar110 *module;
   Vec drag_position;
-  unsigned int selected_parameter = 0;
   double bar_width = (LCD_DISPLAY_WIDTH / NUMBER_OF_STEPS) - BAR_HORIZONTAL_PADDING;
 
   ParamEditorDisplay()
@@ -39,7 +38,7 @@ struct ParamEditorDisplay : TransparentWidget
         //
         for(unsigned int i=0; i < NUMBER_OF_STEPS; i++)
         {
-          value = module->selected_track->getParameter(i, selected_parameter);
+          value = module->selected_track->getParameter(i, module->selected_parameter);
 
           // Draw grey background bar
           // drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, getParameter(unsigned int selected_step, unsigned int parameter_number)); // background
@@ -99,14 +98,18 @@ struct ParamEditorDisplay : TransparentWidget
       int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
       int clicked_y = LCD_DISPLAY_HEIGHT - mouse_position.y;
 
-      clicked_bar_x_index = clamp(clicked_bar_x_index, 0, NUMBER_OF_STEPS - 1);
+      unsigned int step = clamp(clicked_bar_x_index, 0, NUMBER_OF_STEPS - 1);
       clicked_y = clamp(clicked_y, 0, LCD_DISPLAY_HEIGHT);
 
       // convert the clicked_y position to a double between 0 and 1
-      double value = (double) clicked_y / (double) LCD_DISPLAY_HEIGHT;
+      float value = (double) clicked_y / (double) LCD_DISPLAY_HEIGHT;
 
-      // TODO: Set parameter here
-      module->selected_track->setParameter(clicked_bar_x_index, this->selected_parameter, value);
+      // Set the parameter
+      module->selected_track->setParameter(step, module->selected_parameter, value);
+
+      // If the bar being edited is selected, adjust the knob of the parameter
+      if(step == module->selected_step) module->setParameterKnobPosition(module->selected_parameter, value);
+
     }
   }
 

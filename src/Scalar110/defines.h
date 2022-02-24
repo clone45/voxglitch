@@ -10,4 +10,7 @@ namespace scalar_110
   const int LCD_DISPLAY_WIDTH = 120;
   const int LCD_DISPLAY_HEIGHT = 50;
   const float BAR_HORIZONTAL_PADDING = .2;
+
+  const float PARAMETER_LABEL_WIDTH = 58;
+  const float PARAMETER_LABEL_HEIGHT = 18;
 }
