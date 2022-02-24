@@ -1,7 +1,5 @@
 //
-// Next: I can't be saving engine by pointer only.  I have to mostly rely
-// on the engine number since that's what's loaded and saved.  I'm thinking
-// of moving the engine management into the track.
+// Next: Add sample player engine?
 
 
 struct Scalar110 : Module
@@ -20,6 +18,9 @@ struct Scalar110 : Module
   StepParams step_parameters;
   float left_output;
   float right_output;
+  
+  // Sample related variables
+  std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
 
   enum ParamIds {
     ENUMS(DRUM_PADS, NUMBER_OF_STEPS),

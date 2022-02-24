@@ -50,6 +50,20 @@ struct Scalar110Widget : ModuleWidget
       addChild(label_display);
     }
 
+    // xy mouse entry box
+    /*
+    LCDDisplay *lcd_display = new LCDDisplay();
+    lcd_display->module = module;
+    lcd_display->box.pos = mm2px(Vec(LCD_DISPLAY_X, LCD_DISPLAY_Y));
+    addChild(lcd_display);
+    */
+
+
+    ParamEditorDisplay *param_editor_display = new ParamEditorDisplay();
+    param_editor_display->module = module;
+    param_editor_display->box.pos = mm2px(Vec(LCD_DISPLAY_X, LCD_DISPLAY_Y));
+    addChild(param_editor_display);
+
   }
 
   void appendContextMenu(Menu *menu) override

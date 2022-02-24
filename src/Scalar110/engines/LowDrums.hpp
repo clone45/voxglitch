@@ -132,6 +132,11 @@ namespace scalar_110
       // do nothing
     }
 
+    void LCDDraw(const Widget::DrawArgs &args) override
+    {
+      // nothing yet
+    }
+
     //
     // Helper math functions that can't die by division by 0
     //
@@ -147,4 +152,5 @@ namespace scalar_110
       return(a / b);
     }
   };
+
 }

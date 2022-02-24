@@ -82,6 +82,16 @@ namespace scalar_110
       // do nothing
     }
 
+    void LCDDraw(const Widget::DrawArgs &args) override
+    {
+      const auto vg = args.vg;
+
+      nvgBeginPath(vg);
+      nvgRect(vg, 0, 0, LCD_DISPLAY_WIDTH, LCD_DISPLAY_HEIGHT - 20);
+      nvgFillColor(vg, nvgRGBA(0, 20, 10, 100));
+      nvgFill(vg);
+    }
+
     //
     // Helper math functions that can't die by division by 0
     //
