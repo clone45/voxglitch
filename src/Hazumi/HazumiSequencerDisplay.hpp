@@ -30,7 +30,7 @@ struct HazumiSequencerDisplay : TransparentWidget
     // Debugging code for draw area, which often has to be set experimentally
     /*
     nvgBeginPath(vg);
-    nvgRect(vg, 0, 0, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
+    nvgRect(vg, 0, 0, box.size.x, box.size.y);
     nvgFillColor(vg, nvgRGBA(120, 20, 20, 100));
     nvgFill(vg);
     */

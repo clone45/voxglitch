@@ -40,15 +40,15 @@ struct Scalar110Widget : ModuleWidget
 
     for(unsigned int i=0; i<NUMBER_OF_PARAMETERS; i++)
     {
-      float x_position = 100 + ((i%4) * 20);
-      float y_position = 41 + ((i/4) * 20);
+      float x_position = 90.2 + ((i%4) * 20);
+      float y_position = 37 + ((i/4) * 20);
 
-      LabelDisplay *label_display = new LabelDisplay();
-      label_display->box.pos = mm2px(Vec(x_position, y_position));
+      LabelDisplay *label_display = new LabelDisplay(i);
+      label_display->box.pos = mm2px(Vec(x_position, y_position));;
       label_display->module = module;
-      label_display->knob_number = i;
       addChild(label_display);
     }
+
 
     // xy mouse entry box
     /*
@@ -70,6 +70,11 @@ struct Scalar110Widget : ModuleWidget
   {
     Scalar110 *module = dynamic_cast<Scalar110*>(this->module);
     assert(module);
+
+    FolderSelect *folder_select = new FolderSelect();
+    folder_select->text = "Load samples from folder";
+    folder_select->module = module;
+    menu->addChild(folder_select);
   }
 
 

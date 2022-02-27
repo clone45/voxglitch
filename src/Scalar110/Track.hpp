@@ -9,6 +9,7 @@ struct Track
   unsigned int engine_index = 0; // must exist to save/load engine selection
   unsigned int old_engine_index = 0;
   StepParams step_parameters[NUMBER_OF_STEPS];
+  unsigned int track_number = 0;
 
   void step()
   {
@@ -87,7 +88,7 @@ struct Track
           engine = new LowDrums();
           break;
         default:
-          engine = new Foo();
+          engine = new Sampler(track_number);
           break;
       }
       old_engine_index = engine_index;

@@ -44,7 +44,7 @@ struct ParamEditorDisplay : TransparentWidget
           // drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, getParameter(unsigned int selected_step, unsigned int parameter_number)); // background
 
           // Draw bars for the parameter values
-          bar_color = nvgRGBA(255, 255, 255, 150);
+          bar_color = nvgRGB(156, 167, 185);
           if(value > 0) drawBar(vg, i, (value * LCD_DISPLAY_HEIGHT), LCD_DISPLAY_HEIGHT, bar_color);
         }
 

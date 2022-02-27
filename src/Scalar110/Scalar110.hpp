@@ -1,10 +1,10 @@
 //
 // Next: Add sample player engine?
-// Also: When clicking a parameter, make it the active parameter
-// Two ways of selected selected_parameter:
-// 1. change a parameter's value
-// 2. click on the parameter's name (with mouse-over color change)
-// Also use the background color as an active state!
+// * mix output
+// * when selecting an engine, use LCD to show list
+// * Engine idea: Beat looper
+// * Step selection using shift key
+// MAYBE: https://stackoverflow.com/questions/10984190/sharing-an-object-with-multiple-classes
 
 struct Scalar110 : Module
 {
@@ -25,7 +25,8 @@ struct Scalar110 : Module
   float right_output;
 
   // Sample related variables
-  std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
+  std::string rootDir;
+	std::string path;
 
   enum ParamIds {
     ENUMS(DRUM_PADS, NUMBER_OF_STEPS),
@@ -74,11 +75,14 @@ struct Scalar110 : Module
     configParam(ENGINE_SELECT_KNOB, 0.0, 2.0, 0.0, "Engine");
     paramQuantities[ENGINE_SELECT_KNOB]->snapEnabled = true;
 
+    for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+    {
+      tracks[i].track_number = i;
+    }
+
     // Set default selected track
     selected_track = &tracks[0];
 
-    // TODO: Remove this line
-    selected_track->setEngine(0);
 	}
 
   void setParameterKnobPosition(unsigned int parameter_number, float position)
@@ -174,8 +178,6 @@ struct Scalar110 : Module
 
     if(tracks_arrays_data)
     {
-      DEBUG("Got here");
-
       size_t track_index;
       size_t step_index;
       size_t parameter_index;
@@ -209,9 +211,12 @@ struct Scalar110 : Module
         }
       }
     }
-
-
 	}
+
+  void helloWorld()
+  {
+    // nothing
+  }
 
 	void process(const ProcessArgs &args) override
 	{
@@ -306,5 +311,9 @@ struct Scalar110 : Module
       // Step the visual playback indicator as well
       playback_step = (playback_step + 1) % NUMBER_OF_STEPS;
     }
+
+    // step all sample players
+    SampleBank& sample_bank = SampleBank::get_instance();
+    sample_bank.step(args.sampleRate);
   }
 };
