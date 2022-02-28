@@ -4,7 +4,6 @@
 // * when selecting an engine, use LCD to show list
 // * Engine idea: Beat looper
 // * Step selection using shift key
-// MAYBE: https://stackoverflow.com/questions/10984190/sharing-an-object-with-multiple-classes
 
 struct Scalar110 : Module
 {
@@ -72,9 +71,11 @@ struct Scalar110 : Module
     paramQuantities[TRACK_SELECT_KNOB]->snapEnabled = true;
 
     // Configure engine selection knob (to be replaced with menu?)
-    configParam(ENGINE_SELECT_KNOB, 0.0, 2.0, 0.0, "Engine");
+    configParam(ENGINE_SELECT_KNOB, 0.0, (NUMBER_OF_ENGINES - 1), 0.0, "Engine");
     paramQuantities[ENGINE_SELECT_KNOB]->snapEnabled = true;
 
+    // Each track knows its own track number, which never changes once
+    // the module is loaded.  Tracks are permanent.
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
     {
       tracks[i].track_number = i;
@@ -232,7 +233,7 @@ struct Scalar110 : Module
     }
 
     // Read the engine selection knob
-    engine_index = params[ENGINE_SELECT_KNOB].getValue() * (NUMBER_OF_ENGINES - 1);
+    engine_index = params[ENGINE_SELECT_KNOB].getValue();
     selected_track->setEngine(engine_index);
 
     //

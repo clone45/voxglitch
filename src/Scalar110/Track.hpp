@@ -82,13 +82,13 @@ struct Track
 
       switch(engine_index) {
         case 0:
-          engine = new Foo();
+          engine = new Foo(); // Equation player
           break;
         case 1:
-          engine = new LowDrums();
+          engine = new LowDrums(); // 8-bit drums
           break;
-        default:
-          engine = new Sampler(track_number);
+        case 2:
+          engine = new Sampler(track_number); // Sample player
           break;
       }
       old_engine_index = engine_index;

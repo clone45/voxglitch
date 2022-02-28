@@ -43,7 +43,10 @@ public:
 
   void assign(unsigned int sample_number, unsigned int track_number)
   {
+    if(samples.size() > sample_number)
+    {
       sample_ptr_players[track_number].assign(&samples[sample_number]);
+    }
   }
 
   void trigger(unsigned int track_number)
@@ -93,12 +96,15 @@ public:
         // Load the sample data from the disk
         new_sample.load(file);
 
-        // Reminder: .push_back is a method of vectors that pushes the object
-        // to the end of a list.
+        // Reminder: .push_back is a method of vectors that pushes the object to the end of a list.
         this->samples.push_back(new_sample);
       }
     }
   }
 
+  unsigned int size()
+  {
+    return(this->samples.size());
+  }
 
 };

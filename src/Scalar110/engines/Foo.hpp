@@ -14,14 +14,16 @@ namespace scalar_110
     unsigned int clock_division_counter = 0;
     unsigned int selected_equation = 0;
 
-    float p[NUMBER_OF_PARAMETERS];
+    // float p[NUMBER_OF_PARAMETERS];
 
     Foo() // constructor
     {
+      /*
       for(unsigned int i=0; i<NUMBER_OF_PARAMETERS; i++)
       {
         p[i] = 0.0;
       }
+      */
     }
 
     //
