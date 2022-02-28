@@ -488,7 +488,6 @@ struct DigitalSequencerXP : Module
 
 
       // output values
-      // TODO: restore this after we reintroduce the gate sequencers
       for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
       {
         if(voltage_sequencers[i].sample_and_hold)

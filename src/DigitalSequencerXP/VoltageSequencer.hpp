@@ -1,7 +1,7 @@
 struct VoltageSequencer : Sequencer
 {
   std::array<double, MAX_SEQUENCER_STEPS> sequence;
-  unsigned int voltage_range_index = 0; // see voltage_ranges in DigitalSequencerXP.h
+  unsigned int voltage_range_index = 0; // see voltage_ranges in DigitalSequencerXP.hpp
   unsigned int snap_division_index = 0;
   bool sample_and_hold = false;
 

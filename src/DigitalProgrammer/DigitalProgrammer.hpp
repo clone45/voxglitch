@@ -32,6 +32,8 @@ struct DigitalProgrammer : Module
   PortWidget *output_ports[NUMBER_OF_SLIDERS];
 
   unsigned int snap_settings[NUMBER_OF_SLIDERS] = {0};
+  unsigned int range_settings[NUMBER_OF_SLIDERS] = {0};
+
   DPSlider sliders[NUMBER_OF_BANKS][NUMBER_OF_SLIDERS];
   float add_input_voltages[NUMBER_OF_SLIDERS] = {0};
 
@@ -44,6 +46,17 @@ struct DigitalProgrammer : Module
   dsp::SchmittTrigger copy_mode_button_trigger;
   dsp::SchmittTrigger clear_mode_button_trigger;
   dsp::SchmittTrigger randomize_mode_button_trigger;
+
+  std::string voltage_range_names[NUMBER_OF_VOLTAGE_RANGES] = {
+    "0.0 to 10.0",
+    "-10.0 to 10.0",
+    "0.0 to 5.0",
+    "-5.0 to 5.0",
+    "0.0 to 3.0",
+    "-3.0 to 3.0",
+    "0.0 to 1.0",
+    "-1.0 to 1.0"
+  };
 
   enum ParamIds {
     ENUMS(BANK_BUTTONS, NUMBER_OF_BANKS),
@@ -104,11 +117,11 @@ struct DigitalProgrammer : Module
 
     json_t *banks_json_array = json_array();
 
-    for(int bank_number = 0; bank_number < NUMBER_OF_BANKS; bank_number++)
+    for(unsigned int bank_number = 0; bank_number < NUMBER_OF_BANKS; bank_number++)
     {
       json_t *sliders_json_array = json_array();
 
-      for(int i = 0; i < NUMBER_OF_SLIDERS; i++)
+      for(unsigned int i = 0; i < NUMBER_OF_SLIDERS; i++)
       {
         json_array_append_new(sliders_json_array, json_real(sliders[bank_number][i].getValue()));
       }
@@ -122,7 +135,7 @@ struct DigitalProgrammer : Module
     // Save the labels
     //
     json_t *labels_json_array = json_array();
-    for(int i = 0; i < NUMBER_OF_SLIDERS; i++)
+    for(unsigned int i = 0; i < NUMBER_OF_SLIDERS; i++)
     {
       json_array_append_new(labels_json_array, json_string(labels[i].c_str()));
     }
@@ -137,6 +150,17 @@ struct DigitalProgrammer : Module
 
     // Save visualize sums
     json_object_set_new(json_root, "visualize_sums", json_integer(visualize_sums));
+
+    //
+    // Save sequencer voltage range index selections
+    //
+    json_t *slider_voltage_range_json_array = json_array();
+    for(unsigned int slider_number = 0; slider_number < NUMBER_OF_SLIDERS; slider_number++)
+    {
+      json_array_append_new(slider_voltage_range_json_array, json_integer(this->range_settings[slider_number]));
+    }
+    json_object_set(json_root, "voltage_ranges", slider_voltage_range_json_array);
+    json_decref(slider_voltage_range_json_array);
 
     return json_root;
   }
@@ -158,7 +182,7 @@ struct DigitalProgrammer : Module
 
       json_array_foreach(banks_arrays_data, bank_number, json_slider_array)
       {
-        for(int i=0; i<NUMBER_OF_SLIDERS; i++)
+        for(unsigned int i=0; i<NUMBER_OF_SLIDERS; i++)
         {
           this->sliders[bank_number][i].setValue(json_real_value(json_array_get(json_slider_array, i)));
         }
@@ -191,6 +215,23 @@ struct DigitalProgrammer : Module
 
     json_t* visualize_sums_json = json_object_get(json_root, "visualize_sums");
     if (visualize_sums_json) visualize_sums = json_integer_value(visualize_sums_json);
+
+
+    //
+    // Load voltage ranges
+    //
+    json_t *voltage_ranges_json_array = json_object_get(json_root, "voltage_ranges");
+
+    if(voltage_ranges_json_array)
+    {
+      size_t slider_number;
+      json_t *voltage_range_json;
+
+      json_array_foreach(voltage_ranges_json_array, slider_number, voltage_range_json)
+      {
+        this->range_settings[slider_number] = json_integer_value(voltage_range_json);
+      }
+    }
   }
 
   void incrementBank()
@@ -224,7 +265,7 @@ struct DigitalProgrammer : Module
 
   void copyBank(unsigned int source_bank_id, unsigned int destination_bank_id)
   {
-    for(int column = 0; column < NUMBER_OF_SLIDERS; column ++)
+    for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)
     {
       sliders[destination_bank_id][column].setValue(sliders[source_bank_id][column].getValue());
     }
@@ -232,7 +273,7 @@ struct DigitalProgrammer : Module
 
   void clearBank(unsigned int bank_id)
   {
-    for(int column = 0; column < NUMBER_OF_SLIDERS; column ++)
+    for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)
     {
       sliders[bank_id][column].setValue(0);
     }
@@ -311,13 +352,14 @@ struct DigitalProgrammer : Module
     }
 
     // Output values
-    for(int column = 0; column < NUMBER_OF_SLIDERS; column ++)
+    for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)
     {
       // Get voltage for the specific slider
-      float output_voltage = sliders[selected_bank][column].getValue();
+      float scaled_output = sliders[selected_bank][column].getOutput(range_settings[column]);
 
       // Eventually, I may add per-channel scaling
-      float scaled_output = output_voltage * 10.0;
+      // float scaled_output = output_voltage * 10.0;
+      // float scaled_output = output_voltage * 10.0;
 
       // Add any value from the poly input
       float add_input_voltage = inputs[POLY_ADD_INPUT].getVoltage(column);
