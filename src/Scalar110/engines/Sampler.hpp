@@ -25,8 +25,8 @@ namespace scalar_110
 
       std::tie(left_audio, right_audio) = sample_bank.getOutput(track_number);
 
-      left_audio = (left_audio * 10.0) - 5.0;
-      right_audio = (right_audio * 10.0) - 5.0;
+      left_audio = (left_audio * 5.0);
+      right_audio = (right_audio * 5.0);
 
       return { left_audio, right_audio };
     }

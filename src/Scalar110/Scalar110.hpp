@@ -1,9 +1,10 @@
 //
-// Next: Add sample player engine?
+// Next:
 // * mix output
 // * when selecting an engine, use LCD to show list
 // * Engine idea: Beat looper
 // * Step selection using shift key
+// * show samples when changing sample selection
 
 struct Scalar110 : Module
 {
