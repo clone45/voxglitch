@@ -26,16 +26,7 @@ struct ParamEditorDisplay : TransparentWidget
 
       if(module)
       {
-        /*
-        double range_low = voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][0];
-        double range_high = voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][1];
-
-        if(range_low < 0 && range_high > 0) draw_from_center = true;
-        */
-
-        //
         // Display the pattern
-        //
         for(unsigned int i=0; i < NUMBER_OF_STEPS; i++)
         {
           value = module->selected_track->getParameter(i, module->selected_parameter);

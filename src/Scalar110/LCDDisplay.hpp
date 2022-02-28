@@ -1,3 +1,4 @@
+/*
 struct LCDDisplay : TransparentWidget
 {
   Scalar110 *module;
@@ -112,3 +113,4 @@ struct LCDDisplay : TransparentWidget
   }
 
 };
+*/

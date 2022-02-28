@@ -49,20 +49,27 @@ struct Scalar110Widget : ModuleWidget
       addChild(label_display);
     }
 
-
-    // xy mouse entry box
     /*
-    LCDDisplay *lcd_display = new LCDDisplay();
-    lcd_display->module = module;
-    lcd_display->box.pos = mm2px(Vec(LCD_DISPLAY_X, LCD_DISPLAY_Y));
-    addChild(lcd_display);
+    if(module->selected_track->engine_index == 2 && module->selected_parameter == 0)
+    {
+      FileSelectWidget *file_select_widget = new FileSelectWidget();
+      file_select_widget->module = module;
+      file_select_widget->box.pos = mm2px(Vec(LCD_DISPLAY_X, LCD_DISPLAY_Y));
+      addChild(file_select_widget);
+    }
+    else // show parameter edit display
+    {
+      ParamEditorDisplay *param_editor_display = new ParamEditorDisplay();
+      param_editor_display->module = module;
+      param_editor_display->box.pos = mm2px(Vec(LCD_DISPLAY_X, LCD_DISPLAY_Y));
+      addChild(param_editor_display);
+    }
     */
 
-
-    ParamEditorDisplay *param_editor_display = new ParamEditorDisplay();
-    param_editor_display->module = module;
-    param_editor_display->box.pos = mm2px(Vec(LCD_DISPLAY_X, LCD_DISPLAY_Y));
-    addChild(param_editor_display);
+    FileSelectWidget *file_select_widget = new FileSelectWidget();
+    file_select_widget->module = module;
+    file_select_widget->box.pos = mm2px(Vec(LCD_DISPLAY_X, LCD_DISPLAY_Y));
+    addChild(file_select_widget);
 
   }
 

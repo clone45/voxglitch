@@ -26,7 +26,7 @@ using namespace scalar_110;
 #include "Scalar110/Scalar110.hpp"
 
 #include "Scalar110/LabelDisplay.hpp"
-#include "Scalar110/LCDDisplay.hpp"
+#include "Scalar110/FileSelectWidget.hpp"
 #include "Scalar110/ParamEditorDisplay.hpp"
 #include "Scalar110/FolderSelect.hpp"
 #include "Scalar110/Scalar110Widget.hpp"

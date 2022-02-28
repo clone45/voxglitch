@@ -5,6 +5,7 @@
 // * Engine idea: Beat looper
 // * Step selection using shift key
 // * show samples when changing sample selection
+// * I think that the sample engine bug still exists where it doesn't play at first
 
 struct Scalar110 : Module
 {
@@ -23,6 +24,7 @@ struct Scalar110 : Module
   StepParams step_parameters;
   float left_output;
   float right_output;
+  SampleBank& sample_bank = SampleBank::get_instance();
 
   // Sample related variables
   std::string rootDir;
@@ -166,12 +168,22 @@ struct Scalar110 : Module
     json_object_set(json_root, "tracks", tracks_json_array);
     json_decref(tracks_json_array);
 
+    // Save path of the sample bank
+    json_object_set_new(json_root, "path", json_string(this->sample_bank.path.c_str()));
+
 		return json_root;
 	}
 
 	// Load module data
 	void dataFromJson(json_t *json_root) override
 	{
+    // Load files in sample_bank
+    json_t *loaded_path_json = json_object_get(json_root, ("path"));
+		if (loaded_path_json)
+		{
+			sample_bank.loadSamplesFromPath(json_string_value(loaded_path_json));
+		}
+
     //
     // Load all track data
     //
@@ -214,11 +226,6 @@ struct Scalar110 : Module
       }
     }
 	}
-
-  void helloWorld()
-  {
-    // nothing
-  }
 
 	void process(const ProcessArgs &args) override
 	{
@@ -315,7 +322,6 @@ struct Scalar110 : Module
     }
 
     // step all sample players
-    SampleBank& sample_bank = SampleBank::get_instance();
     sample_bank.step(args.sampleRate);
   }
 };

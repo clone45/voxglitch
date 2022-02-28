@@ -20,6 +20,7 @@ public:
 	std::vector<Sample> samples;
   SamplePtrPlayer sample_ptr_players[NUMBER_OF_TRACKS];
   std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
+  std::string path = "";
 
   // Code for making Sample Bank a "Singleton"
   // =====================================================
@@ -71,10 +72,10 @@ public:
   {
     // Clear out any old .wav files
     // Reminder: this->samples is a vector, and vectors have a .clear() menthod.
-    // this->samples.clear();
+    this->samples.clear();
 
     // Load all .wav files found in the folder specified by 'path'
-    // this->rootDir = std::string(path);
+    this->path = std::string(path);
 
     std::vector<std::string> dirList = system::getEntries(path);
 
@@ -100,6 +101,11 @@ public:
         this->samples.push_back(new_sample);
       }
     }
+  }
+
+  std::string getDisplayName(unsigned int sample_index)
+  {
+    return(samples[sample_index].display_name);
   }
 
   unsigned int size()

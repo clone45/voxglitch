@@ -14,4 +14,6 @@ namespace scalar_110
 
   const float PARAMETER_LABEL_WIDTH = 58;
   const float PARAMETER_LABEL_HEIGHT = 18;
+
+  const unsigned int NUMBER_OF_SAMPLE_DISPLAY_ROWS = 5;
 }
