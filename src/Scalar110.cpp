@@ -12,6 +12,7 @@ using namespace scalar_110;
 
 // Sample players and such
 #include "Common/sample.hpp"
+#include "Common/common.hpp"
 #include "Scalar110/SamplePtrPlayer.hpp"
 #include "Scalar110/SampleBank.hpp"
 

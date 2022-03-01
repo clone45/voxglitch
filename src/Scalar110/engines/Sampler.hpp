@@ -39,7 +39,8 @@ namespace scalar_110
     void trigger(StepParams *step_parameters) override
     {
       // read sample selection knob
-      unsigned int sample_selection = (step_parameters->p[0] * sample_bank.size()) - 1; // sample selection
+      unsigned int sample_selection = (step_parameters->p[0] * sample_bank.size()); // sample selection
+
       sample_bank.assign(sample_selection, track_number);
 
       // Trigger sample playback

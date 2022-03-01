@@ -51,7 +51,7 @@ struct FileSelectWidget : TransparentWidget
         window_start = 0;
         window_end = number_of_samples;
 
-        unsigned int selected_sample_slot = (module->selected_track->getParameter(module->selected_step, 0) * sample_bank.size()) - 1;
+        unsigned int selected_sample_slot = (module->selected_track->getParameter(module->selected_step, 0) * sample_bank.size());
 
         // If there are more samples than can naturally fit in the display, then
         // we'll do some extra work to scroll the panel list if necessary.
@@ -59,19 +59,19 @@ struct FileSelectWidget : TransparentWidget
         {
           unsigned int half_display_location = (NUMBER_OF_SAMPLE_DISPLAY_ROWS / 2);
 
-
           if(selected_sample_slot > half_display_location)
           {
             window_start = selected_sample_slot - half_display_location;
             window_end = selected_sample_slot + half_display_location + 1;
+
+            //DEBUG(std::to_string(selected_sample_slot).c_str());
+            //DEBUG(std::to_string(half_display_location).c_str());
 
             if(window_end > number_of_samples)
             {
               window_start = number_of_samples - NUMBER_OF_SAMPLE_DISPLAY_ROWS;
               window_end = number_of_samples;
             }
-
-            if(window_end > number_of_samples) window_end = number_of_samples;
           }
           // If the selected sample is near the beginning, then make sure to
           // adjust the window end to the maximum viewable samples
@@ -81,6 +81,7 @@ struct FileSelectWidget : TransparentWidget
             window_end = NUMBER_OF_SAMPLE_DISPLAY_ROWS;
           }
         }
+
 
         for(unsigned int i = window_start; i < window_end; i++)
         {

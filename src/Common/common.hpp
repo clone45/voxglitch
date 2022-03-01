@@ -27,6 +27,16 @@ struct Common
     }
   }
 
+  void DEBUG_INT(int value)
+  {
+    debug_counter--;
+    if(debug_counter == 0)
+    {
+      DEBUG(std::to_string(value).c_str());
+      debug_counter = 1000;
+    }
+  }
+
   float CONTOURS[10][512] =
   {
       // Classic
