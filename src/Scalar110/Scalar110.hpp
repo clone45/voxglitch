@@ -1,11 +1,15 @@
 //
 // Next:
-// * mix output
+
 // * when selecting an engine, use LCD to show list
 // * Engine idea: Beat looper
 // * Step selection using shift key
-// * show samples when changing sample selection
 // * I think that the sample engine bug still exists where it doesn't play at first
+// * sample pitch controls?
+// * figure out ratcheting / pattern ratcheting
+// * context aware copy/paste
+// * save and load root_directory so you always start loading samples in the right place
+// * equation playback needs to be quiet when the track has no gates
 
 struct Scalar110 : Module
 {
@@ -17,17 +21,16 @@ struct Scalar110 : Module
   unsigned int track_index;
   unsigned int playback_step = 0;
   unsigned int selected_step = 0;
-  unsigned int engine_index = 0;
-  unsigned int old_engine_index = 0;
   unsigned int old_track_index = 0;
   unsigned int selected_parameter = 0;
-  StepParams step_parameters;
   float left_output;
   float right_output;
+  float track_left_output;
+  float track_right_output;
   SampleBank& sample_bank = SampleBank::get_instance();
 
   // Sample related variables
-  std::string rootDir;
+  std::string root_directory;
 	std::string path;
 
   enum ParamIds {
@@ -241,8 +244,7 @@ struct Scalar110 : Module
     }
 
     // Read the engine selection knob
-    engine_index = params[ENGINE_SELECT_KNOB].getValue();
-    selected_track->setEngine(engine_index);
+    selected_track->setEngine(params[ENGINE_SELECT_KNOB].getValue());
 
     //
     // Handle drum pads, drum location, and drum selection interactions and
@@ -302,7 +304,15 @@ struct Scalar110 : Module
     //
     // compute output
     // The return result from tne engine should be -5v to 5v
-    std::tie(left_output, right_output) = selected_track->process();
+    left_output = 0;
+    right_output = 0;
+
+    for(unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
+    {
+      std::tie(track_left_output, track_right_output) = tracks[i].process();
+      left_output += track_left_output;
+      right_output += track_right_output;
+    }
 
     // Output voltages at stereo outputs
     outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_output);

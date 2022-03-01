@@ -4,7 +4,7 @@ struct FolderSelect : MenuItem
 
 	void onAction(const event::Action &e) override
 	{
-		const std::string dir = module->rootDir.empty() ? "" : module->rootDir;
+		const std::string dir = module->root_directory.empty() ? "" : module->root_directory;
     char *path = osdialog_file(OSDIALOG_OPEN_DIR, dir.c_str(), NULL, NULL);
 
 		if (path)

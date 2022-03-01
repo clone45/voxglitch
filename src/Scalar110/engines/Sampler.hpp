@@ -40,11 +40,17 @@ namespace scalar_110
     {
       // read sample selection knob
       unsigned int sample_selection = (step_parameters->p[0] * sample_bank.size()); // sample selection
+      sample_selection = clamp(sample_selection, 0, sample_bank.size() - 1);
 
       sample_bank.assign(sample_selection, track_number);
 
       // Trigger sample playback
       sample_bank.trigger(track_number);
+    }
+
+    void reset() override
+    {
+      // no action needed
     }
 
     ~Sampler() // destructor

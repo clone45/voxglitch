@@ -15,6 +15,8 @@ struct Track
   {
     playback_position = (playback_position + 1) % NUMBER_OF_STEPS;
 
+    if(playback_position == 0) engine->reset();
+
     if (steps[playback_position])
     {
       engine->trigger(& step_parameters[playback_position]);

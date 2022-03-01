@@ -52,6 +52,7 @@ struct FileSelectWidget : TransparentWidget
         window_end = number_of_samples;
 
         unsigned int selected_sample_slot = (module->selected_track->getParameter(module->selected_step, 0) * sample_bank.size());
+        selected_sample_slot = clamp(selected_sample_slot, 0, sample_bank.size() - 1);
 
         // If there are more samples than can naturally fit in the display, then
         // we'll do some extra work to scroll the panel list if necessary.
@@ -81,7 +82,6 @@ struct FileSelectWidget : TransparentWidget
             window_end = NUMBER_OF_SAMPLE_DISPLAY_ROWS;
           }
         }
-
 
         for(unsigned int i = window_start; i < window_end; i++)
         {

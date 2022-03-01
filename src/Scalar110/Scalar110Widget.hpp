@@ -68,7 +68,7 @@ struct Scalar110Widget : ModuleWidget
 
     FileSelectWidget *file_select_widget = new FileSelectWidget();
     file_select_widget->module = module;
-    file_select_widget->box.pos = mm2px(Vec(LCD_DISPLAY_X, LCD_DISPLAY_Y));
+    file_select_widget->box.pos = mm2px(Vec(LCD_DISPLAY_X + 2, LCD_DISPLAY_Y + 5));
     addChild(file_select_widget);
 
   }

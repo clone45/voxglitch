@@ -126,6 +126,10 @@ namespace scalar_110
       env = 0;
     }
 
+    void reset() override
+    {
+      // no action needed
+    }
 
     ~LowDrums() // destructor
     {

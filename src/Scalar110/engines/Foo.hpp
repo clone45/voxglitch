@@ -13,6 +13,7 @@ namespace scalar_110
     unsigned int clock_division = 0;
     unsigned int clock_division_counter = 0;
     unsigned int selected_equation = 0;
+    bool playing = false;
 
     // float p[NUMBER_OF_PARAMETERS];
 
@@ -31,27 +32,33 @@ namespace scalar_110
     //
     std::pair<float, float> process() override
     {
-      clock_division_counter ++;
-      if(clock_division_counter >= clock_division)
+      float output = 0;
+
+      if(playing)
       {
-        t = t + 1;
-        clock_division_counter = 0;
+        clock_division_counter ++;
+        if(clock_division_counter >= clock_division)
+        {
+          t = t + 1;
+          clock_division_counter = 0;
+        }
+
+        // t = t + 1;
+
+        switch(selected_equation) {
+
+          case 0: // Exploratorium
+            w = ((mod(t,(v[1]+(mod(t,v[2])))))^(t>>(v[3]>>5)))*2;
+            break;
+
+          case 1: // Toner
+            w = ((t>>( mod((t>>12), (v[3]>>4)) ))+( mod((v[1]|t),v[2])))<<2;
+            break;
+        }
+
+        output = ((w / 256.0) * 10.0) - 5.0;
       }
 
-      // t = t + 1;
-
-      switch(selected_equation) {
-
-        case 0: // Exploratorium
-          w = ((mod(t,(v[1]+(mod(t,v[2])))))^(t>>(v[3]>>5)))*2;
-          break;
-
-        case 1: // Toner
-          w = ((t>>( mod((t>>12), (v[3]>>4)) ))+( mod((v[1]|t),v[2])))<<2;
-          break;
-      }
-
-      float output = ((w / 256.0) * 10.0) - 5.0;
       return { output, output };
     }
 
@@ -60,8 +67,15 @@ namespace scalar_110
       return(knob_labels[knob_number]);
     }
 
+    void reset() override
+    {
+      playing = false;
+    }
+
     void trigger(StepParams *step_parameters) override
     {
+      playing = true;
+
       // p0 through p3 are variable values used in the equations
       v[0] = step_parameters->p[0] * 128.0;
       v[1] = step_parameters->p[1] * 128.0;
