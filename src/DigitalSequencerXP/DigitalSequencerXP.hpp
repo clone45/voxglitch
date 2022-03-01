@@ -582,7 +582,7 @@ struct DigitalSequencerXP : Module
       {
         float length_input = inputs[POLY_LENGTH_INPUT].getVoltage(i);
         int length = ((length_input / 10.0) * 32) + 1;
-        length = clamp(length, 1.0, 32.0);
+        length = clamp(length, 1, 32);
 
         voltage_sequencers[i].setLength((int) length);
         gate_sequencers[i].setLength((int) length);
