@@ -8,8 +8,14 @@ struct Track
   Engine *engine = new Foo();
   unsigned int engine_index = 0; // must exist to save/load engine selection
   unsigned int old_engine_index = 0;
-  StepParams step_parameters[NUMBER_OF_STEPS];
+  StepParams step_params[NUMBER_OF_STEPS];
+  StepParams default_step_params;
   unsigned int track_number = 0;
+
+  Track()
+  {
+    copyEngineDefaults();
+  }
 
   void step()
   {
@@ -19,7 +25,7 @@ struct Track
 
     if (steps[playback_position])
     {
-      engine->trigger(& step_parameters[playback_position]);
+      engine->trigger(& step_params[playback_position]);
     }
   }
 
@@ -30,17 +36,27 @@ struct Track
 
   StepParams *getParameters(unsigned int selected_step)
   {
-    return(& this->step_parameters[selected_step]);
+    return(& this->step_params[selected_step]);
   }
 
   float getParameter(unsigned int selected_step, unsigned int parameter_number)
   {
-    return(this->step_parameters[selected_step].p[parameter_number]);
+    return(this->step_params[selected_step].p[parameter_number]);
   }
 
   void setParameter(unsigned int selected_step, unsigned int parameter_number, float value)
   {
-    this->step_parameters[selected_step].p[parameter_number] = value;
+    this->step_params[selected_step].p[parameter_number] = value;
+  }
+
+  float getDefaultParameter(unsigned int parameter_number)
+  {
+    return(default_step_params.p[parameter_number]);
+  }
+
+  void setDefaultParameter(unsigned int parameter_number, float value)
+  {
+    this->default_step_params.p[parameter_number] = value;
   }
 
   void setPosition(unsigned int playback_position)
@@ -71,7 +87,6 @@ struct Track
     playback_position = 0;
   }
 
-  // To do: Migrate all engine stuff over here
   void setEngine(unsigned int engine_index)
   {
     this->engine_index = engine_index;
@@ -94,6 +109,20 @@ struct Track
           break;
       }
       old_engine_index = engine_index;
+
+      copyEngineDefaults();
+    }
+  }
+
+  // Copy the engine default step parameters into the track's memory.
+  // When the user swiches tracks, the default step parameters will be
+  // restored to where the user left them.
+  void copyEngineDefaults()
+  {
+    StepParams *engine_default_parameters = engine->getDefaultParams();
+    for(unsigned int i=0; i<NUMBER_OF_PARAMETERS; i++)
+    {
+      this->setDefaultParameter(i, engine_default_parameters->p[i]);
     }
   }
 

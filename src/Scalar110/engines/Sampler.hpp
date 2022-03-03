@@ -4,18 +4,33 @@ namespace scalar_110
   {
     // All engines should have these variables
     std::string knob_labels[8] = {"Sample","","","","","","",""};
-    SampleBank& sample_bank = SampleBank::get_instance();
+    StepParams default_params;
 
     // Engine specific variables
     unsigned int sample_selection = 0;
     unsigned int track_number = 0;
+    SampleBank& sample_bank = SampleBank::get_instance();
 
     Sampler(unsigned int track_number) // constructor
     {
       this->track_number = track_number;
 
+      this->default_params.p[0] = 0;
+      this->default_params.p[1] = 0;
+      this->default_params.p[2] = 0;
+      this->default_params.p[3] = 0;
+      this->default_params.p[4] = 0;
+      this->default_params.p[5] = 0;
+      this->default_params.p[6] = 0;
+      this->default_params.p[7] = 0;
+
       // Get at least the first sample assigned
       sample_bank.assign(sample_selection, track_number);
+    }
+
+    StepParams *getDefaultParams() override
+    {
+      return(&default_params);
     }
 
     std::pair<float, float> process() override

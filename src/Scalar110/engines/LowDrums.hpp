@@ -5,6 +5,7 @@ namespace scalar_110
   {
     // All engines should have these variables
     std::string knob_labels[8] = {"Drum","","","","","","",""};
+    StepParams default_params;
 
     // Engine specific variables
     uint8_t w = 0;
@@ -15,16 +16,24 @@ namespace scalar_110
     unsigned int drum_selection = 0;
     float env = 0.0f;
 
-    float p[NUMBER_OF_PARAMETERS];
+    // float p[NUMBER_OF_PARAMETERS];
 
     LowDrums() // constructor
     {
-      for(unsigned int i=0; i<NUMBER_OF_PARAMETERS; i++)
-      {
-        p[i] = 0.0;
-      }
+      this->default_params.p[0] = 0;
+      this->default_params.p[1] = 0;
+      this->default_params.p[2] = 0;
+      this->default_params.p[3] = 0;
+      this->default_params.p[4] = 0;
+      this->default_params.p[5] = 0;
+      this->default_params.p[6] = 0;
+      this->default_params.p[7] = 0;
     }
 
+    StepParams *getDefaultParams() override
+    {
+      return(&default_params);
+    }
     //
     // There should always be 8 parameters
     //
