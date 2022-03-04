@@ -30,6 +30,8 @@ struct Scalar110 : Module
   Track *selected_track;
   unsigned int track_index;
   unsigned int old_track_index = 0;
+  unsigned int engine_index;
+  unsigned int old_engine_index = 0;
   unsigned int playback_step = 0;
   bool selected_steps[NUMBER_OF_STEPS];
   unsigned int selected_step = 0;
@@ -144,6 +146,18 @@ struct Scalar110 : Module
 
     // Set the selected engine
     params[ENGINE_SELECT_KNOB].setValue(selected_track->getEngine());
+  }
+
+  void switchEngine(unsigned int engine_index)
+  {
+    // This next line also loads the engine default parameters into the track
+    selected_track->setEngine(engine_index);
+
+    // Set all of the parameter knobs of the selected step to the correct position
+    for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
+    {
+      this->setParameterKnobPosition(parameter_number, selected_track->getParameter(selected_step, parameter_number));
+    }
   }
 
   void refreshKnobs()
@@ -286,7 +300,13 @@ struct Scalar110 : Module
     // ADD: When engine changes, set default values for engine
     // I may have to add a flag to each engine to say if it's been modified or
     // not and do not load defaults if it has been modified
-    selected_track->setEngine(params[ENGINE_SELECT_KNOB].getValue());
+    engine_index = params[ENGINE_SELECT_KNOB].getValue();
+    if(engine_index != old_engine_index)
+    {
+      old_engine_index = engine_index;
+      switchEngine(engine_index);
+    }
+
 
     //
     // Handle drum pads, drum location, and drum selection interactions and lights.
