@@ -54,10 +54,12 @@ struct Track
     return(default_step_params.p[parameter_number]);
   }
 
+  /*
   void setDefaultParameter(unsigned int parameter_number, float value)
   {
     this->default_step_params.p[parameter_number] = value;
   }
+  */
 
   void setPosition(unsigned int playback_position)
   {
@@ -120,9 +122,14 @@ struct Track
   void copyEngineDefaults()
   {
     StepParams *engine_default_parameters = engine->getDefaultParams();
-    for(unsigned int i=0; i<NUMBER_OF_PARAMETERS; i++)
+
+    for(unsigned int step_number=0; step_number<NUMBER_OF_STEPS; step_number++)
     {
-      this->setDefaultParameter(i, engine_default_parameters->p[i]);
+      for(unsigned int parameter_number=0; parameter_number<NUMBER_OF_PARAMETERS; parameter_number++)
+      {
+        // setParameter(unsigned int selected_step, unsigned int parameter_number, float value)
+        this->setParameter(step_number, parameter_number, engine_default_parameters->p[parameter_number]);
+      }
     }
   }
 

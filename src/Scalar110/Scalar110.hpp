@@ -31,7 +31,7 @@ struct Scalar110 : Module
   unsigned int track_index;
   unsigned int old_track_index = 0;
   unsigned int playback_step = 0;
-  bool is_step_selected = false;
+  bool selected_steps[NUMBER_OF_STEPS];
   unsigned int selected_step = 0;
   unsigned int selected_parameter = 0;
   float left_output;
@@ -77,11 +77,12 @@ struct Scalar110 : Module
     {
       configParam(DRUM_PADS + i, 0.0, 1.0, 0.0, "drum_button_" + std::to_string(i));
       configParam(STEP_SELECT_BUTTONS + i, 0.0, 1.0, 0.0, "selected_step_" + std::to_string(i));
+      selected_steps[i] = false;
     }
 
     for(unsigned int i=0; i < NUMBER_OF_PARAMETERS; i++)
     {
-      configParam(ENGINE_PARAMS + i, 0.0, 1.0, 1.0, "engine_parameter_" + std::to_string(i));
+      configParam(ENGINE_PARAMS + i, 0.0, 1.0, 0.0, "engine_parameter_" + std::to_string(i));
     }
 
     // Configure track knob
@@ -100,7 +101,7 @@ struct Scalar110 : Module
     }
 
     // Set default selected track
-    selected_track = &tracks[0];
+    switchTrack(0);
 
     // Set default parameters
     // loadEngineDefaultParams();
@@ -118,19 +119,14 @@ struct Scalar110 : Module
 
   void toggleStep(unsigned int i)
   {
-    if(is_step_selected == false || selected_step != i) // this will need rewriting once I introduce the ability to select multiple steps
+    if(selected_step != i) // this will need rewriting once I introduce the ability to select multiple steps
     {
-      is_step_selected = true;
       selected_step = i;
       for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
       {
         // set the knob positions for the selected step
         params[ENGINE_PARAMS + parameter_number].setValue(selected_track->getParameter(selected_step, parameter_number));
       }
-    }
-    else // deselect step
-    {
-      is_step_selected = false;
     }
   }
 
@@ -143,15 +139,7 @@ struct Scalar110 : Module
     // Set all of the parameter knobs of the selected step to the correct position
     for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
     {
-      if(is_step_selected) {
-        this->setParameterKnobPosition(parameter_number, selected_track->getParameter(selected_step, parameter_number));
-      }
-      else {
-        DEBUG("switched track");
-        float value = selected_track->getDefaultParameter(parameter_number);
-        this->setParameterKnobPosition(parameter_number, value);
-        this->setDefaultParameter(parameter_number, value);
-      }
+      this->setParameterKnobPosition(parameter_number, selected_track->getParameter(selected_step, parameter_number));
     }
 
     // Set the selected engine
@@ -295,44 +283,46 @@ struct Scalar110 : Module
     }
 
     // Read the engine selection knob
+    // ADD: When engine changes, set default values for engine
+    // I may have to add a flag to each engine to say if it's been modified or
+    // not and do not load defaults if it has been modified
     selected_track->setEngine(params[ENGINE_SELECT_KNOB].getValue());
 
     //
     // Handle drum pads, drum location, and drum selection interactions and lights.
     //
-    for(unsigned int i = 0; i < NUMBER_OF_STEPS; i++)
+    for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
       // Process drum pads
-      if(drum_pad_triggers[i].process(params[DRUM_PADS + i].getValue()))
+      if(drum_pad_triggers[step_number].process(params[DRUM_PADS + step_number].getValue()))
       {
         // Toggle the drum pad
-        selected_track->toggleStep(i);
+        selected_track->toggleStep(step_number);
 
         // Also set the step selection for convenience
         // selectStep(i);
       }
 
       // Process step select triggers.
-      if(step_select_triggers[i].process(params[STEP_SELECT_BUTTONS + i].getValue()))
+      if(step_select_triggers[step_number].process(params[STEP_SELECT_BUTTONS + step_number].getValue()))
       {
-        toggleStep(i);
+        toggleStep(step_number);
       }
 
       // Light up drum pads
-      lights[DRUM_PAD_LIGHTS + i].setBrightness(selected_track->getValue(i));
+      lights[DRUM_PAD_LIGHTS + step_number].setBrightness(selected_track->getValue(step_number));
 
       // Light up step selection light
-      lights[STEP_SELECT_BUTTON_LIGHTS + i].setBrightness(is_step_selected && (selected_step == i));
+      lights[STEP_SELECT_BUTTON_LIGHTS + step_number].setBrightness(selected_step == step_number);
 
       // Show location
-      lights[STEP_LOCATION_LIGHTS + i].setBrightness(playback_step == i);
+      lights[STEP_LOCATION_LIGHTS + step_number].setBrightness(playback_step == step_number);
     }
 
     //
     // Read all of the parameter knobs and assign them to the selected Track/Step
-    if(is_step_selected)
-    {
-      for(unsigned int i = 0; i < NUMBER_OF_PARAMETERS; i++)
+
+      for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
       {
         // Let's dive into this next line.
         // * Selected_track is a pointer to a Track.
@@ -341,18 +331,33 @@ struct Scalar110 : Module
         // So this next line is setting the active playback step to the current
         // knob positions for the selected track.
         //
-        float new_parameter_value = params[ENGINE_PARAMS + i].getValue();
-        float current_parameter_value = selected_track->getParameter(selected_step, i);
+        float new_parameter_value = params[ENGINE_PARAMS + parameter_number].getValue();
+        float current_parameter_value = selected_track->getParameter(selected_step, parameter_number);
 
         if(new_parameter_value != current_parameter_value)
         {
-          selected_track->setParameter(selected_step, i, params[ENGINE_PARAMS + i].getValue());
+          // There are two different options when the user is twiddling a
+          // parameter knob.  Either the user is trying to modify the parameters
+          // for a specific step, or they're adjust the default parameter values
+          // for the track.
+          /*
+          if(is_step_selected)
+          {
+            selected_track->setParameter(selected_step, parameter_number, params[ENGINE_PARAMS + parameter_number].getValue());
+          }
+          else
+          {
+            selected_track->setDefaultParameter(parameter_number, params[ENGINE_PARAMS + parameter_number].getValue());
+          }
+          */
+
+          selected_track->setParameter(selected_step, parameter_number, params[ENGINE_PARAMS + parameter_number].getValue());
 
           // TODO: we might need to do this for engines as well??
-          if(! track_switched) selected_parameter = i;
+          if(! track_switched) selected_parameter = parameter_number;
         }
       }
-    }
+
 
     //
     // compute output

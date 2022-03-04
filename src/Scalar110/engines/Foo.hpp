@@ -23,7 +23,7 @@ namespace scalar_110
       this->default_params.p[0] = 0; // v1
       this->default_params.p[1] = 0; // v2
       this->default_params.p[2] = 0; // v3
-      this->default_params.p[3] = 4; // clk div
+      this->default_params.p[3] = 0.25; // clk div of 4 == 4 / 16 = .25
       this->default_params.p[4] = 0; // equation
       this->default_params.p[5] = 0;
       this->default_params.p[6] = 0;
