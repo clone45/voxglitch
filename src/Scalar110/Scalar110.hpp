@@ -10,16 +10,14 @@
 //   when you switch engines in a track, the track copies the engine's parameter default to the track
 //   when you switch between tracks, the defaults are loaded into the module's defaults
 //
-// * shift-click to select multiple steps
+// * shift-click to select multiple steps (maybe not?)
 // * when selecting an engine, use LCD to show list
 // * Engine idea: Beat looper
 // * Step selection using shift key
-// * I think that the sample engine bug still exists where it doesn't play at first
 // * sample pitch controls?
 // * figure out ratcheting / pattern ratcheting
 // * context aware copy/paste
 // * save and load root_directory so you always start loading samples in the right place
-// * equation playback needs to be quiet when the track has no gates
 
 struct Scalar110 : Module
 {
@@ -136,8 +134,6 @@ struct Scalar110 : Module
   {
     selected_track = &tracks[track_index];
 
-    // if is_step_selected ??
-
     // Set all of the parameter knobs of the selected step to the correct position
     for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
     {
@@ -168,20 +164,6 @@ struct Scalar110 : Module
       params[ENGINE_PARAMS + parameter_number].setValue(selected_track->step_params[selected_step].p[parameter_number]);
     }
   }
-
-  /* I don't think that this will be needed now that I'm moving the default
-  // parameters into the track memeory.
-  void loadEngineDefaultParams()
-  {
-    StepParams *loaded_step_params;
-    loaded_step_params = this->track[selected_track].engine.getDefaultParams();
-
-    for(unsigned int i; i<NUMBER_OF_PARAMETERS; i++)
-    {
-      this->default_params[i] = loaded_step_params[i];
-    }
-  }
-  */
 
 	// Autosave module data.  VCV Rack decides when this should be called.
 	json_t *dataToJson() override
@@ -286,6 +268,7 @@ struct Scalar110 : Module
 	void process(const ProcessArgs &args) override
 	{
     bool track_switched = false;
+    bool engine_switched = false;
 
     // selected_track = &tracks[(int) params[TRACK_SELECT_KNOB].getValue()];
     track_index = params[TRACK_SELECT_KNOB].getValue();
@@ -305,6 +288,7 @@ struct Scalar110 : Module
     {
       old_engine_index = engine_index;
       switchEngine(engine_index);
+      engine_switched = true;
     }
 
 
@@ -356,25 +340,10 @@ struct Scalar110 : Module
 
         if(new_parameter_value != current_parameter_value)
         {
-          // There are two different options when the user is twiddling a
-          // parameter knob.  Either the user is trying to modify the parameters
-          // for a specific step, or they're adjust the default parameter values
-          // for the track.
-          /*
-          if(is_step_selected)
-          {
-            selected_track->setParameter(selected_step, parameter_number, params[ENGINE_PARAMS + parameter_number].getValue());
-          }
-          else
-          {
-            selected_track->setDefaultParameter(parameter_number, params[ENGINE_PARAMS + parameter_number].getValue());
-          }
-          */
-
           selected_track->setParameter(selected_step, parameter_number, params[ENGINE_PARAMS + parameter_number].getValue());
 
           // TODO: we might need to do this for engines as well??
-          if(! track_switched) selected_parameter = parameter_number;
+          if(! track_switched && ! engine_switched) selected_parameter = parameter_number;
         }
       }
 

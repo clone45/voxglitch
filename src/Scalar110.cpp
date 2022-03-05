@@ -16,6 +16,9 @@ using namespace scalar_110;
 #include "Scalar110/SamplePtrPlayer.hpp"
 #include "Scalar110/SampleBank.hpp"
 
+// Custom controls
+#include "Scalar110/components/Knobs.hpp"
+
 // Core components
 #include "Scalar110/StepParams.hpp"
 #include "Scalar110/Engine.hpp"

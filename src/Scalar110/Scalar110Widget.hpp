@@ -23,24 +23,26 @@ struct Scalar110Widget : ModuleWidget
     }
 
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(50,50)), module, Scalar110::TRACK_SELECT_KNOB));
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(50,80)), module, Scalar110::ENGINE_SELECT_KNOB));
+    addParam(createParamCentered<EngineKnob(5)>(mm2px(Vec(50,80)), module, Scalar110::ENGINE_SELECT_KNOB));
 
 
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(100,50)), module, Scalar110::ENGINE_PARAMS));
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(120,50)), module, Scalar110::ENGINE_PARAMS + 1));
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(140,50)), module, Scalar110::ENGINE_PARAMS + 2));
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(160,50)), module, Scalar110::ENGINE_PARAMS + 3));
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(100,70)), module, Scalar110::ENGINE_PARAMS + 4));
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(120,70)), module, Scalar110::ENGINE_PARAMS + 5));
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(140,70)), module, Scalar110::ENGINE_PARAMS + 6));
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(160,70)), module, Scalar110::ENGINE_PARAMS + 7));
+    float offset = 120;
+
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(offset,50)), module, Scalar110::ENGINE_PARAMS));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(offset + 20,50)), module, Scalar110::ENGINE_PARAMS + 1));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(offset + 40,50)), module, Scalar110::ENGINE_PARAMS + 2));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(offset + 60,50)), module, Scalar110::ENGINE_PARAMS + 3));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(offset,70)), module, Scalar110::ENGINE_PARAMS + 4));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(offset + 20,70)), module, Scalar110::ENGINE_PARAMS + 5));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(offset + 40,70)), module, Scalar110::ENGINE_PARAMS + 6));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(offset + 60,70)), module, Scalar110::ENGINE_PARAMS + 7));
 
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(210, 114.702)), module, Scalar110::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(220, 114.702)), module, Scalar110::AUDIO_OUTPUT_RIGHT));
 
     for(unsigned int i=0; i<NUMBER_OF_PARAMETERS; i++)
     {
-      float x_position = 90.2 + ((i%4) * 20);
+      float x_position = 110.2 + ((i%4) * 20);
       float y_position = 37 + ((i/4) * 20);
 
       LabelDisplay *label_display = new LabelDisplay(i);
