@@ -1,14 +1,5 @@
 //
 // Next:
-// Look at the switchTrack function in this file.  When the track is switched,
-// the default parameters stored in that track should be loaded.  Those values
-// should be applied to the knobs unless a step is selected.  (What to do if
-// multiple tracks are selected?)
-//
-// Question: should tracks remember their defaults?  I think it should, and that's ruthless!
-// Here's how it might work:
-//   when you switch engines in a track, the track copies the engine's parameter default to the track
-//   when you switch between tracks, the defaults are loaded into the module's defaults
 //
 // * shift-click to select multiple steps (maybe not?)
 // * when selecting an engine, use LCD to show list
@@ -31,6 +22,7 @@ struct Scalar110 : Module
   unsigned int engine_index;
   unsigned int old_engine_index = 0;
   unsigned int playback_step = 0;
+  unsigned int lcd_focus = 0;
   bool selected_steps[NUMBER_OF_STEPS];
   unsigned int selected_step = 0;
   unsigned int selected_parameter = 0;
@@ -163,6 +155,11 @@ struct Scalar110 : Module
     {
       params[ENGINE_PARAMS + parameter_number].setValue(selected_track->step_params[selected_step].p[parameter_number]);
     }
+  }
+
+  void setLCDFocus(unsigned int new_focus)
+  {
+    this->lcd_focus = new_focus;
   }
 
 	// Autosave module data.  VCV Rack decides when this should be called.

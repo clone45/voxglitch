@@ -16,8 +16,7 @@ using namespace scalar_110;
 #include "Scalar110/SamplePtrPlayer.hpp"
 #include "Scalar110/SampleBank.hpp"
 
-// Custom controls
-#include "Scalar110/components/Knobs.hpp"
+
 
 // Core components
 #include "Scalar110/StepParams.hpp"
@@ -29,10 +28,15 @@ using namespace scalar_110;
 
 #include "Scalar110/Scalar110.hpp"
 
+// Custom widgets and displays
+#include "Scalar110/components/Knobs.hpp"
 #include "Scalar110/LabelDisplay.hpp"
-#include "Scalar110/FileSelectWidget.hpp"
-#include "Scalar110/ParamEditorDisplay.hpp"
 #include "Scalar110/FolderSelect.hpp"
+
+// #include "Scalar110/FileSelectWidget.hpp"
+// #include "Scalar110/ParamEditorDisplay.hpp"
+
+#include "Scalar110/LCDDisplay/LCDWidget.hpp"
 #include "Scalar110/Scalar110Widget.hpp"
 
 Model* modelScalar110 = createModel<Scalar110, Scalar110Widget>("scalar110");

@@ -23,7 +23,7 @@ struct Scalar110Widget : ModuleWidget
     }
 
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(50,50)), module, Scalar110::TRACK_SELECT_KNOB));
-    addParam(createParamCentered<EngineKnob(5)>(mm2px(Vec(50,80)), module, Scalar110::ENGINE_SELECT_KNOB));
+    addParam(createParamCentered<EngineKnob>(mm2px(Vec(50,80)), module, Scalar110::ENGINE_SELECT_KNOB));
 
 
     float offset = 120;
@@ -51,27 +51,18 @@ struct Scalar110Widget : ModuleWidget
       addChild(label_display);
     }
 
-    /*
-    if(module->selected_track->engine_index == 2 && module->selected_parameter == 0)
-    {
-      FileSelectWidget *file_select_widget = new FileSelectWidget();
-      file_select_widget->module = module;
-      file_select_widget->box.pos = mm2px(Vec(LCD_DISPLAY_X, LCD_DISPLAY_Y));
-      addChild(file_select_widget);
-    }
-    else // show parameter edit display
-    {
-      ParamEditorDisplay *param_editor_display = new ParamEditorDisplay();
-      param_editor_display->module = module;
-      param_editor_display->box.pos = mm2px(Vec(LCD_DISPLAY_X, LCD_DISPLAY_Y));
-      addChild(param_editor_display);
-    }
-    */
 
+      LCDWidget *lcd_widget = new LCDWidget(module);
+      // lcd_widget->module = module;
+      lcd_widget->box.pos = mm2px(Vec(LCD_DISPLAY_X, LCD_DISPLAY_Y));
+      addChild(lcd_widget);
+
+      /*
     FileSelectWidget *file_select_widget = new FileSelectWidget();
     file_select_widget->module = module;
     file_select_widget->box.pos = mm2px(Vec(LCD_DISPLAY_X + 2, LCD_DISPLAY_Y + 5));
     addChild(file_select_widget);
+    */
 
   }
 

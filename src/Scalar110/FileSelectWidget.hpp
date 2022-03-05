@@ -1,4 +1,4 @@
-struct FileSelectWidget : TransparentWidget
+struct FileSelectWidget : LCDDisplay
 {
 	Scalar110 *module;
 

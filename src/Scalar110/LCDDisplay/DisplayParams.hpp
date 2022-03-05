@@ -1,23 +1,10 @@
-struct ParamEditorDisplay : LCDDisplay
+struct DisplayParams : Display
 {
-  Scalar110 *module;
   Vec drag_position;
   double bar_width = (LCD_DISPLAY_WIDTH / NUMBER_OF_STEPS) - BAR_HORIZONTAL_PADDING;
 
-  ParamEditorDisplay()
+  void draw(NVGcontext *vg) override
   {
-    // The bounding box needs to be a little deeper than the visual
-    // controls to allow mouse drags to indicate '0' (off) column heights,
-    // which is why 16 is being added to the draw height to define the
-    // bounding box.
-    box.size = Vec(LCD_DISPLAY_WIDTH, LCD_DISPLAY_HEIGHT + 16);
-  }
-
-  void drawLayer(const DrawArgs& args, int layer) override
-  {
-  	if (layer == 1)
-    {
-      const auto vg = args.vg;
       double value;
       NVGcolor bar_color;
 
@@ -62,7 +49,6 @@ struct ParamEditorDisplay : LCDDisplay
       //drawOverlay(vg, OVERLAY_WIDTH, DRAW_AREA_HEIGHT);
 
       nvgRestore(vg);
-    }
 
   }
 
@@ -104,6 +90,7 @@ struct ParamEditorDisplay : LCDDisplay
     }
   }
 
+  /*
   void onButton(const event::Button &e) override
   {
     if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
@@ -123,6 +110,6 @@ struct ParamEditorDisplay : LCDDisplay
 
     editBar(drag_position);
   }
-
+  */
 
 };
