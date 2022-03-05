@@ -1,10 +1,35 @@
+
+struct CustomLightPanel : CustomPanel
+{
+    CustomLightPanel()
+    {
+        // backgroundColor = componentlibrary::SCHEME_LIGHT_GRAY;
+    }
+};
+
+
 struct LooperWidget : ModuleWidget
 {
   LooperWidget(Looper* module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/looper_front_panel.svg")));
+    // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/looper/looper_front_panel.svg")));
 
+    // =========================
+
+    box.size = mm2px(Vec(5.08 * 3, 128.5));
+    CustomLightPanel *pngPanel = new CustomLightPanel();
+    pngPanel->setBackgroundImage("res/looper/looper_3he_baseplate.png");
+    pngPanel->box.size = box.size;
+    addChild(pngPanel);
+
+    // Second layer
+    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/looper/looper_front_panel.svg"));
+    SvgPanel *svgPanel = new SvgPanel;
+    svgPanel->setBackground(svg);
+    addChild(svgPanel);
+
+    // =======================
     // Add output jacks
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(7.560, ROW_12 AND_A_HALF_ROW)), module, Looper::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(7.560, ROW_14)), module, Looper::AUDIO_OUTPUT_RIGHT));
