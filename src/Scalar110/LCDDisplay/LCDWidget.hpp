@@ -17,6 +17,23 @@ struct LCDWidget : TransparentWidget
 
   void draw(const DrawArgs &args) override
   {
-    display_params.draw(args.vg);
+    if(module)
+    {
+      switch(module->lcd_focus)
+      {
+        case LCD_VALUES_DISPLAY:
+          display_params.draw(args.vg);
+          break;
+        /*
+        case LCD_ENGINE_DISPLAY:
+          display_params.draw(args.vg);
+          break;
+        case LCD_SAMPLES_DISPLAY:
+          display_samples.draw(args.vg);
+          break;
+        */
+      }
+    }
+
   }
 };

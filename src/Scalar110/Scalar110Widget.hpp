@@ -28,14 +28,18 @@ struct Scalar110Widget : ModuleWidget
 
     float offset = 120;
 
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(offset,50)), module, Scalar110::ENGINE_PARAMS));
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(offset + 20,50)), module, Scalar110::ENGINE_PARAMS + 1));
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(offset + 40,50)), module, Scalar110::ENGINE_PARAMS + 2));
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(offset + 60,50)), module, Scalar110::ENGINE_PARAMS + 3));
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(offset,70)), module, Scalar110::ENGINE_PARAMS + 4));
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(offset + 20,70)), module, Scalar110::ENGINE_PARAMS + 5));
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(offset + 40,70)), module, Scalar110::ENGINE_PARAMS + 6));
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(offset + 60,70)), module, Scalar110::ENGINE_PARAMS + 7));
+    ParameterKnob* parameterKnob = createParamCentered<ParameterKnob>(mm2px(Vec(offset,50)), module, Scalar110::ENGINE_PARAMS);
+		parameterKnob->parameter_number = 4;
+		addParam(parameterKnob);
+
+    // addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset,50)), module, Scalar110::ENGINE_PARAMS));
+    addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset + 20,50)), module, Scalar110::ENGINE_PARAMS + 1));
+    addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset + 40,50)), module, Scalar110::ENGINE_PARAMS + 2));
+    addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset + 60,50)), module, Scalar110::ENGINE_PARAMS + 3));
+    addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset,70)), module, Scalar110::ENGINE_PARAMS + 4));
+    addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset + 20,70)), module, Scalar110::ENGINE_PARAMS + 5));
+    addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset + 40,70)), module, Scalar110::ENGINE_PARAMS + 6));
+    addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset + 60,70)), module, Scalar110::ENGINE_PARAMS + 7));
 
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(210, 114.702)), module, Scalar110::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(220, 114.702)), module, Scalar110::AUDIO_OUTPUT_RIGHT));

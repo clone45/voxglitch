@@ -262,6 +262,11 @@ struct Scalar110 : Module
     }
 	}
 
+  void selectParameter(unsigned int parameter_number)
+  {
+    selected_parameter = parameter_number;
+  }
+
 	void process(const ProcessArgs &args) override
 	{
     bool track_switched = false;
@@ -340,7 +345,7 @@ struct Scalar110 : Module
           selected_track->setParameter(selected_step, parameter_number, params[ENGINE_PARAMS + parameter_number].getValue());
 
           // TODO: we might need to do this for engines as well??
-          if(! track_switched && ! engine_switched) selected_parameter = parameter_number;
+          if(! track_switched && ! engine_switched) selectParameter(parameter_number);
         }
       }
 
