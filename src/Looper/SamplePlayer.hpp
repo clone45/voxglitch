@@ -40,6 +40,18 @@ struct SamplePlayer
     }
 	}
 
+  float getPlaybackPercentage()
+  {
+    if(this->sample.size() > 0)
+    {
+      return(playback_position / this->sample.size());
+    }
+    else
+    {
+      return(0.0);
+    }
+  }
+
   void loadSample(std::string path)
   {
     sample.load(path);

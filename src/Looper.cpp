@@ -1,8 +1,10 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "Common/sample.hpp"
-#include "settings.hpp"
+#include "Common/components/BlankPort.hpp"
+#include "Common/components/VoxglitchPanel.hpp"
 
+#include "settings.hpp"
 #include "Looper/defines.h"
 #include "Looper/SamplePlayer.hpp"
 #include "Looper/Looper.hpp"

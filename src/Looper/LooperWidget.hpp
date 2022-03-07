@@ -1,11 +1,36 @@
-
-struct CustomLightPanel : CustomPanel
+struct CustomPanel : TransparentWidget
 {
-    CustomLightPanel()
-    {
-        // backgroundColor = componentlibrary::SCHEME_LIGHT_GRAY;
-    }
+  void draw(const DrawArgs &args) override
+  {
+    std::shared_ptr<Image> img = APP->window->loadImage(asset::plugin(pluginInstance, "res/looper/looper_3he_baseplate.png"));
+
+    int width, height;
+
+    // Get the image size and store it in the width and height variables
+    nvgImageSize(args.vg, img->handle, &width, &height);
+
+    // Set the bounding box of the widget
+    box.size = mm2px(Vec(5.08 * 3, 128.5));
+
+    // Paint the .png background
+    NVGpaint paint = nvgImagePattern(args.vg, 0.0, 0.0, box.size.x, box.size.y, 0.0, img->handle, 1.0);
+    nvgBeginPath(args.vg);
+    nvgRect(args.vg, 0.0, 0.0, box.size.x, box.size.y);
+    nvgFillPaint(args.vg, paint);
+    nvgFill(args.vg);
+
+    Widget::draw(args);
+  }
 };
+
+  // Second layer
+  /*
+  std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/looper/looper_front_panel.svg"));
+  SvgPanel *svgPanel = new SvgPanel;
+  svgPanel->setBackground(svg);
+  addChild(svgPanel);
+  */
+
 
 
 struct LooperWidget : ModuleWidget
@@ -13,35 +38,32 @@ struct LooperWidget : ModuleWidget
   LooperWidget(Looper* module)
   {
     setModule(module);
-    // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/looper/looper_front_panel.svg")));
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/looper/looper_front_panel.svg")));
 
-    // =========================
+    CustomPanel *custom_panel = new CustomPanel();
+    addChild(custom_panel);
 
-    box.size = mm2px(Vec(5.08 * 3, 128.5));
-    CustomLightPanel *pngPanel = new CustomLightPanel();
-    pngPanel->setBackgroundImage("res/looper/looper_3he_baseplate.png");
-    pngPanel->box.size = box.size;
-    addChild(pngPanel);
+    // Add typography layer
+    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/looper/looper_typography_t2.svg"));
+    VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
+    voxglitch_panel->setBackground(svg);
+    addChild(voxglitch_panel);
 
-    // Second layer
-    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/looper/looper_front_panel.svg"));
-    SvgPanel *svgPanel = new SvgPanel;
-    svgPanel->setBackground(svg);
-    addChild(svgPanel);
-
-    // =======================
     // Add output jacks
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(7.560, ROW_12 AND_A_HALF_ROW)), module, Looper::AUDIO_OUTPUT_LEFT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(7.560, ROW_14)), module, Looper::AUDIO_OUTPUT_RIGHT));
+    // addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(7.55, 103)), module, Looper::AUDIO_OUTPUT_LEFT));
+    addOutput(createOutputCentered<BlankPort>(mm2px(Vec(7.55, 103)), module, Looper::AUDIO_OUTPUT_LEFT));
+		addOutput(createOutputCentered<BlankPort>(mm2px(Vec(7.55, 115.2)), module, Looper::AUDIO_OUTPUT_RIGHT));
 
     // Add reset input
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(7.560, ROW_3)), module, Looper::RESET_INPUT));
+    addInput(createInputCentered<BlankPort>(mm2px(Vec(7.55, 25.5)), module, Looper::RESET_INPUT));
 
     // Add waveform display (see LooperWaveformDisplay.hpp)
     LooperWaveformDisplay *looper_waveform_display = new LooperWaveformDisplay();
     looper_waveform_display->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
     looper_waveform_display->module = module;
     addChild(looper_waveform_display);
+
+
   }
 
   void appendContextMenu(Menu *menu) override

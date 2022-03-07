@@ -1,7 +1,32 @@
+struct FadeLine
+{
+  float y = 0;
+  float fade = 1.0;
+  float fade_rate = .1;
+
+  FadeLine(float vertical_position)
+  {
+    y = vertical_position;
+  }
+
+  void fadeOut()
+  {
+    if(fade > 0)
+    {
+      fade -= fade_rate;
+    }
+    else
+    {
+      fade = 0;
+    }
+  }
+};
+
 struct LooperWaveformDisplay : TransparentWidget
 {
   Looper *module;
-  std::deque<float> waveform_array;
+  std::deque<FadeLine *> fades;
+  unsigned int update_countdown = 0;
 
   void draw(const DrawArgs &args) override
   {
@@ -20,24 +45,44 @@ struct LooperWaveformDisplay : TransparentWidget
 
     if(module)
     {
-      waveform_array.push_front(module->left_audio);
+      if(update_countdown == 0)
+      {
+        for (unsigned int i = 0; i < fades.size(); i++) {
+          fades[i]->fadeOut();
+        }
+        float playback_position = module->sample_player.getPlaybackPercentage();
+        float vertical_position = playback_position * 180.0;
 
-      if(waveform_array.size() > 40) waveform_array.pop_back();
+        fades.push_front(new FadeLine(vertical_position));
+        if(fades.size() > 10) fades.pop_back();
+        update_countdown = 10;
+      }
+      else
+      {
+        //  only draw the
+        update_countdown --;
+      }
 
-      for (unsigned int i = 0; i < waveform_array.size(); i++)
+      for (unsigned int i = 0; i < fades.size(); i++)
       {
         nvgBeginPath(vg);
-        nvgStrokeWidth(vg, 3);
-        nvgStrokeColor(vg, nvgRGBA(97, 143, 170, 200));
-        nvgMoveTo(vg, (DRAW_AREA_WIDTH / 2), i * 4.3);
-        nvgLineTo(vg, (DRAW_AREA_WIDTH / 2) + (DRAW_AREA_WIDTH * waveform_array[i]), i * 4.3);
+        nvgStrokeWidth(vg, 5);
+        if(i == 0) nvgStrokeColor(vg, nvgRGBA(255, 255, 255, 255));
+        if(i != 0) nvgStrokeColor(vg, nvgRGBA(255, 255, 255, fades[i]->fade * 20));
+        nvgMoveTo(vg, 0, fades[i]->y);
+        nvgLineTo(vg, DRAW_AREA_WIDTH, fades[i]->y);
         nvgStroke(vg);
+
+        // fades[i]->fadeOut();
       }
     }
 
     nvgRestore(vg);
+
+
   }
 
+  /*
   void onButton(const event::Button &e) override
   {
     if(isMouseInDrawArea(e.pos))
@@ -64,6 +109,7 @@ struct LooperWaveformDisplay : TransparentWidget
       }
     }
   }
+  */
 
   bool isMouseInDrawArea(Vec position)
   {
