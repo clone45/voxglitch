@@ -28,11 +28,26 @@ struct Scalar110Widget : ModuleWidget
 
     float offset = 120;
 
-    ParameterKnob* parameterKnob = createParamCentered<ParameterKnob>(mm2px(Vec(offset,50)), module, Scalar110::ENGINE_PARAMS);
-		parameterKnob->parameter_number = 4;
-		addParam(parameterKnob);
+    for(unsigned int i=0; i<4; i++)
+    {
+      ParameterKnob* parameter_knob = createParamCentered<ParameterKnob>(mm2px(Vec(offset + (i * 20),50)), module, Scalar110::ENGINE_PARAMS + i);
+  		parameter_knob->parameter_number = i;
+  		addParam(parameter_knob);
+    }
 
-    // addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset,50)), module, Scalar110::ENGINE_PARAMS));
+    for(unsigned int i=4; i<8; i++)
+    {
+      ParameterKnob* parameter_knob = createParamCentered<ParameterKnob>(mm2px(Vec(offset + ((i-4) * 20),70)), module, Scalar110::ENGINE_PARAMS + i);
+  		parameter_knob->parameter_number = i;
+  		addParam(parameter_knob);
+    }
+
+    /*
+    ParameterKnob* parameter_knob_1 = createParamCentered<ParameterKnob>(mm2px(Vec(offset + 20,50)), module, Scalar110::ENGINE_PARAMS + 1);
+		parameter_knob_1->parameter_number = 1;
+		addParam(parameter_knob_1);
+
+    addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset,50)), module, Scalar110::ENGINE_PARAMS));
     addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset + 20,50)), module, Scalar110::ENGINE_PARAMS + 1));
     addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset + 40,50)), module, Scalar110::ENGINE_PARAMS + 2));
     addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset + 60,50)), module, Scalar110::ENGINE_PARAMS + 3));
@@ -40,7 +55,7 @@ struct Scalar110Widget : ModuleWidget
     addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset + 20,70)), module, Scalar110::ENGINE_PARAMS + 5));
     addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset + 40,70)), module, Scalar110::ENGINE_PARAMS + 6));
     addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset + 60,70)), module, Scalar110::ENGINE_PARAMS + 7));
-
+    */
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(210, 114.702)), module, Scalar110::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(220, 114.702)), module, Scalar110::AUDIO_OUTPUT_RIGHT));
 
@@ -80,6 +95,8 @@ struct Scalar110Widget : ModuleWidget
     folder_select->module = module;
     menu->addChild(folder_select);
   }
+
+
 
 
 };
