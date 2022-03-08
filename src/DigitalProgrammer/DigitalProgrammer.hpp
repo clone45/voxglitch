@@ -298,6 +298,18 @@ struct DigitalProgrammer : Module
     }
   }
 
+  void onReset(const ResetEvent &e) override
+  {
+    for(unsigned int bank = 0; bank < NUMBER_OF_BANKS; bank++)
+    {
+      for(unsigned int slider = 0; slider < NUMBER_OF_SLIDERS; slider ++)
+      {
+        this->sliders[bank][slider].setValue(0);
+      }
+    }
+    Module::onReset(e);
+  }
+
   /*
 
   ______
