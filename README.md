@@ -10,3 +10,7 @@ Modules for VCV Rack.  My apologies if I fall behind on the documentation.
 * [Repeater](docs/repeater.md)
 * [Wavebank](docs/wavebank.md)
 * [XY Controller](docs/xy-controller.md)
+
+License:
+
+Voxglitch Modules (both artwork and code) are licensed under the GPLv3 license. Enjoy!
