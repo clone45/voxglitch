@@ -8,5 +8,6 @@ namespace scalar_110
     virtual std::string getKnobLabel(unsigned int knob_number) = 0;
     virtual StepParams* getDefaultParams() = 0;
     virtual void LCDDraw(const Widget::DrawArgs &args) = 0;
+    virtual unsigned int getLCDController(unsigned int parameter_number) = 0;
   };
 }

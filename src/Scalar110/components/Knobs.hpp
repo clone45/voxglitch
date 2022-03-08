@@ -33,4 +33,10 @@ struct ParameterKnob : RoundBlackKnob
     }
     RoundBlackKnob::onButton(e);
   }
+  /* Nope
+  void setLCDFocus(unsigned int new_lcd_focus)
+  {
+    lcd_focus = new_lcd_focus;
+  }
+  */
 };

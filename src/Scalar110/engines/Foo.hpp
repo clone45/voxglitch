@@ -5,7 +5,7 @@ namespace scalar_110
   {
     // All engines should have these variables
     std::string knob_labels[8] = {"V1","V2","V3","Clk Div","Equation","","",""};
-    unsigned int knob_displays[8] = {
+    unsigned int knob_lcd_focus[8] = {
       LCD_VALUES_DISPLAY,
       LCD_VALUES_DISPLAY,
       LCD_VALUES_DISPLAY,
@@ -15,7 +15,7 @@ namespace scalar_110
       LCD_NO_FOCUS_CHANGE,
       LCD_NO_FOCUS_CHANGE
     };
-    
+
     StepParams default_params;
 
     // Engine specific variables
@@ -39,6 +39,11 @@ namespace scalar_110
       this->default_params.p[5] = 0;
       this->default_params.p[6] = 0;
       this->default_params.p[7] = 0;
+    }
+
+    unsigned int getLCDController(unsigned int parameter_number) override
+    {
+      return(knob_lcd_focus[parameter_number]);
     }
 
     StepParams *getDefaultParams() override

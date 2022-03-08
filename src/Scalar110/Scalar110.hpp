@@ -2,6 +2,9 @@
 // Where I left off.  I added knob_displays arrays to each engine.  Next I have
 // to copy those values into the ParameterKnobs when the engine is changed.
 //
+// NOT working, but focus on selectParameter, because I think we're close
+// It probably did work!  It's just that something didn't listen to the
+// lcd switch correctly.  (check the switch statement!)
 //
 // * shift-click to select multiple steps (maybe not?)
 // * when selecting an engine, use LCD to show list
@@ -168,9 +171,6 @@ struct Scalar110 : Module
     for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
     {
       this->setParameterKnobPosition(parameter_number, selected_track->getParameter(selected_step, parameter_number));
-
-      // While we're at it, also set the LCD focus for each knob
-
     }
   }
 
@@ -291,6 +291,11 @@ struct Scalar110 : Module
   void selectParameter(unsigned int parameter_number)
   {
     selected_parameter = parameter_number;
+
+    // set the LCD focus based on the selected engine
+    unsigned int new_lcd_focus = this->selected_track->engine->getLCDController(parameter_number);
+
+    this->lcd_focus = new_lcd_focus;
   }
 
 	void process(const ProcessArgs &args) override
