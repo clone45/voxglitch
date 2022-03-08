@@ -10,6 +10,7 @@ struct Looper : Module
   std::string root_dir;
 
   enum ParamIds {
+    SWITCH_TEST,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -25,6 +26,7 @@ struct Looper : Module
 	Looper()
 	{
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
+    configSwitch(SWITCH_TEST, 0.0f, 1.0f, 1.0f, "Something", {"Value", "Other Value"});
 	}
 
 	// Autosave module data.  VCV Rack decides when this should be called.

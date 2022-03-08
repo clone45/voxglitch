@@ -23,6 +23,14 @@ struct CustomPanel : TransparentWidget
   }
 };
 
+struct roundToggle : app::SvgSwitch {
+  roundToggle() {
+    momentary = false;
+    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/test.svg")));
+    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/round_light_on_8mm_189px.svg")));
+  }
+};
+
   // Second layer
   /*
   std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/looper/looper_front_panel.svg"));
@@ -63,7 +71,8 @@ struct LooperWidget : ModuleWidget
     looper_waveform_display->module = module;
     addChild(looper_waveform_display);
 
-
+    // Add custom switch
+    addParam(createParamCentered<roundToggle>(Vec(2, 2), module, Looper::SWITCH_TEST));
   }
 
   void appendContextMenu(Menu *menu) override
