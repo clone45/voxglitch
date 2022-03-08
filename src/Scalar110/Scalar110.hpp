@@ -1,5 +1,7 @@
 //
-// Next:
+// Where I left off.  I added knob_displays arrays to each engine.  Next I have
+// to copy those values into the ParameterKnobs when the engine is changed.
+//
 //
 // * shift-click to select multiple steps (maybe not?)
 // * when selecting an engine, use LCD to show list
@@ -9,6 +11,27 @@
 // * figure out ratcheting / pattern ratcheting
 // * context aware copy/paste
 // * save and load root_directory so you always start loading samples in the right place
+
+
+// Notes on "LCD Focus"
+//
+// lcd_focus is a variable in the struct Scalar110.  There are constants defined
+// in defines.h which can be used when setting lcd_focus's value.
+// LCDDisplay/LCDWidget reads module->lcd_focus in its draw() method and uses
+// that value to decide which interactive display should be active.
+//
+// ParameterKnob is a special knob type for parameters.  It's defined in
+// componenets/knobs/Knobs.hpp.  Each ParameterKnobs has a "lcd_focus" variable
+// which indicates what engine should be visible when the knob is clicked.
+// Different knobs may benefit from different LCD displays, which is why this
+// is done.
+//
+// But what determins what a ParameterKnob's lcd_focus is?  Engines do.  But
+// that will take a bit of explaining.
+//
+// Engines need to have an array of lcd_focus values: 1 per parameter knob.  (Meaning 8!)
+// When the engine is switched, those values must be assigned to the 8
+// ParameterKnobs' lcd_focus variable.
 
 struct Scalar110 : Module
 {
@@ -145,6 +168,9 @@ struct Scalar110 : Module
     for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
     {
       this->setParameterKnobPosition(parameter_number, selected_track->getParameter(selected_step, parameter_number));
+
+      // While we're at it, also set the LCD focus for each knob
+
     }
   }
 

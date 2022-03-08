@@ -5,6 +5,17 @@ namespace scalar_110
   {
     // All engines should have these variables
     std::string knob_labels[8] = {"V1","V2","V3","Clk Div","Equation","","",""};
+    unsigned int knob_displays[8] = {
+      LCD_VALUES_DISPLAY,
+      LCD_VALUES_DISPLAY,
+      LCD_VALUES_DISPLAY,
+      LCD_VALUES_DISPLAY,
+      LCD_VALUES_DISPLAY,
+      LCD_NO_FOCUS_CHANGE,
+      LCD_NO_FOCUS_CHANGE,
+      LCD_NO_FOCUS_CHANGE
+    };
+    
     StepParams default_params;
 
     // Engine specific variables
