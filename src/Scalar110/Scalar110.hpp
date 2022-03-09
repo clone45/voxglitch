@@ -1,5 +1,5 @@
 //
-// Where I left off.  When switching tracks, the LCD function is not getting updated.
+// Where I left off.  When switching tracks, engine selection is not restored properly.
 //
 //
 // * shift-click to select multiple steps (maybe not?)
@@ -149,13 +149,20 @@ struct Scalar110 : Module
     selected_track = &tracks[track_index];
 
     // Set all of the parameter knobs of the selected step to the correct position
+    /*
     for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
     {
       this->setParameterKnobPosition(parameter_number, selected_track->getParameter(selected_step, parameter_number));
     }
+    */
 
     // Set the selected engine
-    params[ENGINE_SELECT_KNOB].setValue(selected_track->getEngine());
+    // params[ENGINE_SELECT_KNOB].setValue(selected_track->getEngine());
+
+    if(params[ENGINE_SELECT_KNOB].getValue() != selected_track->getEngine())
+    {
+      switchEngine(selected_track->getEngine());
+    }
 
     // Display the correct LCD display for the selected track
     selectLCDFunctionOnParameterFocus(this->selected_parameter);
@@ -165,6 +172,9 @@ struct Scalar110 : Module
   {
     // This next line also loads the engine default parameters into the track
     selected_track->setEngine(engine_index);
+
+    // Set the engine knob to the right position
+    params[ENGINE_SELECT_KNOB].setValue(engine_index);
 
     // Set all of the parameter knobs of the selected step to the correct position
     for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
