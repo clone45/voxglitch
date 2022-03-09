@@ -8,7 +8,7 @@ struct EngineKnob : RoundBlackKnob
     {
       if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
       {
-        module->setLCDFocus(LCD_ENGINE_DISPLAY);
+        module->setLCDFunction(LCD_ENGINE_DISPLAY);
       }
     }
     RoundBlackKnob::onButton(e);
@@ -17,7 +17,7 @@ struct EngineKnob : RoundBlackKnob
 
 struct ParameterKnob : RoundBlackKnob
 {
-  unsigned int lcd_focus = LCD_NO_FOCUS_CHANGE;
+  unsigned int lcd_function = LCD_NO_FOCUS_CHANGE;
   unsigned int parameter_number = 0;
 
   void onButton(const event::Button &e) override
@@ -33,10 +33,4 @@ struct ParameterKnob : RoundBlackKnob
     }
     RoundBlackKnob::onButton(e);
   }
-  /* Nope
-  void setLCDFocus(unsigned int new_lcd_focus)
-  {
-    lcd_focus = new_lcd_focus;
-  }
-  */
 };

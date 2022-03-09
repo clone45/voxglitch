@@ -1,10 +1,6 @@
 //
-// Where I left off.  I added knob_displays arrays to each engine.  Next I have
-// to copy those values into the ParameterKnobs when the engine is changed.
+// Where I left off.  When switching tracks, the LCD function is not getting updated.
 //
-// NOT working, but focus on selectParameter, because I think we're close
-// It probably did work!  It's just that something didn't listen to the
-// lcd switch correctly.  (check the switch statement!)
 //
 // * shift-click to select multiple steps (maybe not?)
 // * when selecting an engine, use LCD to show list
@@ -18,23 +14,23 @@
 
 // Notes on "LCD Focus"
 //
-// lcd_focus is a variable in the struct Scalar110.  There are constants defined
-// in defines.h which can be used when setting lcd_focus's value.
-// LCDDisplay/LCDWidget reads module->lcd_focus in its draw() method and uses
+// lcd_function is a variable in the struct Scalar110.  There are constants defined
+// in defines.h which can be used when setting lcd_function's value.
+// LCDDisplay/LCDWidget reads module->lcd_function in its draw() method and uses
 // that value to decide which interactive display should be active.
 //
 // ParameterKnob is a special knob type for parameters.  It's defined in
-// componenets/knobs/Knobs.hpp.  Each ParameterKnobs has a "lcd_focus" variable
+// componenets/knobs/Knobs.hpp.  Each ParameterKnobs has a "lcd_function" variable
 // which indicates what engine should be visible when the knob is clicked.
 // Different knobs may benefit from different LCD displays, which is why this
 // is done.
 //
-// But what determins what a ParameterKnob's lcd_focus is?  Engines do.  But
+// But what determins what a ParameterKnob's lcd_function is?  Engines do.  But
 // that will take a bit of explaining.
 //
-// Engines need to have an array of lcd_focus values: 1 per parameter knob.  (Meaning 8!)
+// Engines need to have an array of lcd_function values: 1 per parameter knob.  (Meaning 8!)
 // When the engine is switched, those values must be assigned to the 8
-// ParameterKnobs' lcd_focus variable.
+// ParameterKnobs' lcd_function variable.
 
 struct Scalar110 : Module
 {
@@ -48,7 +44,7 @@ struct Scalar110 : Module
   unsigned int engine_index;
   unsigned int old_engine_index = 0;
   unsigned int playback_step = 0;
-  unsigned int lcd_focus = 0;
+  unsigned int lcd_function = 0;
   bool selected_steps[NUMBER_OF_STEPS];
   unsigned int selected_step = 0;
   unsigned int selected_parameter = 0;
@@ -160,6 +156,9 @@ struct Scalar110 : Module
 
     // Set the selected engine
     params[ENGINE_SELECT_KNOB].setValue(selected_track->getEngine());
+
+    // Display the correct LCD display for the selected track
+    selectLCDFunctionOnParameterFocus(this->selected_parameter);
   }
 
   void switchEngine(unsigned int engine_index)
@@ -183,10 +182,7 @@ struct Scalar110 : Module
     }
   }
 
-  void setLCDFocus(unsigned int new_focus)
-  {
-    this->lcd_focus = new_focus;
-  }
+
 
 	// Autosave module data.  VCV Rack decides when this should be called.
 	json_t *dataToJson() override
@@ -291,11 +287,18 @@ struct Scalar110 : Module
   void selectParameter(unsigned int parameter_number)
   {
     selected_parameter = parameter_number;
+  }
 
+  void setLCDFunction(unsigned int new_function)
+  {
+    this->lcd_function = new_function;
+  }
+
+  void selectLCDFunctionOnParameterFocus(unsigned int parameter_number)
+  {
     // set the LCD focus based on the selected engine
-    unsigned int new_lcd_focus = this->selected_track->engine->getLCDController(parameter_number);
-
-    this->lcd_focus = new_lcd_focus;
+    unsigned int lcd_function = this->selected_track->engine->getLCDController(parameter_number);
+    this->setLCDFunction(lcd_function);
   }
 
 	void process(const ProcessArgs &args) override
@@ -359,26 +362,28 @@ struct Scalar110 : Module
     //
     // Read all of the parameter knobs and assign them to the selected Track/Step
 
-      for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
+    for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
+    {
+      // Let's dive into this next line.
+      // * Selected_track is a pointer to a Track.
+      // * A track contains an array of StepParams, one element for each step
+      // * StepParams is a structure containing an array "p" of 8 floats
+      // So this next line is setting the active playback step to the current
+      // knob positions for the selected track.
+      //
+      float new_parameter_value = params[ENGINE_PARAMS + parameter_number].getValue();
+      float current_parameter_value = selected_track->getParameter(selected_step, parameter_number);
+
+      if(new_parameter_value != current_parameter_value)
       {
-        // Let's dive into this next line.
-        // * Selected_track is a pointer to a Track.
-        // * A track contains an array of StepParams, one element for each step
-        // * StepParams is a structure containing an array "p" of 8 floats
-        // So this next line is setting the active playback step to the current
-        // knob positions for the selected track.
-        //
-        float new_parameter_value = params[ENGINE_PARAMS + parameter_number].getValue();
-        float current_parameter_value = selected_track->getParameter(selected_step, parameter_number);
+        // BUG: This is being called often
+        selected_track->setParameter(selected_step, parameter_number, new_parameter_value);
 
-        if(new_parameter_value != current_parameter_value)
-        {
-          selected_track->setParameter(selected_step, parameter_number, params[ENGINE_PARAMS + parameter_number].getValue());
-
-          // TODO: we might need to do this for engines as well??
-          if(! track_switched && ! engine_switched) selectParameter(parameter_number);
-        }
+        // TODO: we might need to do this for engines as well??
+        if(! track_switched && ! engine_switched) selectParameter(parameter_number);
+        selectLCDFunctionOnParameterFocus(parameter_number);
       }
+    }
 
 
     //
