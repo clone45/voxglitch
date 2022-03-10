@@ -26,8 +26,8 @@ struct CustomPanel : TransparentWidget
 struct roundToggle : app::SvgSwitch {
   roundToggle() {
     momentary = false;
-    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/test.svg")));
-    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/round_light2.svg")));
+    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/round_light_off.svg")));
+    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/round_light5-4.svg")));
   }
 };
 
@@ -72,7 +72,7 @@ struct LooperWidget : ModuleWidget
     addChild(looper_waveform_display);
 
     // Add custom switch
-    addParam(createParamCentered<roundToggle>(Vec(4, 4), module, Looper::SWITCH_TEST));
+    addParam(createParamCentered<roundToggle>(mm2px(Vec(6.72, 10.50)), module, Looper::SWITCH_TEST));
   }
 
   void appendContextMenu(Menu *menu) override
