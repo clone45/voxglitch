@@ -83,6 +83,7 @@ struct DisplaySampleSelect : Display
           nvgText(vg, 0, 6.3 + ((i - window_start) * 16), text_to_display.c_str(), NULL);
         }
       }
+
 		}
     else
     {
@@ -126,9 +127,10 @@ struct DisplaySampleSelect : Display
         }
 
         nvgText(vg, 0, 4 + (i * 16), text_to_display.c_str(), NULL);
-      }
-    }
+      } // end for loop
+    }  // end of else
 	} // end of draw method
+
 
 /*
   void onButton(const event::Button &e) override
@@ -188,4 +190,15 @@ struct DisplaySampleSelect : Display
     TransparentWidget::step();
   }
   */
+
+
+  void onButton(Vec position) override
+  {
+
+  }
+
+  void onDragMove(Vec position) override
+  {
+
+  }
 };

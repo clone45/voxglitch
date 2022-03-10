@@ -90,26 +90,15 @@ struct DisplayParams : Display
     }
   }
 
-  /*
-  void onButton(const event::Button &e) override
+  void onButton(Vec position) override
   {
-    if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
-    {
-      e.consume(this);
-      drag_position = e.pos;
-
-      this->editBar(e.pos);
-    }
+    // this->editBar(position);
   }
 
-  void onDragMove(const event::DragMove &e) override
+  void onDragMove(Vec position) override
   {
-    TransparentWidget::onDragMove(e);
-    float zoom = getAbsoluteZoom();
-    drag_position = drag_position.plus(e.mouseDelta.div(zoom));
-
-    editBar(drag_position);
+    // editBar(position);
   }
-  */
+
 
 };

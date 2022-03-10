@@ -1,5 +1,5 @@
 //
-// Where I left off.  When switching tracks, engine selection is not restored properly.
+// Where I left off.  if DisplaySampleSelect : Display is restored, it crashes
 //
 //
 // * shift-click to select multiple steps (maybe not?)
