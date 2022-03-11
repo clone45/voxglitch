@@ -25,11 +25,9 @@ struct LCDWidget : TransparentWidget
       {
         case LCD_VALUES_DISPLAY:
           active_display = &display_params;
-          // display_params.draw(args.vg);
           break;
         case LCD_SAMPLES_DISPLAY:
           active_display = &display_sample_select;
-          // display_sample_select.draw(args.vg);
           break;
         /*
         case LCD_ENGINE_DISPLAY:
@@ -38,10 +36,6 @@ struct LCDWidget : TransparentWidget
 
         */
       }
-
-
-
-
 
       // I think that this is crashing it
       // This is crashing IF the engine is set to sample display
@@ -70,6 +64,10 @@ struct LCDWidget : TransparentWidget
     float zoom = getAbsoluteZoom();
     drag_position = drag_position.plus(e.mouseDelta.div(zoom));
     active_display->onDragMove(drag_position);
+  }
+
+  void step() override {
+    TransparentWidget::step();
   }
 
 };

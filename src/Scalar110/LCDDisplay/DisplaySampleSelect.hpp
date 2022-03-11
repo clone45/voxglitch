@@ -23,7 +23,7 @@ struct DisplaySampleSelect : Display
 
       unsigned int number_of_samples = sample_bank.size();
 
-      if(number_of_samples > 0)
+      if(number_of_samples > NUMBER_OF_SAMPLE_DISPLAY_ROWS)
       {
         // When there are too many sample filenames to fit on the front panel,
         // then we'll show a window into the sample list.  Here's where the

@@ -1,6 +1,7 @@
 //
 // Where I left off.  if DisplaySampleSelect : Display is restored, it crashes
-//
+// It seems like it could be related to a bug where the active display does
+// not initially match the active engine/parameter setting
 //
 // * shift-click to select multiple steps (maybe not?)
 // * when selecting an engine, use LCD to show list
@@ -304,11 +305,19 @@ struct Scalar110 : Module
     this->lcd_function = new_function;
   }
 
+  // This function may not be needed.  It might be replacable with selectLCDFunctionSelectedParam()
   void selectLCDFunctionOnParameterFocus(unsigned int parameter_number)
   {
     // set the LCD focus based on the selected engine
     unsigned int lcd_function = this->selected_track->engine->getLCDController(parameter_number);
     this->setLCDFunction(lcd_function);
+  }
+
+  void selectLCDFunctionSelectedParam()
+  {
+    unsigned int lcd_function = this->selected_track->engine->getLCDController(this->selected_parameter);
+    this->setLCDFunction(lcd_function);
+    DEBUG("waka waka");
   }
 
 	void process(const ProcessArgs &args) override

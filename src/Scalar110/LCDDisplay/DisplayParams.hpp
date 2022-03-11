@@ -92,12 +92,12 @@ struct DisplayParams : Display
 
   void onButton(Vec position) override
   {
-    // this->editBar(position);
+    this->editBar(position);
   }
 
   void onDragMove(Vec position) override
   {
-    // editBar(position);
+    this->editBar(position);
   }
 
 

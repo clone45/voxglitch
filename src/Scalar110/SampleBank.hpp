@@ -66,6 +66,7 @@ public:
 	std::pair<float, float> getOutput(unsigned int track_number)
   {
     return sample_ptr_players[track_number].getStereoOutput();
+    // return {0,0};
   }
 
   void loadSamplesFromPath(const char *path)
@@ -105,7 +106,14 @@ public:
 
   std::string getDisplayName(unsigned int sample_index)
   {
-    return(samples[sample_index].display_name);
+    if(sample_index < samples.size())
+    {
+      return(samples[sample_index].display_name);
+    }
+    else
+    {
+      return("out of bounds");
+    }
   }
 
   unsigned int size()

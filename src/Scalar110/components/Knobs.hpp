@@ -6,19 +6,37 @@ struct EngineKnob : RoundBlackKnob
 
     if(module)
     {
-      if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
+      if(e.button == GLFW_MOUSE_BUTTON_LEFT)
       {
-        module->setLCDFunction(LCD_ENGINE_DISPLAY);
+        if(e.action == GLFW_PRESS) module->setLCDFunction(LCD_ENGINE_DISPLAY);
+        if(e.action == GLFW_RELEASE) module->selectLCDFunctionSelectedParam();
       }
+
     }
     RoundBlackKnob::onButton(e);
   }
+
+  void onLeave(const LeaveEvent &e) override
+  {
+    Scalar110 *module = dynamic_cast<Scalar110*>(this->module);
+
+    if(module)
+    {
+      module->selectLCDFunctionSelectedParam();
+    }
+  }
+
+  void onHover(const event::Hover& e) override
+  {
+		RoundBlackKnob::onHover(e);
+		e.consume(this);
+	}
 };
 
 struct ParameterKnob : RoundBlackKnob
 {
   unsigned int lcd_function = LCD_NO_FOCUS_CHANGE;
-  unsigned int parameter_number = 0;
+  unsigned int parameter_number = 0; // This gets set when the widget is created
 
   void onButton(const event::Button &e) override
   {
@@ -29,6 +47,7 @@ struct ParameterKnob : RoundBlackKnob
       if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
       {
         module->selectParameter(parameter_number);
+        module->selectLCDFunctionOnParameterFocus(parameter_number);
       }
     }
     RoundBlackKnob::onButton(e);
