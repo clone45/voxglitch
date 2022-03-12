@@ -1,3 +1,4 @@
+/*
 struct CustomPanel : TransparentWidget
 {
   void draw(const DrawArgs &args) override
@@ -22,6 +23,7 @@ struct CustomPanel : TransparentWidget
     Widget::draw(args);
   }
 };
+*/
 
 struct roundToggle : app::SvgSwitch {
 
@@ -77,10 +79,13 @@ struct LooperWidget : ModuleWidget
   LooperWidget(Looper* module)
   {
     setModule(module);
+
+    // Set the background SVG panel.  This should be blank
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/looper/looper_front_panel.svg")));
 
-    CustomPanel *custom_panel = new CustomPanel();
-    addChild(custom_panel);
+    // Load up the background PNG and add it to the panel
+    PNGPanel *png_panel = new PNGPanel("res/looper/looper_3he_baseplate.png", 5.08 * 3, 128.5);
+    addChild(png_panel);
 
     // Add typography layer
     std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/looper/looper_typography_t2.svg"));

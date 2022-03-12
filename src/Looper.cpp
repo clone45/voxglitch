@@ -1,6 +1,7 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "Common/sample.hpp"
+#include "Common/components/PNGPanel.hpp"
 #include "Common/components/BlankPort.hpp"
 #include "Common/components/InputPort.hpp"
 #include "Common/components/OutputPort.hpp"

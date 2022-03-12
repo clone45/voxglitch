@@ -7,11 +7,14 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "Common/sample.hpp"
+#include "Common/components/PNGPanel.hpp"
+#include "Common/components/VoxglitchPanel.hpp"
 
 #include "WavBank/defines.h"
 #include "WavBank/WavBank.hpp"
 #include "WavBank/WavBankReadout.hpp"
 #include "WavBank/MenuItemLoadBank.hpp"
+
 #include "WavBank/WavBankWidget.hpp"
 
 Model* modelWavBank = createModel<WavBank, WavBankWidget>("wavbank");

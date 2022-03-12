@@ -3,12 +3,22 @@ struct WavBankWidget : ModuleWidget
 	WavBankWidget(WavBank* module)
 	{
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/wav_bank_front_panel.svg")));
 
-		// Cosmetic rack screws
-		addChild(createWidget<ScrewSilver>(Vec(15, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
+    // Set the background SVG panel.  This should be blank
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/wavbank/wav_bank_panel_container.svg")));
 
+
+    // Load up the background PNG and add it to the panel
+    PNGPanel *png_panel = new PNGPanel("res/wavbank/wav_bank_base.png", 50.8, 128.5);
+    addChild(png_panel);
+
+    // Add typography layer
+    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/wavbank/wav_bank_typography.svg"));
+    VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
+    voxglitch_panel->setBackground(svg);
+    addChild(voxglitch_panel);
+
+    /*
 		// Input and label for the trigger input (which is labeled "CLK" on the front panel)
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.185, 25.535)), module, WavBank::TRIG_INPUT));
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.185, 46)), module, WavBank::WAV_INPUT));
@@ -26,6 +36,8 @@ struct WavBankWidget : ModuleWidget
 		// WAV output
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 104)), module, WavBank::WAV_LEFT_OUTPUT));
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 114.9)), module, WavBank::WAV_RIGHT_OUTPUT));
+    */
+
 	}
 
   //
