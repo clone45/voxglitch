@@ -7,6 +7,7 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "Common/sample.hpp"
+#include "Common/components/VoxglitchKnobs.hpp"
 #include "Common/components/PNGPanel.hpp"
 #include "Common/components/VoxglitchPanel.hpp"
 

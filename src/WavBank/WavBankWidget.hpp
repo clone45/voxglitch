@@ -18,13 +18,19 @@ struct WavBankWidget : ModuleWidget
     voxglitch_panel->setBackground(svg);
     addChild(voxglitch_panel);
 
+    addParam(createParamCentered<VoxglitchLargeKnob>(mm2px(Vec(16.544, 26.185)), module, WavBank::WAV_KNOB));
+
+    addParam(createParamCentered<VoxglitchAttenuator>(mm2px(Vec(16.544, 46.09)), module, WavBank::WAV_ATTN_KNOB));
+
     /*
 		// Input and label for the trigger input (which is labeled "CLK" on the front panel)
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.185, 25.535)), module, WavBank::TRIG_INPUT));
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.185, 46)), module, WavBank::WAV_INPUT));
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.185, 114.893)), module, WavBank::PITCH_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(13.185, 60)), module, WavBank::WAV_ATTN_KNOB));
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(13.185, 75)), module, WavBank::WAV_KNOB));
+
+
+    addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(13.185, 75)), module, WavBank::WAV_KNOB));
+
 		addParam(createParamCentered<CKSS>(mm2px(Vec(13.185, 97)), module, WavBank::LOOP_SWITCH));
 
 		WavBankReadout *readout = new WavBankReadout();
