@@ -2,6 +2,8 @@
 #include "osdialog.h"
 #include "Common/sample.hpp"
 #include "Common/components/BlankPort.hpp"
+#include "Common/components/InputPort.hpp"
+#include "Common/components/OutputPort.hpp"
 #include "Common/components/VoxglitchPanel.hpp"
 
 #include "settings.hpp"
