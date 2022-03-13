@@ -19,30 +19,24 @@ struct WavBankWidget : ModuleWidget
     addChild(voxglitch_panel);
 
     addParam(createParamCentered<VoxglitchLargeKnob>(mm2px(Vec(16.544, 26.185)), module, WavBank::WAV_KNOB));
-
     addParam(createParamCentered<VoxglitchAttenuator>(mm2px(Vec(16.544, 46.09)), module, WavBank::WAV_ATTN_KNOB));
 
-    /*
-		// Input and label for the trigger input (which is labeled "CLK" on the front panel)
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.185, 25.535)), module, WavBank::TRIG_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.185, 46)), module, WavBank::WAV_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.185, 114.893)), module, WavBank::PITCH_INPUT));
+		addParam(createParamCentered<squareToggle>(mm2px(Vec(40.72, 96.12)), module, WavBank::LOOP_SWITCH));
 
-
-    addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(13.185, 75)), module, WavBank::WAV_KNOB));
-
-		addParam(createParamCentered<CKSS>(mm2px(Vec(13.185, 97)), module, WavBank::LOOP_SWITCH));
-
-		WavBankReadout *readout = new WavBankReadout();
-		readout->box.pos = mm2px(Vec(34.236, 82));
+    WavBankReadout *readout = new WavBankReadout();
+		readout->box.pos = mm2px(Vec(40.68, 78));
 		readout->box.size = Vec(110, 30); // bounding box of the widget
 		readout->module = module;
 		addChild(readout);
 
+		// Input jacks
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(48.550400,227.734650), module, WavBank::TRIG_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(48.550400,171.650101), module, WavBank::WAV_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(48.732090,283.751099), module, WavBank::PITCH_INPUT));
+
 		// WAV output
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 104)), module, WavBank::WAV_LEFT_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 114.9)), module, WavBank::WAV_RIGHT_OUTPUT));
-    */
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(74.990524,349.837158), module, WavBank::WAV_LEFT_OUTPUT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(120.190491,349.837158), module, WavBank::WAV_RIGHT_OUTPUT));
 
 	}
 

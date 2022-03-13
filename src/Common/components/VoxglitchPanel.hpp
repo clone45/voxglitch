@@ -2,7 +2,10 @@ struct VoxglitchPanel : app::SvgPanel {
 
   VoxglitchPanel()
   {
-    panelBorder->visible = false;
+#if defined DEV_MODE
+  panelBorder->visible = true;
+#else
+  panelBorder->visible = false;
+#endif
   }
-
 };

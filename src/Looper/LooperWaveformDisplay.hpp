@@ -24,9 +24,15 @@ struct FadeLine
 
 struct LooperWaveformDisplay : TransparentWidget
 {
+  std::deque<float> waveform_array;
+
   Looper *module;
   std::deque<FadeLine *> fades;
-  unsigned int update_countdown = 0;
+  float playback_position;
+  float vertical_position;
+  float spacing = 2.4;
+  float stroke_width = 3;
+  float audio_value = 0.0;
 
   void draw(const DrawArgs &args) override
   {
@@ -35,46 +41,37 @@ struct LooperWaveformDisplay : TransparentWidget
     // Save the drawing context to restore later
     nvgSave(vg);
 
-    // Debugging code for draw area, which often has to be set experimentally
-    /*
-    nvgBeginPath(vg);
-    nvgRect(vg, 0, 0, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
-    nvgFillColor(vg, nvgRGBA(120, 20, 20, 100));
-    nvgFill(vg);
-    */
-
     if(module)
     {
-      if(update_countdown == 0)
-      {
-        for (unsigned int i = 0; i < fades.size(); i++) {
-          fades[i]->fadeOut();
-        }
-        float playback_position = module->sample_player.getPlaybackPercentage();
-        float vertical_position = playback_position * 180.0;
+      audio_value = (module->left_audio + module->right_audio) / 2;
+      audio_value = clamp(audio_value, -1.0, 1.0);
 
-        fades.push_front(new FadeLine(vertical_position));
-        if(fades.size() > 10) fades.pop_back();
-        update_countdown = 10;
-      }
-      else
-      {
-        //  only draw the
-        update_countdown --;
-      }
+      waveform_array.push_front(audio_value);
 
-      for (unsigned int i = 0; i < fades.size(); i++)
+      if(waveform_array.size() > 75) waveform_array.pop_back();
+
+      for (unsigned int i = 0; i < waveform_array.size(); i++)
       {
+        float rect_length = DRAW_AREA_WIDTH * waveform_array[i];
+        float rect_x = (DRAW_AREA_WIDTH - rect_length) / 2;
+
         nvgBeginPath(vg);
-        nvgStrokeWidth(vg, 5);
-        if(i == 0) nvgStrokeColor(vg, nvgRGBA(255, 255, 255, 255));
-        if(i != 0) nvgStrokeColor(vg, nvgRGBA(255, 255, 255, fades[i]->fade * 20));
-        nvgMoveTo(vg, 0, fades[i]->y);
-        nvgLineTo(vg, DRAW_AREA_WIDTH, fades[i]->y);
+        nvgStrokeWidth(vg, stroke_width);
+        nvgStrokeColor(vg, nvgRGBA(97, 143, 170, 220));
+        nvgMoveTo(vg, rect_x, i * spacing);
+        nvgLineTo(vg, rect_x + rect_length, i * spacing);
         nvgStroke(vg);
-
-        // fades[i]->fadeOut();
       }
+
+      // Draw position playback indicator
+      playback_position = module->sample_player.getPlaybackPercentage();
+      vertical_position = playback_position * 180.0;
+      nvgBeginPath(vg);
+      nvgStrokeWidth(vg, 2);
+      nvgStrokeColor(vg, nvgRGBA(97, 143, 170, 50));
+      nvgMoveTo(vg, 0, vertical_position);
+      nvgLineTo(vg, DRAW_AREA_WIDTH, vertical_position);
+      nvgStroke(vg);
     }
 
     nvgRestore(vg);

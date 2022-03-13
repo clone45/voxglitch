@@ -7,10 +7,10 @@ struct WavBankReadout : TransparentWidget
 
 	void draw(const DrawArgs &args) override
 	{
+    text_to_display = "right-click to load samples";
+
 		if(module)
 		{
-			text_to_display = "";
-
 			if(module->samples.size() > module->selected_sample_slot)
 			{
 				text_to_display = module->samples[module->selected_sample_slot].filename;
@@ -19,16 +19,16 @@ struct WavBankReadout : TransparentWidget
 		}
 
 		// Set font information
-    std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+    std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/Minecraftia-Regular.ttf"));
     if (font) {
-  		nvgFontSize(args.vg, 13);
+  		nvgFontSize(args.vg, 12);
   		nvgFontFaceId(args.vg, font->handle);
   		nvgTextLetterSpacing(args.vg, 0);
-  		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+  		nvgFillColor(args.vg, nvgRGBA(244, 237, 231, 0xff));
   		nvgRotate(args.vg, text_rotation_angle);
     }
 
 		// Print out the text
-		nvgText(args.vg, 5, 5, text_to_display.c_str(), NULL);
+		nvgText(args.vg, 0, 9, text_to_display.c_str(), NULL);
 	}
 };

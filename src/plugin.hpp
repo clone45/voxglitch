@@ -1,3 +1,5 @@
+#define DEV_MODE 1
+
 #pragma once
 #include <rack.hpp>
 

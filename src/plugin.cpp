@@ -1,4 +1,5 @@
 #define DR_WAV_IMPLEMENTATION
+
 #include "Common/dr_wav.h"
 
 #include "plugin.hpp"
