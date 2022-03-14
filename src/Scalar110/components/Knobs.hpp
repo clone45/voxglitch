@@ -8,7 +8,7 @@ struct EngineKnob : RoundBlackKnob
     {
       if(e.button == GLFW_MOUSE_BUTTON_LEFT)
       {
-        if(e.action == GLFW_PRESS) module->setLCDFunction(LCD_ENGINE_DISPLAY);
+        if(e.action == GLFW_PRESS) module->setLCDPage(LCD_PAGE_ENGINE);
         if(e.action == GLFW_RELEASE) module->selectLCDFunctionSelectedParam();
       }
 
@@ -35,7 +35,7 @@ struct EngineKnob : RoundBlackKnob
 
 struct ParameterKnob : RoundBlackKnob
 {
-  unsigned int lcd_function = LCD_NO_FOCUS_CHANGE;
+  unsigned int lcd_function = LCD_PAGE_PARAMETER_VALUES; // Default
   unsigned int parameter_number = 0; // This gets set when the widget is created
 
   void onButton(const event::Button &e) override

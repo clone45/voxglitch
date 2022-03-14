@@ -96,7 +96,4 @@ struct Scalar110Widget : ModuleWidget
     menu->addChild(folder_select);
   }
 
-
-
-
 };

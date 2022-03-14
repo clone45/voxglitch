@@ -6,14 +6,14 @@ namespace scalar_110
     // All engines should have these variables
     std::string knob_labels[8] = {"Drum","","","","","","",""};
     unsigned int knob_lcd_focus[8] = {
-      LCD_VALUES_DISPLAY,
-      LCD_NO_FOCUS_CHANGE,
-      LCD_NO_FOCUS_CHANGE,
-      LCD_NO_FOCUS_CHANGE,
-      LCD_NO_FOCUS_CHANGE,
-      LCD_NO_FOCUS_CHANGE,
-      LCD_NO_FOCUS_CHANGE,
-      LCD_NO_FOCUS_CHANGE
+      LCD_PAGE_PARAMETER_VALUES,
+      LCD_PAGE_PARAMETER_VALUES,
+      LCD_PAGE_PARAMETER_VALUES,
+      LCD_PAGE_PARAMETER_VALUES,
+      LCD_PAGE_PARAMETER_VALUES,
+      LCD_PAGE_PARAMETER_VALUES,
+      LCD_PAGE_PARAMETER_VALUES,
+      LCD_PAGE_PARAMETER_VALUES
     };
     StepParams default_params;
 

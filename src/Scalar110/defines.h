@@ -15,11 +15,21 @@ namespace scalar_110
   const float PARAMETER_LABEL_WIDTH = 58;
   const float PARAMETER_LABEL_HEIGHT = 18;
 
+  const unsigned int NUMBER_OF_ENGINE_DISPLAY_ROWS = 5;
   const unsigned int NUMBER_OF_SAMPLE_DISPLAY_ROWS = 5;
 
-  const unsigned int LCD_NO_FOCUS_CHANGE = 0;
-  const unsigned int LCD_ENGINE_DISPLAY = 1;
-  const unsigned int LCD_VALUES_DISPLAY = 2;
-  const unsigned int LCD_SAMPLES_DISPLAY = 3;
+  // LCD related constants
+  const unsigned int NUMBER_OF_LCD_PAGES = 3;
+
+  // Array Indexes
+  const unsigned int LCD_PAGE_ENGINE = 0;
+  const unsigned int LCD_PAGE_PARAMETER_VALUES = 1;
+  const unsigned int LCD_PAGE_SAMPLES = 2;
+
+  const std::string ENGINE_NAMES[3] = {
+    "ByteBeat",
+    "8-bit Drums",
+    "Sample Player"
+  };
 
 }

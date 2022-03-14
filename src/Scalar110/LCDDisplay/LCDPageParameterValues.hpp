@@ -1,4 +1,4 @@
-struct DisplayParams : Display
+struct LCDPageParameterValues : LCDPage
 {
   Vec drag_position;
   double bar_width = (LCD_DISPLAY_WIDTH / NUMBER_OF_STEPS) - BAR_HORIZONTAL_PADDING;

@@ -1,4 +1,4 @@
-struct DisplaySampleSelect : Display
+struct LCDPageSamples : LCDPage
 {
 	std::shared_ptr<Font> font;
 	std::string text_to_display = "";

@@ -1,7 +1,7 @@
 //
-// Where I left off.  if DisplaySampleSelect : Display is restored, it crashes
-// It seems like it could be related to a bug where the active display does
-// not initially match the active engine/parameter setting
+// Where I left off.
+// - create engine selection display
+// - also alter the parameter adjustment dislplay to show the name of the parameter
 //
 // * shift-click to select multiple steps (maybe not?)
 // * when selecting an engine, use LCD to show list
@@ -13,39 +13,18 @@
 // * save and load root_directory so you always start loading samples in the right place
 
 
-// Notes on "LCD Focus"
-//
-// lcd_function is a variable in the struct Scalar110.  There are constants defined
-// in defines.h which can be used when setting lcd_function's value.
-// LCDDisplay/LCDWidget reads module->lcd_function in its draw() method and uses
-// that value to decide which interactive display should be active.
-//
-// ParameterKnob is a special knob type for parameters.  It's defined in
-// componenets/knobs/Knobs.hpp.  Each ParameterKnobs has a "lcd_function" variable
-// which indicates what engine should be visible when the knob is clicked.
-// Different knobs may benefit from different LCD displays, which is why this
-// is done.
-//
-// But what determins what a ParameterKnob's lcd_function is?  Engines do.  But
-// that will take a bit of explaining.
-//
-// Engines need to have an array of lcd_function values: 1 per parameter knob.  (Meaning 8!)
-// When the engine is switched, those values must be assigned to the 8
-// ParameterKnobs' lcd_function variable.
-
 struct Scalar110 : Module
 {
   dsp::SchmittTrigger drum_pad_triggers[NUMBER_OF_STEPS];
   dsp::SchmittTrigger step_select_triggers[NUMBER_OF_STEPS];
   dsp::SchmittTrigger stepTrigger;
   Track tracks[NUMBER_OF_TRACKS];
-  Track *selected_track;
+  Track *selected_track = NULL;
   unsigned int track_index;
   unsigned int old_track_index = 0;
-  unsigned int engine_index;
   unsigned int old_engine_index = 0;
   unsigned int playback_step = 0;
-  unsigned int lcd_function = 0;
+  unsigned int lcd_page_index = 0;
   bool selected_steps[NUMBER_OF_STEPS];
   unsigned int selected_step = 0;
   unsigned int selected_parameter = 0;
@@ -300,24 +279,23 @@ struct Scalar110 : Module
     selected_parameter = parameter_number;
   }
 
-  void setLCDFunction(unsigned int new_function)
+  void setLCDPage(unsigned int new_page_index)
   {
-    this->lcd_function = new_function;
+    this->lcd_page_index = new_page_index;
   }
 
   // This function may not be needed.  It might be replacable with selectLCDFunctionSelectedParam()
   void selectLCDFunctionOnParameterFocus(unsigned int parameter_number)
   {
     // set the LCD focus based on the selected engine
-    unsigned int lcd_function = this->selected_track->engine->getLCDController(parameter_number);
-    this->setLCDFunction(lcd_function);
+    unsigned int lcd_page_index = this->selected_track->engine->getLCDController(parameter_number);
+    this->setLCDPage(lcd_page_index);
   }
 
   void selectLCDFunctionSelectedParam()
   {
-    unsigned int lcd_function = this->selected_track->engine->getLCDController(this->selected_parameter);
-    this->setLCDFunction(lcd_function);
-    DEBUG("waka waka");
+    unsigned int lcd_page_index = this->selected_track->engine->getLCDController(this->selected_parameter);
+    this->setLCDPage(lcd_page_index);
   }
 
 	void process(const ProcessArgs &args) override
@@ -338,11 +316,11 @@ struct Scalar110 : Module
     // ADD: When engine changes, set default values for engine
     // I may have to add a flag to each engine to say if it's been modified or
     // not and do not load defaults if it has been modified
-    engine_index = params[ENGINE_SELECT_KNOB].getValue();
-    if(engine_index != old_engine_index)
+    unsigned int new_engine_index = params[ENGINE_SELECT_KNOB].getValue();
+    if(new_engine_index != old_engine_index)
     {
-      old_engine_index = engine_index;
-      switchEngine(engine_index);
+      old_engine_index = new_engine_index;
+      switchEngine(new_engine_index);
       engine_switched = true;
     }
 
