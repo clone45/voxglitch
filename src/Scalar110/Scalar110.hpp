@@ -1,6 +1,9 @@
 //
 // Where I left off.
-// - create engine selection display
+//
+// Interesting error: When quicky dragging paramater values, the selected
+// parameter is changing.
+
 // - also alter the parameter adjustment dislplay to show the name of the parameter
 //
 // * shift-click to select multiple steps (maybe not?)
@@ -11,7 +14,7 @@
 // * figure out ratcheting / pattern ratcheting
 // * context aware copy/paste
 // * save and load root_directory so you always start loading samples in the right place
-
+// * add gate sequencing to LCD for speed ?? (but it wouldn't change per parameter)
 
 struct Scalar110 : Module
 {
@@ -95,7 +98,7 @@ struct Scalar110 : Module
     }
 
     // Set default selected track
-    switchTrack(0);
+    setTrack(0);
 
     // Set default parameters
     // loadEngineDefaultParams();
@@ -113,28 +116,21 @@ struct Scalar110 : Module
 
   void toggleStep(unsigned int i)
   {
-    if(selected_step != i) // this will need rewriting once I introduce the ability to select multiple steps
+    if(selected_step != i)
     {
-      selected_step = i;
-      for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
-      {
-        // set the knob positions for the selected step
-        params[ENGINE_PARAMS + parameter_number].setValue(selected_track->getParameter(selected_step, parameter_number));
-      }
+      this->selectStep(i);
     }
+  }
+
+  void setTrack(unsigned int track_index)
+  {
+    selected_track = &tracks[track_index];
+    selectLCDFunctionOnParameterFocus(this->selected_parameter);
   }
 
   void switchTrack(unsigned int track_index)
   {
     selected_track = &tracks[track_index];
-
-    // Set all of the parameter knobs of the selected step to the correct position
-    /*
-    for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
-    {
-      this->setParameterKnobPosition(parameter_number, selected_track->getParameter(selected_step, parameter_number));
-    }
-    */
 
     // Set the selected engine
     // params[ENGINE_SELECT_KNOB].setValue(selected_track->getEngine());
@@ -142,6 +138,10 @@ struct Scalar110 : Module
     if(params[ENGINE_SELECT_KNOB].getValue() != selected_track->getEngine())
     {
       switchEngine(selected_track->getEngine());
+    }
+    else
+    {
+      this->updateParameterKnobs();
     }
 
     // Display the correct LCD display for the selected track
@@ -152,23 +152,25 @@ struct Scalar110 : Module
   {
     // This next line also loads the engine default parameters into the track
     selected_track->setEngine(engine_index);
+    selected_track->copyEngineDefaults();
+    this->updateParameterKnobs();
 
     // Set the engine knob to the right position
     params[ENGINE_SELECT_KNOB].setValue(engine_index);
-
-    // Set all of the parameter knobs of the selected step to the correct position
-    for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
-    {
-      this->setParameterKnobPosition(parameter_number, selected_track->getParameter(selected_step, parameter_number));
-    }
   }
 
-  void refreshKnobs()
+  void selectStep(unsigned int which_step)
+  {
+    this->selected_step = which_step;
+    this->updateParameterKnobs();
+  }
+
+  void updateParameterKnobs()
   {
     // Set all of the parameter knobs of the selected step to the correct position
     for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
     {
-      params[ENGINE_PARAMS + parameter_number].setValue(selected_track->step_params[selected_step].p[parameter_number]);
+      this->setParameterKnobPosition(parameter_number, selected_track->getParameter(selected_step, parameter_number));
     }
   }
 
@@ -274,6 +276,9 @@ struct Scalar110 : Module
     }
 	}
 
+  //
+  // This should be the only way to set the selected parameter
+  //
   void selectParameter(unsigned int parameter_number)
   {
     selected_parameter = parameter_number;
@@ -324,10 +329,10 @@ struct Scalar110 : Module
       engine_switched = true;
     }
 
-
     //
     // Handle drum pads, drum location, and drum selection interactions and lights.
     //
+
     for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
       // Process drum pads
@@ -356,31 +361,40 @@ struct Scalar110 : Module
       lights[STEP_LOCATION_LIGHTS + step_number].setBrightness(playback_step == step_number);
     }
 
+
     //
     // Read all of the parameter knobs and assign them to the selected Track/Step
 
+    // Be careful.  this->selected step can change within the rendering thread
+    // and cause issues within this loop, therefore it's necessary to capture
+    // the value in a local variable and is guaranteed not to change.
+    //
+    // Anothe option is to set a flag on mouse-over in the LCD code and don't
+    // process this code if it's being modulated.  This might be necessary.
+
+
+    unsigned int local_selected_step = this->selected_step;
+
     for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
     {
-      // Let's dive into this next line.
-      // * Selected_track is a pointer to a Track.
-      // * A track contains an array of StepParams, one element for each step
-      // * StepParams is a structure containing an array "p" of 8 floats
-      // So this next line is setting the active playback step to the current
-      // knob positions for the selected track.
-      //
+      // get the knob value
       float new_parameter_value = params[ENGINE_PARAMS + parameter_number].getValue();
-      float current_parameter_value = selected_track->getParameter(selected_step, parameter_number);
+
+      // get the value for the parameter at the selected step,
+      float current_parameter_value = selected_track->getParameter(local_selected_step, parameter_number);
 
       if(new_parameter_value != current_parameter_value)
       {
-        // BUG: This is being called often
-        selected_track->setParameter(selected_step, parameter_number, new_parameter_value);
+        selected_track->setParameter(local_selected_step, parameter_number, new_parameter_value);
 
-        // TODO: we might need to do this for engines as well??
-        if(! track_switched && ! engine_switched) selectParameter(parameter_number);
+        // BUG: THis is being called when a paramter (knob) has changed.  However,
+        // swiping the parameter display should only change a single parameter's
+        // value, so new_parameter_value == current_parameter_value should be true for all parameters except that being modified (see above)
+        if(! track_switched && ! engine_switched) selectParameter(parameter_number); // This is triggering on parameter page swipe
         selectLCDFunctionOnParameterFocus(parameter_number);
       }
     }
+
 
 
     //

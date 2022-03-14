@@ -29,10 +29,6 @@ struct LCDWidget : TransparentWidget
     {
       lcd_pages[lcd_page_index]->module = module;
     }
-    // I only set the lcd_page_params module pointer, not the others
-    // How the other modules ever got a pointer to module is unclear
-
-    // lcd_page_parameter_values.module = module; // HERE'S WHERE THE PROBLEM IS
 
     box.size = Vec(LCD_DISPLAY_WIDTH, LCD_DISPLAY_HEIGHT);
   }
@@ -42,9 +38,6 @@ struct LCDWidget : TransparentWidget
     if(module)
     {
       active_page_index = module->lcd_page_index;
-
-      // I think that this is crashing it
-      // This is crashing IF the engine is set to sample display
       lcd_pages[active_page_index]->draw(args.vg);
     }
 

@@ -1,5 +1,11 @@
 struct EngineKnob : RoundBlackKnob
 {
+  EngineKnob()
+  {
+    minAngle = -0.83*M_PI;
+    maxAngle = -0.50*M_PI;
+  }
+
   void onButton(const event::Button &e) override
   {
     Scalar110 *module = dynamic_cast<Scalar110*>(this->module);

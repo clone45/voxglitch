@@ -22,7 +22,15 @@ struct LCDPageParameterValues : LCDPage
           // drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, getParameter(unsigned int selected_step, unsigned int parameter_number)); // background
 
           // Draw bars for the parameter values
-          bar_color = nvgRGB(156, 167, 185);
+          if(module->selected_step == i)
+          {
+            bar_color = nvgRGB(255, 255, 255);
+          }
+          else
+          {
+            bar_color = nvgRGB(156, 167, 185);
+          }
+
           if(value > 0) drawBar(vg, i, (value * LCD_DISPLAY_HEIGHT), LCD_DISPLAY_HEIGHT, bar_color);
         }
 
@@ -71,7 +79,6 @@ struct LCDPageParameterValues : LCDPage
   {
     if(module)
     {
-
       int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
       int clicked_y = LCD_DISPLAY_HEIGHT - mouse_position.y;
 
@@ -85,7 +92,10 @@ struct LCDPageParameterValues : LCDPage
       module->selected_track->setParameter(step, module->selected_parameter, value);
 
       // If the bar being edited is selected, adjust the knob of the parameter
-      if(step == module->selected_step) module->setParameterKnobPosition(module->selected_parameter, value);
+      // if(step == module->selected_step) module->setParameterKnobPosition(module->selected_parameter, value);
+
+      module->selectStep(step);
+      module->setParameterKnobPosition(module->selected_parameter, value);
 
     }
   }

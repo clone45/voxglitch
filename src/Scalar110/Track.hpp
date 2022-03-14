@@ -111,8 +111,6 @@ struct Track
           break;
       }
       old_engine_index = engine_index;
-
-      copyEngineDefaults();
     }
   }
 
