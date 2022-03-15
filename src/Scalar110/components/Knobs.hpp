@@ -15,11 +15,18 @@ struct EngineKnob : RoundBlackKnob
       if(e.button == GLFW_MOUSE_BUTTON_LEFT)
       {
         if(e.action == GLFW_PRESS) module->setLCDPage(LCD_PAGE_ENGINE);
-        if(e.action == GLFW_RELEASE) module->selectLCDFunctionSelectedParam();
+        // if(e.action == GLFW_RELEASE) this event never happens
       }
 
     }
     RoundBlackKnob::onButton(e);
+  }
+
+  void onDragEnd(const DragEndEvent& e) override
+  {
+    Scalar110 *module = dynamic_cast<Scalar110*>(this->module);
+    if(module && e.button == GLFW_MOUSE_BUTTON_LEFT) module->selectLCDFunctionSelectedParam();
+    RoundBlackKnob::onDragEnd(e);
   }
 
   void onLeave(const LeaveEvent &e) override
@@ -30,6 +37,8 @@ struct EngineKnob : RoundBlackKnob
     {
       module->selectLCDFunctionSelectedParam();
     }
+
+    RoundBlackKnob::onLeave(e);
   }
 
   void onHover(const event::Hover& e) override

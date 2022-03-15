@@ -24,29 +24,28 @@ struct LCDPageEngine : LCDPage
       window_start = 0;
       window_end = NUMBER_OF_ENGINES;
 
-      // if(module->selected_track) // This still seems to crash  << =============================
-      // {
-        for(unsigned int i = 0; i < 3; i++)
+      for(unsigned int i = 0; i < 3; i++)
+      {
+
+        text_to_display = ENGINE_NAMES[i]; // Defined in defines.h
+        text_to_display.resize(22);
+
+        /*
+        if(i == module->selected_track->getEngine())
         {
-
-          text_to_display = ENGINE_NAMES[i]; // Defined in defines.h
-          text_to_display.resize(22);
-          /*
-
-          if(i == module->selected_track->getEngine())
-          {
-            nvgFillColor(vg, nvgRGBA(255, 215, 20, 0xff));
-          }
-          else
-          {
-            nvgFillColor(vg, nvgRGBA(136, 116, 19, 0xff));
-          }
-          */
-          nvgFillColor(vg, nvgRGBA(136, 116, 19, 0xff));
-          nvgText(vg, 0, 6.3 + ((i - window_start) * 16), text_to_display.c_str(), NULL);
-
+          nvgFillColor(vg, nvgRGBA(255, 215, 20, 0xff));
         }
-      // }
+        else
+        {
+          nvgFillColor(vg, nvgRGBA(136, 116, 19, 0xff));
+        }
+        */
+
+        nvgFillColor(vg, nvgRGBA(136, 116, 19, 0xff));
+        nvgText(vg, 0, 6.3 + ((i - window_start) * 16), text_to_display.c_str(), NULL);
+
+      }
+
 		}
     else
     {

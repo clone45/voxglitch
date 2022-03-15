@@ -1,9 +1,7 @@
 //
 // Where I left off.
 //
-// Interesting error: When quicky dragging paramater values, the selected
-// parameter is changing.
-
+// - disable ability to select a parameter not supported by the selected engine
 // - also alter the parameter adjustment dislplay to show the name of the parameter
 //
 // * shift-click to select multiple steps (maybe not?)
