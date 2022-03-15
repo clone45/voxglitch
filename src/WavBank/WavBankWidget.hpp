@@ -18,7 +18,7 @@ struct WavBankWidget : ModuleWidget
     voxglitch_panel->setBackground(svg);
     addChild(voxglitch_panel);
 
-    addParam(createParamCentered<VoxglitchLargeKnob>(mm2px(Vec(16.544, 26.185)), module, WavBank::WAV_KNOB));
+    addParam(createParamCentered<VoxglitchLargeKnob>(Vec(48.800396,77.267914), module, WavBank::WAV_KNOB));
     addParam(createParamCentered<VoxglitchAttenuator>(mm2px(Vec(16.544, 46.09)), module, WavBank::WAV_ATTN_KNOB));
 
 		addParam(createParamCentered<squareToggle>(mm2px(Vec(40.72, 96.12)), module, WavBank::LOOP_SWITCH));

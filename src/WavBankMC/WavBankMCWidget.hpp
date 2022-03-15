@@ -3,11 +3,20 @@ struct WavBankMCWidget : ModuleWidget
 	WavBankMCWidget(WavBankMC* module)
 	{
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/wav_bank_mc_front_panel_v2.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/wav_bank_mc_front_panel_v3.svg")));
 
+    // Load up the background PNG and add it to the panel
+    PNGPanel *png_panel = new PNGPanel("res/wavbank_mc/wavbank_mc_base.png", 101.6, 128.5);
+    addChild(png_panel);
+
+    // Add typography layer
+    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/wavbank_mc/wavbank_mc_typography.svg"));
+    VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
+    voxglitch_panel->setBackground(svg);
+    addChild(voxglitch_panel);
 
 		// Input and label for the trigger input (which is labeled "CLK" on the front panel)
-
+/*
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COL18, ROW7)), module, WavBankMC::WAV_INPUT));
     addParam(createParamCentered<Trimpot>(mm2px(Vec(COL18, ROW10)), module, WavBankMC::WAV_ATTN_KNOB));
 		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(COL18, ROW14)), module, WavBankMC::WAV_KNOB));
@@ -42,17 +51,9 @@ struct WavBankMCWidget : ModuleWidget
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COL24, ROW29)), module, WavBankMC::LEFT_WAV_OUTPUT));
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COL28, ROW29)), module, WavBankMC::RIGHT_WAV_OUTPUT));
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COL28, ROW24)), module, WavBankMC::POLY_WAV_OUTPUT));
+    */
 	}
 
-  // SampleChangeMode on sample change
-  /*
-  struct SampleChangeModeMenuItem : MenuItem {
-    WavBankMC* module;
-    void onAction(const event::Action& e) override {
-      module->sample_change_mode = !(module->sample_change_mode);
-    }
-  };
-  */
 
   struct RestartOption : MenuItem {
     WavBankMC *module;

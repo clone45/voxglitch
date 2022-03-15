@@ -34,7 +34,7 @@ struct roundToggle : VoxglitchSwitch {
   roundToggle() {
     momentary = false;
     addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/round_light_off.svg")));
-    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/round_light6.svg")));
+    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/round_light_switch.svg")));
     box.size = Vec(15.5,15.5);
   }
 

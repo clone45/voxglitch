@@ -4,6 +4,10 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
+#include "Common/components/PNGPanel.hpp"
+#include "Common/components/VoxglitchPorts.hpp"
+#include "Common/components/VoxglitchSwitches.hpp"
+#include "Common/components/VoxglitchPanel.hpp"
 #include "Common/sample_mc.hpp"
 
 #include "WavBankMC/defines.h"

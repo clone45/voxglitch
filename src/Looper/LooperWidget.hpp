@@ -32,7 +32,7 @@ struct LooperWidget : ModuleWidget
 
     // Add custom switch
     // addParam(createParamCentered<roundToggle>(mm2px(Vec(7.55, 11.54)), module, Looper::SWITCH_TEST));
-    addParam(createParamCentered<roundToggle>(Vec(22.493309,34.074802), module, Looper::SWITCH_TEST));
+    addParam(createParamCentered<roundToggle>(Vec(22.393309,33.974804), module, Looper::SWITCH_TEST));
   }
 
   void appendContextMenu(Menu *menu) override
