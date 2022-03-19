@@ -19,7 +19,7 @@ struct WavBankMCReadout : TransparentWidget
   		nvgFontSize(args.vg, 10);
   		nvgFontFaceId(args.vg, font->handle);
   		nvgTextLetterSpacing(args.vg, 0);
-      nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 0xff));
+      // nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 0xff));
     }
 
 		if(module)
@@ -86,11 +86,11 @@ struct WavBankMCReadout : TransparentWidget
 
           if(i == module->selected_sample_slot || (show_hover_effect && hover_row == i))
           {
-            nvgFillColor(args.vg, nvgRGBA(255, 215, 20, 0xff));
+            nvgFillColor(args.vg, nvgRGBA(122, 179, 193, 0xff));
           }
           else
           {
-            nvgFillColor(args.vg, nvgRGBA(136, 116, 19, 0xff));
+            nvgFillColor(args.vg, nvgRGBA(73, 107, 116, 0xff));
           }
 
           nvgText(args.vg, 0, 6.3 + ((i - window_start) * 16), text_to_display.c_str(), NULL);
@@ -131,11 +131,11 @@ struct WavBankMCReadout : TransparentWidget
 
         if(i == 12)
         {
-          nvgFillColor(args.vg, nvgRGBA(255, 215, 20, 0xff));
+          nvgFillColor(args.vg, nvgRGBA(122, 179, 193, 0xff));
         }
         else
         {
-          nvgFillColor(args.vg, nvgRGBA(136, 116, 19, 0xff));
+          nvgFillColor(args.vg, nvgRGBA(73, 107, 116, 0xff));
         }
 
         nvgText(args.vg, 0, 4 + (i * 16), text_to_display.c_str(), NULL);

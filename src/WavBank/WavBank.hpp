@@ -1,3 +1,6 @@
+// TODO:
+// * tooltips for all components
+
 struct WavBank : Module
 {
 	unsigned int selected_sample_slot = 0;
@@ -66,7 +69,7 @@ struct WavBank : Module
 
     // Load trigger input response mode
     json_t* trig_input_response_mode_json = json_object_get(json_root, "trig_input_response_mode");
-    if (trig_input_response_mode_json) trig_input_response_mode = json_integer_value(trig_input_response_mode_json);    
+    if (trig_input_response_mode_json) trig_input_response_mode = json_integer_value(trig_input_response_mode_json);
 	}
 
 	void load_samples_from_path(const char *path)

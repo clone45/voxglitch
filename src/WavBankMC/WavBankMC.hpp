@@ -1,6 +1,8 @@
 //
 // WavBankMC
 //
+// TODO:
+// * tooltips for all components
 
 struct WavBankMC : Module
 {
@@ -12,7 +14,6 @@ struct WavBankMC : Module
   float sample_time = 0;
 	float smooth_ramp[NUMBER_OF_CHANNELS] = {1};
 	float last_output_voltage[NUMBER_OF_CHANNELS] = {0};
-  // unsigned int trig_input_response_mode = TRIGGER;
 	std::string rootDir;
 	std::string path;
 

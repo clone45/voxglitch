@@ -7,7 +7,6 @@ struct WavBankWidget : ModuleWidget
     // Set the background SVG panel.  This should be blank
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/wavbank/wav_bank_panel_container.svg")));
 
-
     // Load up the background PNG and add it to the panel
     PNGPanel *png_panel = new PNGPanel("res/wavbank/wav_bank_base.png", 50.8, 128.5);
     addChild(png_panel);

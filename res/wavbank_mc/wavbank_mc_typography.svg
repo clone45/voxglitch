@@ -7,7 +7,7 @@
    x="0px"
    y="0px"
    width="101.6mm"
-   height="128.5mm" 
+   height="128.5mm"
    viewBox="0 0 288 364.252"
    style="enable-background:new 0 0 288 364.252;"
    xml:space="preserve"
@@ -120,15 +120,16 @@
    inkscape:pageopacity="0.0"
    inkscape:pagecheckerboard="false"
    showgrid="false"
-   inkscape:zoom="16"
-   inkscape:cx="200.625"
-   inkscape:cy="42.5"
+   inkscape:zoom="5.6568543"
+   inkscape:cx="129.57732"
+   inkscape:cy="410.47549"
    inkscape:window-width="3840"
    inkscape:window-height="2066"
    inkscape:window-x="2869"
    inkscape:window-y="-11"
    inkscape:window-maximized="1"
-   inkscape:current-layer="Ebene_1" />
+   inkscape:current-layer="Ebene_1"
+   inkscape:document-units="mm" />
 <style
    type="text/css"
    id="style2">
@@ -733,38 +734,12 @@
    id="path260"
    style="fill:#f3ede7;fill-opacity:1;stroke:none" /><path
    d="M 140.81,347.392 H 19.418 c -1.331,0 -2.41,-1.079 -2.41,-2.41 V 19.412 c 0,-1.331 1.079,-2.41 2.41,-2.41 H 140.81 c 1.331,0 2.41,1.079 2.41,2.41 v 325.57 c 0,1.331 -1.079,2.41 -2.41,2.41"
-   id="path262" /><g
-   id="g272">
-		<defs
-   id="defs265">
-			<path
-   id="SVGID_1_"
-   d="m 143.22,345 c 0,1.331 -1.079,2.41 -2.41,2.41 H 19.418 c -1.331,0 -2.41,-1.079 -2.41,-2.41 v 0.583 c 0,1.331 1.079,2.41 2.41,2.41 H 140.81 c 1.331,0 2.41,-1.079 2.41,-2.41 V 345" />
-		</defs>
-		<clipPath
-   id="SVGID_00000150104751923262811390000005176829405546612141_">
-			<use
-   xlink:href="#SVGID_1_"
-   style="overflow:visible"
-   id="use267"
-   x="0"
-   y="0"
-   width="100%"
-   height="100%" />
-		</clipPath>
-
-			<rect
-   x="17.007999"
-   y="345"
-   style="fill:#ffffff"
-   width="126.212"
-   height="2.994"
-   clip-path="url(#SVGID_00000150104751923262811390000005176829405546612141_)"
-   id="rect270" />
-	</g><path
+   id="path262"
+   style="stroke:none;stroke-opacity:1;fill:#000000;fill-opacity:1" /><path
    class="st3"
    d="M 140.526,345.695 H 19.701 c -0.504,0 -0.912,-0.409 -0.912,-0.913 V 19.744 c 0,-0.504 0.409,-0.912 0.912,-0.912 h 120.825 c 0.504,0 0.912,0.409 0.912,0.912 v 325.039 c 0.001,0.504 -0.408,0.912 -0.912,0.912 z"
-   id="path274" /><polyline
+   id="path274"
+   style="fill:#1c2729;fill-opacity:1;stroke:none" /><polyline
    class="st0"
    points="224.511,75.323 258.756,75.323 258.756,74.823 224.511,74.823  "
    id="polyline276"

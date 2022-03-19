@@ -15,28 +15,53 @@ struct WavBankMCWidget : ModuleWidget
     voxglitch_panel->setBackground(svg);
     addChild(voxglitch_panel);
 
+    addParam(createParamCentered<VoxglitchLargeKnob>(Vec(202.096863,80.255463), module, WavBankMC::WAV_KNOB));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(270.199890,97.450043), module, WavBankMC::WAV_INPUT));
+    // addParam(createParamCentered<Trimpot>(mm2px(Vec(COL18, ROW10)), module, WavBankMC::WAV_ATTN_KNOB));
+
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(179.650024,160.600006), module, WavBankMC::TRIG_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(225.000000,160.600006), module, WavBankMC::NEXT_WAV_TRIGGER_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(270.250000,160.600006), module, WavBankMC::PREV_WAV_TRIGGER_INPUT));
+
+    // TODO: Think of being able to light up the light without pressing the button
+    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(Vec(179.757858,189.357864), module, WavBankMC::TRIG_INPUT_BUTTON_PARAM));
+    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(Vec(225.100021,189.357864), module, WavBankMC::NEXT_WAV_BUTTON_PARAM));
+    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(Vec(270.250000,189.357864), module, WavBankMC::PREV_WAV_BUTTON_PARAM));
+
+
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(179.650055,240.359680), module, WavBankMC::PITCH_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(225.000061,240.248474), module, WavBankMC::VOLUME_INPUT));
+
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(270.199677,240.283936), module, WavBankMC::POLY_WAV_OUTPUT));
+
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(225.000000,349.589600), module, WavBankMC::LEFT_WAV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(270.250549,349.739563), module, WavBankMC::RIGHT_WAV_OUTPUT));
+
+		addParam(createParamCentered<squareToggle>(Vec(173.499985,350.189453), module, WavBankMC::LOOP_SWITCH));
+
+    addParam(createParamCentered<VoxglitchAttenuator>(Vec(270.299652,60.532650), module, WavBankMC::WAV_ATTN_KNOB));
+
+    WavBankMCReadout *readout = new WavBankMCReadout();
+		readout->box.pos = mm2px(Vec(9, 9));
+		readout->box.size = Vec(READOUT_WIDTH, READOUT_HEIGHT); // bounding box of the widget
+		readout->module = module;
+		addChild(readout);
+
+    //
+
 		// Input and label for the trigger input (which is labeled "CLK" on the front panel)
 /*
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COL18, ROW7)), module, WavBankMC::WAV_INPUT));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(COL18, ROW10)), module, WavBankMC::WAV_ATTN_KNOB));
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(COL18, ROW14)), module, WavBankMC::WAV_KNOB));
 
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COL18, ROW19 + 1.0)), module, WavBankMC::PITCH_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COL18, ROW24)), module, WavBankMC::VOLUME_INPUT));
-
 		addParam(createParamCentered<CKSS>(mm2px(Vec(COL18, ROW29)), module, WavBankMC::LOOP_SWITCH));
 
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COL24, ROW7)), module, WavBankMC::TRIG_INPUT));
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(COL28, ROW7)), module, WavBankMC::TRIG_INPUT_BUTTON_PARAM));
-		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(COL28, ROW7)), module, WavBankMC::TRIG_LIGHT));
-
     // Next wav button and input
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COL24, ROW12)), module, WavBankMC::NEXT_WAV_TRIGGER_INPUT));
+
 		addParam(createParamCentered<LEDButton>(mm2px(Vec(COL28, ROW12)), module, WavBankMC::NEXT_WAV_BUTTON_PARAM));
 		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(COL28, ROW12)), module, WavBankMC::NEXT_WAV_LIGHT));
 
     // Prev wav button and input
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COL24, ROW17)), module, WavBankMC::PREV_WAV_TRIGGER_INPUT));
+
 		addParam(createParamCentered<LEDButton>(mm2px(Vec(COL28, ROW17)), module, WavBankMC::PREV_WAV_BUTTON_PARAM));
 		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(COL28, ROW17)), module, WavBankMC::PREV_WAV_LIGHT));
 
@@ -45,12 +70,6 @@ struct WavBankMCWidget : ModuleWidget
 		readout->box.size = Vec(READOUT_WIDTH, READOUT_HEIGHT); // bounding box of the widget
 		readout->module = module;
 		addChild(readout);
-
-		// WAV output
-		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 104)), module, WavBankMC::WAV_LEFT_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COL24, ROW29)), module, WavBankMC::LEFT_WAV_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COL28, ROW29)), module, WavBankMC::RIGHT_WAV_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COL28, ROW24)), module, WavBankMC::POLY_WAV_OUTPUT));
     */
 	}
 
@@ -166,5 +185,17 @@ struct WavBankMCWidget : ModuleWidget
 		menu_item_load_bank_mc->wav_bank_mc_module = module;
 		menu->addChild(menu_item_load_bank_mc);
 	}
+
+  #ifdef DEV_MODE
+    void onHoverKey(const event::HoverKey &e) override
+    {
+      if(e.action == GLFW_PRESS && e.key == GLFW_KEY_P)
+      {
+        std::string debug_string = "mouse at: " + std::to_string(e.pos.x) + "," + std::to_string(e.pos.y);
+        DEBUG(debug_string.c_str());
+      }
+      ModuleWidget::onHoverKey(e);
+    }
+  #endif
 
 };

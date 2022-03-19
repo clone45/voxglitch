@@ -39,12 +39,12 @@ struct BlankPort : VoxglitchPort {
 
 struct VoxglitchInputPort : VoxglitchPort {
 	VoxglitchInputPort() {
-		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/input-port-simplified2.svg")));
+		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/voxglitch_input_port.svg")));
 	}
 };
 
 struct VoxglitchOutputPort : VoxglitchPort {
 	VoxglitchOutputPort() {
-		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/output-port-simplified.svg")));
+		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/voxglitch_output_port.svg")));
 	}
 };

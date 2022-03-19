@@ -18,7 +18,6 @@ struct LooperWidget : ModuleWidget
     addChild(voxglitch_panel);
 
     // Add output jacks
-    // addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(7.55, 103)), module, Looper::AUDIO_OUTPUT_LEFT));
     addOutput(createOutputCentered<VoxglitchOutputPort>(mm2px(Vec(7.58, 103)), module, Looper::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<VoxglitchOutputPort>(mm2px(Vec(7.58, 115.2)), module, Looper::AUDIO_OUTPUT_RIGHT));
 
@@ -32,7 +31,7 @@ struct LooperWidget : ModuleWidget
 
     // Add custom switch
     // addParam(createParamCentered<roundToggle>(mm2px(Vec(7.55, 11.54)), module, Looper::SWITCH_TEST));
-    addParam(createParamCentered<roundToggle>(Vec(22.393309,33.974804), module, Looper::SWITCH_TEST));
+    addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(Vec(22.393309,33.974804), module, Looper::SWITCH_TEST));
   }
 
   void appendContextMenu(Menu *menu) override
