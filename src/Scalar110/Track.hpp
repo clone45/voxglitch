@@ -97,7 +97,8 @@ struct Track
     // engine to the currently selected track.
     if(engine_index != old_engine_index)
     {
-      if(engine != NULL) delete engine;
+      Engine *engine_to_delete = NULL;
+      if(engine != NULL) engine_to_delete = engine;
 
       switch(engine_index) {
         case 0:
@@ -111,7 +112,11 @@ struct Track
           break;
       }
       old_engine_index = engine_index;
+
+      if(engine_to_delete != NULL) delete engine_to_delete;
     }
+
+    // Consider copying engine defaults here instead of wherever it's done now
   }
 
   // Copy the engine default step parameters into the track's memory.

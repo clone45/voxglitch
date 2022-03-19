@@ -30,7 +30,6 @@ struct LCDPageEngine : LCDPage
         text_to_display = ENGINE_NAMES[i]; // Defined in defines.h
         text_to_display.resize(22);
 
-        /*
         if(i == module->selected_track->getEngine())
         {
           nvgFillColor(vg, nvgRGBA(255, 215, 20, 0xff));
@@ -39,9 +38,8 @@ struct LCDPageEngine : LCDPage
         {
           nvgFillColor(vg, nvgRGBA(136, 116, 19, 0xff));
         }
-        */
 
-        nvgFillColor(vg, nvgRGBA(136, 116, 19, 0xff));
+        // nvgFillColor(vg, nvgRGBA(136, 116, 19, 0xff));
         nvgText(vg, 0, 6.3 + ((i - window_start) * 16), text_to_display.c_str(), NULL);
 
       }

@@ -1,11 +1,12 @@
 //
 // Where I left off.
 //
+// - when switching from track 3 to track 2, step parameter values are all set to 0
+//   Maybe this is due to the change in engine?
+//
 // - disable ability to select a parameter not supported by the selected engine
 // - also alter the parameter adjustment dislplay to show the name of the parameter
 //
-// * shift-click to select multiple steps (maybe not?)
-// * when selecting an engine, use LCD to show list
 // * Engine idea: Beat looper
 // * Step selection using shift key
 // * sample pitch controls?
@@ -13,6 +14,7 @@
 // * context aware copy/paste
 // * save and load root_directory so you always start loading samples in the right place
 // * add gate sequencing to LCD for speed ?? (but it wouldn't change per parameter)
+// * ability to name tracks?
 
 struct Scalar110 : Module
 {
@@ -130,17 +132,10 @@ struct Scalar110 : Module
   {
     selected_track = &tracks[track_index];
 
-    // Set the selected engine
-    // params[ENGINE_SELECT_KNOB].setValue(selected_track->getEngine());
+    params[ENGINE_SELECT_KNOB].setValue(selected_track->getEngine());
+    old_engine_index = selected_track->getEngine();
 
-    if(params[ENGINE_SELECT_KNOB].getValue() != selected_track->getEngine())
-    {
-      switchEngine(selected_track->getEngine());
-    }
-    else
-    {
-      this->updateParameterKnobs();
-    }
+    this->updateParameterKnobs();
 
     // Display the correct LCD display for the selected track
     selectLCDFunctionOnParameterFocus(this->selected_parameter);
@@ -319,12 +314,15 @@ struct Scalar110 : Module
     // ADD: When engine changes, set default values for engine
     // I may have to add a flag to each engine to say if it's been modified or
     // not and do not load defaults if it has been modified
-    unsigned int new_engine_index = params[ENGINE_SELECT_KNOB].getValue();
-    if(new_engine_index != old_engine_index)
+    if(! track_switched)
     {
-      old_engine_index = new_engine_index;
-      switchEngine(new_engine_index);
-      engine_switched = true;
+      unsigned int new_engine_index = params[ENGINE_SELECT_KNOB].getValue();
+      if(new_engine_index != old_engine_index)
+      {
+        old_engine_index = new_engine_index;
+        switchEngine(new_engine_index);
+        engine_switched = true;
+      }
     }
 
     //
