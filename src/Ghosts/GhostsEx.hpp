@@ -45,9 +45,7 @@ struct Ghost
         // Wrap if the sample position is past the sample end point
         sample_position = sample_position % this->sample_ptr->size();
 
-        // output_voltage_left  = this->sample_ptr->leftPlayBuffer[sample_position];
-        // output_voltage_right = this->sample_ptr->rightPlayBuffer[sample_position];
-
+        // Read and store the sample value (left and right) at sample_position
         std::tie(output_voltage_left, output_voltage_right) = this->sample_ptr->read((unsigned int) sample_position);
 
         // Smooth out transitions (or passthrough unmodified when not triggered)
@@ -84,10 +82,13 @@ struct Ghost
 
     void markForRemoval()
     {
-        if(marked_for_removal == false) marked_for_removal = true;
+        marked_for_removal = true;
     }
 };
 
+//
+// This structure manages the graveyard and all of the ghosts in the graveyard.
+//
 struct GhostsEx
 {
     std::deque<Ghost> graveyard;
@@ -125,17 +126,6 @@ struct GhostsEx
     {
         Ghost ghost;
 
-        /*
-        if(counter == 0)
-        {
-          counter = 44100;
-          DEBUG(("SS start_position: " + std::to_string(start_position)).c_str());
-        }
-        */
-
-        // DEBUG(("counter: " + std::to_string(counter)).c_str());
-        // counter++;
-
         // Configure it for playback
         ghost.start_position = start_position;
         ghost.playback_length = playback_length;
@@ -152,13 +142,15 @@ struct GhostsEx
     {
         if(nth >= graveyard.size())
         {
-            markAllForRemoval();
-            return;
+          markAllForRemoval();
+          return;
         }
 
         for(unsigned int i=0; i < nth; i++)
         {
-            graveyard[i].markForRemoval();
+          // graveyard[i] is a ghost.  So here we're setting the ghost's
+          // marked_for_removal flag to true.
+          graveyard[i].markForRemoval();
         }
     }
 
@@ -182,7 +174,12 @@ struct GhostsEx
             }
         }
 
+        //
         // perform cleanup of grains ready for removal
+        // This code searches the graveyard (a queue) for ghosts with the "erase_me"
+        // attribute set to TRUE.  Those marked as "erase_me" are removed
+        // from the graveyard.
+        //
         graveyard.erase(std::remove_if(
             graveyard.begin(), graveyard.end(),
                 [](const Ghost& ghost) {

@@ -16,9 +16,9 @@ struct XYDisplay : VoxglitchWidget
 
     for(unsigned int i=0; i<30; i++)
     {
-      int r = 40.0 + (((156.0 - 40.0)/30.0) * i);
-      int g = 40.0 + (((167.0 - 40.0)/30.0) * i);
-      int b = 42.0 + (((185.0 - 42.0)/30.0) * i);
+      int r = 40.0 + (3.866 * i);  // (156.0 - 40.0)/30.0
+      int g = 40.0 + (4.233 * i);  // (167.0 - 40.0)/30.0
+      int b = 42.0 + (4.766 * i);  // (185.0 - 42.0)/30.0
       rectangle_colors[i] = nvgRGB(r, g, b);
     }
   }
@@ -132,29 +132,27 @@ struct XYDisplay : VoxglitchWidget
     e.consume(this);
     this->module->drag_position = this->clampToDrawArea(e.pos);
 
-    if(this->module->get_punch_switch_value() == 0) // Punch recording mode NOT enabled
+    //
+    // Punch recording mode NOT enabled
+    //
+    if(this->module->get_punch_switch_value() == 0)
     {
-      if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
-      {
-        this->module->start_recording();
-      }
+      // Press left Mouse Button to start recording
+      if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) this->module->start_recording();
 
-      if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_RELEASE)
-      {
-        this->module->start_playback();
-      }
+      // Release left mouse button to stop recording and start playback
+      if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_RELEASE) this->module->start_playback();
     }
-    else // Punch recording mode enabled
+    //
+    // Punch recording mode enabled
+    //
+    else
     {
-      if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
-      {
-        this->module->start_punch_recording();
-      }
+      // Press left Mouse Button to start punch recording
+      if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) this->module->start_punch_recording();
 
-      if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_RELEASE)
-      {
-        this->module->continue_playback();
-      }
+      // Release left mouse button to stop recording and continue playback
+      if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_RELEASE) this->module->continue_playback();
     }
   }
 

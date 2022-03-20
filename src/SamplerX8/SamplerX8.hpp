@@ -171,7 +171,9 @@ struct SamplerX8 : Module
     }
 	}
 
-	// Autosave module data.  VCV Rack decides when this should be called.
+  //
+	// Save module data
+  //
 	json_t *dataToJson() override
 	{
 		json_t *root = json_object();
@@ -189,7 +191,9 @@ struct SamplerX8 : Module
 		return root;
 	}
 
+  //
 	// Load module data
+  //
 	void dataFromJson(json_t *root) override
 	{
     for(int i=0; i < NUMBER_OF_SAMPLES; i++)
@@ -233,7 +237,11 @@ struct SamplerX8 : Module
       lights[mute_lights[i]].setBrightness(mute_states[i]);
 
 
+      //
       // Send audio to outputs
+      //
+
+      // Get stereo outputs from the sample player
       std::tie(left_audio, right_audio) = sample_players[i].getStereoOutput();
 
       // Apply volume knobs
@@ -254,7 +262,8 @@ struct SamplerX8 : Module
         summed_output_right += right_audio;
       }
 
-      // Step samples
+      // Step samples.  "Stepping" means to increment the playback position by a
+      // very small amount based on the selected sample rate in rack.
       sample_players[i].step(args.sampleRate);
     }
 

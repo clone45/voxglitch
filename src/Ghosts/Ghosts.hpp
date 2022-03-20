@@ -1,3 +1,10 @@
+//
+// Ghosts
+//
+// by Voxglitch
+// Bret Truchan
+//
+
 struct Ghosts : Module
 {
 	float spawn_rate_counter = 0;
@@ -7,6 +14,7 @@ struct Ghosts : Module
 	int step = 0;
 	std::string root_dir;
 	std::string path;
+
 
 	GhostsEx graveyard;
 	Sample sample;
@@ -111,6 +119,7 @@ struct Ghosts : Module
 
 	void process(const ProcessArgs &args) override
 	{
+    // Read knobs
 		float spawn_rate = calculate_inputs(GHOST_SPAWN_RATE_INPUT, GHOST_SPAWN_RATE_KNOB, GHOST_SPAWN_RATE_ATTN_KNOB, 4) + 1;
 		float playback_length = calculate_inputs(GHOST_PLAYBACK_LENGTH_INPUT, GHOST_PLAYBACK_LENGTH_KNOB, GHOST_PLAYBACK_LENGTH_ATTN_KNOB, (args.sampleRate / 16));
 		float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, sample.size());
@@ -123,8 +132,6 @@ struct Ghosts : Module
 		// Shorten the playback length if it would result in playback passing the end of the sample data.
 		if(playback_length > (sample.size() - start_position)) playback_length = sample.size() - start_position;
 
-
-
 		//
 		// This next conditional is a little tricky, so let me break it down...
 		//   If there's a cable in the Jitter CV Input, then apply jitter if the signal on that cable is greater than 0
@@ -132,8 +139,7 @@ struct Ghosts : Module
 		//
 		// Additional Notes
 		// * The jitter switch is ignored if a cable is connected to the jitter CV input.
-		// * I'm not sure if (inputs[JITTER_CV_INPUT].getVoltage() > 0) is the proper way to
-		//   check if the voltage is "on", or if I should us 0.5 or some other number?
+
 
 		if(inputs[JITTER_CV_INPUT].isConnected() ? (inputs[JITTER_CV_INPUT].getVoltage() > 0) : params[JITTER_SWITCH].getValue())
 		{
