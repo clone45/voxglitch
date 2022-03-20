@@ -5,27 +5,28 @@ struct Track
 {
   bool steps[NUMBER_OF_STEPS] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
   unsigned int playback_position = 0;
-  Engine *engine = new Foo();
-  unsigned int engine_index = 0; // must exist to save/load engine selection
-  unsigned int old_engine_index = 0;
-  StepParams step_params[NUMBER_OF_STEPS];
-  StepParams default_step_params;
-  unsigned int track_number = 0;
+  SamplePlaybackSettings sample_playback_settings[NUMBER_OF_STEPS];
+
+  std::string loaded_filename = "";
+  SamplePlayer sample_player;
 
   Track()
   {
-    copyEngineDefaults();
+
   }
 
   void step()
   {
     playback_position = (playback_position + 1) % NUMBER_OF_STEPS;
 
-    if(playback_position == 0) engine->reset();
+    //
+    // TODO: possibly send over a pointer to ALL of the step parameters
+    //       and copy them locally in the sample_player?
 
     if (steps[playback_position])
     {
-      engine->trigger(& step_params[playback_position]);
+      // trigger sample playback
+      sample_player.trigger(this->sample_playback_settings[playback_position].offset);
     }
   }
 
@@ -33,33 +34,6 @@ struct Track
   {
     return(playback_position);
   }
-
-  StepParams *getParameters(unsigned int selected_step)
-  {
-    return(& this->step_params[selected_step]);
-  }
-
-  float getParameter(unsigned int selected_step, unsigned int parameter_number)
-  {
-    return(this->step_params[selected_step].p[parameter_number]);
-  }
-
-  void setParameter(unsigned int selected_step, unsigned int parameter_number, float value)
-  {
-    this->step_params[selected_step].p[parameter_number] = value;
-  }
-
-  float getDefaultParameter(unsigned int parameter_number)
-  {
-    return(default_step_params.p[parameter_number]);
-  }
-
-  /*
-  void setDefaultParameter(unsigned int parameter_number, float value)
-  {
-    this->default_step_params.p[parameter_number] = value;
-  }
-  */
 
   void setPosition(unsigned int playback_position)
   {
@@ -89,65 +63,24 @@ struct Track
     playback_position = 0;
   }
 
-  void setEngine(unsigned int engine_index)
-  {
-    this->engine_index = engine_index;
-
-    // If the engine selection has changed, then assign the newly selected
-    // engine to the currently selected track.
-    if(engine_index != old_engine_index)
-    {
-      Engine *engine_to_delete = NULL;
-      if(engine != NULL) engine_to_delete = engine;
-
-      switch(engine_index) {
-        case 0:
-          engine = new Foo(); // Equation player
-          break;
-        case 1:
-          engine = new LowDrums(); // 8-bit drums
-          break;
-        case 2:
-          engine = new Sampler(track_number); // Sample player
-          break;
-      }
-      old_engine_index = engine_index;
-
-      if(engine_to_delete != NULL) delete engine_to_delete;
-    }
-
-    // Consider copying engine defaults here instead of wherever it's done now
-  }
-
-  // Copy the engine default step parameters into the track's memory.
-  // When the user swiches tracks, the default step parameters will be
-  // restored to where the user left them.
-  void copyEngineDefaults()
-  {
-    StepParams *engine_default_parameters = engine->getDefaultParams();
-
-    for(unsigned int step_number=0; step_number<NUMBER_OF_STEPS; step_number++)
-    {
-      for(unsigned int parameter_number=0; parameter_number<NUMBER_OF_PARAMETERS; parameter_number++)
-      {
-        // setParameter(unsigned int selected_step, unsigned int parameter_number, float value)
-        this->setParameter(step_number, parameter_number, engine_default_parameters->p[parameter_number]);
-      }
-    }
-  }
-
-  unsigned int getEngine()
-  {
-    return this->engine_index;
-  }
-
-  std::pair<float, float> process()
+  std::pair<float, float> getStereoOutput()
   {
     float left_output;
     float right_output;
 
-    std::tie(left_output, right_output) = this->engine->process();
+    // Read sample output and return
+    std::tie(left_output, right_output) = this->sample_player.getStereoOutput();
     return { left_output, right_output };
+  }
+
+  void setOffset(unsigned int selected_step, float offset)
+  {
+    this->sample_playback_settings[selected_step].offset = offset;
+  }
+
+  float getOffset(unsigned int selected_step)
+  {
+    return(this->sample_playback_settings[selected_step].offset);
   }
 
 };

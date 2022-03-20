@@ -13,30 +13,17 @@ using namespace scalar_110;
 // Sample players and such
 #include "Common/sample.hpp"
 #include "Common/common.hpp"
-#include "Scalar110/SamplePtrPlayer.hpp"
-#include "Scalar110/SampleBank.hpp"
-
-
 
 // Core components
-#include "Scalar110/StepParams.hpp"
-#include "Scalar110/Engine.hpp"
-#include "Scalar110/engines/Foo.hpp"
-#include "Scalar110/engines/LowDrums.hpp"
-#include "Scalar110/engines/Sampler.hpp"
+#include "Scalar110/SamplePlayer.hpp"
+#include "Scalar110/SamplePlaybackSettings.hpp"
 #include "Scalar110/Track.hpp"
-
 #include "Scalar110/Scalar110.hpp"
 
-// Custom widgets and displays
-#include "Scalar110/components/Knobs.hpp"
-#include "Scalar110/LabelDisplay.hpp"
-#include "Scalar110/FolderSelect.hpp"
 
 // #include "Scalar110/FileSelectWidget.hpp"
 // #include "Scalar110/ParamEditorDisplay.hpp"
-
-#include "Scalar110/LCDDisplay/LCDWidget.hpp"
+// #include "Scalar110/LCDDisplay/LCDWidget.hpp"
 #include "Scalar110/Scalar110Widget.hpp"
 
 Model* modelScalar110 = createModel<Scalar110, Scalar110Widget>("scalar110");

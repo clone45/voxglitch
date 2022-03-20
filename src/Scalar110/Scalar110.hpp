@@ -1,13 +1,9 @@
 //
 // Where I left off.
 //
-// - when switching from track 3 to track 2, step parameter values are all set to 0
-//   Maybe this is due to the change in engine?
+// - bring parameter meaning to the sample players
 //
-// - disable ability to select a parameter not supported by the selected engine
-// - also alter the parameter adjustment dislplay to show the name of the parameter
-//
-// * Engine idea: Beat looper
+// *
 // * Step selection using shift key
 // * sample pitch controls?
 // * figure out ratcheting / pattern ratcheting
@@ -25,29 +21,28 @@ struct Scalar110 : Module
   Track *selected_track = NULL;
   unsigned int track_index;
   unsigned int old_track_index = 0;
-  unsigned int old_engine_index = 0;
   unsigned int playback_step = 0;
-  unsigned int lcd_page_index = 0;
-  bool selected_steps[NUMBER_OF_STEPS];
   unsigned int selected_step = 0;
   unsigned int selected_parameter = 0;
   float left_output;
   float right_output;
   float track_left_output;
   float track_right_output;
-  SampleBank& sample_bank = SampleBank::get_instance();
-  StepParams default_params;
+  // StepParams default_params;
 
   // Sample related variables
   std::string root_directory;
 	std::string path;
 
+
   enum ParamIds {
     ENUMS(DRUM_PADS, NUMBER_OF_STEPS),
     ENUMS(STEP_SELECT_BUTTONS, NUMBER_OF_STEPS),
-    ENUMS(ENGINE_PARAMS, NUMBER_OF_PARAMETERS),
+    SAMPLE_OFFSET_KNOB,
+    SAMPLE_VOLUME_KNOB,
+    SAMPLE_PAN_KNOB,
     TRACK_SELECT_KNOB,
-    ENGINE_SELECT_KNOB,
+    // ENGINE_SELECT_KNOB,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -74,28 +69,22 @@ struct Scalar110 : Module
     {
       configParam(DRUM_PADS + i, 0.0, 1.0, 0.0, "drum_button_" + std::to_string(i));
       configParam(STEP_SELECT_BUTTONS + i, 0.0, 1.0, 0.0, "selected_step_" + std::to_string(i));
-      selected_steps[i] = false;
+      // selected_steps[i] = false;
     }
 
-    for(unsigned int i=0; i < NUMBER_OF_PARAMETERS; i++)
-    {
-      configParam(ENGINE_PARAMS + i, 0.0, 1.0, 0.0, "engine_parameter_" + std::to_string(i));
-    }
+    configParam(SAMPLE_OFFSET_KNOB, 0.0, 1.0, 0.0,"sample_offset");
+    configParam(SAMPLE_VOLUME_KNOB, 0.0, 1.0, 0.0,"sample_volume");
+    configParam(SAMPLE_PAN_KNOB, 0.0, 1.0, 0.0,"sample_pan");
+
 
     // Configure track knob
     configParam(TRACK_SELECT_KNOB, 0.0, NUMBER_OF_TRACKS - 1, 0.0, "Track");
     paramQuantities[TRACK_SELECT_KNOB]->snapEnabled = true;
 
     // Configure engine selection knob (to be replaced with menu?)
-    configParam(ENGINE_SELECT_KNOB, 0.0, (NUMBER_OF_ENGINES - 1), 0.0, "Engine");
-    paramQuantities[ENGINE_SELECT_KNOB]->snapEnabled = true;
+    // configParam(ENGINE_SELECT_KNOB, 0.0, (NUMBER_OF_ENGINES - 1), 0.0, "Engine");
+    // paramQuantities[ENGINE_SELECT_KNOB]->snapEnabled = true;
 
-    // Each track knows its own track number, which never changes once
-    // the module is loaded.  Tracks are permanent.
-    for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
-    {
-      tracks[i].track_number = i;
-    }
 
     // Set default selected track
     setTrack(0);
@@ -103,16 +92,6 @@ struct Scalar110 : Module
     // Set default parameters
     // loadEngineDefaultParams();
 	}
-
-  void setParameterKnobPosition(unsigned int parameter_number, float position)
-  {
-    params[ENGINE_PARAMS + parameter_number].setValue(position);
-  }
-
-  void setDefaultParameter(unsigned int parameter_number, float value)
-  {
-    this->default_params.p[parameter_number] = value;
-  }
 
   void toggleStep(unsigned int i)
   {
@@ -125,51 +104,32 @@ struct Scalar110 : Module
   void setTrack(unsigned int track_index)
   {
     selected_track = &tracks[track_index];
-    selectLCDFunctionOnParameterFocus(this->selected_parameter);
+    // selectLCDFunctionOnParameterFocus(this->selected_parameter);
   }
 
   void switchTrack(unsigned int track_index)
   {
     selected_track = &tracks[track_index];
 
-    params[ENGINE_SELECT_KNOB].setValue(selected_track->getEngine());
-    old_engine_index = selected_track->getEngine();
+    // params[ENGINE_SELECT_KNOB].setValue(selected_track->getEngine());
+    // old_engine_index = selected_track->getEngine();
 
-    this->updateParameterKnobs();
+    // this->updateParameterKnobs();
 
     // Display the correct LCD display for the selected track
-    selectLCDFunctionOnParameterFocus(this->selected_parameter);
-  }
-
-  void switchEngine(unsigned int engine_index)
-  {
-    // This next line also loads the engine default parameters into the track
-    selected_track->setEngine(engine_index);
-    selected_track->copyEngineDefaults();
-    this->updateParameterKnobs();
-
-    // Set the engine knob to the right position
-    params[ENGINE_SELECT_KNOB].setValue(engine_index);
+    // selectLCDFunctionOnParameterFocus(this->selected_parameter);
   }
 
   void selectStep(unsigned int which_step)
   {
     this->selected_step = which_step;
-    this->updateParameterKnobs();
-  }
-
-  void updateParameterKnobs()
-  {
-    // Set all of the parameter knobs of the selected step to the correct position
-    for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
-    {
-      this->setParameterKnobPosition(parameter_number, selected_track->getParameter(selected_step, parameter_number));
-    }
+    // this->updateParameterKnobs();
   }
 
 
 
 	// Autosave module data.  VCV Rack decides when this should be called.
+  /*
 	json_t *dataToJson() override
 	{
 		json_t *json_root = json_object();
@@ -204,27 +164,28 @@ struct Scalar110 : Module
       json_t *track_data = json_object();
 
       json_object_set(track_data, "steps", steps_json_array);
-      json_object_set(track_data, "engine", json_integer(this->tracks[track_number].getEngine()));
+      // json_object_set(track_data, "engine", json_integer(this->tracks[track_number].getEngine()));
       json_array_append_new(tracks_json_array, track_data);
     }
     json_object_set(json_root, "tracks", tracks_json_array);
     json_decref(tracks_json_array);
 
     // Save path of the sample bank
-    json_object_set_new(json_root, "path", json_string(this->sample_bank.path.c_str()));
+    // json_object_set_new(json_root, "path", json_string(this->sample_bank.path.c_str()));
 
 		return json_root;
 	}
-
+  */
 	// Load module data
 	void dataFromJson(json_t *json_root) override
 	{
     // Load files in sample_bank
-    json_t *loaded_path_json = json_object_get(json_root, ("path"));
-		if (loaded_path_json)
-		{
-			sample_bank.loadSamplesFromPath(json_string_value(loaded_path_json));
-		}
+
+    //json_t *loaded_path_json = json_object_get(json_root, ("path"));
+		//if (loaded_path_json)
+		//{
+		//	sample_bank.loadSamplesFromPath(json_string_value(loaded_path_json));
+		//}
 
     //
     // Load all track data
@@ -244,7 +205,7 @@ struct Scalar110 : Module
       json_array_foreach(tracks_arrays_data, track_index, json_track_object)
       {
         json_t *steps_json_array = json_object_get(json_track_object, "steps");
-        this->tracks[track_index].setEngine(json_integer_value(json_object_get(json_track_object, "engine")));
+        // this->tracks[track_index].setEngine(json_integer_value(json_object_get(json_track_object, "engine")));
 
         if(steps_json_array)
         {
@@ -261,7 +222,7 @@ struct Scalar110 : Module
             {
               float parameter_value = json_real_value(parameter_array_data);
               // DEBUG(std::to_string(parameter_value).c_str());
-              this->tracks[track_index].setParameter(step_index, parameter_index, parameter_value);
+              // this->tracks[track_index].setParameter(step_index, parameter_index, parameter_value);
             }
           }
         }
@@ -269,37 +230,21 @@ struct Scalar110 : Module
     }
 	}
 
+
   //
   // This should be the only way to set the selected parameter
   //
+  /*
   void selectParameter(unsigned int parameter_number)
   {
     selected_parameter = parameter_number;
   }
+  */
 
-  void setLCDPage(unsigned int new_page_index)
-  {
-    this->lcd_page_index = new_page_index;
-  }
-
-  // This function may not be needed.  It might be replacable with selectLCDFunctionSelectedParam()
-  void selectLCDFunctionOnParameterFocus(unsigned int parameter_number)
-  {
-    // set the LCD focus based on the selected engine
-    unsigned int lcd_page_index = this->selected_track->engine->getLCDController(parameter_number);
-    this->setLCDPage(lcd_page_index);
-  }
-
-  void selectLCDFunctionSelectedParam()
-  {
-    unsigned int lcd_page_index = this->selected_track->engine->getLCDController(this->selected_parameter);
-    this->setLCDPage(lcd_page_index);
-  }
 
 	void process(const ProcessArgs &args) override
 	{
     bool track_switched = false;
-    bool engine_switched = false;
 
     // selected_track = &tracks[(int) params[TRACK_SELECT_KNOB].getValue()];
     track_index = params[TRACK_SELECT_KNOB].getValue();
@@ -308,21 +253,6 @@ struct Scalar110 : Module
       old_track_index = track_index;
       switchTrack(track_index);
       track_switched = true;
-    }
-
-    // Read the engine selection knob
-    // ADD: When engine changes, set default values for engine
-    // I may have to add a flag to each engine to say if it's been modified or
-    // not and do not load defaults if it has been modified
-    if(! track_switched)
-    {
-      unsigned int new_engine_index = params[ENGINE_SELECT_KNOB].getValue();
-      if(new_engine_index != old_engine_index)
-      {
-        old_engine_index = new_engine_index;
-        switchEngine(new_engine_index);
-        engine_switched = true;
-      }
     }
 
     //
@@ -344,7 +274,11 @@ struct Scalar110 : Module
       // Process step select triggers.
       if(step_select_triggers[step_number].process(params[STEP_SELECT_BUTTONS + step_number].getValue()))
       {
-        toggleStep(step_number);
+        // toggleStep(step_number);
+        selected_step = step_number;
+
+        // Adjust knob positions
+        params[SAMPLE_OFFSET_KNOB].setValue(selected_track->getOffset(selected_step));
       }
 
       // Light up drum pads
@@ -369,12 +303,13 @@ struct Scalar110 : Module
     // process this code if it's being modulated.  This might be necessary.
 
 
-    unsigned int local_selected_step = this->selected_step;
+    // unsigned int local_selected_step = this->selected_step;
 
+    /*
     for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
     {
       // get the knob value
-      float new_parameter_value = params[ENGINE_PARAMS + parameter_number].getValue();
+      float new_parameter_value = params[STEP_PARAMS + parameter_number].getValue();
 
       // get the value for the parameter at the selected step,
       float current_parameter_value = selected_track->getParameter(local_selected_step, parameter_number);
@@ -386,24 +321,27 @@ struct Scalar110 : Module
         // BUG: THis is being called when a paramter (knob) has changed.  However,
         // swiping the parameter display should only change a single parameter's
         // value, so new_parameter_value == current_parameter_value should be true for all parameters except that being modified (see above)
-        if(! track_switched && ! engine_switched) selectParameter(parameter_number); // This is triggering on parameter page swipe
-        selectLCDFunctionOnParameterFocus(parameter_number);
+        if(! track_switched) selectParameter(parameter_number); // This is triggering on parameter page swipe
+        // selectLCDFunctionOnParameterFocus(parameter_number);
       }
     }
+    */
 
+    selected_track->setOffset(selected_step, params[SAMPLE_OFFSET_KNOB].getValue());
 
 
     //
-    // compute output
+    // compute output and step the sample playback position
     // The return result from tne engine should be -5v to 5v
     left_output = 0;
     right_output = 0;
 
     for(unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
-      std::tie(track_left_output, track_right_output) = tracks[i].process();
+      std::tie(track_left_output, track_right_output) = tracks[i].getStereoOutput();
       left_output += track_left_output;
       right_output += track_right_output;
+      tracks[i].sample_player.step(args.sampleRate);
     }
 
     // Output voltages at stereo outputs
@@ -424,6 +362,6 @@ struct Scalar110 : Module
     }
 
     // step all sample players
-    sample_bank.step(args.sampleRate);
+    // sample_bank.step(args.sampleRate);
   }
 };

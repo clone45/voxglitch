@@ -1,5 +1,68 @@
 #include <componentlibrary.hpp>
 
+struct LoadSamplesFromFolderMenuItem : MenuItem
+{
+	Scalar110 *module;
+	unsigned int sample_number = 0;
+  std::string root_dir;
+
+	void onAction(const event::Action &e) override
+	{
+		const std::string dir = root_dir.empty() ? "" : root_dir;
+    char *path = osdialog_file(OSDIALOG_OPEN_DIR, dir.c_str(), NULL, NULL);
+
+		if (path)
+		{
+      root_dir = std::string(path);
+
+      std::vector<std::string> dirList = system::getEntries(path);
+
+      unsigned int i = 0;
+
+  		for (auto entry : dirList)
+  		{
+  			if (
+          // Something happened in Rack 2 where the extension started to include
+          // the ".", so I decided to check for both versions, just in case.
+          (rack::string::lowercase(system::getExtension(entry)) == "wav") ||
+          (rack::string::lowercase(system::getExtension(entry)) == ".wav")
+        )
+  			{
+          if(i < 6)
+          {
+            module->tracks[i].sample_player.loadSample(std::string(entry));
+            // loaded_filename = module->tracks[i].sampler_player..getFilename();
+            i++;
+          }
+  			}
+  		}
+		}
+
+    free(path);
+	}
+};
+
+struct LoadSampleMenuItem : MenuItem
+{
+	Scalar110 *module;
+	unsigned int sample_number = 0;
+  std::string root_dir;
+
+	void onAction(const event::Action &e) override
+	{
+		const std::string dir = root_dir.empty() ? "" : root_dir;
+		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("WAV:wav:Wav"));
+
+		if (path)
+		{
+      root_dir = std::string(path);
+			module->tracks[sample_number].sample_player.loadSample(std::string(path));
+      // module->loaded_filenames[sample_number] = module->sample_players[sample_number].getFilename();
+			free(path);
+		}
+	}
+};
+
 struct Scalar110Widget : ModuleWidget
 {
   Scalar110Widget(Scalar110* module)
@@ -23,24 +86,26 @@ struct Scalar110Widget : ModuleWidget
     }
 
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(50,50)), module, Scalar110::TRACK_SELECT_KNOB));
-    addParam(createParamCentered<EngineKnob>(mm2px(Vec(50,80)), module, Scalar110::ENGINE_SELECT_KNOB));
+    // addParam(createParamCentered<EngineKnob>(mm2px(Vec(50,80)), module, Scalar110::ENGINE_SELECT_KNOB));
 
 
-    float offset = 120;
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(120 + (0 * 20),50)), module, Scalar110::SAMPLE_OFFSET_KNOB));
 
+    /*
     for(unsigned int i=0; i<4; i++)
     {
-      ParameterKnob* parameter_knob = createParamCentered<ParameterKnob>(mm2px(Vec(offset + (i * 20),50)), module, Scalar110::ENGINE_PARAMS + i);
+      ParameterKnob* parameter_knob = createParamCentered<ParameterKnob>(mm2px(Vec(offset + (i * 20),50)), module, Scalar110::STEP_PARAMS + i);
   		parameter_knob->parameter_number = i;
   		addParam(parameter_knob);
     }
 
     for(unsigned int i=4; i<8; i++)
     {
-      ParameterKnob* parameter_knob = createParamCentered<ParameterKnob>(mm2px(Vec(offset + ((i-4) * 20),70)), module, Scalar110::ENGINE_PARAMS + i);
+      ParameterKnob* parameter_knob = createParamCentered<ParameterKnob>(mm2px(Vec(offset + ((i-4) * 20),70)), module, Scalar110::STEP_PARAMS + i);
   		parameter_knob->parameter_number = i;
   		addParam(parameter_knob);
     }
+    */
 
     /*
     ParameterKnob* parameter_knob_1 = createParamCentered<ParameterKnob>(mm2px(Vec(offset + 20,50)), module, Scalar110::ENGINE_PARAMS + 1);
@@ -59,22 +124,13 @@ struct Scalar110Widget : ModuleWidget
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(210, 114.702)), module, Scalar110::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(220, 114.702)), module, Scalar110::AUDIO_OUTPUT_RIGHT));
 
-    for(unsigned int i=0; i<NUMBER_OF_PARAMETERS; i++)
-    {
-      float x_position = 110.2 + ((i%4) * 20);
-      float y_position = 37 + ((i/4) * 20);
 
-      LabelDisplay *label_display = new LabelDisplay(i);
-      label_display->box.pos = mm2px(Vec(x_position, y_position));;
-      label_display->module = module;
-      addChild(label_display);
-    }
-
-
+    /*
       LCDWidget *lcd_widget = new LCDWidget(module);
       // lcd_widget->module = module;
       lcd_widget->box.pos = mm2px(Vec(LCD_DISPLAY_X, LCD_DISPLAY_Y));
       addChild(lcd_widget);
+      */
 
       /*
     FileSelectWidget *file_select_widget = new FileSelectWidget();
@@ -90,10 +146,32 @@ struct Scalar110Widget : ModuleWidget
     Scalar110 *module = dynamic_cast<Scalar110*>(this->module);
     assert(module);
 
-    FolderSelect *folder_select = new FolderSelect();
-    folder_select->text = "Load samples from folder";
-    folder_select->module = module;
-    menu->addChild(folder_select);
+    menu->addChild(new MenuEntry); // For spacing only
+    menu->addChild(createMenuLabel("Load individual samples"));
+
+
+    //
+    // Add the sample slots to the right-click context menu
+    //
+
+    for(int i=0; i < NUMBER_OF_TRACKS; i++)
+    {
+      LoadSampleMenuItem *menu_item_load_sample = new LoadSampleMenuItem();
+      menu_item_load_sample->sample_number = i;
+      menu_item_load_sample->text = std::to_string(i+1) + ": " + module->tracks[i].sample_player.getFilename();
+      menu_item_load_sample->module = module;
+      menu->addChild(menu_item_load_sample);
+    }
+
+    // Add spacer
+    menu->addChild(new MenuEntry); // For spacing only
+    menu->addChild(createMenuLabel("Or.."));
+
+    // Add menu item for loading samples from a folder
+    LoadSamplesFromFolderMenuItem *menu_item_load_folder = new LoadSamplesFromFolderMenuItem();
+    menu_item_load_folder->text = "Load first 8 WAV files from a folder";
+    menu_item_load_folder->module = module;
+    menu->addChild(menu_item_load_folder);
   }
 
 };
