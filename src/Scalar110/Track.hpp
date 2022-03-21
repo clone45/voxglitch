@@ -6,12 +6,13 @@ struct Track
   bool steps[NUMBER_OF_STEPS] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
   unsigned int playback_position = 0;
   SamplePlaybackSettings sample_playback_settings[NUMBER_OF_STEPS];
+  float volume = .5;
 
   SamplePlayer sample_player;
 
   Track()
   {
-
+    volume = getVolume(playback_position);
   }
 
   void step()
@@ -25,6 +26,7 @@ struct Track
     if (steps[playback_position])
     {
       // trigger sample playback
+      volume = getVolume(playback_position);
       sample_player.trigger(this->sample_playback_settings[playback_position].offset);
     }
   }
@@ -69,6 +71,12 @@ struct Track
 
     // Read sample output and return
     std::tie(left_output, right_output) = this->sample_player.getStereoOutput();
+
+
+
+    left_output *= (volume * 2);  // Range from 0 to 2 times normal volume
+    right_output *= (volume * 2);  // Range from 0 to 2 times normal volume
+
     return { left_output, right_output };
   }
 

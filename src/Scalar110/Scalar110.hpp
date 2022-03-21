@@ -86,6 +86,7 @@ struct Scalar110 : Module
   void updateKnobPositions()
   {
     params[SAMPLE_OFFSET_KNOB].setValue(selected_track->getOffset(selected_step));
+    params[SAMPLE_VOLUME_KNOB].setValue(selected_track->getVolume(selected_step));
   }
 
   //
@@ -177,10 +178,13 @@ struct Scalar110 : Module
 
             json_t *offset_json = json_object_get(json_step_object, "offset");
             if(offset_json) this->tracks[track_index].setOffset(step_index, json_real_value(offset_json));
+
+            json_t *volume_json = json_object_get(json_step_object, "volume");
+            if(volume_json) this->tracks[track_index].setVolume(step_index, json_real_value(volume_json));
           }
         }
 
-        json_t *sample_filename_json = json_object_get(json_track_object, "sample_filename");
+        // json_t *sample_filename_json = json_object_get(json_track_object, "sample_filename");
         json_t *sample_path_json = json_object_get(json_track_object, "sample_path");
 
         if(sample_path_json)
@@ -240,7 +244,9 @@ struct Scalar110 : Module
       lights[STEP_LOCATION_LIGHTS + step_number].setBrightness(playback_step == step_number);
     }
 
+
     selected_track->setOffset(selected_step, params[SAMPLE_OFFSET_KNOB].getValue());
+    selected_track->setVolume(selected_step, params[SAMPLE_VOLUME_KNOB].getValue());
 
 
     //
