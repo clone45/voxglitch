@@ -28,7 +28,6 @@ struct Scalar110 : Module
   float right_output;
   float track_left_output;
   float track_right_output;
-  // StepParams default_params;
 
   // Sample related variables
   std::string root_directory;
@@ -69,67 +68,29 @@ struct Scalar110 : Module
     {
       configParam(DRUM_PADS + i, 0.0, 1.0, 0.0, "drum_button_" + std::to_string(i));
       configParam(STEP_SELECT_BUTTONS + i, 0.0, 1.0, 0.0, "selected_step_" + std::to_string(i));
-      // selected_steps[i] = false;
     }
 
     configParam(SAMPLE_OFFSET_KNOB, 0.0, 1.0, 0.0,"sample_offset");
     configParam(SAMPLE_VOLUME_KNOB, 0.0, 1.0, 0.0,"sample_volume");
     configParam(SAMPLE_PAN_KNOB, 0.0, 1.0, 0.0,"sample_pan");
 
-
     // Configure track knob
     configParam(TRACK_SELECT_KNOB, 0.0, NUMBER_OF_TRACKS - 1, 0.0, "Track");
     paramQuantities[TRACK_SELECT_KNOB]->snapEnabled = true;
 
-    // Configure engine selection knob (to be replaced with menu?)
-    // configParam(ENGINE_SELECT_KNOB, 0.0, (NUMBER_OF_ENGINES - 1), 0.0, "Engine");
-    // paramQuantities[ENGINE_SELECT_KNOB]->snapEnabled = true;
-
-
     // Set default selected track
-    setTrack(0);
+    selected_track = &tracks[track_index];
 
-    // Set default parameters
-    // loadEngineDefaultParams();
 	}
 
-  void toggleStep(unsigned int i)
+
+  void updateKnobPositions()
   {
-    if(selected_step != i)
-    {
-      this->selectStep(i);
-    }
+    params[SAMPLE_OFFSET_KNOB].setValue(selected_track->getOffset(selected_step));
   }
-
-  void setTrack(unsigned int track_index)
-  {
-    selected_track = &tracks[track_index];
-    // selectLCDFunctionOnParameterFocus(this->selected_parameter);
-  }
-
-  void switchTrack(unsigned int track_index)
-  {
-    selected_track = &tracks[track_index];
-
-    // params[ENGINE_SELECT_KNOB].setValue(selected_track->getEngine());
-    // old_engine_index = selected_track->getEngine();
-
-    // this->updateParameterKnobs();
-
-    // Display the correct LCD display for the selected track
-    // selectLCDFunctionOnParameterFocus(this->selected_parameter);
-  }
-
-  void selectStep(unsigned int which_step)
-  {
-    this->selected_step = which_step;
-    // this->updateParameterKnobs();
-  }
-
-
 
 	// Autosave module data.  VCV Rack decides when this should be called.
-  /*
+
 	json_t *dataToJson() override
 	{
 		json_t *json_root = json_object();
@@ -146,17 +107,14 @@ struct Scalar110 : Module
       {
         json_t *step_data = json_object();
         json_object_set(step_data, "trigger", json_integer(this->tracks[track_number].getValue(step_index)));
-        // json_object_set(step_data, "engine", json_integer(this->tracks[track_number].getValue(step_index)));
 
-        // I could have saved the parameters as named kay/value pairs, but there's going to be a LOT of them,
-        // so I'm being conscientious and storing them in a minimal-format
-        json_t *parameter_json_array = json_array();
-        for(int parameter_index = 0; parameter_index < 4; parameter_index++)
-        {
-          json_array_append_new(parameter_json_array, json_real(this->tracks[track_number].getParameter(step_index,parameter_index)));
-        }
+        // json_t *parameter_json_array = json_array();
 
-        json_object_set(step_data, "p", parameter_json_array);
+        //  json_array_append_new(parameter_json_array, json_real(this->tracks[track_number].getParameter(step_index,parameter_index)));
+        json_object_set(step_data, "offset", json_real(this->tracks[track_number].getOffset(step_index)));
+        json_object_set(step_data, "volume", json_real(this->tracks[track_number].getVolume(step_index)));
+
+        // json_object_set(step_data, "p", parameter_json_array);
 
         json_array_append_new(steps_json_array, step_data);
       }
@@ -175,7 +133,7 @@ struct Scalar110 : Module
 
 		return json_root;
 	}
-  */
+
 	// Load module data
 	void dataFromJson(json_t *json_root) override
 	{
@@ -197,7 +155,7 @@ struct Scalar110 : Module
     {
       size_t track_index;
       size_t step_index;
-      size_t parameter_index;
+      // size_t parameter_index;
       // json_t *json_steps_array;
       json_t *json_step_object;
       json_t *json_track_object;
@@ -212,9 +170,14 @@ struct Scalar110 : Module
           json_array_foreach(steps_json_array, step_index, json_step_object)
           {
             // First, read the trigger state
-            this->tracks[track_index].setValue(step_index, json_integer_value(json_object_get(json_step_object, "trigger")));
+            json_t *trigger_json = json_object_get(json_step_object, "trigger");
+            if(trigger_json) this->tracks[track_index].setValue(step_index, json_integer_value(trigger_json));
+
+            json_t *offset_json = json_object_get(json_step_object, "offset");
+            if(offset_json) this->tracks[track_index].setOffset(step_index, json_real_value(offset_json));
 
             // Secondly, read the parameters
+            /*
             json_t *parameter_json_array = json_object_get(json_step_object, "p");
             json_t *parameter_array_data;
 
@@ -224,6 +187,7 @@ struct Scalar110 : Module
               // DEBUG(std::to_string(parameter_value).c_str());
               // this->tracks[track_index].setParameter(step_index, parameter_index, parameter_value);
             }
+            */
           }
         }
       }
@@ -231,28 +195,15 @@ struct Scalar110 : Module
 	}
 
 
-  //
-  // This should be the only way to set the selected parameter
-  //
-  /*
-  void selectParameter(unsigned int parameter_number)
-  {
-    selected_parameter = parameter_number;
-  }
-  */
-
-
 	void process(const ProcessArgs &args) override
 	{
-    bool track_switched = false;
-
     // selected_track = &tracks[(int) params[TRACK_SELECT_KNOB].getValue()];
     track_index = params[TRACK_SELECT_KNOB].getValue();
     if(track_index != old_track_index)
     {
       old_track_index = track_index;
-      switchTrack(track_index);
-      track_switched = true;
+      selected_track = &tracks[track_index];
+      updateKnobPositions();
     }
 
     //
@@ -268,17 +219,15 @@ struct Scalar110 : Module
         selected_track->toggleStep(step_number);
 
         // Also set the step selection for convenience
-        // selectStep(i);
+        selected_step = step_number;
+        updateKnobPositions();
       }
 
       // Process step select triggers.
       if(step_select_triggers[step_number].process(params[STEP_SELECT_BUTTONS + step_number].getValue()))
       {
-        // toggleStep(step_number);
         selected_step = step_number;
-
-        // Adjust knob positions
-        params[SAMPLE_OFFSET_KNOB].setValue(selected_track->getOffset(selected_step));
+        updateKnobPositions();
       }
 
       // Light up drum pads
@@ -290,42 +239,6 @@ struct Scalar110 : Module
       // Show location
       lights[STEP_LOCATION_LIGHTS + step_number].setBrightness(playback_step == step_number);
     }
-
-
-    //
-    // Read all of the parameter knobs and assign them to the selected Track/Step
-
-    // Be careful.  this->selected step can change within the rendering thread
-    // and cause issues within this loop, therefore it's necessary to capture
-    // the value in a local variable and is guaranteed not to change.
-    //
-    // Anothe option is to set a flag on mouse-over in the LCD code and don't
-    // process this code if it's being modulated.  This might be necessary.
-
-
-    // unsigned int local_selected_step = this->selected_step;
-
-    /*
-    for(unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETERS; parameter_number++)
-    {
-      // get the knob value
-      float new_parameter_value = params[STEP_PARAMS + parameter_number].getValue();
-
-      // get the value for the parameter at the selected step,
-      float current_parameter_value = selected_track->getParameter(local_selected_step, parameter_number);
-
-      if(new_parameter_value != current_parameter_value)
-      {
-        selected_track->setParameter(local_selected_step, parameter_number, new_parameter_value);
-
-        // BUG: THis is being called when a paramter (knob) has changed.  However,
-        // swiping the parameter display should only change a single parameter's
-        // value, so new_parameter_value == current_parameter_value should be true for all parameters except that being modified (see above)
-        if(! track_switched) selectParameter(parameter_number); // This is triggering on parameter page swipe
-        // selectLCDFunctionOnParameterFocus(parameter_number);
-      }
-    }
-    */
 
     selected_track->setOffset(selected_step, params[SAMPLE_OFFSET_KNOB].getValue());
 
@@ -360,8 +273,5 @@ struct Scalar110 : Module
       // Step the visual playback indicator as well
       playback_step = (playback_step + 1) % NUMBER_OF_STEPS;
     }
-
-    // step all sample players
-    // sample_bank.step(args.sampleRate);
   }
 };

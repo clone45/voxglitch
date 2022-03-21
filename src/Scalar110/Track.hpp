@@ -73,14 +73,25 @@ struct Track
     return { left_output, right_output };
   }
 
+
+  float getOffset(unsigned int selected_step)
+  {
+    return(this->sample_playback_settings[selected_step].offset);
+  }
+
   void setOffset(unsigned int selected_step, float offset)
   {
     this->sample_playback_settings[selected_step].offset = offset;
   }
 
-  float getOffset(unsigned int selected_step)
+  float getVolume(unsigned int selected_step)
   {
-    return(this->sample_playback_settings[selected_step].offset);
+    return(this->sample_playback_settings[selected_step].volume);
+  }
+
+  void setVolume(unsigned int selected_step, float volume)
+  {
+    this->sample_playback_settings[selected_step].volume = volume;
   }
 
 };
