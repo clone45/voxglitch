@@ -7,7 +7,6 @@ struct Track
   unsigned int playback_position = 0;
   SamplePlaybackSettings sample_playback_settings[NUMBER_OF_STEPS];
 
-  std::string loaded_filename = "";
   SamplePlayer sample_player;
 
   Track()

@@ -122,7 +122,14 @@ struct Scalar110 : Module
       json_t *track_data = json_object();
 
       json_object_set(track_data, "steps", steps_json_array);
-      // json_object_set(track_data, "engine", json_integer(this->tracks[track_number].getEngine()));
+
+      // Save the file name and path of the loaded sample.  This might be blank
+      std::string filename = this->tracks[track_number].sample_player.getFilename();
+      std::string path = this->tracks[track_number].sample_player.getPath();
+
+      json_object_set(track_data, "sample_filename", json_string(filename.c_str()));
+      json_object_set(track_data, "sample_path", json_string(path.c_str()));
+
       json_array_append_new(tracks_json_array, track_data);
     }
     json_object_set(json_root, "tracks", tracks_json_array);
@@ -140,13 +147,6 @@ struct Scalar110 : Module
 
 	void dataFromJson(json_t *json_root) override
 	{
-    // Load files in sample_bank
-
-    //json_t *loaded_path_json = json_object_get(json_root, ("path"));
-		//if (loaded_path_json)
-		//{
-		//	sample_bank.loadSamplesFromPath(json_string_value(loaded_path_json));
-		//}
 
     //
     // Load all track data
@@ -166,7 +166,6 @@ struct Scalar110 : Module
       json_array_foreach(tracks_arrays_data, track_index, json_track_object)
       {
         json_t *steps_json_array = json_object_get(json_track_object, "steps");
-        // this->tracks[track_index].setEngine(json_integer_value(json_object_get(json_track_object, "engine")));
 
         if(steps_json_array)
         {
@@ -178,20 +177,16 @@ struct Scalar110 : Module
 
             json_t *offset_json = json_object_get(json_step_object, "offset");
             if(offset_json) this->tracks[track_index].setOffset(step_index, json_real_value(offset_json));
-
-            // Secondly, read the parameters
-            /*
-            json_t *parameter_json_array = json_object_get(json_step_object, "p");
-            json_t *parameter_array_data;
-
-            json_array_foreach(parameter_json_array, parameter_index, parameter_array_data)
-            {
-              float parameter_value = json_real_value(parameter_array_data);
-              // DEBUG(std::to_string(parameter_value).c_str());
-              // this->tracks[track_index].setParameter(step_index, parameter_index, parameter_value);
-            }
-            */
           }
+        }
+
+        json_t *sample_filename_json = json_object_get(json_track_object, "sample_filename");
+        json_t *sample_path_json = json_object_get(json_track_object, "sample_path");
+
+        if(sample_path_json)
+        {
+          std::string path = json_string_value(sample_path_json);
+          if(path != "") this->tracks[track_index].sample_player.loadSample(path);
         }
       }
     }
