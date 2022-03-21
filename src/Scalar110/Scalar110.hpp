@@ -19,7 +19,7 @@ struct Scalar110 : Module
   dsp::SchmittTrigger stepTrigger;
   Track tracks[NUMBER_OF_TRACKS];
   Track *selected_track = NULL;
-  unsigned int track_index;
+  unsigned int track_index = 0;
   unsigned int old_track_index = 0;
   unsigned int playback_step = 0;
   unsigned int selected_step = 0;
@@ -79,8 +79,7 @@ struct Scalar110 : Module
     paramQuantities[TRACK_SELECT_KNOB]->snapEnabled = true;
 
     // Set default selected track
-    selected_track = &tracks[track_index];
-
+    selected_track = &tracks[0];
 	}
 
 
@@ -89,8 +88,9 @@ struct Scalar110 : Module
     params[SAMPLE_OFFSET_KNOB].setValue(selected_track->getOffset(selected_step));
   }
 
-	// Autosave module data.  VCV Rack decides when this should be called.
-
+  //
+	// SAVE module data
+  //
 	json_t *dataToJson() override
 	{
 		json_t *json_root = json_object();
@@ -134,7 +134,10 @@ struct Scalar110 : Module
 		return json_root;
 	}
 
-	// Load module data
+  //
+	// LOAD module data
+  //
+
 	void dataFromJson(json_t *json_root) override
 	{
     // Load files in sample_bank
@@ -192,6 +195,8 @@ struct Scalar110 : Module
         }
       }
     }
+
+    updateKnobPositions();
 	}
 
 
