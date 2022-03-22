@@ -3,8 +3,15 @@ struct XYWidget : ModuleWidget
   XYWidget(XY* module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/xy_front_panel.svg")));
 
+    // Set the background SVG panel.  This should be blank
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/xy/xy_front_panel.svg")));
+
+    // Load up the background PNG and add it to the panel
+    PNGPanel *png_panel = new PNGPanel("res/xy/xy_all.png", 5.08 * 20, 128.5);
+    addChild(png_panel);
+
+    /*
     // Cosmetic rack screws
     // addChild(createWidget<ScrewSilver>(Vec(15, 0)));
     addChild(createWidget<ScrewSilver>(Vec(15, 365)));
@@ -23,6 +30,7 @@ struct XYWidget : ModuleWidget
     xy_display = new XYDisplay(module);
     xy_display->box.pos = mm2px(Vec(3.4, MODULE_HEIGHT_MM - 30 - DRAW_AREA_HEIGHT_MM + .4));
     addChild(xy_display);
+    */
   }
 
   struct ClicklessOption : MenuItem {
