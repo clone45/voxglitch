@@ -39,8 +39,8 @@ struct Scalar110 : Module
     ENUMS(STEP_SELECT_BUTTONS, NUMBER_OF_STEPS),
     SAMPLE_OFFSET_KNOB,
     SAMPLE_VOLUME_KNOB,
-    SAMPLE_PAN_KNOB,
     SAMPLE_PITCH_KNOB,
+    SAMPLE_PAN_KNOB,
     TRACK_SELECT_KNOB,
 		NUM_PARAMS
 	};
@@ -72,6 +72,7 @@ struct Scalar110 : Module
 
     configParam(SAMPLE_OFFSET_KNOB, 0.0, 1.0, 0.0,"sample_offset");
     configParam(SAMPLE_VOLUME_KNOB, 0.0, 1.0, 0.0,"sample_volume");
+    configParam(SAMPLE_PITCH_KNOB, 0.0, 1.0, 0.0,"sample_pitch");
     configParam(SAMPLE_PAN_KNOB, 0.0, 1.0, 0.0,"sample_pan");
 
     // Configure track knob
@@ -87,6 +88,7 @@ struct Scalar110 : Module
   {
     params[SAMPLE_OFFSET_KNOB].setValue(selected_track->getOffset(selected_step));
     params[SAMPLE_VOLUME_KNOB].setValue(selected_track->getVolume(selected_step));
+    params[SAMPLE_PITCH_KNOB].setValue(selected_track->getPitch(selected_step));
     params[SAMPLE_PAN_KNOB].setValue(selected_track->getPan(selected_step));
   }
 
@@ -115,6 +117,7 @@ struct Scalar110 : Module
         //  json_array_append_new(parameter_json_array, json_real(this->tracks[track_number].getParameter(step_index,parameter_index)));
         json_object_set(step_data, "offset", json_real(this->tracks[track_number].getOffset(step_index)));
         json_object_set(step_data, "volume", json_real(this->tracks[track_number].getVolume(step_index)));
+        json_object_set(step_data, "pitch", json_real(this->tracks[track_number].getPitch(step_index)));
         json_object_set(step_data, "pan", json_real(this->tracks[track_number].getPan(step_index)));
 
         // json_object_set(step_data, "p", parameter_json_array);
@@ -184,6 +187,9 @@ struct Scalar110 : Module
             json_t *volume_json = json_object_get(json_step_object, "volume");
             if(volume_json) this->tracks[track_index].setVolume(step_index, json_real_value(volume_json));
 
+            json_t *pitch_json = json_object_get(json_step_object, "pitch");
+            if(pitch_json) this->tracks[track_index].setPitch(step_index, json_real_value(pitch_json));
+
             json_t *pan_json = json_object_get(json_step_object, "pan");
             if(pan_json) this->tracks[track_index].setPan(step_index, json_real_value(pan_json));
           }
@@ -252,6 +258,7 @@ struct Scalar110 : Module
 
     selected_track->setOffset(selected_step, params[SAMPLE_OFFSET_KNOB].getValue());
     selected_track->setVolume(selected_step, params[SAMPLE_VOLUME_KNOB].getValue());
+    selected_track->setPitch(selected_step, params[SAMPLE_PITCH_KNOB].getValue());
     selected_track->setPan(selected_step, params[SAMPLE_PAN_KNOB].getValue());
 
 
@@ -266,7 +273,8 @@ struct Scalar110 : Module
       std::tie(track_left_output, track_right_output) = tracks[i].getStereoOutput();
       left_output += track_left_output;
       right_output += track_right_output;
-      tracks[i].sample_player.step(args.sampleRate);
+      tracks[i].incrementSamplePosition(args.sampleRate);
+      // tracks[i].sample_player.step(args.sampleRate);
     }
 
     // Output voltages at stereo outputs

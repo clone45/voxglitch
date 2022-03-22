@@ -29,14 +29,15 @@ struct SamplePlayer
     playing = false;
   }
 
-	void step(float rack_sample_rate)
+	void step(float rack_sample_rate, float pitch_cv_input)
 	{
     if(playing && sample.loaded)
     {
       float step_amount = sample.sample_rate / rack_sample_rate;
 
       // Step the playback position forward.
-  		playback_position = playback_position + step_amount;
+  		// playback_position = playback_position + step_amount;
+      playback_position = playback_position + (pitch_cv_input * (playback_position + step_amount));
 
       // If the playback position is past the playback length, end sample playback
   		if(playback_position >= sample.size()) stop();
