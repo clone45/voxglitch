@@ -40,8 +40,8 @@ struct Scalar110 : Module
     SAMPLE_OFFSET_KNOB,
     SAMPLE_VOLUME_KNOB,
     SAMPLE_PAN_KNOB,
+    SAMPLE_PITCH_KNOB,
     TRACK_SELECT_KNOB,
-    // ENGINE_SELECT_KNOB,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -87,6 +87,7 @@ struct Scalar110 : Module
   {
     params[SAMPLE_OFFSET_KNOB].setValue(selected_track->getOffset(selected_step));
     params[SAMPLE_VOLUME_KNOB].setValue(selected_track->getVolume(selected_step));
+    params[SAMPLE_PAN_KNOB].setValue(selected_track->getPan(selected_step));
   }
 
   //
@@ -114,6 +115,7 @@ struct Scalar110 : Module
         //  json_array_append_new(parameter_json_array, json_real(this->tracks[track_number].getParameter(step_index,parameter_index)));
         json_object_set(step_data, "offset", json_real(this->tracks[track_number].getOffset(step_index)));
         json_object_set(step_data, "volume", json_real(this->tracks[track_number].getVolume(step_index)));
+        json_object_set(step_data, "pan", json_real(this->tracks[track_number].getPan(step_index)));
 
         // json_object_set(step_data, "p", parameter_json_array);
 
@@ -181,6 +183,9 @@ struct Scalar110 : Module
 
             json_t *volume_json = json_object_get(json_step_object, "volume");
             if(volume_json) this->tracks[track_index].setVolume(step_index, json_real_value(volume_json));
+
+            json_t *pan_json = json_object_get(json_step_object, "pan");
+            if(pan_json) this->tracks[track_index].setPan(step_index, json_real_value(pan_json));
           }
         }
 
@@ -247,6 +252,7 @@ struct Scalar110 : Module
 
     selected_track->setOffset(selected_step, params[SAMPLE_OFFSET_KNOB].getValue());
     selected_track->setVolume(selected_step, params[SAMPLE_VOLUME_KNOB].getValue());
+    selected_track->setPan(selected_step, params[SAMPLE_PAN_KNOB].getValue());
 
 
     //

@@ -13,6 +13,7 @@ using namespace scalar_110;
 // Sample players and such
 #include "Common/sample.hpp"
 #include "Common/common.hpp"
+#include "Common/submodules.hpp"
 
 // Core components
 #include "Scalar110/SamplePlayer.hpp"

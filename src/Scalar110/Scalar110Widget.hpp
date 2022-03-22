@@ -91,6 +91,8 @@ struct Scalar110Widget : ModuleWidget
 
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(120 + (0 * 20),50)), module, Scalar110::SAMPLE_OFFSET_KNOB));
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(120 + (1 * 20),50)), module, Scalar110::SAMPLE_VOLUME_KNOB));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(120 + (2 * 20),50)), module, Scalar110::SAMPLE_PITCH_KNOB));
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(120 + (3 * 20),50)), module, Scalar110::SAMPLE_PAN_KNOB));
 
     /*
     for(unsigned int i=0; i<4; i++)
