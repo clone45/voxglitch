@@ -14,5 +14,4 @@ struct VoxglitchWidget : TransparentWidget
 
     return(new_color);
   }
-
 };
