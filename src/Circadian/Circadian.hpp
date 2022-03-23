@@ -12,24 +12,24 @@ struct Circadian : Module
 
   enum ParamIds {
     PLAYBACK_BUTTON,
-		NUM_PARAMS
-	};
-	enum InputIds {
-		NUM_INPUTS
-	};
-	enum OutputIds {
+    NUM_PARAMS
+  };
+  enum InputIds {
+    NUM_INPUTS
+  };
+  enum OutputIds {
     AUDIO_OUTPUT_LEFT,
     AUDIO_OUTPUT_RIGHT,
-		NUM_OUTPUTS
-	};
+    NUM_OUTPUTS
+  };
 
-	Circadian()
-	{
+  Circadian()
+  {
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
-	}
+  }
 
-	void process(const ProcessArgs &args) override
-	{
+  void process(const ProcessArgs &args) override
+  {
     if(playback_trigger.process(params[PLAYBACK_BUTTON].getValue()))
     {
       // reset sample playback position
@@ -45,13 +45,13 @@ struct Circadian : Module
       float step_amount = 44100 / args.sampleRate;
 
       // Step the playback position forward.
-  		playback_position = playback_position + step_amount;
+      playback_position = playback_position + step_amount;
 
       // convert float to integer
       unsigned int sample_position = playback_position;
 
       // If the playback position is past the playback length, end sample playback
-  		if(sample_position >= KICK_SAMPLE_LENGTH)
+      if(sample_position >= KICK_SAMPLE_LENGTH)
       {
         playback_position = 0;
         playback = false;
@@ -77,7 +77,7 @@ struct CircadianWidget : ModuleWidget
 
     // Add output jacks
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(7.560, 35.0)), module, Circadian::AUDIO_OUTPUT_LEFT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(7.560, 40.0)), module, Circadian::AUDIO_OUTPUT_RIGHT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(7.560, 40.0)), module, Circadian::AUDIO_OUTPUT_RIGHT));
 
     // Add playback input
     addParam(createParamCentered<LEDButton>(mm2px(Vec(7.560, 5)), module, Circadian::PLAYBACK_BUTTON));
