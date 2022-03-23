@@ -10,6 +10,7 @@ extern Plugin* pluginInstance;
 // extern Model* modelMyModule;
 extern Model *modelAutobreak;
 extern Model *modelByteBeat;
+extern Model *modelCircadian;
 extern Model *modelDigitalProgrammer;
 extern Model *modelDigitalSequencer;
 extern Model *modelDigitalSequencerXP;

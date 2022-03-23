@@ -26,6 +26,12 @@
         "tags": ["Oscillator"]
     },
     {
+        "slug": "circadian",
+        "name": "Circadian",
+        "description": "Proof of concept",
+        "tags": ["Oscillator"]
+    },
+    {
         "slug": "digitalprogrammer",
         "name": "Digital Programmer",
         "description": "16 channel polyphonic programmer with built-in bank memory slots",
