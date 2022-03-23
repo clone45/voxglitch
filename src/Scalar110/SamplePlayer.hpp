@@ -36,8 +36,13 @@ struct SamplePlayer
       float step_amount = sample.sample_rate / rack_sample_rate;
 
       // Step the playback position forward.
-  		// playback_position = playback_position + step_amount;
-      playback_position = playback_position + (pitch_cv_input * (playback_position + step_amount));
+      // Need to revisit this and get it right.
+  		playback_position = playback_position + step_amount;
+      playback_position = playback_position + (step_amount * (pow(2,pitch_cv_input * 5)  - 1)); // 5 octave range
+
+      // voltage of 0 should playback at normal rate
+      // voltage of 1 should playback at 2^1 == twice as fast
+      // voltage of 2 should playback at 2^2 == four times as fast
 
       // If the playback position is past the playback length, end sample playback
   		if(playback_position >= sample.size()) stop();
