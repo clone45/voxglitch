@@ -1,10 +1,15 @@
-struct HazumiWidget : ModuleWidget
+struct HazumiWidget : VoxglitchModuleWidget
 {
   HazumiWidget(Hazumi* module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/hazumi_front_panel.svg")));
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/hazumi/hazumi_front_panel.svg")));
 
+    // Load up the background PNG and add it to the panel
+    PNGPanel *png_panel = new PNGPanel("res/hazumi/hazumi_baseplate.png", 5.08 * 17, 128.5);
+    addChild(png_panel);
+
+/*
     // Step & Reset inputs
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_14, ROW_1 AND_A_HALF_ROW)), module, Hazumi::STEP_INPUT));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_14, ROW_3 AND_THREE_QUARTERS_ROW - 0.5)), module, Hazumi::RESET_INPUT));
@@ -23,6 +28,7 @@ struct HazumiWidget : ModuleWidget
     hazumi_sequencer_display->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
     hazumi_sequencer_display->module = module;
     addChild(hazumi_sequencer_display);
+    */
   }
 
   struct TriggerOptionValueItem : MenuItem {
