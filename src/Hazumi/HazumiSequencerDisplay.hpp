@@ -13,12 +13,13 @@ struct HazumiSequencerDisplay : TransparentWidget
   int old_row = -1;
   int old_column = -1;
 
-  int alpha_fades[8] = {255,255,255,255,255,255,255,255};
+  float color_fades[8] = {1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0};
 
   void HazumiDisplay()
   {
     box.size = Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
   }
+
 
   void draw(const DrawArgs &args) override
   {
@@ -41,35 +42,51 @@ struct HazumiSequencerDisplay : TransparentWidget
       {
         for(unsigned int row=0; row < SEQUENCER_ROWS; row++)
         {
-          nvgBeginPath(vg);
-          nvgRect(vg, (column * CELL_WIDTH) + (column * CELL_PADDING), ((SEQUENCER_ROWS - row - 1) * CELL_HEIGHT) + ((SEQUENCER_ROWS - row - 1) * CELL_PADDING), CELL_WIDTH, CELL_HEIGHT);
+          // Draw bright backdrop squares for highlighs
+          float x = (column * CELL_WIDTH) + (column * CELL_PADDING);
+          float y = ((SEQUENCER_ROWS - row - 1) * CELL_HEIGHT) + ((SEQUENCER_ROWS - row - 1) * CELL_PADDING);
 
-          // Default color for inactive square
-          nvgFillColor(vg, nvgRGB(42, 50, 52));
+          // Draw square
+          nvgBeginPath(vg);
+          nvgRect(vg, x, y, CELL_WIDTH, CELL_HEIGHT);
 
           row = clamp(row, 0, SEQUENCER_ROWS - 1);
           column = clamp(column, 0, SEQUENCER_COLUMNS - 1);
 
-          if(module->hazumi_sequencer.column_heights[column] > row) nvgFillColor(vg, nvgRGB(63, 71, 73)); // paint height indicator
+          // Bright background for inactive squares
+          // nvgFillColor(vg, nvgRGBA(42, 50, 52, alpha_fades[column]));
 
+
+          // nvgFillColor(vg, nvgRGBA(42, 50, 52, alpha_fades[column]));
+
+          if(module->hazumi_sequencer.column_heights[column] > row)
+          {
+            // nvgFillColor(vg, nvgRGB(63, 71, 73)); // paint height indicator
+            nvgFillColor(vg, nvgLerpRGBA(nvgRGBA(200, 200, 200, 100), nvgRGB(63, 71, 73), color_fades[column]));
+          }
+          else
+          {
+            nvgFillColor(vg, nvgLerpRGBA(nvgRGBA(200, 200, 200, 100), nvgRGB(42, 50, 52), color_fades[column]));
+          }
+
+          // If we're paintint the square that the ball is on
           if(module->hazumi_sequencer.ball_locations[column] == row)
           {
-            // nvgFillColor(vg, nvgRGB(97, 143, 170));  // paint ball
-
             // If the ball has triggered an output, paint it brighter
             if(module->hazumi_sequencer.stored_trigger_results[column] == true)
             {
-              alpha_fades[column] = 160;
+              color_fades[column] = 0;
               module->hazumi_sequencer.stored_trigger_results[column] = false;
             }
-            nvgFillColor(vg, nvgRGBA(176, 255, 224, alpha_fades[column]));
+
+            // Paint a bright color for the ball
+            nvgFillColor(vg, nvgRGBA(176, 255, 224, 255));
 
             // This assumes a consistent draw frequency. I should probably
             // replace this with code that accurately fades out the alpha at
             // a exact rate.
-            alpha_fades[column] += 6;
-
-            if(alpha_fades[column] > 255) alpha_fades[column] = 255;
+            color_fades[column] += 0.0006f / APP->window->getLastFrameDuration();
+            if(color_fades[column] > 1.0) color_fades[column] = 1.0;
           }
 
           nvgFill(vg);
