@@ -42,6 +42,8 @@ struct Scalar110 : Module
     SAMPLE_PITCH_KNOB,
     SAMPLE_PAN_KNOB,
     TRACK_SELECT_KNOB,
+    ENUMS(STEP_KNOBS, NUMBER_OF_STEPS),
+    ENUMS(FUNCTION_BUTTONS, NUMBER_OF_STEPS),
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -57,6 +59,7 @@ struct Scalar110 : Module
     ENUMS(DRUM_PAD_LIGHTS, NUMBER_OF_STEPS),
     ENUMS(STEP_SELECT_BUTTON_LIGHTS, NUMBER_OF_STEPS),
     ENUMS(STEP_LOCATION_LIGHTS, NUMBER_OF_STEPS),
+    ENUMS(FUNCTION_BUTTON_LIGHTS, 6),
 		NUM_LIGHTS
 	};
 
@@ -68,6 +71,7 @@ struct Scalar110 : Module
     {
       configParam(DRUM_PADS + i, 0.0, 1.0, 0.0, "drum_button_" + std::to_string(i));
       configParam(STEP_SELECT_BUTTONS + i, 0.0, 1.0, 0.0, "selected_step_" + std::to_string(i));
+      configParam(STEP_KNOBS + i, 0.0, 1.0, 0.0, "step_knob_" + std::to_string(i));
     }
 
     configParam(SAMPLE_OFFSET_KNOB, 0.0, 1.0, 0.0,"sample_offset");
@@ -86,10 +90,12 @@ struct Scalar110 : Module
 
   void updateKnobPositions()
   {
+    /*
     params[SAMPLE_OFFSET_KNOB].setValue(selected_track->getOffset(selected_step));
     params[SAMPLE_VOLUME_KNOB].setValue(selected_track->getVolume(selected_step));
     params[SAMPLE_PITCH_KNOB].setValue(selected_track->getPitch(selected_step));
     params[SAMPLE_PAN_KNOB].setValue(selected_track->getPan(selected_step));
+    */
   }
 
   //
@@ -213,6 +219,7 @@ struct Scalar110 : Module
 	void process(const ProcessArgs &args) override
 	{
     // selected_track = &tracks[(int) params[TRACK_SELECT_KNOB].getValue()];
+
     track_index = params[TRACK_SELECT_KNOB].getValue();
     if(track_index != old_track_index)
     {
@@ -220,6 +227,7 @@ struct Scalar110 : Module
       selected_track = &tracks[track_index];
       updateKnobPositions();
     }
+
 
     //
     // Handle drum pads, drum location, and drum selection interactions and lights.
@@ -234,16 +242,18 @@ struct Scalar110 : Module
         selected_track->toggleStep(step_number);
 
         // Also set the step selection for convenience
-        selected_step = step_number;
-        updateKnobPositions();
+        // selected_step = step_number;
+        // updateKnobPositions();
       }
 
       // Process step select triggers.
+      /*
       if(step_select_triggers[step_number].process(params[STEP_SELECT_BUTTONS + step_number].getValue()))
       {
         selected_step = step_number;
         updateKnobPositions();
       }
+      */
 
       // Light up drum pads
       lights[DRUM_PAD_LIGHTS + step_number].setBrightness(selected_track->getValue(step_number));
@@ -255,12 +265,12 @@ struct Scalar110 : Module
       lights[STEP_LOCATION_LIGHTS + step_number].setBrightness(playback_step == step_number);
     }
 
-
+    /*
     selected_track->setOffset(selected_step, params[SAMPLE_OFFSET_KNOB].getValue());
     selected_track->setVolume(selected_step, params[SAMPLE_VOLUME_KNOB].getValue());
     selected_track->setPitch(selected_step, params[SAMPLE_PITCH_KNOB].getValue());
     selected_track->setPan(selected_step, params[SAMPLE_PAN_KNOB].getValue());
-
+    */
 
     //
     // compute output and step the sample playback position
@@ -274,7 +284,6 @@ struct Scalar110 : Module
       left_output += track_left_output;
       right_output += track_right_output;
       tracks[i].incrementSamplePosition(args.sampleRate);
-      // tracks[i].sample_player.step(args.sampleRate);
     }
 
     // Output voltages at stereo outputs
