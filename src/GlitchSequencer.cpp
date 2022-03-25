@@ -7,7 +7,7 @@
 #include "cmath"
 
 #include "GlitchSequencer/defines.h"
-#include "Common/VoxglitchWidget.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
 #include "GlitchSequencer/CellularAutomatonSequencer.hpp"
 #include "GlitchSequencer/GlitchSequencer.hpp"
 #include "GlitchSequencer/CellularAutomatonDisplay.hpp"

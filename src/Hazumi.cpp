@@ -2,12 +2,7 @@
 #include "osdialog.h"
 #include "settings.hpp"
 
-#include "Common/components/PNGPanel.hpp"
-#include "Common/components/VoxglitchPorts.hpp"
-#include "Common/components/VoxglitchPanel.hpp"
-#include "Common/components/VoxglitchSwitches.hpp"
-#include "Common/components/VoxglitchModuleWidget.hpp"
-#include "Common/VoxglitchWidget.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
 
 #include "Hazumi/defines.h"
 #include "Hazumi/HazumiSequencer.hpp"

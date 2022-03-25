@@ -7,11 +7,7 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "Common/sample.hpp"
-#include "Common/components/VoxglitchKnobs.hpp"
-#include "Common/components/VoxglitchSwitches.hpp"
-#include "Common/components/VoxglitchPorts.hpp"
-#include "Common/components/PNGPanel.hpp"
-#include "Common/components/VoxglitchPanel.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
 
 #include "WavBank/defines.h"
 #include "WavBank/WavBank.hpp"

@@ -1,10 +1,7 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "Common/sample.hpp"
-#include "Common/components/PNGPanel.hpp"
-#include "Common/components/VoxglitchPorts.hpp"
-#include "Common/components/VoxglitchSwitches.hpp"
-#include "Common/components/VoxglitchPanel.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
 
 #include "settings.hpp"
 #include "Looper/defines.h"

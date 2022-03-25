@@ -8,7 +8,7 @@
 #include "DigitalProgrammer/defines.h"
 using namespace digital_programmer;
 
-#include "Common/VoxglitchWidget.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
 #include "DigitalProgrammer/DPSlider.hpp"
 #include "DigitalProgrammer/DigitalProgrammer.hpp"
 #include "DigitalProgrammer/CopyPasteLabel.hpp"

@@ -19,7 +19,7 @@
 #include "DigitalSequencerXP/defines.h"
 using namespace digital_sequencer_xp;
 
-#include "Common/VoxglitchWidget.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
 #include "DigitalSequencerXP/Sequencer.hpp"
 #include "DigitalSequencerXP/VoltageSequencer.hpp"
 #include "DigitalSequencerXP/GateSequencer.hpp"

@@ -45,12 +45,12 @@ struct HazumiSequencerDisplay : TransparentWidget
           nvgRect(vg, (column * CELL_WIDTH) + (column * CELL_PADDING), ((SEQUENCER_ROWS - row - 1) * CELL_HEIGHT) + ((SEQUENCER_ROWS - row - 1) * CELL_PADDING), CELL_WIDTH, CELL_HEIGHT);
 
           // Default color for inactive square
-          nvgFillColor(vg, nvgRGB(220, 220, 220));
+          nvgFillColor(vg, nvgRGB(42, 50, 52));
 
           row = clamp(row, 0, SEQUENCER_ROWS - 1);
           column = clamp(column, 0, SEQUENCER_COLUMNS - 1);
 
-          if(module->hazumi_sequencer.column_heights[column] > row) nvgFillColor(vg, nvgRGB(200, 200, 200)); // paint height indicator
+          if(module->hazumi_sequencer.column_heights[column] > row) nvgFillColor(vg, nvgRGB(63, 71, 73)); // paint height indicator
 
           if(module->hazumi_sequencer.ball_locations[column] == row)
           {
@@ -62,7 +62,7 @@ struct HazumiSequencerDisplay : TransparentWidget
               alpha_fades[column] = 160;
               module->hazumi_sequencer.stored_trigger_results[column] = false;
             }
-            nvgFillColor(vg, nvgRGBA(97, 143, 170, alpha_fades[column]));
+            nvgFillColor(vg, nvgRGBA(176, 255, 224, alpha_fades[column]));
 
             // This assumes a consistent draw frequency. I should probably
             // replace this with code that accurately fades out the alpha at

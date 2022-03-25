@@ -19,7 +19,7 @@
 #include <array>
 
 #include "DigitalSequencer/defines.h"
-#include "Common/VoxglitchWidget.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
 #include "DigitalSequencer/Sequencer.hpp"
 #include "DigitalSequencer/VoltageSequencer.hpp"
 #include "DigitalSequencer/GateSequencer.hpp"

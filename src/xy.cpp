@@ -11,12 +11,7 @@
 #include <vector>
 #include "cmath"
 
-#include "Common/components/PNGPanel.hpp"
-#include "Common/components/VoxglitchPorts.hpp"
-#include "Common/components/VoxglitchPanel.hpp"
-#include "Common/components/VoxglitchSwitches.hpp"
-#include "Common/components/VoxglitchModuleWidget.hpp"
-#include "Common/VoxglitchWidget.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
 #include "XY/defines.h"
 #include "XY/XY.hpp"
 #include "XY/XYDisplay.hpp"
