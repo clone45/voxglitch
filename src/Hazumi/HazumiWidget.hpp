@@ -6,8 +6,14 @@ struct HazumiWidget : VoxglitchModuleWidget
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/hazumi/hazumi_front_panel.svg")));
 
     // Load up the background PNG and add it to the panel
-    PNGPanel *png_panel = new PNGPanel("res/hazumi/hazumi_baseplate.png", 5.08 * 17, 128.5);
+    PNGPanel *png_panel = new PNGPanel("res/hazumi/hazumi_baseplate_final.png", 86.360, 128.5);
     addChild(png_panel);
+
+    // Add typography layer
+    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/hazumi/hazumi_typography.svg"));
+    VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
+    voxglitch_panel->setBackground(svg);
+    addChild(voxglitch_panel);
 
     addInput(createInputCentered<VoxglitchInputPort>(Vec(223.500000,41.499992), module, Hazumi::STEP_INPUT));
     addInput(createInputCentered<VoxglitchInputPort>(Vec(223.500000,92.250000), module, Hazumi::RESET_INPUT));
