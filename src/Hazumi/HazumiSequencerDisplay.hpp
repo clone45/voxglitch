@@ -62,11 +62,11 @@ struct HazumiSequencerDisplay : TransparentWidget
           if(module->hazumi_sequencer.column_heights[column] > row)
           {
             // nvgFillColor(vg, nvgRGB(63, 71, 73)); // paint height indicator
-            nvgFillColor(vg, nvgLerpRGBA(nvgRGBA(200, 200, 200, 100), nvgRGB(63, 71, 73), color_fades[column]));
+            nvgFillColor(vg, nvgLerpRGBA(nvgRGBA(160, 160, 160, 150), nvgRGBA(63, 71, 73, 255), color_fades[column]));
           }
           else
           {
-            nvgFillColor(vg, nvgLerpRGBA(nvgRGBA(200, 200, 200, 100), nvgRGB(42, 50, 52), color_fades[column]));
+            nvgFillColor(vg, nvgLerpRGBA(nvgRGBA(160, 160, 160, 150), nvgRGBA(42, 50, 52, 255), color_fades[column]));
           }
 
           // If we're paintint the square that the ball is on
