@@ -53,20 +53,15 @@ struct HazumiSequencerDisplay : TransparentWidget
           row = clamp(row, 0, SEQUENCER_ROWS - 1);
           column = clamp(column, 0, SEQUENCER_COLUMNS - 1);
 
-          // Bright background for inactive squares
-          // nvgFillColor(vg, nvgRGBA(42, 50, 52, alpha_fades[column]));
-
-
-          // nvgFillColor(vg, nvgRGBA(42, 50, 52, alpha_fades[column]));
-
+          // If inside of the height range, then blink
           if(module->hazumi_sequencer.column_heights[column] > row)
           {
-            // nvgFillColor(vg, nvgRGB(63, 71, 73)); // paint height indicator
             nvgFillColor(vg, nvgLerpRGBA(nvgRGBA(160, 160, 160, 150), nvgRGBA(63, 71, 73, 255), color_fades[column]));
           }
+          // ouside of the height range
           else
           {
-            nvgFillColor(vg, nvgLerpRGBA(nvgRGBA(160, 160, 160, 150), nvgRGBA(42, 50, 52, 255), color_fades[column]));
+            nvgFillColor(vg, nvgRGB(42, 50, 52));
           }
 
           // If we're paintint the square that the ball is on
