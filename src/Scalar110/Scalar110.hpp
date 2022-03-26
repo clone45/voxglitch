@@ -1,16 +1,8 @@
 //
 // Where I left off.
 //
-// - bring parameter meaning to the sample players
-//
-// *
-// * Step selection using shift key
-// * sample pitch controls?
-// * figure out ratcheting / pattern ratcheting
-// * context aware copy/paste
-// * save and load root_directory so you always start loading samples in the right place
-// * add gate sequencing to LCD for speed ?? (but it wouldn't change per parameter)
-// * ability to name tracks?
+// TODO: when a new function is selected, restore the knob positions for that
+// track/function
 
 struct Scalar110 : Module
 {
@@ -25,6 +17,7 @@ struct Scalar110 : Module
   unsigned int selected_step = 0;
   unsigned int selected_parameter = 0;
   unsigned int selected_function = 0;
+  unsigned int old_selected_function = 0;
   float left_output;
   float right_output;
   float track_left_output;
@@ -92,12 +85,18 @@ struct Scalar110 : Module
 
   void updateKnobPositions()
   {
+
     /*
     params[SAMPLE_OFFSET_KNOB].setValue(selected_track->getOffset(selected_step));
     params[SAMPLE_VOLUME_KNOB].setValue(selected_track->getVolume(selected_step));
     params[SAMPLE_PITCH_KNOB].setValue(selected_track->getPitch(selected_step));
     params[SAMPLE_PAN_KNOB].setValue(selected_track->getPan(selected_step));
     */
+    for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
+    {
+      if(selected_function == 0) params[STEP_KNOBS + step_number].setValue(selected_track->getOffset(step_number));
+      if(selected_function == 1) params[STEP_KNOBS + step_number].setValue(selected_track->getPan(step_number));
+    }
   }
 
   //
@@ -271,7 +270,12 @@ struct Scalar110 : Module
     {
       if(function_button_triggers[i].process(params[FUNCTION_BUTTONS + i].getValue()))
       {
-        selected_function = i;
+        if(old_selected_function != i)
+        {
+          selected_function = i;
+          old_selected_function = selected_function;
+          updateKnobPositions();
+        }
       }
     }
 
