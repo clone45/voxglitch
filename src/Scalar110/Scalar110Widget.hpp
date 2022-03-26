@@ -85,7 +85,7 @@ struct Scalar110Widget : ModuleWidget
     }
 
 
-    for(unsigned int i=0; i<6; i++)
+    for(unsigned int i=0; i<NUMBER_OF_FUNCTIONS; i++)
     {
       addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * i), button_group_y - 20)), module, Scalar110::FUNCTION_BUTTONS + i));
       addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * i), button_group_y - 20)), module, Scalar110::FUNCTION_BUTTON_LIGHTS + i));
@@ -93,60 +93,14 @@ struct Scalar110Widget : ModuleWidget
 
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(50,50)), module, Scalar110::TRACK_SELECT_KNOB));
     // addParam(createParamCentered<EngineKnob>(mm2px(Vec(50,80)), module, Scalar110::ENGINE_SELECT_KNOB));
-
-    /*
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(120 + (0 * 20),50)), module, Scalar110::SAMPLE_OFFSET_KNOB));
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(120 + (1 * 20),50)), module, Scalar110::SAMPLE_VOLUME_KNOB));
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(120 + (2 * 20),50)), module, Scalar110::SAMPLE_PITCH_KNOB));
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(120 + (3 * 20),50)), module, Scalar110::SAMPLE_PAN_KNOB));
-    */
-    /*
-    for(unsigned int i=0; i<4; i++)
-    {
-      ParameterKnob* parameter_knob = createParamCentered<ParameterKnob>(mm2px(Vec(offset + (i * 20),50)), module, Scalar110::STEP_PARAMS + i);
-  		parameter_knob->parameter_number = i;
-  		addParam(parameter_knob);
-    }
-
-    for(unsigned int i=4; i<8; i++)
-    {
-      ParameterKnob* parameter_knob = createParamCentered<ParameterKnob>(mm2px(Vec(offset + ((i-4) * 20),70)), module, Scalar110::STEP_PARAMS + i);
-  		parameter_knob->parameter_number = i;
-  		addParam(parameter_knob);
-    }
-    */
-
-    /*
-    ParameterKnob* parameter_knob_1 = createParamCentered<ParameterKnob>(mm2px(Vec(offset + 20,50)), module, Scalar110::ENGINE_PARAMS + 1);
-		parameter_knob_1->parameter_number = 1;
-		addParam(parameter_knob_1);
-
-    addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset,50)), module, Scalar110::ENGINE_PARAMS));
-    addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset + 20,50)), module, Scalar110::ENGINE_PARAMS + 1));
-    addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset + 40,50)), module, Scalar110::ENGINE_PARAMS + 2));
-    addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset + 60,50)), module, Scalar110::ENGINE_PARAMS + 3));
-    addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset,70)), module, Scalar110::ENGINE_PARAMS + 4));
-    addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset + 20,70)), module, Scalar110::ENGINE_PARAMS + 5));
-    addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset + 40,70)), module, Scalar110::ENGINE_PARAMS + 6));
-    addParam(createParamCentered<ParameterKnob>(mm2px(Vec(offset + 60,70)), module, Scalar110::ENGINE_PARAMS + 7));
-    */
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(210, 114.702)), module, Scalar110::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(220, 114.702)), module, Scalar110::AUDIO_OUTPUT_RIGHT));
 
-
-    /*
-      LCDWidget *lcd_widget = new LCDWidget(module);
-      // lcd_widget->module = module;
-      lcd_widget->box.pos = mm2px(Vec(LCD_DISPLAY_X, LCD_DISPLAY_Y));
-      addChild(lcd_widget);
-      */
-
-      /*
-    FileSelectWidget *file_select_widget = new FileSelectWidget();
-    file_select_widget->module = module;
-    file_select_widget->box.pos = mm2px(Vec(LCD_DISPLAY_X + 2, LCD_DISPLAY_Y + 5));
-    addChild(file_select_widget);
-    */
+    for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
+    {
+      addParam(createParamCentered<LEDButton>(mm2px(Vec(20 + (button_spacing * i), 20)), module, Scalar110::TRACK_BUTTONS + i));
+      addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(20 + (button_spacing * i), 20)), module, Scalar110::TRACK_BUTTON_LIGHTS + i));
+    }
 
   }
 

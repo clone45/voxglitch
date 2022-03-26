@@ -7,6 +7,7 @@ struct Scalar110 : Module
 {
   dsp::SchmittTrigger drum_pad_triggers[NUMBER_OF_STEPS];
   dsp::SchmittTrigger step_select_triggers[NUMBER_OF_STEPS];
+  dsp::SchmittTrigger track_button_triggers[NUMBER_OF_TRACKS];
   dsp::SchmittTrigger stepTrigger;
   Track tracks[NUMBER_OF_TRACKS];
   Track *selected_track = NULL;
@@ -36,6 +37,7 @@ struct Scalar110 : Module
     TRACK_SELECT_KNOB,
     ENUMS(STEP_KNOBS, NUMBER_OF_STEPS),
     ENUMS(FUNCTION_BUTTONS, NUMBER_OF_FUNCTIONS),
+    ENUMS(TRACK_BUTTONS, NUMBER_OF_TRACKS),
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -52,6 +54,7 @@ struct Scalar110 : Module
     ENUMS(STEP_SELECT_BUTTON_LIGHTS, NUMBER_OF_STEPS),
     ENUMS(STEP_LOCATION_LIGHTS, NUMBER_OF_STEPS),
     ENUMS(FUNCTION_BUTTON_LIGHTS, NUMBER_OF_FUNCTIONS),
+    ENUMS(TRACK_BUTTON_LIGHTS, NUMBER_OF_TRACKS),
 		NUM_LIGHTS
 	};
 
@@ -216,12 +219,24 @@ struct Scalar110 : Module
     // If the user has turned the track knob, switch tracks and update the
     // knob positions for the selected function.
     //
+    /*
     track_index = params[TRACK_SELECT_KNOB].getValue();
     if(track_index != old_track_index)
     {
       old_track_index = track_index;
       selected_track = &tracks[track_index];
       updateKnobPositions();
+    }
+    */
+
+    for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+    {
+      if(track_button_triggers[i].process(params[TRACK_BUTTONS + i].getValue()))
+      {
+        track_index = i;
+        selected_track = &tracks[track_index];
+        updateKnobPositions();
+      }
     }
 
 
@@ -333,12 +348,16 @@ struct Scalar110 : Module
       clock_counter++;
     }
 
-
-
     // function button lights
     for(unsigned int i=0; i<NUMBER_OF_FUNCTIONS; i++)
     {
       lights[FUNCTION_BUTTON_LIGHTS + i].setBrightness(selected_function == i);
+    }
+
+    // track button lights
+    for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
+    {
+      lights[TRACK_BUTTON_LIGHTS + i].setBrightness(track_index == i);
     }
   }
 };
