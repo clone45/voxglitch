@@ -24,6 +24,7 @@ struct Scalar110 : Module
   unsigned int playback_step = 0;
   unsigned int selected_step = 0;
   unsigned int selected_parameter = 0;
+  unsigned int selected_function = 0;
   float left_output;
   float right_output;
   float track_left_output;
@@ -33,6 +34,7 @@ struct Scalar110 : Module
   std::string root_directory;
 	std::string path;
 
+  dsp::SchmittTrigger function_button_triggers[6];
 
   enum ParamIds {
     ENUMS(DRUM_PADS, NUMBER_OF_STEPS),
@@ -43,7 +45,7 @@ struct Scalar110 : Module
     SAMPLE_PAN_KNOB,
     TRACK_SELECT_KNOB,
     ENUMS(STEP_KNOBS, NUMBER_OF_STEPS),
-    ENUMS(FUNCTION_BUTTONS, NUMBER_OF_STEPS),
+    ENUMS(FUNCTION_BUTTONS, 6),
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -265,12 +267,28 @@ struct Scalar110 : Module
       lights[STEP_LOCATION_LIGHTS + step_number].setBrightness(playback_step == step_number);
     }
 
+    for(unsigned int i=0; i<6; i++)
+    {
+      if(function_button_triggers[i].process(params[FUNCTION_BUTTONS + i].getValue()))
+      {
+        selected_function = i;
+      }
+    }
+
     /*
     selected_track->setOffset(selected_step, params[SAMPLE_OFFSET_KNOB].getValue());
     selected_track->setVolume(selected_step, params[SAMPLE_VOLUME_KNOB].getValue());
     selected_track->setPitch(selected_step, params[SAMPLE_PITCH_KNOB].getValue());
     selected_track->setPan(selected_step, params[SAMPLE_PAN_KNOB].getValue());
     */
+
+    // Here's where I need to use a switch statement, such as
+    // If the offset is the active editing button, then:
+    for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
+    {
+      if(selected_function == 0) selected_track->setOffset(step_number, params[STEP_KNOBS + step_number].getValue());
+      if(selected_function == 1) selected_track->setPan(step_number, params[STEP_KNOBS + step_number].getValue());
+    }
 
     //
     // compute output and step the sample playback position
@@ -301,6 +319,11 @@ struct Scalar110 : Module
 
       // Step the visual playback indicator as well
       playback_step = (playback_step + 1) % NUMBER_OF_STEPS;
+    }
+
+    for(unsigned int i=0; i<6; i++)
+    {
+      lights[FUNCTION_BUTTON_LIGHTS + i].setBrightness(selected_function == i);
     }
   }
 };

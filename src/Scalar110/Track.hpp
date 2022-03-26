@@ -95,41 +95,41 @@ struct Track
   //
   // Offset
   //
-  float getOffset(unsigned int selected_step) {
-    return(this->sample_playback_settings[selected_step].offset);
+  float getOffset(unsigned int step) {
+    return(this->sample_playback_settings[step].offset);
   }
-  void setOffset(unsigned int selected_step, float offset) {
-    this->sample_playback_settings[selected_step].offset = offset;
+  void setOffset(unsigned int step, float offset) {
+    this->sample_playback_settings[step].offset = offset;
   }
 
   //
   // Volume
   //
-  float getVolume(unsigned int selected_step) {
-    return(this->sample_playback_settings[selected_step].volume);
+  float getVolume(unsigned int step) {
+    return(this->sample_playback_settings[step].volume);
   }
-  void setVolume(unsigned int selected_step, float volume) {
-    this->sample_playback_settings[selected_step].volume = volume;
+  void setVolume(unsigned int step, float volume) {
+    this->sample_playback_settings[step].volume = volume;
   }
 
   //
   // Pitch
   //
-  float getPitch(unsigned int selected_step)  {
-    return(this->sample_playback_settings[selected_step].pitch);
+  float getPitch(unsigned int step)  {
+    return(this->sample_playback_settings[step].pitch);
   }
-  void setPitch(unsigned int selected_step, float pitch)  {
-    this->sample_playback_settings[selected_step].pitch = pitch;
+  void setPitch(unsigned int step, float pitch)  {
+    this->sample_playback_settings[step].pitch = pitch;
   }
 
   //
   // Pan
   //
-  float getPan(unsigned int selected_step)  {
-    return(this->sample_playback_settings[selected_step].pan);
+  float getPan(unsigned int step)  {
+    return(this->sample_playback_settings[step].pan);
   }
-  void setPan(unsigned int selected_step, float pan)  {
-    this->sample_playback_settings[selected_step].pan = pan;
+  void setPan(unsigned int step, float pan)  {
+    this->sample_playback_settings[step].pan = pan;
   }
 
 };
