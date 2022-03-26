@@ -327,7 +327,7 @@ struct Scalar110 : Module
         // Manage ratcheting
         for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
         {
-          tracks[i].ratchet();
+          tracks[i].ratchety();
         }
       }
       clock_counter++;

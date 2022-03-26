@@ -9,6 +9,9 @@ struct Track
   float volume = .5;
   float pan = .5;
   float pitch = .5;
+  float offset = 0.0;
+  float ratchet = 0.0;
+
   StereoPanSubModule stereo_pan_submodule;
   unsigned int ratchet_counter = 0;
   SamplePlayer sample_player;
@@ -33,16 +36,18 @@ struct Track
       volume = getVolume(playback_position);
       pitch = getPitch(playback_position);
       pan = getPan(playback_position);
+      ratchet = getRatchet(playback_position);
+      offset = getOffset(playback_position);
 
       sample_player.trigger(this->sample_playback_settings[playback_position].offset);
     }
   }
 
-  void ratchet()
+  void ratchety()
   {
     if (steps[playback_position])
     {
-      unsigned int ratchet = getRatchet(playback_position) * 8;
+      unsigned int ratchet = this->ratchet * 8;
       if(ratchet > 0)
       {
         ratchet = 8 - ratchet;
