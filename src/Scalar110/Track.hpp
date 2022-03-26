@@ -10,7 +10,7 @@ struct Track
   float pan = .5;
   float pitch = .5;
   StereoPanSubModule stereo_pan_submodule;
-
+  unsigned int ratchet_counter = 0;
   SamplePlayer sample_player;
 
   Track()
@@ -21,6 +21,7 @@ struct Track
   void step()
   {
     playback_position = (playback_position + 1) % NUMBER_OF_STEPS;
+    ratchet_counter = 0;
 
     //
     // TODO: possibly send over a pointer to ALL of the step parameters
@@ -34,6 +35,28 @@ struct Track
       pan = getPan(playback_position);
 
       sample_player.trigger(this->sample_playback_settings[playback_position].offset);
+    }
+  }
+
+  void ratchet()
+  {
+    if (steps[playback_position])
+    {
+      unsigned int ratchet = getRatchet(playback_position) * 8;
+      if(ratchet > 0)
+      {
+        ratchet = 8 - ratchet;
+
+        if(ratchet_counter >= ratchet)
+        {
+            // ratchet!
+            sample_player.trigger(this->sample_playback_settings[playback_position].offset);
+
+            // Reset ratchet counter
+            ratchet_counter = 0;
+        }
+        ratchet_counter++;
+      }
     }
   }
 
@@ -130,6 +153,16 @@ struct Track
   }
   void setPan(unsigned int step, float pan)  {
     this->sample_playback_settings[step].pan = pan;
+  }
+
+  //
+  // Ratchet
+  //
+  float getRatchet(unsigned int step)  {
+    return(this->sample_playback_settings[step].ratchet);
+  }
+  void setRatchet(unsigned int step, float ratchet)  {
+    this->sample_playback_settings[step].ratchet = ratchet;
   }
 
 };

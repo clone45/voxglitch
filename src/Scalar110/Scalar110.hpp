@@ -13,10 +13,10 @@ struct Scalar110 : Module
   unsigned int track_index = 0;
   unsigned int old_track_index = 0;
   unsigned int playback_step = 0;
-  unsigned int selected_step = 0;
-  unsigned int selected_parameter = 0;
   unsigned int selected_function = 0;
   unsigned int old_selected_function = 0;
+  unsigned int clock_division = 8;
+  unsigned int clock_counter = 0;
   float track_left_output;
   float track_right_output;
 
@@ -62,16 +62,8 @@ struct Scalar110 : Module
     for(unsigned int i=0; i < NUMBER_OF_STEPS; i++)
     {
       configParam(DRUM_PADS + i, 0.0, 1.0, 0.0, "drum_button_" + std::to_string(i));
-      configParam(STEP_SELECT_BUTTONS + i, 0.0, 1.0, 0.0, "selected_step_" + std::to_string(i));
       configParam(STEP_KNOBS + i, 0.0, 1.0, 0.0, "step_knob_" + std::to_string(i));
     }
-
-    /*
-    configParam(SAMPLE_OFFSET_KNOB, 0.0, 1.0, 0.0,"sample_offset");
-    configParam(SAMPLE_VOLUME_KNOB, 0.0, 1.0, 0.0,"sample_volume");
-    configParam(SAMPLE_PITCH_KNOB, 0.0, 1.0, 0.0,"sample_pitch");
-    configParam(SAMPLE_PAN_KNOB, 0.0, 1.0, 0.0,"sample_pan");
-    */
 
     // Configure track knob
     configParam(TRACK_SELECT_KNOB, 0.0, NUMBER_OF_TRACKS - 1, 0.0, "Track");
@@ -92,6 +84,7 @@ struct Scalar110 : Module
         case FUNCTION_PAN: params[STEP_KNOBS + step_number].setValue(selected_track->getPan(step_number)); break;
         case FUNCTION_VOLUME: params[STEP_KNOBS + step_number].setValue(selected_track->getVolume(step_number)); break;
         case FUNCTION_PITCH: params[STEP_KNOBS + step_number].setValue(selected_track->getPitch(step_number)); break;
+        case FUNCTION_RATCHET: params[STEP_KNOBS + step_number].setValue(selected_track->getRatchet(step_number)); break;
         // TODO: add reverse and loop
       }
     }
@@ -117,13 +110,12 @@ struct Scalar110 : Module
         json_t *step_data = json_object();
         json_object_set(step_data, "trigger", json_integer(this->tracks[track_number].getValue(step_index)));
 
-        // json_t *parameter_json_array = json_array();
-
         //  json_array_append_new(parameter_json_array, json_real(this->tracks[track_number].getParameter(step_index,parameter_index)));
         json_object_set(step_data, "offset", json_real(this->tracks[track_number].getOffset(step_index)));
         json_object_set(step_data, "volume", json_real(this->tracks[track_number].getVolume(step_index)));
         json_object_set(step_data, "pitch", json_real(this->tracks[track_number].getPitch(step_index)));
         json_object_set(step_data, "pan", json_real(this->tracks[track_number].getPan(step_index)));
+        json_object_set(step_data, "ratchet", json_real(this->tracks[track_number].getRatchet(step_index)));
 
         // json_object_set(step_data, "p", parameter_json_array);
 
@@ -197,6 +189,9 @@ struct Scalar110 : Module
 
             json_t *pan_json = json_object_get(json_step_object, "pan");
             if(pan_json) this->tracks[track_index].setPan(step_index, json_real_value(pan_json));
+
+            json_t *ratchet_json = json_object_get(json_step_object, "ratchet");
+            if(ratchet_json) this->tracks[track_index].setRatchet(step_index, json_real_value(ratchet_json));
           }
         }
 
@@ -217,8 +212,10 @@ struct Scalar110 : Module
 
 	void process(const ProcessArgs &args) override
 	{
-    // selected_track = &tracks[(int) params[TRACK_SELECT_KNOB].getValue()];
-
+    //
+    // If the user has turned the track knob, switch tracks and update the
+    // knob positions for the selected function.
+    //
     track_index = params[TRACK_SELECT_KNOB].getValue();
     if(track_index != old_track_index)
     {
@@ -229,6 +226,7 @@ struct Scalar110 : Module
 
 
     //
+    // Pad editing features:
     // Handle drum pads, drum location, and drum selection interactions and lights.
     //
 
@@ -244,12 +242,13 @@ struct Scalar110 : Module
       // Light up drum pads
       lights[DRUM_PAD_LIGHTS + step_number].setBrightness(selected_track->getValue(step_number));
 
-      // Light up step selection light
-      lights[STEP_SELECT_BUTTON_LIGHTS + step_number].setBrightness(selected_step == step_number);
-
       // Show location
       lights[STEP_LOCATION_LIGHTS + step_number].setBrightness(playback_step == step_number);
     }
+
+    //
+    //  Function selection
+    //
 
     for(unsigned int i=0; i < NUMBER_OF_FUNCTIONS; i++)
     {
@@ -277,6 +276,7 @@ struct Scalar110 : Module
         case FUNCTION_PAN: selected_track->setPan(step_number, params[STEP_KNOBS + step_number].getValue()); break;
         case FUNCTION_VOLUME: selected_track->setVolume(step_number, params[STEP_KNOBS + step_number].getValue()); break;
         case FUNCTION_PITCH: selected_track->setPitch(step_number, params[STEP_KNOBS + step_number].getValue()); break;
+        case FUNCTION_RATCHET: selected_track->setRatchet(step_number, params[STEP_KNOBS + step_number].getValue()); break;
 
         // TODO: add reverse and loop
       }
@@ -303,19 +303,39 @@ struct Scalar110 : Module
     outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_output);
     outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_output);
 
-    // Process Step Input
+    //
+    // Clock and step features
+    //
     if(stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
     {
-      // Step all of the tracks
-      for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
+      if(clock_counter == clock_division)
       {
-        tracks[i].step();
-      }
+        // Step all of the tracks
+        for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
+        {
+          tracks[i].step();
+        }
 
-      // Step the visual playback indicator as well
-      playback_step = (playback_step + 1) % NUMBER_OF_STEPS;
+        // Step the visual playback indicator as well
+        playback_step = (playback_step + 1) % NUMBER_OF_STEPS;
+
+        // Reset clock division counter
+        clock_counter = 0;
+      }
+      else
+      {
+        // Manage ratcheting
+        for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
+        {
+          tracks[i].ratchet();
+        }
+      }
+      clock_counter++;
     }
 
+
+
+    // function button lights
     for(unsigned int i=0; i<NUMBER_OF_FUNCTIONS; i++)
     {
       lights[FUNCTION_BUTTON_LIGHTS + i].setBrightness(selected_function == i);
