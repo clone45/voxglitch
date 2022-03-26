@@ -31,7 +31,6 @@ struct LoadSamplesFromFolderMenuItem : MenuItem
           if(i < 6)
           {
             module->tracks[i].sample_player.loadSample(std::string(entry));
-            // loaded_filename = module->tracks[i].sampler_player..getFilename();
             i++;
           }
   			}
@@ -78,18 +77,11 @@ struct Scalar110Widget : ModuleWidget
 
     for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
     {
-      /*
-      addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * i), button_group_y + 10)), module, Scalar110::STEP_SELECT_BUTTONS + i));
-      addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * i), button_group_y + 10)), module, Scalar110::STEP_SELECT_BUTTON_LIGHTS + i));
-      */
       addParam(createLightParamCentered<VCVLightBezel<>>(mm2px(Vec(button_group_x + (button_spacing * i), button_group_y)), module, Scalar110::DRUM_PADS + i, Scalar110::DRUM_PAD_LIGHTS + i));
       addChild(createLightCentered<SmallLight<RedLight>>(mm2px(Vec(button_group_x + (button_spacing * i), button_group_y - 6)), module, Scalar110::STEP_LOCATION_LIGHTS + i));
 
       // Create attenuator knobs for each step
       addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * i), button_group_y + 20)), module, Scalar110::STEP_KNOBS + i));
-
-      // Create function buttons
-
     }
 
 
@@ -102,12 +94,12 @@ struct Scalar110Widget : ModuleWidget
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(50,50)), module, Scalar110::TRACK_SELECT_KNOB));
     // addParam(createParamCentered<EngineKnob>(mm2px(Vec(50,80)), module, Scalar110::ENGINE_SELECT_KNOB));
 
-
+    /*
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(120 + (0 * 20),50)), module, Scalar110::SAMPLE_OFFSET_KNOB));
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(120 + (1 * 20),50)), module, Scalar110::SAMPLE_VOLUME_KNOB));
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(120 + (2 * 20),50)), module, Scalar110::SAMPLE_PITCH_KNOB));
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(120 + (3 * 20),50)), module, Scalar110::SAMPLE_PAN_KNOB));
-
+    */
     /*
     for(unsigned int i=0; i<4; i++)
     {

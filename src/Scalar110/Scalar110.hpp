@@ -1,8 +1,7 @@
 //
 // Where I left off.
 //
-// TODO: when a new function is selected, restore the knob positions for that
-// track/function
+
 
 struct Scalar110 : Module
 {
@@ -18,8 +17,6 @@ struct Scalar110 : Module
   unsigned int selected_parameter = 0;
   unsigned int selected_function = 0;
   unsigned int old_selected_function = 0;
-  float left_output;
-  float right_output;
   float track_left_output;
   float track_right_output;
 
@@ -27,7 +24,7 @@ struct Scalar110 : Module
   std::string root_directory;
 	std::string path;
 
-  dsp::SchmittTrigger function_button_triggers[6];
+  dsp::SchmittTrigger function_button_triggers[NUMBER_OF_FUNCTIONS];
 
   enum ParamIds {
     ENUMS(DRUM_PADS, NUMBER_OF_STEPS),
@@ -38,7 +35,7 @@ struct Scalar110 : Module
     SAMPLE_PAN_KNOB,
     TRACK_SELECT_KNOB,
     ENUMS(STEP_KNOBS, NUMBER_OF_STEPS),
-    ENUMS(FUNCTION_BUTTONS, 6),
+    ENUMS(FUNCTION_BUTTONS, NUMBER_OF_FUNCTIONS),
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -54,7 +51,7 @@ struct Scalar110 : Module
     ENUMS(DRUM_PAD_LIGHTS, NUMBER_OF_STEPS),
     ENUMS(STEP_SELECT_BUTTON_LIGHTS, NUMBER_OF_STEPS),
     ENUMS(STEP_LOCATION_LIGHTS, NUMBER_OF_STEPS),
-    ENUMS(FUNCTION_BUTTON_LIGHTS, 6),
+    ENUMS(FUNCTION_BUTTON_LIGHTS, NUMBER_OF_FUNCTIONS),
 		NUM_LIGHTS
 	};
 
@@ -69,10 +66,12 @@ struct Scalar110 : Module
       configParam(STEP_KNOBS + i, 0.0, 1.0, 0.0, "step_knob_" + std::to_string(i));
     }
 
+    /*
     configParam(SAMPLE_OFFSET_KNOB, 0.0, 1.0, 0.0,"sample_offset");
     configParam(SAMPLE_VOLUME_KNOB, 0.0, 1.0, 0.0,"sample_volume");
     configParam(SAMPLE_PITCH_KNOB, 0.0, 1.0, 0.0,"sample_pitch");
     configParam(SAMPLE_PAN_KNOB, 0.0, 1.0, 0.0,"sample_pan");
+    */
 
     // Configure track knob
     configParam(TRACK_SELECT_KNOB, 0.0, NUMBER_OF_TRACKS - 1, 0.0, "Track");
@@ -85,17 +84,16 @@ struct Scalar110 : Module
 
   void updateKnobPositions()
   {
-
-    /*
-    params[SAMPLE_OFFSET_KNOB].setValue(selected_track->getOffset(selected_step));
-    params[SAMPLE_VOLUME_KNOB].setValue(selected_track->getVolume(selected_step));
-    params[SAMPLE_PITCH_KNOB].setValue(selected_track->getPitch(selected_step));
-    params[SAMPLE_PAN_KNOB].setValue(selected_track->getPan(selected_step));
-    */
     for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
-      if(selected_function == 0) params[STEP_KNOBS + step_number].setValue(selected_track->getOffset(step_number));
-      if(selected_function == 1) params[STEP_KNOBS + step_number].setValue(selected_track->getPan(step_number));
+      switch(selected_function)
+      {
+        case FUNCTION_OFFSET: params[STEP_KNOBS + step_number].setValue(selected_track->getOffset(step_number)); break;
+        case FUNCTION_PAN: params[STEP_KNOBS + step_number].setValue(selected_track->getPan(step_number)); break;
+        case FUNCTION_VOLUME: params[STEP_KNOBS + step_number].setValue(selected_track->getVolume(step_number)); break;
+        case FUNCTION_PITCH: params[STEP_KNOBS + step_number].setValue(selected_track->getPitch(step_number)); break;
+        // TODO: add reverse and loop
+      }
     }
   }
 
@@ -241,20 +239,7 @@ struct Scalar110 : Module
       {
         // Toggle the drum pad
         selected_track->toggleStep(step_number);
-
-        // Also set the step selection for convenience
-        // selected_step = step_number;
-        // updateKnobPositions();
       }
-
-      // Process step select triggers.
-      /*
-      if(step_select_triggers[step_number].process(params[STEP_SELECT_BUTTONS + step_number].getValue()))
-      {
-        selected_step = step_number;
-        updateKnobPositions();
-      }
-      */
 
       // Light up drum pads
       lights[DRUM_PAD_LIGHTS + step_number].setBrightness(selected_track->getValue(step_number));
@@ -266,7 +251,7 @@ struct Scalar110 : Module
       lights[STEP_LOCATION_LIGHTS + step_number].setBrightness(playback_step == step_number);
     }
 
-    for(unsigned int i=0; i<6; i++)
+    for(unsigned int i=0; i < NUMBER_OF_FUNCTIONS; i++)
     {
       if(function_button_triggers[i].process(params[FUNCTION_BUTTONS + i].getValue()))
       {
@@ -279,26 +264,32 @@ struct Scalar110 : Module
       }
     }
 
-    /*
-    selected_track->setOffset(selected_step, params[SAMPLE_OFFSET_KNOB].getValue());
-    selected_track->setVolume(selected_step, params[SAMPLE_VOLUME_KNOB].getValue());
-    selected_track->setPitch(selected_step, params[SAMPLE_PITCH_KNOB].getValue());
-    selected_track->setPan(selected_step, params[SAMPLE_PAN_KNOB].getValue());
-    */
-
     // Here's where I need to use a switch statement, such as
     // If the offset is the active editing button, then:
     for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
-      if(selected_function == 0) selected_track->setOffset(step_number, params[STEP_KNOBS + step_number].getValue());
-      if(selected_function == 1) selected_track->setPan(step_number, params[STEP_KNOBS + step_number].getValue());
+      // if(selected_function == 0) selected_track->setOffset(step_number, params[STEP_KNOBS + step_number].getValue());
+      // if(selected_function == 1) selected_track->setPan(step_number, params[STEP_KNOBS + step_number].getValue());
+
+      switch(selected_function)
+      {
+        case FUNCTION_OFFSET: selected_track->setOffset(step_number, params[STEP_KNOBS + step_number].getValue()); break;
+        case FUNCTION_PAN: selected_track->setPan(step_number, params[STEP_KNOBS + step_number].getValue()); break;
+        case FUNCTION_VOLUME: selected_track->setVolume(step_number, params[STEP_KNOBS + step_number].getValue()); break;
+        case FUNCTION_PITCH: selected_track->setPitch(step_number, params[STEP_KNOBS + step_number].getValue()); break;
+
+        // TODO: add reverse and loop
+      }
     }
 
     //
-    // compute output and step the sample playback position
-    // The return result from tne engine should be -5v to 5v
-    left_output = 0;
-    right_output = 0;
+    // For each track...
+    //  a. Get the output of the tracks and sum them for the stereo output
+    //  b. Once the output has been read, increment the sample position
+    //
+
+    float left_output = 0;
+    float right_output = 0;
 
     for(unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
@@ -325,7 +316,7 @@ struct Scalar110 : Module
       playback_step = (playback_step + 1) % NUMBER_OF_STEPS;
     }
 
-    for(unsigned int i=0; i<6; i++)
+    for(unsigned int i=0; i<NUMBER_OF_FUNCTIONS; i++)
     {
       lights[FUNCTION_BUTTON_LIGHTS + i].setBrightness(selected_function == i);
     }

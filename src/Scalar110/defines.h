@@ -5,6 +5,17 @@ namespace scalar_110
   const int NUMBER_OF_PARAMETERS = 8;
   const int NUMBER_OF_SAMPLES = 16;
 
+  const int NUMBER_OF_FUNCTIONS = 6;
+
+  const int FUNCTION_VOLUME = 0;
+  const int FUNCTION_PAN = 1;
+  const int FUNCTION_PITCH = 2;
+  const int FUNCTION_RATCHET = 3;
+  const int FUNCTION_OFFSET = 4;
+  const int FUNCTION_PROBABILITY = 5;
+  const int FUNCTION_LOOP = 6;
+  const int FUNCTION_REVERSE = 7;
+
 /*
   const int LCD_DISPLAY_X = 43;
   const float LCD_DISPLAY_Y = 9.4;
