@@ -9,6 +9,7 @@
 using namespace scalar_110;
 
 #include "Common/VoxglitchWidget.hpp"
+#include "Scalar110/SamplePlaybackSettings.hpp"
 
 // Sample players and such
 #include "Common/sample.hpp"
@@ -17,7 +18,6 @@ using namespace scalar_110;
 
 // Core components
 #include "Scalar110/SamplePlayer.hpp"
-#include "Scalar110/SamplePlaybackSettings.hpp"
 #include "Scalar110/Track.hpp"
 #include "Scalar110/Scalar110.hpp"
 

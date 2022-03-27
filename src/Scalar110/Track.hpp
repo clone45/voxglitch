@@ -5,12 +5,8 @@ struct Track
 {
   bool steps[NUMBER_OF_STEPS] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
   unsigned int playback_position = 0;
-  SamplePlaybackSettings sample_playback_settings[NUMBER_OF_STEPS];
-  float volume = .5;
-  float pan = .5;
-  float pitch = .5;
-  float offset = 0.0;
-  float ratchet = 0.0;
+  SamplePlaybackSettings sample_playback_settings[NUMBER_OF_STEPS]; // settings assigned to each step
+  SamplePlaybackSettings settings; // currently used settings
 
   StereoPanSubModule stereo_pan_submodule;
   unsigned int ratchet_counter = 0;
@@ -18,7 +14,6 @@ struct Track
 
   Track()
   {
-    volume = getVolume(playback_position);
   }
 
   void step()
@@ -26,20 +21,19 @@ struct Track
     playback_position = (playback_position + 1) % NUMBER_OF_STEPS;
     ratchet_counter = 0;
 
-    //
-    // TODO: possibly send over a pointer to ALL of the step parameters
-    //       and copy them locally in the sample_player?
-
     if (steps[playback_position])
     {
-      // trigger sample playback
-      volume = getVolume(playback_position);
-      pitch = getPitch(playback_position);
-      pan = getPan(playback_position);
-      ratchet = getRatchet(playback_position);
-      offset = getOffset(playback_position);
+      // Copy the settings from sample_playback_settings into settings
+      settings.volume = getVolume(playback_position);
+      settings.pitch = getPitch(playback_position);
+      settings.pan = getPan(playback_position);
+      settings.ratchet = getRatchet(playback_position);
+      settings.offset = getOffset(playback_position);
+      settings.reverse = getReverse(playback_position);
+      settings.loop = getLoop(playback_position);
 
-      sample_player.trigger(this->sample_playback_settings[playback_position].offset);
+      // trigger sample playback
+      sample_player.trigger(&settings);
     }
   }
 
@@ -47,7 +41,7 @@ struct Track
   {
     if (steps[playback_position])
     {
-      unsigned int ratchet = this->ratchet * 8;
+      unsigned int ratchet = settings.ratchet * 8;
       if(ratchet > 0)
       {
         ratchet = 8 - ratchet;
@@ -55,7 +49,7 @@ struct Track
         if(ratchet_counter >= ratchet)
         {
             // ratchet!
-            sample_player.trigger(this->sample_playback_settings[playback_position].offset);
+            sample_player.trigger(&settings);
 
             // Reset ratchet counter
             ratchet_counter = 0;
@@ -106,18 +100,25 @@ struct Track
     // Read sample output and return
     std::tie(left_output, right_output) = this->sample_player.getStereoOutput();
 
-    float centered_pan = (this->pan * 2.0) - 1.0;
+    float centered_pan = (settings.pan * 2.0) - 1.0;
     std::tie(left_output, right_output) = stereo_pan_submodule.process(left_output, right_output, centered_pan);
 
-    left_output *= (volume * 2);  // Range from 0 to 2 times normal volume
-    right_output *= (volume * 2);  // Range from 0 to 2 times normal volume
+    left_output *= (settings.volume * 2);  // Range from 0 to 2 times normal volume
+    right_output *= (settings.volume * 2);  // Range from 0 to 2 times normal volume
 
     return { left_output, right_output };
   }
 
   void incrementSamplePosition(float rack_sample_rate)
   {
-    this->sample_player.step(rack_sample_rate, pitch);
+    if(settings.reverse > .5)
+    {
+      this->sample_player.stepReverse(rack_sample_rate, &settings);
+    }
+    else
+    {
+      this->sample_player.step(rack_sample_rate, &settings);
+    }
   }
 
   //
@@ -168,6 +169,26 @@ struct Track
   }
   void setRatchet(unsigned int step, float ratchet)  {
     this->sample_playback_settings[step].ratchet = ratchet;
+  }
+
+  //
+  // Reverse
+  //
+  float getReverse(unsigned int step)  {
+    return(this->sample_playback_settings[step].reverse);
+  }
+  void setReverse(unsigned int step, float reverse)  {
+    this->sample_playback_settings[step].reverse = reverse;
+  }
+
+  //
+  // Loop
+  //
+  float getLoop(unsigned int step)  {
+    return(this->sample_playback_settings[step].loop);
+  }
+  void setLoop(unsigned int step, float loop)  {
+    this->sample_playback_settings[step].loop = loop;
   }
 
 };

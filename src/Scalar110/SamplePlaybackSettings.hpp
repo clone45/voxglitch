@@ -5,7 +5,7 @@ struct SamplePlaybackSettings
 {
   float volume = 0.5;
   float pan = 0.5;
-  float pitch = 0.5;
+  float pitch = 0.0;
   float ratchet = 0.0;
   float offset = 0.0;
   float probability = 1.0;

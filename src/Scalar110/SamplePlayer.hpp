@@ -3,7 +3,6 @@ namespace scalar_110
 
 struct SamplePlayer
 {
-	// sample_ptr points to the loaded sample in memory
 	Sample sample;
 	float playback_position = 0.0f;
   unsigned int sample_position = 0;
@@ -18,10 +17,18 @@ struct SamplePlayer
 		return { left, right };
 	}
 
-  void trigger(float offset_percentage)
+  void trigger(SamplePlaybackSettings *settings)
   {
-    playback_position = (offset_percentage * this->sample.size());
-    playing = true;
+    if(! settings->reverse)
+    { // if forward playback
+      this->playback_position = (settings->offset * this->sample.size());
+    }
+    else
+    { // if reverse playback
+      this->playback_position = (( 1 - settings->offset) * this->sample.size());
+    }
+
+    this->playing = true;
   }
 
   void stop()
@@ -29,23 +36,53 @@ struct SamplePlayer
     playing = false;
   }
 
-	void step(float rack_sample_rate, float pitch_cv_input)
+	void step(float rack_sample_rate, SamplePlaybackSettings *settings)
 	{
     if(playing && sample.loaded)
     {
       float step_amount = sample.sample_rate / rack_sample_rate;
 
       // Step the playback position forward.
-      // Need to revisit this and get it right.
   		playback_position = playback_position + step_amount;
-      playback_position = playback_position + (step_amount * (pow(2,pitch_cv_input * 5)  - 1)); // 5 octave range
+      playback_position = playback_position + (step_amount * (pow(2,settings->pitch * 5)  - 1)); // 5 octave range
 
-      // voltage of 0 should playback at normal rate
-      // voltage of 1 should playback at 2^1 == twice as fast
-      // voltage of 2 should playback at 2^2 == four times as fast
+      // If the playback position is past the playback length, end sample playback or loop
+      if(playback_position >= sample.size())
+      {
+        if(settings->loop > .5)
+        {
+          playback_position = (settings->offset * this->sample.size());
+        }
+        else
+        {
+           stop();
+        }
+      }
+    }
+	}
 
-      // If the playback position is past the playback length, end sample playback
-  		if(playback_position >= sample.size()) stop();
+  void stepReverse(float rack_sample_rate, SamplePlaybackSettings *settings)
+	{
+    if(playing && sample.loaded)
+    {
+      float step_amount = sample.sample_rate / rack_sample_rate;
+
+      // Step the playback position forward.
+  		playback_position = playback_position - step_amount;
+      playback_position = playback_position - (step_amount * (pow(2,settings->pitch * 5)  - 1)); // 5 octave range
+
+      // If the playback position is past the beginning, end or loop sample playback
+      if(playback_position <= 0)
+      {
+        if(settings->loop > .5)
+        {
+          playback_position = (( 1 - settings->offset) * this->sample.size());
+        }
+        else
+        {
+          stop();
+        }
+      }
     }
 	}
 

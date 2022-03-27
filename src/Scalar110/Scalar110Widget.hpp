@@ -69,39 +69,90 @@ struct Scalar110Widget : ModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/scalar110_front_panel.svg")));
 
-    float button_group_x  = 10.0;
-    float button_group_y  = 100.0;
-    float button_spacing  = 10.0;
+    addInput(createInputCentered<PJ301MPort>(Vec(39.007812,83), module, Scalar110::STEP_INPUT));
 
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 40)), module, Scalar110::STEP_INPUT));
+    float button_positions[16][2] = {
+      { 38.007812,265.011719 },
+      { 74.007812,265.011719},
+      { 115.007812,265.011719},
+      { 153.007812,265.011719},
+      { 191.007812, 265.011719},
+      { 230.007812,265.011719},
+      { 268.007812, 265.011719},
+      { 305.007812, 265.011719},
+      { 345.007812, 265.011719},
+      { 383.007812,265.011719 },
+      { 421.007812,265.011719 },
+      { 459.007812,265.011719 },
+      { 498.007812,265.011719 },
+      { 537.007812,265.011719 },
+      { 575.007812,264.011719 },
+      { 612.007812,265.011719 }
+    };
+
+    float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
+      {22.007812,348.011719},
+      {99.007812,348.011719},
+      {177.007812,350.011719},
+      {253.007812,348.011719},
+      {331.007812,349.011719},
+      {409.007812,349.011719},
+      {485.007812,347.011719},
+      {562.007812,347.011719}
+    };
+
+    float track_button_positions[NUMBER_OF_TRACKS][2] = {
+      {380.007812,83},
+      {380.007812,114.5},
+      {379.007812,145.011719},
+      {380.007812,177.011719},
+      {507.007812,83},
+      {507.007812,114.5},
+      {507.007812,145.011719},
+      {507.007812,177.011719}
+    };
 
     for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
     {
-      addParam(createLightParamCentered<VCVLightBezel<>>(mm2px(Vec(button_group_x + (button_spacing * i), button_group_y)), module, Scalar110::DRUM_PADS + i, Scalar110::DRUM_PAD_LIGHTS + i));
-      addChild(createLightCentered<SmallLight<RedLight>>(mm2px(Vec(button_group_x + (button_spacing * i), button_group_y - 6)), module, Scalar110::STEP_LOCATION_LIGHTS + i));
+      addParam(createLightParamCentered<VCVLightBezel<>>(Vec(button_positions[i][0],button_positions[i][1]), module, Scalar110::DRUM_PADS + i, Scalar110::DRUM_PAD_LIGHTS + i));
+      addChild(createLightCentered<SmallLight<RedLight>>(Vec(button_positions[i][0],button_positions[i][1] - 26), module, Scalar110::STEP_LOCATION_LIGHTS + i));
 
       // Create attenuator knobs for each step
-      addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * i), button_group_y + 20)), module, Scalar110::STEP_KNOBS + i));
+      addParam(createParamCentered<Trimpot>(Vec(button_positions[i][0],button_positions[i][1] + 30), module, Scalar110::STEP_KNOBS + i));
     }
 
-
+    // Function Buttons
     for(unsigned int i=0; i<NUMBER_OF_FUNCTIONS; i++)
     {
-      addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * i), button_group_y - 20)), module, Scalar110::FUNCTION_BUTTONS + i));
-      addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * i), button_group_y - 20)), module, Scalar110::FUNCTION_BUTTON_LIGHTS + i));
+      float x = function_button_positions[i][0];
+      float y = function_button_positions[i][1];
+      addParam(createParamCentered<LEDButton>(Vec(x, y), module, Scalar110::FUNCTION_BUTTONS + i));
+      addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x, y), module, Scalar110::FUNCTION_BUTTON_LIGHTS + i));
     }
 
-    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(50,50)), module, Scalar110::TRACK_SELECT_KNOB));
+    // addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(50,50)), module, Scalar110::TRACK_SELECT_KNOB));
     // addParam(createParamCentered<EngineKnob>(mm2px(Vec(50,80)), module, Scalar110::ENGINE_SELECT_KNOB));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(210, 114.702)), module, Scalar110::AUDIO_OUTPUT_LEFT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(220, 114.702)), module, Scalar110::AUDIO_OUTPUT_RIGHT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(200, 10)), module, Scalar110::AUDIO_OUTPUT_LEFT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(210, 10)), module, Scalar110::AUDIO_OUTPUT_RIGHT));
 
     for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
     {
-      addParam(createParamCentered<LEDButton>(mm2px(Vec(20 + (button_spacing * i), 20)), module, Scalar110::TRACK_BUTTONS + i));
-      addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(20 + (button_spacing * i), 20)), module, Scalar110::TRACK_BUTTON_LIGHTS + i));
+      float x = track_button_positions[i][0];
+      float y = track_button_positions[i][1];
+      addParam(createParamCentered<LEDButton>(Vec(x,y), module, Scalar110::TRACK_BUTTONS + i));
+      addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x,y), module, Scalar110::TRACK_BUTTON_LIGHTS + i));
     }
 
+  }
+
+  void onHoverKey(const event::HoverKey &e) override
+  {
+    if(e.action == GLFW_PRESS && e.key == GLFW_KEY_P)
+    {
+      std::string debug_string = "mouse at: " + std::to_string(e.pos.x) + "," + std::to_string(e.pos.y);
+      DEBUG(debug_string.c_str());
+    }
+    ModuleWidget::onHoverKey(e);
   }
 
   void appendContextMenu(Menu *menu) override

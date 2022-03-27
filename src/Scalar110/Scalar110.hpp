@@ -1,6 +1,6 @@
 //
 // Where I left off.
-//
+// - tooltips?
 
 
 struct Scalar110 : Module
@@ -12,7 +12,6 @@ struct Scalar110 : Module
   Track tracks[NUMBER_OF_TRACKS];
   Track *selected_track = NULL;
   unsigned int track_index = 0;
-  unsigned int old_track_index = 0;
   unsigned int playback_step = 0;
   unsigned int selected_function = 0;
   unsigned int old_selected_function = 0;
@@ -30,11 +29,6 @@ struct Scalar110 : Module
   enum ParamIds {
     ENUMS(DRUM_PADS, NUMBER_OF_STEPS),
     ENUMS(STEP_SELECT_BUTTONS, NUMBER_OF_STEPS),
-    SAMPLE_OFFSET_KNOB,
-    SAMPLE_VOLUME_KNOB,
-    SAMPLE_PITCH_KNOB,
-    SAMPLE_PAN_KNOB,
-    TRACK_SELECT_KNOB,
     ENUMS(STEP_KNOBS, NUMBER_OF_STEPS),
     ENUMS(FUNCTION_BUTTONS, NUMBER_OF_FUNCTIONS),
     ENUMS(TRACK_BUTTONS, NUMBER_OF_TRACKS),
@@ -68,12 +62,9 @@ struct Scalar110 : Module
       configParam(STEP_KNOBS + i, 0.0, 1.0, 0.0, "step_knob_" + std::to_string(i));
     }
 
-    // Configure track knob
-    configParam(TRACK_SELECT_KNOB, 0.0, NUMBER_OF_TRACKS - 1, 0.0, "Track");
-    paramQuantities[TRACK_SELECT_KNOB]->snapEnabled = true;
-
     // Set default selected track
     selected_track = &tracks[0];
+    updateKnobPositions();
 	}
 
 
@@ -88,7 +79,8 @@ struct Scalar110 : Module
         case FUNCTION_VOLUME: params[STEP_KNOBS + step_number].setValue(selected_track->getVolume(step_number)); break;
         case FUNCTION_PITCH: params[STEP_KNOBS + step_number].setValue(selected_track->getPitch(step_number)); break;
         case FUNCTION_RATCHET: params[STEP_KNOBS + step_number].setValue(selected_track->getRatchet(step_number)); break;
-        // TODO: add reverse and loop
+        case FUNCTION_REVERSE: params[STEP_KNOBS + step_number].setValue(selected_track->getReverse(step_number)); break;
+        case FUNCTION_LOOP: params[STEP_KNOBS + step_number].setValue(selected_track->getLoop(step_number)); break;
       }
     }
   }
@@ -119,8 +111,8 @@ struct Scalar110 : Module
         json_object_set(step_data, "pitch", json_real(this->tracks[track_number].getPitch(step_index)));
         json_object_set(step_data, "pan", json_real(this->tracks[track_number].getPan(step_index)));
         json_object_set(step_data, "ratchet", json_real(this->tracks[track_number].getRatchet(step_index)));
-
-        // json_object_set(step_data, "p", parameter_json_array);
+        json_object_set(step_data, "reverse", json_real(this->tracks[track_number].getReverse(step_index)));
+        json_object_set(step_data, "loop", json_real(this->tracks[track_number].getLoop(step_index)));
 
         json_array_append_new(steps_json_array, step_data);
       }
@@ -164,8 +156,6 @@ struct Scalar110 : Module
     {
       size_t track_index;
       size_t step_index;
-      // size_t parameter_index;
-      // json_t *json_steps_array;
       json_t *json_step_object;
       json_t *json_track_object;
 
@@ -177,7 +167,6 @@ struct Scalar110 : Module
         {
           json_array_foreach(steps_json_array, step_index, json_step_object)
           {
-            // First, read the trigger state
             json_t *trigger_json = json_object_get(json_step_object, "trigger");
             if(trigger_json) this->tracks[track_index].setValue(step_index, json_integer_value(trigger_json));
 
@@ -195,6 +184,12 @@ struct Scalar110 : Module
 
             json_t *ratchet_json = json_object_get(json_step_object, "ratchet");
             if(ratchet_json) this->tracks[track_index].setRatchet(step_index, json_real_value(ratchet_json));
+
+            json_t *reverse_json = json_object_get(json_step_object, "reverse");
+            if(reverse_json) this->tracks[track_index].setReverse(step_index, json_real_value(reverse_json));
+
+            json_t *loop_json = json_object_get(json_step_object, "loop");
+            if(loop_json) this->tracks[track_index].setLoop(step_index, json_real_value(loop_json));
           }
         }
 
@@ -216,18 +211,9 @@ struct Scalar110 : Module
 	void process(const ProcessArgs &args) override
 	{
     //
-    // If the user has turned the track knob, switch tracks and update the
+    // If the user has pressed a track button, switch tracks and update the
     // knob positions for the selected function.
     //
-    /*
-    track_index = params[TRACK_SELECT_KNOB].getValue();
-    if(track_index != old_track_index)
-    {
-      old_track_index = track_index;
-      selected_track = &tracks[track_index];
-      updateKnobPositions();
-    }
-    */
 
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
     {
@@ -282,9 +268,6 @@ struct Scalar110 : Module
     // If the offset is the active editing button, then:
     for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
-      // if(selected_function == 0) selected_track->setOffset(step_number, params[STEP_KNOBS + step_number].getValue());
-      // if(selected_function == 1) selected_track->setPan(step_number, params[STEP_KNOBS + step_number].getValue());
-
       switch(selected_function)
       {
         case FUNCTION_OFFSET: selected_track->setOffset(step_number, params[STEP_KNOBS + step_number].getValue()); break;
@@ -292,31 +275,10 @@ struct Scalar110 : Module
         case FUNCTION_VOLUME: selected_track->setVolume(step_number, params[STEP_KNOBS + step_number].getValue()); break;
         case FUNCTION_PITCH: selected_track->setPitch(step_number, params[STEP_KNOBS + step_number].getValue()); break;
         case FUNCTION_RATCHET: selected_track->setRatchet(step_number, params[STEP_KNOBS + step_number].getValue()); break;
-
-        // TODO: add reverse and loop
+        case FUNCTION_REVERSE: selected_track->setReverse(step_number, params[STEP_KNOBS + step_number].getValue()); break;
+        case FUNCTION_LOOP: selected_track->setLoop(step_number, params[STEP_KNOBS + step_number].getValue()); break;
       }
     }
-
-    //
-    // For each track...
-    //  a. Get the output of the tracks and sum them for the stereo output
-    //  b. Once the output has been read, increment the sample position
-    //
-
-    float left_output = 0;
-    float right_output = 0;
-
-    for(unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
-    {
-      std::tie(track_left_output, track_right_output) = tracks[i].getStereoOutput();
-      left_output += track_left_output;
-      right_output += track_right_output;
-      tracks[i].incrementSamplePosition(args.sampleRate);
-    }
-
-    // Output voltages at stereo outputs
-    outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_output);
-    outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_output);
 
     //
     // Clock and step features
@@ -347,6 +309,27 @@ struct Scalar110 : Module
       }
       clock_counter++;
     }
+
+    //
+    // For each track...
+    //  a. Get the output of the tracks and sum them for the stereo output
+    //  b. Once the output has been read, increment the sample position
+    //
+
+    float left_output = 0;
+    float right_output = 0;
+
+    for(unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
+    {
+      std::tie(track_left_output, track_right_output) = tracks[i].getStereoOutput();
+      left_output += track_left_output;
+      right_output += track_right_output;
+      tracks[i].incrementSamplePosition(args.sampleRate);
+    }
+
+    // Output voltages at stereo outputs
+    outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_output);
+    outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_output);
 
     // function button lights
     for(unsigned int i=0; i<NUMBER_OF_FUNCTIONS; i++)

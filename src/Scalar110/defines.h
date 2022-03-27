@@ -5,7 +5,7 @@ namespace scalar_110
   const int NUMBER_OF_PARAMETERS = 8;
   const int NUMBER_OF_SAMPLES = 16;
 
-  const int NUMBER_OF_FUNCTIONS = 6;
+  const int NUMBER_OF_FUNCTIONS = 8;
 
   const int FUNCTION_VOLUME = 0;
   const int FUNCTION_PAN = 1;
