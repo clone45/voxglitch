@@ -4,7 +4,10 @@
 // - Is first beat skipped on load?
 // - improve ratcheting
 // - implement reset
-// - track labels
+// - track labels: Having all labels within one large container is going
+//   to make it impossible to clip the labels using a bounding box.  Instead,
+//   I'll need to create a new widget for each label.  On the plus side, this
+//   means that my positions won't need much adjustment.
 
 struct Scalar110 : Module
 {
@@ -24,10 +27,22 @@ struct Scalar110 : Module
   float track_left_output;
   float track_right_output;
 
+  //
   // Sample related variables
+  //
+  // * root_directory *: Used to store the last folder which the user accessed to
+  // load samples.  This is to alleviate the tedium of having to navigate to
+  // the same folder every time a user goes to load new samples.
+  //
+  // path: ??
+  //
+  // * loaded_filenames *: Filenames are displayed next to the tracks.  This variable
+  // keeps track of the filenames to display.  Filenames are saved and loaded
+  // with the patch
+  //
   std::string root_directory;
 	std::string path;
-  std::string loaded_filenames[NUMBER_OF_TRACKS];
+  std::string loaded_filenames[NUMBER_OF_TRACKS]; // for display on the front panel
 
   enum ParamIds {
     ENUMS(DRUM_PADS, NUMBER_OF_STEPS),
@@ -203,6 +218,7 @@ struct Scalar110 : Module
         {
           std::string path = json_string_value(sample_path_json);
           if(path != "") this->tracks[track_index].sample_player.loadSample(path);
+          this->loaded_filenames[track_index] = this->tracks[track_index].sample_player.getFilename();
         }
       }
     }
