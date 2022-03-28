@@ -1,13 +1,17 @@
 //
 // Where I left off.
 // - tooltips?
-
+// - Is first beat skipped on load?
+// - improve ratcheting
+// - implement reset
+// - track labels
 
 struct Scalar110 : Module
 {
   dsp::SchmittTrigger drum_pad_triggers[NUMBER_OF_STEPS];
   dsp::SchmittTrigger step_select_triggers[NUMBER_OF_STEPS];
   dsp::SchmittTrigger track_button_triggers[NUMBER_OF_TRACKS];
+  dsp::SchmittTrigger function_button_triggers[NUMBER_OF_FUNCTIONS];
   dsp::SchmittTrigger stepTrigger;
   Track tracks[NUMBER_OF_TRACKS];
   Track *selected_track = NULL;
@@ -23,8 +27,7 @@ struct Scalar110 : Module
   // Sample related variables
   std::string root_directory;
 	std::string path;
-
-  dsp::SchmittTrigger function_button_triggers[NUMBER_OF_FUNCTIONS];
+  std::string loaded_filenames[NUMBER_OF_TRACKS];
 
   enum ParamIds {
     ENUMS(DRUM_PADS, NUMBER_OF_STEPS),

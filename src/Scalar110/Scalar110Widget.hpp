@@ -1,5 +1,49 @@
 #include <componentlibrary.hpp>
 
+struct TrackLabelDisplay : TransparentWidget
+{
+  Scalar110 *module;
+  unsigned int track_number;
+
+  TrackLabelDisplay(unsigned int track_number)
+  {
+    this->track_number = track_number;
+    // box.size = Vec(TRACK_LABEL_WIDTH, SLIDER_HEIGHT);
+  }
+
+  void draw(const DrawArgs& args) override
+  {
+    const auto vg = args.vg;
+
+    // Save the drawing context to restore later
+    nvgSave(vg);
+
+    if(module)
+    {
+      std::string to_display = module->loaded_filenames[track_number];
+
+      // std::string to_display = "foo there is it";
+
+      if(to_display != "")
+      {
+        nvgFontSize(args.vg, 14);
+        nvgTextLetterSpacing(args.vg, 0);
+        nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 0xff));
+        // nvgRotate(args.vg, -M_PI / 2.0f);
+        nvgTextAlign(args.vg, NVG_ALIGN_LEFT);
+        float x_position = 0;
+        float y_position = 0;
+        float wrap_at = 275.0; // Just throw your hands in the air!  And wave them like you just don't
+        nvgTextBox(args.vg, x_position, y_position, wrap_at, to_display.c_str(), NULL);
+      }
+
+      nvgRestore(vg);
+
+    }
+  }
+};
+
+
 struct LoadSamplesFromFolderMenuItem : MenuItem
 {
 	Scalar110 *module;
@@ -31,6 +75,7 @@ struct LoadSamplesFromFolderMenuItem : MenuItem
           if(i < 6)
           {
             module->tracks[i].sample_player.loadSample(std::string(entry));
+            module->loaded_filenames[i] = module->tracks[i].sample_player.getFilename();
             i++;
           }
   			}
@@ -56,7 +101,7 @@ struct LoadSampleMenuItem : MenuItem
 		{
       root_dir = std::string(path);
 			module->tracks[sample_number].sample_player.loadSample(std::string(path));
-      // module->loaded_filenames[sample_number] = module->sample_players[sample_number].getFilename();
+      module->loaded_filenames[sample_number] = module->tracks[sample_number].sample_player.getFilename();
 			free(path);
 		}
 	}
@@ -142,6 +187,12 @@ struct Scalar110Widget : ModuleWidget
       addParam(createParamCentered<LEDButton>(Vec(x,y), module, Scalar110::TRACK_BUTTONS + i));
       addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x,y), module, Scalar110::TRACK_BUTTON_LIGHTS + i));
     }
+
+    TrackLabelDisplay *track_label_display = new TrackLabelDisplay(0);
+    track_label_display->setPosition(mm2px(Vec(20, 20)));
+    track_label_display->setSize(Vec(200, 50));
+    track_label_display->module = module;
+    addChild(track_label_display);
 
   }
 
