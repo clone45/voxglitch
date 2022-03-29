@@ -10,3 +10,4 @@
 // Constants for trig_input_response_mode
 #define TRIGGER 0
 #define GATE 1
+#define NUMBER_OF_SAMPLE_DISPLAY_ROWS 7

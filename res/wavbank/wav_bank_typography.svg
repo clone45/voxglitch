@@ -6,7 +6,7 @@
    id="Ebene_1"
    x="0px"
    y="0px"
-   width="50.8mm" 
+   width="50.8mm"
    height="128.5mm"
    viewBox="0 0 144 364.252"
    style="enable-background:new 0 0 144 364.252;"
@@ -28,13 +28,14 @@
    showgrid="false"
    inkscape:zoom="4.7933846"
    inkscape:cx="44.644863"
-   inkscape:cy="133.51735"
-   inkscape:window-width="3840"
-   inkscape:window-height="2066"
-   inkscape:window-x="2869"
-   inkscape:window-y="-11"
+   inkscape:cy="216.96569"
+   inkscape:window-width="2880"
+   inkscape:window-height="1526"
+   inkscape:window-x="-11"
+   inkscape:window-y="1138"
    inkscape:window-maximized="1"
-   inkscape:current-layer="Ebene_1" />
+   inkscape:current-layer="Ebene_1"
+   inkscape:document-units="mm" />
 <style
    type="text/css"
    id="style2">
@@ -145,7 +146,7 @@
    class="st2"
    d="M 133.62162,227.904 H 10.795621 c -0.504,0 -0.9120001,-0.409 -0.9120001,-0.912 v -95.72 c 0,-0.504 0.4090001,-0.912 0.9120001,-0.912 H 133.62062 c 0.504,0 0.912,0.409 0.912,0.912 v 95.72 c 0.001,0.504 -0.408,0.912 -0.911,0.912 z"
    id="path52"
-   style="stroke:none" /><polyline
+   style="stroke:none;fill-opacity:1;fill:#1c2729" /><polyline
    class="st0"
    points="77.915,75.267 108.161,75.267 108.161,74.767 77.915,74.767  "
    id="polyline54"

@@ -24,7 +24,7 @@ struct WavBankWidget : ModuleWidget
 		addParam(createParamCentered<squareToggle>(Vec(120.186218,280.068604), module, WavBank::LOOP_SWITCH));
 
     WavBankReadout *readout = new WavBankReadout();
-		readout->box.pos = mm2px(Vec(40.68, 78));
+		readout->box.pos = Vec(13.300354,141);
 		readout->box.size = Vec(110, 30); // bounding box of the widget
 		readout->module = module;
 		addChild(readout);

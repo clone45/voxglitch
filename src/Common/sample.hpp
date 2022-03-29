@@ -35,6 +35,7 @@ struct Sample
 {
 	std::string path;
 	std::string filename;
+	std::string display_name;
 	bool loading;
   bool loaded = false;
   bool queued_for_loading = false;
@@ -50,6 +51,7 @@ struct Sample
     sample_audio_buffer.clear();
 		loading = false;
 		filename = "[ empty ]";
+    display_name = "[ empty ]";
 		path = "";
 		sample_rate = 0;
 		channels = 0;
@@ -108,6 +110,8 @@ struct Sample
     // of the patch to reference.
     this->sample_length = sample_audio_buffer.size();
     this->filename = system::getFilename(path);
+    this->display_name = filename;
+    this->display_name.erase(this->display_name.length()-4);
     this->path = path;
 
     this->loading = false;
