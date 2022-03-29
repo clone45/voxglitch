@@ -46,6 +46,10 @@ struct WavBank : Module
 		configParam(WAV_KNOB, 0.0f, 1.0f, 0.0f, "SampleSelectKnob");
 		configParam(WAV_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "SampleSelectAttnKnob");
 		configParam(LOOP_SWITCH, 0.0f, 1.0f, 0.0f, "LoopSwitch");
+    configInput(TRIG_INPUT, "Trigger");
+    configInput(WAV_INPUT, "Wave Selection");
+    configInput(PITCH_INPUT, "Pitch");
+    // configSwitch(SWITCH_TEST, 0.0f, 1.0f, 1.0f, "Something", {"Value", "Other Value"});
 	}
 
   // Save

@@ -12,15 +12,16 @@ struct WavBankWidget : ModuleWidget
     addChild(png_panel);
 
     // Add typography layer
+
     std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/wavbank/wav_bank_typography.svg"));
     VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
     voxglitch_panel->setBackground(svg);
     addChild(voxglitch_panel);
 
-    addParam(createParamCentered<VoxglitchLargeKnob>(Vec(48.800396,77.267914), module, WavBank::WAV_KNOB));
-    addParam(createParamCentered<VoxglitchAttenuator>(mm2px(Vec(16.544, 46.09)), module, WavBank::WAV_ATTN_KNOB));
+    addParam(createParamCentered<VoxglitchLargeKnob>(Vec(48.800396,78.217896), module, WavBank::WAV_KNOB));
+    addParam(createParamCentered<VoxglitchAttenuator>(Vec(112.900337,60.692520), module, WavBank::WAV_ATTN_KNOB));
 
-		addParam(createParamCentered<squareToggle>(mm2px(Vec(40.72, 96.12)), module, WavBank::LOOP_SWITCH));
+		addParam(createParamCentered<squareToggle>(Vec(120.186218,280.068604), module, WavBank::LOOP_SWITCH));
 
     WavBankReadout *readout = new WavBankReadout();
 		readout->box.pos = mm2px(Vec(40.68, 78));
@@ -29,9 +30,9 @@ struct WavBankWidget : ModuleWidget
 		addChild(readout);
 
 		// Input jacks
-		addInput(createInputCentered<VoxglitchInputPort>(Vec(48.550400,227.734650), module, WavBank::TRIG_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(Vec(48.550400,171.650101), module, WavBank::WAV_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(Vec(48.732090,283.751099), module, WavBank::PITCH_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(29.850380,280.335236), module, WavBank::TRIG_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(112.800354,97.550163), module, WavBank::WAV_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(75.182068,280.500671), module, WavBank::PITCH_INPUT));
 
 		// WAV output
 		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(74.990524,349.837158), module, WavBank::WAV_LEFT_OUTPUT));
