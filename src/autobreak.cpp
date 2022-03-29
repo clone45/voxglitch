@@ -10,8 +10,6 @@
 #include "Common/submodules.hpp"
 #include <fstream>
 
-#include "Common/components/VoxglitchComponents.hpp"
-
 #include "Autobreak/defines.h"
 #include "Autobreak/Autobreak.hpp"
 #include "Autobreak/AutobreakLoadSample.hpp"
