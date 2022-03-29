@@ -29,7 +29,7 @@ struct XY : Module
     { -3.0, 3.0 },
     { 0.0, 1.0},
     { -1.0, 1.0}
-  };  
+  };
 
   // Some people are using this module as an x/y controller and not using
   // the recording/playback feature.  Previously, the position of the x/y
@@ -161,10 +161,7 @@ struct XY : Module
 
             if(playback_index < recording_memory.size())
             {
-              // This will cause the XYDisplay to animate
-              // this->drag_position = recording_memory[playback_index];
               recording_memory[playback_index] = drag_position;
-              // this->drag_position = recording_memory[playback_index];
 
               // Output the voltages
               outputs[X_OUTPUT].setVoltage((drag_position.x / DRAW_AREA_WIDTH_PT) * 10.0f);
