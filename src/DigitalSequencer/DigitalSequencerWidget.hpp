@@ -34,14 +34,29 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     auto L5 = createParamCentered<VoxglitchAttenuator>(Vec(252.350006, 311.750000), module, DigitalSequencer::SEQUENCER_5_LENGTH_KNOB); dynamic_cast<Knob*>(L5)->snap = true; addParam(L5);
     auto L6 = createParamCentered<VoxglitchAttenuator>(Vec(289.549988, 311.750000), module, DigitalSequencer::SEQUENCER_6_LENGTH_KNOB); dynamic_cast<Knob*>(L6)->snap = true; addParam(L6);
 
-// 102.500000,280.250000
-  // Sequence selection buttons
-  addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(102.700012, 280.250000), module, DigitalSequencer::SEQUENCER_1_BUTTON));
-  addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(140.200043, 280.250000), module, DigitalSequencer::SEQUENCER_2_BUTTON));
-  addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(177.550018, 280.250000), module, DigitalSequencer::SEQUENCER_3_BUTTON));
-  addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(214.900024, 280.250000), module, DigitalSequencer::SEQUENCER_4_BUTTON));
-  addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(252.350006, 280.250000), module, DigitalSequencer::SEQUENCER_5_BUTTON));
-  addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(289.549988, 280.250000), module, DigitalSequencer::SEQUENCER_6_BUTTON));
+    // Sequence selection buttons
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(102.700012, 280.250000), module, DigitalSequencer::SEQUENCER_1_BUTTON));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(140.200043, 280.250000), module, DigitalSequencer::SEQUENCER_2_BUTTON));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(177.550018, 280.250000), module, DigitalSequencer::SEQUENCER_3_BUTTON));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(214.900024, 280.250000), module, DigitalSequencer::SEQUENCER_4_BUTTON));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(252.350006, 280.250000), module, DigitalSequencer::SEQUENCER_5_BUTTON));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(289.549988, 280.250000), module, DigitalSequencer::SEQUENCER_6_BUTTON));
+
+    // CV outputs
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(359.299927,311.749878), module, DigitalSequencer::SEQ1_CV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(389.449951,311.749878), module, DigitalSequencer::SEQ2_CV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(419.799988,311.749878), module, DigitalSequencer::SEQ3_CV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(450.049988,311.749878), module, DigitalSequencer::SEQ4_CV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(480.449951,311.749878), module, DigitalSequencer::SEQ5_CV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(510.599976,311.749878), module, DigitalSequencer::SEQ6_CV_OUTPUT));
+
+    // Gate outputs
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(359.299927,349.699890), module, DigitalSequencer::SEQ1_GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(389.449951, 349.699890), module, DigitalSequencer::SEQ2_GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(419.799988, 349.699890), module, DigitalSequencer::SEQ3_GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(450.049988, 349.699890), module, DigitalSequencer::SEQ4_GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(480.449951, 349.699890), module, DigitalSequencer::SEQ5_GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(510.599976, 349.699890), module, DigitalSequencer::SEQ6_GATE_OUTPUT));
 
     /*
     // Main voltage sequencer display
