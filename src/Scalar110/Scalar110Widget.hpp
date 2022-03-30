@@ -3,10 +3,12 @@
 struct TrackLabelDisplay : TransparentWidget
 {
   Scalar110 *module;
+  unsigned int track_number = 0;
 
-  TrackLabelDisplay()
+  TrackLabelDisplay(unsigned int track_number)
   {
-    
+    this->track_number = track_number;
+    box.size = Vec(5, 5);
   }
 
   void draw(const DrawArgs& args) override
@@ -18,27 +20,21 @@ struct TrackLabelDisplay : TransparentWidget
 
     if(module)
     {
-      for(unsigned int track_number = 0; track_number < NUMBER_OF_TRACKS; track_number++)
+      std::string to_display = module->loaded_filenames[track_number];
+
+      if(to_display != "")
       {
-        std::string to_display = module->loaded_filenames[track_number];
-
-        if(to_display != "")
-        {
-          nvgFontSize(args.vg, 10);
-          nvgTextLetterSpacing(args.vg, 0);
-          nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 0xff));
-          // nvgRotate(args.vg, -M_PI / 2.0f);
-          nvgTextAlign(args.vg, NVG_ALIGN_LEFT);
-          float x_position = LABEL_POSITIONS[track_number][0];
-          float y_position = LABEL_POSITIONS[track_number][1];
-          float wrap_at = 275.0; // Just throw your hands in the air!  And wave them like you just don't
-          nvgTextBox(args.vg, x_position, y_position, wrap_at, to_display.c_str(), NULL);
-        }
+        nvgFontSize(args.vg, 10);
+        nvgTextLetterSpacing(args.vg, 0);
+        nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 0xff));
+        nvgTextAlign(args.vg, NVG_ALIGN_LEFT);
+        // float x_position = LABEL_POSITIONS[track_number][0];
+        // float y_position = LABEL_POSITIONS[track_number][1];
+        float wrap_at = 80.0; // Just throw your hands in the air!  And wave them like you just don't
+        nvgTextBox(args.vg, 0, 0, wrap_at, to_display.c_str(), NULL);
       }
-
-      nvgRestore(vg);
-
     }
+    nvgRestore(vg);
   }
 };
 
@@ -185,14 +181,13 @@ struct Scalar110Widget : ModuleWidget
       float y = track_button_positions[i][1];
       addParam(createParamCentered<LEDButton>(Vec(x,y), module, Scalar110::TRACK_BUTTONS + i));
       addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x,y), module, Scalar110::TRACK_BUTTON_LIGHTS + i));
+
+      TrackLabelDisplay *track_label_display = new TrackLabelDisplay(i);
+      track_label_display->setPosition(Vec(LABEL_POSITIONS[i][0], LABEL_POSITIONS[i][1]));
+      track_label_display->setSize(Vec(200, 50)); // Need to adjust this
+      track_label_display->module = module;
+      addChild(track_label_display);
     }
-
-    TrackLabelDisplay *track_label_display = new TrackLabelDisplay();
-    track_label_display->setPosition(Vec(0, 0));
-    track_label_display->setSize(Vec(200, 50));
-    track_label_display->module = module;
-    addChild(track_label_display);
-
   }
 
   void onHoverKey(const event::HoverKey &e) override
