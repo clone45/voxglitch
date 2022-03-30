@@ -1,21 +1,4 @@
-/*
-class TrimpotNoRandom : public Trimpot
-{
-public:
-  void randomize() override {} // do nothing. base class would actually randomize
-};
-*/
-
-/* Abandoning this front-panel control for now
-struct FreezeToggle : app::SvgSwitch {
-	FreezeToggle() {
-		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance,"res/freeze-button-off.svg")));
-    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/freeze-button-on.svg")));
-	};
-};
-*/
-
-struct DigitalSequencerWidget : ModuleWidget
+struct DigitalSequencerWidget : VoxglitchModuleWidget
 {
   DigitalSequencer* module;
   int copy_sequencer_index = -1;
@@ -24,13 +7,43 @@ struct DigitalSequencerWidget : ModuleWidget
   {
     this->module = module;
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_sequencer_front_panel.svg")));
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_sequencer/digital_sequencer_front_panel.svg")));
 
-    // Cosmetic rack screws
-    // addChild(createWidget<ScrewSilver>(Vec(15, 0)));
-    addChild(createWidget<ScrewSilver>(Vec(15, 365)));
-    addChild(createWidget<ScrewSilver>(mm2px(Vec(171.5, 0))));
+    PNGPanel *png_panel = new PNGPanel("res/digital_sequencer/digital_sequencer_full.png", 182.88, 128.5);
+    addChild(png_panel);
 
+    // Step
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(41.827522,290.250732), module, DigitalSequencer::STEP_INPUT));
+
+    // Reset
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(41.822453,349.650879), module, DigitalSequencer::RESET_INPUT));
+
+    // 6 step inputs
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(102.700012,349.749878), module, DigitalSequencer::SEQUENCER_1_STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(140.200043,349.849854), module, DigitalSequencer::SEQUENCER_2_STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(177.550018,349.799866), module, DigitalSequencer::SEQUENCER_3_STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(214.900024,349.799805), module, DigitalSequencer::SEQUENCER_4_STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(252.350006,349.799866), module, DigitalSequencer::SEQUENCER_5_STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(289.549988,349.849915), module, DigitalSequencer::SEQUENCER_6_STEP_INPUT));
+
+    // step length attenuators
+    auto L1 = createParamCentered<VoxglitchAttenuator>(Vec(102.700012, 311.750000), module, DigitalSequencer::SEQUENCER_1_LENGTH_KNOB); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
+    auto L2 = createParamCentered<VoxglitchAttenuator>(Vec(140.200043, 311.750000), module, DigitalSequencer::SEQUENCER_2_LENGTH_KNOB); dynamic_cast<Knob*>(L2)->snap = true; addParam(L2);
+    auto L3 = createParamCentered<VoxglitchAttenuator>(Vec(177.550018, 311.750000), module, DigitalSequencer::SEQUENCER_3_LENGTH_KNOB); dynamic_cast<Knob*>(L3)->snap = true; addParam(L3);
+    auto L4 = createParamCentered<VoxglitchAttenuator>(Vec(214.900024, 311.750000), module, DigitalSequencer::SEQUENCER_4_LENGTH_KNOB); dynamic_cast<Knob*>(L4)->snap = true; addParam(L4);
+    auto L5 = createParamCentered<VoxglitchAttenuator>(Vec(252.350006, 311.750000), module, DigitalSequencer::SEQUENCER_5_LENGTH_KNOB); dynamic_cast<Knob*>(L5)->snap = true; addParam(L5);
+    auto L6 = createParamCentered<VoxglitchAttenuator>(Vec(289.549988, 311.750000), module, DigitalSequencer::SEQUENCER_6_LENGTH_KNOB); dynamic_cast<Knob*>(L6)->snap = true; addParam(L6);
+
+// 102.500000,280.250000
+  // Sequence selection buttons
+  addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(102.700012, 280.250000), module, DigitalSequencer::SEQUENCER_1_BUTTON));
+  addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(140.200043, 280.250000), module, DigitalSequencer::SEQUENCER_2_BUTTON));
+  addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(177.550018, 280.250000), module, DigitalSequencer::SEQUENCER_3_BUTTON));
+  addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(214.900024, 280.250000), module, DigitalSequencer::SEQUENCER_4_BUTTON));
+  addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(252.350006, 280.250000), module, DigitalSequencer::SEQUENCER_5_BUTTON));
+  addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(289.549988, 280.250000), module, DigitalSequencer::SEQUENCER_6_BUTTON));
+
+    /*
     // Main voltage sequencer display
     VoltageSequencerDisplay *voltage_sequencer_display = new VoltageSequencerDisplay();
     voltage_sequencer_display->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
@@ -81,12 +94,6 @@ struct DigitalSequencerWidget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_5_STEP_INPUT));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_6_STEP_INPUT));
 
-    // Step
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 114.893)), module, DigitalSequencer::STEP_INPUT));
-
-    // Reset
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 14.544, 114.893)), module, DigitalSequencer::RESET_INPUT));
-
     // 6 sequencer outputs
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(118, 108.224)), module, DigitalSequencer::SEQ1_CV_OUTPUT));
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(129, 108.224)), module, DigitalSequencer::SEQ2_CV_OUTPUT));
@@ -103,6 +110,7 @@ struct DigitalSequencerWidget : ModuleWidget
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(173, 119.309)), module, DigitalSequencer::SEQ6_GATE_OUTPUT));
 
     // addParam(createParamCentered<FreezeToggle>(mm2px(Vec(180,40)), module, DigitalSequencer::FREEZE_TOGGLE));
+    */
   }
 
 
@@ -366,6 +374,15 @@ struct DigitalSequencerWidget : ModuleWidget
           }
         }
       }
+
+      #ifdef DEV_MODE
+        if(e.action == GLFW_PRESS && e.key == GLFW_KEY_P)
+        {
+          std::string debug_string = "mouse at: " + std::to_string(e.pos.x) + "," + std::to_string(e.pos.y);
+          DEBUG(debug_string.c_str());
+        }
+        ModuleWidget::onHoverKey(e);
+      #endif
 
       ModuleWidget::onHoverKey(e);
 

@@ -168,6 +168,10 @@ struct DigitalSequencer : Module
     getParamQuantity(SEQUENCER_5_LENGTH_KNOB)->resetEnabled = false;
     getParamQuantity(SEQUENCER_6_LENGTH_KNOB)->resetEnabled = false;
 
+    configInput(STEP_INPUT, "Step");
+    configInput(RESET_INPUT, "Reset");
+
+
     // On boot, I seem to be getting some weird gate signals.  This keeps those
     // from triggering an output pulse when the module first loads.
     clock_ignore_on_reset = (long) (44100 / 100);
