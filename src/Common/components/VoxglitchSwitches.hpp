@@ -7,6 +7,12 @@
 
 struct VoxglitchSwitch : SvgSwitch {
 #ifdef DEV_MODE
+
+  VoxglitchSwitch()
+  {
+    shadow->opacity = 0;
+  }
+
   void onHoverKey(const event::HoverKey &e) override
   {
     bool shift_key = ((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT);
@@ -37,7 +43,7 @@ struct VoxglitchRoundLampSwitch : VoxglitchSwitch {
   VoxglitchRoundLampSwitch()
   {
     addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/round_light_off.svg")));
-    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/round_light_switch.svg")));
+    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/round_light_on.svg")));
     box.size = Vec(15.5,15.5);
   }
 
@@ -54,12 +60,12 @@ struct VoxglitchRoundLampSwitch : VoxglitchSwitch {
       {
         math::Vec c = box.size.div(2);
         float radius = std::min(box.size.x, box.size.y) / 2.0;
-        float oradius = radius + std::min(radius * 2.f, 3.f);
+        float oradius = radius + std::min(radius * 1.5f, 2.5f);
 
         nvgBeginPath(args.vg);
         nvgRect(args.vg, c.x - oradius, c.y - oradius, 2 * oradius, 2 * oradius);
 
-        NVGcolor icol = nvgRGBA(174, 89, 43, 210);
+        NVGcolor icol = nvgRGBA(174, 89, 43, 230);
         NVGcolor ocol = nvgRGBA(0, 0, 0, 0);
         NVGpaint paint = nvgRadialGradient(args.vg, c.x, c.y, radius, oradius, icol, ocol);
         nvgFillPaint(args.vg, paint);
