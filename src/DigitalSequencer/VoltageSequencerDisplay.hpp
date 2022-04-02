@@ -71,6 +71,8 @@ struct VoltageSequencerDisplay : SequencerDisplay
           }
 
           // Draw bars for the sequence values
+          // refactor
+          // if(value > 0) drawBar(vg, i, (value * DRAW_AREA_HEIGHT), DRAW_AREA_HEIGHT, bar_color);
           if(value > 0) drawBar(vg, i, value, DRAW_AREA_HEIGHT, bar_color);
 
           // Highlight the sequence playback column
@@ -178,6 +180,9 @@ struct VoltageSequencerDisplay : SequencerDisplay
     clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
     clicked_y = clamp(clicked_y, 0, DRAW_AREA_HEIGHT);
 
+    // refactor
+    // double value = (double) clicked_y / (double) DRAW_AREA_HEIGHT;
+    // module->selected_voltage_sequencer->setValue(clicked_bar_x_index, value);
     module->selected_voltage_sequencer->setValue(clicked_bar_x_index, clicked_y);
 
     // Tooltip drawing is done in the draw method

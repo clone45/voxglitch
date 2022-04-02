@@ -1,0 +1,25 @@
+ 
+
+baseplate size -> 81,28 mm x 128,5 mm 
+
+
+--- 
+
+
+NEW: Medium Button (in 2 colors) 
+
+The Button SVGs are -> 12,2 mm x 12,2 mm in size. 
+The mid_button_black.svg is the overlay for the dark/black medium button
+The mid_button_silver.svg is the overlay for the light/silver medium button
+
+
+---
+
+
+How to build (same as always): 
+
+1.: use repeater_all.png in the background to position all UI Elements 
+2.: replace repeater_all.png with repeater_all.png 
+
+
+Done. All should be in place. 

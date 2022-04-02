@@ -49,6 +49,15 @@ struct TLargeKnob : TBase {
 };
 typedef TLargeKnob<> VoxglitchLargeKnob;
 
+// Medium Knob
+template <typename TBase = VoxglitchKnob>
+struct TMediumKnob : TBase {
+	TMediumKnob() {
+		this->svgFile = "medium_knob.svg";
+		this->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/" + this->svgFile)));
+	}
+};
+typedef TMediumKnob<> VoxglitchMediumKnob;
 
 // Attenuator
 template <typename TBase = VoxglitchKnob>

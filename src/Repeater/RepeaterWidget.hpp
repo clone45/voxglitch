@@ -3,8 +3,52 @@ struct RepeaterWidget : ModuleWidget
 	RepeaterWidget(Repeater* module)
 	{
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/repeater_front_panel.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/repeater/repeater_front_panel.svg")));
 
+    // Load up the background PNG and add it to the panel
+    PNGPanel *png_panel = new PNGPanel("res/repeater/repeater_all.png", 81.28, 128.5);
+    addChild(png_panel);
+
+    // Medium Knobs
+		addParam(createParamCentered<VoxglitchMediumKnob>(Vec(126.563736,122.269234), module, Repeater::CLOCK_DIVISION_KNOB));
+    addParam(createParamCentered<VoxglitchMediumKnob>(Vec(126.375656,191.931137), module, Repeater::POSITION_KNOB));
+		addParam(createParamCentered<VoxglitchMediumKnob>(Vec(126.425659,261.852417), module, Repeater::SAMPLE_SELECT_KNOB));
+    addParam(createParamCentered<VoxglitchMediumKnob>(Vec(126.402100,332.388794), module, Repeater::PITCH_KNOB));
+
+    float trigger_input_x = 67.7;
+		float trigger_input_y = 42.0;
+    float clock_division_x = 7.0;
+		float clock_division_y = 42.0;
+    float position_x = 7.0;
+		float position_y = 64.0;
+    float sample_select_x = 7.0;
+    float sample_select_y = 86.0;
+    float pitch_x = 7.0;
+    float pitch_y = 108.0;
+
+    // CV Inputs
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(42.219269,121.665604), module, Repeater::CLOCK_DIVISION_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(42.219269,191.426514), module, Repeater::POSITION_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(42.219269,261.237152), module, Repeater::SAMPLE_SELECT_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(42.219269,331.698181), module, Repeater::PITCH_INPUT));
+
+    // Attenuators
+    addParam(createParamCentered<VoxglitchAttenuator>(Vec(83.563423,121.868500), module, Repeater::CLOCK_DIVISION_ATTN_KNOB));
+    addParam(createParamCentered<VoxglitchAttenuator>(Vec(83.563423,191.479111), module, Repeater::POSITION_ATTN_KNOB));
+    addParam(createParamCentered<VoxglitchAttenuator>(Vec(83.563423,261.189728), module, Repeater::SAMPLE_SELECT_ATTN_KNOB));
+    addParam(createParamCentered<VoxglitchAttenuator>(Vec(83.563423,331.700439), module, Repeater::PITCH_ATTN_KNOB));
+
+    // Clock input
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(196.701385,121.515594), module, Repeater::TRIG_INPUT));
+
+    // Smooth switch
+    addParam(createParamCentered<squareToggle>(Vec(197.249832,193.950241), module, Repeater::SMOOTH_SWITCH));
+
+    // Outputs
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(204.649963,331.449402), module, Repeater::WAV_OUTPUT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(204.699982,281.450653), module, Repeater::TRG_OUTPUT));
+
+    /*
 		// Input and label for the trigger input (which is labeled "CLK" on the front panel)
 		float trigger_input_x = 67.7;
 		float trigger_input_y = 42.0;
@@ -50,6 +94,7 @@ struct RepeaterWidget : ModuleWidget
 		// Outputs
 		addOutput(createOutput<PJ301MPort>(Vec(200, 324), module, Repeater::WAV_OUTPUT));
 		addOutput(createOutput<PJ301MPort>(Vec(200, 259), module, Repeater::TRG_OUTPUT));
+    */
 	}
 
 	void appendContextMenu(Menu *menu) override
