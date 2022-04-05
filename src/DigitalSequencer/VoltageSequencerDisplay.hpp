@@ -177,9 +177,11 @@ struct VoltageSequencerDisplay : SequencerDisplay
   void editBar(Vec mouse_position)
   {
     float value = 1 - (mouse_position.y / DRAW_AREA_HEIGHT);
+    value = clamp(value, 0.0, 1.0);
 
     double bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
     int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
+    clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
 
     module->selected_voltage_sequencer->setValue(clicked_bar_x_index, value);
 
