@@ -4,8 +4,8 @@ const int NUMBER_OF_VOLTAGE_RANGES = 8;
 const int NUMBER_OF_SNAP_DIVISIONS = 8;
 
 // Constants for patterns
-const int DRAW_AREA_WIDTH = 486;
-const int DRAW_AREA_HEIGHT = 214;
+const float DRAW_AREA_WIDTH = 486.0;
+const float DRAW_AREA_HEIGHT = 214.0;
 const float BAR_HEIGHT = 214.0;
 const float BAR_HORIZONTAL_PADDING = .8;
 const float DRAW_AREA_POSITION_X = 9;

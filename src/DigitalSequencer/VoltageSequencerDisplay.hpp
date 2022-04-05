@@ -25,7 +25,6 @@ struct VoltageSequencerDisplay : SequencerDisplay
     {
 
       const auto vg = args.vg;
-      int value;
       NVGcolor bar_color;
       bool draw_from_center = false;
 
@@ -44,7 +43,7 @@ struct VoltageSequencerDisplay : SequencerDisplay
         //
         for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
         {
-          value = module->selected_voltage_sequencer->getValue(i);
+          float value = module->selected_voltage_sequencer->getValue(i);
 
           // Draw grey background bar
           if(i < module->selected_voltage_sequencer->getLength()) {
@@ -70,10 +69,14 @@ struct VoltageSequencerDisplay : SequencerDisplay
             bar_color = nvgRGBA(255, 255, 255, 10);
           }
 
+          // for debugging
+
+
           // Draw bars for the sequence values
-          // refactor
-          // if(value > 0) drawBar(vg, i, (value * DRAW_AREA_HEIGHT), DRAW_AREA_HEIGHT, bar_color);
-          if(value > 0) drawBar(vg, i, value, DRAW_AREA_HEIGHT, bar_color);
+          if(value > 0)
+          {
+            drawBar(vg, i, (value * DRAW_AREA_HEIGHT), DRAW_AREA_HEIGHT, bar_color);
+          }
 
           // Highlight the sequence playback column
           if(i == module->selected_voltage_sequencer->getPlaybackPosition())
@@ -173,22 +176,35 @@ struct VoltageSequencerDisplay : SequencerDisplay
   //
   void editBar(Vec mouse_position)
   {
+    float value = 1 - (mouse_position.y / DRAW_AREA_HEIGHT);
+
     double bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
     int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
-    int clicked_y = DRAW_AREA_HEIGHT - mouse_position.y;
+
+    module->selected_voltage_sequencer->setValue(clicked_bar_x_index, value);
+
+    /*
+    double bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
+    int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
+    float mouse_widget_offset_y = DRAW_AREA_HEIGHT - mouse_position.y;
 
     clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
-    clicked_y = clamp(clicked_y, 0, DRAW_AREA_HEIGHT);
+    mouse_widget_offset_y = clamp(mouse_widget_offset_y, 0.0, DRAW_AREA_HEIGHT);
 
-    // refactor
-    // double value = (double) clicked_y / (double) DRAW_AREA_HEIGHT;
-    // module->selected_voltage_sequencer->setValue(clicked_bar_x_index, value);
-    module->selected_voltage_sequencer->setValue(clicked_bar_x_index, clicked_y);
+    float value = (float) mouse_widget_offset_y / (float) DRAW_AREA_HEIGHT;
+
+    DEBUG(std::to_string(mouse_widget_offset_y).c_str());
+
+    module->selected_voltage_sequencer->setValue(clicked_bar_x_index, value);
+    // pre-refactor: module->selected_voltage_sequencer->setValue(clicked_bar_x_index, clicked_y);
+*/
+
 
     // Tooltip drawing is done in the draw method
+
     draw_tooltip = true;
     draw_tooltip_index = clicked_bar_x_index;
-    draw_tooltip_y = clicked_y;
+    draw_tooltip_y = value * DRAW_AREA_HEIGHT;
     tooltip_value = module->selected_voltage_sequencer->getOutput(clicked_bar_x_index);
   }
 

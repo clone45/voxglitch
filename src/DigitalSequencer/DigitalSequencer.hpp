@@ -4,12 +4,7 @@ struct DigitalSequencer : Module
   dsp::SchmittTrigger sequencer_step_triggers[NUMBER_OF_SEQUENCERS];
   dsp::SchmittTrigger resetTrigger;
 
-  dsp::SchmittTrigger sequencer_1_button_trigger;
-  dsp::SchmittTrigger sequencer_2_button_trigger;
-  dsp::SchmittTrigger sequencer_3_button_trigger;
-  dsp::SchmittTrigger sequencer_4_button_trigger;
-  dsp::SchmittTrigger sequencer_5_button_trigger;
-  dsp::SchmittTrigger sequencer_6_button_trigger;
+  dsp::SchmittTrigger sequencer_button_triggers[NUMBER_OF_SEQUENCERS];
 
   long clock_ignore_on_reset = 0;
   bool legacy_reset = false;
@@ -25,7 +20,7 @@ struct DigitalSequencer : Module
   GateSequencer gate_sequencers[NUMBER_OF_SEQUENCERS];
   GateSequencer *selected_gate_sequencer;
 
-  int selected_sequencer_index = 0;
+  unsigned int selected_sequencer_index = 0;
   int voltage_outputs[NUMBER_OF_SEQUENCERS];
   int gate_outputs[NUMBER_OF_SEQUENCERS];
   int sequencer_step_inputs[NUMBER_OF_SEQUENCERS];
@@ -63,13 +58,7 @@ struct DigitalSequencer : Module
     SEQUENCER_6_LENGTH_KNOB,
 
     SEQUENCE_START_KNOB,
-    SEQUENCER_1_BUTTON,
-    SEQUENCER_2_BUTTON,
-    SEQUENCER_3_BUTTON,
-    SEQUENCER_4_BUTTON,
-    SEQUENCER_5_BUTTON,
-    SEQUENCER_6_BUTTON,
-
+    ENUMS(SEQUENCER_SELECTION_BUTTONS, NUMBER_OF_SEQUENCERS),
     FREEZE_TOGGLE,
 
     NUM_PARAMS
@@ -153,12 +142,10 @@ struct DigitalSequencer : Module
     configParam(SEQUENCER_5_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer5LengthKnob");
     configParam(SEQUENCER_6_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer6LengthKnob");
 
-    configParam(SEQUENCER_1_BUTTON, 0.f, 1.f, 0.f, "Sequence1Button");
-    configParam(SEQUENCER_2_BUTTON, 0.f, 1.f, 0.f, "Sequence2Button");
-    configParam(SEQUENCER_3_BUTTON, 0.f, 1.f, 0.f, "Sequence3Button");
-    configParam(SEQUENCER_4_BUTTON, 0.f, 1.f, 0.f, "Sequence4Button");
-    configParam(SEQUENCER_5_BUTTON, 0.f, 1.f, 0.f, "Sequence5Button");
-    configParam(SEQUENCER_6_BUTTON, 0.f, 1.f, 0.f, "Sequence6Button");
+    for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
+    {
+      configParam(SEQUENCER_SELECTION_BUTTONS + i, 0.f, 1.f, 0.f, "SequencerSelectionButton" + i);
+    }
 
     // Disable randomize for trimpots
     getParamQuantity(SEQUENCER_1_LENGTH_KNOB)->resetEnabled = false;
@@ -229,7 +216,7 @@ struct DigitalSequencer : Module
 
       for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
       {
-        json_array_append_new(pattern_json_array, json_integer(this->voltage_sequencers[sequencer_number].getValue(i)));
+        json_array_append_new(pattern_json_array, json_real(this->voltage_sequencers[sequencer_number].getValue(i)));
       }
 
       json_array_append_new(sequences_json_array, pattern_json_array);
@@ -327,7 +314,7 @@ struct DigitalSequencer : Module
       {
         for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
         {
-          this->voltage_sequencers[pattern_number].setValue(i, json_integer_value(json_array_get(json_pattern_array, i)));
+          this->voltage_sequencers[pattern_number].setValue(i, json_real_value(json_array_get(json_pattern_array, i)));
         }
       }
     }
@@ -446,23 +433,26 @@ struct DigitalSequencer : Module
     //
     // See if someone pressed one of the green sequence selection buttons
     //
-    sequencer_1_button_is_triggered = sequencer_1_button_trigger.process(params[SEQUENCER_1_BUTTON].getValue());
-    sequencer_2_button_is_triggered = sequencer_2_button_trigger.process(params[SEQUENCER_2_BUTTON].getValue());
-    sequencer_3_button_is_triggered = sequencer_3_button_trigger.process(params[SEQUENCER_3_BUTTON].getValue());
-    sequencer_4_button_is_triggered = sequencer_4_button_trigger.process(params[SEQUENCER_4_BUTTON].getValue());
-    sequencer_5_button_is_triggered = sequencer_5_button_trigger.process(params[SEQUENCER_5_BUTTON].getValue());
-    sequencer_6_button_is_triggered = sequencer_6_button_trigger.process(params[SEQUENCER_6_BUTTON].getValue());
-
     // If any of the green sequence buttons were pressed, set the index "selected_sequencer_index"
     // which will be used to look up the selected voltage and gate sequencers from
     // the voltage_sequencers[] and gate_sequencers[] arrays
 
-    if(sequencer_1_button_is_triggered) selected_sequencer_index = 0;
-    if(sequencer_2_button_is_triggered) selected_sequencer_index = 1;
-    if(sequencer_3_button_is_triggered) selected_sequencer_index = 2;
-    if(sequencer_4_button_is_triggered) selected_sequencer_index = 3;
-    if(sequencer_5_button_is_triggered) selected_sequencer_index = 4;
-    if(sequencer_6_button_is_triggered) selected_sequencer_index = 5;
+    for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
+    {
+      if(sequencer_button_triggers[i].process(params[SEQUENCER_SELECTION_BUTTONS + i].getValue()))
+      {
+        selected_sequencer_index = i;
+      }
+    }
+
+    // Highlight only selected sequence buttton
+    for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
+    {
+      params[SEQUENCER_SELECTION_BUTTONS + i].setValue(selected_sequencer_index == i);
+    }
+
+
+    // DEBUG(std::to_string(selected_sequencer_index).c_str());
 
     //
     // Set all of the sequence lengths by checking the corresponding knobs
@@ -487,10 +477,10 @@ struct DigitalSequencer : Module
     gate_sequencers[5].setLength(clamp((int) params[SEQUENCER_6_LENGTH_KNOB].getValue(), 1, 32));
 
     //
-    // FROZEN, FROZEN, FROZEN  (coming soon)
+    // FROZEN, FROZEN, FROZEN
     //
     // This is a pretty crazy IF statement.  It's saying, "If the frozen flag
-    // is FALSE, then don't step the sequencers"  Why would someone want to
+    // is FALSE, then step the sequencers"  Why would someone want to
     // freeze the sequencers?  Freezing the sequencers can be used when editing
     // sequences so you can hear your changes immediately.  In a traditional
     // analog sequencer, when you adjust a voltage knob, you won't hear the
@@ -621,13 +611,6 @@ struct DigitalSequencer : Module
 
     if (clock_ignore_on_reset > 0) clock_ignore_on_reset--;
     if (tooltip_timer > 0) tooltip_timer--;
-
-    lights[SEQUENCER_1_LIGHT].setBrightness(selected_sequencer_index == 0);
-    lights[SEQUENCER_2_LIGHT].setBrightness(selected_sequencer_index == 1);
-    lights[SEQUENCER_3_LIGHT].setBrightness(selected_sequencer_index == 2);
-    lights[SEQUENCER_4_LIGHT].setBrightness(selected_sequencer_index == 3);
-    lights[SEQUENCER_5_LIGHT].setBrightness(selected_sequencer_index == 4);
-    lights[SEQUENCER_6_LIGHT].setBrightness(selected_sequencer_index == 5);
   }
 
 };
