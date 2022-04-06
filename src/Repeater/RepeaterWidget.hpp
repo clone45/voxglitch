@@ -6,8 +6,11 @@ struct RepeaterWidget : ModuleWidget
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/repeater/repeater_front_panel.svg")));
 
     // Load up the background PNG and add it to the panel
-    PNGPanel *png_panel = new PNGPanel("res/repeater/repeater_base.png", 81.28, 128.5);
+
+    PNGPanel *png_panel = new PNGPanel("res/repeater/repeater_base_blur.png", 81.28, 128.5);
+    // PNGPanel *png_panel = new PNGPanel("res/repeater/repeater_base.png", 81.28, 128.5);
     addChild(png_panel);
+
 
     // Add typography layer
     std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/repeater/repeater_typography.svg"));

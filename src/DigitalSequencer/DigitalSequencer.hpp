@@ -28,13 +28,6 @@ struct DigitalSequencer : Module
   dsp::PulseGenerator gateOutputPulseGenerators[NUMBER_OF_SEQUENCERS];
   double sample_rate;
 
-  bool sequencer_1_button_is_triggered;
-  bool sequencer_2_button_is_triggered;
-  bool sequencer_3_button_is_triggered;
-  bool sequencer_4_button_is_triggered;
-  bool sequencer_5_button_is_triggered;
-  bool sequencer_6_button_is_triggered;
-
   std::string voltage_range_names[NUMBER_OF_VOLTAGE_RANGES] = {
     "0.0 to 10.0",
     "-10.0 to 10.0",
@@ -50,12 +43,7 @@ struct DigitalSequencer : Module
 
   enum ParamIds {
     SEQUENCE_SELECTION_KNOB,
-    SEQUENCER_1_LENGTH_KNOB,
-    SEQUENCER_2_LENGTH_KNOB,
-    SEQUENCER_3_LENGTH_KNOB,
-    SEQUENCER_4_LENGTH_KNOB,
-    SEQUENCER_5_LENGTH_KNOB,
-    SEQUENCER_6_LENGTH_KNOB,
+    ENUMS(SEQUENCER_LENGTH_KNOBS, NUMBER_OF_SEQUENCERS),
 
     SEQUENCE_START_KNOB,
     ENUMS(SEQUENCER_SELECTION_BUTTONS, NUMBER_OF_SEQUENCERS),
@@ -135,29 +123,16 @@ struct DigitalSequencer : Module
     selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
 
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-    configParam(SEQUENCER_1_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "SequenceLengthKnob");
-    configParam(SEQUENCER_2_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer2LengthKnob");
-    configParam(SEQUENCER_3_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer3LengthKnob");
-    configParam(SEQUENCER_4_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer4LengthKnob");
-    configParam(SEQUENCER_5_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer5LengthKnob");
-    configParam(SEQUENCER_6_LENGTH_KNOB, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequencer6LengthKnob");
 
     for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
     {
       configParam(SEQUENCER_SELECTION_BUTTONS + i, 0.f, 1.f, 0.f, "SequencerSelectionButton" + i);
+      configParam(SEQUENCER_LENGTH_KNOBS + i, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "SequenceLengthKnob" + i);
+      getParamQuantity(SEQUENCER_LENGTH_KNOBS + i)->resetEnabled = false;  // Disable randomize for trimpots
     }
-
-    // Disable randomize for trimpots
-    getParamQuantity(SEQUENCER_1_LENGTH_KNOB)->resetEnabled = false;
-    getParamQuantity(SEQUENCER_2_LENGTH_KNOB)->resetEnabled = false;
-    getParamQuantity(SEQUENCER_3_LENGTH_KNOB)->resetEnabled = false;
-    getParamQuantity(SEQUENCER_4_LENGTH_KNOB)->resetEnabled = false;
-    getParamQuantity(SEQUENCER_5_LENGTH_KNOB)->resetEnabled = false;
-    getParamQuantity(SEQUENCER_6_LENGTH_KNOB)->resetEnabled = false;
 
     configInput(STEP_INPUT, "Step");
     configInput(RESET_INPUT, "Reset");
-
 
     // On boot, I seem to be getting some weird gate signals.  This keeps those
     // from triggering an output pulse when the module first loads.
@@ -186,7 +161,7 @@ struct DigitalSequencer : Module
 
   void setLengthKnobPosition(unsigned int value)
   {
-    params[SEQUENCER_1_LENGTH_KNOB + selected_sequencer_index].setValue(value);
+    params[SEQUENCER_LENGTH_KNOBS + selected_sequencer_index].setValue(value);
   }
 
   void forceGateOut()
@@ -451,30 +426,14 @@ struct DigitalSequencer : Module
       params[SEQUENCER_SELECTION_BUTTONS + i].setValue(selected_sequencer_index == i);
     }
 
-
-    // DEBUG(std::to_string(selected_sequencer_index).c_str());
-
     //
     // Set all of the sequence lengths by checking the corresponding knobs
     //
-
-    voltage_sequencers[0].setLength(clamp((int) params[SEQUENCER_1_LENGTH_KNOB].getValue(), 1, 32));
-    voltage_sequencers[1].setLength(clamp((int) params[SEQUENCER_2_LENGTH_KNOB].getValue(), 1, 32));
-    voltage_sequencers[2].setLength(clamp((int) params[SEQUENCER_3_LENGTH_KNOB].getValue(), 1, 32));
-    voltage_sequencers[3].setLength(clamp((int) params[SEQUENCER_4_LENGTH_KNOB].getValue(), 1, 32));
-    voltage_sequencers[4].setLength(clamp((int) params[SEQUENCER_5_LENGTH_KNOB].getValue(), 1, 32));
-    voltage_sequencers[5].setLength(clamp((int) params[SEQUENCER_6_LENGTH_KNOB].getValue(), 1, 32));
-
-    //
-    // Do the same for the gate sequencers.  Both the voltage and corresponding gate sequencers
-    // are always the same length.
-
-    gate_sequencers[0].setLength(clamp((int) params[SEQUENCER_1_LENGTH_KNOB].getValue(), 1, 32));
-    gate_sequencers[1].setLength(clamp((int) params[SEQUENCER_2_LENGTH_KNOB].getValue(), 1, 32));
-    gate_sequencers[2].setLength(clamp((int) params[SEQUENCER_3_LENGTH_KNOB].getValue(), 1, 32));
-    gate_sequencers[3].setLength(clamp((int) params[SEQUENCER_4_LENGTH_KNOB].getValue(), 1, 32));
-    gate_sequencers[4].setLength(clamp((int) params[SEQUENCER_5_LENGTH_KNOB].getValue(), 1, 32));
-    gate_sequencers[5].setLength(clamp((int) params[SEQUENCER_6_LENGTH_KNOB].getValue(), 1, 32));
+    for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
+    {
+      voltage_sequencers[i].setLength(clamp((int) params[SEQUENCER_LENGTH_KNOBS + i].getValue(), 1, 32));
+      gate_sequencers[i].setLength(clamp((int) params[SEQUENCER_LENGTH_KNOBS + i].getValue(), 1, 32));
+    }
 
     //
     // FROZEN, FROZEN, FROZEN

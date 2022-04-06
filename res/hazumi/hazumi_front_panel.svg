@@ -18,7 +18,7 @@
      id="defs10997" />
   <sodipodi:namedview
      inkscape:document-rotation="0"
-     showborder="false"
+     showborder="true"
      inkscape:guide-bbox="true"
      showguides="true"
      units="mm"
@@ -35,7 +35,7 @@
      inkscape:current-layer="layer1"
      inkscape:document-units="mm"
      inkscape:cy="217.14286"
-     inkscape:cx="43.571428"
+     inkscape:cx="43.571429"
      inkscape:zoom="1.4"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
@@ -62,11 +62,6 @@
      id="layer1"
      inkscape:groupmode="layer"
      inkscape:label="Panel Layer">
-    <path
-       style="fill:#e6e6e6;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.461152"
-       d="M 64.792954,47.169629 H 151.15295 V 175.66963 H 64.792954 Z m 0,0"
-       id="path33429"
-       inkscape:connector-curvature="0" />
     <text
        id="text110"
        y="53.772301"

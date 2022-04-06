@@ -9,6 +9,7 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_sequencer/digital_sequencer_front_panel.svg")));
 
+    // PNGPanel *png_panel = new PNGPanel("res/digital_sequencer/digital_sequencer_baseplate_smooth.png", 182.88, 128.5);
     PNGPanel *png_panel = new PNGPanel("res/digital_sequencer/digital_sequencer_baseplate.png", 182.88, 128.5);
     addChild(png_panel);
 
@@ -33,12 +34,12 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     addInput(createInputCentered<VoxglitchInputPort>(Vec(289.549988,349.849915), module, DigitalSequencer::SEQUENCER_6_STEP_INPUT));
 
     // step length attenuators
-    auto L1 = createParamCentered<VoxglitchAttenuator>(Vec(102.700012, 311.750000), module, DigitalSequencer::SEQUENCER_1_LENGTH_KNOB); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
-    auto L2 = createParamCentered<VoxglitchAttenuator>(Vec(140.200043, 311.750000), module, DigitalSequencer::SEQUENCER_2_LENGTH_KNOB); dynamic_cast<Knob*>(L2)->snap = true; addParam(L2);
-    auto L3 = createParamCentered<VoxglitchAttenuator>(Vec(177.550018, 311.750000), module, DigitalSequencer::SEQUENCER_3_LENGTH_KNOB); dynamic_cast<Knob*>(L3)->snap = true; addParam(L3);
-    auto L4 = createParamCentered<VoxglitchAttenuator>(Vec(214.900024, 311.750000), module, DigitalSequencer::SEQUENCER_4_LENGTH_KNOB); dynamic_cast<Knob*>(L4)->snap = true; addParam(L4);
-    auto L5 = createParamCentered<VoxglitchAttenuator>(Vec(252.350006, 311.750000), module, DigitalSequencer::SEQUENCER_5_LENGTH_KNOB); dynamic_cast<Knob*>(L5)->snap = true; addParam(L5);
-    auto L6 = createParamCentered<VoxglitchAttenuator>(Vec(289.549988, 311.750000), module, DigitalSequencer::SEQUENCER_6_LENGTH_KNOB); dynamic_cast<Knob*>(L6)->snap = true; addParam(L6);
+    auto L1 = createParamCentered<VoxglitchAttenuator>(Vec(102.700012, 311.750000), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 0); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
+    auto L2 = createParamCentered<VoxglitchAttenuator>(Vec(140.200043, 311.750000), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 1); dynamic_cast<Knob*>(L2)->snap = true; addParam(L2);
+    auto L3 = createParamCentered<VoxglitchAttenuator>(Vec(177.550018, 311.750000), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 2); dynamic_cast<Knob*>(L3)->snap = true; addParam(L3);
+    auto L4 = createParamCentered<VoxglitchAttenuator>(Vec(214.900024, 311.750000), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 3); dynamic_cast<Knob*>(L4)->snap = true; addParam(L4);
+    auto L5 = createParamCentered<VoxglitchAttenuator>(Vec(252.350006, 311.750000), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 4); dynamic_cast<Knob*>(L5)->snap = true; addParam(L5);
+    auto L6 = createParamCentered<VoxglitchAttenuator>(Vec(289.549988, 311.750000), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 5); dynamic_cast<Knob*>(L6)->snap = true; addParam(L6);
 
     // Sequence selection buttons
     addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(102.700012, 280.250000), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 0));

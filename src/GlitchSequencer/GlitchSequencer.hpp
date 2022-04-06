@@ -18,14 +18,7 @@ struct GlitchSequencer : Module
 
   enum ParamIds {
     LENGTH_KNOB,
-    TRIGGER_GROUP_1_BUTTON,
-    TRIGGER_GROUP_2_BUTTON,
-    TRIGGER_GROUP_3_BUTTON,
-    TRIGGER_GROUP_4_BUTTON,
-    TRIGGER_GROUP_5_BUTTON,
-    TRIGGER_GROUP_6_BUTTON,
-    TRIGGER_GROUP_7_BUTTON,
-    TRIGGER_GROUP_8_BUTTON,
+    ENUMS(SELECTION_BUTTONS, NUMBER_OF_TRIGGER_GROUPS),
     NUM_PARAMS
   };
   enum InputIds {
@@ -64,23 +57,12 @@ struct GlitchSequencer : Module
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 
     configParam(LENGTH_KNOB, 1, MAX_SEQUENCE_LENGTH, 16, "LengthKnob");
-    configParam(TRIGGER_GROUP_1_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup1Button");
-    configParam(TRIGGER_GROUP_2_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup2Button");
-    configParam(TRIGGER_GROUP_3_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup3Button");
-    configParam(TRIGGER_GROUP_4_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup4Button");
-    configParam(TRIGGER_GROUP_5_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup5Button");
-    configParam(TRIGGER_GROUP_6_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup6Button");
-    configParam(TRIGGER_GROUP_7_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup7Button");
-    configParam(TRIGGER_GROUP_8_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup8Button");
 
-    trigger_group_buttons[0] = TRIGGER_GROUP_1_BUTTON;
-    trigger_group_buttons[1] = TRIGGER_GROUP_2_BUTTON;
-    trigger_group_buttons[2] = TRIGGER_GROUP_3_BUTTON;
-    trigger_group_buttons[3] = TRIGGER_GROUP_4_BUTTON;
-    trigger_group_buttons[4] = TRIGGER_GROUP_5_BUTTON;
-    trigger_group_buttons[5] = TRIGGER_GROUP_6_BUTTON;
-    trigger_group_buttons[6] = TRIGGER_GROUP_7_BUTTON;
-    trigger_group_buttons[7] = TRIGGER_GROUP_8_BUTTON;
+    for(unsigned int i=0; i<NUMBER_OF_TRIGGER_GROUPS; i++)
+    {
+      configParam(SELECTION_BUTTONS + i, 0.f, 1.f, 0.f, "TriggerGroupButton" + i);
+      trigger_group_buttons[i] = SELECTION_BUTTONS + i;
+    }
 
     gate_outputs[0] = GATE_OUTPUT_1;
     gate_outputs[1] = GATE_OUTPUT_2;
@@ -195,11 +177,17 @@ struct GlitchSequencer : Module
       sequencer.reset();
     }
 
-    // Process when the user presses one of the 5 buttons above the trigger outputs
+    // Process when the user presses one of the 8 buttons above the trigger outputs
     for(unsigned int i=0; i < NUMBER_OF_TRIGGER_GROUPS; i++)
     {
       trigger_button_is_triggered[i] = trigger_group_button_schmitt_trigger[i].process(params[trigger_group_buttons[i]].getValue());
       if(trigger_button_is_triggered[i]) toggleTriggerGroup(i);
+    }
+
+    // Highlight only selected sequence buttton
+    for(unsigned int i=0; i<NUMBER_OF_TRIGGER_GROUPS; i++)
+    {
+      params[SELECTION_BUTTONS + i].setValue(selected_trigger_group_index == i);
     }
 
     // Process Step Input
@@ -221,6 +209,7 @@ struct GlitchSequencer : Module
     }
 
     // Trigger group selection lights
+    /*
     lights[TRIGGER_GROUP_1_LIGHT].setBrightness(selected_trigger_group_index == 0);
     lights[TRIGGER_GROUP_2_LIGHT].setBrightness(selected_trigger_group_index == 1);
     lights[TRIGGER_GROUP_3_LIGHT].setBrightness(selected_trigger_group_index == 2);
@@ -229,6 +218,7 @@ struct GlitchSequencer : Module
     lights[TRIGGER_GROUP_6_LIGHT].setBrightness(selected_trigger_group_index == 5);
     lights[TRIGGER_GROUP_7_LIGHT].setBrightness(selected_trigger_group_index == 6);
     lights[TRIGGER_GROUP_8_LIGHT].setBrightness(selected_trigger_group_index == 7);
+    */
 
     if (clock_ignore_on_reset > 0) clock_ignore_on_reset--;
   }
