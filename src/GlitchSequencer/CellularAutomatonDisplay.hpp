@@ -19,6 +19,7 @@ struct CellularAutomatonDisplay : VoxglitchWidget
     // Save the drawing context to restore later
     nvgSave(vg);
 
+    // draw the default for the library display
     if(!module)
     {
       CellularAutomatonSequencer ca;
@@ -59,15 +60,13 @@ struct CellularAutomatonDisplay : VoxglitchWidget
             nvgBeginPath(vg);
             nvgRect(vg, (column * CELL_WIDTH) + (column * CELL_PADDING), (row * CELL_HEIGHT) + (row * CELL_PADDING), CELL_WIDTH, CELL_HEIGHT);
 
-            // bool cell_is_alive = (module->edit_mode) ? module->sequencer.pattern[row][column] : module->sequencer.state[row][column];
-
             // Default color for inactive square
 
             float dim = settings::rackBrightness;
             // unsigned int fill_color = 55.0 - ((1.0 - dim) * 55.0);
 
             // nvgFillColor(vg, nvgRGB(fill_color, fill_color, fill_color));
-            nvgFillColor(vg, brightness(nvgRGB(55.0, 55.0, 55.0), dim));
+            nvgFillColor(vg, brightness(nvgRGBA(55.0, 55.0, 55.0, 230), dim));
 
             // When in edit mode, the pattern that's being edited will be bright white
             // and the underlying animation will continue to be shown but at a dim gray

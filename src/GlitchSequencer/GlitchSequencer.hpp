@@ -185,7 +185,7 @@ struct GlitchSequencer : Module
     }
 
     // Highlight only selected sequence buttton
-    for(unsigned int i=0; i<NUMBER_OF_TRIGGER_GROUPS; i++)
+    for(int i=0; i<NUMBER_OF_TRIGGER_GROUPS; i++)
     {
       params[SELECTION_BUTTONS + i].setValue(selected_trigger_group_index == i);
     }
