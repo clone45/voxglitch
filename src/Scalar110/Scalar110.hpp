@@ -4,10 +4,7 @@
 // - Is first beat skipped on load?
 // - improve ratcheting
 // - implement reset
-// - track labels: Having all labels within one large container is going
-//   to make it impossible to clip the labels using a bounding box.  Instead,
-//   I'll need to create a new widget for each label.  On the plus side, this
-//   means that my positions won't need much adjustment.
+// - global memory
 
 struct Scalar110 : Module
 {
@@ -283,8 +280,8 @@ struct Scalar110 : Module
       }
     }
 
-    // Here's where I need to use a switch statement, such as
-    // If the offset is the active editing button, then:
+    // Process the knobs below the steps.  These change behavior depending on the
+    // selected function.
     for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
       switch(selected_function)
@@ -312,7 +309,7 @@ struct Scalar110 : Module
           tracks[i].step();
         }
 
-        // Step the visual playback indicator as well
+        // Step the visual playback indicator (led) as well
         playback_step = (playback_step + 1) % NUMBER_OF_STEPS;
 
         // Reset clock division counter
