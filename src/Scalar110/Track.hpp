@@ -4,11 +4,13 @@ namespace scalar_110
 struct Track
 {
   bool steps[NUMBER_OF_STEPS] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
-  bool ratchet_patterns[4][7] = {
+  bool ratchet_patterns[6][7] = {
     {0,0,0,0,0,0,0},
     {0,0,0,1,0,0,0},
     {0,1,0,1,0,1,0},
-    {1,1,1,1,1,1,1}
+    {1,1,1,1,1,1,1},
+    {0,1,0,0,1,0,0},
+    {1,1,1,0,1,0,0},
   };
   unsigned int playback_position = 0;
   SamplePlaybackSettings sample_playback_settings[NUMBER_OF_STEPS]; // settings assigned to each step
@@ -47,7 +49,7 @@ struct Track
   {
     if (steps[playback_position])
     {
-      unsigned int ratchet_pattern = settings.ratchet * 3;
+      unsigned int ratchet_pattern = settings.ratchet * 5;
       if(ratchet_patterns[ratchet_pattern][ratchet_counter]) sample_player.trigger(&settings);
       if(++ratchet_counter >= 8) ratchet_counter = 0;
     }
