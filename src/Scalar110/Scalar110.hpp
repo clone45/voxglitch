@@ -129,51 +129,68 @@ struct Scalar110 : Module
 	{
 		json_t *json_root = json_object();
 
-    /*
     //
-    // Save all track data
+    // handle sample related save/load items
     //
-    json_t *tracks_json_array = json_array();
-    for(int track_number=0; track_number<NUMBER_OF_TRACKS; track_number++)
+    json_t *samples_json_array = json_array();
+
+    for(unsigned int track_number=0; track_number < NUMBER_OF_TRACKS; track_number++)
     {
-      json_t *steps_json_array = json_array();
+      std::string filename = this->sample_players[track_number].getFilename();
+      std::string path = this->sample_players[track_number].getPath();
 
-      for(int step_index=0; step_index<NUMBER_OF_STEPS; step_index++)
+      json_t *sample_json_object = json_object();
+
+      json_object_set(sample_json_object, "sample_filename", json_string(filename.c_str()));
+      json_object_set(sample_json_object, "sample_path", json_string(path.c_str()));
+
+      json_array_append_new(samples_json_array, sample_json_object);
+    }
+    json_object_set(json_root, "samples", samples_json_array);
+
+    //
+    // Save all pattern data
+    //
+    json_t *patterns_json_array = json_array();
+    for(int pattern_number=0; pattern_number<NUMBER_OF_PATTERNS; pattern_number++)
+    {
+      // Save all track data
+      json_t *tracks_json_array = json_array();
+      for(int track_number=0; track_number<NUMBER_OF_TRACKS; track_number++)
       {
-        json_t *step_data = json_object();
-        json_object_set(step_data, "trigger", json_integer(this->tracks[track_number].getValue(step_index)));
+        json_t *steps_json_array = json_array();
 
-        //  json_array_append_new(parameter_json_array, json_real(this->tracks[track_number].getParameter(step_index,parameter_index)));
-        json_object_set(step_data, "offset", json_real(this->tracks[track_number].getOffset(step_index)));
-        json_object_set(step_data, "volume", json_real(this->tracks[track_number].getVolume(step_index)));
-        json_object_set(step_data, "pitch", json_real(this->tracks[track_number].getPitch(step_index)));
-        json_object_set(step_data, "pan", json_real(this->tracks[track_number].getPan(step_index)));
-        json_object_set(step_data, "ratchet", json_real(this->tracks[track_number].getRatchet(step_index)));
-        json_object_set(step_data, "reverse", json_real(this->tracks[track_number].getReverse(step_index)));
-        json_object_set(step_data, "loop", json_real(this->tracks[track_number].getLoop(step_index)));
+        for(int step_index=0; step_index<NUMBER_OF_STEPS; step_index++)
+        {
+          json_t *step_data = json_object();
+          json_object_set(step_data, "trigger", json_integer(this->patterns[pattern_number].tracks[track_number].getValue(step_index)));
 
-        json_array_append_new(steps_json_array, step_data);
+          //  json_array_append_new(parameter_json_array, json_real(this->tracks[track_number].getParameter(step_index,parameter_index)));
+          json_object_set(step_data, "offset", json_real(this->patterns[pattern_number].tracks[track_number].getOffset(step_index)));
+          json_object_set(step_data, "volume", json_real(this->patterns[pattern_number].tracks[track_number].getVolume(step_index)));
+          json_object_set(step_data, "pitch", json_real(this->patterns[pattern_number].tracks[track_number].getPitch(step_index)));
+          json_object_set(step_data, "pan", json_real(this->patterns[pattern_number].tracks[track_number].getPan(step_index)));
+          json_object_set(step_data, "ratchet", json_real(this->patterns[pattern_number].tracks[track_number].getRatchet(step_index)));
+          json_object_set(step_data, "reverse", json_real(this->patterns[pattern_number].tracks[track_number].getReverse(step_index)));
+          json_object_set(step_data, "loop", json_real(this->patterns[pattern_number].tracks[track_number].getLoop(step_index)));
+
+          json_array_append_new(steps_json_array, step_data);
+        }
+
+        json_t *track_data = json_object();
+
+        json_object_set(track_data, "steps", steps_json_array);
+        json_array_append_new(tracks_json_array, track_data);
       }
 
-      json_t *track_data = json_object();
-
-      json_object_set(track_data, "steps", steps_json_array);
-
-      // Save the file name and path of the loaded sample.  This might be blank
-      std::string filename = this->tracks[track_number].sample_player.getFilename();
-      std::string path = this->tracks[track_number].sample_player.getPath();
-
-      json_object_set(track_data, "sample_filename", json_string(filename.c_str()));
-      json_object_set(track_data, "sample_path", json_string(path.c_str()));
-
-      json_array_append_new(tracks_json_array, track_data);
+      json_t *tracks_json_object = json_object();
+      json_object_set(tracks_json_object, "tracks", tracks_json_array);
+      json_array_append_new(patterns_json_array, tracks_json_object);
     }
-    json_object_set(json_root, "tracks", tracks_json_array);
-    json_decref(tracks_json_array);
+    json_object_set(json_root, "patterns", patterns_json_array);
 
     // Save path of the sample bank
     // json_object_set_new(json_root, "path", json_string(this->sample_bank.path.c_str()));
-    */
 
 		return json_root;
 	}
@@ -184,68 +201,93 @@ struct Scalar110 : Module
 
 	void dataFromJson(json_t *json_root) override
 	{
-    /*
-    //
-    // Load all track data
-    //
 
-    json_t *tracks_arrays_data = json_object_get(json_root, "tracks");
+    //
+    // Load samples
+    //
+    json_t *samples_arrays_data = json_object_get(json_root, "samples");
 
-    if(tracks_arrays_data)
+    if(samples_arrays_data)
     {
-      size_t track_index;
-      size_t step_index;
-      json_t *json_step_object;
-      json_t *json_track_object;
+      size_t sample_index;
+      json_t *json_sample_object;
 
-      json_array_foreach(tracks_arrays_data, track_index, json_track_object)
+      json_array_foreach(samples_arrays_data, sample_index, json_sample_object)
       {
-        json_t *steps_json_array = json_object_get(json_track_object, "steps");
-
-        if(steps_json_array)
-        {
-          json_array_foreach(steps_json_array, step_index, json_step_object)
-          {
-            json_t *trigger_json = json_object_get(json_step_object, "trigger");
-            if(trigger_json) this->tracks[track_index].setValue(step_index, json_integer_value(trigger_json));
-
-            json_t *offset_json = json_object_get(json_step_object, "offset");
-            if(offset_json) this->tracks[track_index].setOffset(step_index, json_real_value(offset_json));
-
-            json_t *volume_json = json_object_get(json_step_object, "volume");
-            if(volume_json) this->tracks[track_index].setVolume(step_index, json_real_value(volume_json));
-
-            json_t *pitch_json = json_object_get(json_step_object, "pitch");
-            if(pitch_json) this->tracks[track_index].setPitch(step_index, json_real_value(pitch_json));
-
-            json_t *pan_json = json_object_get(json_step_object, "pan");
-            if(pan_json) this->tracks[track_index].setPan(step_index, json_real_value(pan_json));
-
-            json_t *ratchet_json = json_object_get(json_step_object, "ratchet");
-            if(ratchet_json) this->tracks[track_index].setRatchet(step_index, json_real_value(ratchet_json));
-
-            json_t *reverse_json = json_object_get(json_step_object, "reverse");
-            if(reverse_json) this->tracks[track_index].setReverse(step_index, json_real_value(reverse_json));
-
-            json_t *loop_json = json_object_get(json_step_object, "loop");
-            if(loop_json) this->tracks[track_index].setLoop(step_index, json_real_value(loop_json));
-          }
-        }
-
-        // json_t *sample_filename_json = json_object_get(json_track_object, "sample_filename");
-        json_t *sample_path_json = json_object_get(json_track_object, "sample_path");
+        json_t *sample_path_json = json_object_get(json_sample_object, "sample_path");
 
         if(sample_path_json)
         {
           std::string path = json_string_value(sample_path_json);
-          if(path != "") this->tracks[track_index].sample_player.loadSample(path);
-          this->loaded_filenames[track_index] = this->tracks[track_index].sample_player.getFilename();
+          if(path != "") this->sample_players[sample_index].loadSample(path);
+          this->loaded_filenames[sample_index] = this->sample_players[sample_index].getFilename();
         }
       }
     }
 
+    //
+    // Load pattern and track information
+    //
+    json_t *patterns_arrays_data = json_object_get(json_root, "patterns");
+
+    if(patterns_arrays_data)
+    {
+      size_t pattern_index;
+      json_t *json_pattern_object;
+
+      json_array_foreach(patterns_arrays_data, pattern_index, json_pattern_object)
+      {
+
+        // Load all track data
+        json_t *tracks_arrays_data = json_object_get(json_pattern_object, "tracks");
+
+        if(tracks_arrays_data)
+        {
+          size_t track_index;
+          size_t step_index;
+          json_t *json_step_object;
+          json_t *json_track_object;
+
+          json_array_foreach(tracks_arrays_data, track_index, json_track_object)
+          {
+            json_t *steps_json_array = json_object_get(json_track_object, "steps");
+
+            if(steps_json_array)
+            {
+              json_array_foreach(steps_json_array, step_index, json_step_object)
+              {
+
+                json_t *trigger_json = json_object_get(json_step_object, "trigger");
+                if(trigger_json) this->patterns[pattern_index].tracks[track_index].setValue(step_index, json_integer_value(trigger_json));
+
+                json_t *offset_json = json_object_get(json_step_object, "offset");
+                if(offset_json) this->patterns[pattern_index].tracks[track_index].setOffset(step_index, json_real_value(offset_json));
+
+                json_t *volume_json = json_object_get(json_step_object, "volume");
+                if(volume_json) this->patterns[pattern_index].tracks[track_index].setVolume(step_index, json_real_value(volume_json));
+
+                json_t *pitch_json = json_object_get(json_step_object, "pitch");
+                if(pitch_json) this->patterns[pattern_index].tracks[track_index].setPitch(step_index, json_real_value(pitch_json));
+
+                json_t *pan_json = json_object_get(json_step_object, "pan");
+                if(pan_json) this->patterns[pattern_index].tracks[track_index].setPan(step_index, json_real_value(pan_json));
+
+                json_t *ratchet_json = json_object_get(json_step_object, "ratchet");
+                if(ratchet_json) this->patterns[pattern_index].tracks[track_index].setRatchet(step_index, json_real_value(ratchet_json));
+
+                json_t *reverse_json = json_object_get(json_step_object, "reverse");
+                if(reverse_json) this->patterns[pattern_index].tracks[track_index].setReverse(step_index, json_real_value(reverse_json));
+
+                json_t *loop_json = json_object_get(json_step_object, "loop");
+                if(loop_json) this->patterns[pattern_index].tracks[track_index].setLoop(step_index, json_real_value(loop_json));
+              }
+            }
+          }
+        } // end if tracks array data
+      } // end foreach pattern
+    } // end if patterns array data
+
     updateKnobPositions();
-    */
 	}
 
 
