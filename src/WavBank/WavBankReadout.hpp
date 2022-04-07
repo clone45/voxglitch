@@ -115,12 +115,12 @@ struct WavBankReadout : TransparentWidget
         "Thank_you_Zak_Forrest.wav"
       };
 
-      for(unsigned int i = 0; i < 20; i++)
+      for(unsigned int i = 0; i < NUMBER_OF_SAMPLE_DISPLAY_ROWS; i++)
       {
         text_to_display = dummy_filenames[i];
         text_to_display.resize(22);
 
-        if(i == 12)
+        if(i == 4)
         {
           nvgFillColor(args.vg, nvgRGBA(122, 179, 193, 0xff));
         }
@@ -129,7 +129,7 @@ struct WavBankReadout : TransparentWidget
           nvgFillColor(args.vg, nvgRGBA(73, 107, 116, 0xff));
         }
 
-        nvgText(args.vg, 0, 4 + (i * 16), text_to_display.c_str(), NULL);
+        nvgText(args.vg, 0, 6.3 + ((i - window_start) * 14), text_to_display.c_str(), NULL);
       }
     }
 	} // end of draw method
