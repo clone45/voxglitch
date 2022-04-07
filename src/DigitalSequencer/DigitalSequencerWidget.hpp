@@ -41,13 +41,20 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     auto L5 = createParamCentered<VoxglitchAttenuator>(Vec(252.350006, 311.750000), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 4); dynamic_cast<Knob*>(L5)->snap = true; addParam(L5);
     auto L6 = createParamCentered<VoxglitchAttenuator>(Vec(289.549988, 311.750000), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 5); dynamic_cast<Knob*>(L6)->snap = true; addParam(L6);
 
+    float sequencer_selection_buttons_x[NUMBER_OF_SEQUENCERS] = {
+      102.700012,
+      140.200043,
+      177.550018,
+      214.900024,
+      252.350006,
+      289.549988
+    };
+
     // Sequence selection buttons
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(102.700012, 280.250000), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 0));
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(140.200043, 280.250000), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 1));
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(177.550018, 280.250000), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 2));
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(214.900024, 280.250000), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 3));
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(252.350006, 280.250000), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 4));
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(289.549988, 280.250000), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 5));
+    for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
+    {
+      addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(sequencer_selection_buttons_x[i], 280.250000), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + i));
+    }
 
     // CV outputs
     addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(359.299927,311.749878), module, DigitalSequencer::SEQ1_CV_OUTPUT));
@@ -70,76 +77,48 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     voltage_sequencer_display->module = module;
     addChild(voltage_sequencer_display);
 
-    /*
-    // Main voltage sequencer display
-    VoltageSequencerDisplay *voltage_sequencer_display = new VoltageSequencerDisplay();
-    voltage_sequencer_display->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
-    voltage_sequencer_display->module = module;
-    addChild(voltage_sequencer_display);
-
-    GateSequencerDisplay *gates_display = new GateSequencerDisplay();
-    gates_display->box.pos = mm2px(Vec(GATES_DRAW_AREA_POSITION_X, GATES_DRAW_AREA_POSITION_Y));
-    gates_display->module = module;
-    addChild(gates_display);
-
-    double button_spacing = 9.6; // 9.1
-    double button_group_x = 48.0;
-    double button_group_y = 103.0;
-    // Sequence 1 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x, button_group_y)), module, DigitalSequencer::SEQUENCER_1_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x, button_group_y)), module, DigitalSequencer::SEQUENCER_1_LIGHT));
-    // Sequence 2 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y)), module, DigitalSequencer::SEQUENCER_2_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y)), module, DigitalSequencer::SEQUENCER_2_LIGHT));
-    // Sequence 3 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y)), module, DigitalSequencer::SEQUENCER_3_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y)), module, DigitalSequencer::SEQUENCER_3_LIGHT));
-    // Sequence 4 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y)), module, DigitalSequencer::SEQUENCER_4_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y)), module, DigitalSequencer::SEQUENCER_4_LIGHT));
-    // Sequence 5 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y)), module, DigitalSequencer::SEQUENCER_5_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y)), module, DigitalSequencer::SEQUENCER_5_LIGHT));
-    // Sequence 6 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y)), module, DigitalSequencer::SEQUENCER_6_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y)), module, DigitalSequencer::SEQUENCER_6_LIGHT));
-
-    // addParam(createParamCentered<Trimpot>(mm2px(Vec(button_group_x, button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_1_LENGTH_KNOB));
-
-    auto L1 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x, button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_1_LENGTH_KNOB); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
-    auto L2 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_2_LENGTH_KNOB); dynamic_cast<Knob*>(L2)->snap = true; addParam(L2);
-    auto L3 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_3_LENGTH_KNOB); dynamic_cast<Knob*>(L3)->snap = true; addParam(L3);
-    auto L4 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_4_LENGTH_KNOB); dynamic_cast<Knob*>(L4)->snap = true; addParam(L4);
-    auto L5 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_5_LENGTH_KNOB); dynamic_cast<Knob*>(L5)->snap = true; addParam(L5);
-    auto L6 = createParamCentered<Trimpot>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y + 8.6)), module, DigitalSequencer::SEQUENCER_6_LENGTH_KNOB); dynamic_cast<Knob*>(L6)->snap = true; addParam(L6);
-
-    // 6 step inputs
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x, button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_1_STEP_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_2_STEP_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_3_STEP_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_4_STEP_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_5_STEP_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y + 18.0)), module, DigitalSequencer::SEQUENCER_6_STEP_INPUT));
-
-    // 6 sequencer outputs
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(118, 108.224)), module, DigitalSequencer::SEQ1_CV_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(129, 108.224)), module, DigitalSequencer::SEQ2_CV_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(140, 108.224)), module, DigitalSequencer::SEQ3_CV_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(151, 108.224)), module, DigitalSequencer::SEQ4_CV_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(162, 108.224)), module, DigitalSequencer::SEQ5_CV_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(173, 108.224)), module, DigitalSequencer::SEQ6_CV_OUTPUT));
-
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(118, 119.309)), module, DigitalSequencer::SEQ1_GATE_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(129, 119.309)), module, DigitalSequencer::SEQ2_GATE_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(140, 119.309)), module, DigitalSequencer::SEQ3_GATE_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(151, 119.309)), module, DigitalSequencer::SEQ4_GATE_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(162, 119.309)), module, DigitalSequencer::SEQ5_GATE_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(173, 119.309)), module, DigitalSequencer::SEQ6_GATE_OUTPUT));
-
-    // addParam(createParamCentered<FreezeToggle>(mm2px(Vec(180,40)), module, DigitalSequencer::FREEZE_TOGGLE));
-    */
+    for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
+    {
+      LengthDisplay *length_display = new LengthDisplay();
+      length_display->sequencer_number = i;
+      length_display->box.pos = Vec(sequencer_selection_buttons_x[i], 331.0);
+      length_display->module = module;
+      addChild(length_display);
+    }
   }
 
+  struct LengthDisplay : TransparentWidget
+  {
+    DigitalSequencer *module;
+    std::shared_ptr<Font> font;
+    unsigned int sequencer_number = 0;
+
+    void draw(const DrawArgs &args) override
+    {
+      const auto vg = args.vg;
+
+      nvgSave(vg);
+
+      std::string text_to_display = "16";
+
+      if(module)
+      {
+        text_to_display = std::to_string(module->voltage_sequencers[sequencer_number].sequence_length);
+      }
+
+      std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+    	if (font) {
+        nvgFontSize(vg, 9);
+        nvgFontFaceId(vg, font->handle);
+        nvgTextAlign(vg, NVG_ALIGN_CENTER);
+        nvgTextLetterSpacing(vg, -1);
+        nvgFillColor(vg, nvgRGBA(235, 229, 222, 240));
+        nvgText(vg, 0, 0, text_to_display.c_str(), NULL);
+    	}
+
+      nvgRestore(vg);
+    }
+  };
 
   // Sample and Hold values
   struct SampleAndHoldItem : MenuItem {
