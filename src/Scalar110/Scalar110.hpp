@@ -2,27 +2,33 @@
 // Where I left off.
 // - tooltips?
 // - Is first beat skipped on load?
-// - improve ratcheting
+// - improve ratcheting == more patterns!, and a pattern visualizer
 // - implement reset
 // - global memory
+// - probability
 
 struct Scalar110 : Module
 {
+  Pattern patterns[NUMBER_OF_PATTERNS];
+
   dsp::SchmittTrigger drum_pad_triggers[NUMBER_OF_STEPS];
   dsp::SchmittTrigger step_select_triggers[NUMBER_OF_STEPS];
   dsp::SchmittTrigger track_button_triggers[NUMBER_OF_TRACKS];
+  dsp::SchmittTrigger pattern_button_triggers[NUMBER_OF_PATTERNS];
   dsp::SchmittTrigger function_button_triggers[NUMBER_OF_FUNCTIONS];
   dsp::SchmittTrigger stepTrigger;
-  Track tracks[NUMBER_OF_TRACKS];
+
   Track *selected_track = NULL;
+  Pattern *selected_pattern = NULL;
+
+  unsigned int pattern_index = 0;
   unsigned int track_index = 0;
   unsigned int playback_step = 0;
   unsigned int selected_function = 0;
   unsigned int old_selected_function = 0;
   unsigned int clock_division = 8;
   unsigned int clock_counter = 0;
-  float track_left_output;
-  float track_right_output;
+
 
   //
   // Sample related variables
@@ -37,9 +43,10 @@ struct Scalar110 : Module
   // keeps track of the filenames to display.  Filenames are saved and loaded
   // with the patch
   //
+  SamplePlayer sample_players[NUMBER_OF_TRACKS];
+  std::string loaded_filenames[NUMBER_OF_TRACKS]; // for display on the front panel
   std::string root_directory;
 	std::string path;
-  std::string loaded_filenames[NUMBER_OF_TRACKS]; // for display on the front panel
 
   enum ParamIds {
     ENUMS(DRUM_PADS, NUMBER_OF_STEPS),
@@ -47,6 +54,7 @@ struct Scalar110 : Module
     ENUMS(STEP_KNOBS, NUMBER_OF_STEPS),
     ENUMS(FUNCTION_BUTTONS, NUMBER_OF_FUNCTIONS),
     ENUMS(TRACK_BUTTONS, NUMBER_OF_TRACKS),
+    ENUMS(PATTERN_BUTTONS, NUMBER_OF_PATTERNS),
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -64,6 +72,7 @@ struct Scalar110 : Module
     ENUMS(STEP_LOCATION_LIGHTS, NUMBER_OF_STEPS),
     ENUMS(FUNCTION_BUTTON_LIGHTS, NUMBER_OF_FUNCTIONS),
     ENUMS(TRACK_BUTTON_LIGHTS, NUMBER_OF_TRACKS),
+    ENUMS(PATTERN_BUTTON_LIGHTS, NUMBER_OF_PATTERNS),
 		NUM_LIGHTS
 	};
 
@@ -77,8 +86,21 @@ struct Scalar110 : Module
       configParam(STEP_KNOBS + i, 0.0, 1.0, 0.0, "step_knob_" + std::to_string(i));
     }
 
+    // There are 8 sample players, one for each track.  These sample players
+    // are shared across the tracks contained in the patterns.
+    for(unsigned int p=0; p<NUMBER_OF_PATTERNS; p++) {
+      for(unsigned int t=0; t<NUMBER_OF_TRACKS; t++) {
+        patterns[p].setSamplePlayer(t, &sample_players[t]);
+      }
+    }
+
+    selected_pattern = &patterns[0];
+
     // Set default selected track
-    selected_track = &tracks[0];
+    // selected_track = &tracks[0];
+
+    selected_track = selected_pattern->getTrack(0);
+
     updateKnobPositions();
 	}
 
@@ -107,6 +129,7 @@ struct Scalar110 : Module
 	{
 		json_t *json_root = json_object();
 
+    /*
     //
     // Save all track data
     //
@@ -150,6 +173,7 @@ struct Scalar110 : Module
 
     // Save path of the sample bank
     // json_object_set_new(json_root, "path", json_string(this->sample_bank.path.c_str()));
+    */
 
 		return json_root;
 	}
@@ -160,7 +184,7 @@ struct Scalar110 : Module
 
 	void dataFromJson(json_t *json_root) override
 	{
-
+    /*
     //
     // Load all track data
     //
@@ -221,6 +245,7 @@ struct Scalar110 : Module
     }
 
     updateKnobPositions();
+    */
 	}
 
 
@@ -229,18 +254,42 @@ struct Scalar110 : Module
     //
     // If the user has pressed a track button, switch tracks and update the
     // knob positions for the selected function.
-    //
 
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
     {
       if(track_button_triggers[i].process(params[TRACK_BUTTONS + i].getValue()))
       {
         track_index = i;
-        selected_track = &tracks[track_index];
+        selected_track = selected_pattern->getTrack(track_index);
         updateKnobPositions();
       }
     }
 
+    //
+    // If the user has pressed a pattern button, switch patterns and update the
+    // knob positions for the selected function.
+
+    for(unsigned int i=0; i < NUMBER_OF_PATTERNS; i++)
+    {
+      if(pattern_button_triggers[i].process(params[PATTERN_BUTTONS + i].getValue()))
+      {
+        // Store the selected pattern index.  This is used to highlight
+        // the correct track lamp later in the code.
+        pattern_index = i;
+
+        // Switch patterns and set the selected track
+        selected_pattern = &patterns[i];
+        selected_track = selected_pattern->getTrack(track_index);
+
+        // set all track positions
+        for(unsigned int track_index=0; track_index < NUMBER_OF_TRACKS; track_index++)
+        {
+           selected_pattern->tracks[track_index].setPosition(playback_step);
+        }
+
+        updateKnobPositions();
+      }
+    }
 
     //
     // Pad editing features:
@@ -306,11 +355,11 @@ struct Scalar110 : Module
         // Step all of the tracks
         for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
         {
-          tracks[i].step();
+          selected_pattern->tracks[i].step();
         }
 
         // Step the visual playback indicator (led) as well
-        playback_step = (playback_step + 1) % NUMBER_OF_STEPS;
+        playback_step = selected_pattern->tracks[0].getPosition();
 
         // Reset clock division counter
         clock_counter = 0;
@@ -320,7 +369,7 @@ struct Scalar110 : Module
         // Manage ratcheting
         for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
         {
-          tracks[i].ratchety();
+          selected_pattern->tracks[i].ratchety();
         }
       }
       clock_counter++;
@@ -334,13 +383,15 @@ struct Scalar110 : Module
 
     float left_output = 0;
     float right_output = 0;
+    float track_left_output;
+    float track_right_output;
 
     for(unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
-      std::tie(track_left_output, track_right_output) = tracks[i].getStereoOutput();
+      std::tie(track_left_output, track_right_output) = selected_pattern->tracks[i].getStereoOutput();
       left_output += track_left_output;
       right_output += track_right_output;
-      tracks[i].incrementSamplePosition(args.sampleRate);
+      selected_pattern->tracks[i].incrementSamplePosition(args.sampleRate);
     }
 
     // Output voltages at stereo outputs
@@ -351,6 +402,12 @@ struct Scalar110 : Module
     for(unsigned int i=0; i<NUMBER_OF_FUNCTIONS; i++)
     {
       lights[FUNCTION_BUTTON_LIGHTS + i].setBrightness(selected_function == i);
+    }
+
+    // pattern button lights
+    for(unsigned int i=0; i<NUMBER_OF_PATTERNS; i++)
+    {
+      lights[PATTERN_BUTTON_LIGHTS + i].setBrightness(pattern_index == i);
     }
 
     // track button lights

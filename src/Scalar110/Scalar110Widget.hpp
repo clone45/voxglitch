@@ -41,10 +41,11 @@ struct TrackLabelDisplay : TransparentWidget
 
 struct LoadSamplesFromFolderMenuItem : MenuItem
 {
+
 	Scalar110 *module;
 	unsigned int sample_number = 0;
   std::string root_dir;
-
+  /*
 	void onAction(const event::Action &e) override
 	{
 		const std::string dir = root_dir.empty() ? "" : root_dir;
@@ -79,12 +80,13 @@ struct LoadSamplesFromFolderMenuItem : MenuItem
 
     free(path);
 	}
+  */
 };
 
 struct LoadSampleMenuItem : MenuItem
 {
 	Scalar110 *module;
-	unsigned int sample_number = 0;
+	unsigned int track_number = 0;
   std::string root_dir;
 
 	void onAction(const event::Action &e) override
@@ -95,8 +97,8 @@ struct LoadSampleMenuItem : MenuItem
 		if (path)
 		{
       root_dir = std::string(path);
-			module->tracks[sample_number].sample_player.loadSample(std::string(path));
-      module->loaded_filenames[sample_number] = module->tracks[sample_number].sample_player.getFilename();
+			module->sample_players[track_number].loadSample(std::string(path));
+      module->loaded_filenames[track_number] = module->sample_players[track_number].getFilename();
 			free(path);
 		}
 	}
@@ -144,13 +146,15 @@ struct Scalar110Widget : ModuleWidget
     float track_button_positions[NUMBER_OF_TRACKS][2] = {
       {380.007812,83},
       {380.007812,114.5},
-      {379.007812,145.011719},
+      {380.007812,145.011719},
       {380.007812,177.011719},
       {507.007812,83},
       {507.007812,114.5},
       {507.007812,145.011719},
       {507.007812,177.011719}
     };
+
+
 
     for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
     {
@@ -175,6 +179,9 @@ struct Scalar110Widget : ModuleWidget
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(200, 10)), module, Scalar110::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(210, 10)), module, Scalar110::AUDIO_OUTPUT_RIGHT));
 
+    //
+    // Track buttons
+    //
     for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
     {
       float x = track_button_positions[i][0];
@@ -187,6 +194,32 @@ struct Scalar110Widget : ModuleWidget
       track_label_display->setSize(Vec(200, 50)); // Need to adjust this
       track_label_display->module = module;
       addChild(track_label_display);
+    }
+
+    //
+    // Pattern buttons
+    //
+
+    float pattern_button_positions[NUMBER_OF_PATTERNS][2] = {
+      {180.007812,83},
+      {180.007812,114.5},
+      {180.007812,145.011719},
+      {180.007812,177.011719},
+      {180.007812,209.011719},
+
+      {280.007812,83},
+      {280.007812,114.5},
+      {279.007812,145.011719},
+      {280.007812,177.011719},
+      {280.007812,209.011719},
+    };
+    
+    for(unsigned int i=0; i<NUMBER_OF_PATTERNS; i++)
+    {
+      float x = pattern_button_positions[i][0];
+      float y = pattern_button_positions[i][1];
+      addParam(createParamCentered<LEDButton>(Vec(x,y), module, Scalar110::PATTERN_BUTTONS + i));
+      addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x,y), module, Scalar110::PATTERN_BUTTON_LIGHTS + i));
     }
   }
 
@@ -216,8 +249,8 @@ struct Scalar110Widget : ModuleWidget
     for(int i=0; i < NUMBER_OF_TRACKS; i++)
     {
       LoadSampleMenuItem *menu_item_load_sample = new LoadSampleMenuItem();
-      menu_item_load_sample->sample_number = i;
-      menu_item_load_sample->text = std::to_string(i+1) + ": " + module->tracks[i].sample_player.getFilename();
+      menu_item_load_sample->track_number = i;
+      menu_item_load_sample->text = std::to_string(i+1) + ": " + module->sample_players[i].getFilename();
       menu_item_load_sample->module = module;
       menu->addChild(menu_item_load_sample);
     }

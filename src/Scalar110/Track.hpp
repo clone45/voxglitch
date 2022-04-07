@@ -4,13 +4,15 @@ namespace scalar_110
 struct Track
 {
   bool steps[NUMBER_OF_STEPS] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
-  bool ratchet_patterns[6][7] = {
+  bool ratchet_patterns[8][7] = {
     {0,0,0,0,0,0,0},
     {0,0,0,1,0,0,0},
     {0,1,0,1,0,1,0},
     {1,1,1,1,1,1,1},
     {0,1,0,0,1,0,0},
     {1,1,1,0,1,0,0},
+    {0,0,0,1,1,1,1},
+    {1,1,1,0,0,0,0}
   };
   unsigned int playback_position = 0;
   SamplePlaybackSettings sample_playback_settings[NUMBER_OF_STEPS]; // settings assigned to each step
@@ -18,10 +20,15 @@ struct Track
 
   StereoPanSubModule stereo_pan_submodule;
   unsigned int ratchet_counter = 0;
-  SamplePlayer sample_player;
+  SamplePlayer *sample_player;
 
   Track()
   {
+  }
+
+  void setSamplePlayer(SamplePlayer *sample_player)
+  {
+    this->sample_player = sample_player;
   }
 
   void step()
@@ -41,7 +48,7 @@ struct Track
       settings.loop = getLoop(playback_position);
 
       // trigger sample playback
-      sample_player.trigger(&settings);
+      sample_player->trigger(&settings);
     }
   }
 
@@ -49,8 +56,8 @@ struct Track
   {
     if (steps[playback_position])
     {
-      unsigned int ratchet_pattern = settings.ratchet * 5;
-      if(ratchet_patterns[ratchet_pattern][ratchet_counter]) sample_player.trigger(&settings);
+      unsigned int ratchet_pattern = settings.ratchet * 7;
+      if(ratchet_patterns[ratchet_pattern][ratchet_counter]) sample_player->trigger(&settings);
       if(++ratchet_counter >= 8) ratchet_counter = 0;
     }
     else
@@ -98,7 +105,7 @@ struct Track
     float right_output;
 
     // Read sample output and return
-    std::tie(left_output, right_output) = this->sample_player.getStereoOutput();
+    std::tie(left_output, right_output) = this->sample_player->getStereoOutput();
 
     float centered_pan = (settings.pan * 2.0) - 1.0;
     std::tie(left_output, right_output) = stereo_pan_submodule.process(left_output, right_output, centered_pan);
@@ -113,11 +120,11 @@ struct Track
   {
     if(settings.reverse > .5)
     {
-      this->sample_player.stepReverse(rack_sample_rate, &settings);
+      this->sample_player->stepReverse(rack_sample_rate, &settings);
     }
     else
     {
-      this->sample_player.step(rack_sample_rate, &settings);
+      this->sample_player->step(rack_sample_rate, &settings);
     }
   }
 

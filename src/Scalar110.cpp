@@ -19,6 +19,7 @@ using namespace scalar_110;
 // Core components
 #include "Scalar110/SamplePlayer.hpp"
 #include "Scalar110/Track.hpp"
+#include "Scalar110/Pattern.hpp"
 #include "Scalar110/Scalar110.hpp"
 
 
