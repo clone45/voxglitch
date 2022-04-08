@@ -28,14 +28,6 @@ struct HazumiSequencerDisplay : TransparentWidget
     // Save the drawing context to restore later
     nvgSave(vg);
 
-    // Debugging code for draw area, which often has to be set experimentally
-    /*
-    nvgBeginPath(vg);
-    nvgRect(vg, 0, 0, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
-    nvgFillColor(vg, nvgRGBA(120, 20, 20, 100));
-    nvgFill(vg);
-    */
-
     if(module)
     {
       for(unsigned int column=0; column < SEQUENCER_COLUMNS; column++)
@@ -102,24 +94,41 @@ struct HazumiSequencerDisplay : TransparentWidget
       };
 
       unsigned int lib_column_heights[8] = {
-        8,9,9,4,16,12,0,8
+        8,9,9,4,15,12,0,8
       };
 
       for(unsigned int column=0; column < SEQUENCER_COLUMNS; column++)
       {
         for(unsigned int row=0; row < SEQUENCER_ROWS; row++)
         {
-          nvgBeginPath(vg);
-          nvgRect(vg, (column * CELL_WIDTH) + (column * CELL_PADDING), ((SEQUENCER_ROWS - row - 1) * CELL_HEIGHT) + ((SEQUENCER_ROWS - row - 1) * CELL_PADDING), CELL_WIDTH, CELL_HEIGHT);
+          // Draw bright backdrop squares for highlighs
+          float x = (column * CELL_WIDTH) + (column * CELL_PADDING);
+          float y = ((SEQUENCER_ROWS - row - 1) * CELL_HEIGHT) + ((SEQUENCER_ROWS - row - 1) * CELL_PADDING);
 
-          // Default color for inactive square
-          nvgFillColor(vg, nvgRGB(220, 220, 220));
+          // Draw square
+          nvgBeginPath(vg);
+          nvgRect(vg, x, y, CELL_WIDTH, CELL_HEIGHT);
 
           row = clamp(row, 0, SEQUENCER_ROWS - 1);
           column = clamp(column, 0, SEQUENCER_COLUMNS - 1);
 
-          if(lib_column_heights[column] > row) nvgFillColor(vg, nvgRGB(200, 200, 200)); // paint height indicator
-          if(lib_ball_locations[column] == row) nvgFillColor(vg, nvgRGB(97, 143, 170));  // paint ball
+          // If inside of the height range, then blink
+          if(lib_column_heights[column] > row)
+          {
+            nvgFillColor(vg, nvgRGB(63, 71, 73));
+          }
+          // ouside of the height range
+          else
+          {
+            nvgFillColor(vg, nvgRGB(42, 50, 52));
+          }
+
+          // If we're paintint the square that the ball is on
+          if(lib_ball_locations[column] == row)
+          {
+            // Paint a bright color for the ball
+            nvgFillColor(vg, nvgRGBA(176, 255, 224, 255));
+          }
 
           nvgFill(vg);
         }
