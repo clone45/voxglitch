@@ -21,7 +21,7 @@ struct DPBankButtonDisplay : TransparentWidget
         drawButton(vg, nvgRGBA(66, 77, 97, 255));
         drawMiniMap(vg, nvgRGBA(255, 255, 255, 255));
       }
-      else if (module->is_moused_over_bank && (module->mouse_over_bank == button_index) && (module->copy_paste_mode || module->clear_mode)) {
+      else if (module->is_moused_over_bank && (module->mouse_over_bank == button_index) && ((module->bank_interaction_mode == COPY_MODE) || (module->bank_interaction_mode == CLEAR_MODE))) {
         drawMiniMap(vg, nvgRGBA(97, 86, 105, 255)); // draw special mouse-over highlight while in copy/paste mode
       }
       else if (module->is_moused_over_bank && (module->mouse_over_bank == button_index)) {
@@ -40,7 +40,7 @@ struct DPBankButtonDisplay : TransparentWidget
         }
       }
 
-      if(!module->copy_paste_mode) paste_highlight = false;
+      if(! module->bank_interaction_mode == COPY_MODE) paste_highlight = false;
     }
     else // for display in the user library
     {
@@ -84,20 +84,20 @@ struct DPBankButtonDisplay : TransparentWidget
     {
       e.consume(this);
 
-      if(module->copy_paste_mode)
+      if(module->bank_interaction_mode == COPY_MODE)
       {
         module->copyBank(module->copy_bank_id, this->button_index);
         paste_highlight = true;
       }
-      else if (module->clear_mode)
+      else if (module->bank_interaction_mode == CLEAR_MODE)
       {
         module->clearBank(this->button_index);
       }
-      else if (module->randomize_mode)
+      else if (module->bank_interaction_mode == RANDOMIZE_MODE)
       {
         module->randomizeBank(this->button_index);
       }
-      else
+      else // SELECT_MODE
       {
         module->selected_bank = this->button_index;
       }

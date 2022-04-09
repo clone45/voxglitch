@@ -16,6 +16,12 @@ const float BANK_BUTTONS_PADDING = 1.8;
 const unsigned int NUMBER_OF_SNAP_DIVISIONS = 5;
 const unsigned int NUMBER_OF_VOLTAGE_RANGES = 8;
 
+const unsigned int SELECT_MODE = 0;
+const unsigned int COPY_MODE = 1;
+const unsigned int CLEAR_MODE = 2;
+const unsigned int RANDOMIZE_MODE = 3;
+
+
 double voltage_ranges[NUMBER_OF_VOLTAGE_RANGES][2] = {
   { 0.0, 10.0 },
   { -10.0, 10.0 },

@@ -17,13 +17,16 @@ struct DigitalProgrammer : Module
   unsigned int moused_over_slider = 0;
   bool is_moused_over_slider = false;
 
+  unsigned int bank_interaction_mode = SELECT_MODE;
+
   // Copy/paste tracking
-  bool copy_paste_mode = false;
+  // bool copy_paste_mode = false;
+  // bool old_copy_paste_mode = false;
   unsigned int copy_bank_id = 0;
 
   // Other modes
-  bool clear_mode = false;
-  bool randomize_mode = false;
+  // bool clear_mode = false;
+  // bool randomize_mode = false;
 
   // Context menu options
   bool visualize_sums = false;
@@ -311,6 +314,7 @@ struct DigitalProgrammer : Module
   */
 
 
+
   void process(const ProcessArgs &args) override
   {
     if(inputs[BANK_CV_INPUT].isConnected())
@@ -326,32 +330,36 @@ struct DigitalProgrammer : Module
 
     inputs[POLY_ADD_INPUT].setChannels(NUMBER_OF_SLIDERS);
 
-    // Process copy/paste button
+    //
+    // Process bank mode buttons
+    //
+
     if(copy_mode_button_trigger.process(params[COPY_MODE_PARAM].getValue()))
     {
-      copy_paste_mode = ! copy_paste_mode; // toggle off/on
-      this->copy_bank_id = this->selected_bank;
-      clear_mode = false;
-      randomize_mode = false;
+      bank_interaction_mode = COPY_MODE;
+      params[CLEAR_MODE_PARAM].setValue(false);
+      params[RANDOMIZE_MODE_PARAM].setValue(false);
     }
-
-    // Process clear mode button
-    if(clear_mode_button_trigger.process(params[CLEAR_MODE_PARAM].getValue()))
+    else if(clear_mode_button_trigger.process(params[CLEAR_MODE_PARAM].getValue()))
     {
-      clear_mode = ! clear_mode; // toggle off/on
-      copy_paste_mode = false;
-      randomize_mode = false;
+      bank_interaction_mode = CLEAR_MODE;
+      params[COPY_MODE_PARAM].setValue(false);
+      params[RANDOMIZE_MODE_PARAM].setValue(false);
     }
-
-    // Process randomize mode button
-    if(randomize_mode_button_trigger.process(params[RANDOMIZE_MODE_PARAM].getValue()))
+    else if(randomize_mode_button_trigger.process(params[RANDOMIZE_MODE_PARAM].getValue()))
     {
-      randomize_mode = ! randomize_mode; // toggle off/on
-      copy_paste_mode = false;
-      clear_mode = false;
+      bank_interaction_mode = RANDOMIZE_MODE;
+      params[COPY_MODE_PARAM].setValue(false);
+      params[CLEAR_MODE_PARAM].setValue(false);
     }
 
+    // If all buttons are disabled, set mode to select mode
+    if(! (params[CLEAR_MODE_PARAM].getValue() || params[COPY_MODE_PARAM].getValue() || params[RANDOMIZE_MODE_PARAM].getValue())) bank_interaction_mode = SELECT_MODE;
+
+    //
     // Output values
+    //
+
     for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)
     {
       // Get voltage for the specific slider
@@ -375,9 +383,11 @@ struct DigitalProgrammer : Module
     outputs[POLY_OUTPUT].setChannels(NUMBER_OF_SLIDERS);
 
     // Light up mode displays, if active
+    /*
     lights[COPY_MODE_LIGHT].setBrightness(copy_paste_mode == true);
     lights[CLEAR_MODE_LIGHT].setBrightness(clear_mode == true);
     lights[RANDOMIZE_MODE_LIGHT].setBrightness(randomize_mode == true);
+    */
   }
 
 };
