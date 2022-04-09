@@ -7,12 +7,10 @@ struct DigitalProgrammerWidget : VoxglitchModuleWidget
   DigitalProgrammer* module = NULL;
 
   float bank_button_positions[24][2] = {
-    {189.56, 47.975}, {200.827, 47.975}, {212.093, 47.975}, {223.360, 47.975},
-    {189.56, 59.242}, {200.827, 59.242}, {212.093, 59.242}, {223.360, 59.242},
-    {189.56, 70.509}, {200.827, 70.509}, {212.093, 70.509}, {223.360, 70.509},
-    {189.56, 81.776}, {200.827, 81.776}, {212.093, 81.776}, {223.360, 81.776},
-    {189.56, 93.043}, {200.827, 93.043}, {212.093, 93.043}, {223.360, 93.043},
-    {189.56, 104.317}, {200.827, 104.317}, {212.093, 104.317}, {223.360, 104.317}
+    {561.8, 126.8}, {592.3, 126.8}, {622.8, 126.8}, {653.3, 126.8}, {683.8,126.8}, {714.3,126.8},
+    {561.8, 157.1}, {592.3, 157.1}, {622.8, 157.1}, {653.3, 157.1}, {683.8,157.1}, {714.3,157.1},
+    {561.8, 187.4}, {592.3, 187.4}, {622.8, 187.4}, {653.3, 187.4}, {683.8,187.4}, {714.3,187.4},
+    {561.8, 217.7}, {592.3, 217.7}, {622.8,217.7}, {653.3,217.7}, {683.8,217.7}, {714.3,217.7}
   };
 
   float output_positions[16][2] = {
@@ -44,7 +42,13 @@ struct DigitalProgrammerWidget : VoxglitchModuleWidget
     float panel_x_position = 0;
     float panel_y_position = 0;
 
-    float slider_column_x[NUMBER_OF_SLIDERS] = { 7, 18, 29, 40, 51, 62, 73, 84, 95, 106, 117, 128, 139, 150, 161, 172 };
+    float slider_column_x[NUMBER_OF_SLIDERS] = {
+      27.000000, 58.750000, 90.500000, 122.000000,
+      154.250000, 185.750000, 217.250000, 249.000000,
+      280.750000, 312.500000, 344.500000, 376.250000,
+      408.000000, 439.750000, 471.500000, 503.000000,
+    };
+
     float output_positions_x[NUMBER_OF_SLIDERS] = {
       39.233265, 71.086334, 102.949997, 134.663681,
       166.403931, 198.153900, 229.803955, 261.553925,
@@ -56,41 +60,40 @@ struct DigitalProgrammerWidget : VoxglitchModuleWidget
     //
     // Loop through each column and draw the slider and outputs
     //
-    /*
+
     for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)
     {
       // Calculate where to put the slider
       // panel_x_position = (column * horizontal_padding) + margin_left;
       panel_x_position = slider_column_x[column];
-      panel_y_position = 7.0;
+      panel_y_position = 25.250000;
 
       // Add slider widget
       DPSliderDisplay *dp_slider_display = new DPSliderDisplay(column);
-      dp_slider_display->setPosition(mm2px(Vec(panel_x_position, panel_y_position)));
+      dp_slider_display->setPosition(Vec(panel_x_position, panel_y_position));
       dp_slider_display->setSize(Vec(DRAW_AREA_WIDTH, SLIDER_HEIGHT));
       dp_slider_display->module = module;
       addChild(dp_slider_display);
     }
-    */
+
 
     //
     // bank buttons
     //
-    /*
+
     for(unsigned int i = 0; i < NUMBER_OF_BANKS; i ++)
     {
       // calculation panel_x_position, panel_y_position
       panel_x_position = bank_button_positions[i][0];
-      panel_y_position = bank_button_positions[i][1] - 5.45;
+      panel_y_position = bank_button_positions[i][1];
 
       // Add button widget
       DPBankButtonDisplay *dp_bank_button_display = new DPBankButtonDisplay(i);
-      dp_bank_button_display->setPosition(mm2px(Vec(panel_x_position, panel_y_position)));
+      dp_bank_button_display->setPosition(Vec(panel_x_position, panel_y_position));
       dp_bank_button_display->setSize(Vec(BANK_BUTTON_WIDTH, BANK_BUTTON_HEIGHT));
       dp_bank_button_display->module = module;
       addChild(dp_bank_button_display);
     }
-    */
 
     // Add outputs
     for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)

@@ -52,7 +52,7 @@ struct DPSliderDisplay : TransparentWidget
       else
       {
         // draw normal background
-        drawSliderBackground(vg, nvgRGBA(53, 64, 85, 255));
+        drawSliderBackground(vg, nvgRGBA(53, 64, 85, 100)); // was 53, 64, 85, 255
 
         NVGcolor fill_color = getSliderColor(nvgRGBA(156, 167, 185, 255));
         drawSlider(vg, value, fill_color);
