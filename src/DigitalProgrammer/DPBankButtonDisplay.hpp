@@ -40,7 +40,7 @@ struct DPBankButtonDisplay : TransparentWidget
         }
       }
 
-      if(! module->bank_interaction_mode == COPY_MODE) paste_highlight = false;
+      if(! (module->bank_interaction_mode == COPY_MODE)) paste_highlight = false;
     }
     else // for display in the user library
     {

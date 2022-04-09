@@ -20,13 +20,7 @@ struct DigitalProgrammer : Module
   unsigned int bank_interaction_mode = SELECT_MODE;
 
   // Copy/paste tracking
-  // bool copy_paste_mode = false;
-  // bool old_copy_paste_mode = false;
   unsigned int copy_bank_id = 0;
-
-  // Other modes
-  // bool clear_mode = false;
-  // bool randomize_mode = false;
 
   // Context menu options
   bool visualize_sums = false;
@@ -337,6 +331,7 @@ struct DigitalProgrammer : Module
     if(copy_mode_button_trigger.process(params[COPY_MODE_PARAM].getValue()))
     {
       bank_interaction_mode = COPY_MODE;
+      copy_bank_id = selected_bank;
       params[CLEAR_MODE_PARAM].setValue(false);
       params[RANDOMIZE_MODE_PARAM].setValue(false);
     }
@@ -381,13 +376,6 @@ struct DigitalProgrammer : Module
 
     // output voltages and manage lights
     outputs[POLY_OUTPUT].setChannels(NUMBER_OF_SLIDERS);
-
-    // Light up mode displays, if active
-    /*
-    lights[COPY_MODE_LIGHT].setBrightness(copy_paste_mode == true);
-    lights[CLEAR_MODE_LIGHT].setBrightness(clear_mode == true);
-    lights[RANDOMIZE_MODE_LIGHT].setBrightness(randomize_mode == true);
-    */
   }
 
 };
