@@ -2,7 +2,7 @@
 static DrawTimer drawTimer("DigitalProgrammer");
 #endif
 
-struct DigitalProgrammerWidget : ModuleWidget
+struct DigitalProgrammerWidget : VoxglitchModuleWidget
 {
   DigitalProgrammer* module = NULL;
 
@@ -15,23 +15,48 @@ struct DigitalProgrammerWidget : ModuleWidget
     {189.56, 104.317}, {200.827, 104.317}, {212.093, 104.317}, {223.360, 104.317}
   };
 
+  float output_positions[16][2] = {
+    {189.56, 47.975}, {200.827, 47.975}, {212.093, 47.975}, {223.360, 47.975},
+    {189.56, 59.242}, {200.827, 59.242}, {212.093, 59.242}, {223.360, 59.242},
+    {189.56, 70.509}, {200.827, 70.509}, {212.093, 70.509}, {223.360, 70.509},
+    {189.56, 81.776}, {200.827, 81.776}, {212.093, 81.776}, {223.360, 81.776},
+  };
+
   DigitalProgrammerWidget(DigitalProgrammer* module)
   {
     this->module = module;
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_programmer_front_panel.svg")));
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_programmer/digital_programmer_front_panel.svg")));
+
+    PNGPanel *png_panel = new PNGPanel("res/digital_programmer/digital_programmer_full.png", 259.08, 128.5);
+    addChild(png_panel);
+
+    // Add typography layer
+    /*
+    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_sequencer/digital_sequencer_typography.svg"));
+    VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
+    voxglitch_panel->setBackground(svg);
+    addChild(voxglitch_panel);
+    */
 
     // panel_x_position and panel_y_position specify where a slider should
     // be displayed on the front panel relative to 0,0.
     float panel_x_position = 0;
     float panel_y_position = 0;
 
-    float outputs_vertical_position = 118.0;
     float slider_column_x[NUMBER_OF_SLIDERS] = { 7, 18, 29, 40, 51, 62, 73, 84, 95, 106, 117, 128, 139, 150, 161, 172 };
+    float output_positions_x[NUMBER_OF_SLIDERS] = {
+      39.233265, 71.086334, 102.949997, 134.663681,
+      166.403931, 198.153900, 229.803955, 261.553925,
+      293.399902, 325.000000, 356.599976, 388.400024,
+      420.149902, 451.849915, 483.699951, 515.500000
+    };
+
 
     //
     // Loop through each column and draw the slider and outputs
     //
+    /*
     for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)
     {
       // Calculate where to put the slider
@@ -46,10 +71,12 @@ struct DigitalProgrammerWidget : ModuleWidget
       dp_slider_display->module = module;
       addChild(dp_slider_display);
     }
+    */
 
     //
     // bank buttons
     //
+    /*
     for(unsigned int i = 0; i < NUMBER_OF_BANKS; i ++)
     {
       // calculation panel_x_position, panel_y_position
@@ -63,23 +90,16 @@ struct DigitalProgrammerWidget : ModuleWidget
       dp_bank_button_display->module = module;
       addChild(dp_bank_button_display);
     }
-
-    // add copy/paste label
-    /*
-    CopyPasteLabel *copy_paste_label = new CopyPasteLabel();
-    copy_paste_label->setPosition(mm2px(Vec(198.5, 123.4)));
-    copy_paste_label->module = module;
-    addChild(copy_paste_label);
     */
 
+    // Add outputs
     for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)
     {
       // calculation panel_x_position, panel_y_position
-      panel_x_position = slider_column_x[column];
-      panel_y_position = 7.0;
+      panel_x_position = output_positions_x[column];
 
-      // Add outputs
-      PortWidget *output_port = createOutput<PJ301MPort>(mm2px(Vec(panel_x_position, outputs_vertical_position)), module, column);
+      // Add outputs  39.333263,349.639343
+      PortWidget *output_port = createOutputCentered<VoxglitchOutputPort>(Vec(panel_x_position, 349.703735), module, column);
       addOutput(output_port);
 
       // Store pointer to outputs so that I can later fetch the cable informatiion
@@ -87,28 +107,23 @@ struct DigitalProgrammerWidget : ModuleWidget
       if(module) module->output_ports[column] = output_port;
     }
 
+
     // Poly add input
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(202.404, 11.366)), module, DigitalProgrammer::POLY_ADD_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(722.000000,292.000000), module, DigitalProgrammer::POLY_ADD_INPUT));
 
     // Poly output
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(225.683, 11.366)), module, DigitalProgrammer::POLY_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(722.250000,349.500000), module, DigitalProgrammer::POLY_OUTPUT));
 
     // bank controls
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(193.162, 36.593 + 2.642 - 5.45)), module, DigitalProgrammer::BANK_CV_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(205.383, 36.593 + 2.642 - 5.45)), module, DigitalProgrammer::BANK_NEXT_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(217.612, 36.593 + 2.642 - 5.45)), module, DigitalProgrammer::BANK_PREV_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(229.824, 36.593 + 2.642 - 5.45)), module, DigitalProgrammer::BANK_RESET_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(574.209290,50.708843), module, DigitalProgrammer::BANK_CV_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(623.195435,51.008839), module, DigitalProgrammer::BANK_RESET_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(673.005005,50.808842), module, DigitalProgrammer::BANK_PREV_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(722.345642,50.858841), module, DigitalProgrammer::BANK_NEXT_INPUT));
 
     // copy/paste mode toggle
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_PARAM));
-    addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_LIGHT));
-
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(205, 122)), module, DigitalProgrammer::CLEAR_MODE_PARAM));
-    addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(205, 122)), module, DigitalProgrammer::CLEAR_MODE_LIGHT));
-
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(216.84, 122)), module, DigitalProgrammer::RANDOMIZE_MODE_PARAM));
-    addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(216.84, 122)), module, DigitalProgrammer::RANDOMIZE_MODE_LIGHT));
-
+    addParam(createParamCentered<squareToggle>(Vec(574.108398,291.704529), module, DigitalProgrammer::COPY_MODE_PARAM));
+    addParam(createParamCentered<squareToggle>(Vec(623.299927,291.799927), module, DigitalProgrammer::CLEAR_MODE_PARAM));
+    addParam(createParamCentered<squareToggle>(Vec(672.949829,291.699951), module, DigitalProgrammer::RANDOMIZE_MODE_PARAM));
   }
 
   struct InputSnapValueItem : MenuItem {

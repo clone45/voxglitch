@@ -162,9 +162,6 @@ struct WavBankMC : Module
 
   void change_selected_sample(unsigned int new_sample_slot)
   {
-    // if(this->samples.size() == 0) return;
-    // if(new_sample_slot >= this->samples.size()) return;
-
     if(this->samples.size() != 0)
     {
       // Reset the smooth ramp if the selected sample has changed
@@ -179,7 +176,6 @@ struct WavBankMC : Module
       // Set the selected sample
       selected_sample_slot = new_sample_slot;
     }
-
   }
 
   void process_wav_cv_input()
@@ -189,13 +185,8 @@ struct WavBankMC : Module
 		wav_input_value = clamp(wav_input_value, 0, number_of_samples - 1);
     previous_wav_knob_value = params[WAV_KNOB].getValue();
 
-    //
-    // If the sample has been changed.
-    //
-		if(wav_input_value != selected_sample_slot)
-		{
-      change_selected_sample(wav_input_value);
-		}
+    // If the sample has been changed, then change selected sample slot
+		if(wav_input_value != selected_sample_slot) change_selected_sample(wav_input_value);
   }
 
   void manual_wav_selection()

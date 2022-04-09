@@ -3,7 +3,7 @@ struct WavBankMCWidget : ModuleWidget
 	WavBankMCWidget(WavBankMC* module)
 	{
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/wavebank_mc/wav_bank_mc_front_panel.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/wavbank_mc/wavbank_mc_front_panel.svg")));
 
     // Load up the background PNG and add it to the panel
     PNGPanel *png_panel = new PNGPanel("res/wavbank_mc/wavbank_mc_base.png", 101.6, 128.5);
