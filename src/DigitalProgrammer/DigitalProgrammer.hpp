@@ -37,8 +37,10 @@ struct DigitalProgrammer : Module
   std::string snap_division_names[NUMBER_OF_SNAP_DIVISIONS] = { "None", "32", "16", "8", "4" };
   std::string labels[NUMBER_OF_SLIDERS] = {"","","","","","","","","","","","","","","",""};
 
-  dsp::SchmittTrigger bank_next_schmitt_trigger;
-  dsp::SchmittTrigger bank_prev_schmitt_trigger;
+  dsp::SchmittTrigger bank_next_input_schmitt_trigger;
+  dsp::SchmittTrigger bank_next_button_schmitt_trigger;
+  dsp::SchmittTrigger bank_prev_input_schmitt_trigger;
+  dsp::SchmittTrigger bank_prev_button_schmitt_trigger;
   dsp::SchmittTrigger bank_reset_schmitt_trigger;
   dsp::SchmittTrigger copy_mode_button_trigger;
   dsp::SchmittTrigger clear_mode_button_trigger;
@@ -60,6 +62,8 @@ struct DigitalProgrammer : Module
     COPY_MODE_PARAM,
     CLEAR_MODE_PARAM,
     RANDOMIZE_MODE_PARAM,
+    BANK_PREV_PARAM,
+    BANK_NEXT_PARAM,
     NUM_PARAMS
   };
   enum InputIds {
@@ -231,6 +235,12 @@ struct DigitalProgrammer : Module
     }
   }
 
+  /*
+  ==================================================================================================================================================
+    Helper Functions
+  ==================================================================================================================================================
+  */
+
   void incrementBank()
   {
     if(selected_bank < (NUMBER_OF_BANKS - 1))
@@ -296,21 +306,18 @@ struct DigitalProgrammer : Module
   }
 
   /*
-
-  ______
-  | ___ \
-  | |_/ / __ ___   ___ ___  ___ ___
-  |  __/ '__/ _ \ / __/ _ \/ __/ __|
-  | |  | | | (_) | (_|  __/\__ \__ \
-  \_|  |_|  \___/ \___\___||___/___/
-
-
+  ==================================================================================================================================================
+    Process
+  ==================================================================================================================================================
   */
-
-
 
   void process(const ProcessArgs &args) override
   {
+
+    //
+    // Process bank controls
+    //
+
     if(inputs[BANK_CV_INPUT].isConnected())
     {
       unsigned int bank_cv_value = (inputs[BANK_CV_INPUT].getVoltage() / 10.0) * NUMBER_OF_BANKS;
@@ -318,10 +325,19 @@ struct DigitalProgrammer : Module
       this->selected_bank = bank_cv_value;
     }
 
-    if(bank_next_schmitt_trigger.process(inputs[BANK_NEXT_INPUT].getVoltage())) incrementBank();
-    if(bank_prev_schmitt_trigger.process(inputs[BANK_PREV_INPUT].getVoltage())) decrementBank();
+    if(
+      bank_next_input_schmitt_trigger.process(inputs[BANK_NEXT_INPUT].getVoltage()) ||
+      bank_next_button_schmitt_trigger.process(params[BANK_NEXT_PARAM].getValue())
+    ) incrementBank();
+
+    if(
+      bank_prev_input_schmitt_trigger.process(inputs[BANK_PREV_INPUT].getVoltage()) ||
+      bank_prev_button_schmitt_trigger.process(params[BANK_PREV_PARAM].getValue())
+    ) decrementBank();
+
     if(bank_reset_schmitt_trigger.process(inputs[BANK_RESET_INPUT].getVoltage())) resetBank();
 
+    // Set input channels for poly add input
     inputs[POLY_ADD_INPUT].setChannels(NUMBER_OF_SLIDERS);
 
     //
@@ -359,10 +375,6 @@ struct DigitalProgrammer : Module
     {
       // Get voltage for the specific slider
       float scaled_output = sliders[selected_bank][column].getOutput(range_settings[column]);
-
-      // Eventually, I may add per-channel scaling
-      // float scaled_output = output_voltage * 10.0;
-      // float scaled_output = output_voltage * 10.0;
 
       // Add any value from the poly input
       float add_input_voltage = inputs[POLY_ADD_INPUT].getVoltage(column);

@@ -123,6 +123,10 @@ struct DigitalProgrammerWidget : VoxglitchModuleWidget
     addInput(createInputCentered<VoxglitchInputPort>(Vec(673.005005,50.808842), module, DigitalProgrammer::BANK_PREV_INPUT));
     addInput(createInputCentered<VoxglitchInputPort>(Vec(722.345642,50.858841), module, DigitalProgrammer::BANK_NEXT_INPUT));
 
+    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(Vec(673.204956,85.108795), module, DigitalProgrammer::BANK_PREV_PARAM));
+    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(Vec(722.695557,85.108795), module, DigitalProgrammer::BANK_NEXT_PARAM));
+
+
     // copy/paste mode toggle
     addParam(createParamCentered<squareToggle>(Vec(574.108398,291.704529), module, DigitalProgrammer::COPY_MODE_PARAM));
     addParam(createParamCentered<squareToggle>(Vec(623.299927,291.799927), module, DigitalProgrammer::CLEAR_MODE_PARAM));
