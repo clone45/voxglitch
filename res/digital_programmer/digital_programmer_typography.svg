@@ -26,15 +26,16 @@
    inkscape:pageopacity="0.0"
    inkscape:pagecheckerboard="0"
    showgrid="false"
-   inkscape:zoom="1.9757625"
-   inkscape:cx="651.39409"
-   inkscape:cy="176.13453"
-   inkscape:window-width="3840"
-   inkscape:window-height="2066"
-   inkscape:window-x="2869"
-   inkscape:window-y="-11"
+   inkscape:zoom="11.1766"
+   inkscape:cx="690.63937"
+   inkscape:cy="249.00238"
+   inkscape:window-width="2880"
+   inkscape:window-height="1526"
+   inkscape:window-x="-11"
+   inkscape:window-y="1138"
    inkscape:window-maximized="1"
-   inkscape:current-layer="Ebene_2" />
+   inkscape:current-layer="Ebene_2"
+   inkscape:document-units="mm" />
 <style
    type="text/css"
    id="style2">
@@ -173,7 +174,7 @@
    class="st3"
    d="M 511.978,307.366 H 20.051 c -0.504,0 -0.912,-0.409 -0.912,-0.913 V 19.61 c 0,-0.504 0.409,-0.912 0.912,-0.912 h 491.927 c 0.504,0 0.912,0.409 0.912,0.912 v 286.843 c 0,0.504 -0.408,0.913 -0.912,0.913 z"
    id="path68"
-   style="stroke:#000000;stroke-opacity:1" /><path
+   style="stroke:#000000;stroke-opacity:1;fill:#131b1e;fill-opacity:1" /><path
    d="M 714.678,241.133 H 533.803 c -1.331,0 -2.41,-1.079 -2.41,-2.41 V 116.787 c 0,-1.331 1.079,-2.41 2.41,-2.41 h 180.876 c 1.331,0 2.41,1.079 2.41,2.41 v 121.936 c 0,1.331 -1.079,2.41 -2.411,2.41"
    id="path70"
    style="stroke:none;fill-opacity:1;fill:#000000" /><path
@@ -184,5 +185,5 @@
    class="st3"
    d="M 714.395,239.436 H 534.086 c -0.504,0 -0.913,-0.409 -0.913,-0.912 V 117.118 c 0,-0.504 0.409,-0.912 0.913,-0.912 h 180.309 c 0.504,0 0.913,0.409 0.913,0.912 v 121.405 c 0,0.504 -0.409,0.913 -0.913,0.913 z"
    id="path74"
-   style="stroke:none;fill-opacity:1;fill:#1c2729" />
+   style="stroke:none;fill-opacity:1;fill:#131b1e" />
 </svg>

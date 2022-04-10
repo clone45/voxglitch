@@ -14,29 +14,35 @@ struct DPBankButtonDisplay : TransparentWidget
     const auto vg = args.vg;
     nvgSave(vg);
 
+    NVGcolor button_default_color = nvgRGBA(31,39,42,255);
+    NVGcolor highlight_color = nvgRGBA(45, 61, 60, 255);
+    NVGcolor active_mini_map_color = nvgRGBA(174,255,223,255);
+    NVGcolor inactive_mini_map_color = nvgRGBA(174,255,223,255);
+    NVGcolor paste_mini_map_color = nvgRGBA(97,86,105,255);
+    // NVGcolor unhighligted_background = nvgRGBA(31,39,42,255);
+
     if(module)
     {
       if (module->selected_bank == button_index) {
         // Draw selected bank button
-        drawButton(vg, nvgRGBA(66, 77, 97, 255));
-        drawMiniMap(vg, nvgRGBA(255, 255, 255, 255));
+        drawButton(vg, highlight_color);
+        drawMiniMap(vg, active_mini_map_color);
       }
       else if (module->is_moused_over_bank && (module->mouse_over_bank == button_index) && ((module->bank_interaction_mode == COPY_MODE) || (module->bank_interaction_mode == CLEAR_MODE))) {
-        drawMiniMap(vg, nvgRGBA(97, 86, 105, 255)); // draw special mouse-over highlight while in copy/paste mode
+        drawMiniMap(vg, paste_mini_map_color); // draw special mouse-over highlight while in copy/paste mode
       }
-      else if (module->is_moused_over_bank && (module->mouse_over_bank == button_index)) {
-        // draw mouse-over highlight
-        drawButton(vg, nvgRGBA(66, 77, 97, 255));
-        drawMiniMap(vg, nvgRGBA(255, 255, 255, 251));
+      else if (module->is_moused_over_bank && (module->mouse_over_bank == button_index)) { // draw mouse-over highlight
+        drawButton(vg, highlight_color);
+        drawMiniMap(vg, active_mini_map_color);
       }
       else
       {
         if(paste_highlight) {
-          drawMiniMap(vg, nvgRGBA(97, 86, 105, 255));
+          drawMiniMap(vg, paste_mini_map_color);
         }
         else {
-          // drawMiniMap(vg, nvgRGBA(53, 64, 85, 255)); // draw standard background
-          drawMiniMap(vg, nvgRGBA(156, 167, 185, 255)); // draw standard background
+          drawButton(vg, button_default_color);
+          drawMiniMap(vg, inactive_mini_map_color); // draw standard background
         }
       }
 
@@ -44,7 +50,7 @@ struct DPBankButtonDisplay : TransparentWidget
     }
     else // for display in the user library
     {
-      drawButton(vg, nvgRGBA(53, 64, 85, 255));
+      drawButton(vg, button_default_color);
     }
 
     nvgRestore(vg);
