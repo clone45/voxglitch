@@ -26,16 +26,14 @@ struct DigitalProgrammerWidget : VoxglitchModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_programmer/digital_programmer_front_panel.svg")));
 
-    PNGPanel *png_panel = new PNGPanel("res/digital_programmer/digital_programmer_full.png", 259.08, 128.5);
+    PNGPanel *png_panel = new PNGPanel("res/digital_programmer/digital_programmer_baseplate.png", 259.08, 128.5);
     addChild(png_panel);
 
     // Add typography layer
-    /*
-    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_sequencer/digital_sequencer_typography.svg"));
+    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_programmer/digital_programmer_typography.svg"));
     VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
     voxglitch_panel->setBackground(svg);
     addChild(voxglitch_panel);
-    */
 
     // panel_x_position and panel_y_position specify where a slider should
     // be displayed on the front panel relative to 0,0.
