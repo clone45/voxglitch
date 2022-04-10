@@ -22,6 +22,10 @@ struct Track
   unsigned int ratchet_counter = 0;
   SamplePlayer *sample_player;
 
+  // The "skipped" variable keep track of when a trigger has been skipped because
+  // the "Percentage" funtion is non-zero and didn't fire on the current step.``
+  bool skipped = false;
+
   Track()
   {
   }
@@ -36,25 +40,39 @@ struct Track
     playback_position = (playback_position + 1) % NUMBER_OF_STEPS;
     ratchet_counter = 0;
 
-    if (steps[playback_position])
+    if((getProbability(playback_position) < 0.98) && (((float) rand()/RAND_MAX) > getProbability(playback_position)))
     {
-      // Copy the settings from sample_playback_settings into settings
-      settings.volume = getVolume(playback_position);
-      settings.pitch = getPitch(playback_position);
-      settings.pan = getPan(playback_position);
-      settings.ratchet = getRatchet(playback_position);
-      settings.offset = getOffset(playback_position);
-      settings.reverse = getReverse(playback_position);
-      settings.loop = getLoop(playback_position);
-
-      // trigger sample playback
-      sample_player->trigger(&settings);
+      // Don't trigger
+      skipped = true;
     }
+    else
+    {
+      skipped = false;
+
+      if (steps[playback_position])
+      {
+        // Copy the settings from sample_playback_settings into settings
+        settings.volume = getVolume(playback_position);
+        settings.pitch = getPitch(playback_position);
+        settings.pan = getPan(playback_position);
+        settings.ratchet = getRatchet(playback_position);
+        settings.offset = getOffset(playback_position);
+        settings.reverse = getReverse(playback_position);
+        settings.loop = getLoop(playback_position);
+
+        // trigger sample playback
+        sample_player->trigger(&settings);
+      }
+    }
+
   }
 
+  //
+  // Handle ratcheting
+  //
   void ratchety()
   {
-    if (steps[playback_position])
+    if (steps[playback_position] && (skipped == false))
     {
       unsigned int ratchet_pattern = settings.ratchet * 7;
       if(ratchet_patterns[ratchet_pattern][ratchet_counter]) sample_player->trigger(&settings);
@@ -186,6 +204,16 @@ struct Track
   }
   void setReverse(unsigned int step, float reverse)  {
     this->sample_playback_settings[step].reverse = reverse;
+  }
+
+  //
+  // Probability
+  //
+  float getProbability(unsigned int step)  {
+    return(this->sample_playback_settings[step].probability);
+  }
+  void setProbability(unsigned int step, float probability)  {
+    this->sample_playback_settings[step].probability = probability;
   }
 
   //

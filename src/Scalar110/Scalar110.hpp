@@ -1,10 +1,10 @@
 //
 // Where I left off.
+// - rename
 // - tooltips?
-// - Is first beat skipped on load?
-// - improve ratcheting == more patterns!, and a pattern visualizer
+// - Fix first beat skipped on load
+// - more ratcheting patterns!
 // - implement reset
-// - global memory
 // - probability
 
 struct Scalar110 : Module
@@ -117,6 +117,7 @@ struct Scalar110 : Module
         case FUNCTION_PITCH: params[STEP_KNOBS + step_number].setValue(selected_track->getPitch(step_number)); break;
         case FUNCTION_RATCHET: params[STEP_KNOBS + step_number].setValue(selected_track->getRatchet(step_number)); break;
         case FUNCTION_REVERSE: params[STEP_KNOBS + step_number].setValue(selected_track->getReverse(step_number)); break;
+        case FUNCTION_PROBABILITY: params[STEP_KNOBS + step_number].setValue(selected_track->getProbability(step_number)); break;
         case FUNCTION_LOOP: params[STEP_KNOBS + step_number].setValue(selected_track->getLoop(step_number)); break;
       }
     }
@@ -172,6 +173,7 @@ struct Scalar110 : Module
           json_object_set(step_data, "pan", json_real(this->patterns[pattern_number].tracks[track_number].getPan(step_index)));
           json_object_set(step_data, "ratchet", json_real(this->patterns[pattern_number].tracks[track_number].getRatchet(step_index)));
           json_object_set(step_data, "reverse", json_real(this->patterns[pattern_number].tracks[track_number].getReverse(step_index)));
+          json_object_set(step_data, "probability", json_real(this->patterns[pattern_number].tracks[track_number].getProbability(step_index)));
           json_object_set(step_data, "loop", json_real(this->patterns[pattern_number].tracks[track_number].getLoop(step_index)));
 
           json_array_append_new(steps_json_array, step_data);
@@ -278,6 +280,9 @@ struct Scalar110 : Module
                 json_t *reverse_json = json_object_get(json_step_object, "reverse");
                 if(reverse_json) this->patterns[pattern_index].tracks[track_index].setReverse(step_index, json_real_value(reverse_json));
 
+                json_t *probability_json = json_object_get(json_step_object, "probability");
+                if(probability_json) this->patterns[pattern_index].tracks[track_index].setProbability(step_index, json_real_value(probability_json));
+
                 json_t *loop_json = json_object_get(json_step_object, "loop");
                 if(loop_json) this->patterns[pattern_index].tracks[track_index].setLoop(step_index, json_real_value(loop_json));
               }
@@ -383,6 +388,7 @@ struct Scalar110 : Module
         case FUNCTION_PITCH: selected_track->setPitch(step_number, params[STEP_KNOBS + step_number].getValue()); break;
         case FUNCTION_RATCHET: selected_track->setRatchet(step_number, params[STEP_KNOBS + step_number].getValue()); break;
         case FUNCTION_REVERSE: selected_track->setReverse(step_number, params[STEP_KNOBS + step_number].getValue()); break;
+        case FUNCTION_PROBABILITY: selected_track->setProbability(step_number, params[STEP_KNOBS + step_number].getValue()); break;
         case FUNCTION_LOOP: selected_track->setLoop(step_number, params[STEP_KNOBS + step_number].getValue()); break;
       }
     }

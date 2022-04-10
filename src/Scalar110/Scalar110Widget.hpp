@@ -43,9 +43,9 @@ struct LoadSamplesFromFolderMenuItem : MenuItem
 {
 
 	Scalar110 *module;
-	unsigned int sample_number = 0;
+	unsigned int track_number = 0;
   std::string root_dir;
-  /*
+
 	void onAction(const event::Action &e) override
 	{
 		const std::string dir = root_dir.empty() ? "" : root_dir;
@@ -68,10 +68,10 @@ struct LoadSamplesFromFolderMenuItem : MenuItem
           (rack::string::lowercase(system::getExtension(entry)) == ".wav")
         )
   			{
-          if(i < 6)
+          if(i < NUMBER_OF_TRACKS)
           {
-            module->tracks[i].sample_player.loadSample(std::string(entry));
-            module->loaded_filenames[i] = module->tracks[i].sample_player.getFilename();
+            module->sample_players[i].loadSample(std::string(entry));
+            module->loaded_filenames[i] = module->sample_players[i].getFilename();
             i++;
           }
   			}
@@ -80,7 +80,6 @@ struct LoadSamplesFromFolderMenuItem : MenuItem
 
     free(path);
 	}
-  */
 };
 
 struct LoadSampleMenuItem : MenuItem
@@ -200,20 +199,26 @@ struct Scalar110Widget : ModuleWidget
     // Pattern buttons
     //
 
-    float pattern_button_positions[NUMBER_OF_PATTERNS][2] = {
-      {180.007812,83},
-      {180.007812,114.5},
-      {180.007812,145.011719},
-      {180.007812,177.011719},
-      {180.007812,209.011719},
+    float offset = 30.0;
 
-      {280.007812,83},
-      {280.007812,114.5},
-      {279.007812,145.011719},
-      {280.007812,177.011719},
-      {280.007812,209.011719},
+    float pattern_button_positions[NUMBER_OF_PATTERNS][2] = {
+      {180 - offset,83},
+      {210 - offset,83},
+      {240 - offset,83},
+
+      {180 - offset,114.5},
+      {210 - offset,114.5},
+      {240 - offset,114.5},
+
+      {180 - offset,145},
+      {210 - offset,145},
+      {240 - offset,145},
+
+      {180 - offset,177.011719},
+      {210 - offset,177.011719},
+      {240 - offset,177.011719}
     };
-    
+
     for(unsigned int i=0; i<NUMBER_OF_PATTERNS; i++)
     {
       float x = pattern_button_positions[i][0];
