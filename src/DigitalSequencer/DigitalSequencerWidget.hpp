@@ -9,9 +9,12 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_sequencer/digital_sequencer_front_panel.svg")));
 
-    // PNGPanel *png_panel = new PNGPanel("res/digital_sequencer/digital_sequencer_baseplate_smooth.png", 182.88, 128.5);
     PNGPanel *png_panel = new PNGPanel("res/digital_sequencer/digital_sequencer_baseplate.png", 182.88, 128.5);
     addChild(png_panel);
+
+    // Add dust layer
+    // PNGPanel *dust_png_panel = new PNGPanel("res/digital_sequencer/dust_layer.png", 182.88, 128.5, .5);
+    // addChild(dust_png_panel);
 
     // Add typography layer
     std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_sequencer/digital_sequencer_typography.svg"));

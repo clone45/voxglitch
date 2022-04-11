@@ -3,12 +3,21 @@ struct PNGPanel : TransparentWidget
   std::string png_file_path;
   float width;
   float height;
+  float alpha = 1.0;
 
   PNGPanel(std::string png_file_path, float width, float height)
   {
     this->png_file_path = png_file_path;
     this->width = width;
     this->height = height;
+  }
+
+  PNGPanel(std::string png_file_path, float width, float height, float alpha)
+  {
+    this->png_file_path = png_file_path;
+    this->width = width;
+    this->height = height;
+    this->alpha = alpha;
   }
 
   void draw(const DrawArgs &args) override
@@ -24,7 +33,7 @@ struct PNGPanel : TransparentWidget
     box.size = mm2px(Vec(width, height));
 
     // Paint the .png background
-    NVGpaint paint = nvgImagePattern(args.vg, 0.0, 0.0, box.size.x, box.size.y, 0.0, img->handle, 1.0);
+    NVGpaint paint = nvgImagePattern(args.vg, 0.0, 0.0, box.size.x, box.size.y, 0.0, img->handle, this->alpha);
     nvgBeginPath(args.vg);
     nvgRect(args.vg, 0.0, 0.0, box.size.x, box.size.y);
     nvgFillPaint(args.vg, paint);

@@ -41,7 +41,6 @@ struct DPSliderDisplay : TransparentWidget
     NVGcolor slider_background_mouse_over_color = nvgRGBA(52,60,63,255);
     NVGcolor slider_color = nvgRGBA(132,190,169,255);
 
-
     if(module)
     {
       double value = module->sliders[module->selected_bank][column].getValue();
@@ -100,8 +99,8 @@ struct DPSliderDisplay : TransparentWidget
     }
     else
     {
-      drawSliderBackground(vg, nvgRGBA(66, 77, 97, 255));
-      drawSlider(vg, 0.6, nvgRGBA(156, 167, 185, 255));
+      drawSliderBackground(vg, slider_background_color);
+      drawSlider(vg, 0.6, slider_color);
     }
 
     nvgRestore(vg);
