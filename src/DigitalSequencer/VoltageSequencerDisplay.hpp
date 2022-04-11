@@ -102,7 +102,7 @@ struct VoltageSequencerDisplay : SequencerDisplay
         //
         // draw dirt overlay
         //
-
+        /*
         std::shared_ptr<Image> img = APP->window->loadImage(asset::plugin(pluginInstance, "res/digital_sequencer/dust_layer.png"));
 
         int temp_width, temp_height;
@@ -119,7 +119,7 @@ struct VoltageSequencerDisplay : SequencerDisplay
         nvgRect(vg, 0.0, 0.0, box.size.x, box.size.y);
         nvgFillPaint(vg, paint);
         nvgFill(vg);
-
+        */
 
       }
       else // Draw a demo sequence so that the sequencer looks nice in the library selector

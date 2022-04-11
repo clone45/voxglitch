@@ -80,6 +80,11 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     voltage_sequencer_display->module = module;
     addChild(voltage_sequencer_display);
 
+    // add grime layer
+    GrimeLayer *grime_layer = new GrimeLayer();
+    grime_layer->box.pos = Vec(20.042969,20.140625);
+    addChild(grime_layer);
+
     for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
     {
       LengthDisplay *length_display = new LengthDisplay();
