@@ -8,19 +8,30 @@ struct TrackLabelDisplay : TransparentWidget
   TrackLabelDisplay(unsigned int track_number)
   {
     this->track_number = track_number;
-    box.size = Vec(100, 25);
+    box.size = Vec(90, 25);
   }
 
-  /*
   void onDoubleClick(const event::DoubleClick &e) override
   {
-    DEBUG("Double Clicky");
+    std::string root_dir = module->root_directory;
+    const std::string dir = root_dir.empty() ? "" : root_dir;
+		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("WAV:wav:Wav"));
+
+		if (path)
+		{
+      root_dir = std::string(path);
+			module->sample_players[track_number].loadSample(std::string(path));
+      module->loaded_filenames[track_number] = module->sample_players[track_number].getFilename();
+			free(path);
+		}
   }
 
-  void step() override {
-    TransparentWidget::step();
+  void onButton(const event::Button &e) override
+  {
+    TransparentWidget::onButton(e);
+    e.consume(this);
   }
-  */
+
 
   void draw(const DrawArgs& args) override
   {
@@ -28,12 +39,11 @@ struct TrackLabelDisplay : TransparentWidget
 
 
     // Debugging code for draw area, which often has to be set experimentally
-    /*
     nvgBeginPath(vg);
     nvgRect(vg, 0, 0, box.size.x, box.size.y);
     nvgFillColor(vg, nvgRGBA(120, 20, 20, 100));
     nvgFill(vg);
-    */
+
 
     // Save the drawing context to restore later
     nvgSave(vg);
@@ -49,7 +59,7 @@ struct TrackLabelDisplay : TransparentWidget
         nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 0xff));
         nvgTextAlign(args.vg, NVG_ALIGN_LEFT);
         float wrap_at = 80.0; // Just throw your hands in the air!  And wave them like you just don't
-        nvgTextBox(args.vg, 0, 0, wrap_at, to_display.c_str(), NULL);
+        nvgTextBox(args.vg, 0, 10, wrap_at, to_display.c_str(), NULL);
       }
     }
     nvgRestore(vg);
@@ -62,16 +72,17 @@ struct LoadSamplesFromFolderMenuItem : MenuItem
 
 	Scalar110 *module;
 	unsigned int track_number = 0;
-  std::string root_dir;
+
 
 	void onAction(const event::Action &e) override
 	{
+    std::string root_dir = module->root_directory;;
 		const std::string dir = root_dir.empty() ? "" : root_dir;
     char *path = osdialog_file(OSDIALOG_OPEN_DIR, dir.c_str(), NULL, NULL);
 
 		if (path)
 		{
-      root_dir = std::string(path);
+      module->root_directory = std::string(path);
 
       std::vector<std::string> dirList = system::getEntries(path);
 
@@ -104,16 +115,17 @@ struct LoadSampleMenuItem : MenuItem
 {
 	Scalar110 *module;
 	unsigned int track_number = 0;
-  std::string root_dir;
 
 	void onAction(const event::Action &e) override
 	{
+    std::string root_dir = module->root_directory;
+
 		const std::string dir = root_dir.empty() ? "" : root_dir;
 		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("WAV:wav:Wav"));
 
 		if (path)
 		{
-      root_dir = std::string(path);
+      module->root_directory = std::string(path);
 			module->sample_players[track_number].loadSample(std::string(path));
       module->loaded_filenames[track_number] = module->sample_players[track_number].getFilename();
 			free(path);
