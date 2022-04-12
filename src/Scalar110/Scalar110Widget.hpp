@@ -8,12 +8,32 @@ struct TrackLabelDisplay : TransparentWidget
   TrackLabelDisplay(unsigned int track_number)
   {
     this->track_number = track_number;
-    box.size = Vec(5, 5);
+    box.size = Vec(100, 25);
   }
+
+  /*
+  void onDoubleClick(const event::DoubleClick &e) override
+  {
+    DEBUG("Double Clicky");
+  }
+
+  void step() override {
+    TransparentWidget::step();
+  }
+  */
 
   void draw(const DrawArgs& args) override
   {
     const auto vg = args.vg;
+
+
+    // Debugging code for draw area, which often has to be set experimentally
+    /*
+    nvgBeginPath(vg);
+    nvgRect(vg, 0, 0, box.size.x, box.size.y);
+    nvgFillColor(vg, nvgRGBA(120, 20, 20, 100));
+    nvgFill(vg);
+    */
 
     // Save the drawing context to restore later
     nvgSave(vg);
@@ -28,8 +48,6 @@ struct TrackLabelDisplay : TransparentWidget
         nvgTextLetterSpacing(args.vg, 0);
         nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 0xff));
         nvgTextAlign(args.vg, NVG_ALIGN_LEFT);
-        // float x_position = LABEL_POSITIONS[track_number][0];
-        // float y_position = LABEL_POSITIONS[track_number][1];
         float wrap_at = 80.0; // Just throw your hands in the air!  And wave them like you just don't
         nvgTextBox(args.vg, 0, 0, wrap_at, to_display.c_str(), NULL);
       }
@@ -190,7 +208,6 @@ struct Scalar110Widget : ModuleWidget
 
       TrackLabelDisplay *track_label_display = new TrackLabelDisplay(i);
       track_label_display->setPosition(Vec(LABEL_POSITIONS[i][0], LABEL_POSITIONS[i][1]));
-      track_label_display->setSize(Vec(200, 50)); // Need to adjust this
       track_label_display->module = module;
       addChild(track_label_display);
     }
