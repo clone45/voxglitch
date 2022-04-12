@@ -31,7 +31,7 @@ struct GrimeLayer : VoxglitchWidget
       box.size = Vec(500.5, 231.6);
 
       // Paint the .png background
-      NVGpaint paint = nvgImagePattern(vg, 0.0, 0.0, box.size.x, box.size.y, 0.0, img->handle, .5);
+      NVGpaint paint = nvgImagePattern(vg, 0.0, 0.0, box.size.x, box.size.y, 0.0, img->handle, .9);
       nvgBeginPath(vg);
       nvgRect(vg, 0.0, 0.0, box.size.x, box.size.y);
       nvgFillPaint(vg, paint);
