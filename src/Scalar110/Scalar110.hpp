@@ -5,7 +5,7 @@
 // - Fix first beat skipped on load
 // - more ratcheting patterns!
 // - implement reset
-// - probability
+
 
 struct Scalar110 : Module
 {

@@ -40,11 +40,13 @@ struct SamplePlayer
 	{
     if(playing && sample.loaded)
     {
-      float step_amount = sample.sample_rate / rack_sample_rate;
+      float step_amount = (sample.sample_rate / rack_sample_rate);
 
       // Step the playback position forward.
-  		playback_position = playback_position + step_amount;
-      playback_position = playback_position + (step_amount * (pow(2,settings->pitch * 5)  - 1)); // 5 octave range
+  		playback_position = playback_position + step_amount; // sample rate playback
+
+      // Add more or less to the playback position based on the pitch setting
+      playback_position = playback_position + (step_amount * ((settings->pitch * 2.0) - 1.0)); // 5 octave range
 
       // If the playback position is past the playback length, end sample playback or loop
       if(playback_position >= sample.size())
