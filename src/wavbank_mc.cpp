@@ -11,6 +11,7 @@
 #include "WavBankMC/WavBankMC.hpp"
 #include "WavBankMC/WavBankMCReadout.hpp"
 #include "WavBankMC/MenuItemLoadBankMC.hpp"
+#include "WavBankMC/GrimeLayer.hpp"
 #include "WavBankMC/WavBankMCWidget.hpp"
 
 Model* modelWavBankMC = createModel<WavBankMC, WavBankMCWidget>("wavbankmc");

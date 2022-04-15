@@ -47,6 +47,11 @@ struct WavBankMCWidget : ModuleWidget
 		readout->module = module;
 		addChild(readout);
 
+    // add grime layer
+    GrimeLayer *grime_layer = new GrimeLayer();
+    grime_layer->box.pos = mm2px(Vec(8, 8));
+    addChild(grime_layer);
+
     //
 
 		// Input and label for the trigger input (which is labeled "CLK" on the front panel)
