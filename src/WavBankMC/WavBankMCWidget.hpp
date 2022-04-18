@@ -1,4 +1,4 @@
-struct WavBankMCWidget : ModuleWidget
+struct WavBankMCWidget : VoxglitchModuleWidget
 {
 	WavBankMCWidget(WavBankMC* module)
 	{
@@ -42,15 +42,17 @@ struct WavBankMCWidget : ModuleWidget
     addParam(createParamCentered<VoxglitchAttenuator>(Vec(270.299652,60.532650), module, WavBankMC::WAV_ATTN_KNOB));
 
     WavBankMCReadout *readout = new WavBankMCReadout();
-		readout->box.pos = mm2px(Vec(9, 9));
+		readout->box.pos = mm2px(Vec(8, 8));
 		readout->box.size = Vec(READOUT_WIDTH, READOUT_HEIGHT); // bounding box of the widget
 		readout->module = module;
 		addChild(readout);
 
+
     // add grime layer
-    GrimeLayer *grime_layer = new GrimeLayer();
-    grime_layer->box.pos = mm2px(Vec(8, 8));
+    GrimeLayer *grime_layer = new GrimeLayer(0, 0, 130.21875, 343.25);
+    grime_layer->box.pos = Vec(18.250000, 18.250000);
     addChild(grime_layer);
+
 
     //
 

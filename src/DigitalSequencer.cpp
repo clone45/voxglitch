@@ -27,7 +27,6 @@
 #include "DigitalSequencer/SequencerDisplay.hpp"
 #include "DigitalSequencer/VoltageSequencerDisplay.hpp"
 #include "DigitalSequencer/GateSequencerDisplay.hpp"
-#include "DigitalSequencer/GrimeLayer.hpp"
 #include "DigitalSequencer/DigitalSequencerWidget.hpp"
 
 Model* modelDigitalSequencer = createModel<DigitalSequencer, DigitalSequencerWidget>("digitalsequencer");
