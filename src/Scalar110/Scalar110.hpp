@@ -68,7 +68,6 @@ struct Scalar110 : Module
 	};
   enum LightIds {
     ENUMS(DRUM_PAD_LIGHTS, NUMBER_OF_STEPS),
-    ENUMS(STEP_SELECT_BUTTON_LIGHTS, NUMBER_OF_STEPS),
     ENUMS(STEP_LOCATION_LIGHTS, NUMBER_OF_STEPS),
     ENUMS(FUNCTION_BUTTON_LIGHTS, NUMBER_OF_FUNCTIONS),
     ENUMS(TRACK_BUTTON_LIGHTS, NUMBER_OF_TRACKS),
@@ -97,29 +96,30 @@ struct Scalar110 : Module
     selected_pattern = &patterns[0];
 
     // Set default selected track
-    // selected_track = &tracks[0];
-
     selected_track = selected_pattern->getTrack(0);
 
     updateKnobPositions();
 	}
 
-
   void updateKnobPositions()
   {
     for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
+      float value = 0;
+
       switch(selected_function)
       {
-        case FUNCTION_OFFSET: params[STEP_KNOBS + step_number].setValue(selected_track->getOffset(step_number)); break;
-        case FUNCTION_PAN: params[STEP_KNOBS + step_number].setValue(selected_track->getPan(step_number)); break;
-        case FUNCTION_VOLUME: params[STEP_KNOBS + step_number].setValue(selected_track->getVolume(step_number)); break;
-        case FUNCTION_PITCH: params[STEP_KNOBS + step_number].setValue(selected_track->getPitch(step_number)); break;
-        case FUNCTION_RATCHET: params[STEP_KNOBS + step_number].setValue(selected_track->getRatchet(step_number)); break;
-        case FUNCTION_REVERSE: params[STEP_KNOBS + step_number].setValue(selected_track->getReverse(step_number)); break;
-        case FUNCTION_PROBABILITY: params[STEP_KNOBS + step_number].setValue(selected_track->getProbability(step_number)); break;
-        case FUNCTION_LOOP: params[STEP_KNOBS + step_number].setValue(selected_track->getLoop(step_number)); break;
+        case FUNCTION_OFFSET: value = selected_track->getOffset(step_number); break;
+        case FUNCTION_PAN: value = selected_track->getPan(step_number); break;
+        case FUNCTION_VOLUME: value = selected_track->getVolume(step_number); break;
+        case FUNCTION_PITCH: value = selected_track->getPitch(step_number); break;
+        case FUNCTION_RATCHET: value = selected_track->getRatchet(step_number); break;
+        case FUNCTION_REVERSE: value = selected_track->getReverse(step_number); break;
+        case FUNCTION_PROBABILITY: value = selected_track->getProbability(step_number); break;
+        case FUNCTION_LOOP: value = selected_track->getLoop(step_number); break;
       }
+
+      params[STEP_KNOBS + step_number].setValue(value);
     }
   }
 
@@ -376,20 +376,21 @@ struct Scalar110 : Module
       }
     }
 
-    // Process the knobs below the steps.  These change behavior depending on the
-    // selected function.
+    // Process the knobs below the steps.  These change behavior depending on the selected function.
     for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
+      float value = params[STEP_KNOBS + step_number].getValue();
+
       switch(selected_function)
       {
-        case FUNCTION_OFFSET: selected_track->setOffset(step_number, params[STEP_KNOBS + step_number].getValue()); break;
-        case FUNCTION_PAN: selected_track->setPan(step_number, params[STEP_KNOBS + step_number].getValue()); break;
-        case FUNCTION_VOLUME: selected_track->setVolume(step_number, params[STEP_KNOBS + step_number].getValue()); break;
-        case FUNCTION_PITCH: selected_track->setPitch(step_number, params[STEP_KNOBS + step_number].getValue()); break;
-        case FUNCTION_RATCHET: selected_track->setRatchet(step_number, params[STEP_KNOBS + step_number].getValue()); break;
-        case FUNCTION_REVERSE: selected_track->setReverse(step_number, params[STEP_KNOBS + step_number].getValue()); break;
-        case FUNCTION_PROBABILITY: selected_track->setProbability(step_number, params[STEP_KNOBS + step_number].getValue()); break;
-        case FUNCTION_LOOP: selected_track->setLoop(step_number, params[STEP_KNOBS + step_number].getValue()); break;
+        case FUNCTION_OFFSET: selected_track->setOffset(step_number, value); break;
+        case FUNCTION_PAN: selected_track->setPan(step_number, value); break;
+        case FUNCTION_VOLUME: selected_track->setVolume(step_number, value); break;
+        case FUNCTION_PITCH: selected_track->setPitch(step_number, value); break;
+        case FUNCTION_RATCHET: selected_track->setRatchet(step_number, value); break;
+        case FUNCTION_REVERSE: selected_track->setReverse(step_number, value); break;
+        case FUNCTION_PROBABILITY: selected_track->setProbability(step_number, value); break;
+        case FUNCTION_LOOP: selected_track->setLoop(step_number, value); break;
       }
     }
 

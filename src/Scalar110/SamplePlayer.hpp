@@ -11,20 +11,20 @@ struct SamplePlayer
 	std::pair<float, float> getStereoOutput()
 	{
     sample_position = playback_position; // convert float to int
+
+    // If the sample is not playing, return 0's
     if((playing == false) || (sample_position >= this->sample.size()) || (sample.loaded == false)) return { 0,0 };
-    float left; float right;
-    std::tie(left, right) = this->sample.read(sample_position);
-		return { left, right };
+
+    // Read the sample at the sample position and return the value
+    return(this->sample.read(sample_position));
 	}
 
   void trigger(SamplePlaybackSettings *settings)
   {
-    if(! settings->reverse)
-    { // if forward playback
+    if(! settings->reverse) { // if forward playback
       this->playback_position = (settings->offset * this->sample.size());
     }
-    else
-    { // if reverse playback
+    else { // if reverse playback
       this->playback_position = (( 1 - settings->offset) * this->sample.size());
     }
 
