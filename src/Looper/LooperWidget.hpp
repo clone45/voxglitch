@@ -12,7 +12,7 @@ struct LooperWidget : ModuleWidget
     addChild(png_panel);
 
     // Add typography layer
-    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/looper/looper_typography_t2.svg"));
+    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/looper/looper_typography.svg"));
     VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
     voxglitch_panel->setBackground(svg);
     addChild(voxglitch_panel);
