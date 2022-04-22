@@ -12,7 +12,7 @@
 #define NUMBER_OF_SAMPLE_DISPLAY_ROWS 21
 
 #define READOUT_WIDTH 110
-#define READOUT_HEIGHT 360
+#define READOUT_HEIGHT 330
 
 
 // Constants for trig_input_response_mode

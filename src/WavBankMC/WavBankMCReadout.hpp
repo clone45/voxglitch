@@ -34,13 +34,6 @@ struct WavBankMCReadout : TransparentWidget
       nvgFill(args.vg);
       */
 
-      /*
-			if(module->samples.size() > module->selected_sample_slot)
-			{
-				text_to_display = module->samples[module->selected_sample_slot].filename;
-				text_to_display.resize(30); // truncate long text
-			}
-      */
       if(module->samples.size() > 0)
       {
         // When there are too many sample filenames to fit on the front panel,
@@ -151,7 +144,7 @@ struct WavBankMCReadout : TransparentWidget
 
       if(this->mouse_lock == false)
       {
-        unsigned int row = (e.pos.y / 360.0) * NUMBER_OF_SAMPLE_DISPLAY_ROWS;
+        unsigned int row = (e.pos.y / READOUT_HEIGHT) * NUMBER_OF_SAMPLE_DISPLAY_ROWS;
         if(module->wav_input_not_connected())
         {
           if((row + window_start) < module->number_of_samples)
@@ -183,7 +176,7 @@ struct WavBankMCReadout : TransparentWidget
 
     if(module->wav_input_not_connected())
     {
-      unsigned int row = (e.pos.y / 360.0) * NUMBER_OF_SAMPLE_DISPLAY_ROWS;
+      unsigned int row = (e.pos.y / READOUT_HEIGHT) * NUMBER_OF_SAMPLE_DISPLAY_ROWS;
 
       if((row + window_start) < module->number_of_samples)
       {

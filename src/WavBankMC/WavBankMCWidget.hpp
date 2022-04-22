@@ -6,7 +6,7 @@ struct WavBankMCWidget : VoxglitchModuleWidget
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/wavbank_mc/wavbank_mc_front_panel.svg")));
 
     // Load up the background PNG and add it to the panel
-    PNGPanel *png_panel = new PNGPanel("res/wavbank_mc/wavbank_mc_base.png", 101.6, 128.5);
+    PNGPanel *png_panel = new PNGPanel("res/wavbank_mc/wavbank_mc_base_small.png", 101.6, 128.5);
     addChild(png_panel);
 
     // Add typography layer
