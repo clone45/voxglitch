@@ -6,7 +6,7 @@ struct AutobreakWidget : VoxglitchModuleWidget
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/autobreak/autobreak_front_panel.svg")));
 
     // Load up the background PNG and add it to the panel
-    PNGPanel *png_panel = new PNGPanel("res/autobreak/autobreak_baseplate_final.png", 40.64, 128.5);
+    PNGPanel *png_panel = new PNGPanel("res/autobreak/autobreak_baseplate_small.png", 40.64, 128.5);
     addChild(png_panel);
 
     // Add typography layer

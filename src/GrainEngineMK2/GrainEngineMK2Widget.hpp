@@ -5,7 +5,7 @@ struct GrainEngineMK2Widget : ModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/grain_engine_mk2/grain_engine_mk2_front_panel.svg")));
 
-    PNGPanel *png_panel = new PNGPanel("res/grain_engine_mk2/grain_engine_main_baseplate.png", 101.6, 128.5);
+    PNGPanel *png_panel = new PNGPanel("res/grain_engine_mk2/grain_engine_main_baseplate_small.png", 101.6, 128.5);
     addChild(png_panel);
 
     // Add typography layer

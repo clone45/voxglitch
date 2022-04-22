@@ -7,7 +7,7 @@ struct RepeaterWidget : ModuleWidget
 
     // Load up the background PNG and add it to the panel
 
-    PNGPanel *png_panel = new PNGPanel("res/repeater/repeater_base_blur.png", 81.28, 128.5);
+    PNGPanel *png_panel = new PNGPanel("res/repeater/repeater_base_small.png", 81.28, 128.5);
     // PNGPanel *png_panel = new PNGPanel("res/repeater/repeater_base.png", 81.28, 128.5);
     addChild(png_panel);
 

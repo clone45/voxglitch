@@ -8,7 +8,7 @@ struct XYWidget : VoxglitchModuleWidget
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/xy/xy_front_panel.svg")));
 
     // Load up the background PNG and add it to the panel
-    PNGPanel *png_panel = new PNGPanel("res/xy/xy_base.png", 5.08 * 20, 128.5);
+    PNGPanel *png_panel = new PNGPanel("res/xy/xy_base_small.png", 5.08 * 20, 128.5);
     addChild(png_panel);
 
     // Add typography layer

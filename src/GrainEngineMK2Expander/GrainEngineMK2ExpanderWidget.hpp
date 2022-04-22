@@ -5,7 +5,7 @@ struct GrainEngineMK2ExpanderWidget : VoxglitchModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/grain_engine_mk2_expander/grain_engine_mk2_expander_front_panel.svg")));
 
-    PNGPanel *png_panel = new PNGPanel("res/grain_engine_mk2_expander/grain_engine_expander_baseplate.png", 30.48, 128.5);
+    PNGPanel *png_panel = new PNGPanel("res/grain_engine_mk2_expander/grain_engine_expander_baseplate_small.png", 30.48, 128.5);
     addChild(png_panel);
 
     // Add typography layer
