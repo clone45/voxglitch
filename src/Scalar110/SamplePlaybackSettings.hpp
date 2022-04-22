@@ -9,8 +9,7 @@ struct SamplePlaybackSettings
   float ratchet = 0.0;
   float offset = 0.0;
   float probability = 1.0;
-
-  bool loop = false;
+  float loop = 0.0;
   bool reverse = false;
 };
 
