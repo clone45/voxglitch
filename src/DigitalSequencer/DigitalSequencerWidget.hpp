@@ -9,7 +9,7 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_sequencer/digital_sequencer_front_panel.svg")));
 
-    PNGPanel *png_panel = new PNGPanel("res/digital_sequencer/digital_sequencer_baseplate.png", 182.88, 128.5);
+    PNGPanel *png_panel = new PNGPanel("res/digital_sequencer/digital_sequencer_baseplate_small.png", 182.88, 128.5);
     addChild(png_panel);
 
     // Add dust layer

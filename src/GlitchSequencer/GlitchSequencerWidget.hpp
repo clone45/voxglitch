@@ -5,7 +5,7 @@ struct GlitchSequencerWidget : VoxglitchModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/glitch_sequencer/glitch_sequencer_front_panel.svg")));
 
-    PNGPanel *png_panel = new PNGPanel("res/glitch_sequencer/glitch_sequencer_baseplate.png", 132.08, 128.5);
+    PNGPanel *png_panel = new PNGPanel("res/glitch_sequencer/glitch_sequencer_baseplate_small.png", 132.08, 128.5);
     addChild(png_panel);
 
     // Add typography layer

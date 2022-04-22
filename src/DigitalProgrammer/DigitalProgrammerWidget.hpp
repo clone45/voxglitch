@@ -26,7 +26,7 @@ struct DigitalProgrammerWidget : VoxglitchModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_programmer/digital_programmer_front_panel.svg")));
 
-    PNGPanel *png_panel = new PNGPanel("res/digital_programmer/digital_programmer_baseplate.png", 259.08, 128.5);
+    PNGPanel *png_panel = new PNGPanel("res/digital_programmer/digital_programmer_baseplate_small.png", 259.08, 128.5);
     addChild(png_panel);
 
     // Add typography layer
