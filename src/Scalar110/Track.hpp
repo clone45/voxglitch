@@ -15,6 +15,7 @@ struct Track
     {1,1,1,0,0,0,0}
   };
   unsigned int playback_position = 0;
+  unsigned int length = NUMBER_OF_STEPS;
   SamplePlaybackSettings sample_playback_settings[NUMBER_OF_STEPS]; // settings assigned to each step
   SamplePlaybackSettings settings; // currently used settings
 
@@ -37,7 +38,7 @@ struct Track
 
   void step()
   {
-    playback_position = (playback_position + 1) % NUMBER_OF_STEPS;
+    playback_position = (playback_position + 1) % (length + 1);
     ratchet_counter = 0;
 
     if((getProbability(playback_position) < 0.98) && (((float) rand()/RAND_MAX) > getProbability(playback_position)))
@@ -145,6 +146,17 @@ struct Track
       this->sample_player->step(rack_sample_rate, &settings);
     }
   }
+
+  float getLength()  {
+    return(this->length);
+  }
+
+  void setLength(unsigned int length)  {
+    this->length = length;
+  }
+
+  // Parameter locks
+  // ============================================================================
 
   //
   // Offset

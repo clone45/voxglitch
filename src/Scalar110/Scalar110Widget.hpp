@@ -183,15 +183,20 @@ struct Scalar110Widget : ModuleWidget
       {507.007812,177.011719}
     };
 
-
-
     for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
     {
       addParam(createLightParamCentered<VCVLightBezel<>>(Vec(button_positions[i][0],button_positions[i][1]), module, Scalar110::DRUM_PADS + i, Scalar110::DRUM_PAD_LIGHTS + i));
-      addChild(createLightCentered<SmallLight<RedLight>>(Vec(button_positions[i][0],button_positions[i][1] - 26), module, Scalar110::STEP_LOCATION_LIGHTS + i));
+      addChild(createLightCentered<SmallLight<RedLight>>(Vec(button_positions[i][0],button_positions[i][1] - 20), module, Scalar110::STEP_LOCATION_LIGHTS + i));
 
       // Create attenuator knobs for each step
       addParam(createParamCentered<Trimpot>(Vec(button_positions[i][0],button_positions[i][1] + 30), module, Scalar110::STEP_KNOBS + i));
+    }
+
+    // Track length button-lights
+    for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
+    {
+      addParam(createParamCentered<LEDButton>(Vec(button_positions[i][0],button_positions[i][1] - 35), module, Scalar110::TRACK_LENGTH_BUTTONS  + i));
+      addChild(createLightCentered<MediumLight<GreenLight>>(Vec(button_positions[i][0],button_positions[i][1] - 35), module, Scalar110::TRACK_LENGTH_BUTTON_LIGHTS + i));
     }
 
     // Function Buttons

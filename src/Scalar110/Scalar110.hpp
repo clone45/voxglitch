@@ -6,6 +6,8 @@
 // - more ratcheting patterns!
 // - implement reset
 
+// TODO: playback step needs to be changed to be track-specific to support
+// different track lengths
 
 struct Scalar110 : Module
 {
@@ -16,6 +18,8 @@ struct Scalar110 : Module
   dsp::SchmittTrigger track_button_triggers[NUMBER_OF_TRACKS];
   dsp::SchmittTrigger pattern_button_triggers[NUMBER_OF_PATTERNS];
   dsp::SchmittTrigger function_button_triggers[NUMBER_OF_FUNCTIONS];
+  dsp::SchmittTrigger track_length_button_triggers[NUMBER_OF_STEPS];
+
   dsp::SchmittTrigger stepTrigger;
 
   Track *selected_track = NULL;
@@ -55,6 +59,7 @@ struct Scalar110 : Module
     ENUMS(FUNCTION_BUTTONS, NUMBER_OF_FUNCTIONS),
     ENUMS(TRACK_BUTTONS, NUMBER_OF_TRACKS),
     ENUMS(PATTERN_BUTTONS, NUMBER_OF_PATTERNS),
+    ENUMS(TRACK_LENGTH_BUTTONS, NUMBER_OF_STEPS),
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -72,6 +77,7 @@ struct Scalar110 : Module
     ENUMS(FUNCTION_BUTTON_LIGHTS, NUMBER_OF_FUNCTIONS),
     ENUMS(TRACK_BUTTON_LIGHTS, NUMBER_OF_TRACKS),
     ENUMS(PATTERN_BUTTON_LIGHTS, NUMBER_OF_PATTERNS),
+    ENUMS(TRACK_LENGTH_BUTTON_LIGHTS, NUMBER_OF_STEPS),
 		NUM_LIGHTS
 	};
 
@@ -182,6 +188,7 @@ struct Scalar110 : Module
         json_t *track_data = json_object();
 
         json_object_set(track_data, "steps", steps_json_array);
+        json_object_set(track_data, "length", json_integer(this->patterns[pattern_number].tracks[track_number].getLength()));
         json_array_append_new(tracks_json_array, track_data);
       }
 
@@ -252,6 +259,14 @@ struct Scalar110 : Module
 
           json_array_foreach(tracks_arrays_data, track_index, json_track_object)
           {
+            // Load track length
+            json_t *length_json = json_object_get(json_track_object, "length");
+            if(length_json) this->patterns[pattern_index].tracks[track_index].setLength(json_integer_value(length_json));
+
+            //
+            // Load all of the step information, including trigger and parameter locks
+            //
+
             json_t *steps_json_array = json_object_get(json_track_object, "steps");
 
             if(steps_json_array)
@@ -338,6 +353,18 @@ struct Scalar110 : Module
       }
     }
 
+    // Change the track length if one of the length buttons has been pressed
+    // This time, I'll count backwards so it's easy to light up all buttons
+    // up to the pressed one.
+    for(unsigned int i=0; i < NUMBER_OF_STEPS; i++)
+    {
+      if(track_length_button_triggers[i].process(params[TRACK_LENGTH_BUTTONS + i].getValue()))
+      {
+        DEBUG("LENGTH SET");
+        selected_track->length = i;
+      }
+    }
+
     //
     // Pad editing features:
     // Handle drum pads, drum location, and drum selection interactions and lights.
@@ -408,7 +435,7 @@ struct Scalar110 : Module
         }
 
         // Step the visual playback indicator (led) as well
-        playback_step = selected_pattern->tracks[0].getPosition();
+        playback_step = selected_pattern->tracks[track_index].getPosition();
 
         // Reset clock division counter
         clock_counter = 0;
@@ -463,6 +490,12 @@ struct Scalar110 : Module
     for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
     {
       lights[TRACK_BUTTON_LIGHTS + i].setBrightness(track_index == i);
+    }
+
+    // track length lights
+    for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
+    {
+      lights[TRACK_LENGTH_BUTTON_LIGHTS + i].setBrightness(selected_track->length >= i);
     }
   }
 };
