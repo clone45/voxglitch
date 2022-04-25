@@ -40,7 +40,10 @@ struct Track
   {
     playback_position = (playback_position + 1) % (length + 1);
     ratchet_counter = 0;
+  }
 
+  void trigger()
+  {
     if((getProbability(playback_position) < 0.98) && (((float) rand()/RAND_MAX) > getProbability(playback_position)))
     {
       // Don't trigger
@@ -65,8 +68,8 @@ struct Track
         sample_player->trigger(&settings);
       }
     }
-
   }
+
 
   //
   // Handle ratcheting

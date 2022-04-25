@@ -21,6 +21,7 @@ struct Scalar110 : Module
   dsp::SchmittTrigger track_length_button_triggers[NUMBER_OF_STEPS];
 
   dsp::SchmittTrigger stepTrigger;
+  dsp::SchmittTrigger resetTrigger;
 
   Track *selected_track = NULL;
   Pattern *selected_pattern = NULL;
@@ -32,7 +33,8 @@ struct Scalar110 : Module
   unsigned int old_selected_function = 0;
   unsigned int clock_division = 8;
   unsigned int clock_counter = 0;
-
+  bool first_step = true;
+  long clock_ignore_on_reset = 0;
 
   //
   // Sample related variables
@@ -85,6 +87,8 @@ struct Scalar110 : Module
 	Scalar110()
 	{
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+
+    clock_ignore_on_reset = (long) (44100 / 100);
 
     for(unsigned int i=0; i < NUMBER_OF_STEPS; i++)
     {
@@ -361,8 +365,25 @@ struct Scalar110 : Module
     {
       if(track_length_button_triggers[i].process(params[TRACK_LENGTH_BUTTONS + i].getValue()))
       {
-        DEBUG("LENGTH SET");
         selected_track->length = i;
+      }
+    }
+
+    // On incoming RESET, reset the sequencers
+    if(resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+    {
+      // Set up a (reverse) counter so that the clock input will ignore
+      // incoming clock pulses for 1 millisecond after a reset input. This
+      // is to comply with VCV Rack's standards.  See section "Timing" at
+      // https://vcvrack.com/manual/VoltageStandards
+
+      // clock_ignore_on_reset = (long) (args.sampleRate / 100);
+      // clock_counter = clock_division;  // skip ratcheting
+      first_step = true;
+
+      for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+      {
+        selected_pattern->tracks[i].reset();
       }
     }
 
@@ -429,10 +450,27 @@ struct Scalar110 : Module
     {
       if(clock_counter == clock_division)
       {
-        // Step all of the tracks
+
+        if(first_step == false) // If not the first step
+        {
+          // Step all of the tracks
+          for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
+          {
+            selected_pattern->tracks[i].step();
+          }
+        }
+        else
+        {
+          first_step = false;
+        }
+
+        // Trigger the samples
+        // ===================
+        // This may or may not actually trigger based on the track button
+        // status and the probability parameter lock.
         for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
         {
-          selected_pattern->tracks[i].step();
+          selected_pattern->tracks[i].trigger();
         }
 
         // Step the visual playback indicator (led) as well
@@ -498,5 +536,7 @@ struct Scalar110 : Module
     {
       lights[TRACK_LENGTH_BUTTON_LIGHTS + i].setBrightness(selected_track->length >= i);
     }
+
+    if (clock_ignore_on_reset > 0) clock_ignore_on_reset--;
   }
 };
