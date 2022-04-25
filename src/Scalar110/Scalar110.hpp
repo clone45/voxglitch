@@ -64,6 +64,7 @@ struct Scalar110 : Module
 	};
 	enum InputIds {
     STEP_INPUT,
+    RESET_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {

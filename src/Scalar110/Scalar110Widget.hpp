@@ -8,7 +8,7 @@ struct TrackLabelDisplay : TransparentWidget
   TrackLabelDisplay(unsigned int track_number)
   {
     this->track_number = track_number;
-    box.size = Vec(90, 25);
+    box.size = Vec(110, 25);
   }
 
   void onDoubleClick(const event::DoubleClick &e) override
@@ -41,7 +41,7 @@ struct TrackLabelDisplay : TransparentWidget
     // Debugging code for draw area, which often has to be set experimentally
     nvgBeginPath(vg);
     nvgRect(vg, 0, 0, box.size.x, box.size.y);
-    nvgFillColor(vg, nvgRGBA(120, 20, 20, 100));
+    nvgFillColor(vg, nvgRGBA(200, 200, 200, 255));
     nvgFill(vg);
 
 
@@ -52,13 +52,13 @@ struct TrackLabelDisplay : TransparentWidget
     {
       std::string to_display = module->loaded_filenames[track_number];
 
-      if(to_display != "")
+      if((to_display != "") && (to_display != "[ empty ]"))
       {
         nvgFontSize(args.vg, 10);
         nvgTextLetterSpacing(args.vg, 0);
         nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 0xff));
         nvgTextAlign(args.vg, NVG_ALIGN_LEFT);
-        float wrap_at = 80.0; // Just throw your hands in the air!  And wave them like you just don't
+        float wrap_at = 100.0; // Just throw your hands in the air!  And wave them like you just don't
         nvgTextBox(args.vg, 0, 10, wrap_at, to_display.c_str(), NULL);
       }
     }
@@ -140,7 +140,8 @@ struct Scalar110Widget : ModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/scalar110_front_panel.svg")));
 
-    addInput(createInputCentered<PJ301MPort>(Vec(39.007812,83), module, Scalar110::STEP_INPUT));
+    addInput(createInputCentered<PJ301MPort>(Vec(39.007812,83 + 20), module, Scalar110::STEP_INPUT));
+    addInput(createInputCentered<PJ301MPort>(Vec(39.007812,134 + 20), module, Scalar110::RESET_INPUT));
 
     float button_positions[16][2] = {
       { 38.007812,265.011719 },
@@ -172,15 +173,18 @@ struct Scalar110Widget : ModuleWidget
       {562.007812,347.011719}
     };
 
+    float x_offset_col_1 = -48.0;
+    float x_offset_col_2 = -20.0;
+
     float track_button_positions[NUMBER_OF_TRACKS][2] = {
-      {380.007812,83},
-      {380.007812,114.5},
-      {380.007812,145.011719},
-      {380.007812,177.011719},
-      {507.007812,83},
-      {507.007812,114.5},
-      {507.007812,145.011719},
-      {507.007812,177.011719}
+      {380.00 + x_offset_col_1, 83},
+      {380.00 + x_offset_col_1, 114.5},
+      {380.00 + x_offset_col_1, 145.011719},
+      {380.00 + x_offset_col_1, 177.011719},
+      {507.00 + x_offset_col_2, 83},
+      {507.00 + x_offset_col_2, 114.5},
+      {507.00 + x_offset_col_2, 145.011719},
+      {507.00 + x_offset_col_2, 177.011719}
     };
 
     for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
@@ -224,7 +228,8 @@ struct Scalar110Widget : ModuleWidget
       addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x,y), module, Scalar110::TRACK_BUTTON_LIGHTS + i));
 
       TrackLabelDisplay *track_label_display = new TrackLabelDisplay(i);
-      track_label_display->setPosition(Vec(LABEL_POSITIONS[i][0], LABEL_POSITIONS[i][1]));
+      // track_label_display->setPosition(Vec(LABEL_POSITIONS[i][0], LABEL_POSITIONS[i][1]));
+      track_label_display->setPosition(Vec(x + 20, y - 12));
       track_label_display->module = module;
       addChild(track_label_display);
     }
