@@ -2,13 +2,15 @@
 static DrawTimer drawTimer("Satanonaut");
 #endif
 
-struct SatanonautWidget : ModuleWidget
+struct SatanonautWidget : VoxglitchModuleWidget
 {
   SatanonautWidget(Satanonaut* module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/satanonaut_front_panel.svg")));
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/satanonaut/satanonaut_front_panel.svg")));
 
+    PNGPanel *png_panel = new PNGPanel("res/satanonaut/satanonaut_baseplate.png", 152.4, 128.5);
+    addChild(png_panel);
 
     //
     // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_14, ROW_2)), module, Satanonaut::BUFFER_SIZE_INPUT));
