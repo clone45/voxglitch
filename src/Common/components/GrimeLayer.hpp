@@ -26,7 +26,7 @@ struct GrimeLayer : VoxglitchWidget
 
       // Save the drawing context to restore later
       nvgSave(vg);
-      std::shared_ptr<Image> img = APP->window->loadImage(asset::plugin(pluginInstance, "res/components/mitch-harris-cPZ21gvclO8-unsplash.png"));
+      std::shared_ptr<Image> img = APP->window->loadImage(asset::plugin(pluginInstance, "res/components/dust_layer_3.png"));
 
       // Get the image size and store it in the width and height variables
       int png_width_px, png_height_px;
@@ -36,7 +36,7 @@ struct GrimeLayer : VoxglitchWidget
       float scale =  mm2px(128.5) / png_height_px;
 
       // Paint the .png background
-      NVGpaint paint = nvgImagePattern(vg, offset_x_px, offset_y_px, (float) png_width_px * scale, (float) png_height_px * scale, 0.0, img->handle, .2);
+      NVGpaint paint = nvgImagePattern(vg, offset_x_px, offset_y_px, (float) png_width_px * scale, (float) png_height_px * scale, 0.0, img->handle, .25);
       nvgBeginPath(vg);
       nvgRect(vg, 0.0, 0.0, width_px, height_px);
       nvgFillPaint(vg, paint);

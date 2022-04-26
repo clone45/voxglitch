@@ -49,7 +49,7 @@ struct WavBankMCWidget : VoxglitchModuleWidget
 
 
     // add grime layer
-    GrimeLayer *grime_layer = new GrimeLayer(0, 0, 130.21875, 343.25);
+    GrimeLayer *grime_layer = new GrimeLayer(20, 0, 130.21875, 343.25);
     grime_layer->box.pos = Vec(18.250000, 18.250000);
     addChild(grime_layer);
 

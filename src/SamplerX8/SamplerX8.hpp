@@ -98,6 +98,7 @@ struct SamplerX8 : Module
     AUDIO_MIX_OUTPUT_RIGHT,
 		NUM_OUTPUTS
 	};
+
 	enum LightIds {
     MUTE_BUTTON_1_LIGHT,
     MUTE_BUTTON_2_LIGHT,
@@ -109,7 +110,6 @@ struct SamplerX8 : Module
     MUTE_BUTTON_8_LIGHT,
 		NUM_LIGHTS
 	};
-
 
 
 	SamplerX8()
