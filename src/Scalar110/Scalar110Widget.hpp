@@ -235,27 +235,29 @@ struct Scalar110Widget : ModuleWidget
     }
 
     //
-    // Pattern buttons
+    // Mem buttons
     //
+
+    addInput(createInputCentered<PJ301MPort>(Vec(110, 110), module, Scalar110::MEM_INPUT));
 
     float offset = 30.0;
 
     float pattern_button_positions[NUMBER_OF_PATTERNS][2] = {
-      {180 - offset,83},
-      {210 - offset,83},
-      {240 - offset,83},
+      {180 - offset, 83},
+      {210 - offset, 83},
+      {240 - offset, 83},
 
-      {180 - offset,114.5},
-      {210 - offset,114.5},
-      {240 - offset,114.5},
+      {180 - offset, 114.5},
+      {210 - offset, 114.5},
+      {240 - offset, 114.5},
 
-      {180 - offset,145},
-      {210 - offset,145},
-      {240 - offset,145},
+      {180 - offset, 145},
+      {210 - offset, 145},
+      {240 - offset, 145},
 
-      {180 - offset,177.011719},
-      {210 - offset,177.011719},
-      {240 - offset,177.011719}
+      {180 - offset, 177.011719},
+      {210 - offset, 177.011719},
+      {240 - offset, 177.011719}
     };
 
     for(unsigned int i=0; i<NUMBER_OF_PATTERNS; i++)

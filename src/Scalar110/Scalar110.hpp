@@ -67,6 +67,7 @@ struct Scalar110 : Module
 	enum InputIds {
     STEP_INPUT,
     RESET_INPUT,
+    MEM_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -132,6 +133,23 @@ struct Scalar110 : Module
 
       params[STEP_KNOBS + step_number].setValue(value);
     }
+  }
+
+  void switchMemory(unsigned int new_memory_slot)
+  {
+    pattern_index = new_memory_slot;
+
+    // Switch patterns and set the selected track
+    selected_pattern = &patterns[new_memory_slot];
+    selected_track = selected_pattern->getTrack(track_index);
+
+    // set all track positions
+    for(unsigned int track_index=0; track_index < NUMBER_OF_TRACKS; track_index++)
+    {
+       selected_pattern->tracks[track_index].setPosition(playback_step);
+    }
+
+    updateKnobPositions();
   }
 
   //
@@ -338,23 +356,18 @@ struct Scalar110 : Module
 
     for(unsigned int i=0; i < NUMBER_OF_PATTERNS; i++)
     {
-      if(pattern_button_triggers[i].process(params[PATTERN_BUTTONS + i].getValue()))
+      if(inputs[MEM_INPUT].isConnected())
       {
-        // Store the selected pattern index.  This is used to highlight
-        // the correct track lamp later in the code.
-        pattern_index = i;
-
-        // Switch patterns and set the selected track
-        selected_pattern = &patterns[i];
-        selected_track = selected_pattern->getTrack(track_index);
-
-        // set all track positions
-        for(unsigned int track_index=0; track_index < NUMBER_OF_TRACKS; track_index++)
+        unsigned int memory_selection = (inputs[MEM_INPUT].getVoltage() / 10.0) * NUMBER_OF_PATTERNS;
+        memory_selection = clamp(memory_selection, 0, NUMBER_OF_PATTERNS - 1);
+        switchMemory(memory_selection);
+      }
+      else
+      {
+        if(pattern_button_triggers[i].process(params[PATTERN_BUTTONS + i].getValue()))
         {
-           selected_pattern->tracks[track_index].setPosition(playback_step);
+          switchMemory(i);
         }
-
-        updateKnobPositions();
       }
     }
 
