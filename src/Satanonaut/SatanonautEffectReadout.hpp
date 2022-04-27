@@ -1,3 +1,4 @@
+/*
 struct SatanonautEffectReadout : TransparentWidget
 {
 	Satanonaut *module;
@@ -27,3 +28,4 @@ struct SatanonautEffectReadout : TransparentWidget
 	}
 
 };
+*/

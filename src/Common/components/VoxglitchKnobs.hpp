@@ -68,3 +68,22 @@ struct TAttenuator : TBase {
 	}
 };
 typedef TAttenuator<> VoxglitchAttenuator;
+
+template <typename TBase = VoxglitchKnob>
+struct TValve : TBase {
+	TValve() {
+		this->svgFile = "valve.svg";
+		this->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/" + this->svgFile)));
+	}
+};
+typedef TValve<> VoxglitchValve;
+
+
+template <typename TBase = VoxglitchKnob>
+struct TPainfulMediumKnob : TBase {
+	TPainfulMediumKnob() {
+		this->svgFile = "painful_medium_knob.svg";
+		this->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/" + this->svgFile)));
+	}
+};
+typedef TPainfulMediumKnob<> PainfulMediumKnob;
