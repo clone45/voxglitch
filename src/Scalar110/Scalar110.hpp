@@ -32,6 +32,8 @@ struct Scalar110 : Module
   bool first_step = true;
   long clock_ignore_on_reset = 0;
 
+  bool shift_key = false;
+
   //
   // Sample related variables
   //
@@ -57,7 +59,7 @@ struct Scalar110 : Module
     ENUMS(FUNCTION_BUTTONS, NUMBER_OF_FUNCTIONS),
     ENUMS(TRACK_BUTTONS, NUMBER_OF_TRACKS),
     ENUMS(MEMORY_SLOT_BUTTONS, NUMBER_OF_MEMORY_SLOTS),
-    ENUMS(TRACK_LENGTH_BUTTONS, NUMBER_OF_STEPS),
+    // ENUMS(TRACK_LENGTH_BUTTONS, NUMBER_OF_STEPS),
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -77,7 +79,7 @@ struct Scalar110 : Module
     ENUMS(FUNCTION_BUTTON_LIGHTS, NUMBER_OF_FUNCTIONS),
     ENUMS(TRACK_BUTTON_LIGHTS, NUMBER_OF_TRACKS),
     ENUMS(MEMORY_SLOT_BUTTON_LIGHTS, NUMBER_OF_MEMORY_SLOTS),
-    ENUMS(TRACK_LENGTH_BUTTON_LIGHTS, NUMBER_OF_STEPS),
+    // ENUMS(TRACK_LENGTH_BUTTON_LIGHTS, NUMBER_OF_STEPS),
 		NUM_LIGHTS
 	};
 
@@ -370,6 +372,7 @@ struct Scalar110 : Module
     // Change the track length if one of the length buttons has been pressed
     // This time, I'll count backwards so it's easy to light up all buttons
     // up to the pressed one.
+    /*
     for(unsigned int i=0; i < NUMBER_OF_STEPS; i++)
     {
       if(track_length_button_triggers[i].process(params[TRACK_LENGTH_BUTTONS + i].getValue()))
@@ -377,6 +380,7 @@ struct Scalar110 : Module
         selected_track->length = i;
       }
     }
+    */
 
     // On incoming RESET, reset the sequencers
     if(resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
@@ -406,8 +410,17 @@ struct Scalar110 : Module
       // Process drum pads
       if(drum_pad_triggers[step_number].process(params[DRUM_PADS + step_number].getValue()))
       {
-        // Toggle the drum pad
-        selected_track->toggleStep(step_number);
+        // If the user is holding the control key, then set the track length instead
+        // of toggling the drum pad.
+        if(shift_key)
+        {
+          selected_track->length = step_number;
+        }
+        else
+        {
+          // Toggle the drum pad
+          selected_track->toggleStep(step_number);
+        }
       }
 
       // Light up drum pads
@@ -541,10 +554,12 @@ struct Scalar110 : Module
     }
 
     // track length lights
+    /*
     for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
     {
       lights[TRACK_LENGTH_BUTTON_LIGHTS + i].setBrightness(selected_track->length >= i);
     }
+    */
 
     if (clock_ignore_on_reset > 0) clock_ignore_on_reset--;
   }

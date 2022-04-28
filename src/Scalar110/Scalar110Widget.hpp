@@ -1,5 +1,59 @@
 #include <componentlibrary.hpp>
 
+float button_positions[16][2] = {
+  { 38.007812, 265.011719 },
+  { 74.007812, 265.011719},
+  { 115.007812, 265.011719},
+  { 153.007812, 265.011719},
+  { 191.007812, 265.011719},
+  { 230.007812, 265.011719},
+  { 268.007812, 265.011719},
+  { 305.007812, 265.011719},
+  { 345.007812, 265.011719},
+  { 383.007812, 265.011719 },
+  { 421.007812, 265.011719 },
+  { 459.007812, 265.011719 },
+  { 498.007812, 265.011719 },
+  { 537.007812, 265.011719 },
+  { 575.007812, 264.011719 },
+  { 612.007812, 265.011719 }
+};
+
+struct SequenceLengthWidget : TransparentWidget
+{
+  Scalar110 *module;
+
+  SequenceLengthWidget()
+  {
+    // box.size = Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
+  }
+
+  void draw(const DrawArgs &args) override
+  {
+    const auto vg = args.vg;
+
+    // Save the drawing context to restore later
+    nvgSave(vg);
+
+    if(module)
+    {
+      // Grey background
+      nvgBeginPath(vg);
+      nvgRoundedRect(vg, 0, 0, button_positions[module->selected_track->length][0] - 18, 12, 5);
+      nvgFillColor(vg, nvgRGB(230, 230, 230));
+      nvgFill(vg);
+    }
+    // Paint static content for library display
+    else
+    {
+
+    }
+
+    nvgRestore(vg);
+  }
+
+};
+
 struct TrackLabelDisplay : TransparentWidget
 {
   Scalar110 *module;
@@ -143,24 +197,7 @@ struct Scalar110Widget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(Vec(39.007812,83 + 20), module, Scalar110::STEP_INPUT));
     addInput(createInputCentered<PJ301MPort>(Vec(39.007812,134 + 20), module, Scalar110::RESET_INPUT));
 
-    float button_positions[16][2] = {
-      { 38.007812,265.011719 },
-      { 74.007812,265.011719},
-      { 115.007812,265.011719},
-      { 153.007812,265.011719},
-      { 191.007812, 265.011719},
-      { 230.007812,265.011719},
-      { 268.007812, 265.011719},
-      { 305.007812, 265.011719},
-      { 345.007812, 265.011719},
-      { 383.007812,265.011719 },
-      { 421.007812,265.011719 },
-      { 459.007812,265.011719 },
-      { 498.007812,265.011719 },
-      { 537.007812,265.011719 },
-      { 575.007812,264.011719 },
-      { 612.007812,265.011719 }
-    };
+
 
     float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
       {22.007812,348.011719},
@@ -187,21 +224,40 @@ struct Scalar110Widget : ModuleWidget
       {507.00 + x_offset_col_2, 177.011719}
     };
 
+    //
+    // sequence length indicator
+    //
+    SequenceLengthWidget *sequence_length_widget = new SequenceLengthWidget();
+    sequence_length_widget->setPosition(Vec(button_positions[0][0] - 10, button_positions[0][1] - 31));
+    sequence_length_widget->module = module;
+    addChild(sequence_length_widget);
+
     for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
     {
+      //
+      // Drum pad lights
+      //
       addParam(createLightParamCentered<VCVLightBezel<>>(Vec(button_positions[i][0],button_positions[i][1]), module, Scalar110::DRUM_PADS + i, Scalar110::DRUM_PAD_LIGHTS + i));
-      addChild(createLightCentered<SmallLight<RedLight>>(Vec(button_positions[i][0],button_positions[i][1] - 20), module, Scalar110::STEP_LOCATION_LIGHTS + i));
 
+      //
+      // Step location indicators
+      //
+      addChild(createLightCentered<SmallLight<RedLight>>(Vec(button_positions[i][0],button_positions[i][1] - 25), module, Scalar110::STEP_LOCATION_LIGHTS + i));
+
+      //
       // Create attenuator knobs for each step
+      //
       addParam(createParamCentered<Trimpot>(Vec(button_positions[i][0],button_positions[i][1] + 30), module, Scalar110::STEP_KNOBS + i));
     }
 
     // Track length button-lights
+    /*
     for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
     {
       addParam(createParamCentered<LEDButton>(Vec(button_positions[i][0],button_positions[i][1] - 35), module, Scalar110::TRACK_LENGTH_BUTTONS  + i));
       addChild(createLightCentered<MediumLight<GreenLight>>(Vec(button_positions[i][0],button_positions[i][1] - 35), module, Scalar110::TRACK_LENGTH_BUTTON_LIGHTS + i));
     }
+    */
 
     // Function Buttons
     for(unsigned int i=0; i<NUMBER_OF_FUNCTIONS; i++)
@@ -246,18 +302,22 @@ struct Scalar110Widget : ModuleWidget
       {180 - offset, 83},
       {210 - offset, 83},
       {240 - offset, 83},
+      {270 - offset, 83},
 
       {180 - offset, 114.5},
       {210 - offset, 114.5},
       {240 - offset, 114.5},
+      {270 - offset, 114.5},
 
       {180 - offset, 145},
       {210 - offset, 145},
       {240 - offset, 145},
+      {270 - offset, 145},
 
       {180 - offset, 177.011719},
       {210 - offset, 177.011719},
-      {240 - offset, 177.011719}
+      {240 - offset, 177.011719},
+      {270 - offset, 177.011719}
     };
 
     for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
@@ -271,11 +331,24 @@ struct Scalar110Widget : ModuleWidget
 
   void onHoverKey(const event::HoverKey &e) override
   {
+    Scalar110 *module = dynamic_cast<Scalar110*>(this->module);
+    assert(module);
+
     if(e.action == GLFW_PRESS && e.key == GLFW_KEY_P)
     {
       std::string debug_string = "mouse at: " + std::to_string(e.pos.x) + "," + std::to_string(e.pos.y);
       DEBUG(debug_string.c_str());
     }
+
+    if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT)
+    {
+      module->shift_key = true;
+    }
+    else
+    {
+      module->shift_key = false;
+    }
+
     ModuleWidget::onHoverKey(e);
   }
 
