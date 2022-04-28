@@ -40,7 +40,7 @@ struct SequenceLengthWidget : TransparentWidget
       // Grey background
       nvgBeginPath(vg);
       nvgRoundedRect(vg, 0, 0, button_positions[module->selected_track->length][0] - 18, 12, 5);
-      nvgFillColor(vg, nvgRGB(230, 230, 230));
+      nvgFillColor(vg, nvgRGB(84, 84, 84));
       nvgFill(vg);
     }
     // Paint static content for library display
@@ -194,10 +194,8 @@ struct Scalar110Widget : ModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/scalar110_front_panel.svg")));
 
-    addInput(createInputCentered<PJ301MPort>(Vec(39.007812,83 + 20), module, Scalar110::STEP_INPUT));
-    addInput(createInputCentered<PJ301MPort>(Vec(39.007812,134 + 20), module, Scalar110::RESET_INPUT));
-
-
+    addInput(createInputCentered<PJ301MPort>(Vec(39.007812, 83 + 20), module, Scalar110::STEP_INPUT));
+    addInput(createInputCentered<PJ301MPort>(Vec(39.007812, 134 + 20), module, Scalar110::RESET_INPUT));
 
     float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
       {22.007812,348.011719},
@@ -210,18 +208,23 @@ struct Scalar110Widget : ModuleWidget
       {562.007812,347.011719}
     };
 
-    float x_offset_col_1 = -48.0;
-    float x_offset_col_2 = -20.0;
+    float col_1 = 273.6;
+    float col_2 = 461.4;
+
+    float row_1 = 90.5;
+    float row_2 = 121.750000;
+    float row_3 = 152.683594;
+    float row_4 = 184;
 
     float track_button_positions[NUMBER_OF_TRACKS][2] = {
-      {380.00 + x_offset_col_1, 83},
-      {380.00 + x_offset_col_1, 114.5},
-      {380.00 + x_offset_col_1, 145.011719},
-      {380.00 + x_offset_col_1, 177.011719},
-      {507.00 + x_offset_col_2, 83},
-      {507.00 + x_offset_col_2, 114.5},
-      {507.00 + x_offset_col_2, 145.011719},
-      {507.00 + x_offset_col_2, 177.011719}
+      {col_1, row_1},
+      {col_1, row_2},
+      {col_1, row_3},
+      {col_1, row_4},
+      {col_2, row_1},
+      {col_2, row_2},
+      {col_2, row_3},
+      {col_2, row_4}
     };
 
     //
@@ -291,33 +294,34 @@ struct Scalar110Widget : ModuleWidget
     }
 
     //
-    // Mem buttons
+    // Memory buttons
     //
 
-    addInput(createInputCentered<PJ301MPort>(Vec(110, 110), module, Scalar110::MEM_INPUT));
+    addInput(createInputCentered<PJ301MPort>(Vec(85.255859,124.761719), module, Scalar110::MEM_INPUT));
 
-    float offset = 30.0;
+    float mem_x_offset = -55.0;
+    float mem_y_offset = 10.0;
 
     float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
-      {180 - offset, 83},
-      {210 - offset, 83},
-      {240 - offset, 83},
-      {270 - offset, 83},
+      {180 + mem_x_offset, 83 + mem_y_offset},
+      {210 + mem_x_offset, 83 + mem_y_offset},
+      {240 + mem_x_offset, 83 + mem_y_offset},
+      {270 + mem_x_offset, 83 + mem_y_offset},
 
-      {180 - offset, 114.5},
-      {210 - offset, 114.5},
-      {240 - offset, 114.5},
-      {270 - offset, 114.5},
+      {180 + mem_x_offset, 114.5 + mem_y_offset},
+      {210 + mem_x_offset, 114.5 + mem_y_offset},
+      {240 + mem_x_offset, 114.5 + mem_y_offset},
+      {270 + mem_x_offset, 114.5 + mem_y_offset},
 
-      {180 - offset, 145},
-      {210 - offset, 145},
-      {240 - offset, 145},
-      {270 - offset, 145},
+      {180 + mem_x_offset, 145 + mem_y_offset},
+      {210 + mem_x_offset, 145 + mem_y_offset},
+      {240 + mem_x_offset, 145 + mem_y_offset},
+      {270 + mem_x_offset, 145 + mem_y_offset},
 
-      {180 - offset, 177.011719},
-      {210 - offset, 177.011719},
-      {240 - offset, 177.011719},
-      {270 - offset, 177.011719}
+      {180 + mem_x_offset, 177.011719 + mem_y_offset},
+      {210 + mem_x_offset, 177.011719 + mem_y_offset},
+      {240 + mem_x_offset, 177.011719 + mem_y_offset},
+      {270 + mem_x_offset, 177.011719 + mem_y_offset}
     };
 
     for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
