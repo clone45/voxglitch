@@ -2,14 +2,14 @@ namespace scalar_110
 {
 
 //
-// Pattern
+// Memory
 //
-// A pattern is a collection of tracks.  Patterns allow the musician to switch
-// between different arrangements.  However, patterns do not have different
+// Memory holds a collection of tracks.  Memory slots allow the musician to switch
+// between different arrangements.  However, memory slots do not have different
 // sample settings.  Each track (track #1, #2 .. #8) has one sample loaded into
-// memory, and the sample selection are shared amongst all patterns.
+// memory, and the sample selection are shared amongst all memory slots.
 
-struct Pattern
+struct MemorySlot
 {
   Track tracks[NUMBER_OF_TRACKS];
 

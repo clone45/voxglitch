@@ -242,7 +242,7 @@ struct Scalar110Widget : ModuleWidget
 
     float offset = 30.0;
 
-    float pattern_button_positions[NUMBER_OF_PATTERNS][2] = {
+    float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
       {180 - offset, 83},
       {210 - offset, 83},
       {240 - offset, 83},
@@ -260,12 +260,12 @@ struct Scalar110Widget : ModuleWidget
       {240 - offset, 177.011719}
     };
 
-    for(unsigned int i=0; i<NUMBER_OF_PATTERNS; i++)
+    for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
     {
-      float x = pattern_button_positions[i][0];
-      float y = pattern_button_positions[i][1];
-      addParam(createParamCentered<LEDButton>(Vec(x,y), module, Scalar110::PATTERN_BUTTONS + i));
-      addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x,y), module, Scalar110::PATTERN_BUTTON_LIGHTS + i));
+      float x = memory_slot_button_positions[i][0];
+      float y = memory_slot_button_positions[i][1];
+      addParam(createParamCentered<LEDButton>(Vec(x,y), module, Scalar110::MEMORY_SLOT_BUTTONS + i));
+      addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x,y), module, Scalar110::MEMORY_SLOT_BUTTON_LIGHTS + i));
     }
   }
 

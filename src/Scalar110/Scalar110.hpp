@@ -1,22 +1,18 @@
 //
 // Where I left off.
-// - rename
+// - rename pattern to memory
 // - tooltips?
-// - Fix first beat skipped on load
 // - more ratcheting patterns!
-// - implement reset
 
-// TODO: playback step needs to be changed to be track-specific to support
-// different track lengths
 
 struct Scalar110 : Module
 {
-  Pattern patterns[NUMBER_OF_PATTERNS];
+  MemorySlot memory_slots[NUMBER_OF_MEMORY_SLOTS];
 
   dsp::SchmittTrigger drum_pad_triggers[NUMBER_OF_STEPS];
   dsp::SchmittTrigger step_select_triggers[NUMBER_OF_STEPS];
   dsp::SchmittTrigger track_button_triggers[NUMBER_OF_TRACKS];
-  dsp::SchmittTrigger pattern_button_triggers[NUMBER_OF_PATTERNS];
+  dsp::SchmittTrigger memory_slot_button_triggers[NUMBER_OF_MEMORY_SLOTS];
   dsp::SchmittTrigger function_button_triggers[NUMBER_OF_FUNCTIONS];
   dsp::SchmittTrigger track_length_button_triggers[NUMBER_OF_STEPS];
 
@@ -24,9 +20,9 @@ struct Scalar110 : Module
   dsp::SchmittTrigger resetTrigger;
 
   Track *selected_track = NULL;
-  Pattern *selected_pattern = NULL;
+  MemorySlot *selected_memory_slot = NULL;
 
-  unsigned int pattern_index = 0;
+  unsigned int memory_slot_index = 0;
   unsigned int track_index = 0;
   unsigned int playback_step = 0;
   unsigned int selected_function = 0;
@@ -60,7 +56,7 @@ struct Scalar110 : Module
     ENUMS(STEP_KNOBS, NUMBER_OF_STEPS),
     ENUMS(FUNCTION_BUTTONS, NUMBER_OF_FUNCTIONS),
     ENUMS(TRACK_BUTTONS, NUMBER_OF_TRACKS),
-    ENUMS(PATTERN_BUTTONS, NUMBER_OF_PATTERNS),
+    ENUMS(MEMORY_SLOT_BUTTONS, NUMBER_OF_MEMORY_SLOTS),
     ENUMS(TRACK_LENGTH_BUTTONS, NUMBER_OF_STEPS),
 		NUM_PARAMS
 	};
@@ -80,7 +76,7 @@ struct Scalar110 : Module
     ENUMS(STEP_LOCATION_LIGHTS, NUMBER_OF_STEPS),
     ENUMS(FUNCTION_BUTTON_LIGHTS, NUMBER_OF_FUNCTIONS),
     ENUMS(TRACK_BUTTON_LIGHTS, NUMBER_OF_TRACKS),
-    ENUMS(PATTERN_BUTTON_LIGHTS, NUMBER_OF_PATTERNS),
+    ENUMS(MEMORY_SLOT_BUTTON_LIGHTS, NUMBER_OF_MEMORY_SLOTS),
     ENUMS(TRACK_LENGTH_BUTTON_LIGHTS, NUMBER_OF_STEPS),
 		NUM_LIGHTS
 	};
@@ -98,17 +94,17 @@ struct Scalar110 : Module
     }
 
     // There are 8 sample players, one for each track.  These sample players
-    // are shared across the tracks contained in the patterns.
-    for(unsigned int p=0; p<NUMBER_OF_PATTERNS; p++) {
+    // are shared across the tracks contained in the memory slots.
+    for(unsigned int p=0; p<NUMBER_OF_MEMORY_SLOTS; p++) {
       for(unsigned int t=0; t<NUMBER_OF_TRACKS; t++) {
-        patterns[p].setSamplePlayer(t, &sample_players[t]);
+        memory_slots[p].setSamplePlayer(t, &sample_players[t]);
       }
     }
 
-    selected_pattern = &patterns[0];
+    selected_memory_slot = &memory_slots[0];
 
     // Set default selected track
-    selected_track = selected_pattern->getTrack(0);
+    selected_track = selected_memory_slot->getTrack(0);
 
     updateKnobPositions();
 	}
@@ -137,16 +133,16 @@ struct Scalar110 : Module
 
   void switchMemory(unsigned int new_memory_slot)
   {
-    pattern_index = new_memory_slot;
+    memory_slot_index = new_memory_slot;
 
-    // Switch patterns and set the selected track
-    selected_pattern = &patterns[new_memory_slot];
-    selected_track = selected_pattern->getTrack(track_index);
+    // Switch memory_slots and set the selected track
+    selected_memory_slot = &memory_slots[new_memory_slot];
+    selected_track = selected_memory_slot->getTrack(track_index);
 
     // set all track positions
     for(unsigned int track_index=0; track_index < NUMBER_OF_TRACKS; track_index++)
     {
-       selected_pattern->tracks[track_index].setPosition(playback_step);
+       selected_memory_slot->tracks[track_index].setPosition(playback_step);
     }
 
     updateKnobPositions();
@@ -179,10 +175,10 @@ struct Scalar110 : Module
     json_object_set(json_root, "samples", samples_json_array);
 
     //
-    // Save all pattern data
+    // Save all memory slot data
     //
-    json_t *patterns_json_array = json_array();
-    for(int pattern_number=0; pattern_number<NUMBER_OF_PATTERNS; pattern_number++)
+    json_t *memory_slots_json_array = json_array();
+    for(int memory_slot_number=0; memory_slot_number<NUMBER_OF_MEMORY_SLOTS; memory_slot_number++)
     {
       // Save all track data
       json_t *tracks_json_array = json_array();
@@ -193,17 +189,17 @@ struct Scalar110 : Module
         for(int step_index=0; step_index<NUMBER_OF_STEPS; step_index++)
         {
           json_t *step_data = json_object();
-          json_object_set(step_data, "trigger", json_integer(this->patterns[pattern_number].tracks[track_number].getValue(step_index)));
+          json_object_set(step_data, "trigger", json_integer(this->memory_slots[memory_slot_number].tracks[track_number].getValue(step_index)));
 
           //  json_array_append_new(parameter_json_array, json_real(this->tracks[track_number].getParameter(step_index,parameter_index)));
-          json_object_set(step_data, "offset", json_real(this->patterns[pattern_number].tracks[track_number].getOffset(step_index)));
-          json_object_set(step_data, "volume", json_real(this->patterns[pattern_number].tracks[track_number].getVolume(step_index)));
-          json_object_set(step_data, "pitch", json_real(this->patterns[pattern_number].tracks[track_number].getPitch(step_index)));
-          json_object_set(step_data, "pan", json_real(this->patterns[pattern_number].tracks[track_number].getPan(step_index)));
-          json_object_set(step_data, "ratchet", json_real(this->patterns[pattern_number].tracks[track_number].getRatchet(step_index)));
-          json_object_set(step_data, "reverse", json_real(this->patterns[pattern_number].tracks[track_number].getReverse(step_index)));
-          json_object_set(step_data, "probability", json_real(this->patterns[pattern_number].tracks[track_number].getProbability(step_index)));
-          json_object_set(step_data, "loop", json_real(this->patterns[pattern_number].tracks[track_number].getLoop(step_index)));
+          json_object_set(step_data, "offset", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getOffset(step_index)));
+          json_object_set(step_data, "volume", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getVolume(step_index)));
+          json_object_set(step_data, "pitch", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getPitch(step_index)));
+          json_object_set(step_data, "pan", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getPan(step_index)));
+          json_object_set(step_data, "ratchet", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getRatchet(step_index)));
+          json_object_set(step_data, "reverse", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getReverse(step_index)));
+          json_object_set(step_data, "probability", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getProbability(step_index)));
+          json_object_set(step_data, "loop", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getLoop(step_index)));
 
           json_array_append_new(steps_json_array, step_data);
         }
@@ -211,15 +207,15 @@ struct Scalar110 : Module
         json_t *track_data = json_object();
 
         json_object_set(track_data, "steps", steps_json_array);
-        json_object_set(track_data, "length", json_integer(this->patterns[pattern_number].tracks[track_number].getLength()));
+        json_object_set(track_data, "length", json_integer(this->memory_slots[memory_slot_number].tracks[track_number].getLength()));
         json_array_append_new(tracks_json_array, track_data);
       }
 
       json_t *tracks_json_object = json_object();
       json_object_set(tracks_json_object, "tracks", tracks_json_array);
-      json_array_append_new(patterns_json_array, tracks_json_object);
+      json_array_append_new(memory_slots_json_array, tracks_json_object);
     }
-    json_object_set(json_root, "patterns", patterns_json_array);
+    json_object_set(json_root, "memory_slots", memory_slots_json_array);
 
     // Save path of the sample bank
     // json_object_set_new(json_root, "path", json_string(this->sample_bank.path.c_str()));
@@ -258,20 +254,20 @@ struct Scalar110 : Module
     }
 
     //
-    // Load pattern and track information
+    // Load memory slots and track information
     //
-    json_t *patterns_arrays_data = json_object_get(json_root, "patterns");
+    json_t *memory_slots_arrays_data = json_object_get(json_root, "memory_slots");
 
-    if(patterns_arrays_data)
+    if(memory_slots_arrays_data)
     {
-      size_t pattern_index;
-      json_t *json_pattern_object;
+      size_t memory_slot_index;
+      json_t *json_memory_slot_object;
 
-      json_array_foreach(patterns_arrays_data, pattern_index, json_pattern_object)
+      json_array_foreach(memory_slots_arrays_data, memory_slot_index, json_memory_slot_object)
       {
 
         // Load all track data
-        json_t *tracks_arrays_data = json_object_get(json_pattern_object, "tracks");
+        json_t *tracks_arrays_data = json_object_get(json_memory_slot_object, "tracks");
 
         if(tracks_arrays_data)
         {
@@ -284,7 +280,7 @@ struct Scalar110 : Module
           {
             // Load track length
             json_t *length_json = json_object_get(json_track_object, "length");
-            if(length_json) this->patterns[pattern_index].tracks[track_index].setLength(json_integer_value(length_json));
+            if(length_json) this->memory_slots[memory_slot_index].tracks[track_index].setLength(json_integer_value(length_json));
 
             //
             // Load all of the step information, including trigger and parameter locks
@@ -298,37 +294,37 @@ struct Scalar110 : Module
               {
 
                 json_t *trigger_json = json_object_get(json_step_object, "trigger");
-                if(trigger_json) this->patterns[pattern_index].tracks[track_index].setValue(step_index, json_integer_value(trigger_json));
+                if(trigger_json) this->memory_slots[memory_slot_index].tracks[track_index].setValue(step_index, json_integer_value(trigger_json));
 
                 json_t *offset_json = json_object_get(json_step_object, "offset");
-                if(offset_json) this->patterns[pattern_index].tracks[track_index].setOffset(step_index, json_real_value(offset_json));
+                if(offset_json) this->memory_slots[memory_slot_index].tracks[track_index].setOffset(step_index, json_real_value(offset_json));
 
                 json_t *volume_json = json_object_get(json_step_object, "volume");
-                if(volume_json) this->patterns[pattern_index].tracks[track_index].setVolume(step_index, json_real_value(volume_json));
+                if(volume_json) this->memory_slots[memory_slot_index].tracks[track_index].setVolume(step_index, json_real_value(volume_json));
 
                 json_t *pitch_json = json_object_get(json_step_object, "pitch");
-                if(pitch_json) this->patterns[pattern_index].tracks[track_index].setPitch(step_index, json_real_value(pitch_json));
+                if(pitch_json) this->memory_slots[memory_slot_index].tracks[track_index].setPitch(step_index, json_real_value(pitch_json));
 
                 json_t *pan_json = json_object_get(json_step_object, "pan");
-                if(pan_json) this->patterns[pattern_index].tracks[track_index].setPan(step_index, json_real_value(pan_json));
+                if(pan_json) this->memory_slots[memory_slot_index].tracks[track_index].setPan(step_index, json_real_value(pan_json));
 
                 json_t *ratchet_json = json_object_get(json_step_object, "ratchet");
-                if(ratchet_json) this->patterns[pattern_index].tracks[track_index].setRatchet(step_index, json_real_value(ratchet_json));
+                if(ratchet_json) this->memory_slots[memory_slot_index].tracks[track_index].setRatchet(step_index, json_real_value(ratchet_json));
 
                 json_t *reverse_json = json_object_get(json_step_object, "reverse");
-                if(reverse_json) this->patterns[pattern_index].tracks[track_index].setReverse(step_index, json_real_value(reverse_json));
+                if(reverse_json) this->memory_slots[memory_slot_index].tracks[track_index].setReverse(step_index, json_real_value(reverse_json));
 
                 json_t *probability_json = json_object_get(json_step_object, "probability");
-                if(probability_json) this->patterns[pattern_index].tracks[track_index].setProbability(step_index, json_real_value(probability_json));
+                if(probability_json) this->memory_slots[memory_slot_index].tracks[track_index].setProbability(step_index, json_real_value(probability_json));
 
                 json_t *loop_json = json_object_get(json_step_object, "loop");
-                if(loop_json) this->patterns[pattern_index].tracks[track_index].setLoop(step_index, json_real_value(loop_json));
+                if(loop_json) this->memory_slots[memory_slot_index].tracks[track_index].setLoop(step_index, json_real_value(loop_json));
               }
             }
           }
         } // end if tracks array data
-      } // end foreach pattern
-    } // end if patterns array data
+      } // end foreach memory slot
+    } // end if memory_slots array data
 
     updateKnobPositions();
 	}
@@ -345,26 +341,26 @@ struct Scalar110 : Module
       if(track_button_triggers[i].process(params[TRACK_BUTTONS + i].getValue()))
       {
         track_index = i;
-        selected_track = selected_pattern->getTrack(track_index);
+        selected_track = selected_memory_slot->getTrack(track_index);
         updateKnobPositions();
       }
     }
 
     //
-    // If the user has pressed a pattern button, switch patterns and update the
+    // If the user has pressed a memory slot button, switch memory slots and update the
     // knob positions for the selected function.
 
-    for(unsigned int i=0; i < NUMBER_OF_PATTERNS; i++)
+    for(unsigned int i=0; i < NUMBER_OF_MEMORY_SLOTS; i++)
     {
       if(inputs[MEM_INPUT].isConnected())
       {
-        unsigned int memory_selection = (inputs[MEM_INPUT].getVoltage() / 10.0) * NUMBER_OF_PATTERNS;
-        memory_selection = clamp(memory_selection, 0, NUMBER_OF_PATTERNS - 1);
+        unsigned int memory_selection = (inputs[MEM_INPUT].getVoltage() / 10.0) * NUMBER_OF_MEMORY_SLOTS;
+        memory_selection = clamp(memory_selection, 0, NUMBER_OF_MEMORY_SLOTS - 1);
         switchMemory(memory_selection);
       }
       else
       {
-        if(pattern_button_triggers[i].process(params[PATTERN_BUTTONS + i].getValue()))
+        if(memory_slot_button_triggers[i].process(params[MEMORY_SLOT_BUTTONS + i].getValue()))
         {
           switchMemory(i);
         }
@@ -396,7 +392,7 @@ struct Scalar110 : Module
 
       for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
       {
-        selected_pattern->tracks[i].reset();
+        selected_memory_slot->tracks[i].reset();
       }
     }
 
@@ -469,7 +465,7 @@ struct Scalar110 : Module
           // Step all of the tracks
           for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
           {
-            selected_pattern->tracks[i].step();
+            selected_memory_slot->tracks[i].step();
           }
         }
         else
@@ -483,11 +479,11 @@ struct Scalar110 : Module
         // status and the probability parameter lock.
         for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
         {
-          selected_pattern->tracks[i].trigger();
+          selected_memory_slot->tracks[i].trigger();
         }
 
         // Step the visual playback indicator (led) as well
-        playback_step = selected_pattern->tracks[track_index].getPosition();
+        playback_step = selected_memory_slot->tracks[track_index].getPosition();
 
         // Reset clock division counter
         clock_counter = 0;
@@ -497,7 +493,7 @@ struct Scalar110 : Module
         // Manage ratcheting
         for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
         {
-          selected_pattern->tracks[i].ratchety();
+          selected_memory_slot->tracks[i].ratchety();
         }
       }
       clock_counter++;
@@ -516,10 +512,10 @@ struct Scalar110 : Module
 
     for(unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
-      std::tie(track_left_output, track_right_output) = selected_pattern->tracks[i].getStereoOutput();
+      std::tie(track_left_output, track_right_output) = selected_memory_slot->tracks[i].getStereoOutput();
       left_output += track_left_output;
       right_output += track_right_output;
-      selected_pattern->tracks[i].incrementSamplePosition(args.sampleRate);
+      selected_memory_slot->tracks[i].incrementSamplePosition(args.sampleRate);
     }
 
     // Output voltages at stereo outputs
@@ -532,10 +528,10 @@ struct Scalar110 : Module
       lights[FUNCTION_BUTTON_LIGHTS + i].setBrightness(selected_function == i);
     }
 
-    // pattern button lights
-    for(unsigned int i=0; i<NUMBER_OF_PATTERNS; i++)
+    // memory slot button lights
+    for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
     {
-      lights[PATTERN_BUTTON_LIGHTS + i].setBrightness(pattern_index == i);
+      lights[MEMORY_SLOT_BUTTON_LIGHTS + i].setBrightness(memory_slot_index == i);
     }
 
     // track button lights
