@@ -71,6 +71,7 @@ struct Scalar110 : Module
 	enum OutputIds {
     AUDIO_OUTPUT_LEFT,
     AUDIO_OUTPUT_RIGHT,
+    ENUMS(TRACK_OUTPUTS, NUMBER_OF_TRACKS * 2),
 		NUM_OUTPUTS
 	};
   enum LightIds {
@@ -369,19 +370,6 @@ struct Scalar110 : Module
       }
     }
 
-    // Change the track length if one of the length buttons has been pressed
-    // This time, I'll count backwards so it's easy to light up all buttons
-    // up to the pressed one.
-    /*
-    for(unsigned int i=0; i < NUMBER_OF_STEPS; i++)
-    {
-      if(track_length_button_triggers[i].process(params[TRACK_LENGTH_BUTTONS + i].getValue()))
-      {
-        selected_track->length = i;
-      }
-    }
-    */
-
     // On incoming RESET, reset the sequencers
     if(resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
     {
@@ -516,7 +504,6 @@ struct Scalar110 : Module
     // For each track...
     //  a. Get the output of the tracks and sum them for the stereo output
     //  b. Once the output has been read, increment the sample position
-    //
 
     float left_output = 0;
     float right_output = 0;
@@ -526,12 +513,21 @@ struct Scalar110 : Module
     for(unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
       std::tie(track_left_output, track_right_output) = selected_memory_slot->tracks[i].getStereoOutput();
+
+      // Individual outputs
+      unsigned int left_index = i * 2;
+      unsigned int right_index = left_index + 1;
+
+      outputs[TRACK_OUTPUTS + left_index].setVoltage(track_left_output);
+      outputs[TRACK_OUTPUTS + right_index].setVoltage(track_right_output);
+
+      // Summed output
       left_output += track_left_output;
       right_output += track_right_output;
       selected_memory_slot->tracks[i].incrementSamplePosition(args.sampleRate);
     }
 
-    // Output voltages at stereo outputs
+    // Summed output voltages at stereo outputs
     outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_output);
     outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_output);
 

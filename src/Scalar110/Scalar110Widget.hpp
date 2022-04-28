@@ -253,15 +253,6 @@ struct Scalar110Widget : ModuleWidget
       addParam(createParamCentered<Trimpot>(Vec(button_positions[i][0],button_positions[i][1] + 30), module, Scalar110::STEP_KNOBS + i));
     }
 
-    // Track length button-lights
-    /*
-    for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
-    {
-      addParam(createParamCentered<LEDButton>(Vec(button_positions[i][0],button_positions[i][1] - 35), module, Scalar110::TRACK_LENGTH_BUTTONS  + i));
-      addChild(createLightCentered<MediumLight<GreenLight>>(Vec(button_positions[i][0],button_positions[i][1] - 35), module, Scalar110::TRACK_LENGTH_BUTTON_LIGHTS + i));
-    }
-    */
-
     // Function Buttons
     for(unsigned int i=0; i<NUMBER_OF_FUNCTIONS; i++)
     {
@@ -292,6 +283,13 @@ struct Scalar110Widget : ModuleWidget
       track_label_display->module = module;
       addChild(track_label_display);
     }
+
+    // Track outputs
+    for(unsigned int i=0; i<(NUMBER_OF_TRACKS * 2); i++)
+    {
+      addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(10 + (i * 11), 10)), module, Scalar110::TRACK_OUTPUTS + i));
+    }
+
 
     //
     // Memory buttons
