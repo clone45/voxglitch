@@ -15,7 +15,7 @@ struct Track
     {1,1,1,0,0,0,0}
   };
   unsigned int playback_position = 0;
-  unsigned int length = NUMBER_OF_STEPS;
+  unsigned int length = NUMBER_OF_STEPS - 1;
   SamplePlaybackSettings sample_playback_settings[NUMBER_OF_STEPS]; // settings assigned to each step
   SamplePlaybackSettings settings; // currently used settings
 

@@ -118,9 +118,9 @@ struct TrackLabelDisplay : TransparentWidget
         float bounds[4];
         nvgTextBoxBounds(vg, text_left_margin, 10, wrap_at, to_display.c_str(), NULL, bounds);
 
-        float textX = bounds[0];
-        float textY = bounds[1];
-        float textWidth = bounds[2];
+        // float textX = bounds[0];
+        // float textY = bounds[1];
+        // float textWidth = bounds[2];
         float textHeight = bounds[3];
 
         nvgTextBox(args.vg, text_left_margin, (box.size.y / 2.0f) - (textHeight / 2.0f) + 8, wrap_at, to_display.c_str(), NULL);
@@ -304,29 +304,26 @@ struct Scalar110Widget : ModuleWidget
 
     addInput(createInputCentered<PJ301MPort>(Vec(85.255859,124.761719), module, Scalar110::MEM_INPUT));
 
-    float mem_x_offset = -55.0;
-    float mem_y_offset = 10.0;
-
     float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
-      {180 + mem_x_offset, 83 + mem_y_offset},
-      {210 + mem_x_offset, 83 + mem_y_offset},
-      {240 + mem_x_offset, 83 + mem_y_offset},
-      {270 + mem_x_offset, 83 + mem_y_offset},
+      {125, 93},
+      {155, 93},
+      {185, 93},
+      {215, 93},
 
-      {180 + mem_x_offset, 114.5 + mem_y_offset},
-      {210 + mem_x_offset, 114.5 + mem_y_offset},
-      {240 + mem_x_offset, 114.5 + mem_y_offset},
-      {270 + mem_x_offset, 114.5 + mem_y_offset},
+      {125, 124.5},
+      {155, 124.5},
+      {185, 124.5},
+      {215, 124.5},
 
-      {180 + mem_x_offset, 145 + mem_y_offset},
-      {210 + mem_x_offset, 145 + mem_y_offset},
-      {240 + mem_x_offset, 145 + mem_y_offset},
-      {270 + mem_x_offset, 145 + mem_y_offset},
+      {125, 155},
+      {155, 155},
+      {185, 155},
+      {215, 155},
 
-      {180 + mem_x_offset, 177.011719 + mem_y_offset},
-      {210 + mem_x_offset, 177.011719 + mem_y_offset},
-      {240 + mem_x_offset, 177.011719 + mem_y_offset},
-      {270 + mem_x_offset, 177.011719 + mem_y_offset}
+      {125, 187},
+      {155, 187},
+      {185, 187},
+      {215, 187}
     };
 
     for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)

@@ -285,6 +285,7 @@ struct Scalar110 : Module
             json_t *length_json = json_object_get(json_track_object, "length");
             if(length_json) this->memory_slots[memory_slot_index].tracks[track_index].setLength(json_integer_value(length_json));
 
+
             //
             // Load all of the step information, including trigger and parameter locks
             //
@@ -345,6 +346,9 @@ struct Scalar110 : Module
       {
         track_index = i;
         selected_track = selected_memory_slot->getTrack(track_index);
+
+        // DEBUG(std::to_string(selected_track->length).c_str());
+
         updateKnobPositions();
       }
     }
@@ -548,14 +552,6 @@ struct Scalar110 : Module
     {
       lights[TRACK_BUTTON_LIGHTS + i].setBrightness(track_index == i);
     }
-
-    // track length lights
-    /*
-    for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
-    {
-      lights[TRACK_LENGTH_BUTTON_LIGHTS + i].setBrightness(selected_track->length >= i);
-    }
-    */
 
     if (clock_ignore_on_reset > 0) clock_ignore_on_reset--;
   }
