@@ -109,6 +109,9 @@ struct TrackLabelDisplay : TransparentWidget
       {
         float text_left_margin = 6;
 
+        //
+        // Display track label
+        //
         nvgFontSize(args.vg, 10);
         nvgTextLetterSpacing(args.vg, 0);
         nvgFillColor(args.vg, nvgRGBA(255, 215, 20, 0xff));
@@ -205,7 +208,7 @@ struct Scalar110Widget : ModuleWidget
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/scalar110_front_panel.svg")));
 
     addInput(createInputCentered<PJ301MPort>(Vec(39.4, 98), module, Scalar110::STEP_INPUT));
-    addInput(createInputCentered<PJ301MPort>(Vec(39.4, 146), module, Scalar110::RESET_INPUT));
+    addInput(createInputCentered<PJ301MPort>(Vec(39.4, 159), module, Scalar110::RESET_INPUT));
 
     float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
       {18.8, 349},

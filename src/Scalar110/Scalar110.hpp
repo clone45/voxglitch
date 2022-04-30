@@ -59,7 +59,6 @@ struct Scalar110 : Module
     ENUMS(FUNCTION_BUTTONS, NUMBER_OF_FUNCTIONS),
     ENUMS(TRACK_BUTTONS, NUMBER_OF_TRACKS),
     ENUMS(MEMORY_SLOT_BUTTONS, NUMBER_OF_MEMORY_SLOTS),
-    // ENUMS(TRACK_LENGTH_BUTTONS, NUMBER_OF_STEPS),
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -80,7 +79,6 @@ struct Scalar110 : Module
     ENUMS(FUNCTION_BUTTON_LIGHTS, NUMBER_OF_FUNCTIONS),
     ENUMS(TRACK_BUTTON_LIGHTS, NUMBER_OF_TRACKS),
     ENUMS(MEMORY_SLOT_BUTTON_LIGHTS, NUMBER_OF_MEMORY_SLOTS),
-    // ENUMS(TRACK_LENGTH_BUTTON_LIGHTS, NUMBER_OF_STEPS),
 		NUM_LIGHTS
 	};
 
@@ -92,9 +90,23 @@ struct Scalar110 : Module
 
     for(unsigned int i=0; i < NUMBER_OF_STEPS; i++)
     {
-      configParam(DRUM_PADS + i, 0.0, 1.0, 0.0, "drum_button_" + std::to_string(i));
-      configParam(STEP_KNOBS + i, 0.0, 1.0, 0.0, "step_knob_" + std::to_string(i));
+      configParam(DRUM_PADS + i, 0.0, 1.0, 0.0, "Step Button");
+      configParam(STEP_KNOBS + i, 0.0, 1.0, 0.0, "Parameter Lock Value" + std::to_string(i));
     }
+
+    for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+    {
+      configParam(TRACK_BUTTONS + i, 0.0, 1.0, 0.0, "Track Selection Button");
+    }
+
+    for(unsigned int i=0; i < (NUMBER_OF_TRACKS * 2); i+=2)
+    {
+      configOutput(TRACK_OUTPUTS + i, "Track " + std::to_string((i/2) + 1) + ": left");
+      configOutput(TRACK_OUTPUTS + i + 1, "Track " + std::to_string((i/2) + 1) + ": right");
+    }
+
+    configOutput(AUDIO_OUTPUT_LEFT, "Left Mix");
+    configOutput(AUDIO_OUTPUT_RIGHT, "Right Mix");
 
     // There are 8 sample players, one for each track.  These sample players
     // are shared across the tracks contained in the memory slots.
