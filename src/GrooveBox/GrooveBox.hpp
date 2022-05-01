@@ -136,6 +136,7 @@ struct GrooveBox : Module
   void copyMemory(unsigned int src_index, unsigned int dst_index)
   {
       memory_slots[dst_index].copy(&memory_slots[src_index]);
+      updateKnobPositions();
   }
 
   void updateKnobPositions()
