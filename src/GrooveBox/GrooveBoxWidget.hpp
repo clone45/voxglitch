@@ -82,7 +82,7 @@ struct ModdedCL1362 : SvgPort {
 
 struct SequenceLengthWidget : TransparentWidget
 {
-  Scalar110 *module;
+  GrooveBox *module;
 
   void draw(const DrawArgs &args) override
   {
@@ -122,7 +122,7 @@ struct SequenceLengthWidget : TransparentWidget
 //
 struct TrackLabelDisplay : TransparentWidget
 {
-  Scalar110 *module;
+  GrooveBox *module;
   unsigned int track_number = 0;
 
   TrackLabelDisplay(unsigned int track_number)
@@ -212,7 +212,7 @@ struct TrackLabelDisplay : TransparentWidget
 struct LoadSamplesFromFolderMenuItem : MenuItem
 {
 
-	Scalar110 *module;
+	GrooveBox *module;
 	unsigned int track_number = 0;
 
 
@@ -255,7 +255,7 @@ struct LoadSamplesFromFolderMenuItem : MenuItem
 
 struct LoadSampleMenuItem : MenuItem
 {
-	Scalar110 *module;
+	GrooveBox *module;
 	unsigned int track_number = 0;
 
 	void onAction(const event::Action &e) override
@@ -275,15 +275,15 @@ struct LoadSampleMenuItem : MenuItem
 	}
 };
 
-struct Scalar110Widget : ModuleWidget
+struct GrooveBoxWidget : ModuleWidget
 {
-  Scalar110Widget(Scalar110* module)
+  GrooveBoxWidget(GrooveBox* module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/scalar110_front_panel.svg")));
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groove_box_front_panel.svg")));
 
-    addInput(createInputCentered<PJ301MPort>(Vec(39.4, 98), module, Scalar110::STEP_INPUT));
-    addInput(createInputCentered<PJ301MPort>(Vec(39.4, 159), module, Scalar110::RESET_INPUT));
+    addInput(createInputCentered<PJ301MPort>(Vec(39.4, 98), module, GrooveBox::STEP_INPUT));
+    addInput(createInputCentered<PJ301MPort>(Vec(39.4, 159), module, GrooveBox::RESET_INPUT));
 
 
     //
@@ -299,17 +299,17 @@ struct Scalar110Widget : ModuleWidget
       //
       // Drum pad lights
       //
-      addParam(createLightParamCentered<VCVLightBezel<BlueLight>>(Vec(button_positions[i][0],button_positions[i][1]), module, Scalar110::DRUM_PADS + i, Scalar110::DRUM_PAD_LIGHTS + i));
+      addParam(createLightParamCentered<VCVLightBezel<BlueLight>>(Vec(button_positions[i][0],button_positions[i][1]), module, GrooveBox::DRUM_PADS + i, GrooveBox::DRUM_PAD_LIGHTS + i));
 
       //
       // Step location indicators
       //
-      addChild(createLightCentered<SmallLight<RedLight>>(Vec(button_positions[i][0],button_positions[i][1] - 25), module, Scalar110::STEP_LOCATION_LIGHTS + i));
+      addChild(createLightCentered<SmallLight<RedLight>>(Vec(button_positions[i][0],button_positions[i][1] - 25), module, GrooveBox::STEP_LOCATION_LIGHTS + i));
 
       //
       // Create attenuator knobs for each step
       //
-      addParam(createParamCentered<Trimpot>(Vec(button_positions[i][0],button_positions[i][1] + 30), module, Scalar110::STEP_KNOBS + i));
+      addParam(createParamCentered<Trimpot>(Vec(button_positions[i][0],button_positions[i][1] + 30), module, GrooveBox::STEP_KNOBS + i));
     }
 
     // Function Buttons
@@ -317,8 +317,8 @@ struct Scalar110Widget : ModuleWidget
     {
       float x = function_button_positions[i][0];
       float y = function_button_positions[i][1];
-      addParam(createParamCentered<LEDButton>(Vec(x, y), module, Scalar110::FUNCTION_BUTTONS + i));
-      addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x, y), module, Scalar110::FUNCTION_BUTTON_LIGHTS + i));
+      addParam(createParamCentered<LEDButton>(Vec(x, y), module, GrooveBox::FUNCTION_BUTTONS + i));
+      addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x, y), module, GrooveBox::FUNCTION_BUTTON_LIGHTS + i));
     }
 
     //
@@ -328,8 +328,8 @@ struct Scalar110Widget : ModuleWidget
     {
       float x = track_button_positions[i][0];
       float y = track_button_positions[i][1];
-      addParam(createParamCentered<LEDButton>(Vec(x,y), module, Scalar110::TRACK_BUTTONS + i));
-      addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x,y), module, Scalar110::TRACK_BUTTON_LIGHTS + i));
+      addParam(createParamCentered<LEDButton>(Vec(x,y), module, GrooveBox::TRACK_BUTTONS + i));
+      addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x,y), module, GrooveBox::TRACK_BUTTON_LIGHTS + i));
 
       TrackLabelDisplay *track_label_display = new TrackLabelDisplay(i);
       track_label_display->setPosition(Vec(x + 16, y - 14));
@@ -340,35 +340,35 @@ struct Scalar110Widget : ModuleWidget
     // Track outputs
     for(unsigned int i=0; i<(NUMBER_OF_TRACKS * 2); i++)
     {
-      addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(10 + (i * 11), 6)), module, Scalar110::TRACK_OUTPUTS + i));
+      addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(10 + (i * 11), 6)), module, GrooveBox::TRACK_OUTPUTS + i));
     }
 
     // Mix output
-    addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(203, 6)), module, Scalar110::AUDIO_OUTPUT_LEFT));
-		addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(213, 6)), module, Scalar110::AUDIO_OUTPUT_RIGHT));
+    addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(203, 6)), module, GrooveBox::AUDIO_OUTPUT_LEFT));
+		addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(213, 6)), module, GrooveBox::AUDIO_OUTPUT_RIGHT));
 
     //
     // Memory buttons
     //
 
-    addInput(createInputCentered<PJ301MPort>(Vec(87.622, 98), module, Scalar110::MEM_INPUT));
+    addInput(createInputCentered<PJ301MPort>(Vec(87.622, 98), module, GrooveBox::MEM_INPUT));
 
     for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
     {
       float x = memory_slot_button_positions[i][0];
       float y = memory_slot_button_positions[i][1];
-      addParam(createParamCentered<LEDButton>(Vec(x,y), module, Scalar110::MEMORY_SLOT_BUTTONS + i));
-      addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x,y), module, Scalar110::MEMORY_SLOT_BUTTON_LIGHTS + i));
+      addParam(createParamCentered<LEDButton>(Vec(x,y), module, GrooveBox::MEMORY_SLOT_BUTTONS + i));
+      addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x,y), module, GrooveBox::MEMORY_SLOT_BUTTON_LIGHTS + i));
     }
 
     // Copy/Paste Memory buttons
-    addParam(createParamCentered<VCVButton>(Vec(87.622, 144.00), module, Scalar110::COPY_BUTTON));
-    addParam(createParamCentered<VCVButton>(Vec(87.622, 187), module, Scalar110::PASTE_BUTTON));
+    addParam(createParamCentered<VCVButton>(Vec(87.622, 144.00), module, GrooveBox::COPY_BUTTON));
+    addParam(createParamCentered<VCVButton>(Vec(87.622, 187), module, GrooveBox::PASTE_BUTTON));
   }
 
   void onHoverKey(const event::HoverKey &e) override
   {
-    Scalar110 *module = dynamic_cast<Scalar110*>(this->module);
+    GrooveBox *module = dynamic_cast<GrooveBox*>(this->module);
     assert(module);
 
     if(e.action == GLFW_PRESS && e.key == GLFW_KEY_P)
@@ -391,7 +391,7 @@ struct Scalar110Widget : ModuleWidget
 
   void appendContextMenu(Menu *menu) override
   {
-    Scalar110 *module = dynamic_cast<Scalar110*>(this->module);
+    GrooveBox *module = dynamic_cast<GrooveBox*>(this->module);
     assert(module);
 
     menu->addChild(new MenuEntry); // For spacing only
@@ -420,6 +420,11 @@ struct Scalar110Widget : ModuleWidget
     menu_item_load_folder->text = "Load first 8 WAV files from a folder";
     menu_item_load_folder->module = module;
     menu->addChild(menu_item_load_folder);
+
+    menu->addChild(new MenuEntry); // For spacing only
+    menu->addChild(createMenuLabel("Or double click on a track window"));
+    menu->addChild(createMenuLabel("to select a sample for that track."));
   }
+
 
 };

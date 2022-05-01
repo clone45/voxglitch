@@ -5,7 +5,7 @@
 // - more ratcheting patterns!
 
 
-struct Scalar110 : Module
+struct GrooveBox : Module
 {
   MemorySlot memory_slots[NUMBER_OF_MEMORY_SLOTS];
 
@@ -88,7 +88,7 @@ struct Scalar110 : Module
 		NUM_LIGHTS
 	};
 
-	Scalar110()
+	GrooveBox()
 	{
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 

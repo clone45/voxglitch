@@ -1,4 +1,4 @@
-namespace scalar_110
+namespace groove_box
 {
   const int NUMBER_OF_STEPS = 16;
   const int NUMBER_OF_TRACKS = 8;

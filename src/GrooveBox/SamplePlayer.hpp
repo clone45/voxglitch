@@ -1,4 +1,4 @@
-namespace scalar_110
+namespace groove_box
 {
 
 struct SamplePlayer

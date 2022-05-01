@@ -120,9 +120,9 @@
         "tags": ["Sampler"]
     },
     {
-        "slug": "scalar110",
-        "name": "Scalar 110",
-        "description": "Goove box",
+        "slug": "groovebox",
+        "name": "Groove Box",
+        "description": "8-track sample based groovebox with parameter locks",
         "tags": ["Sampler"]
     },
     {
