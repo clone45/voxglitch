@@ -150,6 +150,22 @@ struct Track
     }
   }
 
+  void copy(Track *src_track)
+  {
+    // First copy step data
+    for(unsigned int i=0; i<NUMBER_OF_STEPS; i++) {
+      this->steps[i] = src_track->steps[i];
+      this->sample_playback_settings[i].copy(src_track->sample_playback_settings);
+      this->settings.copy(&src_track->settings);
+    }
+
+    // Copy single variables
+    this->length = src_track->length;
+    this->playback_position = src_track->playback_position;
+    this->ratchet_counter = src_track->ratchet_counter;
+    this->skipped = src_track->skipped;
+  }
+
   float getLength()  {
     return(this->length);
   }

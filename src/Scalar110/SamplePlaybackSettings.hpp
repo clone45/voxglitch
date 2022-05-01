@@ -11,6 +11,18 @@ struct SamplePlaybackSettings
   float probability = 1.0;
   float loop = 0.0;
   bool reverse = false;
+
+  void copy(SamplePlaybackSettings *src_settings)
+  {
+    this->volume = src_settings->volume;
+    this->pan = src_settings->pan;
+    this->pitch = src_settings->pitch;
+    this->ratchet = src_settings->ratchet;
+    this->offset = src_settings->offset;
+    this->probability = src_settings->probability;
+    this->loop = src_settings->loop;
+    this->reverse = src_settings->reverse;
+  }
 };
 
 }

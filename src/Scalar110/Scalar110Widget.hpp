@@ -1,22 +1,55 @@
+//
+// mm2px 2.952756
+
 #include <componentlibrary.hpp>
 
+float button_positions_y = mm2px(89.75);
+
 float button_positions[16][2] = {
-  { 29.5, 265.0 },
-  { 69, 265.0},
-  { 109, 265.0},
-  { 149, 265.0},
-  { 189, 265.0},
-  { 229, 265.0},
-  { 269, 265.0},
-  { 309, 265.0},
-  { 350, 265.0},
-  { 390, 265.0 },
-  { 430, 265.0 },
-  { 470, 265.0 },
-  { 510, 265.0 },
-  { 550, 265.0 },
-  { 590, 265.0 },
-  { 631, 265.0 }
+  { mm2px(9.941), button_positions_y },
+  { mm2px(23.52), button_positions_y},
+  { mm2px(37.10), button_positions_y},
+  { mm2px(50.69), button_positions_y },
+  { mm2px(64.27), button_positions_y},
+  { mm2px(77.85), button_positions_y},
+  { mm2px(91.43), button_positions_y},
+  { mm2px(105.02), button_positions_y},
+  { mm2px(118.60), button_positions_y},
+  { mm2px(132.18), button_positions_y},
+  { mm2px(145.76), button_positions_y},
+  { mm2px(159.35), button_positions_y},
+  { mm2px(172.93), button_positions_y},
+  { mm2px(186.51), button_positions_y},
+  { mm2px(200.09), button_positions_y},
+  { mm2px(213.67), button_positions_y}
+};
+
+float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
+  {125, 93},
+  {155, 93},
+  {185, 93},
+  {215, 93},
+
+  {125, 124.33},
+  {155, 124.33},
+  {185, 124.33},
+  {215, 124.33},
+
+  {125, 155.664},
+  {155, 155.664},
+  {185, 155.664},
+  {215, 155.664},
+
+  {125, 187},
+  {155, 187},
+  {185, 187},
+  {215, 187}
+};
+
+struct ModdedCL1362 : SvgPort {
+	ModdedCL1362() {
+		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/modded_CL1362.svg")));
+	}
 };
 
 struct SequenceLengthWidget : TransparentWidget
@@ -221,13 +254,13 @@ struct Scalar110Widget : ModuleWidget
       {573, 349}
     };
 
-    float col_1 = 265;
-    float col_2 = 461.4;
+    float col_1 = 265;  // 89.746 px
+    float col_2 = 461.4; // 156.26 px
 
-    float row_1 = 90.5;
-    float row_2 = 121.750000;
-    float row_3 = 152.683594;
-    float row_4 = 184;
+    float row_1 = 93;
+    float row_2 = 124.33;
+    float row_3 = 155.664;
+    float row_4 = 187;
 
     float track_button_positions[NUMBER_OF_TRACKS][2] = {
       {col_1, row_1},
@@ -294,40 +327,18 @@ struct Scalar110Widget : ModuleWidget
     // Track outputs
     for(unsigned int i=0; i<(NUMBER_OF_TRACKS * 2); i++)
     {
-      addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(10 + (i * 11), 6)), module, Scalar110::TRACK_OUTPUTS + i));
+      addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(10 + (i * 11), 6)), module, Scalar110::TRACK_OUTPUTS + i));
     }
 
     // Mix output
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(203, 6)), module, Scalar110::AUDIO_OUTPUT_LEFT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(213, 6)), module, Scalar110::AUDIO_OUTPUT_RIGHT));
+    addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(203, 6)), module, Scalar110::AUDIO_OUTPUT_LEFT));
+		addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(213, 6)), module, Scalar110::AUDIO_OUTPUT_RIGHT));
 
     //
     // Memory buttons
     //
 
-    addInput(createInputCentered<PJ301MPort>(Vec(85.255859,124.761719), module, Scalar110::MEM_INPUT));
-
-    float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
-      {125, 93},
-      {155, 93},
-      {185, 93},
-      {215, 93},
-
-      {125, 124.5},
-      {155, 124.5},
-      {185, 124.5},
-      {215, 124.5},
-
-      {125, 155},
-      {155, 155},
-      {185, 155},
-      {215, 155},
-
-      {125, 187},
-      {155, 187},
-      {185, 187},
-      {215, 187}
-    };
+    addInput(createInputCentered<PJ301MPort>(Vec(87.622, 98), module, Scalar110::MEM_INPUT));
 
     for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
     {
@@ -336,6 +347,10 @@ struct Scalar110Widget : ModuleWidget
       addParam(createParamCentered<LEDButton>(Vec(x,y), module, Scalar110::MEMORY_SLOT_BUTTONS + i));
       addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x,y), module, Scalar110::MEMORY_SLOT_BUTTON_LIGHTS + i));
     }
+
+    // Copy/Paste Memory buttons
+    addParam(createParamCentered<VCVButton>(Vec(87.622, 144.00), module, Scalar110::COPY_BUTTON));
+    addParam(createParamCentered<VCVButton>(Vec(87.622, 187), module, Scalar110::PASTE_BUTTON));
   }
 
   void onHoverKey(const event::HoverKey &e) override

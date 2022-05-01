@@ -23,6 +23,14 @@ struct MemorySlot
     return(&tracks[track_index]);
   }
 
+  void copy(MemorySlot *src_memory)
+  {
+    for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
+    {
+      this->tracks[i].copy(&src_memory->tracks[i]);
+    }
+  }
+
 };
 
 }

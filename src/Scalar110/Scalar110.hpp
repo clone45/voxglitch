@@ -15,6 +15,8 @@ struct Scalar110 : Module
   dsp::SchmittTrigger memory_slot_button_triggers[NUMBER_OF_MEMORY_SLOTS];
   dsp::SchmittTrigger function_button_triggers[NUMBER_OF_FUNCTIONS];
   dsp::SchmittTrigger track_length_button_triggers[NUMBER_OF_STEPS];
+  dsp::SchmittTrigger copy_button_trigger;
+  dsp::SchmittTrigger paste_button_trigger;
 
   dsp::SchmittTrigger stepTrigger;
   dsp::SchmittTrigger resetTrigger;
@@ -23,12 +25,14 @@ struct Scalar110 : Module
   MemorySlot *selected_memory_slot = NULL;
 
   unsigned int memory_slot_index = 0;
+  unsigned int copied_memory_index = 0;
   unsigned int track_index = 0;
   unsigned int playback_step = 0;
   unsigned int selected_function = 0;
   unsigned int old_selected_function = 0;
   unsigned int clock_division = 8;
   unsigned int clock_counter = 0;
+
   bool first_step = true;
   long clock_ignore_on_reset = 0;
 
@@ -59,6 +63,8 @@ struct Scalar110 : Module
     ENUMS(FUNCTION_BUTTONS, NUMBER_OF_FUNCTIONS),
     ENUMS(TRACK_BUTTONS, NUMBER_OF_TRACKS),
     ENUMS(MEMORY_SLOT_BUTTONS, NUMBER_OF_MEMORY_SLOTS),
+    COPY_BUTTON,
+    PASTE_BUTTON,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -85,6 +91,9 @@ struct Scalar110 : Module
 	Scalar110()
 	{
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+
+    // DEBUG("foo: ");
+    // DEBUG(std::to_string(mm2px(1.0)).c_str());
 
     clock_ignore_on_reset = (long) (44100 / 100);
 
@@ -123,6 +132,11 @@ struct Scalar110 : Module
 
     updateKnobPositions();
 	}
+
+  void copyMemory(unsigned int src_index, unsigned int dst_index)
+  {
+      memory_slots[dst_index].copy(&memory_slots[src_index]);
+  }
 
   void updateKnobPositions()
   {
@@ -359,8 +373,6 @@ struct Scalar110 : Module
         track_index = i;
         selected_track = selected_memory_slot->getTrack(track_index);
 
-        // DEBUG(std::to_string(selected_track->length).c_str());
-
         updateKnobPositions();
       }
     }
@@ -384,6 +396,16 @@ struct Scalar110 : Module
           switchMemory(i);
         }
       }
+    }
+
+    if(copy_button_trigger.process(params[COPY_BUTTON].getValue()))
+    {
+      copied_memory_index = memory_slot_index;
+    }
+
+    if(paste_button_trigger.process(params[PASTE_BUTTON].getValue()))
+    {
+      copyMemory(copied_memory_index, memory_slot_index);
     }
 
     // On incoming RESET, reset the sequencers
