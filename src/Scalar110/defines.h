@@ -29,4 +29,15 @@ namespace scalar_110
     {507.007812 + 20, 177.011719 - 11}
   };
 
+  const std::string PLACEHOLDER_TRACK_NAMES[NUMBER_OF_TRACKS] = {
+    "kick_drum.wav",
+    "snare.wav",
+    "hihat_open.wav",
+    "hihat_closed.wav",
+    "low_tom.wav",
+    "jiggly_puff.wav",
+    "",
+    ""
+  };
+
 }

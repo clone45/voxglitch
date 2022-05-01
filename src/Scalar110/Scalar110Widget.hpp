@@ -46,20 +46,43 @@ float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
   {215, 187}
 };
 
+float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
+  {18.8, 349},
+  {98, 349},
+  {177, 349},
+  {256, 349},
+  {335, 349},
+  {414, 349},
+  {493, 349},
+  {573, 349}
+};
+
+float track_button_positions[NUMBER_OF_TRACKS][2] = {
+  {265, 93},
+  {265, 124.33},
+  {265, 155.664},
+  {265, 187},
+  {461.4, 93},
+  {461.4, 124.33},
+  {461.4, 155.664},
+  {461.4, 187}
+};
+
 struct ModdedCL1362 : SvgPort {
 	ModdedCL1362() {
 		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/modded_CL1362.svg")));
 	}
 };
 
+//
+// SequenceLengthWidget
+//
+// This is the grey horizontal bar that shows the sequence length of the
+// selected track.
+
 struct SequenceLengthWidget : TransparentWidget
 {
   Scalar110 *module;
-
-  SequenceLengthWidget()
-  {
-    // box.size = Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
-  }
 
   void draw(const DrawArgs &args) override
   {
@@ -79,7 +102,11 @@ struct SequenceLengthWidget : TransparentWidget
     // Paint static content for library display
     else
     {
-
+      // Grey background
+      nvgBeginPath(vg);
+      nvgRoundedRect(vg, 0, 0, mm2px(186.51), 12, 5);
+      nvgFillColor(vg, nvgRGB(84, 84, 84));
+      nvgFill(vg);
     }
 
     nvgRestore(vg);
@@ -87,6 +114,12 @@ struct SequenceLengthWidget : TransparentWidget
 
 };
 
+//
+// TrackLabelDisplay
+//
+// Bright orange track name displays that are positioned to
+// the right of the track selection buttons
+//
 struct TrackLabelDisplay : TransparentWidget
 {
   Scalar110 *module;
@@ -119,48 +152,57 @@ struct TrackLabelDisplay : TransparentWidget
     e.consume(this);
   }
 
+  void draw_track_label(std::string label, NVGcontext *vg)
+  {
+    float text_left_margin = 6;
+
+    //
+    // Display track label
+    //
+    nvgFontSize(vg, 10);
+    nvgTextLetterSpacing(vg, 0);
+    nvgFillColor(vg, nvgRGBA(255, 215, 20, 0xff));
+    nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
+    float wrap_at = 130.0; // Just throw your hands in the air!  And wave them like you just don't
+
+    float bounds[4];
+    nvgTextBoxBounds(vg, text_left_margin, 10, wrap_at, label.c_str(), NULL, bounds);
+
+    float textHeight = bounds[3];
+    nvgTextBox(vg, text_left_margin, (box.size.y / 2.0f) - (textHeight / 2.0f) + 8, wrap_at, label.c_str(), NULL);
+  }
 
   void draw(const DrawArgs& args) override
   {
     const auto vg = args.vg;
 
-    // Debugging code for draw area, which often has to be set experimentally
+    // Save the drawing context to restore later
+    nvgSave(vg);
+
+    // Draw dark background
     nvgBeginPath(vg);
     nvgRect(vg, 0, 0, box.size.x, box.size.y);
     nvgFillColor(vg, nvgRGBA(20, 20, 20, 255));
     nvgFill(vg);
 
-
-    // Save the drawing context to restore later
-    nvgSave(vg);
-
+    //
+    // Draw track names
+    //
     if(module)
     {
       std::string to_display = module->loaded_filenames[track_number];
 
       if((to_display != "") && (to_display != "[ empty ]"))
       {
-        float text_left_margin = 6;
-
-        //
-        // Display track label
-        //
-        nvgFontSize(args.vg, 10);
-        nvgTextLetterSpacing(args.vg, 0);
-        nvgFillColor(args.vg, nvgRGBA(255, 215, 20, 0xff));
-        nvgTextAlign(args.vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
-        float wrap_at = 130.0; // Just throw your hands in the air!  And wave them like you just don't
-
-        float bounds[4];
-        nvgTextBoxBounds(vg, text_left_margin, 10, wrap_at, to_display.c_str(), NULL, bounds);
-
-        // float textX = bounds[0];
-        // float textY = bounds[1];
-        // float textWidth = bounds[2];
-        float textHeight = bounds[3];
-
-        nvgTextBox(args.vg, text_left_margin, (box.size.y / 2.0f) - (textHeight / 2.0f) + 8, wrap_at, to_display.c_str(), NULL);
+        draw_track_label(to_display, vg);
       }
+    }
+    //
+    // Draw placeholder track names for library view
+    //
+    else
+    {
+      draw_track_label(PLACEHOLDER_TRACK_NAMES[track_number], vg);
     }
     nvgRestore(vg);
   }
@@ -243,35 +285,6 @@ struct Scalar110Widget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(Vec(39.4, 98), module, Scalar110::STEP_INPUT));
     addInput(createInputCentered<PJ301MPort>(Vec(39.4, 159), module, Scalar110::RESET_INPUT));
 
-    float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
-      {18.8, 349},
-      {98, 349},
-      {177, 349},
-      {256, 349},
-      {335, 349},
-      {414, 349},
-      {493, 349},
-      {573, 349}
-    };
-
-    float col_1 = 265;  // 89.746 px
-    float col_2 = 461.4; // 156.26 px
-
-    float row_1 = 93;
-    float row_2 = 124.33;
-    float row_3 = 155.664;
-    float row_4 = 187;
-
-    float track_button_positions[NUMBER_OF_TRACKS][2] = {
-      {col_1, row_1},
-      {col_1, row_2},
-      {col_1, row_3},
-      {col_1, row_4},
-      {col_2, row_1},
-      {col_2, row_2},
-      {col_2, row_3},
-      {col_2, row_4}
-    };
 
     //
     // sequence length indicator
