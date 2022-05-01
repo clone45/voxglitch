@@ -77,7 +77,7 @@ struct SamplePlayer
 
       // Step the playback position forward.
   		playback_position = playback_position - step_amount;
-      playback_position = playback_position - (step_amount * (pow(2,settings->pitch * 5)  - 1)); // 5 octave range
+      playback_position = playback_position - (step_amount * ((settings->pitch * 2.0) - 1.0)); // 5 octave range
 
       // If the playback position is past the beginning, end or loop sample playback
       if(playback_position <= 0)
