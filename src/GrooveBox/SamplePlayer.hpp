@@ -80,34 +80,22 @@ struct SamplePlayer
       // If the playback position is past the beginning, end or loop sample playback
       if(settings->loop > 0)
       {
-        float loop_position = sample.size() - (sample.size() * settings->loop);
+        float playback_start = (1.0 - settings->offset) * sample.size();
+        float loop_position = playback_start - (settings->loop * (sample.size() - playback_start));
+
         if(playback_position <= loop_position)
         {
-          playback_position = (settings->offset * (this->sample.size() * settings->loop));
+          playback_position = playback_start;
         }
       }
       else
       {
         // If the playback position is past the playback length, end sample playback
-        if(playback_position >= sample.size())
+        if(playback_position <= 0)
         {
            stop();
         }
       }
-
-      /*
-      if(playback_position <= 0)
-      {
-        if(settings->loop > 0)
-        {
-          playback_position = (( 1 - settings->offset) * (this->sample.size() * settings->loop));
-        }
-        else
-        {
-          stop();
-        }
-      }
-      */
     }
 	}
 
