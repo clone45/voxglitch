@@ -53,10 +53,8 @@ struct SamplePlayer
       // the entire sample will loop.
       if(settings->loop > 0)
       {
-        if(playback_position >= (sample.size() * settings->loop))
-        {
-          playback_position = (settings->offset * (this->sample.size() * settings->loop));
-        }
+        float loop_position = (settings->offset * sample.size()) + ((sample.size() - settings->offset) * settings->loop);
+        if(playback_position >= loop_position) playback_position = (settings->offset * sample.size());
       }
       else
       {
@@ -80,6 +78,24 @@ struct SamplePlayer
       playback_position = playback_position - (step_amount * ((settings->pitch * 2.0) - 1.0)); // 5 octave range
 
       // If the playback position is past the beginning, end or loop sample playback
+      if(settings->loop > 0)
+      {
+        float loop_position = sample.size() - (sample.size() * settings->loop);
+        if(playback_position <= loop_position)
+        {
+          playback_position = (settings->offset * (this->sample.size() * settings->loop));
+        }
+      }
+      else
+      {
+        // If the playback position is past the playback length, end sample playback
+        if(playback_position >= sample.size())
+        {
+           stop();
+        }
+      }
+
+      /*
       if(playback_position <= 0)
       {
         if(settings->loop > 0)
@@ -91,6 +107,7 @@ struct SamplePlayer
           stop();
         }
       }
+      */
     }
 	}
 
