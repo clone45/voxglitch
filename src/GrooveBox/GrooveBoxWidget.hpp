@@ -88,26 +88,20 @@ struct SequenceLengthWidget : TransparentWidget
   {
     const auto vg = args.vg;
 
-    // Save the drawing context to restore later
     nvgSave(vg);
+    nvgBeginPath(vg);
 
-    if(module)
-    {
-      // Grey background
-      nvgBeginPath(vg);
+    if(module) {
+      // Draw horizontal rectangle for track indictor with pretty rounded corners
       nvgRoundedRect(vg, 0, 0, button_positions[module->selected_track->length][0] - 10, 12, 5);
-      nvgFillColor(vg, nvgRGB(84, 84, 84));
-      nvgFill(vg);
     }
-    // Paint static content for library display
-    else
-    {
-      // Grey background
-      nvgBeginPath(vg);
+    else {
+      // Paint static content for library display
       nvgRoundedRect(vg, 0, 0, mm2px(186.51), 12, 5);
-      nvgFillColor(vg, nvgRGB(84, 84, 84));
-      nvgFill(vg);
     }
+
+    nvgFillColor(vg, nvgRGB(84, 84, 84));
+    nvgFill(vg);
 
     nvgRestore(vg);
   }
@@ -211,10 +205,8 @@ struct TrackLabelDisplay : TransparentWidget
 
 struct LoadSamplesFromFolderMenuItem : MenuItem
 {
-
 	GrooveBox *module;
 	unsigned int track_number = 0;
-
 
 	void onAction(const event::Action &e) override
 	{
@@ -285,15 +277,15 @@ struct GrooveBoxWidget : ModuleWidget
     addInput(createInputCentered<PJ301MPort>(Vec(39.4, 98), module, GrooveBox::STEP_INPUT));
     addInput(createInputCentered<PJ301MPort>(Vec(39.4, 159), module, GrooveBox::RESET_INPUT));
 
-
-    //
     // sequence length indicator
-    //
     SequenceLengthWidget *sequence_length_widget = new SequenceLengthWidget();
     sequence_length_widget->setPosition(Vec(button_positions[0][0] - 10, button_positions[0][1] - 31));
     sequence_length_widget->module = module;
     addChild(sequence_length_widget);
 
+    //
+    // Step button related stuff
+    //
     for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
     {
       //
@@ -321,9 +313,7 @@ struct GrooveBoxWidget : ModuleWidget
       addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x, y), module, GrooveBox::FUNCTION_BUTTON_LIGHTS + i));
     }
 
-    //
-    // Track buttons
-    //
+    // Track buttons and labels
     for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
     {
       float x = track_button_positions[i][0];
@@ -337,22 +327,19 @@ struct GrooveBoxWidget : ModuleWidget
       addChild(track_label_display);
     }
 
-    // Track outputs
+    // Indivisual track outputs
     for(unsigned int i=0; i<(NUMBER_OF_TRACKS * 2); i++)
     {
       addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(10 + (i * 11), 6)), module, GrooveBox::TRACK_OUTPUTS + i));
     }
 
-    // Mix output
+    // Mix output L/R
     addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(203, 6)), module, GrooveBox::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(213, 6)), module, GrooveBox::AUDIO_OUTPUT_RIGHT));
 
     //
     // Memory buttons
     //
-
-    addInput(createInputCentered<PJ301MPort>(Vec(87.622, 98), module, GrooveBox::MEM_INPUT));
-
     for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
     {
       float x = memory_slot_button_positions[i][0];
@@ -360,6 +347,9 @@ struct GrooveBoxWidget : ModuleWidget
       addParam(createParamCentered<LEDButton>(Vec(x,y), module, GrooveBox::MEMORY_SLOT_BUTTONS + i));
       addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x,y), module, GrooveBox::MEMORY_SLOT_BUTTON_LIGHTS + i));
     }
+
+    // Memory CV input
+    addInput(createInputCentered<PJ301MPort>(Vec(87.622, 98), module, GrooveBox::MEM_INPUT));
 
     // Copy/Paste Memory buttons
     addParam(createParamCentered<VCVButton>(Vec(87.622, 144.00), module, GrooveBox::COPY_BUTTON));
@@ -371,20 +361,8 @@ struct GrooveBoxWidget : ModuleWidget
     GrooveBox *module = dynamic_cast<GrooveBox*>(this->module);
     assert(module);
 
-    if(e.action == GLFW_PRESS && e.key == GLFW_KEY_P)
-    {
-      std::string debug_string = "mouse at: " + std::to_string(e.pos.x) + "," + std::to_string(e.pos.y);
-      DEBUG(debug_string.c_str());
-    }
-
-    if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT)
-    {
-      module->shift_key = true;
-    }
-    else
-    {
-      module->shift_key = false;
-    }
+    // Read and store shift key status
+    module->shift_key = ((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT);
 
     ModuleWidget::onHoverKey(e);
   }
@@ -396,7 +374,6 @@ struct GrooveBoxWidget : ModuleWidget
 
     menu->addChild(new MenuEntry); // For spacing only
     menu->addChild(createMenuLabel("Load individual samples"));
-
 
     //
     // Add the sample slots to the right-click context menu

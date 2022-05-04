@@ -1,29 +1,32 @@
 //
-// Where I left off.
-// - rename pattern to memory
-// - tooltips?
-// - more ratcheting patterns!
+// Voxglitch Groovebox
+//
+// By Bret Truchan
+//
+// TODO:
+// -
 
 
 struct GrooveBox : Module
 {
   MemorySlot memory_slots[NUMBER_OF_MEMORY_SLOTS];
 
+  // Schmitt Triggers
   dsp::SchmittTrigger drum_pad_triggers[NUMBER_OF_STEPS];
   dsp::SchmittTrigger step_select_triggers[NUMBER_OF_STEPS];
   dsp::SchmittTrigger track_button_triggers[NUMBER_OF_TRACKS];
   dsp::SchmittTrigger memory_slot_button_triggers[NUMBER_OF_MEMORY_SLOTS];
   dsp::SchmittTrigger function_button_triggers[NUMBER_OF_FUNCTIONS];
-  dsp::SchmittTrigger track_length_button_triggers[NUMBER_OF_STEPS];
   dsp::SchmittTrigger copy_button_trigger;
   dsp::SchmittTrigger paste_button_trigger;
-
   dsp::SchmittTrigger stepTrigger;
   dsp::SchmittTrigger resetTrigger;
 
+  // Pointers to select track and memory
   Track *selected_track = NULL;
   MemorySlot *selected_memory_slot = NULL;
 
+  // Assorted variables
   unsigned int memory_slot_index = 0;
   unsigned int copied_memory_index = 0;
   unsigned int track_index = 0;
@@ -32,29 +35,33 @@ struct GrooveBox : Module
   unsigned int old_selected_function = 0;
   unsigned int clock_division = 8;
   unsigned int clock_counter = 0;
-
   bool first_step = true;
-  long clock_ignore_on_reset = 0;
-
   bool shift_key = false;
 
   //
   // Sample related variables
   //
-  // * root_directory *: Used to store the last folder which the user accessed to
+  // root_directory: Used to store the last folder which the user accessed to
   // load samples.  This is to alleviate the tedium of having to navigate to
   // the same folder every time a user goes to load new samples.
   //
-  // path: ??
+  // loaded_filenames: Filenames are displayed next to the tracks.  This variable
+  // keeps track of the filenames to display.
   //
-  // * loaded_filenames *: Filenames are displayed next to the tracks.  This variable
-  // keeps track of the filenames to display.  Filenames are saved and loaded
-  // with the patch
-  //
-  SamplePlayer sample_players[NUMBER_OF_TRACKS];
   std::string loaded_filenames[NUMBER_OF_TRACKS]; // for display on the front panel
   std::string root_directory;
 	std::string path;
+
+  // Each of the 8 tracks has dedicated sample player engines
+  // The samples assigned to each track are NOT dependent on which memory bank
+  // is active.  This means that you cannot load samples in one memory bank without
+  // it affecting all memory banks.
+
+  SamplePlayer sample_players[NUMBER_OF_TRACKS];
+
+  //
+  // Basic VCV Parameter, Input, Output, and Light definitions
+  //
 
   enum ParamIds {
     ENUMS(DRUM_PADS, NUMBER_OF_STEPS),
@@ -92,28 +99,27 @@ struct GrooveBox : Module
 	{
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 
-    // DEBUG("foo: ");
-    // DEBUG(std::to_string(mm2px(1.0)).c_str());
-
-    clock_ignore_on_reset = (long) (44100 / 100);
-
+    // Configure all of the step buttons and parameter lock knobs
     for(unsigned int i=0; i < NUMBER_OF_STEPS; i++)
     {
       configParam(DRUM_PADS + i, 0.0, 1.0, 0.0, "Step Button");
       configParam(STEP_KNOBS + i, 0.0, 1.0, 0.0, "Parameter Lock Value" + std::to_string(i));
     }
 
+    // Configure the track select buttons
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
     {
       configParam(TRACK_BUTTONS + i, 0.0, 1.0, 0.0, "Track Selection Button");
     }
 
+    // Configure the individual track outputs
     for(unsigned int i=0; i < (NUMBER_OF_TRACKS * 2); i+=2)
     {
       configOutput(TRACK_OUTPUTS + i, "Track " + std::to_string((i/2) + 1) + ": left");
       configOutput(TRACK_OUTPUTS + i + 1, "Track " + std::to_string((i/2) + 1) + ": right");
     }
 
+    // Configure the stereo mix outputs
     configOutput(AUDIO_OUTPUT_LEFT, "Left Mix");
     configOutput(AUDIO_OUTPUT_RIGHT, "Right Mix");
 
@@ -125,14 +131,20 @@ struct GrooveBox : Module
       }
     }
 
+    // Store a pointer to the active memory slot
     selected_memory_slot = &memory_slots[0];
 
-    // Set default selected track
+    // Store a pointer to the active track
     selected_track = selected_memory_slot->getTrack(0);
 
+    // Update parameter lock knobs.  I'm not sure if this is necessary.
     updateKnobPositions();
 	}
 
+  // copyMemory(src_index, dst_index)
+  //
+  // Helper function to copy one memory slot to another memory slot
+  //
   void copyMemory(unsigned int src_index, unsigned int dst_index)
   {
       memory_slots[dst_index].copy(&memory_slots[src_index]);
@@ -399,11 +411,15 @@ struct GrooveBox : Module
       }
     }
 
+    // COPY: If the user has pressed the copy button, then store the index of the
+    // current memory, which will be used when pasting.
     if(copy_button_trigger.process(params[COPY_BUTTON].getValue()))
     {
       copied_memory_index = memory_slot_index;
     }
 
+    // PASTE: If the user has pressed the paste button, then copy previously
+    // copied memory to the current memory location.
     if(paste_button_trigger.process(params[PASTE_BUTTON].getValue()))
     {
       copyMemory(copied_memory_index, memory_slot_index);
@@ -417,8 +433,6 @@ struct GrooveBox : Module
       // is to comply with VCV Rack's standards.  See section "Timing" at
       // https://vcvrack.com/manual/VoltageStandards
 
-      // clock_ignore_on_reset = (long) (args.sampleRate / 100);
-      // clock_counter = clock_division;  // skip ratcheting
       first_step = true;
 
       for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
@@ -587,7 +601,5 @@ struct GrooveBox : Module
     {
       lights[TRACK_BUTTON_LIGHTS + i].setBrightness(track_index == i);
     }
-
-    if (clock_ignore_on_reset > 0) clock_ignore_on_reset--;
   }
 };

@@ -104,12 +104,6 @@ struct SamplePlayer
     sample.load(path);
   }
 
-  void setPositionFromInput(float position_input_value) // 1 to 10
-  {
-    position_input_value = clamp(position_input_value, 0.0, 10.0);
-    playback_position = rescale(position_input_value, 0.0, 10.0, 0.0, sample.size());
-  }
-
   std::string getFilename()
   {
     return(sample.filename);
