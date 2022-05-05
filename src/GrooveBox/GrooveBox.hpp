@@ -4,7 +4,11 @@
 // By Bret Truchan
 //
 // TODO:
-// -
+// - De-click sample looping
+// - Add another row of functions, including Attack/Decay, possibly playback length
+// - Convert "tie" code to passing in references
+// - Thank you to all the friendly people on the VCV Rack Community for answering
+//   my questions and providing feedback on early builds.
 
 
 struct GrooveBox : Module
