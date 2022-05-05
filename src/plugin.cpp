@@ -1,6 +1,6 @@
 #define DR_WAV_IMPLEMENTATION
 #include "Common/dr_wav.h"
-
+// #include "Common/tables.hpp"
 #include "plugin.hpp"
 
 Plugin* pluginInstance;
@@ -25,6 +25,7 @@ void init(Plugin* p) {
   p->addModel(modelRepeater);
   p->addModel(modelSamplerX8);
   p->addModel(modelSatanonaut);
+  p->addModel(modelGrooveBox);
   p->addModel(modelWavBank);
   p->addModel(modelWavBankMC);
   p->addModel(modelXY);

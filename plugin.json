@@ -120,6 +120,12 @@
         "tags": ["Sampler"]
     },
     {
+        "slug": "groovebox",
+        "name": "Groove Box",
+        "description": "8-track sample based groovebox with parameter locks",
+        "tags": ["Sampler"]
+    },
+    {
         "slug": "wavbank",
         "name": "Wav Bank",
         "description": "Sample player that can load and switch between all .wav files in a folder.",

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="26.456694"
+   height="26.456694"
+   viewBox="0 0 7.0000002 7.0000002"
+   version="1.1"
+   id="svg20198"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   sodipodi:docname="PushButton_1.svg">
+  <defs
+     id="defs20192" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="22.4"
+     inkscape:cx="-11.449778"
+     inkscape:cy="17.823348"
+     inkscape:document-units="mm"
+     inkscape:current-layer="g20169-3"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     units="px" />
+  <metadata
+     id="metadata20195">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-82.880045,-115.2515)">
+    <g
+       transform="matrix(0.33514843,0,0,-0.33529537,-224.0132,506.00388)"
+       id="g20169"
+       style="stroke-width:1.05237091">
+      <g
+         transform="matrix(0.99501487,0,0,0.99507779,32.585756,3.8599038)"
+         id="g20169-3"
+         style="stroke-width:1.11299801">
+        <rect
+           style="opacity:1;fill:#333333;fill-opacity:1;stroke:none;stroke-width:0.8268345;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="rect15"
+           width="20.990911"
+           height="20.980385"
+           x="887.53223"
+           y="-1167.2832"
+           transform="scale(1,-1)"
+           ry="3.8550994" />
+        <rect
+           style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.8268345;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="rect15-6"
+           width="19.941366"
+           height="19.931364"
+           x="888.05701"
+           y="-1166.7587"
+           transform="scale(1,-1)"
+           ry="3.5747285" />
+        <rect
+           style="opacity:1;fill:#d40000;fill-opacity:1;stroke:none;stroke-width:0.69672346;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="rect15-6-9"
+           width="16.792728"
+           height="16.784307"
+           x="889.63135"
+           y="-1165.1852"
+           transform="scale(1,-1)"
+           ry="2.1728868" />
+      </g>
+    </g>
+  </g>
+</svg>

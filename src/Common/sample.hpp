@@ -35,6 +35,7 @@ struct Sample
 {
 	std::string path;
 	std::string filename;
+  std::string display_name;
 	bool loading;
   bool loaded = false;
   bool queued_for_loading = false;
@@ -108,6 +109,8 @@ struct Sample
     // of the patch to reference.
     this->sample_length = sample_audio_buffer.size();
     this->filename = system::getFilename(path);
+    this->display_name = filename;
+    this->display_name.erase(this->display_name.length()-4); // remove the .wav extension
     this->path = path;
 
     this->loading = false;
