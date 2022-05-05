@@ -488,7 +488,6 @@ struct DigitalSequencerXP : Module
 
 
       // output values
-      // TODO: restore this after we reintroduce the gate sequencers
       for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
       {
         if(voltage_sequencers[i].sample_and_hold)
@@ -583,7 +582,7 @@ struct DigitalSequencerXP : Module
       {
         float length_input = inputs[POLY_LENGTH_INPUT].getVoltage(i);
         int length = ((length_input / 10.0) * 32) + 1;
-        length = clamp(length, 1.0, 32.0);
+        length = clamp(length, 1, 32);
 
         voltage_sequencers[i].setLength((int) length);
         gate_sequencers[i].setLength((int) length);

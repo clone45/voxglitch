@@ -223,7 +223,51 @@ struct DigitalProgrammerWidget : ModuleWidget
     }
   };
 
+  struct OutputRangeValueItem : MenuItem {
+    DigitalProgrammer *module;
+    int range_index = 0;
+    int slider_number = 0;
 
+    void onAction(const event::Action &e) override {
+      module->range_settings[slider_number] = range_index;
+    }
+  };
+
+  struct OutputRangeItem : MenuItem {
+    DigitalProgrammer *module;
+    int slider_number = 0;
+
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      for (unsigned int i=0; i < NUMBER_OF_VOLTAGE_RANGES; i++)
+      {
+        OutputRangeValueItem *output_range_value_menu_item = createMenuItem<OutputRangeValueItem>(module->voltage_range_names[i], CHECKMARK(module->range_settings[i] == i));
+        output_range_value_menu_item->module = module;
+        output_range_value_menu_item->range_index = i;
+        output_range_value_menu_item->slider_number = this->slider_number;
+        menu->addChild(output_range_value_menu_item);
+      }
+
+      return menu;
+    }
+  };
+
+  struct SliderMenuItem : MenuItem {
+    DigitalProgrammer *module;
+    unsigned int slider_number = 0;
+
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      OutputRangeItem *output_range_item = createMenuItem<OutputRangeItem>("Output Range", RIGHT_ARROW);
+      output_range_item->slider_number = this->slider_number;
+      output_range_item->module = module;
+      menu->addChild(output_range_item);
+
+      return menu;
+    }
+  };
 
   void appendContextMenu(Menu *menu) override
   {
@@ -236,15 +280,25 @@ struct DigitalProgrammerWidget : ModuleWidget
     colorful_sliders_menu_item->module = module;
     menu->addChild(colorful_sliders_menu_item);
 
-    // Add colorful slider toggle
+    // Add visualize sums toggle
     VisualizeSumsMenuItem* visualize_sums_menu_item = createMenuItem<VisualizeSumsMenuItem>("Visualize Summed Voltages");
     visualize_sums_menu_item->rightText = CHECKMARK(module->visualize_sums == 1);
     visualize_sums_menu_item->module = module;
     menu->addChild(visualize_sums_menu_item);
 
+    // Add user-supplied labels
     LabelsMenu *labels_menu = createMenuItem<LabelsMenu>("Labels", RIGHT_ARROW);
     labels_menu->module = module;
     menu->addChild(labels_menu);
+
+    // Add individual slider settings
+    for(unsigned int i=0; i < NUMBER_OF_SLIDERS; i++)
+    {
+      SliderMenuItem *slider_menu_item = createMenuItem<SliderMenuItem>("Slider #" + std::to_string(i + 1), RIGHT_ARROW);
+      slider_menu_item->module = module;
+      slider_menu_item->slider_number = i;
+      menu->addChild(slider_menu_item);
+    }
   }
 
 };

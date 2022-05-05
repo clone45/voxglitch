@@ -347,7 +347,7 @@ struct DigitalSequencerXPWidget : ModuleWidget
         }
       }
 
-      // Switch between seuences using the number keys 1-6
+      // Switch between seuences using the number keys 1-8
       if (e.key >= GLFW_KEY_1 && e.key <= GLFW_KEY_8) // quick-select
       {
         if(e.action == GLFW_PRESS)

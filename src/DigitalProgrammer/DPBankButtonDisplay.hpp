@@ -52,7 +52,7 @@ struct DPBankButtonDisplay : TransparentWidget
 
   void drawMiniMap(NVGcontext *vg, NVGcolor color)
   {
-    for(int column = 0; column < NUMBER_OF_SLIDERS; column ++)
+    for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)
     {
       float slider_value = module->sliders[button_index][column].getValue();
       float x = (BANK_BUTTON_WIDTH / NUMBER_OF_SLIDERS) * column;

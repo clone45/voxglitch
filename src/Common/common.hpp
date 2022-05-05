@@ -17,6 +17,7 @@ struct Common
     return(min + r * (max - min));
   }
 
+  /*
   void DEBUG_FLOAT(float value)
   {
     debug_counter--;
@@ -26,6 +27,7 @@ struct Common
       debug_counter = 1000;
     }
   }
+  */
 
   void DEBUG_INT(int value)
   {
