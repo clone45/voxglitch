@@ -26,20 +26,24 @@ Groove Box doesn't ship with built-in sounds.  It's up to the user to provide sa
 There are three ways of loading samples:
 
 - Double clicking on a track's filename display screen (preferred way!)
-- Using the context-menu (right-click menu) to select individual samples (tedius)
+- Using the context-menu (right-click menu) to select individual samples (tedious)
 - Using the context-menu to select a folder containing samples (good for setting up preset "kits")
 
 ### Step Buttons
 
-The blue Step Buttones are used to program the rythm used for playback -- just like in a typical drum machine.
+The blue Step Buttons are used to program the rythm used for playback -- just like in a typical drum machine.
 
 ![GrooveBoxStepButtons](/docs/images/groovebox/step_buttons.jpg)
 
 The red led indicators above the step buttons show which step is currently active.
 
+### Changing Track Length
+
+You can change the length of a track by shift-clicking on a step button.
+
 ### Parameter Locks
 
-Parameter locks allow you to adjust playback paramteres for each step in a sequence.  Each track has independent parameter locks.
+Parameter locks allow you to adjust playback parameters for each step in a sequence.  Each track has independent parameter locks.
 
 Here's how they work:
 
@@ -50,6 +54,15 @@ Here's how they work:
 ![GrooveBoxParameterLocks](/docs/images/groovebox/parameter_locks.jpg)
 
 For example, if you wanted to raise the volume on the 5th step of a sequence, select VOLUME, then adjust the 5th knob.
+
+### Memory
+
+There are 16 memory slots in the section labeled "MEM".  Each of these sample slots represent a snapshot of all step buttons, track lengths, and parameter locks. The currently selected memory slot is updated in real-time with any changes that you make.  
+
+- To copy a memory slot, select the memory slot that you'd with to copy and click CPY
+- To past a memory slot, select the destination memory slot and click PST
+
+A CV input lets you switch between memory slots using a control voltage that ranges from 0 to 10v.  When a cable is inserted into the MEM CV input, the memory buttons are disabled.
 
 ### Clock and Reset
 
