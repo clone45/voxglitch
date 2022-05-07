@@ -1,6 +1,6 @@
 ## Groovebox
 
-![GrooveBox](/images/groovebox/groovebox.jpg)
+![GrooveBox](/docs/images/groovebox/groovebox.jpg)
 
 The Voxglitch Groove Box is an 8-track, sample based drum machine with per-step parameter locks.  
 
@@ -15,7 +15,7 @@ Tracks store:
 * All parameter lock values
 * Track length
 
-![GrooveBoxTracks](/images/groovebox/tracks.jpg)
+![GrooveBoxTracks](/docs/images/groovebox/tracks.jpg)
 
 ### Samples
 
@@ -33,7 +33,7 @@ There are three ways of loading samples:
 
 The blue Step Buttones are used to program the rythm used for playback -- just like in a typical drum machine.
 
-![GrooveBoxStepButtons](/images/groovebox/step_buttons.jpg)
+![GrooveBoxStepButtons](/docs/images/groovebox/step_buttons.jpg)
 
 The red led indicators above the step buttons show which step is currently active.
 
@@ -47,7 +47,7 @@ Here's how they work:
 2. Select what type of thing you want to modify by using the buttons at the very bottom of the module.  Current options are Volume, Pan, Pitch, Ratcht, Offset, Probability Percentage, Loop, and Reverse
 3. Adjust the small knob underneat whichever steps you want to modify.
 
-![GrooveBoxParameterLocks](/images/groovebox/parameter_locks.jpg)
+![GrooveBoxParameterLocks](/docs/images/groovebox/parameter_locks.jpg)
 
 For example, if you wanted to raise the volume on the 5th step of a sequence, select VOLUME, then adjust the 5th knob.
 
@@ -69,17 +69,14 @@ The reset input is used to reset playback to the beginning.
 
 Individual sample outputs are available at the top of the module  A stereo mix output is available at the two output jacks at the top-right of the module.  
 
-![GrooveBoxParameterLocks](/images/groovebox/outputs.jpg)
+![GrooveBoxParameterLocks](/docs/images/groovebox/outputs.jpg)
 
 ### Minimal Usage
 
-![GrooveBoxMinimalUsage](/images/groovebox/minimal-usage.jpg)
+![GrooveBoxMinimalUsage](/docs/images/groovebox/minimal-usage.jpg)
 
 
 
 ### Video Tutorial
 
-(coming soon)
-
-
-
+https://youtu.be/1J5eBhe01sk
