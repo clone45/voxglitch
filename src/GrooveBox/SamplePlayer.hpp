@@ -8,15 +8,19 @@ struct SamplePlayer
   unsigned int sample_position = 0;
   bool playing = false;
 
-	std::pair<float, float> getStereoOutput()
+	void getStereoOutput(float *left_output_ptr, float *right_output_ptr)
 	{
     sample_position = playback_position; // convert float to int
 
     // If the sample is not playing, return 0's
-    if((playing == false) || (sample_position >= this->sample.size()) || (sample.loaded == false)) return { 0,0 };
+    if((playing == false) || (sample_position >= this->sample.size()) || (sample.loaded == false))
+    {
+      *left_output_ptr = 0;
+      *right_output_ptr = 0;
+    }
 
     // Read the sample at the sample position and return the value
-    return(this->sample.read(sample_position));
+    this->sample.read(sample_position, left_output_ptr, right_output_ptr);
 	}
 
   void trigger(SamplePlaybackSettings *settings)

@@ -198,9 +198,13 @@ struct Ghosts : Module
 				smooth_rate = 128.0f / args.sampleRate;
 
 				// Get the output from the graveyard and increase the age of each ghost
-				std::pair<float, float> stereo_output = graveyard.process(smooth_rate, step_amount);
-				float left_mix_output = stereo_output.first * params[TRIM_KNOB].getValue();
-				float right_mix_output = stereo_output.second  * params[TRIM_KNOB].getValue();
+        float left_output = 0;
+        float right_output = 0;
+
+				graveyard.process(smooth_rate, step_amount, &left_output, &right_output);
+
+				float left_mix_output = left_output * params[TRIM_KNOB].getValue();
+				float right_mix_output = right_output  * params[TRIM_KNOB].getValue();
 
 				// Send audio to outputs
 				outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_mix_output);
