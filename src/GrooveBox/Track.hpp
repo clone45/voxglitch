@@ -127,7 +127,7 @@ struct Track
     float right_output;
 
     // Read sample output and return
-    std::tie(left_output, right_output) = this->sample_player->getStereoOutput();
+    this->sample_player->getStereoOutput(&left_output, &right_output);
 
     float centered_pan = (settings.pan * 2.0) - 1.0;
     std::tie(left_output, right_output) = stereo_pan_submodule.process(left_output, right_output, centered_pan);

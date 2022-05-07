@@ -24,10 +24,18 @@ struct SampleAudioBuffer
     return(left_buffer.size());
   }
 
-  std::pair<float, float> read(unsigned int index)
+  void read(unsigned int index, float *left_audio_ptr, float *right_audio_ptr)
   {
-    if((index >= left_buffer.size()) || (index >= right_buffer.size())) return {0.0, 0.0};
-    return {left_buffer[index], right_buffer[index]};
+    if((index >= left_buffer.size()) || (index >= right_buffer.size()))
+    {
+      *left_audio_ptr = 0;
+      *right_audio_ptr = 0;
+    }
+    else
+    {
+      *left_audio_ptr = left_buffer[index];
+      *right_audio_ptr = right_buffer[index];
+    }
   }
 };
 
@@ -158,9 +166,9 @@ struct Sample
   //
   // Output is a float from 0.0 to 1.0
 
-  std::pair<float, float> read(unsigned int index)
+  void read(unsigned int index, float *left_audio_ptr, float *right_audio_ptr)
   {
-    return(sample_audio_buffer.read(index));
+    sample_audio_buffer.read(index, left_audio_ptr, right_audio_ptr);
   }
 
   unsigned int size()

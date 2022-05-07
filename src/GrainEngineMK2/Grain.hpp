@@ -41,7 +41,7 @@ struct Grain
         sample_position = (this->start_position + this->playback_position);
         sample_position %= this->sample_ptr->size(); // be careful about division by 0 here
 
-        std::tie(output_voltage_left, output_voltage_right)  = this->sample_ptr->read(sample_position);
+        this->sample_ptr->read(sample_position, &output_voltage_left, &output_voltage_right);
 
         // Apply amplitude slope
         int slope_index = (1.0 - ((float)age / (float)lifespan)) * 512.0;  // remember that age decrements instead of increments

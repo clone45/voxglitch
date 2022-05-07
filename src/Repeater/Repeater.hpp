@@ -182,14 +182,11 @@ struct Repeater : Module
 
 			if (samplePos >= 0)
 			{
-				// wav_output_voltage = GAIN  * selected_sample->leftPlayBuffer[floor(samplePos)];
-        std::tie(left_output, right_output) = selected_sample->read(floor(samplePos));
+        selected_sample->read(floor(samplePos), &left_output, &right_output);
 			}
 			else
 			{
-        std::tie(left_output, right_output) = selected_sample->read(floor(selected_sample->size() - 1 + samplePos));
-				// What is this for?  Does it play the sample in reverse?  I think so.
-				// wav_output_voltage = GAIN * selected_sample->leftPlayBuffer[floor(selected_sample->size() - 1 + samplePos)];
+        selected_sample->read(floor(selected_sample->size() - 1 + samplePos), &left_output, &right_output);
 			}
 
       wav_output_voltage = GAIN * left_output;

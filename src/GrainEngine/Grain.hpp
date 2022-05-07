@@ -51,10 +51,7 @@ struct Grain
         }
         else
         {
-            // output_voltage_left  = this->sample_ptr->leftPlayBuffer[sample_position];
-            // output_voltage_right = this->sample_ptr->rightPlayBuffer[sample_position];
-
-            std::tie(output_voltage_left, output_voltage_right)  = this->sample_ptr->read(sample_position);
+            this->sample_ptr->read(sample_position, &output_voltage_left, &output_voltage_right);
 
             // Apply amplitude slope
             int slope_index = (playback_position / playback_length) * 512.0;

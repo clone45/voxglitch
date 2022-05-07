@@ -181,7 +181,7 @@ struct Autobreak : Module
 
       actual_playback_position = clamp(actual_playback_position, 0.0, selected_sample->size() - 1);
 
-      std::tie(left_output, right_output) = selected_sample->read((int)actual_playback_position);
+      selected_sample->read((int)actual_playback_position, &left_output, &right_output);
 
       // Handle smoothing
       float smooth_rate = (128.0f / args.sampleRate);

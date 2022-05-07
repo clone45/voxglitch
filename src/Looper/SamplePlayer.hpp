@@ -11,7 +11,7 @@ struct SamplePlayer
     sample_position = playback_position; // convert float to int
     if((playing == false) || (sample_position >= this->sample.size()) || (sample.loaded == false)) return { 0,0 };
     float left; float right;
-    std::tie(left, right) = this->sample.read(sample_position);
+    this->sample.read(sample_position, &left, &right);
 		return { left, right };
 	}
 

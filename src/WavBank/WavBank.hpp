@@ -66,7 +66,7 @@ struct WavBank : Module
 
     // Load trigger input response mode
     json_t* trig_input_response_mode_json = json_object_get(json_root, "trig_input_response_mode");
-    if (trig_input_response_mode_json) trig_input_response_mode = json_integer_value(trig_input_response_mode_json);    
+    if (trig_input_response_mode_json) trig_input_response_mode = json_integer_value(trig_input_response_mode_json);
 	}
 
 	void load_samples_from_path(const char *path)
@@ -190,11 +190,11 @@ struct WavBank : Module
 
 			if (samplePos >= 0)
 			{
-        std::tie(left_wav_output_voltage, right_wav_output_voltage) = selected_sample->read((int)samplePos);
+        selected_sample->read((int)samplePos, &left_wav_output_voltage, &right_wav_output_voltage);
 			}
 			else
 			{
-        std::tie(left_wav_output_voltage, right_wav_output_voltage) = selected_sample->read(floor(selected_sample->size() - 1 + samplePos));
+        selected_sample->read(floor(selected_sample->size() - 1 + samplePos), &left_wav_output_voltage, &right_wav_output_voltage);
 			}
 
       left_wav_output_voltage *= GAIN;
