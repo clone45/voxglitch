@@ -34,34 +34,44 @@ struct Ghost
   bool marked_for_removal = false;
   bool erase_me = false;
 
-  std::pair<float, float> getStereoOutput(float smooth_rate)
+  void getStereoOutput(float smooth_rate, float *output_voltage_left, float *output_voltage_right)
   {
-    if(erase_me == true) return {0, 0};
-
-    // Note that we're adding two floating point numbers, then casting
-    // them to an int, which is much faster than using floor()
-    sample_position = this->start_position + this->playback_position;
-
-    // Wrap if the sample position is past the sample end point
-    sample_position = sample_position % this->sample_ptr->size();
-
-    // output_voltage_left  = this->sample_ptr->leftPlayBuffer[sample_position];
-    // output_voltage_right = this->sample_ptr->rightPlayBuffer[sample_position];
-
-    this->sample_ptr->read((unsigned int) sample_position, &output_voltage_left, &output_voltage_right);
-
-    // Smooth out transitions (or passthrough unmodified when not triggered)
-    std::tie(output_voltage_left, output_voltage_right) = loop_smooth.process(output_voltage_left, output_voltage_right, smooth_rate);
-
-    if(marked_for_removal && (removal_smoothing_ramp < 1))
+    if(erase_me == true)
     {
-      removal_smoothing_ramp += REMOVAL_RAMP_ACCUMULATOR;
-      output_voltage_left = (output_voltage_left * (1.0f - removal_smoothing_ramp));
-      output_voltage_right = (output_voltage_right * (1.0f - removal_smoothing_ramp));
-      if(removal_smoothing_ramp >= 1) erase_me = true;
+      *output_voltage_left = 0;
+      *output_voltage_right = 0;
     }
+    else
+    {
+      // Note that we're adding two floating point numbers, then casting
+      // them to an int, which is much faster than using floor()
+      sample_position = this->start_position + this->playback_position;
 
-    return {output_voltage_left, output_voltage_right};
+      // Wrap if the sample position is past the sample end point
+      sample_position = sample_position % this->sample_ptr->size();
+
+      float sample_output_left = 0;
+      float sample_output_right = 0;
+
+      this->sample_ptr->read((unsigned int) sample_position, &sample_output_left, &sample_output_right);
+
+      // Smooth out transitions (or passthrough unmodified when not triggered)
+      float smoothed_output_left = 0;
+      float smoothed_output_right = 0;
+
+      loop_smooth.process(sample_output_left, sample_output_right, smooth_rate, &smoothed_output_left, &smoothed_output_right);
+
+      if(marked_for_removal && (removal_smoothing_ramp < 1))
+      {
+        removal_smoothing_ramp += REMOVAL_RAMP_ACCUMULATOR;
+        smoothed_output_left = (smoothed_output_left * (1.0f - removal_smoothing_ramp));
+        smoothed_output_right = (smoothed_output_right * (1.0f - removal_smoothing_ramp));
+        if(removal_smoothing_ramp >= 1) erase_me = true;
+      }
+
+      *output_voltage_left = smoothed_output_left;
+      *output_voltage_right = smoothed_output_right;
+    }
   }
 
   void step(double step_amount)
@@ -125,71 +135,60 @@ struct GhostsEx
   {
     Ghost ghost;
 
-    /*
-    if(counter == 0)
+    // Configure it for playback
+    ghost.start_position = start_position;
+    ghost.playback_length = playback_length;
+    ghost.sample_ptr = sample_ptr;
+
+    graveyard.push_back(ghost);
+  }
+
+  // Once there are too many active grains, we move a lot of the older active
+  // grains into the deprecated grains bucket.  These deprecated grains will
+  // quickly fade out, then be recycled by being placed into the available grain pool.
+
+  virtual void markOldestForRemoval(unsigned int nth)
+  {
+    if(nth >= graveyard.size())
     {
-    counter = 44100;
-    DEBUG(("SS start_position: " + std::to_string(start_position)).c_str());
-  }
-  */
+      markAllForRemoval();
+      return;
+    }
 
-  // DEBUG(("counter: " + std::to_string(counter)).c_str());
-  // counter++;
-
-  // Configure it for playback
-  ghost.start_position = start_position;
-  ghost.playback_length = playback_length;
-  ghost.sample_ptr = sample_ptr;
-
-  graveyard.push_back(ghost);
-}
-
-// Once there are too many active grains, we move a lot of the older active
-// grains into the deprecated grains bucket.  These deprecated grains will
-// quickly fade out, then be recycled by being placed into the available grain pool.
-
-virtual void markOldestForRemoval(unsigned int nth)
-{
-  if(nth >= graveyard.size())
-  {
-    markAllForRemoval();
-    return;
-  }
-
-  for(unsigned int i=0; i < nth; i++)
-  {
-    graveyard[i].markForRemoval();
-  }
-}
-
-virtual std::pair<float, float> process(float smooth_rate, float step_amount)
-{
-  float left_mix_output = 0;
-  float right_mix_output = 0;
-
-  //
-  // Process grains
-  // ---------------------------------------------------------------------
-
-  for (Ghost &ghost : graveyard)
-  {
-    if(ghost.erase_me != true)
+    for(unsigned int i=0; i < nth; i++)
     {
-      std::pair<float, float> stereo_output = ghost.getStereoOutput(smooth_rate);
-      left_mix_output  += stereo_output.first;
-      right_mix_output += stereo_output.second;
-      ghost.step(step_amount);
+      graveyard[i].markForRemoval();
     }
   }
 
-  // perform cleanup of grains ready for removal
-  graveyard.erase(std::remove_if(
-    graveyard.begin(), graveyard.end(),
-    [](const Ghost& ghost) {
-      return ghost.erase_me;
-    }), graveyard.end());
+  virtual void process(float smooth_rate, float step_amount, float *left_mix_output, float *right_mix_output)
+  {
+    *left_mix_output = 0;
+    *right_mix_output = 0;
 
-    return {left_mix_output, right_mix_output};
+    float left_output = 0;
+    float right_output = 0;
+
+    //
+    // Process grains
+    // ---------------------------------------------------------------------
+
+    for (Ghost &ghost : graveyard)
+    {
+      if(ghost.erase_me != true)
+      {
+        ghost.getStereoOutput(smooth_rate, &left_output, &right_output);
+        *left_mix_output  += left_output;
+        *right_mix_output += right_output;
+        ghost.step(step_amount);
+      }
+    }
+
+    // perform cleanup of grains ready for removal
+    graveyard.erase(std::remove_if(
+      graveyard.begin(), graveyard.end(),
+      [](const Ghost& ghost) {
+        return ghost.erase_me;
+      }), graveyard.end());
   }
-
 };

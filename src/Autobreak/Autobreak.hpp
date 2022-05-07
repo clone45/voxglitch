@@ -185,7 +185,7 @@ struct Autobreak : Module
 
       // Handle smoothing
       float smooth_rate = (128.0f / args.sampleRate);
-      std::tie(left_output, right_output) = loop_smooth.process(left_output * GAIN, right_output * GAIN, smooth_rate);
+      loop_smooth.process(left_output * GAIN, right_output * GAIN, smooth_rate, &left_output, &right_output);
 
       // Output audio
       outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_output);
