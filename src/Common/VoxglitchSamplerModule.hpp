@@ -1,4 +1,5 @@
 struct VoxglitchSamplerModule : Module
 {
-  unsigned int interpolation = 0;
+  unsigned int interpolation = 1;
+  float sample_rate = 44100;
 };

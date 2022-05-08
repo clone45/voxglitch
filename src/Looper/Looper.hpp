@@ -5,12 +5,10 @@ struct Looper : VoxglitchSamplerModule
 {
 	std::string loaded_filename = "[ EMPTY ]";
   SamplePlayer sample_player;
-  float sample_rate = 44100;
   dsp::SchmittTrigger resetTrigger;
   float left_audio = 0;
   float right_audio = 0;
   std::string root_dir;
-  unsigned int interpolation = 1; // 0=none, 1=linear
 
   enum ParamIds {
 		NUM_PARAMS
