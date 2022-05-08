@@ -1,7 +1,7 @@
 // Refresh icon curtesy of "Trendy" from the Noun Project
 // TODO: Save/Load linear interpolation settings
 
-struct Looper : Module
+struct Looper : VoxglitchSamplerModule
 {
 	std::string loaded_filename = "[ EMPTY ]";
   SamplePlayer sample_player;
@@ -10,7 +10,7 @@ struct Looper : Module
   float left_audio = 0;
   float right_audio = 0;
   std::string root_dir;
-  unsigned int interpolation = 0; // 0=none, 1=linear
+  unsigned int interpolation = 1; // 0=none, 1=linear
 
   enum ParamIds {
 		NUM_PARAMS
@@ -29,10 +29,6 @@ struct Looper : Module
 	{
     sample_rate = APP->engine->getSampleRate();
     sample_player.updateSampleRate(sample_rate);
-
-    DEBUG("initializing sample rate");
-    DEBUG(std::to_string(sample_rate).c_str());
-
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
 	}
 
@@ -41,6 +37,7 @@ struct Looper : Module
 	{
 		json_t *root = json_object();
 		json_object_set_new(root, "loaded_sample_path", json_string(sample_player.getPath().c_str()));
+    json_object_set_new(root, "interpolation", json_integer(interpolation));
 		return root;
 	}
 
@@ -53,6 +50,9 @@ struct Looper : Module
 			sample_player.loadSample(json_string_value(loaded_sample_path));
 			loaded_filename = sample_player.getFilename();
 		}
+
+    json_t *interpolation_json = json_object_get(root, ("interpolation"));
+		if (interpolation_json) interpolation = json_integer_value(interpolation_json);
 	}
 
 	void process(const ProcessArgs &args) override
@@ -72,10 +72,6 @@ struct Looper : Module
   void onSampleRateChange(const SampleRateChangeEvent& e) override
   {
     sample_rate = e.sampleRate;
-
-    DEBUG("sample rate change");
-    DEBUG(std::to_string(sample_rate).c_str());
-
     sample_player.updateSampleRate(sample_rate);
   }
 };
