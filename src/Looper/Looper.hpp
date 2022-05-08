@@ -1,13 +1,16 @@
 // Refresh icon curtesy of "Trendy" from the Noun Project
+// TODO: Save/Load linear interpolation settings
 
 struct Looper : Module
 {
 	std::string loaded_filename = "[ EMPTY ]";
   SamplePlayer sample_player;
+  float sample_rate = 44100;
   dsp::SchmittTrigger resetTrigger;
   float left_audio = 0;
   float right_audio = 0;
   std::string root_dir;
+  unsigned int interpolation = 0; // 0=none, 1=linear
 
   enum ParamIds {
 		NUM_PARAMS
@@ -24,6 +27,12 @@ struct Looper : Module
 
 	Looper()
 	{
+    sample_rate = APP->engine->getSampleRate();
+    sample_player.updateSampleRate(sample_rate);
+
+    DEBUG("initializing sample rate");
+    DEBUG(std::to_string(sample_rate).c_str());
+
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
 	}
 
@@ -53,10 +62,20 @@ struct Looper : Module
       sample_player.reset();
     }
 
-    std::tie(left_audio, right_audio) = sample_player.getStereoOutput();
-    sample_player.step(args.sampleRate);
+    sample_player.getStereoOutput(&left_audio, &right_audio, interpolation);
+    sample_player.step();
 
     outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_audio);
     outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_audio);
+  }
+
+  void onSampleRateChange(const SampleRateChangeEvent& e) override
+  {
+    sample_rate = e.sampleRate;
+
+    DEBUG("sample rate change");
+    DEBUG(std::to_string(sample_rate).c_str());
+
+    sample_player.updateSampleRate(sample_rate);
   }
 };

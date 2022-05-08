@@ -19,6 +19,40 @@ struct LooperWidget : ModuleWidget
     addChild(looper_waveform_display);
   }
 
+  struct InterpolationOffOption : MenuItem {
+    Looper *module;
+
+    void onAction(const event::Action &e) override {
+      module->interpolation = 0;
+    }
+  };
+
+  struct InterpolationLinearOption : MenuItem {
+    Looper *module;
+
+    void onAction(const event::Action &e) override {
+      module->interpolation = 1;
+    }
+  };
+
+  struct SampleInterpolationMenuItem : MenuItem {
+    Looper *module;
+
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      InterpolationOffOption *interpolation_off_option = createMenuItem<InterpolationOffOption>("Off", CHECKMARK(module->interpolation == 0));
+      interpolation_off_option->module = module;
+      menu->addChild(interpolation_off_option);
+
+      InterpolationLinearOption *interpolation_linear_option = createMenuItem<InterpolationLinearOption>("Linear", CHECKMARK(module->interpolation == 1));
+      interpolation_linear_option->module = module;
+      menu->addChild(interpolation_linear_option);
+
+      return menu;
+    }
+  };
+
   void appendContextMenu(Menu *menu) override
   {
     Looper *module = dynamic_cast<Looper*>(this->module);
@@ -32,5 +66,10 @@ struct LooperWidget : ModuleWidget
     menu_item_load_sample->text = module->loaded_filename;
     menu_item_load_sample->module = module;
     menu->addChild(menu_item_load_sample);
+
+
+    SampleInterpolationMenuItem *sample_interpolation_menu_item = createMenuItem<SampleInterpolationMenuItem>("Interpolation", RIGHT_ARROW);
+    sample_interpolation_menu_item->module = module;
+    menu->addChild(sample_interpolation_menu_item);
   }
 };

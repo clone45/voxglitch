@@ -2,17 +2,50 @@ struct SamplePlayer
 {
 	// sample_ptr points to the loaded sample in memory
 	Sample sample;
-	float playback_position = 0.0f;
+  bool playing = true;
+	double playback_position = 0;
+  double step_amount = 44100;
   unsigned int sample_position = 0;
-  bool playing = false;
 
-	std::pair<float, float> getStereoOutput()
+  void getStereoOutput(float *left_output, float *right_output, unsigned int interpolation)
 	{
-    sample_position = playback_position; // convert float to int
-    if((playing == false) || (sample_position >= this->sample.size()) || (sample.loaded == false)) return { 0,0 };
-    float left; float right;
-    this->sample.read(sample_position, &left, &right);
-		return { left, right };
+    unsigned int sample_index = playback_position; // convert float to int
+
+    if((playing == false) || ((unsigned int) sample_index >= this->sample.size()) || (sample.loaded == false))
+    {
+      *left_output = 0;
+      *right_output = 0;
+    }
+    else
+    {
+      if(interpolation == 0)
+      {
+        // Normal version, using sample index
+        this->sample.read(sample_index, left_output, right_output);
+      }
+      else
+      {
+        // Read sample using Linear Interpolation, sending in double
+        this->sample.readLI(playback_position, left_output, right_output);
+      }
+    }
+	}
+
+  void updateSampleRate(float rack_sample_rate)
+  {
+    this->step_amount = sample.sample_rate / rack_sample_rate;
+  }
+
+	void step()
+	{
+    if(playing && sample.loaded)
+    {
+      // Step the playback position forward.
+  		playback_position = playback_position + this->step_amount;
+
+      // If the playback position is past the playback length, loop playback
+  		if(playback_position >= sample.size()) playback_position = 0;
+    }
 	}
 
   void trigger()
@@ -25,20 +58,6 @@ struct SamplePlayer
   {
     playing = false;
   }
-
-	void step(float rack_sample_rate)
-	{
-    if(playing && sample.loaded)
-    {
-      float step_amount = sample.sample_rate / rack_sample_rate;
-
-      // Step the playback position forward.
-  		playback_position = playback_position + step_amount;
-
-      // If the playback position is past the playback length, end sample playback
-  		if(playback_position >= sample.size()) playback_position = 0;
-    }
-	}
 
   void loadSample(std::string path)
   {
