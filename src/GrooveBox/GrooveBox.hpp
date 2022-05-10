@@ -4,9 +4,7 @@
 // By Bret Truchan
 //
 // TODO:
-// - De-click sample looping
-// - Add another row of functions, including Attack/Decay, possibly playback length
-// - Convert "tie" code to passing in references
+// - Fix copy/paste for realtime tinkering
 // - Thank you to all the friendly people on the VCV Rack Community for answering
 //   my questions and providing feedback on early builds.
 
@@ -38,7 +36,7 @@ struct GrooveBox : Module
   unsigned int selected_function = 0;
   unsigned int old_selected_function = 0;
   unsigned int clock_division = 8;
-  unsigned int clock_counter = 0;
+  unsigned int clock_counter = clock_division;
   bool first_step = true;
   bool shift_key = false;
 
@@ -76,6 +74,7 @@ struct GrooveBox : Module
     ENUMS(MEMORY_SLOT_BUTTONS, NUMBER_OF_MEMORY_SLOTS),
     COPY_BUTTON,
     PASTE_BUTTON,
+    MASTER_VOLUME,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -126,6 +125,9 @@ struct GrooveBox : Module
     // Configure the stereo mix outputs
     configOutput(AUDIO_OUTPUT_LEFT, "Left Mix");
     configOutput(AUDIO_OUTPUT_RIGHT, "Right Mix");
+
+    // Configure the master output knob
+    configParam(MASTER_VOLUME, 0.0, 1.0, 0.5, "Master Volume");
 
     // There are 8 sample players, one for each track.  These sample players
     // are shared across the tracks contained in the memory slots.
@@ -404,7 +406,7 @@ struct GrooveBox : Module
       {
         unsigned int memory_selection = (inputs[MEM_INPUT].getVoltage() / 10.0) * NUMBER_OF_MEMORY_SLOTS;
         memory_selection = clamp(memory_selection, 0, NUMBER_OF_MEMORY_SLOTS - 1);
-        switchMemory(memory_selection);
+        if(memory_selection != memory_slot_index) switchMemory(memory_selection);
       }
       else
       {
@@ -438,6 +440,7 @@ struct GrooveBox : Module
       // https://vcvrack.com/manual/VoltageStandards
 
       first_step = true;
+      clock_counter = clock_division;
 
       for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
       {
@@ -567,6 +570,8 @@ struct GrooveBox : Module
     float track_left_output;
     float track_right_output;
 
+    float gain = params[MASTER_VOLUME].getValue() * 8.0;
+
     for(unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
       std::tie(track_left_output, track_right_output) = selected_memory_slot->tracks[i].getStereoOutput();
@@ -575,8 +580,8 @@ struct GrooveBox : Module
       unsigned int left_index = i * 2;
       unsigned int right_index = left_index + 1;
 
-      outputs[TRACK_OUTPUTS + left_index].setVoltage(track_left_output);
-      outputs[TRACK_OUTPUTS + right_index].setVoltage(track_right_output);
+      outputs[TRACK_OUTPUTS + left_index].setVoltage(track_left_output * gain);
+      outputs[TRACK_OUTPUTS + right_index].setVoltage(track_right_output * gain);
 
       // Summed output
       left_output += track_left_output;
@@ -585,8 +590,8 @@ struct GrooveBox : Module
     }
 
     // Summed output voltages at stereo outputs
-    outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_output);
-    outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_output);
+    outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_output * gain);
+    outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_output * gain);
 
     // function button lights
     for(unsigned int i=0; i<NUMBER_OF_FUNCTIONS; i++)

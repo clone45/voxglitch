@@ -1,5 +1,4 @@
 // Refresh icon curtesy of "Trendy" from the Noun Project
-// TODO: Save/Load linear interpolation settings
 
 struct Looper : VoxglitchSamplerModule
 {
@@ -35,7 +34,10 @@ struct Looper : VoxglitchSamplerModule
 	{
 		json_t *root = json_object();
 		json_object_set_new(root, "loaded_sample_path", json_string(sample_player.getPath().c_str()));
-    json_object_set_new(root, "interpolation", json_integer(interpolation));
+
+    // Call VoxglitchSamplerModule::saveSamplerData to save sampler data
+    saveSamplerData(root);
+
 		return root;
 	}
 
@@ -49,8 +51,8 @@ struct Looper : VoxglitchSamplerModule
 			loaded_filename = sample_player.getFilename();
 		}
 
-    json_t *interpolation_json = json_object_get(root, ("interpolation"));
-		if (interpolation_json) interpolation = json_integer_value(interpolation_json);
+    // Call VoxglitchSamplerModule::loadSamplerData to load sampler specific data
+    loadSamplerData(root);
 	}
 
 	void process(const ProcessArgs &args) override

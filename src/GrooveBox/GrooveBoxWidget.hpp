@@ -337,6 +337,9 @@ struct GrooveBoxWidget : ModuleWidget
     addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(203, 6)), module, GrooveBox::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(213, 6)), module, GrooveBox::AUDIO_OUTPUT_RIGHT));
 
+    // Master volume
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(188.8465, 6)), module, GrooveBox::MASTER_VOLUME));
+
     //
     // Memory buttons
     //

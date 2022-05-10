@@ -119,6 +119,7 @@ struct Track
   void reset()
   {
     playback_position = 0;
+    ratchet_counter = 0;
   }
 
   std::pair<float, float> getStereoOutput()
