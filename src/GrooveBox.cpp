@@ -15,6 +15,8 @@ using namespace groove_box;
 #include "Common/sample.hpp"
 #include "Common/common.hpp"
 #include "Common/submodules.hpp"
+#include "Common/VoxglitchSamplerModule.hpp"
+#include "Common/VoxglitchSamplerModuleWidget.hpp"
 
 // Core components
 #include "GrooveBox/SamplePlayer.hpp"

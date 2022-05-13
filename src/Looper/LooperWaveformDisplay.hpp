@@ -18,6 +18,7 @@ struct LooperWaveformDisplay : TransparentWidget
     nvgFill(vg);
     */
 
+    /*
     if(module)
     {
       waveform_array.push_front(module->left_audio);
@@ -34,6 +35,7 @@ struct LooperWaveformDisplay : TransparentWidget
         nvgStroke(vg);
       }
     }
+    */
 
     nvgRestore(vg);
   }

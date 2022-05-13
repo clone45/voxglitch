@@ -1,4 +1,4 @@
-struct LooperWidget : ModuleWidget
+struct LooperWidget : VoxglitchSamplerModuleWidget
 {
   LooperWidget(Looper* module)
   {
@@ -32,5 +32,10 @@ struct LooperWidget : ModuleWidget
     menu_item_load_sample->text = module->loaded_filename;
     menu_item_load_sample->module = module;
     menu->addChild(menu_item_load_sample);
+
+
+    SampleInterpolationMenuItem *sample_interpolation_menu_item = createMenuItem<SampleInterpolationMenuItem>("Interpolation", RIGHT_ARROW);
+    sample_interpolation_menu_item->module = module;
+    menu->addChild(sample_interpolation_menu_item);
   }
 };

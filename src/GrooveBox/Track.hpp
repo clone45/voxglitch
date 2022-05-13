@@ -119,15 +119,16 @@ struct Track
   void reset()
   {
     playback_position = 0;
+    ratchet_counter = 0;
   }
 
-  std::pair<float, float> getStereoOutput()
+  std::pair<float, float> getStereoOutput(unsigned int interpolation)
   {
     float left_output;
     float right_output;
 
     // Read sample output and return
-    this->sample_player->getStereoOutput(&left_output, &right_output);
+    this->sample_player->getStereoOutput(&left_output, &right_output, interpolation);
 
     float centered_pan = (settings.pan * 2.0) - 1.0;
     std::tie(left_output, right_output) = stereo_pan_submodule.process(left_output, right_output, centered_pan);

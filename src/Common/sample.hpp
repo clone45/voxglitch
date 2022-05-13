@@ -5,7 +5,8 @@
 struct SampleAudioBuffer
 {
   std::vector<float> left_buffer;
-	std::vector<float> right_buffer;
+  std::vector<float> right_buffer;
+  unsigned int interpolation = 1;
 
   void clear()
   {
@@ -37,35 +38,55 @@ struct SampleAudioBuffer
       *right_audio_ptr = right_buffer[index];
     }
   }
+
+  // Read sample using linear interpolation
+  void readLI(double position, float *left_audio_ptr, float *right_audio_ptr)
+  {
+    unsigned int index = std::floor(position); // convert float to int
+
+    // If out of bounds, return zeros
+    if((index >= (left_buffer.size() - 1)) || ((index >= right_buffer.size() - 1)))
+    {
+      *left_audio_ptr = 0;
+      *right_audio_ptr = 0;
+    }
+    // Else, compute and return the interpolated values
+    else
+    {
+      float distance = position - (float) index;
+      *left_audio_ptr = left_buffer[index] + ((left_buffer[index + 1] - left_buffer[index]) * distance);
+      *right_audio_ptr = right_buffer[index] + ((right_buffer[index + 1] - right_buffer[index]) * distance);
+    }
+  }
 };
 
 struct Sample
 {
-	std::string path;
-	std::string filename;
+  std::string path;
+  std::string filename;
   std::string display_name;
-	bool loading;
+  bool loading;
   bool loaded = false;
   bool queued_for_loading = false;
   std::string queued_path = "";
   unsigned int sample_length = 0;
   SampleAudioBuffer sample_audio_buffer;
-	unsigned int sample_rate;
-	unsigned int channels;
+  float sample_rate;
+  unsigned int channels;
   AudioFile<float> audioFile; // For loading samples and saving samples
 
-	Sample()
-	{
+  Sample()
+  {
     sample_audio_buffer.clear();
-		loading = false;
-		filename = "[ empty ]";
-		path = "";
-		sample_rate = 0;
-		channels = 0;
+    loading = false;
+    filename = "[ empty ]";
+    path = "";
+    sample_rate = 44100;
+    channels = 0;
 
     audioFile.setNumChannels(2);
     audioFile.setSampleRate(44100);
-	}
+  }
 
   ~Sample()
   {
@@ -89,7 +110,7 @@ struct Sample
     }
 
     // Read details about the loaded sample
-    int sampleRate = audioFile.getSampleRate();
+    uint32_t sampleRate = audioFile.getSampleRate();
     int numSamples = audioFile.getNumSamplesPerChannel();
     int numChannels = audioFile.getNumChannels();
 
@@ -123,7 +144,7 @@ struct Sample
 
     this->loading = false;
     this->loaded = true;
-	};
+  };
 
   // Where to put recording code and how to save it?
   void initialize_recording()
@@ -156,19 +177,16 @@ struct Sample
     }
   }
 
-  // read(unsigned int index)
-  //
-  // Usage:
-  // ======
-  // float left_audio;
-  // float right_audio;
-  // std::tie(left_audio, right_audio) = sample.getStereoOutput();
-  //
-  // Output is a float from 0.0 to 1.0
-
+  // Current version
   void read(unsigned int index, float *left_audio_ptr, float *right_audio_ptr)
   {
     sample_audio_buffer.read(index, left_audio_ptr, right_audio_ptr);
+  }
+
+  // Read sample, applying Linear Interpolation
+  void readLI(double position, float *left_audio_ptr, float *right_audio_ptr)
+  {
+    sample_audio_buffer.readLI(position, left_audio_ptr, right_audio_ptr);
   }
 
   unsigned int size()

@@ -4,23 +4,31 @@ namespace groove_box
 struct SamplePlayer
 {
 	Sample sample;
-	float playback_position = 0.0f;
-  unsigned int sample_position = 0;
+	double playback_position = 0.0f;
   bool playing = false;
 
-	void getStereoOutput(float *left_output_ptr, float *right_output_ptr)
+  void getStereoOutput(float *left_output, float *right_output, unsigned int interpolation)
 	{
-    sample_position = playback_position; // convert float to int
+    unsigned int sample_index = playback_position; // convert float to int
 
-    // If the sample is not playing, return 0's
-    if((playing == false) || (sample_position >= this->sample.size()) || (sample.loaded == false))
+    if((playing == false) || ((unsigned int) sample_index >= this->sample.size()) || (sample.loaded == false))
     {
-      *left_output_ptr = 0;
-      *right_output_ptr = 0;
+      *left_output = 0;
+      *right_output = 0;
     }
-
-    // Read the sample at the sample position and return the value
-    this->sample.read(sample_position, left_output_ptr, right_output_ptr);
+    else
+    {
+      if(interpolation == 0)
+      {
+        // Normal version, using sample index
+        this->sample.read(sample_index, left_output, right_output);
+      }
+      else
+      {
+        // Read sample using Linear Interpolation, sending in double
+        this->sample.readLI(playback_position, left_output, right_output);
+      }
+    }
 	}
 
   void trigger(SamplePlaybackSettings *settings)
@@ -44,7 +52,7 @@ struct SamplePlayer
 	{
     if(playing && sample.loaded)
     {
-      float step_amount = (sample.sample_rate / rack_sample_rate);
+      double step_amount = (sample.sample_rate / rack_sample_rate);
 
       // Step the playback position forward.
   		playback_position = playback_position + step_amount; // sample rate playback

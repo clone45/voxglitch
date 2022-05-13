@@ -1,6 +1,6 @@
 // Refresh icon curtesy of "Trendy" from the Noun Project
 
-struct Looper : Module
+struct Looper : VoxglitchSamplerModule
 {
 	std::string loaded_filename = "[ EMPTY ]";
   SamplePlayer sample_player;
@@ -24,6 +24,8 @@ struct Looper : Module
 
 	Looper()
 	{
+    sample_rate = APP->engine->getSampleRate();
+    sample_player.updateSampleRate(sample_rate);
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
 	}
 
@@ -32,6 +34,10 @@ struct Looper : Module
 	{
 		json_t *root = json_object();
 		json_object_set_new(root, "loaded_sample_path", json_string(sample_player.getPath().c_str()));
+
+    // Call VoxglitchSamplerModule::saveSamplerData to save sampler data
+    saveSamplerData(root);
+
 		return root;
 	}
 
@@ -44,6 +50,9 @@ struct Looper : Module
 			sample_player.loadSample(json_string_value(loaded_sample_path));
 			loaded_filename = sample_player.getFilename();
 		}
+
+    // Call VoxglitchSamplerModule::loadSamplerData to load sampler specific data
+    loadSamplerData(root);
 	}
 
 	void process(const ProcessArgs &args) override
@@ -53,10 +62,16 @@ struct Looper : Module
       sample_player.reset();
     }
 
-    std::tie(left_audio, right_audio) = sample_player.getStereoOutput();
-    sample_player.step(args.sampleRate);
+    sample_player.getStereoOutput(&left_audio, &right_audio, interpolation);
+    sample_player.step();
 
     outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_audio);
     outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_audio);
+  }
+
+  void onSampleRateChange(const SampleRateChangeEvent& e) override
+  {
+    sample_rate = e.sampleRate;
+    sample_player.updateSampleRate(sample_rate);
   }
 };

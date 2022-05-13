@@ -1,6 +1,8 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "Common/sample.hpp"
+#include "Common/VoxglitchSamplerModule.hpp"
+#include "Common/VoxglitchSamplerModuleWidget.hpp"
 #include "settings.hpp"
 
 #include "Looper/defines.h"
