@@ -74,6 +74,20 @@ struct ModdedCL1362 : SvgPort {
 	}
 };
 
+struct TrimpotMedium : SVGKnob {
+  widget::SvgWidget* bg;
+  TrimpotMedium()
+  {
+		minAngle = -0.83*M_PI;
+		maxAngle = 0.83*M_PI;
+
+    setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/TrimpotMedium.svg")));
+    bg = new widget::SvgWidget;
+    bg->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/TrimpotMedium_bg.svg")));
+    fb->addChildBelow(bg, tw);
+  }
+};
+
 //
 // SequenceLengthWidget
 //
@@ -142,6 +156,11 @@ struct TrackLabelDisplay : TransparentWidget
 
   void onButton(const event::Button &e) override
   {
+    if(e.button == GLFW_MOUSE_BUTTON_RIGHT && e.action == GLFW_PRESS)
+    {
+      module->toggleMute(track_number);
+    }
+
     TransparentWidget::onButton(e);
     e.consume(this);
   }
@@ -166,6 +185,14 @@ struct TrackLabelDisplay : TransparentWidget
     nvgTextBox(vg, text_left_margin, (box.size.y / 2.0f) - (textHeight / 2.0f) + 8, wrap_at, label.c_str(), NULL);
   }
 
+  void draw_track_mute_overlay(NVGcontext *vg)
+  {
+    nvgBeginPath(vg);
+    nvgRect(vg, 0, 0, box.size.x, box.size.y);
+    nvgFillColor(vg, nvgRGBA(0, 0, 0, 162));
+    nvgFill(vg);
+  }
+
   void draw(const DrawArgs& args) override
   {
     const auto vg = args.vg;
@@ -186,9 +213,16 @@ struct TrackLabelDisplay : TransparentWidget
     {
       std::string to_display = module->loaded_filenames[track_number];
 
+      // If the track name is not empty, then display it
       if((to_display != "") && (to_display != "[ empty ]"))
       {
         draw_track_label(to_display, vg);
+      }
+
+      // If the track is muted, then display an overlay
+      if(module->track_mutes[track_number])
+      {
+        draw_track_mute_overlay(vg);
       }
     }
     //
@@ -267,7 +301,7 @@ struct LoadSampleMenuItem : MenuItem
 	}
 };
 
-struct GrooveBoxWidget : ModuleWidget
+struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
 {
   GrooveBoxWidget(GrooveBox* module)
   {
@@ -301,7 +335,7 @@ struct GrooveBoxWidget : ModuleWidget
       //
       // Create attenuator knobs for each step
       //
-      addParam(createParamCentered<Trimpot>(Vec(button_positions[i][0],button_positions[i][1] + 30), module, GrooveBox::STEP_KNOBS + i));
+      addParam(createParamCentered<TrimpotMedium>(Vec(button_positions[i][0],button_positions[i][1] + 30), module, GrooveBox::STEP_KNOBS + i));
     }
 
     // Function Buttons
@@ -401,9 +435,15 @@ struct GrooveBoxWidget : ModuleWidget
     menu_item_load_folder->module = module;
     menu->addChild(menu_item_load_folder);
 
-    menu->addChild(new MenuEntry); // For spacing only
-    menu->addChild(createMenuLabel("Or double click on a track window"));
+    menu->addChild(createMenuLabel("Or.. Double click on a track window"));
     menu->addChild(createMenuLabel("to select a sample for that track."));
+
+    menu->addChild(new MenuEntry); // For spacing only
+
+    // Add interpolation menu from /Common/VoxglitchSamplerModuleWidget.hpp
+    SampleInterpolationMenuItem *sample_interpolation_menu_item = createMenuItem<SampleInterpolationMenuItem>("Interpolation", RIGHT_ARROW);
+    sample_interpolation_menu_item->module = module;
+    menu->addChild(sample_interpolation_menu_item);
   }
 
 

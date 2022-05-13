@@ -39,7 +39,9 @@ The red led indicators above the step buttons show which step is currently activ
 
 ### Changing Track Length
 
-You can change the length of a track by shift-clicking on a step button.
+You can change the length of a track by shift-left-clicking on a step button.
+![GrooveBoxTracks](/docs/images/groovebox/shift-left-click.jpg)
+
 
 ### Parameter Locks
 

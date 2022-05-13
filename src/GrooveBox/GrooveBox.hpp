@@ -4,12 +4,12 @@
 // By Bret Truchan
 //
 // TODO:
-// - Fix copy/paste for realtime tinkering
+// - Override double-click of custom knobs to set to the correct value (possible??)
 // - Thank you to all the friendly people on the VCV Rack Community for answering
 //   my questions and providing feedback on early builds.
 
 
-struct GrooveBox : Module
+struct GrooveBox : VoxglitchSamplerModule
 {
   MemorySlot memory_slots[NUMBER_OF_MEMORY_SLOTS];
 
@@ -39,6 +39,7 @@ struct GrooveBox : Module
   unsigned int clock_counter = clock_division;
   bool first_step = true;
   bool shift_key = false;
+  bool track_mutes[NUMBER_OF_TRACKS];
 
   //
   // Sample related variables
@@ -113,6 +114,7 @@ struct GrooveBox : Module
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
     {
       configParam(TRACK_BUTTONS + i, 0.0, 1.0, 0.0, "Track Selection Button");
+      this->track_mutes[i] = false;
     }
 
     // Configure the individual track outputs
@@ -194,6 +196,11 @@ struct GrooveBox : Module
     }
 
     updateKnobPositions();
+  }
+
+  void toggleMute(unsigned int track_number)
+  {
+    track_mutes[track_number] = ! track_mutes[track_number];
   }
 
   //
@@ -412,6 +419,10 @@ struct GrooveBox : Module
       {
         if(memory_slot_button_triggers[i].process(params[MEMORY_SLOT_BUTTONS + i].getValue()))
         {
+          // If shift-clicking, then copy the current memory into the clicked memory slot
+          // before switching to the new memory slot
+          if(shift_key) copyMemory(memory_slot_index, i);
+
           switchMemory(i);
         }
       }
@@ -565,33 +576,41 @@ struct GrooveBox : Module
     //  a. Get the output of the tracks and sum them for the stereo output
     //  b. Once the output has been read, increment the sample position
 
-    float left_output = 0;
-    float right_output = 0;
+    float mix_left_output = 0;
+    float mix_right_output = 0;
     float track_left_output;
     float track_right_output;
 
-    float gain = params[MASTER_VOLUME].getValue() * 8.0;
-
+    //
+    // Output individual stereo pairs for each track
+    //
     for(unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
-      std::tie(track_left_output, track_right_output) = selected_memory_slot->tracks[i].getStereoOutput();
+      std::tie(track_left_output, track_right_output) = selected_memory_slot->tracks[i].getStereoOutput(this->interpolation);
 
       // Individual outputs
       unsigned int left_index = i * 2;
       unsigned int right_index = left_index + 1;
 
-      outputs[TRACK_OUTPUTS + left_index].setVoltage(track_left_output * gain);
-      outputs[TRACK_OUTPUTS + right_index].setVoltage(track_right_output * gain);
+      outputs[TRACK_OUTPUTS + left_index].setVoltage(track_left_output);
+      outputs[TRACK_OUTPUTS + right_index].setVoltage(track_right_output);
 
-      // Summed output
-      left_output += track_left_output;
-      right_output += track_right_output;
+      // Calculate summed output
+      if(! track_mutes[i])
+      {
+        mix_left_output += track_left_output;
+        mix_right_output += track_right_output;
+      }
+
       selected_memory_slot->tracks[i].incrementSamplePosition(args.sampleRate);
     }
 
+    // Read master volume knob
+    float master_volume = params[MASTER_VOLUME].getValue() * 8.0;
+
     // Summed output voltages at stereo outputs
-    outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_output * gain);
-    outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_output * gain);
+    outputs[AUDIO_OUTPUT_LEFT].setVoltage(mix_left_output * master_volume);
+    outputs[AUDIO_OUTPUT_RIGHT].setVoltage(mix_right_output * master_volume);
 
     // function button lights
     for(unsigned int i=0; i<NUMBER_OF_FUNCTIONS; i++)
