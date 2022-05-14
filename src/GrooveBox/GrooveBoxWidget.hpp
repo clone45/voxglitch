@@ -141,15 +141,26 @@ struct TrackLabelDisplay : TransparentWidget
 
   void onDoubleClick(const event::DoubleClick &e) override
   {
-    std::string root_dir = module->root_directory;
-    const std::string dir = root_dir.empty() ? "" : root_dir;
+		std::string root_dir = module->root_directory;
+		const std::string dir = root_dir.empty() ? "" : root_dir;
+#ifdef USING_CARDINAL_NOT_RACK
+		GrooveBox *module = this->module;
+		unsigned int track_number = this->track_number;
+		async_dialog_filebrowser(false, dir.c_str(), NULL, [module, track_number](char* path) {
+			pathSelected(module, track_number, path);
+		});
+#else
 		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("WAV:wav:Wav"));
+		pathSelected(module, track_number, path);
+#endif
+	}
 
+	static void pathSelected(GrooveBox *module, unsigned int track_number, char *path)
+	{
 		if (path)
 		{
-      root_dir = std::string(path);
 			module->sample_players[track_number].loadSample(std::string(path));
-      module->loaded_filenames[track_number] = module->sample_players[track_number].getFilename();
+			module->loaded_filenames[track_number] = module->sample_players[track_number].getFilename();
 			free(path);
 		}
   }
@@ -244,10 +255,21 @@ struct LoadSamplesFromFolderMenuItem : MenuItem
 
 	void onAction(const event::Action &e) override
 	{
-    std::string root_dir = module->root_directory;;
+		std::string root_dir = module->root_directory;;
 		const std::string dir = root_dir.empty() ? "" : root_dir;
-    char *path = osdialog_file(OSDIALOG_OPEN_DIR, dir.c_str(), NULL, NULL);
+#ifdef USING_CARDINAL_NOT_RACK
+		GrooveBox *module = this->module;
+		async_dialog_filebrowser(false, dir.c_str(), NULL, [module](char* path) {
+			pathSelected(module, path);
+		});
+#else
+		char *path = osdialog_file(OSDIALOG_OPEN_DIR, dir.c_str(), NULL, NULL);
+		pathSelected(module, path);
+#endif
+	}
 
+	static void pathSelected(GrooveBox *module, char *path)
+	{
 		if (path)
 		{
       module->root_directory = std::string(path);
@@ -286,11 +308,23 @@ struct LoadSampleMenuItem : MenuItem
 
 	void onAction(const event::Action &e) override
 	{
-    std::string root_dir = module->root_directory;
-
+		std::string root_dir = module->root_directory;
 		const std::string dir = root_dir.empty() ? "" : root_dir;
-		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("WAV:wav:Wav"));
 
+#ifdef USING_CARDINAL_NOT_RACK
+		GrooveBox *module = this->module;
+		unsigned int track_number = this->track_number;
+		async_dialog_filebrowser(false, dir.c_str(), NULL, [module, track_number](char* path) {
+			pathSelected(module, track_number, path);
+		});
+#else
+		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("WAV:wav:Wav"));
+		pathSelected(module, track_number, path);
+#endif
+	}
+
+	static void pathSelected(GrooveBox *module, unsigned int track_number, char *path)
+	{
 		if (path)
 		{
       module->root_directory = std::string(path);
