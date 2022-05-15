@@ -39,7 +39,12 @@ struct GrooveBox : VoxglitchSamplerModule
   unsigned int clock_counter = clock_division;
   bool first_step = true;
   bool shift_key = false;
-  bool track_mutes[NUMBER_OF_TRACKS];
+  bool mutes[NUMBER_OF_TRACKS];
+  bool solos[NUMBER_OF_TRACKS];
+  bool any_track_soloed = false;
+
+  GrooveBoxExpanderMessage *producer_message = new GrooveBoxExpanderMessage;
+  GrooveBoxExpanderMessage *consumer_message = new GrooveBoxExpanderMessage;
 
   //
   // Sample related variables
@@ -114,7 +119,8 @@ struct GrooveBox : VoxglitchSamplerModule
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
     {
       configParam(TRACK_BUTTONS + i, 0.0, 1.0, 0.0, "Track Selection Button");
-      this->track_mutes[i] = false;
+      this->mutes[i] = false;
+      this->solos[i] = false;
     }
 
     // Configure the individual track outputs
@@ -198,10 +204,6 @@ struct GrooveBox : VoxglitchSamplerModule
     updateKnobPositions();
   }
 
-  void toggleMute(unsigned int track_number)
-  {
-    track_mutes[track_number] = ! track_mutes[track_number];
-  }
 
   //
 	// SAVE module data
@@ -388,6 +390,9 @@ struct GrooveBox : VoxglitchSamplerModule
 
 	void process(const ProcessArgs &args) override
 	{
+
+    processExpander();
+
     //
     // If the user has pressed a track button, switch tracks and update the
     // knob positions for the selected function.
@@ -578,8 +583,8 @@ struct GrooveBox : VoxglitchSamplerModule
 
     float mix_left_output = 0;
     float mix_right_output = 0;
-    float track_left_output;
-    float track_right_output;
+    float track_left_output = 0;
+    float track_right_output = 0;
 
     //
     // Output individual stereo pairs for each track
@@ -596,10 +601,23 @@ struct GrooveBox : VoxglitchSamplerModule
       outputs[TRACK_OUTPUTS + right_index].setVoltage(track_right_output);
 
       // Calculate summed output
-      if(! track_mutes[i])
+      if(any_track_soloed)
       {
-        mix_left_output += track_left_output;
-        mix_right_output += track_right_output;
+        // If any track is soloed, then only add solo tracks to the mix
+        if(solos[i])
+        {
+          mix_left_output += track_left_output;
+          mix_right_output += track_right_output;
+        }
+      }
+      else
+      {
+        // Only add unmuted tracks to the mix
+        if(! mutes[i])
+        {
+          mix_left_output += track_left_output;
+          mix_right_output += track_right_output;
+        }
       }
 
       selected_memory_slot->tracks[i].incrementSamplePosition(args.sampleRate);
@@ -629,5 +647,38 @@ struct GrooveBox : VoxglitchSamplerModule
     {
       lights[TRACK_BUTTON_LIGHTS + i].setBrightness(track_index == i);
     }
+
+    leftExpander.producerMessage = producer_message;
+    leftExpander.consumerMessage = consumer_message;
   }
+
+  void processExpander()
+  {
+    if (leftExpander.module && leftExpander.module->model == modelGrooveBoxExpander)
+    {
+      // Receive message from expander
+      GrooveBoxExpanderMessage *expander_message = (GrooveBoxExpanderMessage *) leftExpander.producerMessage;
+
+      if(expander_message && expander_message->message_received == false)
+      {
+        // Retrieve the data from the expander
+
+        any_track_soloed = false;
+
+        for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+        {
+          this->mutes[i] = expander_message->mutes[i];
+          this->solos[i] = expander_message->solos[i];
+
+          if(this->solos[i]) any_track_soloed = true;
+        }
+
+        // Set the received flag so we don't process the message every single frame
+        expander_message->message_received = true;
+      }
+
+      leftExpander.messageFlipRequested = true;
+    }
+  }
+
 };

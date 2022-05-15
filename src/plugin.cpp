@@ -20,12 +20,13 @@ void init(Plugin* p) {
   p->addModel(modelGrainEngineMK2);
   p->addModel(modelGrainEngineMK2Expander);
   p->addModel(modelGrainFx);
+  p->addModel(modelGrooveBox);
+  p->addModel(modelGrooveBoxExpander);
   p->addModel(modelHazumi);
   p->addModel(modelLooper);
   p->addModel(modelRepeater);
   p->addModel(modelSamplerX8);
   p->addModel(modelSatanonaut);
-  p->addModel(modelGrooveBox);
   p->addModel(modelWavBank);
   p->addModel(modelWavBankMC);
   p->addModel(modelXY);

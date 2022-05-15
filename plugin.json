@@ -1,7 +1,7 @@
 {
     "slug": "voxglitch",
     "name": "Voxglitch",
-    "version": "2.12.0",
+    "version": "2.13.0",
     "license": "GPL-3.0-or-later",
     "brand": "Voxglitch",
     "author": "Bret Truchan",
@@ -123,6 +123,12 @@
         "slug": "groovebox",
         "name": "Groove Box",
         "description": "8-track sample based groovebox with parameter locks",
+        "tags": ["Sampler"]
+    },
+    {
+        "slug": "GrooveBoxExpander",
+        "name": "Groove Box Expander",
+        "description": "Expander module for the Voxglitch Groovebox.  Mutes, Solo, Gate Output, and more.",
         "tags": ["Sampler"]
     },
     {
