@@ -231,16 +231,6 @@ struct TrackLabelDisplay : TransparentWidget
       {
         draw_track_label(to_display, vg);
       }
-
-      // If the track is muted, then display an overlay
-<<<<<<< HEAD
-      if(module->track_mutes[track_number])
-=======
-      if(module->mutes[track_number])
->>>>>>> 9cea2850aa58840745ab8853ce449064f935365b
-      {
-        draw_track_mute_overlay(vg);
-      }
     }
     //
     // Draw placeholder track names for library view
