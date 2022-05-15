@@ -126,6 +126,12 @@
         "tags": ["Sampler"]
     },
     {
+        "slug": "GrooveBoxExpander",
+        "name": "Groove Box Expander",
+        "description": "Expander module for the Voxglitch Groovebox.  Mutes, Solo, Gate Output, and more.",
+        "tags": ["Sampler"]
+    },
+    {
         "slug": "wavbank",
         "name": "Wav Bank",
         "description": "Sample player that can load and switch between all .wav files in a folder.",

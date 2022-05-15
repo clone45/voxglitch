@@ -10,6 +10,7 @@ using namespace groove_box;
 
 #include "Common/VoxglitchWidget.hpp"
 #include "GrooveBox/SamplePlaybackSettings.hpp"
+#include "GrooveBoxExpander/GrooveBoxExpanderMessage.hpp"
 
 // Sample players and such
 #include "Common/sample.hpp"

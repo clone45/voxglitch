@@ -165,6 +165,7 @@ struct TrackLabelDisplay : TransparentWidget
 		}
   }
 
+  /*
   void onButton(const event::Button &e) override
   {
     if(e.button == GLFW_MOUSE_BUTTON_RIGHT && e.action == GLFW_PRESS)
@@ -175,6 +176,7 @@ struct TrackLabelDisplay : TransparentWidget
     TransparentWidget::onButton(e);
     e.consume(this);
   }
+  */
 
   void draw_track_label(std::string label, NVGcontext *vg)
   {
@@ -231,7 +233,7 @@ struct TrackLabelDisplay : TransparentWidget
       }
 
       // If the track is muted, then display an overlay
-      if(module->track_mutes[track_number])
+      if(module->mutes[track_number])
       {
         draw_track_mute_overlay(vg);
       }
