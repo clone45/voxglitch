@@ -165,18 +165,12 @@ struct TrackLabelDisplay : TransparentWidget
 		}
   }
 
-  /*
+
   void onButton(const event::Button &e) override
   {
-    if(e.button == GLFW_MOUSE_BUTTON_RIGHT && e.action == GLFW_PRESS)
-    {
-      module->toggleMute(track_number);
-    }
-
     TransparentWidget::onButton(e);
     e.consume(this);
   }
-  */
 
   void draw_track_label(std::string label, NVGcontext *vg)
   {

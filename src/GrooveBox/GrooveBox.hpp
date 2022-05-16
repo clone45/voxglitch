@@ -8,6 +8,11 @@
 // - Thank you to all the friendly people on the VCV Rack Community for answering
 //   my questions and providing feedback on early builds.
 
+// Here's the issue.  When muting, the mix output is not added for muted or
+// based on solo settings.  However, the mix output must be added until the
+// muted (or not-soloed) sounds stop playing.  The logic for muting should be
+// moved to prevent the triggering of samples, not playback of samples.  However,
+// playback should fade out quickly when a track is muted.
 
 struct GrooveBox : VoxglitchSamplerModule
 {
@@ -45,6 +50,7 @@ struct GrooveBox : VoxglitchSamplerModule
 
   GrooveBoxExpanderMessage *producer_message = new GrooveBoxExpanderMessage;
   GrooveBoxExpanderMessage *consumer_message = new GrooveBoxExpanderMessage;
+  float track_volumes[NUMBER_OF_TRACKS];
 
   //
   // Sample related variables
@@ -121,6 +127,7 @@ struct GrooveBox : VoxglitchSamplerModule
       configParam(TRACK_BUTTONS + i, 0.0, 1.0, 0.0, "Track Selection Button");
       this->mutes[i] = false;
       this->solos[i] = false;
+      this->track_volumes[i] = 1.0;
     }
 
     // Configure the individual track outputs
@@ -387,11 +394,25 @@ struct GrooveBox : VoxglitchSamplerModule
     updateKnobPositions();
 	}
 
+  void trigger(unsigned int track_id)
+  {
+    if(any_track_soloed)
+    {
+      // If any track is soloed, then only add solo tracks to the mix
+      if(solos[track_id]) selected_memory_slot->tracks[track_id].trigger();
+    }
+    else if (! mutes[track_id])
+    {
+      selected_memory_slot->tracks[track_id].trigger();
+    }
+
+    // selected_memory_slot->tracks[track_id].trigger();
+  }
 
 	void process(const ProcessArgs &args) override
 	{
 
-    processExpander();
+    processExpander(args.sampleRate);
 
     //
     // If the user has pressed a track button, switch tracks and update the
@@ -556,7 +577,7 @@ struct GrooveBox : VoxglitchSamplerModule
         // status and the probability parameter lock.
         for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
         {
-          selected_memory_slot->tracks[i].trigger();
+          this->trigger(i);
         }
 
         // Step the visual playback indicator (led) as well
@@ -593,6 +614,21 @@ struct GrooveBox : VoxglitchSamplerModule
     {
       std::tie(track_left_output, track_right_output) = selected_memory_slot->tracks[i].getStereoOutput(this->interpolation);
 
+      //
+      // Apply track volumes from expander
+      //
+      // https://mathcracker.com/exponential-function-calculator
+      // Using first t (t1) = .5,
+      // First y (f(t1)) = 1
+      // Second t (t2) = 2
+      // Second y (f(t2)) = 12
+      //
+      // f(t) = 0.5503 * e^(1.1945 * t)
+
+      float track_volume_multiplier = 0.4368 * std::exp(1.16566 * track_volumes[i]);
+      track_left_output = track_left_output * track_volume_multiplier;
+      track_right_output = track_right_output * track_volume_multiplier;
+
       // Individual outputs
       unsigned int left_index = i * 2;
       unsigned int right_index = left_index + 1;
@@ -601,6 +637,7 @@ struct GrooveBox : VoxglitchSamplerModule
       outputs[TRACK_OUTPUTS + right_index].setVoltage(track_right_output);
 
       // Calculate summed output
+      /*
       if(any_track_soloed)
       {
         // If any track is soloed, then only add solo tracks to the mix
@@ -619,6 +656,10 @@ struct GrooveBox : VoxglitchSamplerModule
           mix_right_output += track_right_output;
         }
       }
+      */
+
+      mix_left_output += track_left_output;
+      mix_right_output += track_right_output;
 
       selected_memory_slot->tracks[i].incrementSamplePosition(args.sampleRate);
     }
@@ -652,7 +693,7 @@ struct GrooveBox : VoxglitchSamplerModule
     leftExpander.consumerMessage = consumer_message;
   }
 
-  void processExpander()
+  void processExpander(float rack_sample_rate)
   {
     if (leftExpander.module && leftExpander.module->model == modelGrooveBoxExpander)
     {
@@ -667,9 +708,14 @@ struct GrooveBox : VoxglitchSamplerModule
 
         for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
         {
-          this->mutes[i] = expander_message->mutes[i];
-          this->solos[i] = expander_message->solos[i];
+          bool expander_mute_value = expander_message->mutes[i];
+          bool expander_solo_value = expander_message->solos[i];
 
+          if((this->mutes[i] == false) && (expander_mute_value == true)) this->selected_memory_slot->tracks[i].fadeOut(rack_sample_rate);
+
+          this->mutes[i] = expander_mute_value;
+          this->solos[i] = expander_solo_value;
+          this->track_volumes[i] = expander_message->track_volumes[i];
           if(this->solos[i]) any_track_soloed = true;
         }
 

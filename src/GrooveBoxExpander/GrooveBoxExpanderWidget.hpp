@@ -1,6 +1,8 @@
 struct GrooveBoxExpanderWidget : ModuleWidget
 {
-  float mute_button_positions[NUMBER_OF_TRACKS][2] = {
+  // 1st columen 20
+
+  float volume_knob_positions[NUMBER_OF_TRACKS][2] = {
     {20, 30},
     {20, 40},
     {20, 50},
@@ -11,7 +13,7 @@ struct GrooveBoxExpanderWidget : ModuleWidget
     {20, 100}
   };
 
-  float solo_button_positions[NUMBER_OF_TRACKS][2] = {
+  float mute_button_positions[NUMBER_OF_TRACKS][2] = {
     {45, 30},
     {45, 40},
     {45, 50},
@@ -22,6 +24,17 @@ struct GrooveBoxExpanderWidget : ModuleWidget
     {45, 100}
   };
 
+  float solo_button_positions[NUMBER_OF_TRACKS][2] = {
+    {70, 30},
+    {70, 40},
+    {70, 50},
+    {70, 60},
+    {70, 70},
+    {70, 80},
+    {70, 90},
+    {70, 100}
+  };
+
   GrooveBoxExpanderWidget(GrooveBoxExpander* module)
   {
     setModule(module);
@@ -29,17 +42,33 @@ struct GrooveBoxExpanderWidget : ModuleWidget
 
     for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
     {
+      //
+      // Add volume buttons and inputs
+      //
+      float volume_knob_x = volume_knob_positions[i][0];
+      float volume_knob_y = volume_knob_positions[i][1];
+      addParam(createParamCentered<Trimpot>(mm2px(Vec(volume_knob_x, volume_knob_y)), module, GrooveBoxExpander::VOLUME_KNOBS + i));
+
+      //
+      // Add mute buttons and inputs
+      //
       float mute_button_x = mute_button_positions[i][0];
       float mute_button_y = mute_button_positions[i][1];
+
+      addParam(createLightParamCentered<VCVLightBezel<RedLight>>(mm2px(Vec(mute_button_x, mute_button_y)), module, GrooveBoxExpander::MUTE_BUTTONS + i, GrooveBoxExpander::MUTE_BUTTON_LIGHTS + i));
+      addInput(createInputCentered<PJ301MPort>(mm2px(Vec(mute_button_x - 10, mute_button_y)), module, GrooveBoxExpander::MUTE_INPUTS + i));
+
+      //
+      // Add solo buttons and inputs
+      //
 
       float solo_button_x = solo_button_positions[i][0];
       float solo_button_y = solo_button_positions[i][1];
 
-      addParam(createLightParamCentered<VCVLightBezel<RedLight>>(mm2px(Vec(mute_button_x, mute_button_y)), module, GrooveBoxExpander::MUTE_BUTTONS + i, GrooveBoxExpander::MUTE_BUTTON_LIGHTS + i));
       addParam(createLightParamCentered<VCVLightBezel<GreenLight>>(mm2px(Vec(solo_button_x, solo_button_y)), module, GrooveBoxExpander::SOLO_BUTTONS + i, GrooveBoxExpander::SOLO_BUTTON_LIGHTS + i));
-
-      addInput(createInputCentered<PJ301MPort>(mm2px(Vec(mute_button_x - 10, mute_button_y)), module, GrooveBoxExpander::MUTE_INPUTS + i));
       addInput(createInputCentered<PJ301MPort>(mm2px(Vec(solo_button_x - 10, solo_button_y)), module, GrooveBoxExpander::SOLO_INPUTS + i));
+
+
     }
   }
 

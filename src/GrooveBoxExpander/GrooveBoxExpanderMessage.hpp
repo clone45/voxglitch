@@ -5,6 +5,7 @@ struct GrooveBoxExpanderMessage
   bool message_received = true;
   bool mutes[8];
   bool solos[8];
+  float track_volumes[8];
 
   GrooveBoxExpanderMessage()
   {
@@ -12,6 +13,7 @@ struct GrooveBoxExpanderMessage
     {
       mutes[i] = false;
       solos[i] = false;
+      track_volumes[i] = 1.0;
     }
   }
 };

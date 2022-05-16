@@ -8,10 +8,12 @@ struct GrooveBoxExpander : Module
   bool mutes[NUMBER_OF_TRACKS];
   bool solos[NUMBER_OF_TRACKS];
   bool send_update_to_groovebox = false;
+  float old_track_volumes[NUMBER_OF_TRACKS];
 
   enum ParamIds {
     ENUMS(MUTE_BUTTONS, NUMBER_OF_TRACKS),
     ENUMS(SOLO_BUTTONS, NUMBER_OF_TRACKS),
+    ENUMS(VOLUME_KNOBS, NUMBER_OF_TRACKS),
     NUM_PARAMS
   };
   enum InputIds {
@@ -37,6 +39,8 @@ struct GrooveBoxExpander : Module
     {
       mutes[i] = false;
       solos[i] = false;
+      old_track_volumes[i] = 1.0;
+      configParam(VOLUME_KNOBS + i, 0.0, 2.0, 1.0, "Track Volume");
     }
   }
 
@@ -73,6 +77,17 @@ struct GrooveBoxExpander : Module
          send_update_to_groovebox = true;
       }
 
+      //
+      // See if track volumes have changed
+      //
+
+      float new_track_volume = params[VOLUME_KNOBS + i].getValue();
+      if(old_track_volumes[i] != new_track_volume)
+      {
+        old_track_volumes[i] = new_track_volume;
+        send_update_to_groovebox = true;
+      }
+
       // Set mute and solo lights
       lights[MUTE_BUTTON_LIGHTS + i].setBrightness(mutes[i]);
       lights[SOLO_BUTTON_LIGHTS + i].setBrightness(solos[i]);
@@ -86,17 +101,21 @@ struct GrooveBoxExpander : Module
       // Prepare message for sending to Grain Engine MK2
       GrooveBoxExpanderMessage *message_to_groove_box = (GrooveBoxExpanderMessage *) rightExpander.module->leftExpander.producerMessage;
 
-      for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+      if(message_to_groove_box)
       {
-        message_to_groove_box->mutes[i] = mutes[i];
-        message_to_groove_box->solos[i] = solos[i];
+        for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+        {
+          message_to_groove_box->mutes[i] = mutes[i];
+          message_to_groove_box->solos[i] = solos[i];
+          message_to_groove_box->track_volumes[i] = params[VOLUME_KNOBS + i].getValue();
+        }
+
+        // Tell GrooveBox that the message is ready for receiving
+        message_to_groove_box->message_received = false;
+
+        // Message has been sent, so flip flag send_update_to_groovebox to false
+        send_update_to_groovebox = false;
       }
-
-      // Tell GrooveBox that the message is ready for receiving
-      message_to_groove_box->message_received = false;
-
-      // Message has been sent, so flip flag send_update_to_groovebox to false
-      send_update_to_groovebox = false;
     }
 	}
 };

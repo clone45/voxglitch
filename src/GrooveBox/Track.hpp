@@ -23,6 +23,10 @@ struct Track
   unsigned int ratchet_counter = 0;
   SamplePlayer *sample_player;
 
+  float fade_out_counter = 0;
+  float fade_out_from = 0;
+  float fading_out = false;
+
   // The "skipped" variable keep track of when a trigger has been skipped because
   // the "Percentage" funtion is non-zero and didn't fire on the current step.``
   bool skipped = false;
@@ -44,6 +48,8 @@ struct Track
 
   void trigger()
   {
+    fading_out = false;
+
     if((getProbability(playback_position) < 0.98) && (((float) rand()/RAND_MAX) > getProbability(playback_position)))
     {
       // Don't trigger
@@ -70,6 +76,12 @@ struct Track
     }
   }
 
+  void fadeOut(float rack_sample_rate)
+  {
+    fade_out_counter = rack_sample_rate / 4.0;
+    fade_out_from = fade_out_counter;
+    fading_out = true;
+  }
 
   //
   // Handle ratcheting
@@ -120,6 +132,7 @@ struct Track
   {
     playback_position = 0;
     ratchet_counter = 0;
+    fading_out = false;
   }
 
   std::pair<float, float> getStereoOutput(unsigned int interpolation)
@@ -135,6 +148,26 @@ struct Track
 
     left_output *= (settings.volume * 2);  // Range from 0 to 2 times normal volume
     right_output *= (settings.volume * 2);  // Range from 0 to 2 times normal volume
+
+    if (fading_out)
+    {
+      fade_out_counter -= 1.0;
+
+      if(fade_out_counter <= 0)
+      {
+        this->sample_player->stop();
+        fading_out = false;
+        left_output = 0;
+        right_output = 0;
+      }
+      else
+      {
+        float fade_amount = fade_out_counter / fade_out_from;
+        left_output *= fade_amount;
+        right_output *= fade_amount;
+        fade_out_counter--;
+      }
+    }
 
     return { left_output, right_output };
   }
