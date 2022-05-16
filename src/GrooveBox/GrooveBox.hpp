@@ -405,8 +405,6 @@ struct GrooveBox : VoxglitchSamplerModule
     {
       selected_memory_slot->tracks[track_id].trigger();
     }
-
-    // selected_memory_slot->tracks[track_id].trigger();
   }
 
 	void process(const ProcessArgs &args) override
@@ -637,27 +635,6 @@ struct GrooveBox : VoxglitchSamplerModule
       outputs[TRACK_OUTPUTS + right_index].setVoltage(track_right_output);
 
       // Calculate summed output
-      /*
-      if(any_track_soloed)
-      {
-        // If any track is soloed, then only add solo tracks to the mix
-        if(solos[i])
-        {
-          mix_left_output += track_left_output;
-          mix_right_output += track_right_output;
-        }
-      }
-      else
-      {
-        // Only add unmuted tracks to the mix
-        if(! mutes[i])
-        {
-          mix_left_output += track_left_output;
-          mix_right_output += track_right_output;
-        }
-      }
-      */
-
       mix_left_output += track_left_output;
       mix_right_output += track_right_output;
 
@@ -711,7 +688,10 @@ struct GrooveBox : VoxglitchSamplerModule
           bool expander_mute_value = expander_message->mutes[i];
           bool expander_solo_value = expander_message->solos[i];
 
-          if((this->mutes[i] == false) && (expander_mute_value == true)) this->selected_memory_slot->tracks[i].fadeOut(rack_sample_rate);
+          if((this->mutes[i] == false) && (expander_mute_value == true) && (this->solos[i] == false))
+          {
+            this->selected_memory_slot->tracks[i].fadeOut(rack_sample_rate);
+          }
 
           this->mutes[i] = expander_mute_value;
           this->solos[i] = expander_solo_value;
