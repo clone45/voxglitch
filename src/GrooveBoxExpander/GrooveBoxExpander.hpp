@@ -5,6 +5,7 @@ struct GrooveBoxExpander : Module
   dsp::SchmittTrigger solo_button_triggers[NUMBER_OF_TRACKS];
   dsp::SchmittTrigger solo_cv_triggers[NUMBER_OF_TRACKS];
   dsp::PulseGenerator triggerOutputPulseGenerators[NUMBER_OF_TRACKS];
+  dsp::PulseGenerator triggerLightPulseGenerators[NUMBER_OF_TRACKS];
 
   GrooveBoxMessage *producer_message = new GrooveBoxMessage;
   GrooveBoxMessage *consumer_message = new GrooveBoxMessage;
@@ -33,6 +34,7 @@ struct GrooveBoxExpander : Module
   enum LightIds {
     ENUMS(MUTE_BUTTON_LIGHTS, NUMBER_OF_TRACKS),
     ENUMS(SOLO_BUTTON_LIGHTS, NUMBER_OF_TRACKS),
+    ENUMS(GATE_OUTPUT_LIGHTS, NUMBER_OF_TRACKS),
     NUM_LIGHTS
   };
 
@@ -118,13 +120,13 @@ struct GrooveBoxExpander : Module
     rightExpander.producerMessage = producer_message;
     rightExpander.consumerMessage = consumer_message;
 
-    // Output gates
-    bool trigger_output_pulse = false;
-
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
     {
-      trigger_output_pulse = triggerOutputPulseGenerators[i].process(args.sampleTime);
+      bool trigger_output_pulse = triggerOutputPulseGenerators[i].process(args.sampleTime);
       outputs[TRIGGER_OUTPUTS + i].setVoltage((trigger_output_pulse ? 10.0f : 0.0f));
+
+      bool light_output_pulse = triggerLightPulseGenerators[i].process(args.sampleTime);
+      lights[GATE_OUTPUT_LIGHTS + i].setBrightness(light_output_pulse ? 1.0f : 0.0f);
     }
 	}
 
@@ -166,6 +168,7 @@ struct GrooveBoxExpander : Module
           {
             // Trigger output
             triggerOutputPulseGenerators[i].trigger(0.01f);
+            triggerLightPulseGenerators[i].trigger(0.05f);
           }
         }
 

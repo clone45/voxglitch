@@ -89,6 +89,7 @@ struct GrooveBoxExpanderWidget : ModuleWidget
       // Add track trigger outputs
       //
       addOutput(createOutputCentered<ModdedCL1362>(Vec(gate_output_positions[i][0], gate_output_positions[i][1]), module, GrooveBoxExpander::TRIGGER_OUTPUTS + i));
+      addChild(createLightCentered<SmallLight<RedLight>>(Vec(gate_output_positions[i][0] + 20, gate_output_positions[i][1]), module, GrooveBoxExpander::GATE_OUTPUT_LIGHTS + i));
 
     }
   }
