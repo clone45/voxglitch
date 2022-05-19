@@ -9,6 +9,7 @@
 
 #include "Common/VoxglitchWidget.hpp"
 #include "GrooveBoxExpander/GrooveBoxExpanderMessage.hpp"
+#include "GrooveBox/GrooveBoxMessage.hpp"
 #include "GrooveBoxExpander/GrooveBoxExpander.hpp"
 #include "GrooveBoxExpander/GrooveBoxExpanderWidget.hpp"
 

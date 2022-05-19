@@ -48,9 +48,18 @@ struct GrooveBox : VoxglitchSamplerModule
   bool solos[NUMBER_OF_TRACKS];
   bool any_track_soloed = false;
 
+  // A pair of GrooveBoxExpanderMessage structures for sending information
+  // from the expander to the groovebox.  Note that they both essentially
+  // serve the same purpose, but are rotated during read/write cycles
   GrooveBoxExpanderMessage *producer_message = new GrooveBoxExpanderMessage;
   GrooveBoxExpanderMessage *consumer_message = new GrooveBoxExpanderMessage;
+
   float track_volumes[NUMBER_OF_TRACKS];
+
+  // The track_triggers array is used to send trigger information to the
+  // expansion module.  Once a trigger is sent, it's immediately set back to
+  // zero.
+  bool track_triggers[NUMBER_OF_TRACKS];
 
   //
   // Sample related variables
@@ -160,6 +169,7 @@ struct GrooveBox : VoxglitchSamplerModule
 
     // Update parameter lock knobs.  I'm not sure if this is necessary.
     updateKnobPositions();
+
 	}
 
   // copyMemory(src_index, dst_index)
@@ -394,23 +404,24 @@ struct GrooveBox : VoxglitchSamplerModule
     updateKnobPositions();
 	}
 
-  void trigger(unsigned int track_id)
+  bool trigger(unsigned int track_id)
   {
     if(any_track_soloed)
     {
       // If any track is soloed, then only add solo tracks to the mix
-      if(solos[track_id]) selected_memory_slot->tracks[track_id].trigger();
+      if(solos[track_id]) return(selected_memory_slot->tracks[track_id].trigger());
     }
     else if (! mutes[track_id])
     {
-      selected_memory_slot->tracks[track_id].trigger();
+      return(selected_memory_slot->tracks[track_id].trigger());
     }
+
+    return(false);
   }
 
 	void process(const ProcessArgs &args) override
 	{
-
-    processExpander(args.sampleRate);
+    readFromExpander(args.sampleRate);
 
     //
     // If the user has pressed a track button, switch tracks and update the
@@ -575,7 +586,7 @@ struct GrooveBox : VoxglitchSamplerModule
         // status and the probability parameter lock.
         for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
         {
-          this->trigger(i);
+          this->track_triggers[i] = this->trigger(i);
         }
 
         // Step the visual playback indicator (led) as well
@@ -666,27 +677,29 @@ struct GrooveBox : VoxglitchSamplerModule
       lights[TRACK_BUTTON_LIGHTS + i].setBrightness(track_index == i);
     }
 
+    writeToExpander();
+
+    // This is required after the flip
     leftExpander.producerMessage = producer_message;
     leftExpander.consumerMessage = consumer_message;
   }
 
-  void processExpander(float rack_sample_rate)
+  void readFromExpander(float rack_sample_rate)
   {
     if (leftExpander.module && leftExpander.module->model == modelGrooveBoxExpander)
     {
-      // Receive message from expander
-      GrooveBoxExpanderMessage *expander_message = (GrooveBoxExpanderMessage *) leftExpander.producerMessage;
+      // Receive message from expander.  Always read from the consumer.
+      GrooveBoxExpanderMessage *consumer_message = (GrooveBoxExpanderMessage *) leftExpander.consumerMessage;
 
-      if(expander_message && expander_message->message_received == false)
+      // Retrieve the data from the expander
+      if(consumer_message && consumer_message->message_received == false)
       {
-        // Retrieve the data from the expander
-
-        any_track_soloed = false;
+        this->any_track_soloed = false;
 
         for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
         {
-          bool expander_mute_value = expander_message->mutes[i];
-          bool expander_solo_value = expander_message->solos[i];
+          bool expander_mute_value = consumer_message->mutes[i];
+          bool expander_solo_value = consumer_message->solos[i];
 
           if((this->mutes[i] == false) && (expander_mute_value == true) && (this->solos[i] == false))
           {
@@ -695,15 +708,38 @@ struct GrooveBox : VoxglitchSamplerModule
 
           this->mutes[i] = expander_mute_value;
           this->solos[i] = expander_solo_value;
-          this->track_volumes[i] = expander_message->track_volumes[i];
-          if(this->solos[i]) any_track_soloed = true;
+          this->track_volumes[i] = consumer_message->track_volumes[i];
+          if(this->solos[i]) this->any_track_soloed = true;
         }
 
-        // Set the received flag so we don't process the message every single frame
-        expander_message->message_received = true;
+        // Set the received flag
+        consumer_message->message_received = true;
       }
 
       leftExpander.messageFlipRequested = true;
+    }
+  }
+
+  void writeToExpander()
+  {
+    if (leftExpander.module && leftExpander.module->model == modelGrooveBoxExpander)
+    {
+      GrooveBoxMessage *groovebox_message = (GrooveBoxMessage *) leftExpander.module->rightExpander.consumerMessage;
+
+      if(groovebox_message && groovebox_message->message_received == false)
+      {
+        // DEBUG("sending message from groovebox to expander");
+
+        for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+        {
+          groovebox_message->track_triggers[i] = this->track_triggers[i];
+          if(this->track_triggers[i]) this->track_triggers[i] = false;
+        }
+
+        groovebox_message->message_received = true;
+      }
+
+      leftExpander.module->rightExpander.messageFlipRequested = true;
     }
   }
 

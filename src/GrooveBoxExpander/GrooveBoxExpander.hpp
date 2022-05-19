@@ -4,11 +4,16 @@ struct GrooveBoxExpander : Module
   dsp::SchmittTrigger mute_cv_triggers[NUMBER_OF_TRACKS];
   dsp::SchmittTrigger solo_button_triggers[NUMBER_OF_TRACKS];
   dsp::SchmittTrigger solo_cv_triggers[NUMBER_OF_TRACKS];
+  dsp::PulseGenerator triggerOutputPulseGenerators[NUMBER_OF_TRACKS];
+
+  GrooveBoxMessage *producer_message = new GrooveBoxMessage;
+  GrooveBoxMessage *consumer_message = new GrooveBoxMessage;
 
   bool mutes[NUMBER_OF_TRACKS];
   bool solos[NUMBER_OF_TRACKS];
   bool send_update_to_groovebox = false;
   float old_track_volumes[NUMBER_OF_TRACKS];
+  bool track_triggers[NUMBER_OF_TRACKS];
 
   enum ParamIds {
     ENUMS(MUTE_BUTTONS, NUMBER_OF_TRACKS),
@@ -22,6 +27,7 @@ struct GrooveBoxExpander : Module
     NUM_INPUTS
   };
   enum OutputIds {
+    ENUMS(TRIGGER_OUTPUTS, NUMBER_OF_TRACKS),
     NUM_OUTPUTS
   };
   enum LightIds {
@@ -42,11 +48,15 @@ struct GrooveBoxExpander : Module
       old_track_volumes[i] = 1.0;
       configParam(VOLUME_KNOBS + i, 0.0, 2.0, 1.0, "Track Volume");
     }
+
+    producer_message->message_received = true;
   }
 
   // Destructor
   ~GrooveBoxExpander()
   {
+    delete producer_message;
+    delete consumer_message;
   }
 
 	void process(const ProcessArgs &args) override
@@ -94,14 +104,38 @@ struct GrooveBoxExpander : Module
     }
 
     //
-    // Send informatio to groovebox
+    // Send information to groovebox
     //
-    if (send_update_to_groovebox && rightExpander.module && rightExpander.module->model == modelGrooveBox)
+    if (send_update_to_groovebox)
+    {
+      writeToGroovebox();
+      send_update_to_groovebox = false;
+    }
+
+    readFromGroovebox();
+
+    // This is required after the flip
+    rightExpander.producerMessage = producer_message;
+    rightExpander.consumerMessage = consumer_message;
+
+    // Output gates
+    bool trigger_output_pulse = false;
+
+    for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+    {
+      trigger_output_pulse = triggerOutputPulseGenerators[i].process(args.sampleTime);
+      outputs[TRIGGER_OUTPUTS + i].setVoltage((trigger_output_pulse ? 10.0f : 0.0f));
+    }
+	}
+
+  void writeToGroovebox()
+  {
+    if (rightExpander.module && rightExpander.module->model == modelGrooveBox)
     {
       // Prepare message for sending to Grain Engine MK2
       GrooveBoxExpanderMessage *message_to_groove_box = (GrooveBoxExpanderMessage *) rightExpander.module->leftExpander.producerMessage;
 
-      if(message_to_groove_box)
+      if(message_to_groove_box && message_to_groove_box->message_received == true)
       {
         for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
         {
@@ -112,10 +146,34 @@ struct GrooveBoxExpander : Module
 
         // Tell GrooveBox that the message is ready for receiving
         message_to_groove_box->message_received = false;
-
-        // Message has been sent, so flip flag send_update_to_groovebox to false
-        send_update_to_groovebox = false;
       }
     }
-	}
+  }
+
+  void readFromGroovebox()
+  {
+    if (rightExpander.module && rightExpander.module->model == modelGrooveBox)
+    {
+      // Receive message from expander
+      GrooveBoxMessage *groovebox_message = (GrooveBoxMessage *) this->rightExpander.producerMessage;
+
+      // Retrieve the data from the expander
+      if(groovebox_message && groovebox_message->message_received == true)
+      {
+        for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+        {
+          if(groovebox_message->track_triggers[i])
+          {
+            // Trigger output
+            triggerOutputPulseGenerators[i].trigger(0.01f);
+          }
+        }
+
+        groovebox_message->message_received = false;
+      }
+
+      rightExpander.messageFlipRequested = true;
+    }
+
+  }
 };

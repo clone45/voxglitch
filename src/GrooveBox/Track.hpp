@@ -46,7 +46,7 @@ struct Track
     ratchet_counter = 0;
   }
 
-  void trigger()
+  bool trigger()
   {
     fading_out = false;
 
@@ -72,8 +72,11 @@ struct Track
 
         // trigger sample playback
         sample_player->trigger(&settings);
+
+        return(true);
       }
     }
+    return(false);
   }
 
   void fadeOut(float rack_sample_rate)
