@@ -51,8 +51,8 @@ struct GrooveBox : VoxglitchSamplerModule
   // A pair of GrooveBoxExpanderMessage structures for sending information
   // from the expander to the groovebox.  Note that they both essentially
   // serve the same purpose, but are rotated during read/write cycles
-  GrooveBoxExpanderMessage *producer_message = new GrooveBoxExpanderMessage;
-  GrooveBoxExpanderMessage *consumer_message = new GrooveBoxExpanderMessage;
+  ExpanderToGrooveboxMessage expander_to_groovebox_message_a;
+  ExpanderToGrooveboxMessage expander_to_groovebox_message_b;
 
   float track_volumes[NUMBER_OF_TRACKS];
 
@@ -170,6 +170,9 @@ struct GrooveBox : VoxglitchSamplerModule
     // Update parameter lock knobs.  I'm not sure if this is necessary.
     updateKnobPositions();
 
+    // Set the leftExpander pointers to the two message holders
+    leftExpander.producerMessage = &expander_to_groovebox_message_a;
+    leftExpander.consumerMessage = &expander_to_groovebox_message_b;
 	}
 
   // copyMemory(src_index, dst_index)
@@ -679,9 +682,6 @@ struct GrooveBox : VoxglitchSamplerModule
 
     writeToExpander();
 
-    // This is required after the flip
-    leftExpander.producerMessage = producer_message;
-    leftExpander.consumerMessage = consumer_message;
   }
 
   void readFromExpander(float rack_sample_rate)
@@ -689,7 +689,8 @@ struct GrooveBox : VoxglitchSamplerModule
     if (leftExpander.module && leftExpander.module->model == modelGrooveBoxExpander)
     {
       // Receive message from expander.  Always read from the consumer.
-      GrooveBoxExpanderMessage *consumer_message = (GrooveBoxExpanderMessage *) leftExpander.consumerMessage;
+      // when reading from the expander, we're using the __GrooveBox's__ consumer and producer message pair
+      ExpanderToGrooveboxMessage *consumer_message = (ExpanderToGrooveboxMessage *) leftExpander.consumerMessage;
 
       // Retrieve the data from the expander
       if(consumer_message && consumer_message->message_received == false)
@@ -724,22 +725,19 @@ struct GrooveBox : VoxglitchSamplerModule
   {
     if (leftExpander.module && leftExpander.module->model == modelGrooveBoxExpander)
     {
-      GrooveBoxMessage *groovebox_message = (GrooveBoxMessage *) leftExpander.module->rightExpander.consumerMessage;
+      // Always write to the producerMessage
+      GrooveboxToExpanderMessage *groovebox_to_expander_message = (GrooveboxToExpanderMessage *) leftExpander.module->rightExpander.producerMessage;
 
-      if(groovebox_message && groovebox_message->message_received == false)
+      if(groovebox_to_expander_message && groovebox_to_expander_message->message_received == true)
       {
-        // DEBUG("sending message from groovebox to expander");
-
         for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
         {
-          groovebox_message->track_triggers[i] = this->track_triggers[i];
+          groovebox_to_expander_message->track_triggers[i] = this->track_triggers[i];
           if(this->track_triggers[i]) this->track_triggers[i] = false;
         }
 
-        groovebox_message->message_received = true;
+        groovebox_to_expander_message->message_received = false;
       }
-
-      leftExpander.module->rightExpander.messageFlipRequested = true;
     }
   }
 

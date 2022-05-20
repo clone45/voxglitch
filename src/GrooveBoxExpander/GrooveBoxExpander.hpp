@@ -7,8 +7,8 @@ struct GrooveBoxExpander : Module
   dsp::PulseGenerator triggerOutputPulseGenerators[NUMBER_OF_TRACKS];
   dsp::PulseGenerator triggerLightPulseGenerators[NUMBER_OF_TRACKS];
 
-  GrooveBoxMessage *producer_message = new GrooveBoxMessage;
-  GrooveBoxMessage *consumer_message = new GrooveBoxMessage;
+  GrooveboxToExpanderMessage groovebox_to_expander_message_a;
+  GrooveboxToExpanderMessage groovebox_to_expander_message_b;
 
   bool mutes[NUMBER_OF_TRACKS];
   bool solos[NUMBER_OF_TRACKS];
@@ -51,14 +51,14 @@ struct GrooveBoxExpander : Module
       configParam(VOLUME_KNOBS + i, 0.0, 2.0, 1.0, "Track Volume");
     }
 
-    producer_message->message_received = true;
+    rightExpander.producerMessage = &groovebox_to_expander_message_a;
+    rightExpander.consumerMessage = &groovebox_to_expander_message_b;
   }
 
   // Destructor
   ~GrooveBoxExpander()
   {
-    delete producer_message;
-    delete consumer_message;
+
   }
 
 	void process(const ProcessArgs &args) override
@@ -117,8 +117,8 @@ struct GrooveBoxExpander : Module
     readFromGroovebox();
 
     // This is required after the flip
-    rightExpander.producerMessage = producer_message;
-    rightExpander.consumerMessage = consumer_message;
+    // rightExpander.producerMessage = producer_message;
+    // rightExpander.consumerMessage = consumer_message;
 
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
     {
@@ -135,8 +135,11 @@ struct GrooveBoxExpander : Module
     if (rightExpander.module && rightExpander.module->model == modelGrooveBox)
     {
       // Prepare message for sending to Grain Engine MK2
-      GrooveBoxExpanderMessage *message_to_groove_box = (GrooveBoxExpanderMessage *) rightExpander.module->leftExpander.producerMessage;
+      // When writing to the groovebox, we're using the __GrooveBox's__ producer and consumer pair
+      // Always write to the producer and read from the consumer
+      ExpanderToGrooveboxMessage *message_to_groove_box = (ExpanderToGrooveboxMessage *) rightExpander.module->leftExpander.producerMessage;
 
+      // Wait until the groovebox received the last message
       if(message_to_groove_box && message_to_groove_box->message_received == true)
       {
         for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
@@ -148,6 +151,8 @@ struct GrooveBoxExpander : Module
 
         // Tell GrooveBox that the message is ready for receiving
         message_to_groove_box->message_received = false;
+
+        // rightExpander.module->leftExpander.messageFlipRequested = true;
       }
     }
   }
@@ -157,10 +162,10 @@ struct GrooveBoxExpander : Module
     if (rightExpander.module && rightExpander.module->model == modelGrooveBox)
     {
       // Receive message from expander
-      GrooveBoxMessage *groovebox_message = (GrooveBoxMessage *) this->rightExpander.producerMessage;
+      GrooveboxToExpanderMessage *groovebox_message = (GrooveboxToExpanderMessage *) this->rightExpander.consumerMessage;
 
       // Retrieve the data from the expander
-      if(groovebox_message && groovebox_message->message_received == true)
+      if(groovebox_message && groovebox_message->message_received == false)
       {
         for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
         {
@@ -172,11 +177,9 @@ struct GrooveBoxExpander : Module
           }
         }
 
-        groovebox_message->message_received = false;
+        groovebox_message->message_received = true;
       }
-
       rightExpander.messageFlipRequested = true;
     }
-
   }
 };

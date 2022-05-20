@@ -8,8 +8,8 @@
 #include "GrooveBoxExpander/defines.h"
 
 #include "Common/VoxglitchWidget.hpp"
-#include "GrooveBoxExpander/GrooveBoxExpanderMessage.hpp"
-#include "GrooveBox/GrooveBoxMessage.hpp"
+#include "GrooveBoxExpander/ExpanderToGrooveboxMessage.hpp"
+#include "GrooveBox/GrooveboxToExpanderMessage.hpp"
 #include "GrooveBoxExpander/GrooveBoxExpander.hpp"
 #include "GrooveBoxExpander/GrooveBoxExpanderWidget.hpp"
 

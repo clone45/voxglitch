@@ -1,13 +1,13 @@
 #pragma once
 
-struct GrooveBoxExpanderMessage
+struct ExpanderToGrooveboxMessage
 {
   bool message_received = true;
   bool mutes[8];
   bool solos[8];
   float track_volumes[8];
 
-  GrooveBoxExpanderMessage()
+  ExpanderToGrooveboxMessage()
   {
     for(unsigned int i=0; i<8; i++)
     {

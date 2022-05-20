@@ -1,11 +1,11 @@
 #pragma once
 
-struct GrooveBoxMessage
+struct GrooveboxToExpanderMessage
 {
   bool track_triggers[8];
   bool message_received = true;
 
-  GrooveBoxMessage()
+  GrooveboxToExpanderMessage()
   {
     for(unsigned int i=0; i<8; i++)
     {
