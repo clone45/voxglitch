@@ -15,6 +15,7 @@ struct GrooveBoxExpander : Module
   bool send_update_to_groovebox = false;
   float old_track_volumes[NUMBER_OF_TRACKS];
   bool track_triggers[NUMBER_OF_TRACKS];
+  bool expander_connected = false;
 
   enum ParamIds {
     ENUMS(MUTE_BUTTONS, NUMBER_OF_TRACKS),
@@ -105,6 +106,18 @@ struct GrooveBoxExpander : Module
       lights[SOLO_BUTTON_LIGHTS + i].setBrightness(solos[i]);
     }
 
+    if(rightExpander.module && rightExpander.module->model == modelGrooveBox)
+    {
+      // If the expander was just added or not yet processed (such as when
+      // the patch first loads), then send the info to the groovebox
+      if(expander_connected == false) send_update_to_groovebox = true;
+      expander_connected = true;
+    }
+    else
+    {
+      expander_connected = false;
+    }
+
     //
     // Send information to groovebox
     //
@@ -151,8 +164,6 @@ struct GrooveBoxExpander : Module
 
         // Tell GrooveBox that the message is ready for receiving
         message_to_groove_box->message_received = false;
-
-        // rightExpander.module->leftExpander.messageFlipRequested = true;
       }
     }
   }

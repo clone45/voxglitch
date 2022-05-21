@@ -47,6 +47,7 @@ struct GrooveBox : VoxglitchSamplerModule
   bool mutes[NUMBER_OF_TRACKS];
   bool solos[NUMBER_OF_TRACKS];
   bool any_track_soloed = false;
+  bool expander_connected = false;
 
   // A pair of GrooveBoxExpanderMessage structures for sending information
   // from the expander to the groovebox.  Note that they both essentially
@@ -424,7 +425,17 @@ struct GrooveBox : VoxglitchSamplerModule
 
 	void process(const ProcessArgs &args) override
 	{
-    readFromExpander(args.sampleRate);
+    if(leftExpander.module && leftExpander.module->model == modelGrooveBoxExpander)
+    {
+      expander_connected = true;
+    }
+    else
+    {
+      if(expander_connected) detachExpander();
+      expander_connected = false;
+    }
+
+    if(expander_connected) readFromExpander(args.sampleRate);
 
     //
     // If the user has pressed a track button, switch tracks and update the
@@ -680,64 +691,69 @@ struct GrooveBox : VoxglitchSamplerModule
       lights[TRACK_BUTTON_LIGHTS + i].setBrightness(track_index == i);
     }
 
-    writeToExpander();
-
+    if(expander_connected) writeToExpander();
   }
 
   void readFromExpander(float rack_sample_rate)
   {
-    if (leftExpander.module && leftExpander.module->model == modelGrooveBoxExpander)
+    // Receive message from expander.  Always read from the consumer.
+    // when reading from the expander, we're using the __GrooveBox's__ consumer and producer message pair
+    ExpanderToGrooveboxMessage *consumer_message = (ExpanderToGrooveboxMessage *) leftExpander.consumerMessage;
+
+    // Retrieve the data from the expander
+    if(consumer_message && consumer_message->message_received == false)
     {
-      // Receive message from expander.  Always read from the consumer.
-      // when reading from the expander, we're using the __GrooveBox's__ consumer and producer message pair
-      ExpanderToGrooveboxMessage *consumer_message = (ExpanderToGrooveboxMessage *) leftExpander.consumerMessage;
+      this->any_track_soloed = false;
 
-      // Retrieve the data from the expander
-      if(consumer_message && consumer_message->message_received == false)
+      for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
       {
-        this->any_track_soloed = false;
+        bool expander_mute_value = consumer_message->mutes[i];
+        bool expander_solo_value = consumer_message->solos[i];
 
-        for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+        if((this->mutes[i] == false) && (expander_mute_value == true) && (this->solos[i] == false))
         {
-          bool expander_mute_value = consumer_message->mutes[i];
-          bool expander_solo_value = consumer_message->solos[i];
-
-          if((this->mutes[i] == false) && (expander_mute_value == true) && (this->solos[i] == false))
-          {
-            this->selected_memory_slot->tracks[i].fadeOut(rack_sample_rate);
-          }
-
-          this->mutes[i] = expander_mute_value;
-          this->solos[i] = expander_solo_value;
-          this->track_volumes[i] = consumer_message->track_volumes[i];
-          if(this->solos[i]) this->any_track_soloed = true;
+          this->selected_memory_slot->tracks[i].fadeOut(rack_sample_rate);
         }
 
-        // Set the received flag
-        consumer_message->message_received = true;
+        this->mutes[i] = expander_mute_value;
+        this->solos[i] = expander_solo_value;
+        this->track_volumes[i] = consumer_message->track_volumes[i];
+        if(this->solos[i]) this->any_track_soloed = true;
       }
 
-      leftExpander.messageFlipRequested = true;
+      // Set the received flag
+      consumer_message->message_received = true;
     }
+
+    leftExpander.messageFlipRequested = true;
   }
 
   void writeToExpander()
   {
-    if (leftExpander.module && leftExpander.module->model == modelGrooveBoxExpander)
+    // Always write to the producerMessage
+    GrooveboxToExpanderMessage *groovebox_to_expander_message = (GrooveboxToExpanderMessage *) leftExpander.module->rightExpander.producerMessage;
+
+    if(groovebox_to_expander_message && groovebox_to_expander_message->message_received == true)
     {
-      // Always write to the producerMessage
-      GrooveboxToExpanderMessage *groovebox_to_expander_message = (GrooveboxToExpanderMessage *) leftExpander.module->rightExpander.producerMessage;
-
-      if(groovebox_to_expander_message && groovebox_to_expander_message->message_received == true)
+      for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
       {
-        for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
-        {
-          groovebox_to_expander_message->track_triggers[i] = this->track_triggers[i];
-          if(this->track_triggers[i]) this->track_triggers[i] = false;
-        }
-
-        groovebox_to_expander_message->message_received = false;
+        groovebox_to_expander_message->track_triggers[i] = this->track_triggers[i];
+        if(this->track_triggers[i]) this->track_triggers[i] = false;
       }
+
+      groovebox_to_expander_message->message_received = false;
+    }
+  }
+
+  void detachExpander()
+  {
+    this->any_track_soloed = false;
+
+    for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+    {
+      this->mutes[i] = false;
+      this->solos[i] = false;
+      this->track_volumes[i] = 1;
     }
   }
 
