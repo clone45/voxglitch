@@ -2,6 +2,7 @@
 // mm2px 2.952756
 
 #include <componentlibrary.hpp>
+#include "menus/TrackMenu.hpp"
 
 float button_positions_y = mm2px(89.75);
 
@@ -76,6 +77,9 @@ struct ModdedCL1362 : SvgPort {
 
 struct TrimpotMedium : SVGKnob {
   widget::SvgWidget* bg;
+  GrooveBox *module;
+  unsigned int parameter_index = 0;
+
   TrimpotMedium()
   {
 		minAngle = -0.83*M_PI;
@@ -85,6 +89,20 @@ struct TrimpotMedium : SVGKnob {
     bg = new widget::SvgWidget;
     bg->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/TrimpotMedium_bg.svg")));
     fb->addChildBelow(bg, tw);
+  }
+
+  void onDoubleClick(const DoubleClickEvent &e) override
+  {
+    switch(module->selected_function)
+    {
+      case FUNCTION_VOLUME: module->params[parameter_index].setValue(default_volume); break;
+      case FUNCTION_PAN: module->params[parameter_index].setValue(default_pan); break;
+      case FUNCTION_PITCH: module->params[parameter_index].setValue(default_pitch); break;
+      case FUNCTION_RATCHET: module->params[parameter_index].setValue(default_ratchet); break;
+      case FUNCTION_OFFSET: module->params[parameter_index].setValue(default_offset); break;
+      case FUNCTION_PROBABILITY: module->params[parameter_index].setValue(default_probability); break;
+      case FUNCTION_REVERSE: module->params[parameter_index].setValue(default_reverse); break;
+    }
   }
 };
 
@@ -359,7 +377,11 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       //
       // Create attenuator knobs for each step
       //
-      addParam(createParamCentered<TrimpotMedium>(Vec(button_positions[i][0],button_positions[i][1] + 30), module, GrooveBox::STEP_KNOBS + i));
+      TrimpotMedium *knob = createParamCentered<TrimpotMedium>(Vec(button_positions[i][0],button_positions[i][1] + 30), module, GrooveBox::STEP_KNOBS + i);
+      knob->module = module;
+      knob->parameter_index = GrooveBox::STEP_KNOBS + i;
+      addParam(knob);
+
     }
 
     // Function Buttons
@@ -433,6 +455,29 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     GrooveBox *module = dynamic_cast<GrooveBox*>(this->module);
     assert(module);
 
+    /*
+    // Add track functions
+    TrackMenuItem *track_menu_items[NUMBER_OF_TRACKS];
+
+    for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+    {
+      track_menu_items[i] = createMenuItem<TrackMenuItem>("Track #" + std::to_string(i + 1), RIGHT_ARROW);
+      track_menu_items[i]->module = module;
+      track_menu_items[i]->track_number = i;
+      menu->addChild(track_menu_items[i]);
+    }
+    */
+
+    menu->addChild(new MenuEntry); // For spacing only
+    menu->addChild(createMenuLabel("GrooveBox"));
+
+    TracksMenu *tracks_menu = createMenuItem<TracksMenu>("Track Actions", RIGHT_ARROW);
+    tracks_menu->module = module;
+    menu->addChild(tracks_menu);
+
+    //
+    // Start sample selection menu options
+    //
     menu->addChild(new MenuEntry); // For spacing only
     menu->addChild(createMenuLabel("Load individual samples"));
 

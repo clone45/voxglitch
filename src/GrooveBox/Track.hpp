@@ -138,6 +138,17 @@ struct Track
     fading_out = false;
   }
 
+  void clear()
+  {
+    for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
+    {
+      setValue(i, false);
+    }
+    this->length = NUMBER_OF_STEPS - 1;
+    this->resetAllParameterLocks();
+  }
+
+
   std::pair<float, float> getStereoOutput(unsigned int interpolation)
   {
     float left_output;
@@ -215,6 +226,22 @@ struct Track
 
   // Parameter locks
   // ============================================================================
+
+  void resetAllParameterLocks()
+  {
+    for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
+    {
+      setOffset(i, default_offset);
+      setVolume(i, default_volume);
+      setPan(i, default_pan);
+      setPitch(i, default_pitch);
+      setRatchet(i, default_ratchet);
+      setOffset(i, default_offset);
+      setProbability(i, default_probability);
+      setLoop(i, default_loop);
+      setReverse(i, default_reverse);
+    }
+  }
 
   //
   // Offset

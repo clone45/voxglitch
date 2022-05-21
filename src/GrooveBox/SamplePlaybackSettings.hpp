@@ -3,14 +3,14 @@ namespace groove_box
 
 struct SamplePlaybackSettings
 {
-  float volume = 0.5;
-  float pan = 0.5;
-  float pitch = 0.5;
-  float ratchet = 0.0;
-  float offset = 0.0;
-  float probability = 1.0;
-  float loop = 0.0;
-  bool reverse = false;
+  float volume = default_volume;
+  float pan = default_pan;
+  float pitch = default_pitch;
+  float ratchet = default_ratchet;
+  float offset = default_offset;
+  float probability = default_probability;
+  float loop = default_loop;
+  bool reverse = default_reverse;
 
   void copy(SamplePlaybackSettings *src_settings)
   {
