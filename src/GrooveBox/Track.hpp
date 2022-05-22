@@ -19,10 +19,16 @@ struct Track
   SamplePlaybackSettings sample_playback_settings[NUMBER_OF_STEPS]; // settings assigned to each step
   SamplePlaybackSettings settings; // currently used settings
 
+  // Global track values set by the expandcer
+  float track_pan = 0.0;
+  float track_pitch = 0.0;
+  float track_volume = 0.0;
+
   StereoPanSubModule stereo_pan_submodule;
   unsigned int ratchet_counter = 0;
   SamplePlayer *sample_player;
 
+  // Variables to assist with fading out
   float fade_out_counter = 0;
   float fade_out_from = 0;
   float fading_out = false;
@@ -157,8 +163,11 @@ struct Track
     // Read sample output and return
     this->sample_player->getStereoOutput(&left_output, &right_output, interpolation);
 
-    float centered_pan = (settings.pan * 2.0) - 1.0;
-    std::tie(left_output, right_output) = stereo_pan_submodule.process(left_output, right_output, centered_pan);
+    // settings.pan ranges from 0 to 1
+    // track_pan ranges from -1 to 0
+    float computed_pan = (settings.pan * 2.0) - 1.0; // convert settings.pan to range from -1 to 1
+    computed_pan = clamp(computed_pan + track_pan, -1.0, 1.0);
+    std::tie(left_output, right_output) = stereo_pan_submodule.process(left_output, right_output, computed_pan);
 
     left_output *= (settings.volume * 2);  // Range from 0 to 2 times normal volume
     right_output *= (settings.volume * 2);  // Range from 0 to 2 times normal volume
@@ -190,11 +199,11 @@ struct Track
   {
     if(settings.reverse > .5)
     {
-      this->sample_player->stepReverse(rack_sample_rate, &settings);
+      this->sample_player->stepReverse(rack_sample_rate, &settings, track_pitch);
     }
     else
     {
-      this->sample_player->step(rack_sample_rate, &settings);
+      this->sample_player->step(rack_sample_rate, &settings, track_pitch);
     }
   }
 
@@ -214,6 +223,10 @@ struct Track
     this->playback_position = src_track->playback_position;
     this->ratchet_counter = src_track->ratchet_counter;
     this->skipped = src_track->skipped;
+
+    this->track_volume = src_track->track_volume;
+    this->track_pan = src_track->track_pan;
+    this->track_pitch = src_track->track_pitch;
   }
 
   float getLength()  {
@@ -321,6 +334,22 @@ struct Track
   }
   void setLoop(unsigned int step, float loop)  {
     this->sample_playback_settings[step].loop = loop;
+  }
+
+  // Track pan
+  float getTrackPan()  {
+    return(this->track_pan);
+  }
+  void setTrackPan(float track_pan) {
+    this->track_pan = track_pan;
+  }
+
+  // Track pitch
+  float getTrackPitch()  {
+    return(this->track_pitch);
+  }
+  void setTrackPitch(float track_pitch) {
+    this->track_pitch = track_pitch;
   }
 
 };

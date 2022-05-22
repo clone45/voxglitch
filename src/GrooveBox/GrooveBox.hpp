@@ -54,8 +54,9 @@ struct GrooveBox : VoxglitchSamplerModule
   // serve the same purpose, but are rotated during read/write cycles
   ExpanderToGrooveboxMessage expander_to_groovebox_message_a;
   ExpanderToGrooveboxMessage expander_to_groovebox_message_b;
-
   float track_volumes[NUMBER_OF_TRACKS];
+  // float track_pans[NUMBER_OF_TRACKS];
+  // float track_pitches[NUMBER_OF_TRACKS];
 
   // The track_triggers array is used to send trigger information to the
   // expansion module.  Once a trigger is sent, it's immediately set back to
@@ -217,9 +218,9 @@ struct GrooveBox : VoxglitchSamplerModule
     selected_track = selected_memory_slot->getTrack(track_index);
 
     // set all track positions
-    for(unsigned int track_index=0; track_index < NUMBER_OF_TRACKS; track_index++)
+    for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
     {
-       selected_memory_slot->tracks[track_index].setPosition(playback_step);
+       selected_memory_slot->tracks[i].setPosition(playback_step);
     }
 
     updateKnobPositions();
@@ -718,6 +719,11 @@ struct GrooveBox : VoxglitchSamplerModule
         this->mutes[i] = expander_mute_value;
         this->solos[i] = expander_solo_value;
         this->track_volumes[i] = consumer_message->track_volumes[i];
+
+        this->selected_memory_slot->tracks[i].setTrackPan(consumer_message->track_pans[i]);
+        this->selected_memory_slot->tracks[i].setTrackPitch(consumer_message->track_pitches[i]);
+
+        // this->track_pitches[i] = consumer_message->track_pitches[i];
         if(this->solos[i]) this->any_track_soloed = true;
       }
 
@@ -749,11 +755,22 @@ struct GrooveBox : VoxglitchSamplerModule
   {
     this->any_track_soloed = false;
 
+    // TODO: Iterate through all memory slots as well
+
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
     {
       this->mutes[i] = false;
       this->solos[i] = false;
-      this->track_volumes[i] = 1;
+      this->track_volumes[i] = 1.0;
+    }
+
+    for(unsigned int m=0; m < NUMBER_OF_MEMORY_SLOTS; m++)
+    {
+      for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+      {
+        this->memory_slots[m].tracks[i].setTrackPan(0.0);
+        this->memory_slots[m].tracks[i].setTrackPitch(0.0);
+      }
     }
   }
 
