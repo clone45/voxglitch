@@ -411,17 +411,14 @@ struct GrooveBox : VoxglitchSamplerModule
 
   bool trigger(unsigned int track_id)
   {
-    if(any_track_soloed)
-    {
-      // If any track is soloed, then only add solo tracks to the mix
-      if(solos[track_id]) return(selected_memory_slot->tracks[track_id].trigger());
-    }
-    else if (! mutes[track_id])
-    {
-      return(selected_memory_slot->tracks[track_id].trigger());
-    }
-
+    if(notMuted(track_id)) return(selected_memory_slot->tracks[track_id].trigger());
     return(false);
+  }
+
+  bool notMuted(unsigned int track_id)
+  {
+    if(any_track_soloed) return(solos[track_id]);
+    return(! mutes[track_id]);
   }
 
 	void process(const ProcessArgs &args) override
@@ -601,6 +598,7 @@ struct GrooveBox : VoxglitchSamplerModule
         // status and the probability parameter lock.
         for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
         {
+          // track_triggers are used to send values to the expander
           this->track_triggers[i] = this->trigger(i);
         }
 
@@ -610,12 +608,12 @@ struct GrooveBox : VoxglitchSamplerModule
         // Reset clock division counter
         clock_counter = 0;
       }
-      else
+      else 
       {
         // Manage ratcheting
         for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
         {
-          selected_memory_slot->tracks[i].ratchety();
+          if(notMuted(i)) this->track_triggers[i] = selected_memory_slot->tracks[i].ratchety();
         }
       }
       clock_counter++;
