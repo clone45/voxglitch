@@ -4,15 +4,12 @@
 // By Bret Truchan
 //
 // TODO:
-// - Override double-click of custom knobs to set to the correct value (possible??)
+// - Flash the light when it triggers.  not so easy.  I could keep the flash
+//   counter in the GrooveBox and have the GrooveBoxBlueLight access it through
+//   the module-> pointer.
 // - Thank you to all the friendly people on the VCV Rack Community for answering
 //   my questions and providing feedback on early builds.
 
-// Here's the issue.  When muting, the mix output is not added for muted or
-// based on solo settings.  However, the mix output must be added until the
-// muted (or not-soloed) sounds stop playing.  The logic for muting should be
-// moved to prevent the triggering of samples, not playback of samples.  However,
-// playback should fade out quickly when a track is muted.
 
 struct GrooveBox : VoxglitchSamplerModule
 {
@@ -55,13 +52,13 @@ struct GrooveBox : VoxglitchSamplerModule
   ExpanderToGrooveboxMessage expander_to_groovebox_message_a;
   ExpanderToGrooveboxMessage expander_to_groovebox_message_b;
   float track_volumes[NUMBER_OF_TRACKS];
-  // float track_pans[NUMBER_OF_TRACKS];
-  // float track_pitches[NUMBER_OF_TRACKS];
+
 
   // The track_triggers array is used to send trigger information to the
   // expansion module.  Once a trigger is sent, it's immediately set back to
   // zero.
   bool track_triggers[NUMBER_OF_TRACKS];
+
 
   //
   // Sample related variables
@@ -578,7 +575,6 @@ struct GrooveBox : VoxglitchSamplerModule
     {
       if(clock_counter == clock_division)
       {
-
         if(first_step == false) // If not the first step
         {
           // Step all of the tracks
@@ -608,7 +604,7 @@ struct GrooveBox : VoxglitchSamplerModule
         // Reset clock division counter
         clock_counter = 0;
       }
-      else 
+      else
       {
         // Manage ratcheting
         for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)

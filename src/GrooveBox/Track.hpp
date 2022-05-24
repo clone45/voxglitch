@@ -97,18 +97,24 @@ struct Track
   //
   bool ratchety()
   {
+    bool ratcheted = false;
+    
     if (steps[playback_position] && (skipped == false))
     {
       unsigned int ratchet_pattern = settings.ratchet * 7;
-      if(ratchet_patterns[ratchet_pattern][ratchet_counter]) sample_player->trigger(&settings);
+      if(ratchet_patterns[ratchet_pattern][ratchet_counter])
+      {
+        sample_player->trigger(&settings);
+        ratcheted = true;
+      }
       if(++ratchet_counter >= 8) ratchet_counter = 0;
-      return(true);
     }
     else
     {
       ratchet_counter = 0;
-      return(false);
     }
+
+    return(ratcheted);
   }
 
   unsigned int getPosition()
