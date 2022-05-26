@@ -48,7 +48,7 @@ struct SamplePlayer
     playing = false;
   }
 
-	void step(float rack_sample_rate, SamplePlaybackSettings *settings)
+	void step(float rack_sample_rate, SamplePlaybackSettings *settings, float track_pitch)
 	{
     if(playing && sample.loaded)
     {
@@ -57,8 +57,14 @@ struct SamplePlayer
       // Step the playback position forward.
   		playback_position = playback_position + step_amount; // sample rate playback
 
+      // computed pitch includes pitch from expander
+      float computed_pitch = (settings->pitch * 2.0) - 1.0;
+      computed_pitch = clamp(computed_pitch + track_pitch, -1.0, 1.0);
+
       // Add more or less to the playback position based on the pitch setting
-      playback_position = playback_position + (step_amount * ((settings->pitch * 2.0) - 1.0)); // 5 octave range
+      // playback_position = playback_position + (step_amount * ((settings->pitch * 2.0) - 1.0)); // 5 octave range
+
+      playback_position = playback_position + (step_amount * computed_pitch);
 
       // If settings loop is greater than 0 and the sample position is past the
       // selected loop length, then loop.  Note:  If loop is set to 1, then
@@ -79,7 +85,7 @@ struct SamplePlayer
     }
 	}
 
-  void stepReverse(float rack_sample_rate, SamplePlaybackSettings *settings)
+  void stepReverse(float rack_sample_rate, SamplePlaybackSettings *settings, float track_pitch)
 	{
     if(playing && sample.loaded)
     {
@@ -87,7 +93,12 @@ struct SamplePlayer
 
       // Step the playback position forward.
   		playback_position = playback_position - step_amount;
-      playback_position = playback_position - (step_amount * ((settings->pitch * 2.0) - 1.0)); // 5 octave range
+
+      // computed pitch includes pitch from expander
+      float computed_pitch = (settings->pitch * 2.0) - 1.0;
+      computed_pitch = clamp(computed_pitch + track_pitch, -1.0, 1.0);
+
+      playback_position = playback_position - (step_amount * computed_pitch); // 5 octave range
 
       // If the playback position is past the beginning, end or loop sample playback
       if(settings->loop > 0)

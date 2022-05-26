@@ -2,6 +2,7 @@
 // mm2px 2.952756
 
 #include <componentlibrary.hpp>
+#include "menus/TrackMenu.hpp"
 
 float button_positions_y = mm2px(89.75);
 
@@ -76,6 +77,9 @@ struct ModdedCL1362 : SvgPort {
 
 struct TrimpotMedium : SVGKnob {
   widget::SvgWidget* bg;
+  GrooveBox *module;
+  unsigned int parameter_index = 0;
+
   TrimpotMedium()
   {
 		minAngle = -0.83*M_PI;
@@ -86,6 +90,25 @@ struct TrimpotMedium : SVGKnob {
     bg->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/TrimpotMedium_bg.svg")));
     fb->addChildBelow(bg, tw);
   }
+
+  void onDoubleClick(const DoubleClickEvent &e) override
+  {
+    switch(module->selected_function)
+    {
+      case FUNCTION_VOLUME: module->params[parameter_index].setValue(default_volume); break;
+      case FUNCTION_PAN: module->params[parameter_index].setValue(default_pan); break;
+      case FUNCTION_PITCH: module->params[parameter_index].setValue(default_pitch); break;
+      case FUNCTION_RATCHET: module->params[parameter_index].setValue(default_ratchet); break;
+      case FUNCTION_OFFSET: module->params[parameter_index].setValue(default_offset); break;
+      case FUNCTION_PROBABILITY: module->params[parameter_index].setValue(default_probability); break;
+      case FUNCTION_REVERSE: module->params[parameter_index].setValue(default_reverse); break;
+    }
+  }
+};
+
+struct GrooveboxBlueLight : BlueLight {
+  GrooveBox *module;
+  // May expand on this eventually
 };
 
 //
@@ -165,37 +188,35 @@ struct TrackLabelDisplay : TransparentWidget
 		}
   }
 
-  /*
+
   void onButton(const event::Button &e) override
   {
-    if(e.button == GLFW_MOUSE_BUTTON_RIGHT && e.action == GLFW_PRESS)
-    {
-      module->toggleMute(track_number);
-    }
-
     TransparentWidget::onButton(e);
     e.consume(this);
   }
-  */
 
   void draw_track_label(std::string label, NVGcontext *vg)
   {
     float text_left_margin = 6;
 
-    //
-    // Display track label
-    //
     nvgFontSize(vg, 10);
     nvgTextLetterSpacing(vg, 0);
     nvgFillColor(vg, nvgRGBA(255, 215, 20, 0xff));
     nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
-    float wrap_at = 130.0; // Just throw your hands in the air!  And wave them like you just don't
+    float wrap_at = 130.0; // Just throw your hands in the air!  And wave them like you just don't 130.0
+
+    const char *end = NULL;
+    NVGtextRow rows[3];
+    unsigned int max_rows = 3;
+    unsigned int number_of_lines = nvgTextBreakLines(vg, label.c_str(), NULL, wrap_at, rows, max_rows);
+
+    if(number_of_lines > 1) end = rows[1].end;
 
     float bounds[4];
-    nvgTextBoxBounds(vg, text_left_margin, 10, wrap_at, label.c_str(), NULL, bounds);
+    nvgTextBoxBounds(vg, text_left_margin, 10, wrap_at, label.c_str(), end, bounds);
 
     float textHeight = bounds[3];
-    nvgTextBox(vg, text_left_margin, (box.size.y / 2.0f) - (textHeight / 2.0f) + 8, wrap_at, label.c_str(), NULL);
+    nvgTextBox(vg, text_left_margin, (box.size.y / 2.0f) - (textHeight / 2.0f) + 8, wrap_at, label.c_str(), end);
   }
 
   void draw_track_mute_overlay(NVGcontext *vg)
@@ -230,12 +251,6 @@ struct TrackLabelDisplay : TransparentWidget
       if((to_display != "") && (to_display != "[ empty ]"))
       {
         draw_track_label(to_display, vg);
-      }
-
-      // If the track is muted, then display an overlay
-      if(module->mutes[track_number])
-      {
-        draw_track_mute_overlay(vg);
       }
     }
     //
@@ -361,7 +376,9 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       //
       // Drum pad lights
       //
-      addParam(createLightParamCentered<VCVLightBezel<BlueLight>>(Vec(button_positions[i][0],button_positions[i][1]), module, GrooveBox::DRUM_PADS + i, GrooveBox::DRUM_PAD_LIGHTS + i));
+      VCVLightBezel<GrooveboxBlueLight> *groovebox_light = createLightParamCentered<VCVLightBezel<GrooveboxBlueLight>>(Vec(button_positions[i][0],button_positions[i][1]), module, GrooveBox::DRUM_PADS + i, GrooveBox::DRUM_PAD_LIGHTS + i);
+      groovebox_light->module = module;
+      addParam(groovebox_light);
 
       //
       // Step location indicators
@@ -371,7 +388,11 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       //
       // Create attenuator knobs for each step
       //
-      addParam(createParamCentered<TrimpotMedium>(Vec(button_positions[i][0],button_positions[i][1] + 30), module, GrooveBox::STEP_KNOBS + i));
+      TrimpotMedium *knob = createParamCentered<TrimpotMedium>(Vec(button_positions[i][0],button_positions[i][1] + 30), module, GrooveBox::STEP_KNOBS + i);
+      knob->module = module;
+      knob->parameter_index = GrooveBox::STEP_KNOBS + i;
+      addParam(knob);
+
     }
 
     // Function Buttons
@@ -445,6 +466,16 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     GrooveBox *module = dynamic_cast<GrooveBox*>(this->module);
     assert(module);
 
+    menu->addChild(new MenuEntry); // For spacing only
+    menu->addChild(createMenuLabel("GrooveBox"));
+
+    TracksMenu *tracks_menu = createMenuItem<TracksMenu>("Track Actions", RIGHT_ARROW);
+    tracks_menu->module = module;
+    menu->addChild(tracks_menu);
+
+    //
+    // Start sample selection menu options
+    //
     menu->addChild(new MenuEntry); // For spacing only
     menu->addChild(createMenuLabel("Load individual samples"));
 

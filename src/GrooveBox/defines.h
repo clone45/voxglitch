@@ -14,6 +14,15 @@ namespace groove_box
   const int FUNCTION_LOOP = 6;
   const int FUNCTION_REVERSE = 7;
 
+  const float default_volume = 0.5;
+  const float default_pan = 0.5;
+  const float default_pitch = 0.5;
+  const float default_ratchet = 0.0;
+  const float default_offset = 0.0;
+  const float default_probability = 1.0;
+  const float default_loop = 0.0;
+  const bool default_reverse = false;
+
   const std::string PLACEHOLDER_TRACK_NAMES[NUMBER_OF_TRACKS] = {
     "kick_drum.wav",
     "snare.wav",
