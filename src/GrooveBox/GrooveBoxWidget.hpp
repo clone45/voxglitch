@@ -107,48 +107,8 @@ struct TrimpotMedium : SVGKnob {
 };
 
 struct GrooveboxBlueLight : BlueLight {
-
-  float halo_counter = 1.0;
   GrooveBox *module;
-
-  void pulse()
-  {
-    halo_counter = 2.0;
-  }
-
-  void drawHalo(const DrawArgs& args) override {
-  	// Don't draw halo if rendering in a framebuffer, e.g. screenshots or Module Browser
-  	if (args.fb)
-  		return;
-
-  	const float halo = settings::haloBrightness;
-  	if (halo == 0.f)
-  		return;
-
-    float new_halo = (halo / 2.0) * halo_counter;
-
-    if(this->module)
-    {
-      if(halo_counter > 1.0) halo_counter -= module->sample_rate;
-    }
-
-  	// If light is off, rendering the halo gives no effect.
-  	if (color.r == 0.f && color.g == 0.f && color.b == 0.f)
-  		return;
-
-  	math::Vec c = box.size.div(2);
-  	float radius = std::min(box.size.x, box.size.y) / 2.0;
-  	float oradius = radius + std::min(radius * 4.f, 15.f);
-
-  	nvgBeginPath(args.vg);
-  	nvgRect(args.vg, c.x - oradius, c.y - oradius, 2 * oradius, 2 * oradius);
-
-  	NVGcolor icol = color::mult(color, new_halo);
-  	NVGcolor ocol = nvgRGBA(0, 0, 0, 0);
-  	NVGpaint paint = nvgRadialGradient(args.vg, c.x, c.y, radius, oradius, icol, ocol);
-  	nvgFillPaint(args.vg, paint);
-  	nvgFill(args.vg);
-  }
+  // May expand on this eventually
 };
 
 //
@@ -239,20 +199,24 @@ struct TrackLabelDisplay : TransparentWidget
   {
     float text_left_margin = 6;
 
-    //
-    // Display track label
-    //
     nvgFontSize(vg, 10);
     nvgTextLetterSpacing(vg, 0);
     nvgFillColor(vg, nvgRGBA(255, 215, 20, 0xff));
     nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
-    float wrap_at = 130.0; // Just throw your hands in the air!  And wave them like you just don't
+    float wrap_at = 130.0; // Just throw your hands in the air!  And wave them like you just don't 130.0
+
+    const char *end = NULL;
+    NVGtextRow rows[3];
+    unsigned int max_rows = 3;
+    unsigned int number_of_lines = nvgTextBreakLines(vg, label.c_str(), NULL, wrap_at, rows, max_rows);
+
+    if(number_of_lines > 1) end = rows[1].end;
 
     float bounds[4];
-    nvgTextBoxBounds(vg, text_left_margin, 10, wrap_at, label.c_str(), NULL, bounds);
+    nvgTextBoxBounds(vg, text_left_margin, 10, wrap_at, label.c_str(), end, bounds);
 
     float textHeight = bounds[3];
-    nvgTextBox(vg, text_left_margin, (box.size.y / 2.0f) - (textHeight / 2.0f) + 8, wrap_at, label.c_str(), NULL);
+    nvgTextBox(vg, text_left_margin, (box.size.y / 2.0f) - (textHeight / 2.0f) + 8, wrap_at, label.c_str(), end);
   }
 
   void draw_track_mute_overlay(NVGcontext *vg)
@@ -501,19 +465,6 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
   {
     GrooveBox *module = dynamic_cast<GrooveBox*>(this->module);
     assert(module);
-
-    /*
-    // Add track functions
-    TrackMenuItem *track_menu_items[NUMBER_OF_TRACKS];
-
-    for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
-    {
-      track_menu_items[i] = createMenuItem<TrackMenuItem>("Track #" + std::to_string(i + 1), RIGHT_ARROW);
-      track_menu_items[i]->module = module;
-      track_menu_items[i]->track_number = i;
-      menu->addChild(track_menu_items[i]);
-    }
-    */
 
     menu->addChild(new MenuEntry); // For spacing only
     menu->addChild(createMenuLabel("GrooveBox"));
