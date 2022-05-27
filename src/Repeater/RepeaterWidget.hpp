@@ -1,4 +1,4 @@
-struct RepeaterWidget : ModuleWidget
+struct RepeaterWidget : VoxglitchSamplerModuleWidget
 {
 	RepeaterWidget(Repeater* module)
 	{
@@ -93,6 +93,11 @@ struct RepeaterWidget : ModuleWidget
 		retrigger_menu_item->rightText = CHECKMARK(module->retrigger == 1);
 		retrigger_menu_item->module = module;
 		menu->addChild(retrigger_menu_item);
+
+    // Sample interpolation settings
+    SampleInterpolationMenuItem *sample_interpolation_menu_item = createMenuItem<SampleInterpolationMenuItem>("Interpolation", RIGHT_ARROW);
+    sample_interpolation_menu_item->module = module;
+    menu->addChild(sample_interpolation_menu_item);
 	}
 
 };

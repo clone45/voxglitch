@@ -5,6 +5,8 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "Common/sample.hpp"
+#include "Common/VoxglitchSamplerModule.hpp"
+#include "Common/VoxglitchSamplerModuleWidget.hpp"
 #include "Common/submodules.hpp"
 
 #include "SamplerX8/defines.h"

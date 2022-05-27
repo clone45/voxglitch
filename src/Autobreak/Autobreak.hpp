@@ -1,4 +1,4 @@
-struct Autobreak : Module
+struct Autobreak : VoxglitchSamplerModule
 {
   unsigned int selected_sample_slot = 0;
 
