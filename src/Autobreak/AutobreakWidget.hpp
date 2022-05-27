@@ -1,4 +1,4 @@
-struct AutobreakWidget : ModuleWidget
+struct AutobreakWidget : VoxglitchSamplerModuleWidget
 {
 	AutobreakWidget(Autobreak* module)
 	{
@@ -66,5 +66,10 @@ struct AutobreakWidget : ModuleWidget
 			menu_item_load_sample->module = module;
 			menu->addChild(menu_item_load_sample);
 		}
+
+    menu->addChild(new MenuEntry); // For spacing only
+    SampleInterpolationMenuItem *sample_interpolation_menu_item = createMenuItem<SampleInterpolationMenuItem>("Interpolation", RIGHT_ARROW);
+    sample_interpolation_menu_item->module = module;
+    menu->addChild(sample_interpolation_menu_item);    
 	}
 };

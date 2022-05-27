@@ -1,4 +1,4 @@
-struct SamplerX8 : Module
+struct SamplerX8 : VoxglitchSamplerModule
 {
 	std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
   std::vector<SamplePlayer> sample_players;

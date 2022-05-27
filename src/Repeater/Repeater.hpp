@@ -1,4 +1,4 @@
-struct Repeater : Module
+struct Repeater : VoxglitchSamplerModule
 {
 	unsigned int selected_sample_slot = 0;
 	double samplePos = 0;

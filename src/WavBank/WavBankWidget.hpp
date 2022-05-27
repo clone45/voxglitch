@@ -1,4 +1,4 @@
-struct WavBankWidget : ModuleWidget
+struct WavBankWidget : VoxglitchSamplerModuleWidget
 {
 	WavBankWidget(WavBank* module)
 	{
@@ -86,6 +86,12 @@ struct WavBankWidget : ModuleWidget
 		menu_item_load_bank->text = "Select Directory Containing WAV Files";
 		menu_item_load_bank->wav_bank_module = module;
 		menu->addChild(menu_item_load_bank);
+
+    // Sample interpolation settings
+    menu->addChild(new MenuEntry); // For spacing only
+    SampleInterpolationMenuItem *sample_interpolation_menu_item = createMenuItem<SampleInterpolationMenuItem>("Interpolation", RIGHT_ARROW);
+    sample_interpolation_menu_item->module = module;
+    menu->addChild(sample_interpolation_menu_item);
 	}
 
 };

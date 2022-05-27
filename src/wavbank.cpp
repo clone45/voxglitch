@@ -7,6 +7,8 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "Common/sample.hpp"
+#include "Common/VoxglitchSamplerModule.hpp"
+#include "Common/VoxglitchSamplerModuleWidget.hpp"
 
 #include "WavBank/defines.h"
 #include "WavBank/WavBank.hpp"
