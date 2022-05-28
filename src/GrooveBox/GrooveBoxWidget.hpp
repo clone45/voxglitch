@@ -195,7 +195,7 @@ struct RangeGrabberRightWidget : TransparentWidget
 {
   GrooveBox *module;
   bool is_moused_over = false;
-  float diameter = 24.0;
+  float diameter = 20.0;
   float radius = diameter / 2.0;
   Vec drag_position;
 
@@ -206,18 +206,24 @@ struct RangeGrabberRightWidget : TransparentWidget
 
   void draw(const DrawArgs &args) override
   {
-
     const auto vg = args.vg;
+
+    /* draw bounding box for testing
     nvgSave(vg);
     nvgBeginPath(vg);
     nvgRect(vg, 0, 0, box.size.x, box.size.y);
     nvgFillColor(vg, nvgRGBA(120, 20, 20, 100));
     nvgFill(vg);
     nvgRestore(vg);
+    */
 
     // Draw circle
     nvgSave(vg);
     nvgBeginPath(vg);
+
+    this->box.pos = Vec(button_positions[module->selected_track->length][0] - radius, this->box.pos.y);
+
+    // box.size.x = button_positions[module->selected_track->length][0];
 
     if(module) {
       nvgCircle(vg, box.size.x - radius, box.size.y - radius, radius);
@@ -228,11 +234,11 @@ struct RangeGrabberRightWidget : TransparentWidget
 
     if(is_moused_over)
     {
-      nvgFillColor(vg, nvgRGBA(200, 200, 200, 40));
+      nvgFillColor(vg, nvgRGB(120,120,120));
     }
     else
     {
-      nvgFillColor(vg, nvgRGBA(200, 200, 200, 90));
+      nvgFillColor(vg, nvgRGB(84,84,84));
     }
 
     nvgFill(vg);
@@ -254,12 +260,16 @@ struct RangeGrabberRightWidget : TransparentWidget
 
   void onEnter(const event::Enter &e) override
   {
+		glfwSetCursor(APP->window->win, glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
+
     this->is_moused_over = true;
     TransparentWidget::onEnter(e);
   }
 
   void onLeave(const event::Leave &e) override
   {
+    glfwSetCursor(APP->window->win, NULL);
+
     this->is_moused_over = false;
     TransparentWidget::onLeave(e);
   }
@@ -279,11 +289,12 @@ struct RangeGrabberRightWidget : TransparentWidget
     float zoom = getAbsoluteZoom();
     drag_position = drag_position.plus(e.mouseDelta.div(zoom));
 
-
     int quantized_x = ((drag_position.x - button_positions[0][0]) + diameter) / (button_positions[1][0] - button_positions[0][0]);
-    quantized_x = clamp(quantized_x, 0, 15);
+    quantized_x = clamp(quantized_x, 0, NUMBER_OF_STEPS - 1);
 
-    this->box.pos = Vec(button_positions[quantized_x][0] - radius, this->box.pos.y);
+    module->selected_track->length = quantized_x;
+
+    // this->box.pos = Vec(button_positions[quantized_x][0] - radius, this->box.pos.y);
   }
 
 /*
@@ -535,7 +546,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
 
 
     RangeGrabberRightWidget *range_grabber_right_widget = new RangeGrabberRightWidget();
-    range_grabber_right_widget->setPosition(Vec(button_positions[0][0] - 12, button_positions[0][1] - 25 - 12)); // 12 is radius
+    range_grabber_right_widget->setPosition(Vec(button_positions[0][0] - range_grabber_right_widget->radius, button_positions[0][1] - 25 - range_grabber_right_widget->radius));
     range_grabber_right_widget->module = module;
     addChild(range_grabber_right_widget);
 
