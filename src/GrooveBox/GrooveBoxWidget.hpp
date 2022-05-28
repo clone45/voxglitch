@@ -256,7 +256,7 @@ struct RangeGrabberRightWidget : TransparentWidget
     int quantized_x = ((drag_position.x - button_positions[0][0]) + diameter) / (button_positions[1][0] - button_positions[0][0]);
     quantized_x = clamp(quantized_x, 0, NUMBER_OF_STEPS - 1);
 
-    module->selected_track->range_end = quantized_x;
+    if((unsigned int) quantized_x > module->selected_track->range_start) module->selected_track->range_end = quantized_x;
   }
 };
 
@@ -277,15 +277,6 @@ struct RangeGrabberLeftWidget : TransparentWidget
   void draw(const DrawArgs &args) override
   {
     const auto vg = args.vg;
-
-    /* draw bounding box for testing
-    nvgSave(vg);
-    nvgBeginPath(vg);
-    nvgRect(vg, 0, 0, box.size.x, box.size.y);
-    nvgFillColor(vg, nvgRGBA(120, 20, 20, 100));
-    nvgFill(vg);
-    nvgRestore(vg);
-    */
 
     // Draw circle
     nvgSave(vg);
@@ -358,7 +349,7 @@ struct RangeGrabberLeftWidget : TransparentWidget
     int quantized_x = ((drag_position.x - button_positions[0][0]) + diameter) / (button_positions[1][0] - button_positions[0][0]);
     quantized_x = clamp(quantized_x, 0, NUMBER_OF_STEPS - 1);
 
-    module->selected_track->range_start = quantized_x;
+    if((unsigned int) quantized_x < module->selected_track->range_end) module->selected_track->range_start = quantized_x;
   }
 };
 
