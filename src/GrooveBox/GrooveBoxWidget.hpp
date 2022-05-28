@@ -4,6 +4,7 @@
 #include <componentlibrary.hpp>
 #include "menus/TrackMenu.hpp"
 
+
 float button_positions_y = mm2px(89.75);
 
 float button_positions[16][2] = {
@@ -144,6 +145,156 @@ struct SequenceLengthWidget : TransparentWidget
   }
 
 };
+
+//
+// SequenceLengthWidget
+//
+// This is the grey horizontal bar that shows the sequence length of the
+// selected track.
+
+struct SequenceRangeSelectorWidget : TransparentWidget
+{
+  /*
+  GrooveBox *module;
+  bool is_moused_over = false;
+
+  SequenceRangeSelectorWidget()
+  {
+    box.size = Vec(203.67, 12); // 213.67
+  }
+
+  void onEnter(const event::Enter &e) override
+  {
+    TransparentWidget::onEnter(e);
+  }
+
+  void onLeave(const event::Leave &e) override
+  {
+    this->is_moused_over = false;
+    TransparentWidget::onLeave(e);
+  }
+
+  void onHover(const event::Hover& e) override {
+    e.consume(this);
+    this->is_moused_over = true;
+  }
+
+  void step() override {
+    TransparentWidget::step();
+  }
+  */
+};
+
+//
+// SequenceLengthWidget
+//
+// This is the grey horizontal bar that shows the sequence length of the
+// selected track.
+
+struct RangeGrabberRightWidget : TransparentWidget
+{
+  GrooveBox *module;
+  bool is_moused_over = false;
+  float diameter = 24.0;
+  float radius = diameter / 2.0;
+  Vec drag_position;
+
+  RangeGrabberRightWidget()
+  {
+    box.size = Vec(diameter, diameter);
+  }
+
+  void draw(const DrawArgs &args) override
+  {
+
+    const auto vg = args.vg;
+    nvgSave(vg);
+    nvgBeginPath(vg);
+    nvgRect(vg, 0, 0, box.size.x, box.size.y);
+    nvgFillColor(vg, nvgRGBA(120, 20, 20, 100));
+    nvgFill(vg);
+    nvgRestore(vg);
+
+    // Draw circle
+    nvgSave(vg);
+    nvgBeginPath(vg);
+
+    if(module) {
+      nvgCircle(vg, box.size.x - radius, box.size.y - radius, radius);
+    }
+    else {
+      nvgCircle(vg, box.size.x - radius, box.size.y - radius, radius);
+    }
+
+    if(is_moused_over)
+    {
+      nvgFillColor(vg, nvgRGBA(200, 200, 200, 40));
+    }
+    else
+    {
+      nvgFillColor(vg, nvgRGBA(200, 200, 200, 90));
+    }
+
+    nvgFill(vg);
+
+    nvgRestore(vg);
+
+  }
+
+
+  void onButton(const event::Button &e) override
+  {
+    if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
+    {
+      e.consume(this);
+      drag_position = e.pos;
+    }
+  }
+
+  void onEnter(const event::Enter &e) override
+  {
+    this->is_moused_over = true;
+    TransparentWidget::onEnter(e);
+  }
+
+  void onLeave(const event::Leave &e) override
+  {
+    this->is_moused_over = false;
+    TransparentWidget::onLeave(e);
+  }
+
+  void onHover(const event::Hover& e) override {
+    e.consume(this);
+    this->is_moused_over = true;
+  }
+
+  void step() override {
+    TransparentWidget::step();
+  }
+
+  void onDragMove(const event::DragMove &e) override
+  {
+    // TransparentWidget::onDragMove(e);
+    float zoom = getAbsoluteZoom();
+    drag_position = drag_position.plus(e.mouseDelta.div(zoom));
+    this->box.pos = Vec(drag_position.x, this->box.pos.y);
+  }
+
+/*
+  void onDragStart(const event::DragStart &e) override
+  {
+    TransparentWidget::onDragStart(e);
+  }
+
+  void onDragEnd(const event::DragEnd &e) override
+  {
+    TransparentWidget::onDragEnd(e);
+    // this->box.pos = Vec(e.pos.x, e.pos.y);
+  }
+  */
+
+};
+
 
 //
 // TrackLabelDisplay
@@ -367,6 +518,22 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     sequence_length_widget->setPosition(Vec(button_positions[0][0] - 10, button_positions[0][1] - 31));
     sequence_length_widget->module = module;
     addChild(sequence_length_widget);
+
+    // sequence range selector
+    /*
+    SequenceRangeSelectorWidget *sequence_range_selector_widget = new SequenceRangeSelectorWidget();
+    sequence_range_selector_widget->setPosition(Vec(button_positions[0][0] - 10, button_positions[0][1] - 31));
+    sequence_range_selector_widget->module = module;
+    addChild(sequence_range_selector_widget);
+    */
+
+
+    RangeGrabberRightWidget *range_grabber_right_widget = new RangeGrabberRightWidget();
+    range_grabber_right_widget->setPosition(Vec(button_positions[0][0] - 12, button_positions[0][1] - 25 - 12)); // 12 is radius
+    range_grabber_right_widget->module = module;
+    addChild(range_grabber_right_widget);
+
+
 
     //
     // Step button related stuff
