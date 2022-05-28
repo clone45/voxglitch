@@ -14,4 +14,14 @@ struct VoxglitchSamplerModule : Module
     if (interpolation_json) interpolation = json_integer_value(interpolation_json);
   }
 
+  char *selectFileVCV(std::string dir)
+  {
+    osdialog_filters* filters = osdialog_filters_parse("WAV:wav");
+    char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, filters);
+    osdialog_filters_free(filters);
+    return path;
+  }
+
+  // pathSelected(module, track_number, path);
+
 };

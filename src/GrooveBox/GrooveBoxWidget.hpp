@@ -173,8 +173,8 @@ struct TrackLabelDisplay : TransparentWidget
 			pathSelected(module, track_number, path);
 		});
 #else
-		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("WAV:wav:Wav"));
-		pathSelected(module, track_number, path);
+    char *path = module->selectFileVCV(dir);
+    pathSelected(module, track_number, path);
 #endif
 	}
 
@@ -335,7 +335,7 @@ struct LoadSampleMenuItem : MenuItem
 			pathSelected(module, track_number, path);
 		});
 #else
-		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("WAV:wav:Wav"));
+    char *path = module->selectFileVCV(dir);
 		pathSelected(module, track_number, path);
 #endif
 	}

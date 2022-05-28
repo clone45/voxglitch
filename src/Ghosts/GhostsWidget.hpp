@@ -1,4 +1,4 @@
-struct GhostsWidget : ModuleWidget
+struct GhostsWidget : VoxglitchSamplerModuleWidget
 {
 	GhostsWidget(Ghosts* module)
 	{

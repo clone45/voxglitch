@@ -1,4 +1,4 @@
-struct Ghosts : Module
+struct Ghosts : VoxglitchSamplerModule
 {
 	float spawn_rate_counter = 0;
 	double step_amount = 0;

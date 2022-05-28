@@ -13,7 +13,8 @@ struct AutobreakLoadSample : MenuItem
 			pathSelected(module, sample_number, path);
 		});
 #else
-		char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("Wav:wav"));
+		// char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("Wav:wav"));
+    char *path = module->selectFileVCV(dir);
 		pathSelected(module, sample_number, path);
 #endif
 	}
