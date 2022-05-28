@@ -131,7 +131,8 @@ struct SequenceLengthWidget : TransparentWidget
 
     if(module) {
       // Draw horizontal rectangle for track indictor with pretty rounded corners
-      nvgRoundedRect(vg, 0, 0, button_positions[module->selected_track->length][0] - 10, 12, 5);
+      float length = button_positions[module->selected_track->range_end][0] - button_positions[module->selected_track->range_start][0];
+      nvgRoundedRect(vg, button_positions[module->selected_track->range_start][0] - 20, 0, length, 12, 5);
     }
     else {
       // Paint static content for library display
@@ -146,44 +147,7 @@ struct SequenceLengthWidget : TransparentWidget
 
 };
 
-//
-// SequenceLengthWidget
-//
-// This is the grey horizontal bar that shows the sequence length of the
-// selected track.
 
-struct SequenceRangeSelectorWidget : TransparentWidget
-{
-  /*
-  GrooveBox *module;
-  bool is_moused_over = false;
-
-  SequenceRangeSelectorWidget()
-  {
-    box.size = Vec(203.67, 12); // 213.67
-  }
-
-  void onEnter(const event::Enter &e) override
-  {
-    TransparentWidget::onEnter(e);
-  }
-
-  void onLeave(const event::Leave &e) override
-  {
-    this->is_moused_over = false;
-    TransparentWidget::onLeave(e);
-  }
-
-  void onHover(const event::Hover& e) override {
-    e.consume(this);
-    this->is_moused_over = true;
-  }
-
-  void step() override {
-    TransparentWidget::step();
-  }
-  */
-};
 
 //
 // SequenceLengthWidget
@@ -221,7 +185,7 @@ struct RangeGrabberRightWidget : TransparentWidget
     nvgSave(vg);
     nvgBeginPath(vg);
 
-    this->box.pos = Vec(button_positions[module->selected_track->length][0] - radius, this->box.pos.y);
+    this->box.pos = Vec(button_positions[module->selected_track->range_end][0] - radius, this->box.pos.y);
 
     // box.size.x = button_positions[module->selected_track->length][0];
 
@@ -292,24 +256,110 @@ struct RangeGrabberRightWidget : TransparentWidget
     int quantized_x = ((drag_position.x - button_positions[0][0]) + diameter) / (button_positions[1][0] - button_positions[0][0]);
     quantized_x = clamp(quantized_x, 0, NUMBER_OF_STEPS - 1);
 
-    module->selected_track->length = quantized_x;
-
-    // this->box.pos = Vec(button_positions[quantized_x][0] - radius, this->box.pos.y);
+    module->selected_track->range_end = quantized_x;
   }
+};
 
-/*
-  void onDragStart(const event::DragStart &e) override
+
+struct RangeGrabberLeftWidget : TransparentWidget
+{
+  GrooveBox *module;
+  bool is_moused_over = false;
+  float diameter = 20.0;
+  float radius = diameter / 2.0;
+  Vec drag_position;
+
+  RangeGrabberLeftWidget()
   {
-    TransparentWidget::onDragStart(e);
+    box.size = Vec(diameter, diameter);
   }
 
-  void onDragEnd(const event::DragEnd &e) override
+  void draw(const DrawArgs &args) override
   {
-    TransparentWidget::onDragEnd(e);
-    // this->box.pos = Vec(e.pos.x, e.pos.y);
-  }
-  */
+    const auto vg = args.vg;
 
+    /* draw bounding box for testing
+    nvgSave(vg);
+    nvgBeginPath(vg);
+    nvgRect(vg, 0, 0, box.size.x, box.size.y);
+    nvgFillColor(vg, nvgRGBA(120, 20, 20, 100));
+    nvgFill(vg);
+    nvgRestore(vg);
+    */
+
+    // Draw circle
+    nvgSave(vg);
+    nvgBeginPath(vg);
+
+    this->box.pos = Vec(button_positions[module->selected_track->range_start][0] - radius, this->box.pos.y);
+
+    // box.size.x = button_positions[module->selected_track->length][0];
+
+    if(module) {
+      nvgCircle(vg, box.size.x - radius, box.size.y - radius, radius);
+    }
+    else {
+      nvgCircle(vg, box.size.x - radius, box.size.y - radius, radius);
+    }
+
+    if(is_moused_over) {
+      nvgFillColor(vg, nvgRGB(120,120,120));
+    }
+    else {
+      nvgFillColor(vg, nvgRGB(84,84,84));
+    }
+
+    nvgFill(vg);
+    nvgRestore(vg);
+
+  }
+
+
+  void onButton(const event::Button &e) override
+  {
+    if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
+    {
+      e.consume(this);
+      drag_position = this->box.pos;
+    }
+  }
+
+  void onEnter(const event::Enter &e) override
+  {
+		glfwSetCursor(APP->window->win, glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
+
+    this->is_moused_over = true;
+    TransparentWidget::onEnter(e);
+  }
+
+  void onLeave(const event::Leave &e) override
+  {
+    glfwSetCursor(APP->window->win, NULL);
+
+    this->is_moused_over = false;
+    TransparentWidget::onLeave(e);
+  }
+
+  void onHover(const event::Hover& e) override {
+    e.consume(this);
+    this->is_moused_over = true;
+  }
+
+  void step() override {
+    TransparentWidget::step();
+  }
+
+  void onDragMove(const event::DragMove &e) override
+  {
+    // TransparentWidget::onDragMove(e);
+    float zoom = getAbsoluteZoom();
+    drag_position = drag_position.plus(e.mouseDelta.div(zoom));
+
+    int quantized_x = ((drag_position.x - button_positions[0][0]) + diameter) / (button_positions[1][0] - button_positions[0][0]);
+    quantized_x = clamp(quantized_x, 0, NUMBER_OF_STEPS - 1);
+
+    module->selected_track->range_start = quantized_x;
+  }
 };
 
 
@@ -536,13 +586,10 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     sequence_length_widget->module = module;
     addChild(sequence_length_widget);
 
-    // sequence range selector
-    /*
-    SequenceRangeSelectorWidget *sequence_range_selector_widget = new SequenceRangeSelectorWidget();
-    sequence_range_selector_widget->setPosition(Vec(button_positions[0][0] - 10, button_positions[0][1] - 31));
-    sequence_range_selector_widget->module = module;
-    addChild(sequence_range_selector_widget);
-    */
+    RangeGrabberLeftWidget *range_grabber_left_widget = new RangeGrabberLeftWidget();
+    range_grabber_left_widget->setPosition(Vec(button_positions[0][0] - range_grabber_left_widget->radius, button_positions[0][1] - 25 - range_grabber_left_widget->radius));
+    range_grabber_left_widget->module = module;
+    addChild(range_grabber_left_widget);
 
 
     RangeGrabberRightWidget *range_grabber_right_widget = new RangeGrabberRightWidget();

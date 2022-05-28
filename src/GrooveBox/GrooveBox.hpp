@@ -283,7 +283,8 @@ struct GrooveBox : VoxglitchSamplerModule
         json_t *track_data = json_object();
 
         json_object_set(track_data, "steps", steps_json_array);
-        json_object_set(track_data, "length", json_integer(this->memory_slots[memory_slot_number].tracks[track_number].getLength()));
+        json_object_set(track_data, "range_start", json_integer(this->memory_slots[memory_slot_number].tracks[track_number].getRangeStart()));
+        json_object_set(track_data, "range_end", json_integer(this->memory_slots[memory_slot_number].tracks[track_number].getRangeEnd()));
         json_array_append_new(tracks_json_array, track_data);
       }
 
@@ -354,9 +355,12 @@ struct GrooveBox : VoxglitchSamplerModule
 
           json_array_foreach(tracks_arrays_data, track_index, json_track_object)
           {
-            // Load track length
-            json_t *length_json = json_object_get(json_track_object, "length");
-            if(length_json) this->memory_slots[memory_slot_index].tracks[track_index].setLength(json_integer_value(length_json));
+            // Load track ranges
+            json_t *range_end_json = json_object_get(json_track_object, "range_end");
+            if(range_end_json) this->memory_slots[memory_slot_index].tracks[track_index].setRangeEnd(json_integer_value(range_end_json));
+
+            json_t *range_start_json = json_object_get(json_track_object, "range_start");
+            if(range_start_json) this->memory_slots[memory_slot_index].tracks[track_index].setRangeStart(json_integer_value(range_start_json));
 
 
             //
@@ -517,7 +521,7 @@ struct GrooveBox : VoxglitchSamplerModule
         // of toggling the drum pad.
         if(shift_key)
         {
-          selected_track->length = step_number;
+          selected_track->range_end = step_number;
         }
         else
         {

@@ -15,7 +15,8 @@ struct Track
     {1,1,1,0,0,0,0}
   };
   unsigned int playback_position = 0;
-  unsigned int length = NUMBER_OF_STEPS - 1;
+  unsigned int range_end = NUMBER_OF_STEPS - 1; // was length
+  unsigned int range_start = 0;
   SamplePlaybackSettings sample_playback_settings[NUMBER_OF_STEPS]; // settings assigned to each step
   SamplePlaybackSettings settings; // currently used settings
 
@@ -48,7 +49,9 @@ struct Track
 
   void step()
   {
-    playback_position = (playback_position + 1) % (length + 1);
+    // playback_position = (playback_position + 1) % (range_end + 1);
+    playback_position = playback_position + 1;
+    if(playback_position > range_end) playback_position = range_start;
     ratchet_counter = 0;
   }
 
@@ -98,7 +101,7 @@ struct Track
   bool ratchety()
   {
     bool ratcheted = false;
-    
+
     if (steps[playback_position] && (skipped == false))
     {
       unsigned int ratchet_pattern = settings.ratchet * 7;
@@ -158,7 +161,8 @@ struct Track
     {
       setValue(i, false);
     }
-    this->length = NUMBER_OF_STEPS - 1;
+    this->range_end = NUMBER_OF_STEPS - 1;
+    this->range_start = 0;
     this->resetAllParameterLocks();
   }
 
@@ -227,7 +231,8 @@ struct Track
     this->settings.copy(&src_track->settings);
 
     // Copy single variables
-    this->length = src_track->length;
+    this->range_end = src_track->range_end;
+    this->range_start = src_track->range_start;
     this->playback_position = src_track->playback_position;
     this->ratchet_counter = src_track->ratchet_counter;
     this->skipped = src_track->skipped;
@@ -237,13 +242,24 @@ struct Track
     this->track_pitch = src_track->track_pitch;
   }
 
-  float getLength()  {
-    return(this->length);
+  float getRangeStart()  {
+    return(this->range_start);
   }
 
-  void setLength(unsigned int length)  {
-    this->length = length;
+  void setRangeStart(unsigned int range_start)  {
+    if(playback_position < range_start) playback_position = range_start;
+    this->range_start = range_start;
   }
+
+  float getRangeEnd()  {
+    return(this->range_end);
+  }
+
+  void setRangeEnd(unsigned int range_end)  {
+    this->range_end = range_end;
+  }
+
+
 
   // Parameter locks
   // ============================================================================
