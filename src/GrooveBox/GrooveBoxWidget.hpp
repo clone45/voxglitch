@@ -247,7 +247,8 @@ struct RangeGrabberRightWidget : TransparentWidget
     if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
     {
       e.consume(this);
-      drag_position = e.pos;
+      // drag_position = e.pos;
+      drag_position = this->box.pos;
     }
   }
 
@@ -277,7 +278,12 @@ struct RangeGrabberRightWidget : TransparentWidget
     // TransparentWidget::onDragMove(e);
     float zoom = getAbsoluteZoom();
     drag_position = drag_position.plus(e.mouseDelta.div(zoom));
-    this->box.pos = Vec(drag_position.x, this->box.pos.y);
+
+
+    int quantized_x = ((drag_position.x - button_positions[0][0]) + diameter) / (button_positions[1][0] - button_positions[0][0]);
+    quantized_x = clamp(quantized_x, 0, 15);
+
+    this->box.pos = Vec(button_positions[quantized_x][0] - radius, this->box.pos.y);
   }
 
 /*
