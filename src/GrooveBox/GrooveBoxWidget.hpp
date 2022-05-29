@@ -185,16 +185,18 @@ struct RangeGrabberRightWidget : TransparentWidget
     nvgSave(vg);
     nvgBeginPath(vg);
 
-    this->box.pos = Vec(button_positions[module->selected_track->range_end][0] - radius, this->box.pos.y);
+    if(module)
+    {
+      this->box.pos = Vec(button_positions[module->selected_track->range_end][0] - radius, this->box.pos.y);
+    }
+    else
+    {
+      this->box.pos = Vec(button_positions[10][0] - radius, this->box.pos.y);
+    }
+
 
     // box.size.x = button_positions[module->selected_track->length][0];
-
-    if(module) {
-      nvgCircle(vg, box.size.x - radius, box.size.y - radius, radius);
-    }
-    else {
-      nvgCircle(vg, box.size.x - radius, box.size.y - radius, radius);
-    }
+    nvgCircle(vg, box.size.x - radius, box.size.y - radius, radius);
 
     if(is_moused_over)
     {
@@ -282,16 +284,16 @@ struct RangeGrabberLeftWidget : TransparentWidget
     nvgSave(vg);
     nvgBeginPath(vg);
 
-    this->box.pos = Vec(button_positions[module->selected_track->range_start][0] - radius, this->box.pos.y);
-
-    // box.size.x = button_positions[module->selected_track->length][0];
-
-    if(module) {
-      nvgCircle(vg, box.size.x - radius, box.size.y - radius, radius);
+    if(module)
+    {
+      this->box.pos = Vec(button_positions[module->selected_track->range_start][0] - radius, this->box.pos.y);
     }
-    else {
-      nvgCircle(vg, box.size.x - radius, box.size.y - radius, radius);
+    else
+    {
+      this->box.pos = Vec(button_positions[10][0] - radius, this->box.pos.y);
     }
+
+    nvgCircle(vg, box.size.x - radius, box.size.y - radius, radius);
 
     if(is_moused_over) {
       nvgFillColor(vg, nvgRGB(120,120,120));
