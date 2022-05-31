@@ -8,16 +8,25 @@ namespace groove_box
 struct Track
 {
   bool steps[NUMBER_OF_STEPS] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
-  bool ratchet_patterns[8][7] = {
+  bool ratchet_patterns[NUMBER_OF_RATCHET_PATTERNS][7] = {
     {0,0,0,0,0,0,0},
     {0,0,0,1,0,0,0},
-    {0,1,0,1,0,1,0},
-    {1,1,1,1,1,1,1},
-    {0,1,0,0,1,0,0},
-    {1,1,1,0,1,0,0},
     {0,0,0,1,1,1,1},
-    {1,1,1,0,0,0,0}
+    {0,0,1,0,0,1,0},
+    {0,1,1,0,1,1,0},
+    {0,1,0,1,0,1,0},
+    {0,1,0,0,1,0,0},
+    {1,0,1,0,1,0,1},
+    {1,1,0,0,0,1,1},
+    {1,1,0,1,1,0,1},
+    {1,1,1,0,1,0,0},
+    {1,1,1,0,1,0,1},
+    {1,1,1,0,0,0,0},
+    {1,1,1,1,0,0,0},
+    {1,1,1,0,1,1,1},
+    {1,1,1,1,1,1,1}
   };
+
   unsigned int playback_position = 0;
   unsigned int range_end = NUMBER_OF_STEPS - 1; // was length
   unsigned int range_start = 0;
@@ -118,7 +127,7 @@ struct Track
 
     if (steps[playback_position] && (skipped == false))
     {
-      unsigned int ratchet_pattern = settings.ratchet * 7;
+      unsigned int ratchet_pattern = settings.ratchet * (NUMBER_OF_RATCHET_PATTERNS - 1);
       if(ratchet_patterns[ratchet_pattern][ratchet_counter])
       {
         sample_player->trigger(&settings);
