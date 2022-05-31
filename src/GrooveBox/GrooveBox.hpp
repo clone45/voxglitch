@@ -307,11 +307,6 @@ struct GrooveBox : VoxglitchSamplerModule
     }
     json_object_set(json_root, "memory_slots", memory_slots_json_array);
 
-    // Save path of the sample bank
-    // json_object_set_new(json_root, "path", json_string(this->sample_bank.path.c_str()));
-
-    // json_object_set_new(json_root, "offset_snap_index", json_integer(this->offset_snap_index));
-
 		return json_root;
 	}
 
@@ -427,10 +422,6 @@ struct GrooveBox : VoxglitchSamplerModule
         } // end if tracks array data
       } // end foreach memory slot
     } // end if memory_slots array data
-
-
-    // json_t* offset_snap_index_json = json_object_get(json_root, "offset_snap_index");
-    // if(offset_snap_index_json) this->offset_snap_index = json_integer_value(offset_snap_index_json);
 
     updateKnobPositions();
 	}
