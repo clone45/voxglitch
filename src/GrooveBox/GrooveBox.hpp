@@ -4,9 +4,7 @@
 // By Bret Truchan
 //
 // TODO:
-// - Flash the light when it triggers.  not so easy.  I could keep the flash
-//   counter in the GrooveBox and have the GrooveBoxBlueLight access it through
-//   the module-> pointer.
+//
 // - Thank you to all the friendly people on the VCV Rack Community for answering
 //   my questions and providing feedback on early builds.
 
@@ -45,6 +43,7 @@ struct GrooveBox : VoxglitchSamplerModule
   bool solos[NUMBER_OF_TRACKS];
   bool any_track_soloed = false;
   bool expander_connected = false;
+  unsigned int offset_snap_track_values[NUMBER_OF_TRACKS];
 
   // A pair of GrooveBoxExpanderMessage structures for sending information
   // from the expander to the groovebox.  Note that they both essentially
@@ -80,6 +79,10 @@ struct GrooveBox : VoxglitchSamplerModule
   // it affecting all memory banks.
 
   SamplePlayer sample_players[NUMBER_OF_TRACKS];
+
+  // offset snap settings
+  unsigned int offset_snap_indexes[NUMBER_OF_TRACKS];
+
 
   //
   // Basic VCV Parameter, Input, Output, and Light definitions
@@ -136,6 +139,7 @@ struct GrooveBox : VoxglitchSamplerModule
       this->mutes[i] = false;
       this->solos[i] = false;
       this->track_volumes[i] = 1.0;
+      this->offset_snap_indexes[i] = 0;
     }
 
     // Configure the individual track outputs
@@ -223,6 +227,12 @@ struct GrooveBox : VoxglitchSamplerModule
     updateKnobPositions();
   }
 
+  void setOffsetSnapIndex(unsigned int offset_snap_index, unsigned int track_index)
+  {
+    this->offset_snap_indexes[track_index] = offset_snap_index;
+    this->offset_snap_track_values[track_index] = offset_snap_values[offset_snap_index];
+    // this->global_modifiers.offset_snap_values[track_index] = offset_snap_values[offset_snap_index];
+  }
 
   //
 	// SAVE module data
@@ -232,23 +242,26 @@ struct GrooveBox : VoxglitchSamplerModule
 		json_t *json_root = json_object();
 
     //
-    // handle sample related save/load items
+    // handle track related information that is tied to the track index and
+    // doesn't change when the memory slot is changed.
     //
-    json_t *samples_json_array = json_array();
+    json_t *track_data_json_array = json_array();
 
     for(unsigned int track_number=0; track_number < NUMBER_OF_TRACKS; track_number++)
     {
       std::string filename = this->sample_players[track_number].getFilename();
       std::string path = this->sample_players[track_number].getPath();
 
-      json_t *sample_json_object = json_object();
+      json_t *track_json_object = json_object();
 
-      json_object_set(sample_json_object, "sample_filename", json_string(filename.c_str()));
-      json_object_set(sample_json_object, "sample_path", json_string(path.c_str()));
+      json_object_set(track_json_object, "sample_filename", json_string(filename.c_str()));
+      json_object_set(track_json_object, "sample_path", json_string(path.c_str()));
+      json_object_set(track_json_object, "offset_snap_index", json_integer(this->offset_snap_indexes[track_number]));
 
-      json_array_append_new(samples_json_array, sample_json_object);
+      json_array_append_new(track_data_json_array, track_json_object);
     }
-    json_object_set(json_root, "samples", samples_json_array);
+    json_object_set(json_root, "shared_track_data", track_data_json_array);
+
 
     //
     // Save all memory slot data
@@ -283,7 +296,8 @@ struct GrooveBox : VoxglitchSamplerModule
         json_t *track_data = json_object();
 
         json_object_set(track_data, "steps", steps_json_array);
-        json_object_set(track_data, "length", json_integer(this->memory_slots[memory_slot_number].tracks[track_number].getLength()));
+        json_object_set(track_data, "range_start", json_integer(this->memory_slots[memory_slot_number].tracks[track_number].getRangeStart()));
+        json_object_set(track_data, "range_end", json_integer(this->memory_slots[memory_slot_number].tracks[track_number].getRangeEnd()));
         json_array_append_new(tracks_json_array, track_data);
       }
 
@@ -295,6 +309,8 @@ struct GrooveBox : VoxglitchSamplerModule
 
     // Save path of the sample bank
     // json_object_set_new(json_root, "path", json_string(this->sample_bank.path.c_str()));
+
+    // json_object_set_new(json_root, "offset_snap_index", json_integer(this->offset_snap_index));
 
 		return json_root;
 	}
@@ -309,22 +325,28 @@ struct GrooveBox : VoxglitchSamplerModule
     //
     // Load samples
     //
-    json_t *samples_arrays_data = json_object_get(json_root, "samples");
+    json_t *shared_track_data = json_object_get(json_root, "shared_track_data");
 
-    if(samples_arrays_data)
+    if(shared_track_data)
     {
-      size_t sample_index;
-      json_t *json_sample_object;
+      size_t track_index;
+      json_t *json_track_data_object;
 
-      json_array_foreach(samples_arrays_data, sample_index, json_sample_object)
+      json_array_foreach(shared_track_data, track_index, json_track_data_object)
       {
-        json_t *sample_path_json = json_object_get(json_sample_object, "sample_path");
-
+        json_t *sample_path_json = json_object_get(json_track_data_object, "sample_path");
         if(sample_path_json)
         {
           std::string path = json_string_value(sample_path_json);
-          if(path != "") this->sample_players[sample_index].loadSample(path);
-          this->loaded_filenames[sample_index] = this->sample_players[sample_index].getFilename();
+          if(path != "") this->sample_players[track_index].loadSample(path);
+          this->loaded_filenames[track_index] = this->sample_players[track_index].getFilename();
+        }
+
+        json_t *offset_snap_index_json = json_object_get(json_track_data_object, "offset_snap_index");
+        if(offset_snap_index_json)
+        {
+          unsigned int offset_snap_index = json_integer_value(offset_snap_index_json);
+          setOffsetSnapIndex(offset_snap_index, track_index);
         }
       }
     }
@@ -354,9 +376,12 @@ struct GrooveBox : VoxglitchSamplerModule
 
           json_array_foreach(tracks_arrays_data, track_index, json_track_object)
           {
-            // Load track length
-            json_t *length_json = json_object_get(json_track_object, "length");
-            if(length_json) this->memory_slots[memory_slot_index].tracks[track_index].setLength(json_integer_value(length_json));
+            // Load track ranges
+            json_t *range_end_json = json_object_get(json_track_object, "range_end");
+            if(range_end_json) this->memory_slots[memory_slot_index].tracks[track_index].setRangeEnd(json_integer_value(range_end_json));
+
+            json_t *range_start_json = json_object_get(json_track_object, "range_start");
+            if(range_start_json) this->memory_slots[memory_slot_index].tracks[track_index].setRangeStart(json_integer_value(range_start_json));
 
 
             //
@@ -403,12 +428,17 @@ struct GrooveBox : VoxglitchSamplerModule
       } // end foreach memory slot
     } // end if memory_slots array data
 
+
+    // json_t* offset_snap_index_json = json_object_get(json_root, "offset_snap_index");
+    // if(offset_snap_index_json) this->offset_snap_index = json_integer_value(offset_snap_index_json);
+
     updateKnobPositions();
 	}
 
   bool trigger(unsigned int track_id)
   {
-    if(notMuted(track_id)) return(selected_memory_slot->tracks[track_id].trigger());
+    unsigned int offset_snap_value = offset_snap_track_values[track_id];
+    if(notMuted(track_id)) return(selected_memory_slot->tracks[track_id].trigger(offset_snap_value));
     return(false);
   }
 
@@ -517,7 +547,7 @@ struct GrooveBox : VoxglitchSamplerModule
         // of toggling the drum pad.
         if(shift_key)
         {
-          selected_track->length = step_number;
+          selected_track->range_end = step_number;
         }
         else
         {

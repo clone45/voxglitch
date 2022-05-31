@@ -1,3 +1,7 @@
+// Thought:
+// When calling Trigger, pass in the global modifiers, such as "offset_snap",
+// to apply to the offset.
+
 namespace groove_box
 {
 
@@ -15,7 +19,8 @@ struct Track
     {1,1,1,0,0,0,0}
   };
   unsigned int playback_position = 0;
-  unsigned int length = NUMBER_OF_STEPS - 1;
+  unsigned int range_end = NUMBER_OF_STEPS - 1; // was length
+  unsigned int range_start = 0;
   SamplePlaybackSettings sample_playback_settings[NUMBER_OF_STEPS]; // settings assigned to each step
   SamplePlaybackSettings settings; // currently used settings
 
@@ -48,11 +53,13 @@ struct Track
 
   void step()
   {
-    playback_position = (playback_position + 1) % (length + 1);
+    // playback_position = (playback_position + 1) % (range_end + 1);
+    playback_position = playback_position + 1;
+    if(playback_position > range_end) playback_position = range_start;
     ratchet_counter = 0;
   }
 
-  bool trigger()
+  bool trigger(unsigned int offset_snap_value)
   {
     fading_out = false;
 
@@ -76,6 +83,16 @@ struct Track
         settings.reverse = getReverse(playback_position);
         settings.loop = getLoop(playback_position);
 
+        if(offset_snap_value > 0 && settings.offset > 0)
+        {
+          // settings.offset ranges from 0 to 1
+          // This next line sets quantized_offset to an integer between
+          // 0 and offset_snap
+          float quantized_offset = settings.offset * (float) offset_snap_value;
+          quantized_offset = std::floor(quantized_offset);
+          settings.offset = quantized_offset / (float) offset_snap_value;
+        }
+
         // trigger sample playback
         sample_player->trigger(&settings);
 
@@ -98,7 +115,7 @@ struct Track
   bool ratchety()
   {
     bool ratcheted = false;
-    
+
     if (steps[playback_position] && (skipped == false))
     {
       unsigned int ratchet_pattern = settings.ratchet * 7;
@@ -158,7 +175,8 @@ struct Track
     {
       setValue(i, false);
     }
-    this->length = NUMBER_OF_STEPS - 1;
+    this->range_end = NUMBER_OF_STEPS - 1;
+    this->range_start = 0;
     this->resetAllParameterLocks();
   }
 
@@ -227,7 +245,8 @@ struct Track
     this->settings.copy(&src_track->settings);
 
     // Copy single variables
-    this->length = src_track->length;
+    this->range_end = src_track->range_end;
+    this->range_start = src_track->range_start;
     this->playback_position = src_track->playback_position;
     this->ratchet_counter = src_track->ratchet_counter;
     this->skipped = src_track->skipped;
@@ -237,13 +256,24 @@ struct Track
     this->track_pitch = src_track->track_pitch;
   }
 
-  float getLength()  {
-    return(this->length);
+  float getRangeStart()  {
+    return(this->range_start);
   }
 
-  void setLength(unsigned int length)  {
-    this->length = length;
+  void setRangeStart(unsigned int range_start)  {
+    if(playback_position < range_start) playback_position = range_start;
+    this->range_start = range_start;
   }
+
+  float getRangeEnd()  {
+    return(this->range_end);
+  }
+
+  void setRangeEnd(unsigned int range_end)  {
+    this->range_end = range_end;
+  }
+
+
 
   // Parameter locks
   // ============================================================================
@@ -267,7 +297,7 @@ struct Track
   //
   // Offset
   //
-  float getOffset(unsigned int step) {
+  float getOffset(unsigned int step) {  // This could apply the snap here
     return(this->sample_playback_settings[step].offset);
   }
   void setOffset(unsigned int step, float offset) {
