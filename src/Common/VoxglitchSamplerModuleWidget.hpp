@@ -26,7 +26,7 @@ struct VoxglitchSamplerModuleWidget : ModuleWidget
       interpolation_off_option->module = module;
       menu->addChild(interpolation_off_option);
 
-      InterpolationLinearOption *interpolation_linear_option = createMenuItem<InterpolationLinearOption>("Linear", CHECKMARK(module->interpolation == 1));
+      InterpolationLinearOption *interpolation_linear_option = createMenuItem<InterpolationLinearOption>("Linear (Better Quality)", CHECKMARK(module->interpolation == 1));
       interpolation_linear_option->module = module;
       menu->addChild(interpolation_linear_option);
 

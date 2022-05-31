@@ -4,6 +4,7 @@ namespace groove_box
   const int NUMBER_OF_TRACKS = 8;
   const int NUMBER_OF_MEMORY_SLOTS = 16;
   const int NUMBER_OF_FUNCTIONS = 8;
+  const int NUMBER_OF_OFFSET_SNAP_OPTIONS = 8;
 
   const int FUNCTION_VOLUME = 0;
   const int FUNCTION_PAN = 1;
@@ -32,6 +33,28 @@ namespace groove_box
     "jiggly_puff.wav",
     "",
     ""
+  };
+
+  const std::string offset_snap_names[NUMBER_OF_OFFSET_SNAP_OPTIONS] = {
+    "none",
+    "4",
+    "8",
+    "16",
+    "32",
+    "64",
+    "128",
+    "256"
+  };
+
+  const unsigned int offset_snap_values[NUMBER_OF_OFFSET_SNAP_OPTIONS] = {
+    0,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256
   };
 
 }

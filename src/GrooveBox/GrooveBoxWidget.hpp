@@ -3,7 +3,7 @@
 
 #include <componentlibrary.hpp>
 #include "menus/TrackMenu.hpp"
-
+#include "menus/OffsetSnapMenu.hpp"
 
 float button_positions_y = mm2px(89.75);
 
@@ -693,9 +693,17 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     menu->addChild(new MenuEntry); // For spacing only
     menu->addChild(createMenuLabel("GrooveBox"));
 
-    TracksMenu *tracks_menu = createMenuItem<TracksMenu>("Track Actions", RIGHT_ARROW);
+    // Track actions menu
+    TracksMenu *tracks_menu = createMenuItem<TracksMenu>("Tracks", RIGHT_ARROW);
     tracks_menu->module = module;
     menu->addChild(tracks_menu);
+
+    // Offset Snap settings menu
+    /*
+    OffsetSnapMenuItem *offset_snap_menu_item = createMenuItem<OffsetSnapMenuItem>("Offset Snap", RIGHT_ARROW);
+    offset_snap_menu_item->module = module;
+    menu->addChild(offset_snap_menu_item);
+    */
 
     //
     // Start sample selection menu options
@@ -732,6 +740,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     menu->addChild(new MenuEntry); // For spacing only
 
     // Add interpolation menu from /Common/VoxglitchSamplerModuleWidget.hpp
+    menu->addChild(createMenuLabel("Audio Quality"));
     SampleInterpolationMenuItem *sample_interpolation_menu_item = createMenuItem<SampleInterpolationMenuItem>("Interpolation", RIGHT_ARROW);
     sample_interpolation_menu_item->module = module;
     menu->addChild(sample_interpolation_menu_item);

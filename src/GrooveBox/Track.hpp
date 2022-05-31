@@ -1,3 +1,7 @@
+// Thought:
+// When calling Trigger, pass in the global modifiers, such as "offset_snap",
+// to apply to the offset.
+
 namespace groove_box
 {
 
@@ -55,7 +59,7 @@ struct Track
     ratchet_counter = 0;
   }
 
-  bool trigger()
+  bool trigger(unsigned int offset_snap_value)
   {
     fading_out = false;
 
@@ -78,6 +82,16 @@ struct Track
         settings.offset = getOffset(playback_position);
         settings.reverse = getReverse(playback_position);
         settings.loop = getLoop(playback_position);
+
+        if(offset_snap_value > 0 && settings.offset > 0)
+        {
+          // settings.offset ranges from 0 to 1
+          // This next line sets quantized_offset to an integer between
+          // 0 and offset_snap
+          float quantized_offset = settings.offset * (float) offset_snap_value;
+          quantized_offset = std::floor(quantized_offset);
+          settings.offset = quantized_offset / (float) offset_snap_value;
+        }
 
         // trigger sample playback
         sample_player->trigger(&settings);
@@ -283,7 +297,7 @@ struct Track
   //
   // Offset
   //
-  float getOffset(unsigned int step) {
+  float getOffset(unsigned int step) {  // This could apply the snap here
     return(this->sample_playback_settings[step].offset);
   }
   void setOffset(unsigned int step, float offset) {
