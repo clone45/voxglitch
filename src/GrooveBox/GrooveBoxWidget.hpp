@@ -139,7 +139,7 @@ struct SequenceLengthWidget : TransparentWidget
       nvgRoundedRect(vg, 0, 0, mm2px(186.51), 12, 5);
     }
 
-    nvgFillColor(vg, nvgRGB(84, 84, 84));
+    nvgFillColor(vg, nvgRGB(65, 65, 65));
     nvgFill(vg);
 
     nvgRestore(vg);
@@ -204,7 +204,7 @@ struct RangeGrabberRightWidget : TransparentWidget
     }
     else
     {
-      nvgFillColor(vg, nvgRGB(84,84,84));
+      nvgFillColor(vg, nvgRGB(65,65,65));
     }
 
     nvgFill(vg);
@@ -299,7 +299,7 @@ struct RangeGrabberLeftWidget : TransparentWidget
       nvgFillColor(vg, nvgRGB(120,120,120));
     }
     else {
-      nvgFillColor(vg, nvgRGB(84,84,84));
+      nvgFillColor(vg, nvgRGB(65,65,65));
     }
 
     nvgFill(vg);
