@@ -204,6 +204,7 @@ struct GrooveBox : VoxglitchSamplerModule
         case FUNCTION_REVERSE: value = selected_track->getReverse(step_number); break;
         case FUNCTION_PROBABILITY: value = selected_track->getProbability(step_number); break;
         case FUNCTION_LOOP: value = selected_track->getLoop(step_number); break;
+        default: value = 0;
       }
 
       params[STEP_KNOBS + step_number].setValue(value);
