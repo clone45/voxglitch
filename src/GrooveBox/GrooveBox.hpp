@@ -155,6 +155,7 @@ struct GrooveBox : VoxglitchSamplerModule
 
     // Configure the master output knob
     configParam(MASTER_VOLUME, 0.0, 1.0, 0.5, "Master Volume");
+    paramQuantities[MASTER_VOLUME]->randomizeEnabled = false;
 
     // There are 8 sample players, one for each track.  These sample players
     // are shared across the tracks contained in the memory slots.
@@ -163,6 +164,8 @@ struct GrooveBox : VoxglitchSamplerModule
         memory_slots[p].setSamplePlayer(t, &sample_players[t]);
       }
     }
+
+
 
     // Store a pointer to the active memory slot
     selected_memory_slot = &memory_slots[0];

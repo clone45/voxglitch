@@ -76,6 +76,17 @@ struct ModdedCL1362 : SvgPort {
 	}
 };
 
+/*
+struct MasterVolumeKnob : Trimpot {
+  MasterVolumeKnob()
+  {
+    randomizeEnabled = false;
+    minAngle = -0.83*M_PI;
+		maxAngle = 0.83*M_PI;
+  }
+};
+*/
+
 struct TrimpotMedium : SVGKnob {
   widget::SvgWidget* bg;
   GrooveBox *module;
