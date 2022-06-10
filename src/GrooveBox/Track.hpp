@@ -173,7 +173,7 @@ struct Track
 
   void reset()
   {
-    playback_position = 0;
+    playback_position = range_start;
     ratchet_counter = 0;
     fading_out = false;
   }
