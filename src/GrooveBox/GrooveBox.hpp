@@ -204,6 +204,8 @@ struct GrooveBox : VoxglitchSamplerModule
         case FUNCTION_REVERSE: value = selected_track->getReverse(step_number); break;
         case FUNCTION_PROBABILITY: value = selected_track->getProbability(step_number); break;
         case FUNCTION_LOOP: value = selected_track->getLoop(step_number); break;
+        case FUNCTION_ATTACK: value = selected_track->getAttack(step_number); break;
+        case FUNCTION_RELEASE: value = selected_track->getRelease(step_number); break;
         default: value = 0;
       }
 
@@ -290,6 +292,8 @@ struct GrooveBox : VoxglitchSamplerModule
           json_object_set(step_data, "reverse", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getReverse(step_index)));
           json_object_set(step_data, "probability", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getProbability(step_index)));
           json_object_set(step_data, "loop", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getLoop(step_index)));
+          json_object_set(step_data, "attack", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getAttack(step_index)));
+          json_object_set(step_data, "release", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getRelease(step_index)));
 
           json_array_append_new(steps_json_array, step_data);
         }
@@ -417,6 +421,13 @@ struct GrooveBox : VoxglitchSamplerModule
 
                 json_t *loop_json = json_object_get(json_step_object, "loop");
                 if(loop_json) this->memory_slots[memory_slot_index].tracks[track_index].setLoop(step_index, json_real_value(loop_json));
+
+                json_t *attack_json = json_object_get(json_step_object, "attack");
+                if(attack_json) this->memory_slots[memory_slot_index].tracks[track_index].setAttack(step_index, json_real_value(attack_json));
+
+                json_t *release_json = json_object_get(json_step_object, "release");
+                if(release_json) this->memory_slots[memory_slot_index].tracks[track_index].setRelease(step_index, json_real_value(release_json));
+
               }
             }
           }
@@ -587,6 +598,8 @@ struct GrooveBox : VoxglitchSamplerModule
         case FUNCTION_REVERSE: selected_track->setReverse(step_number, value); break;
         case FUNCTION_PROBABILITY: selected_track->setProbability(step_number, value); break;
         case FUNCTION_LOOP: selected_track->setLoop(step_number, value); break;
+        case FUNCTION_ATTACK: selected_track->setAttack(step_number, value); break;
+        case FUNCTION_RELEASE: selected_track->setRelease(step_number, value); break;
       }
     }
 
@@ -770,8 +783,6 @@ struct GrooveBox : VoxglitchSamplerModule
   void detachExpander()
   {
     this->any_track_soloed = false;
-
-    // TODO: Iterate through all memory slots as well
 
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
     {

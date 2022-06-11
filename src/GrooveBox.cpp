@@ -17,6 +17,8 @@ using namespace groove_box;
 #include "Common/sample.hpp"
 #include "Common/common.hpp"
 #include "Common/submodules.hpp"
+#include "Common/DSP/ADSR.cpp"
+#include "Common/DSP/freeverb/revmodel.cpp"
 #include "Common/VoxglitchSamplerModule.hpp"
 #include "Common/VoxglitchSamplerModuleWidget.hpp"
 
