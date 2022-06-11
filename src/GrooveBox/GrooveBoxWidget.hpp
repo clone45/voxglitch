@@ -123,6 +123,8 @@ struct TrimpotMedium : SVGKnob {
       case FUNCTION_PROBABILITY: module->params[parameter_index].setValue(default_probability); break;
       case FUNCTION_REVERSE: module->params[parameter_index].setValue(default_reverse); break;
       case FUNCTION_LOOP: module->params[parameter_index].setValue(default_loop); break;
+      case FUNCTION_ATTACK: module->params[parameter_index].setValue(default_attack); break;
+      case FUNCTION_RELEASE: module->params[parameter_index].setValue(default_release); break;
     }
   }
 };
