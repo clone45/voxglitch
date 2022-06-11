@@ -11,6 +11,8 @@ struct SamplePlaybackSettings
   float probability = default_probability;
   float loop = default_loop;
   bool reverse = default_reverse;
+  float attack = default_attack;
+  float release = default_release;
 
   void copy(SamplePlaybackSettings *src_settings)
   {
@@ -22,6 +24,8 @@ struct SamplePlaybackSettings
     this->probability = src_settings->probability;
     this->loop = src_settings->loop;
     this->reverse = src_settings->reverse;
+    this->attack = src_settings->attack;
+    this->release = src_settings->release;
   }
 };
 

@@ -38,6 +38,9 @@ struct Track
   float track_pitch = 0.0;
   float track_volume = 0.0;
 
+  ADSR adsr;
+  // revmodel reverb;
+
   StereoPanSubModule stereo_pan_submodule;
   unsigned int ratchet_counter = 0;
   SamplePlayer *sample_player;
@@ -53,6 +56,16 @@ struct Track
 
   Track()
   {
+    adsr.setAttackRate(0);
+    adsr.setDecayRate(0); // no decay stage for this module
+    adsr.setReleaseRate(1 * rack::settings::sampleRate); // 1 second
+    adsr.setSustainLevel(1.0);
+
+    /*
+    reverb.init(rack::settings::sampleRate);
+    reverb.setdamp(.5);
+    reverb.setroomsize(.5);
+    */
   }
 
   void setSamplePlayer(SamplePlayer *sample_player)
@@ -91,16 +104,21 @@ struct Track
         settings.offset = getOffset(playback_position);
         settings.reverse = getReverse(playback_position);
         settings.loop = getLoop(playback_position);
+        settings.attack = getAttack(playback_position);
+        settings.release = getRelease(playback_position);
 
+        // If the offset settings is set and snap is on, then quantize the offset.
         if(offset_snap_value > 0 && settings.offset > 0)
         {
           // settings.offset ranges from 0 to 1
-          // This next line sets quantized_offset to an integer between
-          // 0 and offset_snap
+          // This next line sets quantized_offset to an integer between 0 and offset_snap
           float quantized_offset = settings.offset * (float) offset_snap_value;
           quantized_offset = std::floor(quantized_offset);
           settings.offset = quantized_offset / (float) offset_snap_value;
         }
+
+        // Trigger the ADSR
+        adsr.gate(true);
 
         // trigger sample playback
         sample_player->trigger(&settings);
@@ -131,6 +149,7 @@ struct Track
       if(ratchet_patterns[ratchet_pattern][ratchet_counter])
       {
         sample_player->trigger(&settings);
+        adsr.gate(true); // retrigger the ADSR
         ratcheted = true;
       }
       if(++ratchet_counter >= 8) ratchet_counter = 0;
@@ -195,6 +214,19 @@ struct Track
     float left_output;
     float right_output;
 
+    adsr.setAttackRate(settings.attack *  rack::settings::sampleRate);
+    adsr.setReleaseRate(settings.release * maximum_release_time * rack::settings::sampleRate);
+
+    float adsr_value = adsr.process();
+
+    // When the ADSR reaches the sustain state, then switch to the release
+    // state.  Only do this when the release is less than max release, otherwise
+    // sustain until the nex time the track is triggered.
+    //
+    // * Reminder: settings.release ranges from 0.0 to 1.0
+    //
+    if(adsr.getState() == ADSR::env_sustain && settings.release < 1.0) adsr.gate(false);
+
     // Read sample output and return
     this->sample_player->getStereoOutput(&left_output, &right_output, interpolation);
 
@@ -226,6 +258,14 @@ struct Track
         fade_out_counter--;
       }
     }
+
+    // Apply ADSR to volume
+    left_output *= adsr_value;
+    right_output *= adsr_value;
+
+    // Apply reverb
+    // float reverb_input = (left_output + right_output) / 2;
+    // reverb.process(reverb_input, left_output, right_output);
 
     return { left_output, right_output };
   }
@@ -383,6 +423,28 @@ struct Track
     this->sample_playback_settings[step].loop = loop;
   }
 
+  //
+  // Attack
+  //
+  float getAttack(unsigned int step)  {
+    return(this->sample_playback_settings[step].attack);
+  }
+  void setAttack(unsigned int step, float attack)  {
+    this->sample_playback_settings[step].attack = attack;
+  }
+
+  //
+  // Release
+  //
+  float getRelease(unsigned int step)  {
+    return(this->sample_playback_settings[step].release);
+  }
+  void setRelease(unsigned int step, float release)  {
+    this->sample_playback_settings[step].release = release;
+  }
+
+  // =-==================================================================
+
   // Track pan
   float getTrackPan()  {
     return(this->track_pan);
@@ -398,6 +460,7 @@ struct Track
   void setTrackPitch(float track_pitch) {
     this->track_pitch = track_pitch;
   }
+
 
 };
 
