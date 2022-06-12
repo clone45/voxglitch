@@ -132,9 +132,28 @@ struct SamplePlayer
     return(sample.filename);
   }
 
+  void setFilename(std::string filename)
+  {
+    sample.filename = filename;
+  }
+
   std::string getPath()
   {
     return(sample.path);
+  }
+
+  void setPath(std::string path)
+  {
+    sample.path = path;
+  }
+
+  void initialize()
+  {
+    sample.unload();
+    this->playback_position = 0.0f;
+    this->playing = false;
+    this->setFilename("");
+    this->setPath("");
   }
 };
 

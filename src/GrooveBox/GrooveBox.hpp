@@ -191,6 +191,23 @@ struct GrooveBox : VoxglitchSamplerModule
       updateKnobPositions();
   }
 
+  void initialize()
+  {
+    for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
+    {
+      memory_slots[i].initialize();
+    }
+
+    for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
+    {
+      // this->sample_players[i].initialize();
+      this->loaded_filenames[i] = "";
+      this->offset_snap_indexes[i] = 0;
+    }
+
+    this->updateKnobPositions();
+  }
+
   void updateKnobPositions()
   {
     for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
@@ -444,7 +461,7 @@ struct GrooveBox : VoxglitchSamplerModule
                 if(delay_length_json) this->memory_slots[memory_slot_index].tracks[track_index].setDelayLength(step_index, json_real_value(delay_length_json));
 
                 json_t *delay_feedback_json = json_object_get(json_step_object, "delay_feedback");
-                if(delay_feedback_json) this->memory_slots[memory_slot_index].tracks[track_index].setDelayFeedback(step_index, json_real_value(delay_feedback_json));                
+                if(delay_feedback_json) this->memory_slots[memory_slot_index].tracks[track_index].setDelayFeedback(step_index, json_real_value(delay_feedback_json));
 
               }
             }

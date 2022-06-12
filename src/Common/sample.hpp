@@ -194,4 +194,13 @@ struct Sample
     return(sample_length);
   }
 
+  void unload()
+  {
+    this->sample_audio_buffer.clear();
+    this->sample_length = 0;
+    this->filename = "";
+    this->display_name = "";
+    this->loaded = false;
+  }
+
 };

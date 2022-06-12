@@ -214,6 +214,11 @@ struct Track
     this->resetAllParameterLocks();
   }
 
+  void initialize()
+  {
+    this->clear();
+    this->sample_player->initialize();
+  }
 
   std::pair<float, float> getStereoOutput(unsigned int interpolation)
   {

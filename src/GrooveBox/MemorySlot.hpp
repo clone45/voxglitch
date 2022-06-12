@@ -31,6 +31,14 @@ struct MemorySlot
     }
   }
 
+  void initialize()
+  {
+    for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
+    {
+      this->tracks[i].initialize();
+    }
+  }
+
 };
 
 }

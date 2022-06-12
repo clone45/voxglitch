@@ -4,6 +4,7 @@
 #include <componentlibrary.hpp>
 #include "menus/TrackMenu.hpp"
 #include "menus/OffsetSnapMenu.hpp"
+#include "menus/InitializeMenu.hpp"
 
 float button_positions_y = mm2px(89.75);
 
@@ -718,6 +719,11 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
 
     menu->addChild(new MenuEntry); // For spacing only
     menu->addChild(createMenuLabel("GrooveBox"));
+
+    // Initialize module
+    InitializeMenuItem *initialize_menu_item = createMenuItem<InitializeMenuItem>("Initialize", RIGHT_ARROW);
+    initialize_menu_item->module = module;
+    menu->addChild(initialize_menu_item);
 
     // Track actions menu
     TracksMenu *tracks_menu = createMenuItem<TracksMenu>("Tracks", RIGHT_ARROW);
