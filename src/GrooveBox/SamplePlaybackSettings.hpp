@@ -13,6 +13,9 @@ struct SamplePlaybackSettings
   bool reverse = default_reverse;
   float attack = default_attack;
   float release = default_release;
+  float delay_mix = default_delay_mix;
+  float delay_length = default_delay_length;
+  float delay_feedback = default_delay_feedback;
 
   void copy(SamplePlaybackSettings *src_settings)
   {
@@ -26,6 +29,9 @@ struct SamplePlaybackSettings
     this->reverse = src_settings->reverse;
     this->attack = src_settings->attack;
     this->release = src_settings->release;
+    this->delay_mix = src_settings->delay_mix;
+    this->delay_length = src_settings->delay_length;
+    this->delay_feedback = src_settings->delay_feedback;
   }
 };
 

@@ -40,6 +40,7 @@ struct Track
 
   ADSR adsr;
   // revmodel reverb;
+  SimpleDelay delay;
 
   StereoPanSubModule stereo_pan_submodule;
   unsigned int ratchet_counter = 0;
@@ -60,6 +61,8 @@ struct Track
     adsr.setDecayRate(0); // no decay stage for this module
     adsr.setReleaseRate(1 * rack::settings::sampleRate); // 1 second
     adsr.setSustainLevel(1.0);
+
+    delay.setBufferSize(rack::settings::sampleRate / 30.0);
 
     /*
     reverb.init(rack::settings::sampleRate);
@@ -106,6 +109,9 @@ struct Track
         settings.loop = getLoop(playback_position);
         settings.attack = getAttack(playback_position);
         settings.release = getRelease(playback_position);
+        settings.delay_mix = getDelayMix(playback_position);
+        settings.delay_length = getDelayLength(playback_position);
+        settings.delay_feedback = getDelayFeedback(playback_position);
 
         // If the offset settings is set and snap is on, then quantize the offset.
         if(offset_snap_value > 0 && settings.offset > 0)
@@ -267,7 +273,16 @@ struct Track
     // float reverb_input = (left_output + right_output) / 2;
     // reverb.process(reverb_input, left_output, right_output);
 
-    return { left_output, right_output };
+    // Apply delay
+    float delay_output_left = 0.0;
+    float delay_output_right = 0.0;
+
+    delay.setMix(settings.delay_mix);
+    delay.setBufferSize(settings.delay_length * (rack::settings::sampleRate / 4));
+    delay.setFeedback(settings.delay_feedback);
+    delay.process(left_output, right_output, delay_output_left, delay_output_right);
+
+    return { delay_output_left, delay_output_right };
   }
 
   void incrementSamplePosition(float rack_sample_rate)
@@ -340,6 +355,11 @@ struct Track
       setProbability(i, default_probability);
       setLoop(i, default_loop);
       setReverse(i, default_reverse);
+      setAttack(i, default_attack);
+      setRelease(i, default_release);
+      setDelayMix(i, default_delay_mix);
+      setDelayLength(i, default_delay_length);
+      setDelayFeedback(i, default_delay_feedback);
     }
   }
 
@@ -441,6 +461,36 @@ struct Track
   }
   void setRelease(unsigned int step, float release)  {
     this->sample_playback_settings[step].release = release;
+  }
+
+  //
+  // Delay Mix
+  //
+  float getDelayMix(unsigned int step)  {
+    return(this->sample_playback_settings[step].delay_mix);
+  }
+  void setDelayMix(unsigned int step, float delay_mix)  {
+    this->sample_playback_settings[step].delay_mix = delay_mix;
+  }
+
+  //
+  // Delay Length
+  //
+  float getDelayLength(unsigned int step)  {
+    return(this->sample_playback_settings[step].delay_length);
+  }
+  void setDelayLength(unsigned int step, float delay_length)  {
+    this->sample_playback_settings[step].delay_length = delay_length;
+  }
+
+  //
+  // Delay Feedback
+  //
+  float getDelayFeedback(unsigned int step)  {
+    return(this->sample_playback_settings[step].delay_feedback);
+  }
+  void setDelayFeedback(unsigned int step, float delay_feedback)  {
+    this->sample_playback_settings[step].delay_feedback = delay_feedback;
   }
 
   // =-==================================================================

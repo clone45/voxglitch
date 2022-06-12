@@ -125,6 +125,9 @@ struct TrimpotMedium : SVGKnob {
       case FUNCTION_LOOP: module->params[parameter_index].setValue(default_loop); break;
       case FUNCTION_ATTACK: module->params[parameter_index].setValue(default_attack); break;
       case FUNCTION_RELEASE: module->params[parameter_index].setValue(default_release); break;
+      case FUNCTION_DELAY_MIX: module->params[parameter_index].setValue(default_delay_mix); break;
+      case FUNCTION_DELAY_LENGTH: module->params[parameter_index].setValue(default_delay_length); break;
+      case FUNCTION_DELAY_FEEDBACK: module->params[parameter_index].setValue(default_delay_feedback); break;
     }
   }
 };

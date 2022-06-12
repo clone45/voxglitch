@@ -17,6 +17,9 @@ namespace groove_box
   const int FUNCTION_REVERSE = 7;
   const int FUNCTION_ATTACK = 8;
   const int FUNCTION_RELEASE = 9;
+  const int FUNCTION_DELAY_MIX = 10;
+  const int FUNCTION_DELAY_LENGTH = 11;
+  const int FUNCTION_DELAY_FEEDBACK = 12;
 
   const float default_volume = 0.5;
   const float default_pan = 0.5;
@@ -29,6 +32,9 @@ namespace groove_box
   const float default_attack = 0.0;
   const float default_release = 1.0;
   const float maximum_release_time = 4.0;
+  const float default_delay_mix = 0.0;
+  const float default_delay_length = 0.5;
+  const float default_delay_feedback = 0.5;
 
   const std::string PLACEHOLDER_TRACK_NAMES[NUMBER_OF_TRACKS] = {
     "kick_drum.wav",

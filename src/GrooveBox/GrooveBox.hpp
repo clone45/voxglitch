@@ -209,6 +209,9 @@ struct GrooveBox : VoxglitchSamplerModule
         case FUNCTION_LOOP: value = selected_track->getLoop(step_number); break;
         case FUNCTION_ATTACK: value = selected_track->getAttack(step_number); break;
         case FUNCTION_RELEASE: value = selected_track->getRelease(step_number); break;
+        case FUNCTION_DELAY_MIX: value = selected_track->getDelayMix(step_number); break;
+        case FUNCTION_DELAY_LENGTH: value = selected_track->getDelayLength(step_number); break;
+        case FUNCTION_DELAY_FEEDBACK: value = selected_track->getDelayFeedback(step_number); break;
         default: value = 0;
       }
 
@@ -297,6 +300,9 @@ struct GrooveBox : VoxglitchSamplerModule
           json_object_set(step_data, "loop", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getLoop(step_index)));
           json_object_set(step_data, "attack", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getAttack(step_index)));
           json_object_set(step_data, "release", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getRelease(step_index)));
+          json_object_set(step_data, "delay_mix", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getDelayMix(step_index)));
+          json_object_set(step_data, "delay_length", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getDelayLength(step_index)));
+          json_object_set(step_data, "delay_feedback", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getDelayFeedback(step_index)));
 
           json_array_append_new(steps_json_array, step_data);
         }
@@ -430,6 +436,15 @@ struct GrooveBox : VoxglitchSamplerModule
 
                 json_t *release_json = json_object_get(json_step_object, "release");
                 if(release_json) this->memory_slots[memory_slot_index].tracks[track_index].setRelease(step_index, json_real_value(release_json));
+
+                json_t *delay_mix_json = json_object_get(json_step_object, "delay_mix");
+                if(delay_mix_json) this->memory_slots[memory_slot_index].tracks[track_index].setDelayMix(step_index, json_real_value(delay_mix_json));
+
+                json_t *delay_length_json = json_object_get(json_step_object, "delay_length");
+                if(delay_length_json) this->memory_slots[memory_slot_index].tracks[track_index].setDelayLength(step_index, json_real_value(delay_length_json));
+
+                json_t *delay_feedback_json = json_object_get(json_step_object, "delay_feedback");
+                if(delay_feedback_json) this->memory_slots[memory_slot_index].tracks[track_index].setDelayFeedback(step_index, json_real_value(delay_feedback_json));                
 
               }
             }
@@ -603,6 +618,9 @@ struct GrooveBox : VoxglitchSamplerModule
         case FUNCTION_LOOP: selected_track->setLoop(step_number, value); break;
         case FUNCTION_ATTACK: selected_track->setAttack(step_number, value); break;
         case FUNCTION_RELEASE: selected_track->setRelease(step_number, value); break;
+        case FUNCTION_DELAY_MIX: selected_track->setDelayMix(step_number, value); break;
+        case FUNCTION_DELAY_LENGTH: selected_track->setDelayLength(step_number, value); break;
+        case FUNCTION_DELAY_FEEDBACK: selected_track->setDelayFeedback(step_number, value); break;
       }
     }
 
