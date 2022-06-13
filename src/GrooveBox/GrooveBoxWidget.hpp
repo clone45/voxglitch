@@ -114,21 +114,38 @@ struct TrimpotMedium : SVGKnob {
 
   void onDoubleClick(const DoubleClickEvent &e) override
   {
+    float value = 0.0;
+
     switch(module->selected_function)
     {
-      case FUNCTION_VOLUME: module->params[parameter_index].setValue(default_volume); break;
-      case FUNCTION_PAN: module->params[parameter_index].setValue(default_pan); break;
-      case FUNCTION_PITCH: module->params[parameter_index].setValue(default_pitch); break;
-      case FUNCTION_RATCHET: module->params[parameter_index].setValue(default_ratchet); break;
-      case FUNCTION_OFFSET: module->params[parameter_index].setValue(default_offset); break;
-      case FUNCTION_PROBABILITY: module->params[parameter_index].setValue(default_probability); break;
-      case FUNCTION_REVERSE: module->params[parameter_index].setValue(default_reverse); break;
-      case FUNCTION_LOOP: module->params[parameter_index].setValue(default_loop); break;
-      case FUNCTION_ATTACK: module->params[parameter_index].setValue(default_attack); break;
-      case FUNCTION_RELEASE: module->params[parameter_index].setValue(default_release); break;
-      case FUNCTION_DELAY_MIX: module->params[parameter_index].setValue(default_delay_mix); break;
-      case FUNCTION_DELAY_LENGTH: module->params[parameter_index].setValue(default_delay_length); break;
-      case FUNCTION_DELAY_FEEDBACK: module->params[parameter_index].setValue(default_delay_feedback); break;
+      case FUNCTION_VOLUME: value = default_volume; break;
+      case FUNCTION_PAN: value = default_pan; break;
+      case FUNCTION_PITCH: value = default_pitch; break;
+      case FUNCTION_RATCHET: value = default_ratchet; break;
+      case FUNCTION_OFFSET: value = default_offset; break;
+      case FUNCTION_PROBABILITY: value = default_probability; break;
+      case FUNCTION_REVERSE: value = default_reverse; break;
+      case FUNCTION_LOOP: value = default_loop; break;
+      case FUNCTION_ATTACK: value = default_attack; break;
+      case FUNCTION_RELEASE: value = default_release; break;
+      case FUNCTION_DELAY_MIX: value = default_delay_mix; break;
+      case FUNCTION_DELAY_LENGTH: value = default_delay_length; break;
+      case FUNCTION_DELAY_FEEDBACK: value = default_delay_feedback; break;
+    }
+
+    if(module->shift_key)
+    {
+      // DEBUG("got here");
+      // set _all_ knob values to the default
+      for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
+      {
+        module->params[module->STEP_KNOBS + i].setValue(value);
+      }
+    }
+    else
+    {
+      // set _this_ knob's values to the default
+      module->params[parameter_index].setValue(value);
     }
   }
 };
