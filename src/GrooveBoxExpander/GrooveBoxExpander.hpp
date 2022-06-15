@@ -16,6 +16,7 @@ struct GrooveBoxExpander : Module
   // float old_track_volumes[NUMBER_OF_TRACKS];
   bool track_triggers[NUMBER_OF_TRACKS];
   bool expander_connected = false;
+  bool shift_key = false;
 
   enum ParamIds {
     ENUMS(MUTE_BUTTONS, NUMBER_OF_TRACKS),
@@ -130,7 +131,7 @@ struct GrooveBoxExpander : Module
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
     {
       //
-      // Read mute buttons abd inputs
+      // Read mute buttons and inputs
       //
       bool mute_button_pressed = mute_button_triggers[i].process(params[MUTE_BUTTONS + i].getValue());
       bool mute_button_triggered = mute_cv_triggers[i].process(rescale(inputs[MUTE_INPUTS + i].getVoltage(), 0.0f, 10.0f, 0.f, 1.f));
@@ -140,7 +141,19 @@ struct GrooveBoxExpander : Module
       // Read solo buttons and inputs
       //
       bool solo_button_pressed = solo_button_triggers[i].process(params[SOLO_BUTTONS + i].getValue());
-      if(solo_button_pressed) solos[i] = !solos[i];
+      if(solo_button_pressed)
+      {
+        // Special behavior: If the shift key is held and a track is soloed,
+        // then solo the track and un-solo any other track that is soloed
+        if(this->shift_key)
+        {
+          exclusiveSolo(i);
+        }
+        else
+        {
+          toggleSolo(i);
+        }
+      }
 
       //
       // See if track volumes have changed
@@ -177,6 +190,19 @@ struct GrooveBoxExpander : Module
       lights[GATE_OUTPUT_LIGHTS + i].setBrightness(light_output_pulse ? 1.0f : 0.0f);
     }
 	}
+
+  void exclusiveSolo(unsigned int track_index)
+  {
+    for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+    {
+      solos[i] = (i == track_index);
+    }
+  }
+
+  void toggleSolo(unsigned int track_index)
+  {
+    solos[track_index] = !solos[track_index];
+  }
 
   void writeToGroovebox()
   {

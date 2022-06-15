@@ -71,4 +71,15 @@ struct GrooveBoxExpanderWidget : ModuleWidget
     }
   }
 
+  void onHoverKey(const event::HoverKey &e) override
+  {
+    GrooveBoxExpander *module = dynamic_cast<GrooveBoxExpander*>(this->module);
+    assert(module);
+
+    // Read and store shift key status
+    module->shift_key = ((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT);
+
+    ModuleWidget::onHoverKey(e);
+  }
+
 };

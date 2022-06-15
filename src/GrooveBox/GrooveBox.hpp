@@ -775,27 +775,29 @@ struct GrooveBox : VoxglitchSamplerModule
 
       for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
       {
+        if(this->solos[i]) this->any_track_soloed = true;
+      }
+
+      for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+      {
         bool expander_mute_value = consumer_message->mutes[i];
         bool expander_solo_value = consumer_message->solos[i];
 
-        bool current_mute_value = this->mutes[i];
-        bool current_solo_value = this->solos[i];
+        // bool current_mute_value = this->mutes[i];
+        // bool current_solo_value = this->solos[i];
 
-        // If this track is NOT musted or soloed, and the expender says to
-        // mute the track, then fade out the audio of the track.
-        if((current_mute_value == false) && (expander_mute_value == true) && (current_solo_value == false))
+        // Shorthand to make code more readable
+        Track *track = &this->selected_memory_slot->tracks[i];
+
+        if((track->sample_player->playing == true) && (! track->fading_out))
         {
-          this->selected_memory_slot->tracks[i].fadeOut(rack_sample_rate);
-        }
+          bool fade_out = false;
 
-        // If the track is both muted and soloed, then solo is turned off, then
-        // fade out the audio track.
-        if((current_solo_value == true) && (expander_solo_value == false) && (current_mute_value == true))
-        {
-          this->selected_memory_slot->tracks[i].fadeOut(rack_sample_rate);
-        }
+          if(any_track_soloed && (expander_solo_value == false)) fade_out = true;
+          if(expander_mute_value == true && (expander_solo_value == false)) fade_out = true;
 
-        // if(this->solos[i] == false)
+          if (fade_out) track->fadeOut(rack_sample_rate);
+        }
 
         this->mutes[i] = expander_mute_value;
         this->solos[i] = expander_solo_value;
@@ -803,9 +805,6 @@ struct GrooveBox : VoxglitchSamplerModule
 
         this->selected_memory_slot->tracks[i].setTrackPan(consumer_message->track_pans[i]);
         this->selected_memory_slot->tracks[i].setTrackPitch(consumer_message->track_pitches[i]);
-
-        // this->track_pitches[i] = consumer_message->track_pitches[i];
-        if(this->solos[i]) this->any_track_soloed = true;
       }
 
       // Set the received flag
