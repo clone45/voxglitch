@@ -778,10 +778,24 @@ struct GrooveBox : VoxglitchSamplerModule
         bool expander_mute_value = consumer_message->mutes[i];
         bool expander_solo_value = consumer_message->solos[i];
 
-        if((this->mutes[i] == false) && (expander_mute_value == true) && (this->solos[i] == false))
+        bool current_mute_value = this->mutes[i];
+        bool current_solo_value = this->solos[i];
+
+        // If this track is NOT musted or soloed, and the expender says to
+        // mute the track, then fade out the audio of the track.
+        if((current_mute_value == false) && (expander_mute_value == true) && (current_solo_value == false))
         {
           this->selected_memory_slot->tracks[i].fadeOut(rack_sample_rate);
         }
+
+        // If the track is both muted and soloed, then solo is turned off, then
+        // fade out the audio track.
+        if((current_solo_value == true) && (expander_solo_value == false) && (current_mute_value == true))
+        {
+          this->selected_memory_slot->tracks[i].fadeOut(rack_sample_rate);
+        }
+
+        // if(this->solos[i] == false)
 
         this->mutes[i] = expander_mute_value;
         this->solos[i] = expander_solo_value;
