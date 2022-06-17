@@ -39,7 +39,6 @@ struct Track
   float track_volume = 0.0;
 
   ADSR adsr;
-  // revmodel reverb;
   SimpleDelay delay;
 
   StereoPanSubModule stereo_pan_submodule;
@@ -54,6 +53,9 @@ struct Track
   // The "skipped" variable keep track of when a trigger has been skipped because
   // the "Percentage" funtion is non-zero and didn't fire on the current step.``
   bool skipped = false;
+
+  // Transitory variables
+  int shift_starting_column = 0;
 
   Track()
   {
@@ -212,6 +214,30 @@ struct Track
     this->range_end = NUMBER_OF_STEPS - 1;
     this->range_start = 0;
     this->resetAllParameterLocks();
+  }
+
+  void shift(unsigned int amount)
+  {
+    if(amount > 0)
+    {
+      // Create a copy of all of the playback settings for this track
+      SamplePlaybackSettings temp_settings[NUMBER_OF_STEPS];
+      bool temp_steps[NUMBER_OF_STEPS];
+
+      for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
+      {
+        temp_settings[i].copy(& sample_playback_settings[i]);
+        temp_steps[i] = this->steps[i];
+      }
+
+      // Now copy the track information back into the shifted location
+      for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
+      {
+        unsigned int copy_from_index = (i + amount) % NUMBER_OF_STEPS;
+        sample_playback_settings[i].copy(& temp_settings[copy_from_index]);
+        this->steps[i] = temp_steps[copy_from_index];
+      }
+    }
   }
 
   void initialize()

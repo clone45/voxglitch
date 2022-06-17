@@ -242,7 +242,7 @@ struct GrooveBox : VoxglitchSamplerModule
 
     // Switch memory_slots and set the selected track
     selected_memory_slot = &memory_slots[new_memory_slot];
-    selected_track = selected_memory_slot->getTrack(track_index);
+    selected_track = selected_memory_slot->getTrack(this->track_index);
 
     // set all track positions
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
@@ -250,6 +250,12 @@ struct GrooveBox : VoxglitchSamplerModule
        selected_memory_slot->tracks[i].setPosition(playback_step);
     }
 
+    updateKnobPositions();
+  }
+
+  void shiftTrack(unsigned int amount)
+  {
+    selected_memory_slot->tracks[this->track_index].shift(amount);
     updateKnobPositions();
   }
 
@@ -581,17 +587,7 @@ struct GrooveBox : VoxglitchSamplerModule
       // Process drum pads
       if(drum_pad_triggers[step_number].process(params[DRUM_PADS + step_number].getValue()))
       {
-        // If the user is holding the control key, then set the track length instead
-        // of toggling the drum pad.
-        if(shift_key)
-        {
-          selected_track->range_end = step_number;
-        }
-        else
-        {
-          // Toggle the drum pad
-          selected_track->toggleStep(step_number);
-        }
+        selected_track->toggleStep(step_number);
       }
 
       // Light up drum pads
@@ -773,18 +769,28 @@ struct GrooveBox : VoxglitchSamplerModule
     {
       this->any_track_soloed = false;
 
+      // We'll need to know if any track is soloed to decide if an un-soloed
+      // track should be faded out.  Here, we loop through each solo value
+      // provided by the expander to find out.
+
       for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
       {
         if(this->solos[i]) this->any_track_soloed = true;
       }
 
+      // Iterate over each track's information sent by the expander.
+      // Copy the information sent from the expander into the variables
+      // this->mutes and this->solos, which will later be used by the tracks
+      // to determine if they should trigger or not.
+      //
+      // When a track should stop playback based on the mute and solo
+      // configuration, then we fade out the track so there's not a jarring
+      // experience.
+
       for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
       {
         bool expander_mute_value = consumer_message->mutes[i];
         bool expander_solo_value = consumer_message->solos[i];
-
-        // bool current_mute_value = this->mutes[i];
-        // bool current_solo_value = this->solos[i];
 
         // Shorthand to make code more readable
         Track *track = &this->selected_memory_slot->tracks[i];
