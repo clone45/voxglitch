@@ -17,16 +17,12 @@ struct GrooveboxBlueLight : BlueLight {
 
   void onEnter(const event::Enter &e) override
   {
-		// glfwSetCursor(APP->window->win, glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
-
     this->is_moused_over = true;
     BlueLight::onEnter(e);
   }
 
   void onLeave(const event::Leave &e) override
   {
-    // glfwSetCursor(APP->window->win, NULL);
-
     this->is_moused_over = false;
     BlueLight::onLeave(e);
   }
