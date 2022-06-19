@@ -39,6 +39,7 @@ struct GrooveBox : VoxglitchSamplerModule
   unsigned int clock_counter = clock_division;
   bool first_step = true;
   bool shift_key = false;
+  bool control_key = false;
   bool mutes[NUMBER_OF_TRACKS];
   bool solos[NUMBER_OF_TRACKS];
   bool any_track_soloed = false;
@@ -250,6 +251,15 @@ struct GrooveBox : VoxglitchSamplerModule
        selected_memory_slot->tracks[i].setPosition(playback_step);
     }
 
+    updateKnobPositions();
+  }
+
+  void shiftAllTracks(unsigned int amount)
+  {
+    for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+    {
+       selected_memory_slot->tracks[i].shift(amount);
+    }
     updateKnobPositions();
   }
 

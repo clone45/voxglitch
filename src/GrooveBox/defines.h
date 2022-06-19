@@ -21,6 +21,9 @@ namespace groove_box
   const int FUNCTION_DELAY_LENGTH = 11;
   const int FUNCTION_DELAY_FEEDBACK = 12;
 
+  const float MODULE_WIDTH = 223.52000 * 2.952756;
+  const float MODULE_HEIGHT = 128.50000 * 2.952756;
+
   const float default_volume = 0.5;
   const float default_pan = 0.5;
   const float default_pitch = 0.5;
@@ -67,6 +70,27 @@ namespace groove_box
     64,
     128,
     256
+  };
+
+  const float button_positions_y = mm2px(89.75);
+
+  const float button_positions[16][2] = {
+    { mm2px(9.941), button_positions_y },
+    { mm2px(23.52), button_positions_y},
+    { mm2px(37.10), button_positions_y},
+    { mm2px(50.69), button_positions_y },
+    { mm2px(64.27), button_positions_y},
+    { mm2px(77.85), button_positions_y},
+    { mm2px(91.43), button_positions_y},
+    { mm2px(105.02), button_positions_y},
+    { mm2px(118.60), button_positions_y},
+    { mm2px(132.18), button_positions_y},
+    { mm2px(145.76), button_positions_y},
+    { mm2px(159.35), button_positions_y},
+    { mm2px(172.93), button_positions_y},
+    { mm2px(186.51), button_positions_y},
+    { mm2px(200.09), button_positions_y},
+    { mm2px(213.67), button_positions_y}
   };
 
 }

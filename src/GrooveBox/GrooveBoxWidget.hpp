@@ -5,27 +5,11 @@
 #include "menus/TrackMenu.hpp"
 #include "menus/OffsetSnapMenu.hpp"
 #include "menus/InitializeMenu.hpp"
-
-float button_positions_y = mm2px(89.75);
-
-float button_positions[16][2] = {
-  { mm2px(9.941), button_positions_y },
-  { mm2px(23.52), button_positions_y},
-  { mm2px(37.10), button_positions_y},
-  { mm2px(50.69), button_positions_y },
-  { mm2px(64.27), button_positions_y},
-  { mm2px(77.85), button_positions_y},
-  { mm2px(91.43), button_positions_y},
-  { mm2px(105.02), button_positions_y},
-  { mm2px(118.60), button_positions_y},
-  { mm2px(132.18), button_positions_y},
-  { mm2px(145.76), button_positions_y},
-  { mm2px(159.35), button_positions_y},
-  { mm2px(172.93), button_positions_y},
-  { mm2px(186.51), button_positions_y},
-  { mm2px(200.09), button_positions_y},
-  { mm2px(213.67), button_positions_y}
-};
+#include "widgets/RangeGrabbers.hpp"
+#include "widgets/GrooveboxBlueLight.hpp"
+#include "widgets/SequenceLengthWidget.hpp"
+#include "widgets/TrackLabelDisplay.hpp"
+#include "widgets/UpdatesWidget.hpp"
 
 float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
   {125, 93},
@@ -85,16 +69,6 @@ struct ModdedCL1362 : SvgPort {
 	}
 };
 
-/*
-struct MasterVolumeKnob : Trimpot {
-  MasterVolumeKnob()
-  {
-    randomizeEnabled = false;
-    minAngle = -0.83*M_PI;
-		maxAngle = 0.83*M_PI;
-  }
-};
-*/
 
 struct TrimpotMedium : SVGKnob {
   widget::SvgWidget* bg;
@@ -148,432 +122,6 @@ struct TrimpotMedium : SVGKnob {
     }
   }
 };
-
-struct GrooveboxBlueLight : BlueLight {
-  GrooveBox *module;
-  bool is_moused_over = false;
-  Vec drag_position;
-  float diameter = 20.0;
-  float radius = diameter / 2.0;
-
-  void onButton(const event::Button &e) override
-  {
-    if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
-    {
-      e.consume(this);
-      drag_position = this->box.pos + Vec(this->box.size[0] / 2, 0);
-      BlueLight::onButton(e);
-    }
-  }
-
-  void onEnter(const event::Enter &e) override
-  {
-		// glfwSetCursor(APP->window->win, glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
-
-    this->is_moused_over = true;
-    BlueLight::onEnter(e);
-  }
-
-  void onLeave(const event::Leave &e) override
-  {
-    // glfwSetCursor(APP->window->win, NULL);
-
-    this->is_moused_over = false;
-    BlueLight::onLeave(e);
-  }
-
-  void onHover(const event::Hover& e) override {
-    e.consume(this);
-    this->is_moused_over = true;
-  }
-
-  void step() override {
-    BlueLight::step();
-  }
-
-  void onDragMove(const event::DragMove &e) override
-  {
-    unsigned int space_between_buttons = (button_positions[1][0] - button_positions[0][0]);
-
-    if(module && module->shift_key)
-    {
-      float zoom = getAbsoluteZoom();
-      drag_position = drag_position.plus(e.mouseDelta.div(zoom));
-
-      int amount = -1 * (drag_position.x / space_between_buttons);
-
-      if(amount != 0)
-      {
-        module->shiftTrack(amount);
-        drag_position.x = e.mouseDelta.div(zoom).x;
-      }
-    }
-  }
-};
-
-//
-// SequenceLengthWidget
-//
-// This is the grey horizontal bar that shows the sequence length of the
-// selected track.
-
-struct SequenceLengthWidget : TransparentWidget
-{
-  GrooveBox *module;
-
-  void draw(const DrawArgs &args) override
-  {
-    const auto vg = args.vg;
-
-    nvgSave(vg);
-    nvgBeginPath(vg);
-
-    if(module) {
-      // Draw horizontal rectangle for track indictor with pretty rounded corners
-      float length = button_positions[module->selected_track->range_end][0] - button_positions[module->selected_track->range_start][0];
-      nvgRoundedRect(vg, button_positions[module->selected_track->range_start][0] - 20, 0, length, 12, 5);
-    }
-    else {
-      // Paint static content for library display
-      nvgRoundedRect(vg, 0, 0, mm2px(186.51), 12, 5);
-    }
-
-    nvgFillColor(vg, nvgRGB(65, 65, 65));
-    nvgFill(vg);
-
-    nvgRestore(vg);
-  }
-
-};
-
-
-
-//
-// SequenceLengthWidget
-//
-// This is the grey horizontal bar that shows the sequence length of the
-// selected track.
-
-struct RangeGrabberRightWidget : TransparentWidget
-{
-  GrooveBox *module;
-  bool is_moused_over = false;
-  float diameter = 20.0;
-  float radius = diameter / 2.0;
-  Vec drag_position;
-
-  RangeGrabberRightWidget()
-  {
-    box.size = Vec(diameter, diameter);
-  }
-
-  void draw(const DrawArgs &args) override
-  {
-    const auto vg = args.vg;
-
-    /* draw bounding box for testing
-    nvgSave(vg);
-    nvgBeginPath(vg);
-    nvgRect(vg, 0, 0, box.size.x, box.size.y);
-    nvgFillColor(vg, nvgRGBA(120, 20, 20, 100));
-    nvgFill(vg);
-    nvgRestore(vg);
-    */
-
-    // Draw circle
-    nvgSave(vg);
-    nvgBeginPath(vg);
-
-    if(module)
-    {
-      this->box.pos = Vec(button_positions[module->selected_track->range_end][0] - radius, this->box.pos.y);
-    }
-    else
-    {
-      this->box.pos = Vec(button_positions[10][0] - radius, this->box.pos.y);
-    }
-
-
-    // box.size.x = button_positions[module->selected_track->length][0];
-    nvgCircle(vg, box.size.x - radius, box.size.y - radius, radius);
-
-    if(is_moused_over)
-    {
-      nvgFillColor(vg, nvgRGB(120,120,120));
-    }
-    else
-    {
-      nvgFillColor(vg, nvgRGB(65,65,65));
-    }
-
-    nvgFill(vg);
-
-    nvgRestore(vg);
-
-  }
-
-
-  void onButton(const event::Button &e) override
-  {
-    if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
-    {
-      e.consume(this);
-      // drag_position = e.pos;
-      drag_position = this->box.pos;
-    }
-  }
-
-  void onEnter(const event::Enter &e) override
-  {
-		glfwSetCursor(APP->window->win, glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
-
-    this->is_moused_over = true;
-    TransparentWidget::onEnter(e);
-  }
-
-  void onLeave(const event::Leave &e) override
-  {
-    glfwSetCursor(APP->window->win, NULL);
-
-    this->is_moused_over = false;
-    TransparentWidget::onLeave(e);
-  }
-
-  void onHover(const event::Hover& e) override {
-    e.consume(this);
-    this->is_moused_over = true;
-  }
-
-  void step() override {
-    TransparentWidget::step();
-  }
-
-  void onDragMove(const event::DragMove &e) override
-  {
-    // TransparentWidget::onDragMove(e);
-    float zoom = getAbsoluteZoom();
-    drag_position = drag_position.plus(e.mouseDelta.div(zoom));
-
-    int quantized_x = ((drag_position.x - button_positions[0][0]) + diameter) / (button_positions[1][0] - button_positions[0][0]);
-    quantized_x = clamp(quantized_x, 0, NUMBER_OF_STEPS - 1);
-
-    if((unsigned int) quantized_x > module->selected_track->range_start) module->selected_track->range_end = quantized_x;
-  }
-};
-
-
-struct RangeGrabberLeftWidget : TransparentWidget
-{
-  GrooveBox *module;
-  bool is_moused_over = false;
-  float diameter = 20.0;
-  float radius = diameter / 2.0;
-  Vec drag_position;
-
-  RangeGrabberLeftWidget()
-  {
-    box.size = Vec(diameter, diameter);
-  }
-
-  void draw(const DrawArgs &args) override
-  {
-    const auto vg = args.vg;
-
-    // Draw circle
-    nvgSave(vg);
-    nvgBeginPath(vg);
-
-    if(module)
-    {
-      this->box.pos = Vec(button_positions[module->selected_track->range_start][0] - radius, this->box.pos.y);
-    }
-    else
-    {
-      this->box.pos = Vec(button_positions[10][0] - radius, this->box.pos.y);
-    }
-
-    nvgCircle(vg, box.size.x - radius, box.size.y - radius, radius);
-
-    if(is_moused_over) {
-      nvgFillColor(vg, nvgRGB(120,120,120));
-    }
-    else {
-      nvgFillColor(vg, nvgRGB(65,65,65));
-    }
-
-    nvgFill(vg);
-    nvgRestore(vg);
-
-  }
-
-
-  void onButton(const event::Button &e) override
-  {
-    if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
-    {
-      e.consume(this);
-      drag_position = this->box.pos;
-    }
-  }
-
-  void onEnter(const event::Enter &e) override
-  {
-		glfwSetCursor(APP->window->win, glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
-
-    this->is_moused_over = true;
-    TransparentWidget::onEnter(e);
-  }
-
-  void onLeave(const event::Leave &e) override
-  {
-    glfwSetCursor(APP->window->win, NULL);
-
-    this->is_moused_over = false;
-    TransparentWidget::onLeave(e);
-  }
-
-  void onHover(const event::Hover& e) override {
-    e.consume(this);
-    this->is_moused_over = true;
-  }
-
-  void step() override {
-    TransparentWidget::step();
-  }
-
-  void onDragMove(const event::DragMove &e) override
-  {
-    // TransparentWidget::onDragMove(e);
-    float zoom = getAbsoluteZoom();
-    drag_position = drag_position.plus(e.mouseDelta.div(zoom));
-
-    int quantized_x = ((drag_position.x - button_positions[0][0]) + diameter) / (button_positions[1][0] - button_positions[0][0]);
-    quantized_x = clamp(quantized_x, 0, NUMBER_OF_STEPS - 1);
-
-    if((unsigned int) quantized_x < module->selected_track->range_end) module->selected_track->range_start = quantized_x;
-  }
-};
-
-
-//
-// TrackLabelDisplay
-//
-// Bright orange track name displays that are positioned to
-// the right of the track selection buttons
-//
-struct TrackLabelDisplay : TransparentWidget
-{
-  GrooveBox *module;
-  unsigned int track_number = 0;
-
-  TrackLabelDisplay(unsigned int track_number)
-  {
-    this->track_number = track_number;
-    box.size = Vec(152, 29);
-  }
-
-  void onDoubleClick(const event::DoubleClick &e) override
-  {
-		std::string root_dir = module->root_directory;
-		const std::string dir = root_dir.empty() ? "" : root_dir;
-#ifdef USING_CARDINAL_NOT_RACK
-		GrooveBox *module = this->module;
-		unsigned int track_number = this->track_number;
-		async_dialog_filebrowser(false, dir.c_str(), NULL, [module, track_number](char* path) {
-			pathSelected(module, track_number, path);
-		});
-#else
-    char *path = module->selectFileVCV(dir);
-    pathSelected(module, track_number, path);
-#endif
-	}
-
-	static void pathSelected(GrooveBox *module, unsigned int track_number, char *path)
-	{
-		if (path)
-		{
-			module->sample_players[track_number].loadSample(std::string(path));
-			module->loaded_filenames[track_number] = module->sample_players[track_number].getFilename();
-			free(path);
-		}
-  }
-
-
-  void onButton(const event::Button &e) override
-  {
-    TransparentWidget::onButton(e);
-    e.consume(this);
-  }
-
-  void draw_track_label(std::string label, NVGcontext *vg)
-  {
-    float text_left_margin = 6;
-
-    nvgFontSize(vg, 10);
-    nvgTextLetterSpacing(vg, 0);
-    nvgFillColor(vg, nvgRGBA(255, 215, 20, 0xff));
-    nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
-    float wrap_at = 130.0; // Just throw your hands in the air!  And wave them like you just don't 130.0
-
-    const char *end = NULL;
-    NVGtextRow rows[3];
-    unsigned int max_rows = 3;
-    unsigned int number_of_lines = nvgTextBreakLines(vg, label.c_str(), NULL, wrap_at, rows, max_rows);
-
-    if(number_of_lines > 1) end = rows[1].end;
-
-    float bounds[4];
-    nvgTextBoxBounds(vg, text_left_margin, 10, wrap_at, label.c_str(), end, bounds);
-
-    float textHeight = bounds[3];
-    nvgTextBox(vg, text_left_margin, (box.size.y / 2.0f) - (textHeight / 2.0f) + 8, wrap_at, label.c_str(), end);
-  }
-
-  void draw_track_mute_overlay(NVGcontext *vg)
-  {
-    nvgBeginPath(vg);
-    nvgRect(vg, 0, 0, box.size.x, box.size.y);
-    nvgFillColor(vg, nvgRGBA(0, 0, 0, 162));
-    nvgFill(vg);
-  }
-
-  void draw(const DrawArgs& args) override
-  {
-    const auto vg = args.vg;
-
-    // Save the drawing context to restore later
-    nvgSave(vg);
-
-    // Draw dark background
-    nvgBeginPath(vg);
-    nvgRect(vg, 0, 0, box.size.x, box.size.y);
-    nvgFillColor(vg, nvgRGBA(20, 20, 20, 255));
-    nvgFill(vg);
-
-    //
-    // Draw track names
-    //
-    if(module)
-    {
-      std::string to_display = module->loaded_filenames[track_number];
-
-      // If the track name is not empty, then display it
-      if((to_display != "") && (to_display != "[ empty ]"))
-      {
-        draw_track_label(to_display, vg);
-      }
-    }
-    //
-    // Draw placeholder track names for library view
-    //
-    else
-    {
-      draw_track_label(PLACEHOLDER_TRACK_NAMES[track_number], vg);
-    }
-    nvgRestore(vg);
-  }
-};
-
 
 struct LoadSamplesFromFolderMenuItem : MenuItem
 {
@@ -683,13 +231,10 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     range_grabber_left_widget->module = module;
     addChild(range_grabber_left_widget);
 
-
     RangeGrabberRightWidget *range_grabber_right_widget = new RangeGrabberRightWidget();
     range_grabber_right_widget->setPosition(Vec(button_positions[0][0] - range_grabber_right_widget->radius, button_positions[0][1] - 25 - range_grabber_right_widget->radius));
     range_grabber_right_widget->module = module;
     addChild(range_grabber_right_widget);
-
-
 
     //
     // Step button related stuff
@@ -773,6 +318,13 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     // Copy/Paste Memory buttons
     addParam(createParamCentered<VCVButton>(Vec(87.622, 144.00), module, GrooveBox::COPY_BUTTON));
     addParam(createParamCentered<VCVButton>(Vec(87.622, 187), module, GrooveBox::PASTE_BUTTON));
+
+    // Updates widget
+    /*
+    UpdatesWidget *updates_widget = new UpdatesWidget();
+    updates_widget->module = module;
+    addChild(updates_widget);
+    */
   }
 
   void onHoverKey(const event::HoverKey &e) override
@@ -780,8 +332,8 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     GrooveBox *module = dynamic_cast<GrooveBox*>(this->module);
     assert(module);
 
-    // Read and store shift key status
-    module->shift_key = ((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT);
+    module->shift_key = ((e.mods & RACK_MOD_MASK) && GLFW_MOD_SHIFT);
+    module->control_key = ((e.mods & RACK_MOD_MASK) && GLFW_MOD_CONTROL);
 
     ModuleWidget::onHoverKey(e);
   }
