@@ -7,6 +7,7 @@ struct SampleAudioBuffer
   std::vector<float> left_buffer;
   std::vector<float> right_buffer;
   unsigned int interpolation = 1;
+  unsigned int virtual_size = 0;
 
   void clear()
   {
@@ -192,6 +193,11 @@ struct Sample
   unsigned int size()
   {
     return(sample_length);
+  }
+
+  void setSize(unsigned int sample_length)
+  {
+    this->sample_length = sample_length;
   }
 
   void unload()

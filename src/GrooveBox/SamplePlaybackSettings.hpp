@@ -7,7 +7,8 @@ struct SamplePlaybackSettings
   float pan = default_pan;
   float pitch = default_pitch;
   float ratchet = default_ratchet;
-  float offset = default_offset;
+  float sample_start = default_sample_start;
+  float sample_end = default_sample_end;
   float probability = default_probability;
   float loop = default_loop;
   bool reverse = default_reverse;
@@ -23,7 +24,8 @@ struct SamplePlaybackSettings
     this->pan = src_settings->pan;
     this->pitch = src_settings->pitch;
     this->ratchet = src_settings->ratchet;
-    this->offset = src_settings->offset;
+    this->sample_start = src_settings->sample_start;
+    this->sample_end = src_settings->sample_end;
     this->probability = src_settings->probability;
     this->loop = src_settings->loop;
     this->reverse = src_settings->reverse;

@@ -3,7 +3,6 @@
 
 #include <componentlibrary.hpp>
 #include "menus/TrackMenu.hpp"
-#include "menus/OffsetSnapMenu.hpp"
 #include "menus/InitializeMenu.hpp"
 #include "widgets/RangeGrabbers.hpp"
 #include "widgets/GrooveboxBlueLight.hpp"
@@ -96,7 +95,8 @@ struct TrimpotMedium : SVGKnob {
       case FUNCTION_PAN: value = default_pan; break;
       case FUNCTION_PITCH: value = default_pitch; break;
       case FUNCTION_RATCHET: value = default_ratchet; break;
-      case FUNCTION_OFFSET: value = default_offset; break;
+      case FUNCTION_SAMPLE_START: value = default_sample_start; break;
+      case FUNCTION_SAMPLE_END: value = default_sample_end; break;
       case FUNCTION_PROBABILITY: value = default_probability; break;
       case FUNCTION_REVERSE: value = default_reverse; break;
       case FUNCTION_LOOP: value = default_loop; break;
@@ -355,13 +355,6 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     TracksMenu *tracks_menu = createMenuItem<TracksMenu>("Tracks", RIGHT_ARROW);
     tracks_menu->module = module;
     menu->addChild(tracks_menu);
-
-    // Offset Snap settings menu
-    /*
-    OffsetSnapMenuItem *offset_snap_menu_item = createMenuItem<OffsetSnapMenuItem>("Offset Snap", RIGHT_ARROW);
-    offset_snap_menu_item->module = module;
-    menu->addChild(offset_snap_menu_item);
-    */
 
     //
     // Start sample selection menu options
