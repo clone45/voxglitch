@@ -33,23 +33,45 @@ float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
 };
 
 float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
-  {18.8, 332.7667},
-  {98, 332.7667},
-  {177, 332.7667},
-  {256, 332.7667},
-  {335, 332.7667},
-  {414, 332.7667},
-  {493, 332.7667},
-  {573, 332.7667},
-  {18.8, 360.936},
-  {98, 360.936},
-  {177, 360.936},
-  {256, 360.936},
-  {335, 360.936},
-  {414, 360.936},
-  {493, 360.936},
-  {573, 360.936},
+  {18.8, 332.7667}, // FUNCTION_VOLUME
+  {98, 332.7667},   // FUNCTION_PAN
+  {177, 332.7667},  // FUNCTION_PITCH
+  {256, 332.7667},  // FUNCTION_RATCHET
+  {335, 360.936},   // FUNCTION_SAMPLE_START
+  {335, 332.7667},  // FUNCTION_PROBABILITY
+  {177, 360.936},   // FUNCTION_LOOP
+  {256, 360.936},   // FUNCTION_REVERSE
+
+  {18.8, 360.936},  // FUNCTION_ATTACK
+  {98, 360.936},    // FUNCTION_RELEASE
+  {414, 332.7667},  // FUNCTION_DELAY_MIX
+  {493, 332.7667},  // FUNCTION_DELAY_LENGTH
+  {573, 332.7667},  // FUNCTION_DELAY_FEEDBACK
+  {414, 360.936},   // FUNCTION_SAMPLE_END
+  {493, 360.936},   // Position #15
+  {573, 360.936},   // Position #16
+
+  /*
+  {18.8, 332.7667}, // Position #1
+  {98, 332.7667},   // Position #2
+  {177, 332.7667},  // Position #3
+  {256, 332.7667},  // Position #4
+  {335, 332.7667},  // Position #5
+  {414, 332.7667},  // Position #6
+  {493, 332.7667},  // Position #7
+  {573, 332.7667},  // Position #8
+
+  {18.8, 360.936},  // Position #9
+  {98, 360.936},    // Position #10
+  {177, 360.936},   // Position #11
+  {256, 360.936},   // Position #12
+  {335, 360.936},   // Position #13
+  {414, 360.936},   // Position #14
+  {493, 360.936},   // Position #15
+  {573, 360.936},   // Position #16
+  */
 };
+
 
 float track_button_positions[NUMBER_OF_TRACKS][2] = {
   {265, 93},
@@ -267,6 +289,10 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     // Function Buttons
     for(unsigned int i=0; i<NUMBER_OF_FUNCTIONS; i++)
     {
+
+      // The function buttons got shifted around at some point during the evolution
+      // of the module.  The "ordering_of_functions" array maps the function index
+      // to the correct location on the front panel.
       float x = function_button_positions[i][0];
       float y = function_button_positions[i][1];
 

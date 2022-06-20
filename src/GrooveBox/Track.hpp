@@ -80,7 +80,6 @@ struct Track
 
   void step()
   {
-    // playback_position = (playback_position + 1) % (range_end + 1);
     playback_position = playback_position + 1;
     if(playback_position > range_end) playback_position = range_start;
     ratchet_counter = 0;

@@ -34,10 +34,10 @@ struct SamplePlayer
   void trigger(SamplePlaybackSettings *settings)
   {
     if(! settings->reverse) { // if forward playback
-      this->playback_position = (settings->sample_start * (this->sample.size() * settings->sample_end));
+      this->playback_position = settings->sample_start * this->sample.size();
     }
     else { // if reverse playback
-      this->playback_position = (( 1 - settings->sample_start) * (this->sample.size() * settings->sample_end));
+      this->playback_position = (( 1 - settings->sample_start) * this->sample.size());
     }
 
     this->playing = true;

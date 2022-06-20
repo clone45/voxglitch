@@ -130,7 +130,8 @@ struct GrooveBox : VoxglitchSamplerModule
     for(unsigned int i=0; i < NUMBER_OF_STEPS; i++)
     {
       configParam(DRUM_PADS + i, 0.0, 1.0, 0.0, "Step Button");
-      configParam(STEP_KNOBS + i, 0.0, 1.0, 0.0, "Parameter Lock Value" + std::to_string(i));
+      configParam(STEP_KNOBS + i, 0.0, 1.0, 0.0, "Parameter Lock Value " + std::to_string(i));
+      configParam(FUNCTION_BUTTONS + i, 0.0, 1.0, 0.0, FUNCTION_NAMES[i]);
     }
 
     // Configure the track select buttons
@@ -153,6 +154,11 @@ struct GrooveBox : VoxglitchSamplerModule
     // Configure the stereo mix outputs
     configOutput(AUDIO_OUTPUT_LEFT, "Left Mix");
     configOutput(AUDIO_OUTPUT_RIGHT, "Right Mix");
+
+    // Create tooltips for the memory slots
+    for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++) {
+      configParam(MEMORY_SLOT_BUTTONS + i, 0.0, 1.0, 0.0, "Memory Slot #" + std::to_string(i+1));
+    }
 
     // Configure the master output knob
     configParam(MASTER_VOLUME, 0.0, 1.0, 0.5, "Master Volume");
@@ -645,6 +651,24 @@ struct GrooveBox : VoxglitchSamplerModule
     for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
       float value = params[STEP_KNOBS + step_number].getValue();
+
+      // Special code to ensure that sample end isn't smaller than sample start
+      /*
+      if (selected_function == FUNCTION_SAMPLE_END)
+      {
+        float sample_start = selected_track->getSampleStart(step_number);
+
+        // If sample end knob is greater than sample start, then adjust sample
+        // end knob to be equal to the sample start.
+
+        if(value < sample_start)
+        {
+          // params[STEP_KNOBS + step_number].setValue(sample_start);
+          value = sample_start;
+        }
+
+      }
+      */
 
       switch(selected_function)
       {

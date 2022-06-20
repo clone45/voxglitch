@@ -74,6 +74,27 @@ namespace groove_box
     256
   };
 
+  // For tooltips
+  const std::string FUNCTION_NAMES[NUMBER_OF_FUNCTIONS] = {
+    "Volume",
+    "Pan",
+    "Pitch",
+    "Ratchet (repeat)",
+    "Sample Start Playback Position",
+    "Trigger Probability",
+    "Loop Sample",
+    "Reverse Sample Playback",
+    "Amplitude Envelope Attack",
+    "Amplitude Envelope Release",
+    "Delay Effect Mix",
+    "Delay Effect Length",
+    "Delay Effect Feedback",
+    "Sample End Playback Position",
+    "",
+    ""
+  };
+
+
   const float button_positions_y = mm2px(89.75);
 
   const float button_positions[16][2] = {
