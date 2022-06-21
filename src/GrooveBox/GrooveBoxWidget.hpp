@@ -7,6 +7,7 @@
 #include "widgets/RangeGrabbers.hpp"
 #include "widgets/GrooveboxBlueLight.hpp"
 #include "widgets/SequenceLengthWidget.hpp"
+#include "widgets/SampleVisualizer.hpp"
 #include "widgets/TrackLabelDisplay.hpp"
 #include "widgets/UpdatesWidget.hpp"
 
@@ -91,10 +92,11 @@ struct ModdedCL1362 : SvgPort {
 };
 
 
-struct TrimpotMedium : SVGKnob {
+struct TrimpotMedium : SvgKnob {
   widget::SvgWidget* bg;
   GrooveBox *module;
   unsigned int parameter_index = 0;
+  unsigned int step = 0;
 
   TrimpotMedium()
   {
@@ -142,6 +144,36 @@ struct TrimpotMedium : SVGKnob {
       // set _this_ knob's values to the default
       module->params[parameter_index].setValue(value);
     }
+  }
+
+  void onButton(const event::Button &e) override
+  {
+    if(module->selected_function == FUNCTION_SAMPLE_START || module->selected_function == FUNCTION_SAMPLE_END)
+    {
+      if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
+      {
+        if(module->show_sample_visualizer == false)
+        {
+          module->show_sample_visualizer = true;
+          module->sample_visualizer_step = step;
+          // module->sample_visualizer_step = parameter_index;
+        }
+      }
+    }
+
+    SvgKnob::onButton(e);
+  }
+
+  void onDragEnd(const DragEndEvent& e) override {
+    if(module->selected_function == FUNCTION_SAMPLE_START || module->selected_function == FUNCTION_SAMPLE_END)
+    {
+      if(e.button == GLFW_MOUSE_BUTTON_LEFT)
+      {
+        module->show_sample_visualizer = false;
+      }
+    }
+
+    SvgKnob::onDragEnd(e);
   }
 };
 
@@ -282,6 +314,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       TrimpotMedium *knob = createParamCentered<TrimpotMedium>(Vec(button_positions[i][0],button_positions[i][1] + 30), module, GrooveBox::STEP_KNOBS + i);
       knob->module = module;
       knob->parameter_index = GrooveBox::STEP_KNOBS + i;
+      knob->step = i;
       addParam(knob);
 
     }
@@ -344,6 +377,14 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     // Copy/Paste Memory buttons
     addParam(createParamCentered<VCVButton>(Vec(87.622, 144.00), module, GrooveBox::COPY_BUTTON));
     addParam(createParamCentered<VCVButton>(Vec(87.622, 187), module, GrooveBox::PASTE_BUTTON));
+
+    // Sample Visualizer Widget
+
+    SampleVisualizerWidget *sampler_visualizer_widget = new SampleVisualizerWidget();
+    sampler_visualizer_widget->module = module;
+    sampler_visualizer_widget->box.pos.x = 83.348 * 2.952756;
+    sampler_visualizer_widget->box.pos.y = 21.796 * 2.952756;
+    addChild(sampler_visualizer_widget);
 
     // Updates widget
     /*

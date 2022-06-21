@@ -65,12 +65,6 @@ struct Track
     adsr.setSustainLevel(1.0);
 
     delay.setBufferSize(rack::settings::sampleRate / 30.0);
-
-    /*
-    reverb.init(rack::settings::sampleRate);
-    reverb.setdamp(.5);
-    reverb.setroomsize(.5);
-    */
   }
 
   void setSamplePlayer(SamplePlayer *sample_player)

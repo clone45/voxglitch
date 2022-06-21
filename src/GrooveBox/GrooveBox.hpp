@@ -44,6 +44,8 @@ struct GrooveBox : VoxglitchSamplerModule
   bool solos[NUMBER_OF_TRACKS];
   bool any_track_soloed = false;
   bool expander_connected = false;
+  bool show_sample_visualizer = false;
+  unsigned int sample_visualizer_step = 0;
   unsigned int sample_position_snap_track_values[NUMBER_OF_TRACKS];
 
   // A pair of GrooveBoxExpanderMessage structures for sending information
