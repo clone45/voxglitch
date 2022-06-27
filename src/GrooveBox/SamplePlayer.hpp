@@ -34,10 +34,10 @@ struct SamplePlayer
   void trigger(SamplePlaybackSettings *settings)
   {
     if(! settings->reverse) { // if forward playback
-      this->playback_position = (settings->offset * this->sample.size());
+      this->playback_position = settings->sample_start * this->sample.size();
     }
     else { // if reverse playback
-      this->playback_position = (( 1 - settings->offset) * this->sample.size());
+      this->playback_position = (( 1 - settings->sample_start) * this->sample.size());
     }
 
     this->playing = true;
@@ -69,15 +69,18 @@ struct SamplePlayer
       // If settings loop is greater than 0 and the sample position is past the
       // selected loop length, then loop.  Note:  If loop is set to 1, then
       // the entire sample will loop.
+
+      unsigned int sample_size = sample.size() * settings->sample_end;
+
       if(settings->loop > 0)
       {
-        float loop_position = (settings->offset * sample.size()) + ((sample.size() - settings->offset) * settings->loop);
-        if(playback_position >= loop_position) playback_position = (settings->offset * sample.size());
+        float loop_position = (settings->sample_start * sample_size) + ((sample_size - settings->sample_start) * settings->loop);
+        if(playback_position >= loop_position) playback_position = (settings->sample_start * sample_size);
       }
       else
       {
         // If the playback position is past the playback length, end sample playback
-        if(playback_position >= sample.size())
+        if(playback_position >= sample_size)
         {
            stop();
         }
@@ -100,11 +103,13 @@ struct SamplePlayer
 
       playback_position = playback_position - (step_amount * computed_pitch); // 5 octave range
 
+      unsigned int sample_size = sample.size() * settings->sample_end;
+
       // If the playback position is past the beginning, end or loop sample playback
       if(settings->loop > 0)
       {
-        float playback_start = (1.0 - settings->offset) * sample.size();
-        float loop_position = playback_start - (settings->loop * (sample.size() - playback_start));
+        float playback_start = (1.0 - settings->sample_start) * sample_size;
+        float loop_position = playback_start - (settings->loop * (sample_size - playback_start));
 
         if(playback_position <= loop_position)
         {

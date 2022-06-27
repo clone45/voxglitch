@@ -1,6 +1,6 @@
 // Thought:
-// When calling Trigger, pass in the global modifiers, such as "offset_snap",
-// to apply to the offset.
+// When calling Trigger, pass in the global modifiers, such as "sample_position_snap",
+// to apply to the sample start position and sample end position.
 
 namespace groove_box
 {
@@ -8,24 +8,7 @@ namespace groove_box
 struct Track
 {
   bool steps[NUMBER_OF_STEPS] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
-  bool ratchet_patterns[NUMBER_OF_RATCHET_PATTERNS][7] = {
-    {0,0,0,0,0,0,0},
-    {0,0,0,1,0,0,0},
-    {0,0,0,1,1,1,1},
-    {0,0,1,0,0,1,0},
-    {0,1,1,0,1,1,0},
-    {0,1,0,1,0,1,0},
-    {0,1,0,0,1,0,0},
-    {1,0,1,0,1,0,1},
-    {1,1,0,0,0,1,1},
-    {1,1,0,1,1,0,1},
-    {1,1,1,0,1,0,0},
-    {1,1,1,0,1,0,1},
-    {1,1,1,0,0,0,0},
-    {1,1,1,1,0,0,0},
-    {1,1,1,0,1,1,1},
-    {1,1,1,1,1,1,1}
-  };
+
 
   unsigned int playback_position = 0;
   unsigned int range_end = NUMBER_OF_STEPS - 1; // was length
@@ -65,12 +48,6 @@ struct Track
     adsr.setSustainLevel(1.0);
 
     delay.setBufferSize(rack::settings::sampleRate / 30.0);
-
-    /*
-    reverb.init(rack::settings::sampleRate);
-    reverb.setdamp(.5);
-    reverb.setroomsize(.5);
-    */
   }
 
   void setSamplePlayer(SamplePlayer *sample_player)
@@ -80,13 +57,12 @@ struct Track
 
   void step()
   {
-    // playback_position = (playback_position + 1) % (range_end + 1);
     playback_position = playback_position + 1;
     if(playback_position > range_end) playback_position = range_start;
     ratchet_counter = 0;
   }
 
-  bool trigger(unsigned int offset_snap_value)
+  bool trigger(unsigned int sample_position_snap_value)
   {
     fading_out = false;
 
@@ -106,7 +82,8 @@ struct Track
         settings.pitch = getPitch(playback_position);
         settings.pan = getPan(playback_position);
         settings.ratchet = getRatchet(playback_position);
-        settings.offset = getOffset(playback_position);
+        settings.sample_start = getSampleStart(playback_position);
+        settings.sample_end = getSampleEnd(playback_position);
         settings.reverse = getReverse(playback_position);
         settings.loop = getLoop(playback_position);
         settings.attack = getAttack(playback_position);
@@ -115,14 +92,14 @@ struct Track
         settings.delay_length = getDelayLength(playback_position);
         settings.delay_feedback = getDelayFeedback(playback_position);
 
-        // If the offset settings is set and snap is on, then quantize the offset.
-        if(offset_snap_value > 0 && settings.offset > 0)
+        // If the sample start settings is set and snap is on, then quantize the sample start position.
+        if(sample_position_snap_value > 0 && settings.sample_start > 0)
         {
-          // settings.offset ranges from 0 to 1
-          // This next line sets quantized_offset to an integer between 0 and offset_snap
-          float quantized_offset = settings.offset * (float) offset_snap_value;
-          quantized_offset = std::floor(quantized_offset);
-          settings.offset = quantized_offset / (float) offset_snap_value;
+          // settings.sample_start ranges from 0 to 1
+          // This next line sets quantized_sample_start to an integer between 0 and sample_position_snap
+          float quantized_sample_start = settings.sample_start * (float) sample_position_snap_value;
+          quantized_sample_start = std::floor(quantized_sample_start);
+          settings.sample_start = quantized_sample_start / (float) sample_position_snap_value;
         }
 
         // Trigger the ADSR
@@ -377,12 +354,12 @@ struct Track
   {
     for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
     {
-      setOffset(i, default_offset);
       setVolume(i, default_volume);
       setPan(i, default_pan);
       setPitch(i, default_pitch);
       setRatchet(i, default_ratchet);
-      setOffset(i, default_offset);
+      setSampleStart(i, default_sample_start);
+      setSampleEnd(i, default_sample_end);
       setProbability(i, default_probability);
       setLoop(i, default_loop);
       setReverse(i, default_reverse);
@@ -395,13 +372,23 @@ struct Track
   }
 
   //
-  // Offset
+  // Sample Start
   //
-  float getOffset(unsigned int step) {  // This could apply the snap here
-    return(this->sample_playback_settings[step].offset);
+  float getSampleStart(unsigned int step) {  // This could apply the snap here
+    return(this->sample_playback_settings[step].sample_start);
   }
-  void setOffset(unsigned int step, float offset) {
-    this->sample_playback_settings[step].offset = offset;
+  void setSampleStart(unsigned int step, float sample_start) {
+    this->sample_playback_settings[step].sample_start = sample_start;
+  }
+
+  //
+  // Sample End
+  //
+  float getSampleEnd(unsigned int step) {  // This could apply the snap here
+    return(this->sample_playback_settings[step].sample_end);
+  }
+  void setSampleEnd(unsigned int step, float sample_end) {
+    this->sample_playback_settings[step].sample_end = sample_end;
   }
 
   //

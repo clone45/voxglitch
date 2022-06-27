@@ -4,14 +4,14 @@ namespace groove_box
   const int NUMBER_OF_TRACKS = 8;
   const int NUMBER_OF_MEMORY_SLOTS = 16;
   const int NUMBER_OF_FUNCTIONS = 16;
-  const int NUMBER_OF_OFFSET_SNAP_OPTIONS = 8;
+  const int NUMBER_OF_SAMPLE_POSITION_SNAP_OPTIONS = 8;
   const int NUMBER_OF_RATCHET_PATTERNS = 16;
 
   const int FUNCTION_VOLUME = 0;
   const int FUNCTION_PAN = 1;
   const int FUNCTION_PITCH = 2;
   const int FUNCTION_RATCHET = 3;
-  const int FUNCTION_OFFSET = 4;
+  const int FUNCTION_SAMPLE_START = 4;
   const int FUNCTION_PROBABILITY = 5;
   const int FUNCTION_LOOP = 6;
   const int FUNCTION_REVERSE = 7;
@@ -20,6 +20,7 @@ namespace groove_box
   const int FUNCTION_DELAY_MIX = 10;
   const int FUNCTION_DELAY_LENGTH = 11;
   const int FUNCTION_DELAY_FEEDBACK = 12;
+  const int FUNCTION_SAMPLE_END = 13;
 
   const float MODULE_WIDTH = 223.52000 * 2.952756;
   const float MODULE_HEIGHT = 128.50000 * 2.952756;
@@ -28,7 +29,8 @@ namespace groove_box
   const float default_pan = 0.5;
   const float default_pitch = 0.5;
   const float default_ratchet = 0.0;
-  const float default_offset = 0.0;
+  const float default_sample_start = 0.0;
+  const float default_sample_end = 1.0;
   const float default_probability = 1.0;
   const float default_loop = 0.0;
   const bool default_reverse = false;
@@ -50,7 +52,7 @@ namespace groove_box
     ""
   };
 
-  const std::string offset_snap_names[NUMBER_OF_OFFSET_SNAP_OPTIONS] = {
+  const std::string sample_position_snap_names[NUMBER_OF_SAMPLE_POSITION_SNAP_OPTIONS] = {
     "none",
     "4",
     "8",
@@ -61,7 +63,7 @@ namespace groove_box
     "256"
   };
 
-  const unsigned int offset_snap_values[NUMBER_OF_OFFSET_SNAP_OPTIONS] = {
+  const unsigned int sample_position_snap_values[NUMBER_OF_SAMPLE_POSITION_SNAP_OPTIONS] = {
     0,
     4,
     8,
@@ -70,6 +72,45 @@ namespace groove_box
     64,
     128,
     256
+  };
+
+  // For tooltips
+  const std::string FUNCTION_NAMES[NUMBER_OF_FUNCTIONS] = {
+    "Volume",
+    "Pan",
+    "Pitch",
+    "Ratchet (repeat)",
+    "Sample Start Playback Position",
+    "Trigger Probability",
+    "Loop Sample",
+    "Reverse Sample Playback",
+    "Amplitude Envelope Attack",
+    "Amplitude Envelope Release",
+    "Delay Effect Mix",
+    "Delay Effect Length",
+    "Delay Effect Feedback",
+    "Sample End Playback Position",
+    "",
+    ""
+  };
+
+  const bool ratchet_patterns[NUMBER_OF_RATCHET_PATTERNS][7] = {
+    {0,0,0,0,0,0,0},
+    {0,0,0,1,0,0,0},
+    {0,0,0,1,1,1,1},
+    {0,0,1,0,0,1,0},
+    {0,1,1,0,1,1,0},
+    {0,1,0,1,0,1,0},
+    {0,1,0,0,1,0,0},
+    {1,0,1,0,1,0,1},
+    {1,1,0,0,0,1,1},
+    {1,1,0,1,1,0,1},
+    {1,1,1,0,1,0,0},
+    {1,1,1,0,1,0,1},
+    {1,1,1,0,0,0,0},
+    {1,1,1,1,0,0,0},
+    {1,1,1,0,1,1,1},
+    {1,1,1,1,1,1,1}
   };
 
   const float button_positions_y = mm2px(89.75);

@@ -3,13 +3,14 @@
 
 #include <componentlibrary.hpp>
 #include "menus/TrackMenu.hpp"
-#include "menus/OffsetSnapMenu.hpp"
 #include "menus/InitializeMenu.hpp"
 #include "widgets/RangeGrabbers.hpp"
 #include "widgets/GrooveboxBlueLight.hpp"
 #include "widgets/SequenceLengthWidget.hpp"
+#include "widgets/SampleVisualizer.hpp"
+#include "widgets/RatchetVisualizer.hpp"
 #include "widgets/TrackLabelDisplay.hpp"
-#include "widgets/UpdatesWidget.hpp"
+#include "widgets/UpdatesVisualizer.hpp"
 
 float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
   {125, 93},
@@ -34,23 +35,45 @@ float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
 };
 
 float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
-  {18.8, 332.7667},
-  {98, 332.7667},
-  {177, 332.7667},
-  {256, 332.7667},
-  {335, 332.7667},
-  {414, 332.7667},
-  {493, 332.7667},
-  {573, 332.7667},
-  {18.8, 360.936},
-  {98, 360.936},
-  {177, 360.936},
-  {256, 360.936},
-  {335, 360.936},
-  {414, 360.936},
-  {493, 360.936},
-  {573, 360.936},
+  {18.8, 332.7667}, // FUNCTION_VOLUME
+  {98, 332.7667},   // FUNCTION_PAN
+  {177, 332.7667},  // FUNCTION_PITCH
+  {256, 332.7667},  // FUNCTION_RATCHET
+  {335, 360.936},   // FUNCTION_SAMPLE_START
+  {335, 332.7667},  // FUNCTION_PROBABILITY
+  {177, 360.936},   // FUNCTION_LOOP
+  {256, 360.936},   // FUNCTION_REVERSE
+
+  {18.8, 360.936},  // FUNCTION_ATTACK
+  {98, 360.936},    // FUNCTION_RELEASE
+  {414, 332.7667},  // FUNCTION_DELAY_MIX
+  {493, 332.7667},  // FUNCTION_DELAY_LENGTH
+  {573, 332.7667},  // FUNCTION_DELAY_FEEDBACK
+  {414, 360.936},   // FUNCTION_SAMPLE_END
+  {493, 360.936},   // Position #15
+  {573, 360.936},   // Position #16
+
+  /*
+  {18.8, 332.7667}, // Position #1
+  {98, 332.7667},   // Position #2
+  {177, 332.7667},  // Position #3
+  {256, 332.7667},  // Position #4
+  {335, 332.7667},  // Position #5
+  {414, 332.7667},  // Position #6
+  {493, 332.7667},  // Position #7
+  {573, 332.7667},  // Position #8
+
+  {18.8, 360.936},  // Position #9
+  {98, 360.936},    // Position #10
+  {177, 360.936},   // Position #11
+  {256, 360.936},   // Position #12
+  {335, 360.936},   // Position #13
+  {414, 360.936},   // Position #14
+  {493, 360.936},   // Position #15
+  {573, 360.936},   // Position #16
+  */
 };
+
 
 float track_button_positions[NUMBER_OF_TRACKS][2] = {
   {265, 93},
@@ -70,10 +93,11 @@ struct ModdedCL1362 : SvgPort {
 };
 
 
-struct TrimpotMedium : SVGKnob {
+struct TrimpotMedium : SvgKnob {
   widget::SvgWidget* bg;
   GrooveBox *module;
   unsigned int parameter_index = 0;
+  unsigned int step = 0;
 
   TrimpotMedium()
   {
@@ -96,7 +120,8 @@ struct TrimpotMedium : SVGKnob {
       case FUNCTION_PAN: value = default_pan; break;
       case FUNCTION_PITCH: value = default_pitch; break;
       case FUNCTION_RATCHET: value = default_ratchet; break;
-      case FUNCTION_OFFSET: value = default_offset; break;
+      case FUNCTION_SAMPLE_START: value = default_sample_start; break;
+      case FUNCTION_SAMPLE_END: value = default_sample_end; break;
       case FUNCTION_PROBABILITY: value = default_probability; break;
       case FUNCTION_REVERSE: value = default_reverse; break;
       case FUNCTION_LOOP: value = default_loop; break;
@@ -120,6 +145,48 @@ struct TrimpotMedium : SVGKnob {
       // set _this_ knob's values to the default
       module->params[parameter_index].setValue(value);
     }
+  }
+
+  void onButton(const event::Button &e) override
+  {
+    if(module->selected_function == FUNCTION_SAMPLE_START || module->selected_function == FUNCTION_SAMPLE_END)
+    {
+      if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
+      {
+        if(module->show_sample_visualizer == false)
+        {
+          module->show_sample_visualizer = true;
+          module->visualizer_step = step;
+        }
+      }
+    }
+
+    if(module->selected_function == FUNCTION_RATCHET)
+    {
+      if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
+      {
+        if(module->show_ratchet_visualizer == false)
+        {
+          module->show_ratchet_visualizer = true;
+          module->visualizer_step = step;
+        }
+      }
+    }
+
+    SvgKnob::onButton(e);
+  }
+
+  void onDragEnd(const DragEndEvent& e) override {
+
+    if(module->selected_function == FUNCTION_SAMPLE_START || module->selected_function == FUNCTION_SAMPLE_END) {
+      if(e.button == GLFW_MOUSE_BUTTON_LEFT) module->show_sample_visualizer = false;
+    }
+
+    if(module->selected_function == FUNCTION_RATCHET) {
+      if(e.button == GLFW_MOUSE_BUTTON_LEFT) module->show_ratchet_visualizer = false;
+    }
+
+    SvgKnob::onDragEnd(e);
   }
 };
 
@@ -260,6 +327,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       TrimpotMedium *knob = createParamCentered<TrimpotMedium>(Vec(button_positions[i][0],button_positions[i][1] + 30), module, GrooveBox::STEP_KNOBS + i);
       knob->module = module;
       knob->parameter_index = GrooveBox::STEP_KNOBS + i;
+      knob->step = i;
       addParam(knob);
 
     }
@@ -267,6 +335,10 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     // Function Buttons
     for(unsigned int i=0; i<NUMBER_OF_FUNCTIONS; i++)
     {
+
+      // The function buttons got shifted around at some point during the evolution
+      // of the module.  The "ordering_of_functions" array maps the function index
+      // to the correct location on the front panel.
       float x = function_button_positions[i][0];
       float y = function_button_positions[i][1];
 
@@ -319,6 +391,26 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     addParam(createParamCentered<VCVButton>(Vec(87.622, 144.00), module, GrooveBox::COPY_BUTTON));
     addParam(createParamCentered<VCVButton>(Vec(87.622, 187), module, GrooveBox::PASTE_BUTTON));
 
+    // Sample Visualizer Widget
+
+    SampleVisualizerWidget *sampler_visualizer_widget = new SampleVisualizerWidget();
+    sampler_visualizer_widget->module = module;
+    sampler_visualizer_widget->box.pos.x = 83.348 * 2.952756;
+    sampler_visualizer_widget->box.pos.y = 21.796 * 2.952756;
+    addChild(sampler_visualizer_widget);
+
+    RatchetVisualizerWidget *ratchet_visualizer_widget = new RatchetVisualizerWidget();
+    ratchet_visualizer_widget->module = module;
+    ratchet_visualizer_widget->box.pos.x = 83.348 * 2.952756;
+    ratchet_visualizer_widget->box.pos.y = 21.796 * 2.952756;
+    addChild(ratchet_visualizer_widget);
+
+    UpdatesVisualizerWidget *updates_visualizer_widget = new UpdatesVisualizerWidget();
+    updates_visualizer_widget->module = module;
+    updates_visualizer_widget->box.pos.x = 83.348 * 2.952756;
+    updates_visualizer_widget->box.pos.y = 21.796 * 2.952756;
+    addChild(updates_visualizer_widget);
+
     // Updates widget
     /*
     UpdatesWidget *updates_widget = new UpdatesWidget();
@@ -355,13 +447,6 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     TracksMenu *tracks_menu = createMenuItem<TracksMenu>("Tracks", RIGHT_ARROW);
     tracks_menu->module = module;
     menu->addChild(tracks_menu);
-
-    // Offset Snap settings menu
-    /*
-    OffsetSnapMenuItem *offset_snap_menu_item = createMenuItem<OffsetSnapMenuItem>("Offset Snap", RIGHT_ARROW);
-    offset_snap_menu_item->module = module;
-    menu->addChild(offset_snap_menu_item);
-    */
 
     //
     // Start sample selection menu options

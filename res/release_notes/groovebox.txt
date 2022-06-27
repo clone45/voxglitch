@@ -1,0 +1,9 @@
+Recent Updates:  [click to dismiss]
+
+* Holding shift while clicking on a blue step button no longer sets the track
+  start position.  (See above!)
+* Hold shift while dragging a blue step button to shift track contents.
+* Added waveform display to assist when changing sample start/end positions
+* Added ratchet pattern display during ratchet selection
+* Added recent updates display (this)!
+* Support my work on https://www.patreon.com/voxglitch

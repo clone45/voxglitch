@@ -1,30 +1,28 @@
-struct OffsetSnapValueItem : MenuItem {
+struct SamplePositionSnapValueItem : MenuItem {
   GrooveBox *module;
-  unsigned int offset_snap_index = 0;
+  unsigned int sample_position_snap_index = 0;
   unsigned int track_index = 0;
 
   void onAction(const event::Action &e) override {
-    module->offset_snap_indexes[track_index] = offset_snap_index;
-    module->setOffsetSnapIndex(offset_snap_index, track_index);
-
-    // TODO: Set the offset_snap_index in the track, not the module
+    module->sample_position_snap_indexes[track_index] = sample_position_snap_index;
+    module->setSamplePositionSnapIndex(sample_position_snap_index, track_index);
   }
 };
 
-struct OffsetSnapMenuItem : MenuItem {
+struct SamplePositionSnapMenuItem : MenuItem {
   GrooveBox *module;
   unsigned int track_index = 0;
 
   Menu *createChildMenu() override {
     Menu *menu = new Menu;
 
-    for (unsigned int i=0; i < NUMBER_OF_OFFSET_SNAP_OPTIONS; i++)
+    for (unsigned int i=0; i < NUMBER_OF_SAMPLE_POSITION_SNAP_OPTIONS; i++)
     {
-      OffsetSnapValueItem *offset_snap_value_item = createMenuItem<OffsetSnapValueItem>(offset_snap_names[i], CHECKMARK(module->offset_snap_indexes[track_index] == i));
-      offset_snap_value_item->module = module;
-      offset_snap_value_item->offset_snap_index = i;
-      offset_snap_value_item->track_index = this->track_index;
-      menu->addChild(offset_snap_value_item);
+      SamplePositionSnapValueItem *sample_position_snap_value_item = createMenuItem<SamplePositionSnapValueItem>(sample_position_snap_names[i], CHECKMARK(module->sample_position_snap_indexes[track_index] == i));
+      sample_position_snap_value_item->module = module;
+      sample_position_snap_value_item->sample_position_snap_index = i;
+      sample_position_snap_value_item->track_index = this->track_index;
+      menu->addChild(sample_position_snap_value_item);
     }
 
     return menu;
@@ -49,10 +47,10 @@ struct TrackMenuItem : MenuItem {
   Menu *createChildMenu() override {
     Menu *menu = new Menu;
 
-    OffsetSnapMenuItem *offset_snap_menu_item = createMenuItem<OffsetSnapMenuItem>("Offset Snap Division", RIGHT_ARROW);
-    offset_snap_menu_item->track_index = this->track_index;
-    offset_snap_menu_item->module = module;
-    menu->addChild(offset_snap_menu_item);
+    SamplePositionSnapMenuItem *sample_position_snap_menu_item = createMenuItem<SamplePositionSnapMenuItem>("Sample Position Snap Division", RIGHT_ARROW);
+    sample_position_snap_menu_item->track_index = this->track_index;
+    sample_position_snap_menu_item->module = module;
+    menu->addChild(sample_position_snap_menu_item);
 
     ClearMenuItem *clear_menu_item = createMenuItem<ClearMenuItem>("Clear Track Data");
     clear_menu_item->track_index = this->track_index;
@@ -62,10 +60,7 @@ struct TrackMenuItem : MenuItem {
     // Randomize??
 
     /*
-    InputSnapItem *input_snap_item = createMenuItem<InputSnapItem>("Snap", RIGHT_ARROW);
-    input_snap_item->sequencer_number = this->sequencer_number;
-    input_snap_item->module = module;
-    menu->addChild(input_snap_item);
+
 
     SampleAndHoldItem *sample_and_hold_item = createMenuItem<SampleAndHoldItem>("Sample & Hold", CHECKMARK(module->voltage_sequencers[sequencer_number].sample_and_hold));
     sample_and_hold_item->sequencer_number = this->sequencer_number;
