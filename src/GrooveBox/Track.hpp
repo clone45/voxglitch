@@ -8,24 +8,7 @@ namespace groove_box
 struct Track
 {
   bool steps[NUMBER_OF_STEPS] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
-  bool ratchet_patterns[NUMBER_OF_RATCHET_PATTERNS][7] = {
-    {0,0,0,0,0,0,0},
-    {0,0,0,1,0,0,0},
-    {0,0,0,1,1,1,1},
-    {0,0,1,0,0,1,0},
-    {0,1,1,0,1,1,0},
-    {0,1,0,1,0,1,0},
-    {0,1,0,0,1,0,0},
-    {1,0,1,0,1,0,1},
-    {1,1,0,0,0,1,1},
-    {1,1,0,1,1,0,1},
-    {1,1,1,0,1,0,0},
-    {1,1,1,0,1,0,1},
-    {1,1,1,0,0,0,0},
-    {1,1,1,1,0,0,0},
-    {1,1,1,0,1,1,1},
-    {1,1,1,1,1,1,1}
-  };
+
 
   unsigned int playback_position = 0;
   unsigned int range_end = NUMBER_OF_STEPS - 1; // was length

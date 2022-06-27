@@ -8,8 +8,9 @@
 #include "widgets/GrooveboxBlueLight.hpp"
 #include "widgets/SequenceLengthWidget.hpp"
 #include "widgets/SampleVisualizer.hpp"
+#include "widgets/RatchetVisualizer.hpp"
 #include "widgets/TrackLabelDisplay.hpp"
-#include "widgets/UpdatesWidget.hpp"
+#include "widgets/UpdatesVisualizer.hpp"
 
 float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
   {125, 93},
@@ -155,8 +156,19 @@ struct TrimpotMedium : SvgKnob {
         if(module->show_sample_visualizer == false)
         {
           module->show_sample_visualizer = true;
-          module->sample_visualizer_step = step;
-          // module->sample_visualizer_step = parameter_index;
+          module->visualizer_step = step;
+        }
+      }
+    }
+
+    if(module->selected_function == FUNCTION_RATCHET)
+    {
+      if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
+      {
+        if(module->show_ratchet_visualizer == false)
+        {
+          module->show_ratchet_visualizer = true;
+          module->visualizer_step = step;
         }
       }
     }
@@ -165,12 +177,13 @@ struct TrimpotMedium : SvgKnob {
   }
 
   void onDragEnd(const DragEndEvent& e) override {
-    if(module->selected_function == FUNCTION_SAMPLE_START || module->selected_function == FUNCTION_SAMPLE_END)
-    {
-      if(e.button == GLFW_MOUSE_BUTTON_LEFT)
-      {
-        module->show_sample_visualizer = false;
-      }
+
+    if(module->selected_function == FUNCTION_SAMPLE_START || module->selected_function == FUNCTION_SAMPLE_END) {
+      if(e.button == GLFW_MOUSE_BUTTON_LEFT) module->show_sample_visualizer = false;
+    }
+
+    if(module->selected_function == FUNCTION_RATCHET) {
+      if(e.button == GLFW_MOUSE_BUTTON_LEFT) module->show_ratchet_visualizer = false;
     }
 
     SvgKnob::onDragEnd(e);
@@ -385,6 +398,18 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     sampler_visualizer_widget->box.pos.x = 83.348 * 2.952756;
     sampler_visualizer_widget->box.pos.y = 21.796 * 2.952756;
     addChild(sampler_visualizer_widget);
+
+    RatchetVisualizerWidget *ratchet_visualizer_widget = new RatchetVisualizerWidget();
+    ratchet_visualizer_widget->module = module;
+    ratchet_visualizer_widget->box.pos.x = 83.348 * 2.952756;
+    ratchet_visualizer_widget->box.pos.y = 21.796 * 2.952756;
+    addChild(ratchet_visualizer_widget);
+
+    UpdatesVisualizerWidget *updates_visualizer_widget = new UpdatesVisualizerWidget();
+    updates_visualizer_widget->module = module;
+    updates_visualizer_widget->box.pos.x = 83.348 * 2.952756;
+    updates_visualizer_widget->box.pos.y = 21.796 * 2.952756;
+    addChild(updates_visualizer_widget);
 
     // Updates widget
     /*
