@@ -11,7 +11,7 @@
     "manualUrl": "https://github.com/clone45/voxglitch",
     "sourceUrl": "https://github.com/clone45/voxglitch",
     "donateUrl": "https://www.patreon.com/voxglitch",
-    "changelogUrl": "https://github.com/clone45/voxglitch/docs/changelog.md",
+    "changelogUrl": "https://github.com/clone45/voxglitch/blob/master/docs/changelog.md",
     "modules": [
     {
         "slug": "autobreak",
