@@ -3,31 +3,29 @@ struct MenuItemLoadSample : MenuItem
 	Repeater *module;
 	unsigned int sample_number = 0;
 
-	void onAction(const event::Action &e) override
+  void onAction(const event::Action &e) override
 	{
-		const std::string dir = module->root_dir.empty() ? "" : module->root_dir;
 #ifdef USING_CARDINAL_NOT_RACK
-		Repeater *module = this->module;
-		unsigned int sample_number = this->sample_number;
-		async_dialog_filebrowser(false, dir.c_str(), text.c_str(), [module, sample_number](char* path) {
-			pathSelected(module, sample_number, path);
+		async_dialog_filebrowser(false, module->samples_root_dir.c_str(), NULL, [module, sample_number](char* filename) {
+      if(filename)
+      {
+  			fileSelected(module, sample_number, std::string(filename));
+        free filename;
+      }
 		});
 #else
-		// char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("Wav:wav"));
-    char *path = module->selectFileVCV(dir);
-		pathSelected(module, sample_number, path);
+		fileSelected(module, this->sample_number, module->selectFileVCV());
 #endif
 	}
 
-	static void pathSelected(Repeater *module, unsigned int sample_number, char *path)
+  static void fileSelected(Repeater *module, unsigned int sample_number, std::string filename)
 	{
-		if (path)
+		if (filename != "")
 		{
 			module->any_sample_has_been_loaded = true;
-			module->samples[sample_number].load(path);
-			module->root_dir = std::string(path);
+			module->samples[sample_number].load(filename);
 			module->loaded_filenames[sample_number] = module->samples[sample_number].filename;
-			free(path);
+      module->setRoot(filename);
 		}
 	}
 };

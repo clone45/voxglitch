@@ -162,7 +162,7 @@ struct WavBankMCWidget : ModuleWidget
 		// Add the "Select Directory Containing WAV Files" menu item
 		MenuItemLoadBankMC *menu_item_load_bank_mc = new MenuItemLoadBankMC();
 		menu_item_load_bank_mc->text = "Select Directory Containing WAV Files";
-		menu_item_load_bank_mc->wav_bank_mc_module = module;
+		menu_item_load_bank_mc->module = module;
 		menu->addChild(menu_item_load_bank_mc);
 	}
 

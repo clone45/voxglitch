@@ -19,7 +19,7 @@ struct LoadQueue
   }
 };
 
-struct GrainEngineMK2 : Module
+struct GrainEngineMK2 : VoxglitchSamplerModule
 {
   // Various internal variables
   unsigned int selected_sample_slot = 0;

@@ -78,7 +78,6 @@ struct GrooveBox : VoxglitchSamplerModule
   // keeps track of the filenames to display.
   //
   std::string loaded_filenames[NUMBER_OF_TRACKS]; // for display on the front panel
-  std::string root_directory;
 	std::string path;
 
   // Each of the 8 tracks has dedicated sample player engines

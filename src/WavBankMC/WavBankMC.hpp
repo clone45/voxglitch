@@ -2,7 +2,7 @@
 // WavBankMC
 //
 
-struct WavBankMC : Module
+struct WavBankMC : VoxglitchSamplerModule
 {
 	unsigned int selected_sample_slot = 0;
 	double playback_positions[NUMBER_OF_CHANNELS];
@@ -100,7 +100,7 @@ struct WavBankMC : Module
 		if (loaded_path_json)
 		{
 			this->path = json_string_value(loaded_path_json);
-			this->load_samples_from_path(this->path.c_str());
+			this->load_samples_from_path(this->path);
 		}
 
     // Load sample change mode
@@ -254,16 +254,16 @@ struct WavBankMC : Module
     }
   }
 
-	void load_samples_from_path(const char *path)
+	void load_samples_from_path(std::string path)
 	{
 		// Clear out any old .wav files
     // Reminder: this->samples is a vector, and vectors have a .clear() menthod.
 		this->samples.clear();
 
 		// Load all .wav files found in the folder specified by 'path'
-		this->rootDir = std::string(path);
+		this->rootDir = path;
 
-		std::vector<std::string> dirList = system::getEntries(path);
+		std::vector<std::string> dirList = system::getEntries(path.c_str());
 
 		// TODO: Decide on a maximum memory consuption allowed and abort if
 		// that amount of member would be exhausted by loading all of the files

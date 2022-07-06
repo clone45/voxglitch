@@ -17,29 +17,28 @@ struct TrackLabelDisplay : TransparentWidget
 
   void onDoubleClick(const event::DoubleClick &e) override
   {
-		std::string root_dir = module->root_directory;
-		const std::string dir = root_dir.empty() ? "" : root_dir;
 #ifdef USING_CARDINAL_NOT_RACK
-		GrooveBox *module = this->module;
-		unsigned int track_number = this->track_number;
-		async_dialog_filebrowser(false, dir.c_str(), NULL, [module, track_number](char* path) {
-			pathSelected(module, track_number, path);
+    async_dialog_filebrowser(false, module->sample_root_dir.c_str(), NULL, [module, this->track_number](char* filename) {
+      if(filename)
+      {
+        fileSelected(module, this->track_number, std::string(filename));  
+        free(filename);
+      }
 		});
 #else
-    char *path = module->selectFileVCV(dir);
-    pathSelected(module, track_number, path);
+    fileSelected(module, this->track_number, module->selectFileVCV());
 #endif
 	}
 
-	static void pathSelected(GrooveBox *module, unsigned int track_number, char *path)
+  static void fileSelected(GrooveBox *module, unsigned int track_number, std::string filename)
 	{
-		if (path)
+		if (filename != "")
 		{
-			module->sample_players[track_number].loadSample(std::string(path));
-			module->loaded_filenames[track_number] = module->sample_players[track_number].getFilename();
-			free(path);
+			module->sample_players[track_number].loadSample(filename);
+      module->loaded_filenames[track_number] = module->sample_players[track_number].getFilename();
+			module->setRoot(filename);
 		}
-  }
+	}
 
 
   void onButton(const event::Button &e) override

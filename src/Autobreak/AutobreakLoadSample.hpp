@@ -5,28 +5,26 @@ struct AutobreakLoadSample : MenuItem
 
 	void onAction(const event::Action &e) override
 	{
-		const std::string dir = module->root_dir.empty() ? "" : module->root_dir;
-#ifdef USING_CARDINAL_NOT_RACK
-		Autobreak *module = this->module;
-		unsigned int sample_number = this->sample_number;
-		async_dialog_filebrowser(false, dir.c_str(), text.c_str(), [module, sample_number](char* path) {
-			pathSelected(module, sample_number, path);
-		});
-#else
-		// char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("Wav:wav"));
-    char *path = module->selectFileVCV(dir);
-		pathSelected(module, sample_number, path);
-#endif
+    #ifdef USING_CARDINAL_NOT_RACK
+    		async_dialog_filebrowser(false, module->sample_root_dir.c_str(), NULL, [module, sample_number](char* filename) {
+          if(filename)
+          {
+            fileSelected(module, sample_number, std::string(filename));
+            free filename;
+          }
+    		});
+    #else
+  		fileSelected(module, this->sample_number, module->selectFileVCV());
+    #endif
 	}
 
-	static void pathSelected(Autobreak *module, unsigned int sample_number, char *path)
+	static void fileSelected(Autobreak *module, unsigned int sample_number, std::string filename)
 	{
-		if (path)
+		if (filename != "")
 		{
-			module->samples[sample_number].load(path);
-			module->root_dir = std::string(path);
+			module->samples[sample_number].load(filename);
 			module->loaded_filenames[sample_number] = module->samples[sample_number].filename;
-			free(path);
+      module->setRoot(filename);
 		}
 	}
 };

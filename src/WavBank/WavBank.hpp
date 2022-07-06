@@ -69,15 +69,15 @@ struct WavBank : VoxglitchSamplerModule
     if (trig_input_response_mode_json) trig_input_response_mode = json_integer_value(trig_input_response_mode_json);
 	}
 
-	void load_samples_from_path(const char *path)
+	void load_samples_from_path(std::string path)
 	{
 		// Clear out any old .wav files
 		this->samples.clear();
 
 		// Load all .wav files found in the folder specified by 'path'
-		this->rootDir = std::string(path);
+		// this->rootDir = std::string(path);
 
-		std::vector<std::string> dirList = system::getEntries(path);
+		std::vector<std::string> dirList = system::getEntries(path.c_str());
 
 		// TODO: Decide on a maximum memory consuption allowed and abort if
 		// that amount of member would be exhausted by loading all of the files

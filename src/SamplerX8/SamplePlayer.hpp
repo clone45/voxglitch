@@ -2,7 +2,7 @@ struct SamplePlayer
 {
 	// sample_ptr points to the loaded sample in memory
 	Sample sample;
-	float playback_position = 0.0f;
+	double playback_position = 0.0f;
   unsigned int sample_position = 0;
   bool playing = false;
 
@@ -17,8 +17,11 @@ struct SamplePlayer
       left = 0;
       right = 0;
     }
+    else
+    {
+      this->sample.read(sample_position, &left, &right);
+    }
 
-    this->sample.read(sample_position, &left, &right);
 		return { left, right };
 	}
 
@@ -37,7 +40,7 @@ struct SamplePlayer
 	{
     if(playing && sample.loaded)
     {
-      float step_amount = sample.sample_rate / rack_sample_rate;
+      double step_amount = sample.sample_rate / rack_sample_rate;
 
       // Step the playback position forward.
   		playback_position = playback_position + step_amount;
@@ -47,9 +50,9 @@ struct SamplePlayer
     }
 	}
 
-  void loadSample(std::string path)
+  bool loadSample(std::string path)
   {
-    sample.load(path);
+    return(sample.load(path));
   }
 
   void setPositionFromInput(float position_input_value) // 1 to 10

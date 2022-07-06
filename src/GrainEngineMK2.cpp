@@ -10,6 +10,8 @@
 #include "Common/common.hpp"
 #include "Common/sample.hpp"
 #include "Common/submodules.hpp"
+#include "Common/VoxglitchSamplerModule.hpp"
+#include "Common/VoxglitchSamplerModuleWidget.hpp"
 #include "Common/GrainEngineExpanderMessage.hpp"
 
 #include "GrainEngineMK2/defines.h"

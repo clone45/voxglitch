@@ -197,8 +197,10 @@ struct SamplerX8 : VoxglitchSamplerModule
 			json_t *loaded_sample_path = json_object_get(root, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
 			if (loaded_sample_path)
 			{
-				sample_players[i].loadSample(json_string_value(loaded_sample_path));
-				loaded_filenames[i] = sample_players[i].getFilename();
+				if(sample_players[i].loadSample(json_string_value(loaded_sample_path)))
+        {
+          loaded_filenames[i] = sample_players[i].getFilename();
+        }
 			}
 		}
 
@@ -214,6 +216,7 @@ struct SamplerX8 : VoxglitchSamplerModule
 	{
     float summed_output_left = 0;
     float summed_output_right = 0;
+
 
     for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
     {
@@ -232,9 +235,10 @@ struct SamplerX8 : VoxglitchSamplerModule
 
       lights[mute_lights[i]].setBrightness(mute_states[i]);
 
-
       // Send audio to outputs
+
       std::tie(left_audio, right_audio) = sample_players[i].getStereoOutput();
+
 
       // Apply volume knobs
       left_audio = (left_audio * params[VOLUME_KNOBS + i + 1].getValue());
@@ -256,10 +260,12 @@ struct SamplerX8 : VoxglitchSamplerModule
 
       // Step samples
       sample_players[i].step(args.sampleRate);
+
     }
 
     // Output summed output
     outputs[AUDIO_MIX_OUTPUT_LEFT].setVoltage(summed_output_left);
     outputs[AUDIO_MIX_OUTPUT_RIGHT].setVoltage(summed_output_right);
+
   }
 };

@@ -11,6 +11,13 @@ struct SampleAudioBuffer
 
   void clear()
   {
+    // left_buffer.resize(0);
+    // right_buffer.resize(0);
+
+    // Trick to free up memory in buffers
+    std::vector<float>().swap(left_buffer);
+    std::vector<float>().swap(right_buffer);
+
     left_buffer.resize(0);
     right_buffer.resize(0);
   }
@@ -75,6 +82,7 @@ struct Sample
   float sample_rate;
   unsigned int channels;
   AudioFile<float> audioFile; // For loading samples and saving samples
+  // uint64_t file_size_limit = 50000000;  // File size limit of 50 MB
 
   Sample()
   {
@@ -94,20 +102,32 @@ struct Sample
     sample_audio_buffer.clear();
   }
 
-  void load(std::string path)
+  bool load(std::string path)
   {
+    // If the file size is too large, then abort
+    /*
+    if(rack::system::getFileSize(path) > file_size_limit)
+    {
+      // DEBUG("File too large");
+      // DEBUG(std::to_string(rack::system::getFileSize(path)).c_str());
+      return(false);
+    }
+    */
+
+    // Set loading flags
     this->loading = true;
     this->loaded = false;
 
+    // initialize some transient variables
     float left = 0;
     float right = 0;
 
-    // If file fails to load, abandon operation
+    // Load the audio file
     if(! audioFile.load(path))
     {
       this->loading = false;
       this->loaded = false;
-      return;
+      return(false);
     }
 
     // Read details about the loaded sample
@@ -119,7 +139,10 @@ struct Sample
     this->sample_rate = sampleRate;
     sample_audio_buffer.clear();
 
-    for (int i = 0; i < numSamples; i++)
+    //
+    // Copy the sample data from the AudioFile object to floating point vectors
+    //
+    for(int i = 0; i < numSamples; i++)
     {
       if(numChannels == 2)
       {
@@ -145,6 +168,12 @@ struct Sample
 
     this->loading = false;
     this->loaded = true;
+
+    // Now that the audioFile has been read into memory, clear it out
+    audioFile.samples[0].resize(0);
+    audioFile.samples[1].resize(0);
+
+    return(true);
   };
 
   // Where to put recording code and how to save it?

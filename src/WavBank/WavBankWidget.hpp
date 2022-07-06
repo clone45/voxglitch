@@ -84,7 +84,7 @@ struct WavBankWidget : VoxglitchSamplerModuleWidget
 		// Add the "Select Directory Containing WAV Files" menu item
 		MenuItemLoadBank *menu_item_load_bank = new MenuItemLoadBank();
 		menu_item_load_bank->text = "Select Directory Containing WAV Files";
-		menu_item_load_bank->wav_bank_module = module;
+		menu_item_load_bank->module = module;
 		menu->addChild(menu_item_load_bank);
 
     // Sample interpolation settings

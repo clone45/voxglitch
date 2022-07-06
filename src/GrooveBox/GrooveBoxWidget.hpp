@@ -10,7 +10,6 @@
 #include "widgets/SampleVisualizer.hpp"
 #include "widgets/RatchetVisualizer.hpp"
 #include "widgets/TrackLabelDisplay.hpp"
-#include "widgets/UpdatesVisualizer.hpp"
 
 float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
   {125, 93},
@@ -197,25 +196,22 @@ struct LoadSamplesFromFolderMenuItem : MenuItem
 
 	void onAction(const event::Action &e) override
 	{
-		std::string root_dir = module->root_directory;;
-		const std::string dir = root_dir.empty() ? "" : root_dir;
 #ifdef USING_CARDINAL_NOT_RACK
-		GrooveBox *module = this->module;
-		async_dialog_filebrowser(false, dir.c_str(), NULL, [module](char* path) {
-			pathSelected(module, path);
+		async_dialog_filebrowser(false, module->sample_root_dir.c_str(), NULL, [module](char* path) {
+      if(path){
+        pathSelected(module, std::string(path));
+        free(path);
+      }
 		});
 #else
-		char *path = osdialog_file(OSDIALOG_OPEN_DIR, dir.c_str(), NULL, NULL);
-		pathSelected(module, path);
+		pathSelected(module, module->selectPathVCV());
 #endif
 	}
 
-	static void pathSelected(GrooveBox *module, char *path)
+	static void pathSelected(GrooveBox * module, std::string path)
 	{
-		if (path)
+		if (path != "")
 		{
-      module->root_directory = std::string(path);
-
       std::vector<std::string> dirList = system::getEntries(path);
 
       unsigned int i = 0;
@@ -237,9 +233,9 @@ struct LoadSamplesFromFolderMenuItem : MenuItem
           }
   			}
   		}
-		}
 
-    free(path);
+      module->setRoot(path);
+		}
 	}
 };
 
@@ -250,29 +246,26 @@ struct LoadSampleMenuItem : MenuItem
 
 	void onAction(const event::Action &e) override
 	{
-		std::string root_dir = module->root_directory;
-		const std::string dir = root_dir.empty() ? "" : root_dir;
-
 #ifdef USING_CARDINAL_NOT_RACK
-		GrooveBox *module = this->module;
-		unsigned int track_number = this->track_number;
-		async_dialog_filebrowser(false, dir.c_str(), NULL, [module, track_number](char* path) {
-			pathSelected(module, track_number, path);
+		async_dialog_filebrowser(false, module->sample_root_dir.c_str(), NULL, [module, this->track_number](char* filename) {
+      if(filename)
+      {
+        fileSelected(module, this->track_number, std::string(filename));
+        free(filename);
+      }
 		});
 #else
-    char *path = module->selectFileVCV(dir);
-		pathSelected(module, track_number, path);
+		fileSelected(module, this->track_number, module->selectFileVCV());
 #endif
 	}
 
-	static void pathSelected(GrooveBox *module, unsigned int track_number, char *path)
+	static void fileSelected(GrooveBox *module, unsigned int track_number, std::string filename)
 	{
-		if (path)
+		if (filename != "")
 		{
-      module->root_directory = std::string(path);
-			module->sample_players[track_number].loadSample(std::string(path));
+			module->sample_players[track_number].loadSample(filename);
       module->loaded_filenames[track_number] = module->sample_players[track_number].getFilename();
-			free(path);
+			module->setRoot(filename);
 		}
 	}
 };
@@ -405,18 +398,6 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     ratchet_visualizer_widget->box.pos.y = 21.796 * 2.952756;
     addChild(ratchet_visualizer_widget);
 
-    UpdatesVisualizerWidget *updates_visualizer_widget = new UpdatesVisualizerWidget();
-    updates_visualizer_widget->module = module;
-    updates_visualizer_widget->box.pos.x = 83.348 * 2.952756;
-    updates_visualizer_widget->box.pos.y = 21.796 * 2.952756;
-    addChild(updates_visualizer_widget);
-
-    // Updates widget
-    /*
-    UpdatesWidget *updates_widget = new UpdatesWidget();
-    updates_widget->module = module;
-    addChild(updates_widget);
-    */
   }
 
   void onHoverKey(const event::HoverKey &e) override
@@ -457,7 +438,6 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     //
     // Add the sample slots to the right-click context menu
     //
-
     for(int i=0; i < NUMBER_OF_TRACKS; i++)
     {
       LoadSampleMenuItem *menu_item_load_sample = new LoadSampleMenuItem();

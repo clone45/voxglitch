@@ -5,17 +5,17 @@ struct GrainEngineMK2Widget : ModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/grain_engine_mk2_front_panel_r3.svg")));
 
-    float hrule1 = 128.5 - 104.035;
-    float hrule2 = 128.5 - 92.415;
-    float hrule3 = 128.5 - 63.689;
-    float hrule4 = 128.5 - 49.515;
-    float hrule5 = 128.5 - 38.034;
+    // float hrule1 = 24.465;
+    float hrule2 = 36.085;
+    float hrule3 = 64.811;
+    float hrule4 = 78.985;
+    float hrule5 = 90.466;
     float hrule6 = 114.702;
 
     float vrule_a_1 = 15.903;
     float vrule_a_2 = 37.278;
     float vrule_a_3 = 53.263;
-    float vrule_a_4 = 69.249;
+    // float vrule_a_4 = 69.249;
     float vrule_a_5 = 85.234;
 
     float vrule_b_1 = 9.421;
@@ -30,13 +30,13 @@ struct GrainEngineMK2Widget : ModuleWidget
     float vrule_c_4 = 65.012;
 
     // Position
-		// addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(vrule_a_1, hrule1)), module, GrainEngineMK2::POSITION_COARSE_KNOB));
+		// addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(vrule_a_1, 24.465)), module, GrainEngineMK2::POSITION_COARSE_KNOB));
 
-    addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(vrule_a_1, hrule1)), module, GrainEngineMK2::POSITION_KNOB));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_a_2, hrule1)), module, GrainEngineMK2::POSITION_ATTN_KNOB));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_a_3, hrule1)), module, GrainEngineMK2::POSITION_INPUT));
+    addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(vrule_a_1, 24.465)), module, GrainEngineMK2::POSITION_KNOB));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_a_2, 24.465)), module, GrainEngineMK2::POSITION_ATTN_KNOB));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_a_3, 24.465)), module, GrainEngineMK2::POSITION_INPUT));
 
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_a_5, hrule1)), module, GrainEngineMK2::JITTER_KNOB));
+    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_a_5, 24.465)), module, GrainEngineMK2::JITTER_KNOB));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_a_5, hrule2)), module, GrainEngineMK2::JITTER_INPUT));
 
     // Spawn input
