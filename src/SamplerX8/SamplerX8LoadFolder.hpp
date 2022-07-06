@@ -10,7 +10,7 @@ struct SamplerX8LoadFolder : MenuItem
 #ifdef USING_CARDINAL_NOT_RACK
 		SamplerX8 *module = this->module;
 		unsigned int sample_number = this->sample_number;
-		async_dialog_filebrowser(false, dir.c_str(), text.c_str(), [module, sample_number](char *path) {
+		async_dialog_filebrowser(false, NULL, dir.c_str(), text.c_str(), [module, sample_number](char *path) {
 			if (path) {
 				if (char *rpath = strrchr(path, CARDINAL_OS_SEP))
 					*rpath = '\0';

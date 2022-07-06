@@ -5,11 +5,12 @@ struct LooperLoadSample : MenuItem
 	void onAction(const event::Action &e) override
 	{
     #ifdef USING_CARDINAL_NOT_RACK
-    	async_dialog_filebrowser(false, module->samples_root_dir.c_str(), NULL, [module](char* filename) {
+		Looper *module = this->module;
+    	async_dialog_filebrowser(false, NULL, module->samples_root_dir.c_str(), "Load sample", [module](char* filename) {
         if(filename)
         {
           fileSelected(module, std::string(filename));
-          free filename;
+          free(filename);
         }
     	});
     #else

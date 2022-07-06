@@ -18,10 +18,12 @@ struct TrackLabelDisplay : TransparentWidget
   void onDoubleClick(const event::DoubleClick &e) override
   {
 #ifdef USING_CARDINAL_NOT_RACK
-    async_dialog_filebrowser(false, module->sample_root_dir.c_str(), NULL, [module, this->track_number](char* filename) {
+    GrooveBox *module = this->module;
+    unsigned int track_number = this->track_number;
+    async_dialog_filebrowser(false, NULL, module->samples_root_dir.c_str(), "Load filename", [module, track_number](char* filename) {
       if(filename)
       {
-        fileSelected(module, this->track_number, std::string(filename));  
+        fileSelected(module, track_number, std::string(filename));  
         free(filename);
       }
 		});

@@ -24,6 +24,7 @@ struct VoxglitchSamplerModule : Module
   // Pure virtual function that must be implemented in the derived classes
   // virtual void fileSelected(std::string filename) = 0;
 
+#ifndef USING_CARDINAL_NOT_RACK
   std::string selectFileVCV()
   {
     std::string filename_string = "";
@@ -61,6 +62,7 @@ struct VoxglitchSamplerModule : Module
     return(filename_string);
     */
   }
+#endif
 
   void setSamplesRootDirectory(std::string samples_root_directory)
   {

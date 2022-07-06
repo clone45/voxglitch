@@ -197,11 +197,12 @@ struct LoadSamplesFromFolderMenuItem : MenuItem
 	void onAction(const event::Action &e) override
 	{
 #ifdef USING_CARDINAL_NOT_RACK
-		async_dialog_filebrowser(false, module->sample_root_dir.c_str(), NULL, [module](char* path) {
-      if(path){
-        pathSelected(module, std::string(path));
-        free(path);
-      }
+		GrooveBox *module = this->module;
+		async_dialog_filebrowser(false, NULL, module->samples_root_dir.c_str(), "Load folder", [module](char* path) {
+			if(path){
+				pathSelected(module, std::string(path));
+				free(path);
+			}
 		});
 #else
 		pathSelected(module, module->selectPathVCV());
@@ -247,10 +248,12 @@ struct LoadSampleMenuItem : MenuItem
 	void onAction(const event::Action &e) override
 	{
 #ifdef USING_CARDINAL_NOT_RACK
-		async_dialog_filebrowser(false, module->sample_root_dir.c_str(), NULL, [module, this->track_number](char* filename) {
+		GrooveBox *module = this->module;
+		unsigned int track_number = this->track_number;
+		async_dialog_filebrowser(false, NULL, module->samples_root_dir.c_str(), "Load sample", [module, track_number](char* filename) {
       if(filename)
       {
-        fileSelected(module, this->track_number, std::string(filename));
+        fileSelected(module, track_number, std::string(filename));
         free(filename);
       }
 		});

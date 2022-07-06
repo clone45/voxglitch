@@ -9,7 +9,7 @@ struct GoblinsLoadSample : MenuItem
 #ifdef USING_CARDINAL_NOT_RACK
 		Goblins *module = this->module;
 		unsigned int sample_number = this->sample_number;
-		async_dialog_filebrowser(false, dir.c_str(), text.c_str(), [module, sample_number](char* path) {
+		async_dialog_filebrowser(false, NULL, dir.c_str(), text.c_str(), [module, sample_number](char* path) {
 			pathSelected(module, sample_number, path);
 		});
 #else

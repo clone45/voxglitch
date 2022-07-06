@@ -5,12 +5,13 @@ struct MenuItemLoadBank : MenuItem
   void onAction(const event::Action &e) override
 	{
     #ifdef USING_CARDINAL_NOT_RACK
-    		async_dialog_filebrowser(false, module->samples_root_dir.c_str(), NULL, [module](char* path) {
+    		WavBank *module = this->module;
+    		async_dialog_filebrowser(false, NULL, module->samples_root_dir.c_str(), "Load sample", [module](char* path) {
     			if (path) {
     				if (char *rpath = strrchr(path, CARDINAL_OS_SEP))
     					*rpath = '\0';
     				pathSelected(module, std::string(path));
-            free(path);
+    				free(path);
     			}
     		});
     #else

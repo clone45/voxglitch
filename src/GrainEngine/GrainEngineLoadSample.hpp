@@ -7,7 +7,7 @@ struct GrainEngineLoadSample : MenuItem
 		const std::string dir = "";
 #ifdef USING_CARDINAL_NOT_RACK
 		GrainEngine *module = this->module;
-		async_dialog_filebrowser(false, dir.c_str(), text.c_str(), [module](char* path) {
+		async_dialog_filebrowser(false, NULL, dir.c_str(), text.c_str(), [module](char* path) {
 			pathSelected(module, path);
 		});
 #else
