@@ -6,11 +6,13 @@ struct MenuItemLoadSample : MenuItem
   void onAction(const event::Action &e) override
 	{
 #ifdef USING_CARDINAL_NOT_RACK
-		async_dialog_filebrowser(false, module->samples_root_dir.c_str(), NULL, [module, sample_number](char* filename) {
+		Repeater *module = this->module;
+		unsigned int sample_number = this->sample_number;
+		async_dialog_filebrowser(false, NULL, module->samples_root_dir.c_str(), "Load sample", [module, sample_number](char* filename) {
       if(filename)
       {
   			fileSelected(module, sample_number, std::string(filename));
-        free filename;
+        free(filename);
       }
 		});
 #else

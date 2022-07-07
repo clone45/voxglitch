@@ -7,11 +7,13 @@ struct GrainEngineMK2LoadSample : MenuItem
 	{
 		const std::string dir = module->root_dir.empty() ? "" : module->root_dir;
 #ifdef USING_CARDINAL_NOT_RACK
-		async_dialog_filebrowser(false, dir.c_str(), NULL, [module, sample_number](char* filename) {
+		GrainEngineMK2 *module = this->module;
+		unsigned int sample_number = this->sample_number;
+		async_dialog_filebrowser(false, NULL, dir.c_str(), "Load sample", [module, sample_number](char* filename) {
       if(filename)
       {
         fileSelected(module, sample_number, std::string(filename));
-        free filename;
+        free(filename);
       }
 		});
 #else
