@@ -408,8 +408,10 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     GrooveBox *module = dynamic_cast<GrooveBox*>(this->module);
     assert(module);
 
-    module->shift_key = ((e.mods & RACK_MOD_MASK) && GLFW_MOD_SHIFT);
-    module->control_key = ((e.mods & RACK_MOD_MASK) && GLFW_MOD_CONTROL);
+    module->shift_key = ((e.mods & RACK_MOD_MASK) & GLFW_MOD_SHIFT);
+    module->control_key = ((e.mods & RACK_MOD_MASK) & RACK_MOD_CTRL);
+
+    // if(module->control_key) DEBUG("control key is set");
 
     ModuleWidget::onHoverKey(e);
   }

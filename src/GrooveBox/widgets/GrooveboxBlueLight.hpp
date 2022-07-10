@@ -49,7 +49,13 @@ struct GrooveboxBlueLight : BlueLight {
 
       if(amount != 0)
       {
-        module->control_key ? module->shiftAllTracks(amount) : module->shiftTrack(amount);
+        if(module->control_key) {
+          module->shiftAllTracks(amount);
+        }
+        else {
+          module->shiftTrack(amount);
+        }
+
         drag_position.x = e.mouseDelta.div(zoom).x;
       }
     }

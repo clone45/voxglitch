@@ -19,6 +19,7 @@ using namespace groove_box;
 #include "Common/submodules.hpp"
 #include "Common/dsp/ADSR.cpp"
 #include "Common/dsp/SimpleDelay.hpp"
+#include "Common/dsp/DeclickFilter.hpp"
 #include "Common/VoxglitchModule.hpp"
 #include "Common/VoxglitchSamplerModule.hpp"
 #include "Common/VoxglitchSamplerModuleWidget.hpp"

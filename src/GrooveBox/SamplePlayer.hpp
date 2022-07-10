@@ -52,6 +52,8 @@ struct SamplePlayer
 	{
     if(playing && sample.loaded)
     {
+      // TODO: move this somewhere that only runs the calcuation on sample or
+      // sample rate change.
       double step_amount = (sample.sample_rate / rack_sample_rate);
 
       // Step the playback position forward.

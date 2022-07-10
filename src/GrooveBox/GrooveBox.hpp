@@ -543,7 +543,7 @@ struct GrooveBox : VoxglitchSamplerModule
       expander_connected = false;
     }
 
-    if(expander_connected) readFromExpander(args.sampleRate);
+    if(expander_connected) readFromExpander();
 
     //
     // If the user has pressed a track button, switch tracks and update the
@@ -658,24 +658,6 @@ struct GrooveBox : VoxglitchSamplerModule
     {
       float value = params[STEP_KNOBS + step_number].getValue();
 
-      // Special code to ensure that sample end isn't smaller than sample start
-      /*
-      if (selected_function == FUNCTION_SAMPLE_END)
-      {
-        float sample_start = selected_track->getSampleStart(step_number);
-
-        // If sample end knob is greater than sample start, then adjust sample
-        // end knob to be equal to the sample start.
-
-        if(value < sample_start)
-        {
-          // params[STEP_KNOBS + step_number].setValue(sample_start);
-          value = sample_start;
-        }
-
-      }
-      */
-
       switch(selected_function)
       {
         case FUNCTION_SAMPLE_START: selected_track->setSampleStart(step_number, value); break;
@@ -785,7 +767,7 @@ struct GrooveBox : VoxglitchSamplerModule
       mix_left_output += track_left_output;
       mix_right_output += track_right_output;
 
-      selected_memory_slot->tracks[i].incrementSamplePosition(args.sampleRate);
+      selected_memory_slot->tracks[i].incrementSamplePosition();
     }
 
     // Read master volume knob
@@ -816,7 +798,7 @@ struct GrooveBox : VoxglitchSamplerModule
     if(expander_connected) writeToExpander();
   }
 
-  void readFromExpander(float rack_sample_rate)
+  void readFromExpander()
   {
     // Receive message from expander.  Always read from the consumer.
     // when reading from the expander, we're using the __GrooveBox's__ consumer and producer message pair
@@ -853,14 +835,20 @@ struct GrooveBox : VoxglitchSamplerModule
         // Shorthand to make code more readable
         Track *track = &this->selected_memory_slot->tracks[i];
 
+        //
+        // If the sample is playing and not fading out, then see if the
+        // expander settings should stop playback.  If so, start fading out the sound.
         if((track->sample_player->playing == true) && (! track->fading_out))
         {
           bool fade_out = false;
 
+          // Is any track is soloed and this one is not, then fade out
           if(any_track_soloed && (expander_solo_value == false)) fade_out = true;
+
+          // If this track is muted but not soloed, then fade it out
           if(expander_mute_value == true && (expander_solo_value == false)) fade_out = true;
 
-          if (fade_out) track->fadeOut(rack_sample_rate);
+          if (fade_out) track->fadeOut();
         }
 
         this->mutes[i] = expander_mute_value;
@@ -912,6 +900,17 @@ struct GrooveBox : VoxglitchSamplerModule
       {
         this->memory_slots[m].tracks[i].setTrackPan(0.0);
         this->memory_slots[m].tracks[i].setTrackPitch(0.0);
+      }
+    }
+  }
+
+  void onSampleRateChange(const SampleRateChangeEvent& e) override
+  {
+    for(unsigned int m=0; m < NUMBER_OF_MEMORY_SLOTS; m++)
+    {
+      for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+      {
+        this->memory_slots[m].tracks[i].updateRackSampleRate();
       }
     }
   }
