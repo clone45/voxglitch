@@ -1,5 +1,11 @@
 ## Change Log
 
+### 2.17.1
+
+* Fixed bug where it was not possible to shift only 1 track in groovebox
+* Added de-click filter to groovebox
+* Compatibility with Cardinal restored (thanks Filipe Coelho)
+
 ### 2.17.0
 
 * Added this change log file!
