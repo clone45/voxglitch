@@ -21,8 +21,10 @@ struct Track
   float track_pitch = 0.0;
   float track_volume = 0.0;
 
+  // DSP classes
   ADSR adsr;
   SimpleDelay delay;
+  DeclickFilter declick_filter;
 
   StereoPanSubModule stereo_pan_submodule;
   unsigned int ratchet_counter = 0;
@@ -39,6 +41,9 @@ struct Track
 
   // Transitory variables
   int shift_starting_column = 0;
+
+  // Sample rate
+  float rack_sample_rate = rack::settings::sampleRate;
 
   Track()
   {
@@ -105,6 +110,9 @@ struct Track
         // Trigger the ADSR
         adsr.gate(true);
 
+        // Conditionally trigger declick_filter
+        if(settings.sample_start > 0 || sample_player->playing == true) this->declick_filter.trigger();
+
         // trigger sample playback
         sample_player->trigger(&settings);
 
@@ -114,7 +122,7 @@ struct Track
     return(false);
   }
 
-  void fadeOut(float rack_sample_rate)
+  void fadeOut()
   {
     fade_out_counter = rack_sample_rate / 4.0;
     fade_out_from = fade_out_counter;
@@ -133,6 +141,7 @@ struct Track
       unsigned int ratchet_pattern = settings.ratchet * (NUMBER_OF_RATCHET_PATTERNS - 1);
       if(ratchet_patterns[ratchet_pattern][ratchet_counter])
       {
+        this->declick_filter.trigger();
         sample_player->trigger(&settings);
         adsr.gate(true); // retrigger the ADSR
         ratcheted = true;
@@ -241,18 +250,23 @@ struct Track
     //
     if(adsr.getState() == ADSR::env_sustain && settings.release < 1.0) adsr.gate(false);
 
-    // Read sample output and return
+    // Read sample output
     this->sample_player->getStereoOutput(&left_output, &right_output, interpolation);
 
+
+    // Apply pan parameters
+    //
     // settings.pan ranges from 0 to 1
     // track_pan ranges from -1 to 0
     float computed_pan = (settings.pan * 2.0) - 1.0; // convert settings.pan to range from -1 to 1
     computed_pan = clamp(computed_pan + track_pan, -1.0, 1.0);
     std::tie(left_output, right_output) = stereo_pan_submodule.process(left_output, right_output, computed_pan);
 
+    // Apply volume parameters
     left_output *= (settings.volume * 2);  // Range from 0 to 2 times normal volume
     right_output *= (settings.volume * 2);  // Range from 0 to 2 times normal volume
 
+    // Manage fad-out
     if (fading_out)
     {
       fade_out_counter -= 1.0;
@@ -281,6 +295,9 @@ struct Track
     // float reverb_input = (left_output + right_output) / 2;
     // reverb.process(reverb_input, left_output, right_output);
 
+    // Run de-click filter
+    this->declick_filter.process(&left_output, &right_output);
+
     // Apply delay
     float delay_output_left = 0.0;
     float delay_output_right = 0.0;
@@ -293,7 +310,7 @@ struct Track
     return { delay_output_left, delay_output_right };
   }
 
-  void incrementSamplePosition(float rack_sample_rate)
+  void incrementSamplePosition()
   {
     if(settings.reverse > .5)
     {
@@ -303,6 +320,12 @@ struct Track
     {
       this->sample_player->step(rack_sample_rate, &settings, track_pitch);
     }
+  }
+
+  void updateRackSampleRate()
+  {
+    rack_sample_rate = rack::settings::sampleRate;
+    this->declick_filter.updateSampleRate();
   }
 
   void copy(Track *src_track)
