@@ -232,11 +232,9 @@ struct SamplerX8 : VoxglitchSamplerModule
       bool mute_button_is_triggered = mute_buttons_schmitt_triggers[i].process(params[mute_buttons[i]].getValue());
       if(mute_button_is_triggered) mute_states[i] ^= true;
 
-
       lights[mute_lights[i]].setBrightness(mute_states[i]);
 
       // Send audio to outputs
-
       std::tie(left_audio, right_audio) = sample_players[i].getStereoOutput();
 
 

@@ -5,6 +5,13 @@ struct SamplePlayer
 	double playback_position = 0.0f;
   unsigned int sample_position = 0;
   bool playing = false;
+  DeclickFilter declick_filter;
+
+  SamplePlayer()
+  {
+    // Very fast declick
+    // declick_filter.smooth_constant = 8192.0;
+  }
 
 	std::pair<float, float> getStereoOutput()
 	{
@@ -22,6 +29,8 @@ struct SamplePlayer
       this->sample.read(sample_position, &left, &right);
     }
 
+    declick_filter.process(&left, &right);
+
 		return { left, right };
 	}
 
@@ -29,6 +38,7 @@ struct SamplePlayer
   {
     playback_position = 0;
     playing = true;
+    declick_filter.trigger();
   }
 
   void stop()

@@ -22,7 +22,8 @@ struct Autobreak : VoxglitchSamplerModule
   bool clock_triggered = false;
   bool ratchet_triggered = false;
 
-  StereoSmoothSubModule loop_smooth;
+  // StereoSmoothSubModule loop_smooth;
+  DeclickFilter declick_filter;
 
   std::string root_dir;
   std::string path;
@@ -124,7 +125,7 @@ struct Autobreak : VoxglitchSamplerModule
     if(wav_input_value != selected_sample_slot)
     {
       // Reset the smooth ramp if the selected sample has changed
-      loop_smooth.trigger();
+      declick_filter.trigger();
 
       // Set the selected sample
       selected_sample_slot = wav_input_value;
@@ -169,7 +170,7 @@ struct Autobreak : VoxglitchSamplerModule
         theoretical_playback_position = 0;
 
         // Smooth back into playback
-        loop_smooth.trigger();
+        declick_filter.trigger();
       }
     }
 
@@ -184,12 +185,13 @@ struct Autobreak : VoxglitchSamplerModule
       selected_sample->read((int)actual_playback_position, &left_output, &right_output);
 
       // Handle smoothing
-      float smooth_rate = (128.0f / args.sampleRate);
-      loop_smooth.process(left_output * GAIN, right_output * GAIN, smooth_rate, &left_output, &right_output);
+      // float smooth_rate = (128.0f / args.sampleRate);
+      // loop_smooth.process(left_output * GAIN, right_output * GAIN, smooth_rate, &left_output, &right_output);
+      declick_filter.process(&left_output, &right_output);
 
       // Output audio
-      outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_output);
-      outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_output);
+      outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_output * GAIN);
+      outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_output * GAIN);
 
       // Step the theoretical playback position
       if(inputs[REVERSE_INPUT].getVoltage() >= 5)
@@ -236,15 +238,13 @@ struct Autobreak : VoxglitchSamplerModule
       if(theoretical_playback_position >= samples_to_play_per_loop)
       {
         theoretical_playback_position = 0;
-        loop_smooth.trigger();
+        declick_filter.trigger();
       }
       else if (theoretical_playback_position < 0)
       {
         theoretical_playback_position = samples_to_play_per_loop;
-        loop_smooth.trigger();
+        declick_filter.trigger();
       }
-
-
 
       // Map the theoretical playback position to the actual sample playback position
       actual_playback_position = ((float) theoretical_playback_position / samples_to_play_per_loop) * selected_sample->size();

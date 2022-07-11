@@ -2,14 +2,15 @@ struct WavBank : VoxglitchSamplerModule
 {
 	unsigned int selected_sample_slot = 0;
 	double samplePos = 0;
-	float smooth_ramp = 1;
-	float last_wave_output_voltage[2] = {0};
+	// float smooth_ramp = 1;
+	// float last_wave_output_voltage[2] = {0};
   unsigned int trig_input_response_mode = TRIGGER;
 	std::string rootDir;
 	std::string path;
 
 	std::vector<Sample> samples;
 	dsp::SchmittTrigger playTrigger;
+  DeclickFilter declick_filter;
 
   bool playback = false;
 
@@ -118,8 +119,8 @@ struct WavBank : VoxglitchSamplerModule
     //
 		if(wav_input_value != selected_sample_slot)
 		{
-			// Reset the smooth ramp if the selected sample has changed
-			smooth_ramp = 0;
+			// Trigger the declick filter if the selected sample has changed
+			declick_filter.trigger();
 
 			// Reset sample position so playback does not start at previous sample position
 			// TODO: Think this over.  Is it more flexible to allow people to changes
@@ -148,7 +149,7 @@ struct WavBank : VoxglitchSamplerModule
   			if (playTrigger.process(inputs[TRIG_INPUT].getVoltage()))
   			{
   				samplePos = 0;
-  				smooth_ramp = 0;
+  				declick_filter.trigger();
   				playback = true;
   			}
       }
@@ -163,14 +164,14 @@ struct WavBank : VoxglitchSamplerModule
           {
             playback = true;
             samplePos = 0;
-    				smooth_ramp = 0;
+    				declick_filter.trigger();
           }
         }
         else
         {
           playback = false;
           samplePos = 0;
-  				smooth_ramp = 0;
+  				declick_filter.trigger();
         }
       }
 		}
@@ -197,27 +198,13 @@ struct WavBank : VoxglitchSamplerModule
         selected_sample->read(floor(selected_sample->size() - 1 + samplePos), &left_wav_output_voltage, &right_wav_output_voltage);
 			}
 
+      declick_filter.process(&left_wav_output_voltage, &right_wav_output_voltage);
+
       left_wav_output_voltage *= GAIN;
       right_wav_output_voltage *= GAIN;
 
-			if(SMOOTH_ENABLED && (smooth_ramp < 1))
-			{
-				float smooth_rate = (128.0f / args.sampleRate);  // A smooth rate of 128 seems to work best
-				smooth_ramp += smooth_rate;
-				left_wav_output_voltage = (last_wave_output_voltage[0] * (1 - smooth_ramp)) + (left_wav_output_voltage * smooth_ramp);
-				if(selected_sample->channels > 1) {
-					right_wav_output_voltage = (last_wave_output_voltage[1] * (1 - smooth_ramp)) + (right_wav_output_voltage * smooth_ramp);
-				}
-				else {
-					right_wav_output_voltage = left_wav_output_voltage;
-				}
-			}
-
 			outputs[WAV_LEFT_OUTPUT].setVoltage(left_wav_output_voltage);
 			outputs[WAV_RIGHT_OUTPUT].setVoltage(right_wav_output_voltage);
-
-			last_wave_output_voltage[0] = left_wav_output_voltage;
-			last_wave_output_voltage[1] = right_wav_output_voltage;
 
 			// Increment sample offset (pitch)
 			if (inputs[PITCH_INPUT].isConnected())
@@ -236,8 +223,7 @@ struct WavBank : VoxglitchSamplerModule
       // and loop == false
 
 			playback = false; // Cancel current trigger
-			outputs[WAV_LEFT_OUTPUT].setVoltage(0);
-			outputs[WAV_RIGHT_OUTPUT].setVoltage(0);
+      declick_filter.trigger();
 		}
 	}
 };
