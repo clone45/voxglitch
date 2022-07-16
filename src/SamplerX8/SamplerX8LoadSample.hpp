@@ -18,8 +18,6 @@ struct SamplerX8LoadSample : MenuItem
     #else
     		fileSelected(module, this->sample_number, module->selectFileVCV());
     #endif
-
-    DEBUG("onAction completed");
 	}
 
   static void fileSelected(SamplerX8 *module, unsigned int sample_number, std::string filename)
@@ -32,6 +30,5 @@ struct SamplerX8LoadSample : MenuItem
         module->setRoot(filename);
       }
 		}
-    DEBUG("Finished file selected");
 	}
 };

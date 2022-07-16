@@ -69,20 +69,6 @@ struct GrooveboxBlueLight : BlueLight {
     }
   }
 
-  /* copy/paste is not working using keys
-  void onHoverKey(const event::HoverKey &e) override
-  {
-    DEBUG("hover key event");
-
-    if(e.key == GLFW_KEY_C && e.action == GLFW_PRESS)
-    {
-      if((e.mods & RACK_MOD_MASK) != GLFW_MOD_CONTROL) // Ignore control-g
-      {
-        DEBUG("control-c event");
-      }
-    }
-  }
-  */
   void onDoubleClick(const event::DoubleClick &e) override
   {
     if(module->shift_key)
