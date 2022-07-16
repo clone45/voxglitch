@@ -45,6 +45,9 @@ struct GrooveBox : VoxglitchSamplerModule
   bool any_track_soloed = false;
   bool expander_connected = false;
 
+  bool step_copy_paste_mode = false;
+  unsigned int copied_step_index = 0;
+
   // TODO: merge these into enum show_visualizer
   bool show_sample_visualizer = false;
   bool show_ratchet_visualizer = false;
@@ -201,6 +204,16 @@ struct GrooveBox : VoxglitchSamplerModule
   void copyMemory(unsigned int src_index, unsigned int dst_index)
   {
       memory_slots[dst_index].copy(&memory_slots[src_index]);
+      updateKnobPositions();
+  }
+
+  // copyMemory(src_index, dst_index)
+  //
+  // Helper function to copy one memory slot to another memory slot
+  //
+  void copyStep(unsigned int dst_index)
+  {
+      selected_track->copyStep(this->copied_step_index, dst_index);
       updateKnobPositions();
   }
 
@@ -533,6 +546,8 @@ struct GrooveBox : VoxglitchSamplerModule
 
 	void process(const ProcessArgs &args) override
 	{
+    if(! this->shift_key) step_copy_paste_mode = false;
+
     if(leftExpander.module && leftExpander.module->model == modelGrooveBoxExpander)
     {
       expander_connected = true;
@@ -654,6 +669,9 @@ struct GrooveBox : VoxglitchSamplerModule
     }
 
     // Process the knobs below the steps.  These change behavior depending on the selected function.
+    // This loop add 2% CPU and should be contemplated.
+    // What about turning this inside out?  Switch first, then iterate?  That didn't make any noticeable difference.
+
     for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
       float value = params[STEP_KNOBS + step_number].getValue();
@@ -676,6 +694,7 @@ struct GrooveBox : VoxglitchSamplerModule
         case FUNCTION_DELAY_FEEDBACK: selected_track->setDelayFeedback(step_number, value); break;
       }
     }
+
 
     //
     // Clock and step features
@@ -752,9 +771,13 @@ struct GrooveBox : VoxglitchSamplerModule
       //
       // f(t) = 0.5503 * e^(1.1945 * t)
 
-      float track_volume_multiplier = 0.4368 * std::exp(1.16566 * track_volumes[i]);
-      track_left_output = track_left_output * track_volume_multiplier;
-      track_right_output = track_right_output * track_volume_multiplier;
+      if(expander_connected)
+      {
+        // This is a very expensive operation and I should consider making a lookup table for it:
+        float track_volume_multiplier = 0.4368 * std::exp(1.16566 * track_volumes[i]);
+        track_left_output = track_left_output * track_volume_multiplier;
+        track_right_output = track_right_output * track_volume_multiplier;
+      }
 
       // Individual outputs
       unsigned int left_index = i * 2;

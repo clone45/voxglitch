@@ -9,7 +9,6 @@ struct Track
 {
   bool steps[NUMBER_OF_STEPS] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
 
-
   unsigned int playback_position = 0;
   unsigned int range_end = NUMBER_OF_STEPS - 1; // was length
   unsigned int range_start = 0;
@@ -223,6 +222,15 @@ struct Track
         sample_playback_settings[i].copy(& temp_settings[copy_from_index]);
         this->steps[i] = temp_steps[copy_from_index];
       }
+    }
+  }
+
+  void copyStep(unsigned int copy_from_index, unsigned int copy_to_index)
+  {
+    if(copy_from_index != copy_to_index)
+    {
+      sample_playback_settings[copy_to_index].copy(& sample_playback_settings[copy_from_index]);
+      this->steps[copy_to_index] = this->steps[copy_from_index];
     }
   }
 

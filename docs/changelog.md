@@ -1,5 +1,14 @@
 ## Change Log
 
+### 2.18.0
+
+* Fixed a bug where the right-drag-handle didn't highlight because of overlapping visualizer widgets
+* Improved performance.  Should take up 1% less CPU when expander is disconnected
+* Moved de-clicking filter into a shared class in /Common/dsp.  This will make it easier to update in the future.
+* Added de-clicking code to 8xSampler
+* Added new feature to Groovebox: Copy/Paste step data
+* Updated documentation
+
 ### 2.17.1
 
 * Fixed bug where it was not possible to shift only 1 track in groovebox

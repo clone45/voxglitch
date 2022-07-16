@@ -15,45 +15,27 @@ struct RangeGrabberRightWidget : TransparentWidget
   {
     const auto vg = args.vg;
 
-    /* draw bounding box for testing
-    nvgSave(vg);
-    nvgBeginPath(vg);
-    nvgRect(vg, 0, 0, box.size.x, box.size.y);
-    nvgFillColor(vg, nvgRGBA(120, 20, 20, 100));
-    nvgFill(vg);
-    nvgRestore(vg);
-    */
-
-    // Draw circle
     nvgSave(vg);
     nvgBeginPath(vg);
 
-    if(module)
-    {
+    if(module) {
       this->box.pos = Vec(button_positions[module->selected_track->range_end][0] - radius, this->box.pos.y);
     }
-    else
-    {
+    else {
       this->box.pos = Vec(button_positions[10][0] - radius, this->box.pos.y);
     }
 
-
-    // box.size.x = button_positions[module->selected_track->length][0];
     nvgCircle(vg, box.size.x - radius, box.size.y - radius, radius);
 
-    if(is_moused_over)
-    {
+    if(is_moused_over) {
       nvgFillColor(vg, nvgRGB(120,120,120));
     }
-    else
-    {
+    else {
       nvgFillColor(vg, nvgRGB(65,65,65));
     }
 
     nvgFill(vg);
-
     nvgRestore(vg);
-
   }
 
 
@@ -94,7 +76,6 @@ struct RangeGrabberRightWidget : TransparentWidget
 
   void onDragMove(const event::DragMove &e) override
   {
-    // TransparentWidget::onDragMove(e);
     float zoom = getAbsoluteZoom();
     drag_position = drag_position.plus(e.mouseDelta.div(zoom));
 
@@ -127,12 +108,10 @@ struct RangeGrabberLeftWidget : TransparentWidget
     nvgSave(vg);
     nvgBeginPath(vg);
 
-    if(module)
-    {
+    if(module) {
       this->box.pos = Vec(button_positions[module->selected_track->range_start][0] - radius, this->box.pos.y);
     }
-    else
-    {
+    else {
       this->box.pos = Vec(button_positions[10][0] - radius, this->box.pos.y);
     }
 
@@ -147,7 +126,6 @@ struct RangeGrabberLeftWidget : TransparentWidget
 
     nvgFill(vg);
     nvgRestore(vg);
-
   }
 
 
@@ -187,7 +165,6 @@ struct RangeGrabberLeftWidget : TransparentWidget
 
   void onDragMove(const event::DragMove &e) override
   {
-    // TransparentWidget::onDragMove(e);
     float zoom = getAbsoluteZoom();
     drag_position = drag_position.plus(e.mouseDelta.div(zoom));
 

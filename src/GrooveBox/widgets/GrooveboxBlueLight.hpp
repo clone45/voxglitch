@@ -4,14 +4,22 @@ struct GrooveboxBlueLight : BlueLight {
   Vec drag_position;
   float diameter = 20.0;
   float radius = diameter / 2.0;
+  unsigned int index = 0;
 
   void onButton(const event::Button &e) override
   {
     if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
     {
       e.consume(this);
-      drag_position = this->box.pos + Vec(this->box.size[0] / 2, 0);
-      BlueLight::onButton(e);
+      if(module->step_copy_paste_mode)
+      {
+        module->copyStep(this->index);
+      }
+      else
+      {
+        drag_position = this->box.pos + Vec(this->box.size[0] / 2, 0);
+        BlueLight::onButton(e);
+      }
     }
   }
 
@@ -60,4 +68,14 @@ struct GrooveboxBlueLight : BlueLight {
       }
     }
   }
+
+  void onDoubleClick(const event::DoubleClick &e) override
+  {
+    if(module->shift_key)
+    {
+      module->step_copy_paste_mode = true;
+      module->copied_step_index = this->index;
+    }
+	}
+
 };

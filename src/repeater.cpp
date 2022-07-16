@@ -10,6 +10,7 @@
 #include "Common/VoxglitchSamplerModule.hpp"
 #include "Common/VoxglitchSamplerModuleWidget.hpp"
 #include "Common/submodules.hpp"
+#include "Common/dsp/DeclickFilter.hpp"
 
 #include "Repeater/defines.h"
 #include "Repeater/Repeater.hpp"

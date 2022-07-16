@@ -10,6 +10,7 @@ struct SampleVisualizerWidget : TransparentWidget
 
   SampleVisualizerWidget()
   {
+    this->box.size = Vec(width, height);
   }
 
   void drawLayer(const DrawArgs& args, int layer) override

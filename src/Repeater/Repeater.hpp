@@ -4,7 +4,7 @@ struct Repeater : VoxglitchSamplerModule
 	double samplePos = 0;
 	int step = 0;
 	bool isPlaying = false;
-	SmoothSubModule smooth;
+  DeclickFilter declick_filter;
 	int retrigger;
 	std::string root_dir;
 
@@ -126,7 +126,7 @@ struct Repeater : VoxglitchSamplerModule
 		if(sample_select_input_value != selected_sample_slot)
 		{
 			// Start smoothing if the selected sample has changed
-			smooth.trigger();
+      declick_filter.trigger();
 
 			// Set the selected sample
 			selected_sample_slot = sample_select_input_value;
@@ -155,7 +155,7 @@ struct Repeater : VoxglitchSamplerModule
 				{
 					isPlaying = true;
 					samplePos = calculate_inputs(POSITION_INPUT, POSITION_KNOB, POSITION_ATTN_KNOB, selected_sample->size());
-					smooth.trigger();
+          declick_filter.trigger();
 					triggerOutputPulse.trigger(0.01f);
 				}
 			}
@@ -171,7 +171,7 @@ struct Repeater : VoxglitchSamplerModule
 		if(retrigger && abs(floor(samplePos)) >= selected_sample->size())
 		{
 			samplePos = 0;
-			smooth.trigger();
+      declick_filter.trigger();
 		}
 
 		if (isPlaying && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->size() > 0) && ((abs(floor(samplePos)) < selected_sample->size())))
@@ -192,7 +192,7 @@ struct Repeater : VoxglitchSamplerModule
       wav_output_voltage = GAIN * left_output;
 
 			// Apply smoothing
-			if(params[SMOOTH_SWITCH].getValue()) wav_output_voltage = smooth.process(wav_output_voltage, (128.0f / args.sampleRate));
+			if(params[SMOOTH_SWITCH].getValue()) declick_filter.process(&wav_output_voltage, &wav_output_voltage);
 
 			// Output voltage
 			outputs[WAV_OUTPUT].setVoltage(wav_output_voltage);
