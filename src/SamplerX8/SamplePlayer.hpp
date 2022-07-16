@@ -13,25 +13,28 @@ struct SamplePlayer
     // declick_filter.smooth_constant = 8192.0;
   }
 
-	std::pair<float, float> getStereoOutput()
+  void getStereoOutput(float *left_output, float *right_output, unsigned int interpolation)
 	{
-    sample_position = playback_position; // convert float to int
+    unsigned int sample_index = playback_position; // convert float to int
 
-    float left; float right;
-
-    if((playing == false) || (sample_position >= this->sample.size()) || (sample.loaded == false))
+    if((playing == false) || ((unsigned int) sample_index >= this->sample.size()) || (sample.loaded == false))
     {
-      left = 0;
-      right = 0;
+      *left_output = 0;
+      *right_output = 0;
     }
     else
     {
-      this->sample.read(sample_position, &left, &right);
+      if(interpolation == 0)
+      {
+        // Normal version, using sample index
+        this->sample.read(sample_index, left_output, right_output);
+      }
+      else
+      {
+        // Read sample using Linear Interpolation, sending in double
+        this->sample.readLI(playback_position, left_output, right_output);
+      }
     }
-
-    declick_filter.process(&left, &right);
-
-		return { left, right };
 	}
 
   void trigger()

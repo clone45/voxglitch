@@ -10,6 +10,7 @@ struct SamplerX8 : VoxglitchSamplerModule
   unsigned int mute_buttons[NUMBER_OF_SAMPLES];
   unsigned int mute_lights[NUMBER_OF_SAMPLES];
   bool mute_states[NUMBER_OF_SAMPLES];
+  DeclickFilter declick_filter[NUMBER_OF_SAMPLES];
 
   enum ParamIds {
     // Enums for volume knobs
@@ -225,7 +226,11 @@ struct SamplerX8 : VoxglitchSamplerModule
       {
         unsigned int position_input_index = i + 8;
         sample_players[i].trigger();
-        if(inputs[position_input_index].isConnected()) sample_players[i].setPositionFromInput(inputs[position_input_index].getVoltage());
+        if(inputs[position_input_index].isConnected())
+        {
+          sample_players[i].setPositionFromInput(inputs[position_input_index].getVoltage());
+          // this->declick_filter[i].trigger();
+        }
       }
 
       // Process mute button
@@ -235,7 +240,7 @@ struct SamplerX8 : VoxglitchSamplerModule
       lights[mute_lights[i]].setBrightness(mute_states[i]);
 
       // Send audio to outputs
-      std::tie(left_audio, right_audio) = sample_players[i].getStereoOutput();
+      sample_players[i].getStereoOutput(&left_audio, &right_audio, interpolation);
 
 
       // Apply volume knobs
@@ -244,6 +249,8 @@ struct SamplerX8 : VoxglitchSamplerModule
 
       // Apply panning knobs
       std::tie(left_audio, right_audio) = stereo_pan_submodule.process(left_audio, right_audio, params[PAN_KNOBS + i + 1].getValue());
+
+      this->declick_filter[i].process(&left_audio, &right_audio);
 
       // Output audio for the current sample
       if(mute_states[i] == true)  // True means "play sample"

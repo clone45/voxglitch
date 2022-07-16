@@ -15,6 +15,11 @@ struct RatchetVisualizerWidget : TransparentWidget
   float lcd_padding_top = (lcd_height - ((8 * cell_height) + (padding * 7)))/ 2.0;
   float lcd_padding_left = lcd_padding_top;
 
+  RatchetVisualizerWidget()
+  {
+    this->box.size = Vec(lcd_width, lcd_height);
+  }
+
   void drawLayer(const DrawArgs& args, int layer) override
   {
   	if (layer == 1)

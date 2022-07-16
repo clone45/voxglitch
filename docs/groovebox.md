@@ -37,10 +37,40 @@ The blue Step Buttons are used to program the rythm used for playback -- just li
 
 The red led indicators above the step buttons show which step is currently active.
 
-### Changing Track Length
+#### Copying Step Data
 
-You can change the length of a track by shift-left-clicking on a step button.
-![GrooveBoxTracks](/docs/images/groovebox/shift-left-click.jpg)
+It's possible to copy all step data (including parameter lock settings) from one step to another.  
+
+Here's how:
+
+* Hold down the shift key
+* While continuing to holding the shift key, double-click on the blue step button that you wish to copy.
+* Don’t lift up the shift yet! Keep it pressed!
+* While continuing to hold the shift key, click on the destination step(s). All step data will be copied to the destination steps.
+* Finally, release the shift key. This will return the module to normal operation.
+
+#### Shifting Patterns
+
+Sometimes it may be helpful to shift a pattern left or right.  There are two ways to
+do this:
+
+In order to shift a single track's data left or right:
+
+1. Hold down the __shift key__
+2. Click on one of the blue step buttons
+3. Drag left or right
+
+In order to shift all 8 of the tracks' data left or right:
+
+1. Hold down the __shift & control keys__
+2. Click on one of the blue step buttons
+3. Drag left or right
+
+### Changing Track Start and End
+
+This has changed recently! Changing the sequence start and end is now accomplished by dragging the sequence length indicator from the endpoints.  Click either the start or end location indicated in the screen capture below, then drag left or right.
+
+![GrooveBoxTracks](/docs/images/groovebox/change-start-and-end.jpg)
 
 
 ### Parameter Locks
@@ -50,8 +80,8 @@ Parameter locks allow you to adjust playback parameters for each step in a seque
 Here's how they work:
 
 1. Select which track you'd like to modify.
-2. Select what type of thing you want to modify by using the buttons at the very bottom of the module.  Current options are Volume, Pan, Pitch, Ratcht, Offset, Probability Percentage, Loop, and Reverse
-3. Adjust the small knob underneat whichever steps you want to modify.
+2. Select what type of thing you want to modify by using the buttons at the very bottom of the module.
+3. Adjust the small knob underneath whichever steps you want to modify.
 
 ![GrooveBoxParameterLocks](/docs/images/groovebox/parameter_locks.jpg)
 
@@ -61,10 +91,17 @@ For example, if you wanted to raise the volume on the 5th step of a sequence, se
 
 There are 16 memory slots in the section labeled "MEM".  Each of these sample slots represent a snapshot of all step buttons, track lengths, and parameter locks. The currently selected memory slot is updated in real-time with any changes that you make.  
 
-- To copy a memory slot, select the memory slot that you'd with to copy and click CPY
-- To past a memory slot, select the destination memory slot and click PST
-
 A CV input lets you switch between memory slots using a control voltage that ranges from 0 to 10v.  When a cable is inserted into the MEM CV input, the memory buttons are disabled.
+
+#### Copying Memory
+
+Basic Method:
+* To copy a memory slot, select the memory slot that you'd with to copy and click the CPY button
+* To past a memory slot, select the destination memory slot and click PST
+
+Sneaky Method:
+* To copy a memory slot, select the memory slot that you'd with to copy and click the CPY button
+* While holding the shift key, click on one or more memory slots to paste the copied memory.  This allows you to copy the currently selected memory slot without having to switch memory slots.
 
 ### Clock and Reset
 
@@ -85,6 +122,11 @@ The reset input is used to reset playback to the beginning.
 Individual sample outputs are available at the top of the module  A stereo mix output is available at the two output jacks at the top-right of the module.  
 
 ![GrooveBoxParameterLocks](/docs/images/groovebox/outputs.jpg)
+
+#### Master Volume
+
+You can crank up the MIX OUT by using the master volume attenuator.  The master volume does
+not affect the individual stereo track outputs.
 
 ### Minimal Usage
 

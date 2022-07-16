@@ -310,6 +310,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       VCVLightBezel<GrooveboxBlueLight> *groovebox_blue_light_bezel = createLightParamCentered<VCVLightBezel<GrooveboxBlueLight>>(Vec(button_positions[i][0],button_positions[i][1]), module, GrooveBox::DRUM_PADS + i, GrooveBox::DRUM_PAD_LIGHTS + i);
       GrooveboxBlueLight *groove_box_blue_light = dynamic_cast<GrooveboxBlueLight*>(groovebox_blue_light_bezel->getLight());
       groove_box_blue_light->module = module;
+      groove_box_blue_light->index = i;
       addParam(groovebox_blue_light_bezel);
 
       //
@@ -410,8 +411,6 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
 
     module->shift_key = ((e.mods & RACK_MOD_MASK) & GLFW_MOD_SHIFT);
     module->control_key = ((e.mods & RACK_MOD_MASK) & RACK_MOD_CTRL);
-
-    // if(module->control_key) DEBUG("control key is set");
 
     ModuleWidget::onHoverKey(e);
   }
