@@ -264,7 +264,7 @@ struct SamplerX8 : VoxglitchSamplerModule
       }
 
       // Step samples
-      sample_players[i].step(args.sampleRate);
+      sample_players[i].step();
 
     }
 
@@ -272,5 +272,13 @@ struct SamplerX8 : VoxglitchSamplerModule
     outputs[AUDIO_MIX_OUTPUT_LEFT].setVoltage(summed_output_left);
     outputs[AUDIO_MIX_OUTPUT_RIGHT].setVoltage(summed_output_right);
 
+  }
+
+  void onSampleRateChange(const SampleRateChangeEvent& e) override
+  {
+    for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
+    {
+      sample_players[i].updateSampleRate();
+    }
   }
 };

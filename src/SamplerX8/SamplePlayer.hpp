@@ -6,6 +6,7 @@ struct SamplePlayer
   unsigned int sample_position = 0;
   bool playing = false;
   DeclickFilter declick_filter;
+  float rack_sample_rate = rack::settings::sampleRate;
 
   SamplePlayer()
   {
@@ -49,7 +50,7 @@ struct SamplePlayer
     playing = false;
   }
 
-	void step(float rack_sample_rate)
+	void step()
 	{
     if(playing && sample.loaded)
     {
@@ -72,6 +73,11 @@ struct SamplePlayer
   {
     position_input_value = clamp(position_input_value, 0.0, 10.0);
     playback_position = rescale(position_input_value, 0.0, 10.0, 0.0, sample.size());
+  }
+
+  void updateSampleRate()
+  {
+    rack_sample_rate = rack::settings::sampleRate;
   }
 
   std::string getFilename()

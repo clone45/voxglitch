@@ -322,11 +322,11 @@ struct Track
   {
     if(settings.reverse > .5)
     {
-      this->sample_player->stepReverse(rack_sample_rate, &settings, track_pitch);
+      this->sample_player->stepReverse(&settings, track_pitch);
     }
     else
     {
-      this->sample_player->step(rack_sample_rate, &settings, track_pitch);
+      this->sample_player->step(&settings, track_pitch);
     }
   }
 
@@ -334,6 +334,7 @@ struct Track
   {
     rack_sample_rate = rack::settings::sampleRate;
     this->declick_filter.updateSampleRate();
+    this->sample_player->updateSampleRate();
   }
 
   void copy(Track *src_track)

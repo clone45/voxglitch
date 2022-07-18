@@ -70,28 +70,24 @@ struct SampleAudioBuffer
 
 struct Sample
 {
-  std::string path;
+  std::string path = "";
   std::string filename;
   std::string display_name;
-  bool loading;
+  bool loading = false;
   bool loaded = false;
   bool queued_for_loading = false;
   std::string queued_path = "";
   unsigned int sample_length = 0;
   SampleAudioBuffer sample_audio_buffer;
-  float sample_rate;
-  unsigned int channels;
-  AudioFile<float> audioFile; // For loading samples and saving samples
-  // uint64_t file_size_limit = 50000000;  // File size limit of 50 MB
+  float sample_rate = 44100.0;                // This is the sample rate in which the sample was recorded
+  unsigned int channels = 0;
+  AudioFile<float> audioFile;                 // For loading samples and saving samples
 
   Sample()
   {
     sample_audio_buffer.clear();
     loading = false;
     filename = "[ empty ]";
-    path = "";
-    sample_rate = 44100;
-    channels = 0;
 
     audioFile.setNumChannels(2);
     audioFile.setSampleRate(44100);
@@ -104,16 +100,6 @@ struct Sample
 
   bool load(std::string path)
   {
-    // If the file size is too large, then abort
-    /*
-    if(rack::system::getFileSize(path) > file_size_limit)
-    {
-      // DEBUG("File too large");
-      // DEBUG(std::to_string(rack::system::getFileSize(path)).c_str());
-      return(false);
-    }
-    */
-
     // Set loading flags
     this->loading = true;
     this->loaded = false;
@@ -207,7 +193,7 @@ struct Sample
     }
   }
 
-  // Current version
+  // Read stereo audio from the buffer at position _index_
   void read(unsigned int index, float *left_audio_ptr, float *right_audio_ptr)
   {
     sample_audio_buffer.read(index, left_audio_ptr, right_audio_ptr);

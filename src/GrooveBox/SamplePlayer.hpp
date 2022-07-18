@@ -6,6 +6,7 @@ struct SamplePlayer
 	Sample sample;
 	double playback_position = 0.0f;
   bool playing = false;
+  double step_amount = 0.0;
 
   void getStereoOutput(float *left_output, float *right_output, unsigned int interpolation)
 	{
@@ -48,14 +49,10 @@ struct SamplePlayer
     playing = false;
   }
 
-	void step(float rack_sample_rate, SamplePlaybackSettings *settings, float track_pitch)
+	void step(SamplePlaybackSettings *settings, float track_pitch)
 	{
     if(playing && sample.loaded)
     {
-      // TODO: move this somewhere that only runs the calcuation on sample or
-      // sample rate change.
-      double step_amount = (sample.sample_rate / rack_sample_rate);
-
       // Step the playback position forward.
   		playback_position = playback_position + step_amount; // sample rate playback
 
@@ -82,19 +79,16 @@ struct SamplePlayer
       else
       {
         // If the playback position is past the playback length, end sample playback
-        if(playback_position >= sample_size)
-        {
-           stop();
-        }
+        if(playback_position >= sample_size) stop();
       }
     }
 	}
 
-  void stepReverse(float rack_sample_rate, SamplePlaybackSettings *settings, float track_pitch)
+  void stepReverse(SamplePlaybackSettings *settings, float track_pitch)
 	{
     if(playing && sample.loaded)
     {
-      float step_amount = sample.sample_rate / rack_sample_rate;
+      // float step_amount = sample.sample_rate / rack_sample_rate;
 
       // Step the playback position forward.
   		playback_position = playback_position - step_amount;
@@ -132,6 +126,7 @@ struct SamplePlayer
   void loadSample(std::string path)
   {
     sample.load(path);
+    updateStepAmount();
   }
 
   std::string getFilename()
@@ -152,6 +147,18 @@ struct SamplePlayer
   void setPath(std::string path)
   {
     sample.path = path;
+  }
+
+  void updateSampleRate()
+  {
+    // The variable rack_sample_rate is not necessary
+    // rack_sample_rate = rack::settings::sampleRate;
+    updateStepAmount();
+  }
+
+  void updateStepAmount()
+  {
+    step_amount = (sample.sample_rate / rack::settings::sampleRate);
   }
 
   void initialize()
