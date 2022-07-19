@@ -1,5 +1,10 @@
 ## Change Log
 
+### 2.19.0
+
+* For Groovebox, added ability to use scroll wheel when mousing-over a track label to quickly load the next or previous sample in the same folder.
+* Replaced rack::settings::sampleRate with APP->engine->getSampleRate() globally for better plugin and Cardinal compatibility.  (Thanks again Filipe!)
+
 ### 2.18.0
 
 * Fixed a bug where the right-drag-handle didn't highlight because of overlapping visualizer widgets

@@ -71,13 +71,7 @@ struct VoxglitchSamplerModule : Module
 
   void setRoot(std::string filename)
   {
-    this->setSamplesRootDirectory(extractDirectoryFromFilename(filename));
+    this->setSamplesRootDirectory(rack::system::getDirectory(filename));
   }
 
-  // Helper function that returns the directory given a full path
-  std::string extractDirectoryFromFilename(const std::string& filename)
-  {
-    size_t pos = filename.find_last_of("\\/");
-    return (std::string::npos == pos) ? "" : filename.substr(0, pos);
-  }
 };

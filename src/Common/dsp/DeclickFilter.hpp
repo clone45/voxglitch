@@ -8,8 +8,8 @@ struct DeclickFilter
   // 2048 seems to work well and doesn't have a noticeable affect on the
   // snappiness of drum sounds.  Low values, such as 256 or lower, will have
   // a dramatic affect on the punch of drums.
-  // double smooth_constant = 2048.0;
-  double smooth_constant = 128.0;
+  double smooth_constant = 2048.0;
+  // double smooth_constant = 128.0;
   double smooth_rate = (smooth_constant / APP->engine->getSampleRate());
 
   float previous_left_audio = 0.0;

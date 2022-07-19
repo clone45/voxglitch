@@ -17,31 +17,79 @@ struct TrackLabelDisplay : TransparentWidget
 
   void onDoubleClick(const event::DoubleClick &e) override
   {
-#ifdef USING_CARDINAL_NOT_RACK
+    #ifdef USING_CARDINAL_NOT_RACK
     GrooveBox *module = this->module;
     unsigned int track_number = this->track_number;
     async_dialog_filebrowser(false, NULL, module->samples_root_dir.c_str(), "Load filename", [module, track_number](char* filename) {
       if(filename)
       {
-        fileSelected(module, track_number, std::string(filename));  
+        fileSelected(module, track_number, std::string(filename));
         free(filename);
       }
-		});
-#else
+    });
+    #else
     fileSelected(module, this->track_number, module->selectFileVCV());
-#endif
-	}
+    #endif
+  }
+
+  //
+  // When using the scroll wheel when hovered over a track label, load either
+  // the next or previous sample.  This is a fast way of changing between
+  // samples in the same folder.
+  //
+  void onHoverScroll(const HoverScrollEvent &e) override
+  {
+    int scroll_distance = (e.scrollDelta.y / 50);
+
+    std::string path = module->sample_players[track_number].getPath();
+    std::string directory = rack::system::getDirectory(path);
+    std::string filename = module->sample_players[track_number].getFilename();
+
+    std::vector<std::string> directory_list = system::getEntries(directory);
+    std::vector<std::string> wav_files;
+
+    // Folders might contain things that aren't .wav files, and we need to
+    // week those out. In order to do that, we iterate over the directory list
+    // and populate a new vector called "wav_files".
+    for (auto entry : directory_list)
+    {
+      if (
+        (rack::string::lowercase(system::getExtension(entry)) == "wav") ||
+        (rack::string::lowercase(system::getExtension(entry)) == ".wav")
+      )
+      {
+        wav_files.push_back(entry);
+      }
+    }
+
+    // Now that we have a clean list, search for the currently selected
+    // wav file.  If we find it (which we should), use the scroll wheel offset
+    // to decide which sample to load.
+    for(unsigned i=0; i < wav_files.size(); i++)
+    {
+      std::string filename_in_directory =rack::system::getFilename(wav_files[i]);
+
+      if(filename_in_directory.compare(filename) == 0) // Found it!
+      {
+        int index = i + scroll_distance; // scroll distance can be negative
+        index = clamp(index, 0, wav_files.size() - 1);
+        fileSelected(this->module, this->track_number, wav_files[index]);
+        break;
+      }
+    }
+
+    e.consume(this);
+  }
 
   static void fileSelected(GrooveBox *module, unsigned int track_number, std::string filename)
-	{
-		if (filename != "")
-		{
-			module->sample_players[track_number].loadSample(filename);
+  {
+    if (filename != "")
+    {
+      module->sample_players[track_number].loadSample(filename);
       module->loaded_filenames[track_number] = module->sample_players[track_number].getFilename();
-			module->setRoot(filename);
-		}
-	}
-
+      module->setRoot(filename);
+    }
+  }
 
   void onButton(const event::Button &e) override
   {
