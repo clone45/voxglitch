@@ -4,7 +4,7 @@ struct SamplePlayer
 	Sample sample;
   bool playing = true;
 	double playback_position = 0;
-  double step_amount = rack::settings::sampleRate;
+  double step_amount = APP->engine->getSampleRate();
   unsigned int sample_position = 0;
 
   void getStereoOutput(float *left_output, float *right_output, unsigned int interpolation)

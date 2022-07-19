@@ -6,7 +6,7 @@ struct SamplePlayer
   unsigned int sample_position = 0;
   bool playing = false;
   DeclickFilter declick_filter;
-  float rack_sample_rate = rack::settings::sampleRate;
+  float rack_sample_rate = APP->engine->getSampleRate();
 
   SamplePlayer()
   {
@@ -77,7 +77,7 @@ struct SamplePlayer
 
   void updateSampleRate()
   {
-    rack_sample_rate = rack::settings::sampleRate;
+    rack_sample_rate = APP->engine->getSampleRate();
   }
 
   std::string getFilename()

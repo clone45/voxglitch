@@ -152,13 +152,13 @@ struct SamplePlayer
   void updateSampleRate()
   {
     // The variable rack_sample_rate is not necessary
-    // rack_sample_rate = rack::settings::sampleRate;
+    // rack_sample_rate = APP->engine->getSampleRate();
     updateStepAmount();
   }
 
   void updateStepAmount()
   {
-    step_amount = (sample.sample_rate / rack::settings::sampleRate);
+    step_amount = (sample.sample_rate / APP->engine->getSampleRate());
   }
 
   void initialize()

@@ -10,7 +10,7 @@ struct DeclickFilter
   // a dramatic affect on the punch of drums.
   // double smooth_constant = 2048.0;
   double smooth_constant = 128.0;
-  double smooth_rate = (smooth_constant / rack::settings::sampleRate);
+  double smooth_rate = (smooth_constant / APP->engine->getSampleRate());
 
   float previous_left_audio = 0.0;
   float previous_right_audio = 0.0;
@@ -26,7 +26,7 @@ struct DeclickFilter
   // This method should be called by the module when onSampleRateChange is called
   void updateSampleRate()
   {
-    smooth_rate = (smooth_constant / rack::settings::sampleRate);
+    smooth_rate = (smooth_constant / APP->engine->getSampleRate());
   }
 
   void process(float *left_audio_ptr, float *right_audio_ptr)

@@ -13,3 +13,9 @@ Modules for VCV Rack.  My apologies if I fall behind on the documentation.
 * [Wavebank](docs/wavebank.md)
 * [XY Controller](docs/xy-controller.md)
 
+## The Hall of Heros
+
+Thank you to my supporters on [Patreon](https://www.patreon.com/voxglitch):
+
+* fred lcc
+* Secret Cinema

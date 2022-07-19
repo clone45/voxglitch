@@ -42,16 +42,16 @@ struct Track
   int shift_starting_column = 0;
 
   // Sample rate
-  float rack_sample_rate = rack::settings::sampleRate;
+  float rack_sample_rate = APP->engine->getSampleRate();
 
   Track()
   {
     adsr.setAttackRate(0);
     adsr.setDecayRate(0); // no decay stage for this module
-    adsr.setReleaseRate(1 * rack::settings::sampleRate); // 1 second
+    adsr.setReleaseRate(1 * APP->engine->getSampleRate()); // 1 second
     adsr.setSustainLevel(1.0);
 
-    delay.setBufferSize(rack::settings::sampleRate / 30.0);
+    delay.setBufferSize(APP->engine->getSampleRate() / 30.0);
   }
 
   void setSamplePlayer(SamplePlayer *sample_player)
@@ -245,8 +245,8 @@ struct Track
     float left_output;
     float right_output;
 
-    adsr.setAttackRate(settings.attack *  rack::settings::sampleRate);
-    adsr.setReleaseRate(settings.release * maximum_release_time * rack::settings::sampleRate);
+    adsr.setAttackRate(settings.attack *  APP->engine->getSampleRate());
+    adsr.setReleaseRate(settings.release * maximum_release_time * APP->engine->getSampleRate());
 
     float adsr_value = adsr.process();
 
@@ -311,7 +311,7 @@ struct Track
     float delay_output_right = 0.0;
 
     delay.setMix(settings.delay_mix);
-    delay.setBufferSize(settings.delay_length * (rack::settings::sampleRate / 4));
+    delay.setBufferSize(settings.delay_length * (APP->engine->getSampleRate() / 4));
     delay.setFeedback(settings.delay_feedback);
     delay.process(left_output, right_output, delay_output_left, delay_output_right);
 
@@ -332,7 +332,7 @@ struct Track
 
   void updateRackSampleRate()
   {
-    rack_sample_rate = rack::settings::sampleRate;
+    rack_sample_rate = APP->engine->getSampleRate();
     this->declick_filter.updateSampleRate();
     this->sample_player->updateSampleRate();
   }
