@@ -29,6 +29,8 @@ There are three ways of loading samples:
 - Using the context-menu (right-click menu) to select individual samples (tedious)
 - Using the context-menu to select a folder containing samples (good for setting up preset "kits")
 
+Once a sample is loaded, you can over over the track label and scroll through other sounds in the same folder by holding SHIFT + CTRL while using your mouse wheel.
+
 ### Step Buttons
 
 The blue Step Buttons are used to program the rythm used for playback -- just like in a typical drum machine.

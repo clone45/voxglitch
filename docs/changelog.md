@@ -2,7 +2,7 @@
 
 ### 2.19.0
 
-* For Groovebox, added ability to use scroll wheel when mousing-over a track label to quickly load the next or previous sample in the same folder.
+* For Groovebox, added ability to use `SHIFT` + `CTRL` + `scroll wheel` when mousing-over a track label to quickly load the next or previous sample in the same folder.
 * Replaced rack::settings::sampleRate with APP->engine->getSampleRate() globally for better plugin and Cardinal compatibility.  (Thanks again Filipe!)
 * Possibly fixed a bug where outputs would display "NAN" instead of outputting the correct values
 
