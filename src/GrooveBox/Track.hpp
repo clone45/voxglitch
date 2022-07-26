@@ -113,7 +113,7 @@ struct Track
         if(settings.sample_start > 0 || sample_player->playing == true) this->declick_filter.trigger();
 
         // trigger sample playback
-        sample_player->trigger(&settings);
+        sample_player->trigger(settings.sample_start, settings.reverse);
 
         return(true);
       }
@@ -141,7 +141,7 @@ struct Track
       if(ratchet_patterns[ratchet_pattern][ratchet_counter])
       {
         this->declick_filter.trigger();
-        sample_player->trigger(&settings);
+        sample_player->trigger(settings.sample_start, settings.reverse);
         adsr.gate(true); // retrigger the ADSR
         ratcheted = true;
       }
@@ -320,13 +320,15 @@ struct Track
 
   void incrementSamplePosition()
   {
+    // -2.0 to 2.0 is a two octave range in either direction (4 octives total)
+    // TODO: update these to include the expander pitch
     if(settings.reverse > .5)
     {
-      this->sample_player->stepReverse(&settings, track_pitch);
+      this->sample_player->stepReverse(rescale(settings.pitch, 0.0, 1.0, -2.0, 2.0), settings.sample_start, settings.sample_end, settings.loop);
     }
     else
     {
-      this->sample_player->step(&settings, track_pitch);
+      this->sample_player->step(rescale(settings.pitch, 0.0, 1.0, -2.0, 2.0), settings.sample_start, settings.sample_end, settings.loop);
     }
   }
 

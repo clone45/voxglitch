@@ -1,3 +1,22 @@
+/*
+
+Note to self:
+
+It would be nice to create a common "SamplePlayer" class that's used by all of
+the sampler modules.  At first glance, they all look practically identical.
+However, the groovebox sample player uses the SamplePlaybackSettings structure
+for more advanced features.  One possible solution is to create two different
+versions of functions such as trigger(..), one which takes no arguments, and
+the other which takes the SamplePlaybackSettings object as an argument.
+
+Or, we could change the signature of functions such as trigger(..) to include
+default values such as
+
+trigger(float sample_start = 0, bool reverse = false)
+
+This seems to be the most flexible, decoupled approach.
+
+*/
 namespace groove_box
 {
 
@@ -32,13 +51,15 @@ struct SamplePlayer
     }
 	}
 
-  void trigger(SamplePlaybackSettings *settings)
+  void trigger(float sample_start = 0, bool reverse = false)
   {
-    if(! settings->reverse) { // if forward playback
-      this->playback_position = settings->sample_start * this->sample.size();
+    if(! reverse) // if forward playback
+    {
+      this->playback_position = sample_start * this->sample.size();
     }
-    else { // if reverse playback
-      this->playback_position = (( 1 - settings->sample_start) * this->sample.size());
+    else // if reverse playback
+    {
+      this->playback_position = (( 1 - sample_start) * this->sample.size());
     }
 
     this->playing = true;
@@ -48,6 +69,9 @@ struct SamplePlayer
   {
     playing = false;
   }
+
+  // Left off here.  Have to think about computing the pitch instead
+  // of passing in track_pitch
 
 	void step(SamplePlaybackSettings *settings, float track_pitch)
 	{
