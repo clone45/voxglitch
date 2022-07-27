@@ -23,7 +23,7 @@ struct Track
   // DSP classes
   ADSR adsr;
   SimpleDelay delay;
-  DeclickFilter declick_filter;
+  // DeclickFilter declick_filter;
 
   StereoPanSubModule stereo_pan_submodule;
   unsigned int ratchet_counter = 0;
@@ -110,7 +110,7 @@ struct Track
         adsr.gate(true);
 
         // Conditionally trigger declick_filter
-        if(settings.sample_start > 0 || sample_player->playing == true) this->declick_filter.trigger();
+        // if(settings.sample_start > 0 || sample_player->playing == true) this->declick_filter.trigger();
 
         // trigger sample playback
         sample_player->trigger(settings.sample_start, settings.reverse);
@@ -140,7 +140,7 @@ struct Track
       unsigned int ratchet_pattern = settings.ratchet * (NUMBER_OF_RATCHET_PATTERNS - 1);
       if(ratchet_patterns[ratchet_pattern][ratchet_counter])
       {
-        this->declick_filter.trigger();
+        // this->declick_filter.trigger();
         sample_player->trigger(settings.sample_start, settings.reverse);
         adsr.gate(true); // retrigger the ADSR
         ratcheted = true;
@@ -304,7 +304,7 @@ struct Track
     // reverb.process(reverb_input, left_output, right_output);
 
     // Run de-click filter
-    this->declick_filter.process(&left_output, &right_output);
+    // this->declick_filter.process(&left_output, &right_output);
 
     // Apply delay
     float delay_output_left = 0.0;
@@ -335,7 +335,7 @@ struct Track
   void updateRackSampleRate()
   {
     rack_sample_rate = APP->engine->getSampleRate();
-    this->declick_filter.updateSampleRate();
+    // this->declick_filter.updateSampleRate();
     this->sample_player->updateSampleRate();
   }
 
