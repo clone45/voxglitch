@@ -23,16 +23,16 @@ struct Track
   // DSP classes
   ADSR adsr;
   SimpleDelay delay;
-  DeclickFilter declick_filter;
+  FadeOut fade_out;
+  rack::dsp::SlewLimiter volume_slew_limiter;
+  rack::dsp::SlewLimiter pan_slew_limiter;
+  float volume_slew_target = 0.0;
+  float pan_slew_target = 0.0;
 
   StereoPanSubModule stereo_pan_submodule;
   unsigned int ratchet_counter = 0;
   SamplePlayer *sample_player;
 
-  // Variables to assist with fading out
-  float fade_out_counter = 0;
-  float fade_out_from = 0;
-  float fading_out = false;
 
   // The "skipped" variable keep track of when a trigger has been skipped because
   // the "Percentage" funtion is non-zero and didn't fire on the current step.``
@@ -51,6 +51,9 @@ struct Track
     adsr.setReleaseRate(1 * APP->engine->getSampleRate()); // 1 second
     adsr.setSustainLevel(1.0);
 
+    volume_slew_limiter.setRiseFall(900.0f, 900.0f); // 900 works.  I want the highest number possible for the shortest slew
+    pan_slew_limiter.setRiseFall(900.0f, 900.0f);
+
     delay.setBufferSize(APP->engine->getSampleRate() / 30.0);
   }
 
@@ -68,7 +71,7 @@ struct Track
 
   bool trigger(unsigned int sample_position_snap_value)
   {
-    fading_out = false;
+    fade_out.reset();
 
     if((getProbability(playback_position) < 0.98) && (((float) rand()/RAND_MAX) > getProbability(playback_position)))
     {
@@ -81,10 +84,13 @@ struct Track
 
       if (steps[playback_position])
       {
-        // Copy the settings from sample_playback_settings into settings
-        settings.volume = getVolume(playback_position);
+        // It's necessary to slew the volume and pan, otherwise these will
+        // introduce a pop or click when modulated between distant values
+        volume_slew_target = getVolume(playback_position);
+        pan_slew_target = getPan(playback_position);
+
+        // Change all other settings immediately when triggered
         settings.pitch = getPitch(playback_position);
-        settings.pan = getPan(playback_position);
         settings.ratchet = getRatchet(playback_position);
         settings.sample_start = getSampleStart(playback_position);
         settings.sample_end = getSampleEnd(playback_position);
@@ -109,11 +115,8 @@ struct Track
         // Trigger the ADSR
         adsr.gate(true);
 
-        // Conditionally trigger declick_filter
-        if(settings.sample_start > 0 || sample_player->playing == true) this->declick_filter.trigger();
-
         // trigger sample playback
-        sample_player->trigger(&settings);
+        sample_player->trigger(settings.sample_start, settings.reverse);
 
         return(true);
       }
@@ -123,9 +126,7 @@ struct Track
 
   void fadeOut()
   {
-    fade_out_counter = rack_sample_rate / 4.0;
-    fade_out_from = fade_out_counter;
-    fading_out = true;
+    fade_out.trigger();
   }
 
   //
@@ -140,8 +141,7 @@ struct Track
       unsigned int ratchet_pattern = settings.ratchet * (NUMBER_OF_RATCHET_PATTERNS - 1);
       if(ratchet_patterns[ratchet_pattern][ratchet_counter])
       {
-        this->declick_filter.trigger();
-        sample_player->trigger(&settings);
+        sample_player->trigger(settings.sample_start, settings.reverse);
         adsr.gate(true); // retrigger the ADSR
         ratcheted = true;
       }
@@ -187,7 +187,7 @@ struct Track
   {
     playback_position = range_start;
     ratchet_counter = 0;
-    fading_out = false;
+    fade_out.reset();
   }
 
   void clear()
@@ -245,6 +245,8 @@ struct Track
     float left_output;
     float right_output;
 
+    // -===== ADSR Processing =====-
+    //
     adsr.setAttackRate(settings.attack *  APP->engine->getSampleRate());
     adsr.setReleaseRate(settings.release * maximum_release_time * APP->engine->getSampleRate());
 
@@ -258,9 +260,13 @@ struct Track
     //
     if(adsr.getState() == ADSR::env_sustain && settings.release < 1.0) adsr.gate(false);
 
+    // -===== Slew Limiter Processing =====-
+    //
+    settings.volume = volume_slew_limiter.process(APP->engine->getSampleTime(), volume_slew_target);
+    settings.pan = pan_slew_limiter.process(APP->engine->getSampleTime(), pan_slew_target);
+
     // Read sample output
     this->sample_player->getStereoOutput(&left_output, &right_output, interpolation);
-
 
     // Apply pan parameters
     //
@@ -274,67 +280,69 @@ struct Track
     left_output *= (settings.volume * 2);  // Range from 0 to 2 times normal volume
     right_output *= (settings.volume * 2);  // Range from 0 to 2 times normal volume
 
-    // Manage fad-out
-    if (fading_out)
+    // The fade_out.process() method will pass through the audio untouched if
+    // there's no fade in progress.  It will return TRUE on the event of a fade
+    // having been completed.
+    if (fade_out.process(&left_output, &right_output))
     {
-      fade_out_counter -= 1.0;
-
-      if(fade_out_counter <= 0)
-      {
-        this->sample_player->stop();
-        fading_out = false;
-        left_output = 0;
-        right_output = 0;
-      }
-      else
-      {
-        float fade_amount = fade_out_counter / fade_out_from;
-        left_output *= fade_amount;
-        right_output *= fade_amount;
-        fade_out_counter--;
-      }
+      // If this line has been reached, it means the a fade out has just completed
+      // If so, stop the sample player
+      this->sample_player->stop();
     }
 
     // Apply ADSR to volume
     left_output *= adsr_value;
     right_output *= adsr_value;
 
-    // Apply reverb
-    // float reverb_input = (left_output + right_output) / 2;
-    // reverb.process(reverb_input, left_output, right_output);
+    // If the delay mix is above 0 for this track, then compute the delay and
+    // output it.  This if statement is an attempt to trim down CPU usage when
+    // the delay is effectively turned off.
+    if(settings.delay_mix > 0)
+    {
+      float delay_output_left = 0.0;
+      float delay_output_right = 0.0;
 
-    // Run de-click filter
-    this->declick_filter.process(&left_output, &right_output);
+      // Apply delay
+      delay.setMix(settings.delay_mix);
+      delay.setBufferSize(settings.delay_length * (APP->engine->getSampleRate() / 4));
+      delay.setFeedback(settings.delay_feedback);
+      delay.process(left_output, right_output, delay_output_left, delay_output_right);
 
-    // Apply delay
-    float delay_output_left = 0.0;
-    float delay_output_right = 0.0;
+      // Return audio with the delay applied
+      return { delay_output_left, delay_output_right };
+    }
+    else
+    {
+      // In this case, the delay is turned off, so skip all of the delay computations
+      // and simply return the output computed up to now.
+      return { left_output, right_output };
+    }
 
-    delay.setMix(settings.delay_mix);
-    delay.setBufferSize(settings.delay_length * (APP->engine->getSampleRate() / 4));
-    delay.setFeedback(settings.delay_feedback);
-    delay.process(left_output, right_output, delay_output_left, delay_output_right);
-
-    return { delay_output_left, delay_output_right };
   }
 
   void incrementSamplePosition()
   {
+    // -2.0 to 2.0 is a two octave range in either direction (4 octives total)
+    // TODO: update these to include the expander pitch
     if(settings.reverse > .5)
     {
-      this->sample_player->stepReverse(&settings, track_pitch);
+      this->sample_player->stepReverse(rescale(settings.pitch, 0.0, 1.0, -2.0, 2.0), settings.sample_start, settings.sample_end, settings.loop);
     }
     else
     {
-      this->sample_player->step(&settings, track_pitch);
+      this->sample_player->step(rescale(settings.pitch, 0.0, 1.0, -2.0, 2.0), settings.sample_start, settings.sample_end, settings.loop);
     }
   }
 
   void updateRackSampleRate()
   {
     rack_sample_rate = APP->engine->getSampleRate();
-    this->declick_filter.updateSampleRate();
     this->sample_player->updateSampleRate();
+  }
+
+  bool isFadingOut()
+  {
+    return(fade_out.fading_out);
   }
 
   void copy(Track *src_track)

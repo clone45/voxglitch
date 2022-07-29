@@ -55,6 +55,7 @@ struct GrooveBox : VoxglitchSamplerModule
 
   unsigned int visualizer_step = 0;
   unsigned int sample_position_snap_track_values[NUMBER_OF_TRACKS];
+  bool track_declicking_enabled[NUMBER_OF_TRACKS];
 
   // A pair of GrooveBoxExpanderMessage structures for sending information
   // from the expander to the groovebox.  Note that they both essentially
@@ -151,6 +152,7 @@ struct GrooveBox : VoxglitchSamplerModule
       this->solos[i] = false;
       this->track_volumes[i] = 1.0;
       this->sample_position_snap_indexes[i] = 0;
+      this->track_declicking_enabled[i] = false;
     }
 
     // Configure the individual track outputs
@@ -861,7 +863,7 @@ struct GrooveBox : VoxglitchSamplerModule
         //
         // If the sample is playing and not fading out, then see if the
         // expander settings should stop playback.  If so, start fading out the sound.
-        if((track->sample_player->playing == true) && (! track->fading_out))
+        if((track->sample_player->playing == true) && (! track->isFadingOut()))
         {
           bool fade_out = false;
 

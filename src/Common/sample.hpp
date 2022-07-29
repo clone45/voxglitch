@@ -215,6 +215,11 @@ struct Sample
     this->sample_length = sample_length;
   }
 
+  float getSampleRate()
+  {
+    return(this->sample_rate);
+  }
+
   void unload()
   {
     this->sample_audio_buffer.clear();
