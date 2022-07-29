@@ -29,19 +29,10 @@ struct Track
   float volume_slew_target = 0.0;
   float pan_slew_target = 0.0;
 
-
-  // DeclickFilter declick_filter;
-
   StereoPanSubModule stereo_pan_submodule;
   unsigned int ratchet_counter = 0;
   SamplePlayer *sample_player;
 
-  // Variables to assist with fading out
-  /*
-  float fade_out_counter = 0;
-  float fade_out_from = 0;
-  float fading_out = false;
-  */
 
   // The "skipped" variable keep track of when a trigger has been skipped because
   // the "Percentage" funtion is non-zero and didn't fire on the current step.``
@@ -61,7 +52,6 @@ struct Track
     adsr.setSustainLevel(1.0);
 
     volume_slew_limiter.setRiseFall(900.0f, 900.0f); // 900 works.  I want the highest number possible for the shortest slew
-    // pitch_slew_limiter.setRiseFall(900.0f, 900.0f);
     pan_slew_limiter.setRiseFall(900.0f, 900.0f);
 
     delay.setBufferSize(APP->engine->getSampleRate() / 30.0);
@@ -136,11 +126,6 @@ struct Track
 
   void fadeOut()
   {
-    /*
-    fade_out_counter = rack_sample_rate / 4.0;
-    fade_out_from = fade_out_counter;
-    fading_out = true;
-    */
     fade_out.trigger();
   }
 
@@ -352,7 +337,6 @@ struct Track
   void updateRackSampleRate()
   {
     rack_sample_rate = APP->engine->getSampleRate();
-    // this->declick_filter.updateSampleRate();
     this->sample_player->updateSampleRate();
   }
 
