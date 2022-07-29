@@ -39,7 +39,6 @@ struct ClearMenuItem : MenuItem {
   }
 };
 
-
 struct TrackMenuItem : MenuItem {
   GrooveBox *module;
   unsigned int track_index = 0;
@@ -56,17 +55,6 @@ struct TrackMenuItem : MenuItem {
     clear_menu_item->track_index = this->track_index;
     clear_menu_item->module = module;
     menu->addChild(clear_menu_item);
-
-    // Randomize??
-
-    /*
-
-
-    SampleAndHoldItem *sample_and_hold_item = createMenuItem<SampleAndHoldItem>("Sample & Hold", CHECKMARK(module->voltage_sequencers[sequencer_number].sample_and_hold));
-    sample_and_hold_item->sequencer_number = this->sequencer_number;
-    sample_and_hold_item->module = module;
-    menu->addChild(sample_and_hold_item);
-    */
 
     return menu;
   }

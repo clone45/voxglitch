@@ -1,3 +1,9 @@
+/*
+
+  todo: Put a slew limiter on (some) the parameter locks, such as vol, pan
+
+*/
+
 
 #include "plugin.hpp"
 #include "osdialog.h"
@@ -20,7 +26,7 @@ using namespace groove_box;
 #include "Common/dsp/ADSR.cpp"
 #include "Common/dsp/SimpleDelay.hpp"
 // #include "Common/dsp/DeclickFilter.hpp"
-#include "Common/dsp/Xfade.hpp"
+#include "Common/dsp/FadeOut.hpp"
 #include "Common/VoxglitchModule.hpp"
 #include "Common/VoxglitchSamplerModule.hpp"
 #include "Common/VoxglitchSamplerModuleWidget.hpp"

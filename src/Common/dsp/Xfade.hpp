@@ -2,21 +2,17 @@
 
 struct Xfade
 {
-  // Old code
-  // =========
-  // double smooth_constant = 128.0;
-  // double crossfade_rate = (crossfade_constant / APP->engine->getSampleRate());
-
-
-  // The HIGHER the smooth_constant, the faster the smoothing will take effect
-  // 2048 seems to work well and doesn't have a noticeable affect on the
-  // snappiness of drum sounds.  Low values, such as 256 or lower, will have
-  // a dramatic affect on the punch of drums.
-  double crossfade_constant = 2048.0;
   double crossfade_percentage = 0.0;
   bool crossfading = false;
 
-  double crossfade_rate = .05;
+  // 1/20th of a second
+  // double crossfade_rate = 1.0/(APP->engine->getSampleRate()/20.0);
+
+  // double crossfade_rate = .005;
+
+  // double crossfade_rate = 240.0 / APP->engine->getSampleRate();
+
+  double crossfade_rate = 1500.0 / APP->engine->getSampleRate(); // last 1500
 
   void trigger()
   {
@@ -47,4 +43,12 @@ struct Xfade
     }
   }
 
+  // computing crossfade rate
+  //
+  //  sample_increment
+
+  void setCrossfadeRate(double crossfade_rate)
+  {
+    this->crossfade_rate = crossfade_rate;
+  }
 };
