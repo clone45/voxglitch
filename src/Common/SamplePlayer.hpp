@@ -7,14 +7,8 @@ struct SamplePlayer
 {
   Sample sample;
   double playback_position = 0.0f;
-
-  // These will take the place of playback_position
-  // double old_playhead = 0.0f;
-  // double playhead = 0.0f;
-
   bool playing = false;
   double step_amount = 0.0;
-
 
   void trigger(float sample_start = 0, bool reverse = false)
   {
@@ -76,6 +70,7 @@ struct SamplePlayer
 
       if(loop > 0)
       {
+        // Remember, loop is NOT a boolean, but rather a position
         float loop_position = (sample_start * sample_size) + ((sample_size - sample_start) * loop);
 
         // Check to see if playback_position is past the loop point
