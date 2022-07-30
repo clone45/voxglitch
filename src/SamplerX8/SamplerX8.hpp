@@ -3,8 +3,6 @@ struct SamplerX8 : VoxglitchSamplerModule
 	std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
   std::vector<SamplePlayer> sample_players;
   dsp::SchmittTrigger sample_triggers[NUMBER_OF_SAMPLES];
-  float left_audio = 0;
-  float right_audio = 0;
   StereoPanSubModule stereo_pan_submodule;
   dsp::SchmittTrigger mute_buttons_schmitt_triggers[NUMBER_OF_SAMPLES];
   bool mute_states[NUMBER_OF_SAMPLES];
@@ -74,6 +72,8 @@ struct SamplerX8 : VoxglitchSamplerModule
 			json_object_set_new(root, ("mute_states_" + std::to_string(i+1)).c_str(), json_integer((unsigned int) mute_states[i]));
 		}
 
+    saveSamplerData(root);
+
 		return root;
 	}
 
@@ -97,6 +97,9 @@ struct SamplerX8 : VoxglitchSamplerModule
 			json_t *loaded_mute_value = json_object_get(root, ("mute_states_" +  std::to_string(i+1)).c_str());
 			if (loaded_mute_value) mute_states[i] = json_integer_value(loaded_mute_value);
 		}
+
+    // Call VoxglitchSamplerModule::loadSamplerData to load sampler specific data
+    loadSamplerData(root);
 	}
 
 
@@ -105,17 +108,13 @@ struct SamplerX8 : VoxglitchSamplerModule
     float summed_output_left = 0;
     float summed_output_right = 0;
 
-
     for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
     {
       // Process trigger inputs to start sample playback
       if (sample_triggers[i].process(rescale(inputs[TRIGGER_INPUTS + i].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
       {
-        // unsigned int position_input_index = i + 8;
-
         if(inputs[POSITION_INPUTS + i].isConnected())
         {
-          // sample_players[i].setPositionFromInput(inputs[position_input_index].getVoltage());
           sample_players[i].trigger(rescale(inputs[POSITION_INPUTS + i].getVoltage(), 0.0f, 10.0f, 0.f, 1.f));
         }
         else
@@ -131,6 +130,7 @@ struct SamplerX8 : VoxglitchSamplerModule
       lights[MUTE_BUTTON_LIGHTS + i].setBrightness(mute_states[i]);
 
       // Send audio to outputs
+      float left_audio, right_audio;
       sample_players[i].getStereoOutput(&left_audio, &right_audio, interpolation);
 
       // Apply volume knobs
