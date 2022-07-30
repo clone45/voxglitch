@@ -1,5 +1,21 @@
 /*
-common version of SamplePlayer
+  SamplePlayer.hpp
+
+  This SamplePlayer type is used to (no surprise) play a sample.  It keeps
+  track of the sample playback position and has methods for fetching the
+  audio at the playback position from the sample.  You can also step a sample
+  forward or reverse with pitch applied, and load a sample.
+
+  One or more SamplePlayers are typically created in the main module's code.
+  For example, SamplerX8 maintains a vector of 8 SamplePlayers.
+
+  A SammplePlayer contains one singe Sample instance.  The Sample object mostly
+  abstracts the actual .wav file implementation.  In theory, one should be able
+  to replace the AudioFile.h library with something else, if ever something
+  better comes along.
+
+  SamplePlayer is not multi-timbral, and that might be something that could
+  improve it in the future.
 
 */
 
@@ -10,6 +26,8 @@ struct SamplePlayer
   bool playing = false;
   double step_amount = 0.0;
 
+  // Trigger restarts sample playback by setting the playback position and
+  // setting the "playing" boolean to true.
   void trigger(float sample_start = 0, bool reverse = false)
   {
     if(! reverse) // if forward playback
@@ -23,6 +41,22 @@ struct SamplePlayer
 
     this->playing = true;
   }
+
+  //
+  // getStereoOutput
+  //
+  // getStereoOutput takes a pointer to the left and right float variable
+  // where the output will be stored.  In other words, getStereoOutput will
+  // overwrite the contents of those variables.  It also takes an int called
+  // "interpolation", which is a member of the base class VoxglitchSamplerModule,
+  // and is set from the context menu.
+  //
+  // An example call might look like:
+  //
+  //     float left_audio = 0;
+  //     float right_audio = 0;
+  //     sample_player.getStereoOutput(&left_audio, &right_audio, interpolation);
+  //
 
   void getStereoOutput(float *left_output, float *right_output, unsigned int interpolation)
   {
