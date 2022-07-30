@@ -113,10 +113,17 @@ struct SamplePlayer
     playing = false;
   }
 
-  void loadSample(std::string path)
+  bool loadSample(std::string path)
   {
-    sample.load(path);
-    updateStepAmount();
+    if(sample.load(path))
+    {
+      updateStepAmount();
+      return(true);
+    }
+    else
+    {
+      return(false);
+    }
   }
 
   std::string getFilename()

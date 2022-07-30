@@ -9,6 +9,7 @@
 #include "Common/VoxglitchSamplerModuleWidget.hpp"
 #include "Common/submodules.hpp"
 #include "Common/dsp/DeclickFilter.hpp"
+#include "Common/SamplePlayer.hpp"
 
 #include "SamplerX8/defines.h"
 #include "SamplerX8/SamplePlayer.hpp"

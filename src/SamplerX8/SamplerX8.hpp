@@ -126,6 +126,15 @@ struct SamplerX8 : VoxglitchSamplerModule
     configParam(VOLUME_KNOB_7, 0.0, 1.0, 1.0, "VolumeKnob7");
     configParam(VOLUME_KNOB_8, 0.0, 1.0, 1.0, "VolumeKnob8");
 
+    configParam(POSITION_INPUT_1, 0.0, 1.0, 0.0, "PositionInput1");
+    configParam(POSITION_INPUT_2, 0.0, 1.0, 0.0, "PositionInput2");
+    configParam(POSITION_INPUT_3, 0.0, 1.0, 0.0, "PositionInput3");
+    configParam(POSITION_INPUT_4, 0.0, 1.0, 0.0, "PositionInput4");
+    configParam(POSITION_INPUT_5, 0.0, 1.0, 0.0, "PositionInput5");
+    configParam(POSITION_INPUT_6, 0.0, 1.0, 0.0, "PositionInput6");
+    configParam(POSITION_INPUT_7, 0.0, 1.0, 0.0, "PositionInput7");
+    configParam(POSITION_INPUT_8, 0.0, 1.0, 0.0, "PositionInput8");
+
     configParam(PAN_KNOB_1, -1.0, 1.0, 0.0, "PanKnob1");
     configParam(PAN_KNOB_2, -1.0, 1.0, 0.0, "PanKnob2");
     configParam(PAN_KNOB_3, -1.0, 1.0, 0.0, "PanKnob3");
@@ -225,11 +234,15 @@ struct SamplerX8 : VoxglitchSamplerModule
       if (sample_triggers[i].process(rescale(inputs[i].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
       {
         unsigned int position_input_index = i + 8;
-        sample_players[i].trigger();
+
         if(inputs[position_input_index].isConnected())
         {
-          sample_players[i].setPositionFromInput(inputs[position_input_index].getVoltage());
-          // this->declick_filter[i].trigger();
+          // sample_players[i].setPositionFromInput(inputs[position_input_index].getVoltage());
+          sample_players[i].trigger(inputs[position_input_index].getVoltage());
+        }
+        else
+        {
+          sample_players[i].trigger();
         }
       }
 
@@ -264,7 +277,8 @@ struct SamplerX8 : VoxglitchSamplerModule
       }
 
       // Step samples
-      sample_players[i].step();
+      // step(float pitch = 0.0, float sample_start = 0.0, float sample_end = 1.0, bool loop = false)
+      sample_players[i].step(0.0, inputs[POSITION_INPUT_1 + i].getVoltage(), 1.0, false);
 
     }
 
