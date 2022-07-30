@@ -12,7 +12,6 @@
 #include "Common/SamplePlayer.hpp"
 
 #include "SamplerX8/defines.h"
-#include "SamplerX8/SamplePlayer.hpp"
 #include "SamplerX8/SamplerX8.hpp"
 #include "SamplerX8/SamplerX8LoadSample.hpp"
 #include "SamplerX8/SamplerX8LoadFolder.hpp"
