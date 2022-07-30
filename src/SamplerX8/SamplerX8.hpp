@@ -8,7 +8,6 @@ struct SamplerX8 : VoxglitchSamplerModule
   StereoPanSubModule stereo_pan_submodule;
   dsp::SchmittTrigger mute_buttons_schmitt_triggers[NUMBER_OF_SAMPLES];
   bool mute_states[NUMBER_OF_SAMPLES];
-  DeclickFilter declick_filter[NUMBER_OF_SAMPLES];
 
   enum ParamIds
   {
@@ -117,7 +116,7 @@ struct SamplerX8 : VoxglitchSamplerModule
         if(inputs[POSITION_INPUTS + i].isConnected())
         {
           // sample_players[i].setPositionFromInput(inputs[position_input_index].getVoltage());
-          sample_players[i].trigger(inputs[POSITION_INPUTS + i].getVoltage());
+          sample_players[i].trigger(rescale(inputs[POSITION_INPUTS + i].getVoltage(), 0.0f, 10.0f, 0.f, 1.f));
         }
         else
         {
@@ -134,15 +133,12 @@ struct SamplerX8 : VoxglitchSamplerModule
       // Send audio to outputs
       sample_players[i].getStereoOutput(&left_audio, &right_audio, interpolation);
 
-
       // Apply volume knobs
       left_audio = (left_audio * params[VOLUME_KNOBS + i].getValue());
       right_audio = (right_audio * params[VOLUME_KNOBS + i].getValue());
 
       // Apply panning knobs
       std::tie(left_audio, right_audio) = stereo_pan_submodule.process(left_audio, right_audio, params[PAN_KNOBS + i].getValue());
-
-      this->declick_filter[i].process(&left_audio, &right_audio);
 
       // Output audio for the current sample
       if(mute_states[i] == true)  // True means "play sample"
