@@ -1,9 +1,11 @@
+//
+// TODO: Instead of accessing Samples directly, use SamplePlayer struct
+//
+
 struct WavBank : VoxglitchSamplerModule
 {
 	unsigned int selected_sample_slot = 0;
 	double samplePos = 0;
-	// float smooth_ramp = 1;
-	// float last_wave_output_voltage[2] = {0};
   unsigned int trig_input_response_mode = TRIGGER;
 	std::string rootDir;
 	std::string path;
