@@ -10,6 +10,7 @@
 #include "Common/VoxglitchSamplerModule.hpp"
 #include "Common/VoxglitchSamplerModuleWidget.hpp"
 #include "Common/dsp/DeclickFilter.hpp"
+#include "Common/SamplePlayer.hpp"
 
 #include "WavBank/defines.h"
 #include "WavBank/WavBank.hpp"

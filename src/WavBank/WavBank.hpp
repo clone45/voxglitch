@@ -1,16 +1,21 @@
 //
-// TODO: Instead of accessing Samples directly, use SamplePlayer struct
+// TODO: Adjust pitch sensitivity and test
 //
 
 struct WavBank : VoxglitchSamplerModule
 {
 	unsigned int selected_sample_slot = 0;
-	double samplePos = 0;
+	// double samplePos = 0;
+
+  float SAMPLE_START_POSITION = 0.0;
+  float SAMPLE_END_POSITION = 1.0;
+
   unsigned int trig_input_response_mode = TRIGGER;
 	std::string rootDir;
 	std::string path;
+  bool loading_samples = false;
 
-	std::vector<Sample> samples;
+	std::vector<SamplePlayer> sample_players;
 	dsp::SchmittTrigger playTrigger;
   DeclickFilter declick_filter;
 
@@ -74,8 +79,10 @@ struct WavBank : VoxglitchSamplerModule
 
 	void load_samples_from_path(std::string path)
 	{
+    loading_samples = true;
+
 		// Clear out any old .wav files
-		this->samples.clear();
+		this->sample_players.clear();
 
 		// Load all .wav files found in the folder specified by 'path'
 		// this->rootDir = std::string(path);
@@ -85,18 +92,21 @@ struct WavBank : VoxglitchSamplerModule
 		// TODO: Decide on a maximum memory consuption allowed and abort if
 		// that amount of member would be exhausted by loading all of the files
 		// in the folder.  Also consider supporting MP3.
-		for (auto entry : dirList)
+		for (auto path : dirList)
 		{
 			if (
-        (rack::string::lowercase(system::getExtension(entry)) == "wav") ||
-        (rack::string::lowercase(system::getExtension(entry)) == ".wav")
+        (rack::string::lowercase(system::getExtension(path)) == "wav") ||
+        (rack::string::lowercase(system::getExtension(path)) == ".wav")
       )
 			{
-				Sample new_sample;
-				new_sample.load(entry);
-				this->samples.push_back(new_sample);
+				SamplePlayer sample_player;
+
+				sample_player.loadSample(path);
+				this->sample_players.push_back(sample_player);
 			}
 		}
+
+    loading_samples = false;
 	}
 
 	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
@@ -110,11 +120,20 @@ struct WavBank : VoxglitchSamplerModule
 
 	void process(const ProcessArgs &args) override
 	{
-		unsigned int number_of_samples = samples.size();
+    // If the samples are being loaded, don't do anything
+    if(loading_samples) return;
+
+		unsigned int number_of_samples = sample_players.size();
 
 		// Read the input/knob for sample selection
 		unsigned int wav_input_value = calculate_inputs(WAV_INPUT, WAV_KNOB, WAV_ATTN_KNOB, number_of_samples);
 		wav_input_value = clamp(wav_input_value, 0, number_of_samples - 1);
+
+    // Read the loop switch
+    bool loop = params[LOOP_SWITCH].getValue();
+
+    // Read the pitch input
+    float pitch = inputs[PITCH_INPUT].getVoltage();
 
     //
     // If the sample has been changed.
@@ -125,9 +144,7 @@ struct WavBank : VoxglitchSamplerModule
 			declick_filter.trigger();
 
 			// Reset sample position so playback does not start at previous sample position
-			// TODO: Think this over.  Is it more flexible to allow people to changes
-			// samples without resetting the sample position?
-			samplePos = 0;
+      sample_players[selected_sample_slot].stop();
 
 			// Set the selected sample
 			selected_sample_slot = wav_input_value;
@@ -137,9 +154,9 @@ struct WavBank : VoxglitchSamplerModule
 
 		// Check to see if the selected sample slot refers to an existing sample.
 		// If not, return.  This could happen before any samples have been loaded.
-		if(! (samples.size() > selected_sample_slot)) return;
+		if(! (sample_players.size() > selected_sample_slot)) return;
 
-		Sample *selected_sample = &samples[selected_sample_slot];
+		SamplePlayer *selected_sample_player = &sample_players[selected_sample_slot];
 
 		if (inputs[TRIG_INPUT].isConnected())
 		{
@@ -150,9 +167,9 @@ struct WavBank : VoxglitchSamplerModule
 
   			if (playTrigger.process(inputs[TRIG_INPUT].getVoltage()))
   			{
-  				samplePos = 0;
-  				declick_filter.trigger();
   				playback = true;
+          declick_filter.trigger();
+          selected_sample_player->trigger(SAMPLE_START_POSITION, loop);
   			}
       }
       else if(trig_input_response_mode == GATE)
@@ -165,14 +182,14 @@ struct WavBank : VoxglitchSamplerModule
           if(playback == false)
           {
             playback = true;
-            samplePos = 0;
+            selected_sample_player->trigger(SAMPLE_START_POSITION, loop); // TODO: May have to come back to this
     				declick_filter.trigger();
           }
         }
         else
         {
           playback = false;
-          samplePos = 0;
+          selected_sample_player->stop();
   				declick_filter.trigger();
         }
       }
@@ -183,49 +200,20 @@ struct WavBank : VoxglitchSamplerModule
 			playback = true;
 		}
 
-		// Loop
-		if(params[LOOP_SWITCH].getValue() && (samplePos >= selected_sample->size())) samplePos = 0;
+    if (playback)
+    {
+      float left_audio;
+      float right_audio;
 
-		if (playback && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->size() > 0) && (samplePos < selected_sample->size()))
-		{
-			float left_wav_output_voltage;
-			float right_wav_output_voltage;
+      selected_sample_player->getStereoOutput(&left_audio, &right_audio, interpolation);
 
-			if (samplePos >= 0)
-			{
-        selected_sample->read((int)samplePos, &left_wav_output_voltage, &right_wav_output_voltage);
-			}
-			else
-			{
-        selected_sample->read(floor(selected_sample->size() - 1 + samplePos), &left_wav_output_voltage, &right_wav_output_voltage);
-			}
+      declick_filter.process(&left_audio, &right_audio);
 
-      declick_filter.process(&left_wav_output_voltage, &right_wav_output_voltage);
+			outputs[WAV_LEFT_OUTPUT].setVoltage(left_audio * GAIN);
+			outputs[WAV_RIGHT_OUTPUT].setVoltage(right_audio * GAIN);
 
-      left_wav_output_voltage *= GAIN;
-      right_wav_output_voltage *= GAIN;
+      selected_sample_player->step(pitch, SAMPLE_START_POSITION, SAMPLE_END_POSITION, loop);
+    }
 
-			outputs[WAV_LEFT_OUTPUT].setVoltage(left_wav_output_voltage);
-			outputs[WAV_RIGHT_OUTPUT].setVoltage(right_wav_output_voltage);
-
-			// Increment sample offset (pitch)
-			if (inputs[PITCH_INPUT].isConnected())
-			{
-				samplePos = samplePos + (selected_sample->sample_rate / args.sampleRate) + ((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f);
-			}
-			else
-			{
-				samplePos = samplePos + (selected_sample->sample_rate / args.sampleRate);
-			}
-		}
-		else
-		{
-      // This block of code gets run if the sample is loading, or there's no
-      // sample data, or most importantly, if the sample playback had ended
-      // and loop == false
-
-			playback = false; // Cancel current trigger
-      declick_filter.trigger();
-		}
 	}
 };

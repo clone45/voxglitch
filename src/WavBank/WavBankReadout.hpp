@@ -11,9 +11,9 @@ struct WavBankReadout : TransparentWidget
 		{
 			text_to_display = "";
 
-			if(module->samples.size() > module->selected_sample_slot)
+			if(module->sample_players.size() > module->selected_sample_slot)
 			{
-				text_to_display = module->samples[module->selected_sample_slot].filename;
+				text_to_display = module->sample_players[module->selected_sample_slot].getFilename();
 				text_to_display.resize(30); // truncate long text
 			}
 		}
