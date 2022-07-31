@@ -20,41 +20,15 @@ struct GlitchSequencerWidget : ModuleWidget
     // Length
     addParam(createParamCentered<Trimpot>(mm2px(Vec(10 + (13.544 * 2), inputs_y)), module, GlitchSequencer::LENGTH_KNOB));
 
-    // Sequence 1 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x, button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_1_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x, button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_1_LIGHT));
-    // Sequence 2 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_2_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 1.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_2_LIGHT));
-    // Sequence 3 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_3_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 2.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_3_LIGHT));
-    // Sequence 4 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_4_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 3.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_4_LIGHT));
-    // Sequence 5 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_5_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 4.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_5_LIGHT));
-    // Sequence 6 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_6_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 5.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_6_LIGHT));
-    // Sequence 7 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 6.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_7_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 6.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_7_LIGHT));
-    // Sequence 8 button
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * 7.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_8_BUTTON));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * 7.0), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_8_LIGHT));
+    for(unsigned int i=0; i<NUMBER_OF_TRIGGER_GROUPS; i++)
+    {
+      // Trigger group buttons and lights
+      addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * i), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + i));
+      addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * i), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_LIGHTS + i));
 
-
-    float y = button_group_y + 10;
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(button_group_x, y)), module, GlitchSequencer::GATE_OUTPUT_1));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 1.0), y)), module, GlitchSequencer::GATE_OUTPUT_2));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 2.0), y)), module, GlitchSequencer::GATE_OUTPUT_3));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 3.0), y)), module, GlitchSequencer::GATE_OUTPUT_4));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 4.0), y)), module, GlitchSequencer::GATE_OUTPUT_5));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 5.0), y)), module, GlitchSequencer::GATE_OUTPUT_6));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 6.0), y)), module, GlitchSequencer::GATE_OUTPUT_7));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * 7.0), y)), module, GlitchSequencer::GATE_OUTPUT_8));
+      // Add outputs
+      addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * i), button_group_y + 10)), module, GlitchSequencer::GATE_OUTPUTS + i));
+    }
 
     CellularAutomatonDisplay *ca_display = new CellularAutomatonDisplay();
     ca_display->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));

@@ -9,50 +9,33 @@ struct GlitchSequencer : Module
 
   unsigned int mode = PLAY_MODE;
   bool trigger_button_is_triggered[NUMBER_OF_TRIGGER_GROUPS];
-  unsigned int trigger_group_buttons[NUMBER_OF_TRIGGER_GROUPS];
-  unsigned int gate_outputs[NUMBER_OF_TRIGGER_GROUPS];
   int selected_trigger_group_index = -1; // -1 means "none selected"
   long clock_ignore_on_reset = 0;
 
   bool trigger_results[NUMBER_OF_TRIGGER_GROUPS];
 
-  enum ParamIds {
+  enum ParamIds
+  {
     LENGTH_KNOB,
-    TRIGGER_GROUP_1_BUTTON,
-    TRIGGER_GROUP_2_BUTTON,
-    TRIGGER_GROUP_3_BUTTON,
-    TRIGGER_GROUP_4_BUTTON,
-    TRIGGER_GROUP_5_BUTTON,
-    TRIGGER_GROUP_6_BUTTON,
-    TRIGGER_GROUP_7_BUTTON,
-    TRIGGER_GROUP_8_BUTTON,
+    ENUMS(TRIGGER_GROUP_BUTTONS, NUMBER_OF_TRIGGER_GROUPS),
     NUM_PARAMS
   };
+
   enum InputIds {
     STEP_INPUT,
     RESET_INPUT,
     NUM_INPUTS
   };
-  enum OutputIds {
-    GATE_OUTPUT_1,
-    GATE_OUTPUT_2,
-    GATE_OUTPUT_3,
-    GATE_OUTPUT_4,
-    GATE_OUTPUT_5,
-    GATE_OUTPUT_6,
-    GATE_OUTPUT_7,
-    GATE_OUTPUT_8,
+
+  enum OutputIds
+  {
+    ENUMS(GATE_OUTPUTS, NUMBER_OF_TRIGGER_GROUPS),
     NUM_OUTPUTS
   };
-  enum LightIds {
-    TRIGGER_GROUP_1_LIGHT,
-    TRIGGER_GROUP_2_LIGHT,
-    TRIGGER_GROUP_3_LIGHT,
-    TRIGGER_GROUP_4_LIGHT,
-    TRIGGER_GROUP_5_LIGHT,
-    TRIGGER_GROUP_6_LIGHT,
-    TRIGGER_GROUP_7_LIGHT,
-    TRIGGER_GROUP_8_LIGHT,
+
+  enum LightIds
+  {
+    ENUMS(TRIGGER_GROUP_LIGHTS, NUMBER_OF_TRIGGER_GROUPS),
     NUM_LIGHTS
   };
 
@@ -64,32 +47,11 @@ struct GlitchSequencer : Module
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 
     configParam(LENGTH_KNOB, 1, MAX_SEQUENCE_LENGTH, 16, "LengthKnob");
-    configParam(TRIGGER_GROUP_1_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup1Button");
-    configParam(TRIGGER_GROUP_2_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup2Button");
-    configParam(TRIGGER_GROUP_3_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup3Button");
-    configParam(TRIGGER_GROUP_4_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup4Button");
-    configParam(TRIGGER_GROUP_5_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup5Button");
-    configParam(TRIGGER_GROUP_6_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup6Button");
-    configParam(TRIGGER_GROUP_7_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup7Button");
-    configParam(TRIGGER_GROUP_8_BUTTON, 0.f, 1.f, 0.f, "TriggerGroup8Button");
 
-    trigger_group_buttons[0] = TRIGGER_GROUP_1_BUTTON;
-    trigger_group_buttons[1] = TRIGGER_GROUP_2_BUTTON;
-    trigger_group_buttons[2] = TRIGGER_GROUP_3_BUTTON;
-    trigger_group_buttons[3] = TRIGGER_GROUP_4_BUTTON;
-    trigger_group_buttons[4] = TRIGGER_GROUP_5_BUTTON;
-    trigger_group_buttons[5] = TRIGGER_GROUP_6_BUTTON;
-    trigger_group_buttons[6] = TRIGGER_GROUP_7_BUTTON;
-    trigger_group_buttons[7] = TRIGGER_GROUP_8_BUTTON;
-
-    gate_outputs[0] = GATE_OUTPUT_1;
-    gate_outputs[1] = GATE_OUTPUT_2;
-    gate_outputs[2] = GATE_OUTPUT_3;
-    gate_outputs[3] = GATE_OUTPUT_4;
-    gate_outputs[4] = GATE_OUTPUT_5;
-    gate_outputs[5] = GATE_OUTPUT_6;
-    gate_outputs[6] = GATE_OUTPUT_7;
-    gate_outputs[7] = GATE_OUTPUT_8;
+    for(unsigned int i=0; i<NUMBER_OF_TRIGGER_GROUPS; i++)
+    {
+      configParam(TRIGGER_GROUP_BUTTONS + i, 0.f, 1.f, 0.f, "TriggerGroupButton");
+    }
   }
 
   json_t *dataToJson() override
@@ -198,7 +160,7 @@ struct GlitchSequencer : Module
     // Process when the user presses one of the 5 buttons above the trigger outputs
     for(unsigned int i=0; i < NUMBER_OF_TRIGGER_GROUPS; i++)
     {
-      trigger_button_is_triggered[i] = trigger_group_button_schmitt_trigger[i].process(params[trigger_group_buttons[i]].getValue());
+      trigger_button_is_triggered[i] = trigger_group_button_schmitt_trigger[i].process(params[TRIGGER_GROUP_BUTTONS + i].getValue());
       if(trigger_button_is_triggered[i]) toggleTriggerGroup(i);
     }
 
@@ -214,21 +176,13 @@ struct GlitchSequencer : Module
     }
 
     // Output gates
-    for(unsigned int i=0; i < NUMBER_OF_TRIGGER_GROUPS; i++)
+    for(int i=0; i < NUMBER_OF_TRIGGER_GROUPS; i++)
     {
       trigger_output_pulse = gateOutputPulseGenerators[i].process(1.0 / args.sampleRate);
-      outputs[gate_outputs[i]].setVoltage((trigger_output_pulse ? 10.0f : 0.0f));
-    }
+      outputs[GATE_OUTPUTS + i].setVoltage((trigger_output_pulse ? 10.0f : 0.0f));
 
-    // Trigger group selection lights
-    lights[TRIGGER_GROUP_1_LIGHT].setBrightness(selected_trigger_group_index == 0);
-    lights[TRIGGER_GROUP_2_LIGHT].setBrightness(selected_trigger_group_index == 1);
-    lights[TRIGGER_GROUP_3_LIGHT].setBrightness(selected_trigger_group_index == 2);
-    lights[TRIGGER_GROUP_4_LIGHT].setBrightness(selected_trigger_group_index == 3);
-    lights[TRIGGER_GROUP_5_LIGHT].setBrightness(selected_trigger_group_index == 4);
-    lights[TRIGGER_GROUP_6_LIGHT].setBrightness(selected_trigger_group_index == 5);
-    lights[TRIGGER_GROUP_7_LIGHT].setBrightness(selected_trigger_group_index == 6);
-    lights[TRIGGER_GROUP_8_LIGHT].setBrightness(selected_trigger_group_index == 7);
+      lights[TRIGGER_GROUP_LIGHTS + i].setBrightness(selected_trigger_group_index == i);
+    }
 
     if (clock_ignore_on_reset > 0) clock_ignore_on_reset--;
   }
