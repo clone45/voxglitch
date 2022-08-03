@@ -186,6 +186,7 @@ struct Ghosts : VoxglitchSamplerModule
 				// pre-calculate step amount and smooth rate. This is to reduce the amount of math needed
 				// within each Ghost's getStereoOutput() and age() functions.
 
+        /*
 				if(inputs[PITCH_INPUT].isConnected())
 				{
 					step_amount = (sample.sample_rate / args.sampleRate) + (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
@@ -194,6 +195,12 @@ struct Ghosts : VoxglitchSamplerModule
 				{
 					step_amount = (sample.sample_rate / args.sampleRate) + params[PITCH_KNOB].getValue();
 				}
+        */
+
+        float pitch_cv_input = inputs[PITCH_INPUT].getVoltage();
+        step_amount = (sample.sample_rate / APP->engine->getSampleRate()) * exp2(pitch_cv_input);
+
+        // step_amount = (sample.sample_rate / args.sampleRate) + (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
 
 				smooth_rate = 128.0f / args.sampleRate;
 
