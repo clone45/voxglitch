@@ -29,7 +29,7 @@ struct GhostsWidget : VoxglitchSamplerModuleWidget
 		// Pitch
 		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 50.489 - y_offset)), module, Ghosts::PITCH_KNOB));
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 50.489 - y_offset)), module, Ghosts::PITCH_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 50.489 - y_offset)), module, Ghosts::PITCH_ATTN_KNOB));
+		// addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 50.489 - y_offset)), module, Ghosts::PITCH_ATTN_KNOB));
 
 		// Length
 		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(44 + x_offset, 72.452 - y_offset)), module, Ghosts::GHOST_PLAYBACK_LENGTH_KNOB));
