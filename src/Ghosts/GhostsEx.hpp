@@ -25,7 +25,7 @@ struct Ghost
   // playback position jumps around.
   StereoSmooth stereo_smooth;
 
-  float removal_smoothing_ramp = 0;
+  float removal_smoothing_ramp = 1;
 
   float output_voltage_left = 0;
   float output_voltage_right = 0;
@@ -60,12 +60,30 @@ struct Ghost
 
       stereo_smooth.process(sample_output_left, sample_output_right, smooth_rate, &smoothed_output_left, &smoothed_output_right);
 
-      if(marked_for_removal && (removal_smoothing_ramp < 1))
+      if(marked_for_removal && (removal_smoothing_ramp > 0))
       {
+
+        /*
         removal_smoothing_ramp += REMOVAL_RAMP_ACCUMULATOR;
         smoothed_output_left = (smoothed_output_left * (1.0f - removal_smoothing_ramp));
         smoothed_output_right = (smoothed_output_right * (1.0f - removal_smoothing_ramp));
         if(removal_smoothing_ramp >= 1) erase_me = true;
+        */
+
+
+        removal_smoothing_ramp -= REMOVAL_RAMP_ACCUMULATOR;
+
+        if(removal_smoothing_ramp <= 0)
+        {
+          erase_me = true;
+          smoothed_output_left = 0.0;
+          smoothed_output_right = 0.0;
+        }
+        else
+        {
+          smoothed_output_left = (smoothed_output_left * removal_smoothing_ramp);
+          smoothed_output_right = (smoothed_output_right * removal_smoothing_ramp);
+        }
       }
 
       *output_voltage_left = smoothed_output_left;

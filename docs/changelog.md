@@ -1,5 +1,11 @@
 ## Change Log
 
+### 2.20.0
+* Breaking change: Wavbank and Ghosts modules now conform to the 1v/octave standard for pitch response
+* Added sorting code to wavbank modules to (hopefully) solve a problem where samples were being loaded out of order for some users.
+* Code clean-up: Consolidated all DSP helpers into the dsp folder instead of using submodules.hpp
+* Stripped out declicking code from Groovebox until I can implement a proper solution
+
 ### 2.19.0
 
 * For Groovebox, added ability to use `SHIFT` + `CTRL` + `scroll wheel` when mousing-over a track label to quickly load the next or previous sample in the same folder.
