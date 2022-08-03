@@ -31,7 +31,7 @@ struct Ghosts : VoxglitchSamplerModule
 		SAMPLE_PLAYBACK_POSITION_KNOB,
 		SAMPLE_PLAYBACK_POSITION_ATTN_KNOB,
 		PITCH_KNOB,
-		PITCH_ATTN_KNOB,
+		PITCH_ATTN_KNOB, // unused, but keeping here to avoid shifting the enums
 		PURGE_BUTTON_PARAM,
 		TRIM_KNOB,
 		JITTER_SWITCH,
@@ -72,7 +72,7 @@ struct Ghosts : VoxglitchSamplerModule
 		configParam(GHOST_SPAWN_RATE_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "GhostSpawnRateAttnKnob");
 		configParam(SAMPLE_PLAYBACK_POSITION_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionKnob");
 		configParam(SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionAttnKnob");
-		configParam(PITCH_KNOB, -0.3f, 1.0f, 0.0f, "PitchKnob");
+		configParam(PITCH_KNOB, -2.0f, 2.0f, 0.0f, "PitchKnob");
 		configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "PitchAttnKnob");
 		configParam(PURGE_BUTTON_PARAM, 0.f, 1.f, 0.f, "PurgeButtonParam");
 		configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
@@ -186,6 +186,7 @@ struct Ghosts : VoxglitchSamplerModule
 				// pre-calculate step amount and smooth rate. This is to reduce the amount of math needed
 				// within each Ghost's getStereoOutput() and age() functions.
 
+        /*
 				if(inputs[PITCH_INPUT].isConnected())
 				{
 					step_amount = (sample.sample_rate / args.sampleRate) + (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
@@ -194,6 +195,11 @@ struct Ghosts : VoxglitchSamplerModule
 				{
 					step_amount = (sample.sample_rate / args.sampleRate) + params[PITCH_KNOB].getValue();
 				}
+        */
+
+        step_amount = (sample.sample_rate / APP->engine->getSampleRate()) * exp2(inputs[PITCH_INPUT].getVoltage() + params[PITCH_KNOB].getValue());
+
+        // step_amount = (sample.sample_rate / args.sampleRate) + (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
 
 				smooth_rate = 128.0f / args.sampleRate;
 
