@@ -1,6 +1,5 @@
 #pragma once
 #include <stack>
-#include "../Common/submodules.hpp"
 #define REMOVAL_RAMP_ACCUMULATOR 0.01f
 
 struct Ghost
@@ -24,7 +23,7 @@ struct Ghost
 
   // Smoothing classes to remove clicks and pops that would happen when sample
   // playback position jumps around.
-  StereoSmoothSubModule loop_smooth;
+  StereoSmooth stereo_smooth;
 
   float removal_smoothing_ramp = 0;
 
@@ -59,7 +58,7 @@ struct Ghost
       float smoothed_output_left = 0;
       float smoothed_output_right = 0;
 
-      loop_smooth.process(sample_output_left, sample_output_right, smooth_rate, &smoothed_output_left, &smoothed_output_right);
+      stereo_smooth.process(sample_output_left, sample_output_right, smooth_rate, &smoothed_output_left, &smoothed_output_right);
 
       if(marked_for_removal && (removal_smoothing_ramp < 1))
       {
@@ -87,7 +86,7 @@ struct Ghost
         // fmod is modulus for floating point variables
         playback_position = fmod(playback_position, playback_length);
 
-        loop_smooth.trigger();
+        stereo_smooth.trigger();
       }
     }
   }

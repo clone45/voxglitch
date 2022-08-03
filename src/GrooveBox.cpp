@@ -1,6 +1,6 @@
 /*
+  // todo: add intro documentation
 
-  todo: Put a slew limiter on (some) the parameter locks, such as vol, pan
 
 */
 
@@ -22,11 +22,11 @@ using namespace groove_box;
 // Sample players and such
 #include "Common/sample.hpp"
 #include "Common/common.hpp"
-#include "Common/submodules.hpp"
 #include "Common/dsp/ADSR.cpp"
 #include "Common/dsp/SimpleDelay.hpp"
 // #include "Common/dsp/DeclickFilter.hpp"
-#include "Common/dsp/FadeOut.hpp"
+#include "Common/dsp/StereoFadeOut.hpp"
+#include "Common/dsp/StereoPan.hpp"
 #include "Common/VoxglitchModule.hpp"
 #include "Common/VoxglitchSamplerModule.hpp"
 #include "Common/VoxglitchSamplerModuleWidget.hpp"

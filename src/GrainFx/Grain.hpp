@@ -26,7 +26,7 @@ struct Grain
     float output_voltage_right = 0;
     bool erase_me = false;
 
-    StereoPanSubModule panner;
+    StereoPan stereo_pan;
 
     Grain()
     {
@@ -66,7 +66,7 @@ struct Grain
             output_voltage_right = slope_value * output_voltage_right;
 
             // Apply pan
-            std::tie(output_voltage_left, output_voltage_right) = panner.process(output_voltage_left, output_voltage_right, pan);
+            stereo_pan.process(&output_voltage_left, &output_voltage_right, pan);
         }
 
         return {output_voltage_left, output_voltage_right};
