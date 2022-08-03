@@ -1,8 +1,9 @@
 struct Ghosts : VoxglitchSamplerModule
 {
-	float spawn_rate_counter = 0;
-	double step_amount = 0;
-	float smooth_rate = 0;
+	float spawn_rate_counter = 0.0;
+	double step_amount = 0.0;
+	float smooth_rate = 128.0f / APP->engine->getSampleRate();
+  float sample_rate_division = 0.0;
 
 	int step = 0;
 	std::string root_dir;
@@ -14,7 +15,6 @@ struct Ghosts : VoxglitchSamplerModule
 	dsp::SchmittTrigger purge_button_trigger;
 
 	float jitter_divisor = 1;
-
   unsigned int counter = 0;
 
 	// The filename of the loaded sample.  This is used to display the currently
@@ -172,7 +172,7 @@ struct Ghosts : VoxglitchSamplerModule
 			graveyard.markOldestForRemoval(graveyard.size() - graveyard_capacity);
 		}
 
-		if (sample.loaded)
+		if(sample.loaded)
 		{
 
 			//
@@ -186,22 +186,7 @@ struct Ghosts : VoxglitchSamplerModule
 				// pre-calculate step amount and smooth rate. This is to reduce the amount of math needed
 				// within each Ghost's getStereoOutput() and age() functions.
 
-        /*
-				if(inputs[PITCH_INPUT].isConnected())
-				{
-					step_amount = (sample.sample_rate / args.sampleRate) + (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
-				}
-				else
-				{
-					step_amount = (sample.sample_rate / args.sampleRate) + params[PITCH_KNOB].getValue();
-				}
-        */
-
-        step_amount = (sample.sample_rate / APP->engine->getSampleRate()) * exp2(inputs[PITCH_INPUT].getVoltage() + params[PITCH_KNOB].getValue());
-
-        // step_amount = (sample.sample_rate / args.sampleRate) + (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
-
-				smooth_rate = 128.0f / args.sampleRate;
+        step_amount = sample_rate_division * exp2(inputs[PITCH_INPUT].getVoltage() + params[PITCH_KNOB].getValue());
 
 				// Get the output from the graveyard and increase the age of each ghost
         float left_output = 0;
@@ -221,4 +206,10 @@ struct Ghosts : VoxglitchSamplerModule
 			spawn_rate_counter = spawn_rate_counter + 1.0f;
 		}
 	}
+
+  void onSampleRateChange(const SampleRateChangeEvent& e) override
+  {
+    smooth_rate = 128.0f / APP->engine->getSampleRate();
+    if(sample.loaded) sample_rate_division = sample.sample_rate / APP->engine->getSampleRate();
+  }
 };
