@@ -33,12 +33,12 @@ struct Ghost
   bool marked_for_removal = false;
   bool erase_me = false;
 
-  void getStereoOutput(float smooth_rate, float *output_voltage_left, float *output_voltage_right)
+  void getStereoOutput(float smooth_rate, float *audio_left, float *audio_right)
   {
     if(erase_me == true)
     {
-      *output_voltage_left = 0;
-      *output_voltage_right = 0;
+      *audio_left = 0;
+      *audio_right = 0;
     }
     else
     {
@@ -49,45 +49,28 @@ struct Ghost
       // Wrap if the sample position is past the sample end point
       sample_position = sample_position % this->sample_ptr->size();
 
-      float sample_output_left = 0;
-      float sample_output_right = 0;
+      this->sample_ptr->read((unsigned int) sample_position, audio_left, audio_right);
 
-      this->sample_ptr->read((unsigned int) sample_position, &sample_output_left, &sample_output_right);
+      // stereo_smooth.process(sample_output_left, sample_output_right, smooth_rate, &smoothed_output_left, &smoothed_output_right);
 
-      // Smooth out transitions (or passthrough unmodified when not triggered)
-      float smoothed_output_left = 0;
-      float smoothed_output_right = 0;
-
-      stereo_smooth.process(sample_output_left, sample_output_right, smooth_rate, &smoothed_output_left, &smoothed_output_right);
+      stereo_smooth.process(audio_left, audio_right, smooth_rate);
 
       if(marked_for_removal && (removal_smoothing_ramp > 0))
       {
-
-        /*
-        removal_smoothing_ramp += REMOVAL_RAMP_ACCUMULATOR;
-        smoothed_output_left = (smoothed_output_left * (1.0f - removal_smoothing_ramp));
-        smoothed_output_right = (smoothed_output_right * (1.0f - removal_smoothing_ramp));
-        if(removal_smoothing_ramp >= 1) erase_me = true;
-        */
-
-
         removal_smoothing_ramp -= REMOVAL_RAMP_ACCUMULATOR;
 
         if(removal_smoothing_ramp <= 0)
         {
           erase_me = true;
-          smoothed_output_left = 0.0;
-          smoothed_output_right = 0.0;
+          *audio_left = 0.0;
+          *audio_right = 0.0;
         }
         else
         {
-          smoothed_output_left = (smoothed_output_left * removal_smoothing_ramp);
-          smoothed_output_right = (smoothed_output_right * removal_smoothing_ramp);
+          *audio_left = (*audio_left * removal_smoothing_ramp);
+          *audio_right = (*audio_right * removal_smoothing_ramp);
         }
       }
-
-      *output_voltage_left = smoothed_output_left;
-      *output_voltage_right = smoothed_output_right;
     }
   }
 

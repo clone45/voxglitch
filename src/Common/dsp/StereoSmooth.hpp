@@ -11,7 +11,7 @@ struct StereoSmooth
     smoothing_ramp = 0;
   }
 
-  void process(float left_voltage, float right_voltage, float smooth_rate, float *left_output, float* right_output)
+  void process(float *left_audio, float *right_audio, float smooth_rate)
   {
     if(smoothing_ramp < 1)
     {
@@ -20,15 +20,12 @@ struct StereoSmooth
       // It's noteworthy that this line of code doesn't really have much effect
       // on CPU consumption.  If you comment it out, the module takes about the
       // same amount of CPU.
-      left_voltage = (left_previous_voltage * (1.0f - smoothing_ramp)) + (left_voltage * smoothing_ramp);
-      right_voltage = (right_previous_voltage * (1.0f - smoothing_ramp)) + (right_voltage * smoothing_ramp);
+      *left_audio = (left_previous_voltage * (1.0f - smoothing_ramp)) + (*left_audio * smoothing_ramp);
+      *right_audio = (right_previous_voltage * (1.0f - smoothing_ramp)) + (*right_audio * smoothing_ramp);
     }
 
-    left_previous_voltage = left_voltage;
-    right_previous_voltage = right_voltage;
-
-    *left_output = left_voltage;
-    *right_output = right_voltage;
+    left_previous_voltage = *left_audio;
+    right_previous_voltage = *right_audio;
   }
 
   void reset()
