@@ -23,13 +23,14 @@ struct Track
   // DSP classes
   ADSR adsr;
   SimpleDelay delay;
-  FadeOut fade_out;
+  StereoFadeOut fade_out;
   rack::dsp::SlewLimiter volume_slew_limiter;
   rack::dsp::SlewLimiter pan_slew_limiter;
   float volume_slew_target = 0.0;
   float pan_slew_target = 0.0;
 
-  StereoPanSubModule stereo_pan_submodule;
+  // StereoPanSubModule stereo_pan_submodule;
+  StereoPan stereo_pan;
   unsigned int ratchet_counter = 0;
   SamplePlayer *sample_player;
 
@@ -274,16 +275,22 @@ struct Track
     // track_pan ranges from -1 to 0
     float computed_pan = (settings.pan * 2.0) - 1.0; // convert settings.pan to range from -1 to 1
     computed_pan = clamp(computed_pan + track_pan, -1.0, 1.0);
-    std::tie(left_output, right_output) = stereo_pan_submodule.process(left_output, right_output, computed_pan);
+    stereo_pan.process(&left_output, &right_output, computed_pan);
 
     // Apply volume parameters
     left_output *= (settings.volume * 2);  // Range from 0 to 2 times normal volume
     right_output *= (settings.volume * 2);  // Range from 0 to 2 times normal volume
 
+    // Process fade out at 1/10th of a second.
+    //
     // The fade_out.process() method will pass through the audio untouched if
     // there's no fade in progress.  It will return TRUE on the event of a fade
     // having been completed.
-    if (fade_out.process(&left_output, &right_output))
+    //
+    // Why fade?  At the moment, the only reason to fade_out is when a track
+    // is muted by the expander.
+    //
+    if (fade_out.process(&left_output, &right_output, 10.0 * APP->engine->getSampleTime()))
     {
       // If this line has been reached, it means the a fade out has just completed
       // If so, stop the sample player

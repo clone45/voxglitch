@@ -7,6 +7,7 @@
 #include "Common/sample.hpp"
 #include "Common/VoxglitchSamplerModule.hpp"
 #include "Common/VoxglitchSamplerModuleWidget.hpp"
+#include "Common/dsp/StereoSmooth.hpp"
 
 #include "Ghosts/defines.h"
 #include "Ghosts/GhostsEx.hpp"

@@ -26,7 +26,7 @@ struct GrainEngineMK2LoadSample : MenuItem
 		if (filename != "")
 		{
 			module->load_queue.queue_sample_for_loading(filename, sample_number);
-			module->fade_out_on_load.trigger();
+			module->stereo_fade_out.trigger();
 		}
 	}
 };

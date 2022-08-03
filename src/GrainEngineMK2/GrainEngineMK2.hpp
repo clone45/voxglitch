@@ -33,8 +33,11 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
 	std::string path;
   float pan = 0;
   LoadQueue load_queue;
-  StereoFadeOutSubModule fade_out_on_load;
-  StereoFadeInSubModule fade_in_after_load;
+  // StereoFadeOutSubModule fade_out_on_load;
+  // StereoFadeInSubModule fade_in_after_load;
+  StereoFadeOut stereo_fade_out;
+  StereoFadeIn stereo_fade_in;
+
   bool bipolar_pitch_mode = false;
 
   // Structs
@@ -264,7 +267,7 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
     {
       // If either there's no loaded sample in the sample slot, or the fade out
       // of the existing sample has completed then load the new sample and start fading in.
-      if((fade_out_on_load.fading == false) || (samples[load_queue.sample_number]->loaded == false))
+      if((stereo_fade_out.isFadingOut() == false) || (samples[load_queue.sample_number]->loaded == false))
       {
         // dequeue the request.  We're going to process it right now!
         load_queue.sample_queued_for_loading = false;
@@ -278,7 +281,7 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
         this->path = path;     // This is used by the widget class
         loaded_filenames[load_queue.sample_number] = samples[load_queue.sample_number]->filename;
 
-        fade_in_after_load.trigger();
+        stereo_fade_in.trigger();
       }
     }
 
@@ -376,8 +379,8 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
       float left_mix_output = stereo_output.first * params[TRIM_KNOB].getValue();
       float right_mix_output = stereo_output.second * params[TRIM_KNOB].getValue();
 
-      if(fade_in_after_load.fading) std::tie(left_mix_output, right_mix_output) = fade_in_after_load.process(left_mix_output, right_mix_output, 0.01f);
-      if(fade_out_on_load.fading) std::tie(left_mix_output, right_mix_output) = fade_out_on_load.process(left_mix_output, right_mix_output, 0.01f);
+      if(stereo_fade_in.isFadingIn()) stereo_fade_in.process(&left_mix_output, &right_mix_output, 100.0 * APP->engine->getSampleTime()); // 1/100th of a second
+      if(stereo_fade_out.isFadingOut()) stereo_fade_out.process(&left_mix_output, &right_mix_output, 100.0 * APP->engine->getSampleTime()); // 1/100th of a second
 
       // Send audio to outputs
       outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_mix_output);
@@ -411,9 +414,7 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
 
           // Queue sample for loading
           load_queue.queue_sample_for_loading(path_to_file, sample_slot);
-          fade_out_on_load.trigger();
-
-          // DEBUG(("Queued sample for loading: " + path_to_file).c_str());
+          stereo_fade_out.trigger();
         }
 
         // Set the received flag so we don't process the message every single frame

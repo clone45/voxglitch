@@ -70,14 +70,6 @@
         "tags": ["Granular", "Sampler"]
     },
     {
-        "slug": "grainengine",
-        "name": "Grain Engine",
-        "description": "Basic .wav player/scanner using granular synthesis",
-        "tags": ["Granular", "Sampler"],
-        "deprecated": true,
-        "hidden": true
-    },
-    {
         "slug": "GrainEngineMK2",
         "name": "Grain Engine MK2",
         "description": "Granular syntesis based .wav player",

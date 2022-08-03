@@ -3,7 +3,8 @@ struct SamplerX8 : VoxglitchSamplerModule
 	std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
   std::vector<SamplePlayer> sample_players;
   dsp::SchmittTrigger sample_triggers[NUMBER_OF_SAMPLES];
-  StereoPanSubModule stereo_pan_submodule;
+  // StereoPanSubModule stereo_pan_submodule;
+  StereoPan stereo_pan;
   dsp::SchmittTrigger mute_buttons_schmitt_triggers[NUMBER_OF_SAMPLES];
   bool mute_states[NUMBER_OF_SAMPLES];
 
@@ -138,7 +139,7 @@ struct SamplerX8 : VoxglitchSamplerModule
       right_audio = (right_audio * params[VOLUME_KNOBS + i].getValue());
 
       // Apply panning knobs
-      std::tie(left_audio, right_audio) = stereo_pan_submodule.process(left_audio, right_audio, params[PAN_KNOBS + i].getValue());
+      stereo_pan.process(&left_audio, &right_audio, params[PAN_KNOBS + i].getValue());
 
       // Output audio for the current sample
       if(mute_states[i] == true)  // True means "play sample"

@@ -7,8 +7,8 @@
 #include "Common/sample.hpp"
 #include "Common/VoxglitchSamplerModule.hpp"
 #include "Common/VoxglitchSamplerModuleWidget.hpp"
-#include "Common/submodules.hpp"
 #include "Common/SamplePlayer.hpp"
+#include "Common/dsp/StereoPan.hpp"
 
 #include "SamplerX8/defines.h"
 #include "SamplerX8/SamplerX8.hpp"
