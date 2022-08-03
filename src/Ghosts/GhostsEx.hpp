@@ -27,9 +27,6 @@ struct Ghost
 
   float removal_smoothing_ramp = 1;
 
-  float output_voltage_left = 0;
-  float output_voltage_right = 0;
-
   bool marked_for_removal = false;
   bool erase_me = false;
 
@@ -50,8 +47,6 @@ struct Ghost
       sample_position = sample_position % this->sample_ptr->size();
 
       this->sample_ptr->read((unsigned int) sample_position, audio_left, audio_right);
-
-      // stereo_smooth.process(sample_output_left, sample_output_right, smooth_rate, &smoothed_output_left, &smoothed_output_right);
 
       stereo_smooth.process(audio_left, audio_right, smooth_rate);
 
