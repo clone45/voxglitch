@@ -14,6 +14,9 @@ struct GhostsWidget : VoxglitchSamplerModuleWidget
 		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(62.366, 45.713)), module, Ghosts::JITTER_CV_INPUT));
 		addParam(createParamCentered<CKSS>(mm2px(Vec(75.595, 45.713)), module, Ghosts::JITTER_SWITCH));
 
+    addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(62.366, 65)), module, Ghosts::MODES_KNOB));
+
+
 		//
 		// Main Left-side Knobs
 		//

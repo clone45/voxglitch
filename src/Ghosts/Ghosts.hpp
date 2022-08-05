@@ -1,9 +1,15 @@
+//
+// TODO: In some modes, jitter should be replaced by a modulation source, such
+// as a triangle wav.
+// - test to see if removal smoothing is really doing anything at all
+
 struct Ghosts : VoxglitchSamplerModule
 {
 	float spawn_rate_counter = 0.0;
 	double step_amount = 0.0;
-	float smooth_rate = 128.0f / APP->engine->getSampleRate();
-  float sample_rate_division = 0.0;
+	double smooth_rate = 128.0f / APP->engine->getSampleRate();
+  double sample_rate_division = 0.0;
+  float sr_div_8 = APP->engine->getSampleRate() / 8.0;
 
 	int step = 0;
 	std::string root_dir;
@@ -14,7 +20,6 @@ struct Ghosts : VoxglitchSamplerModule
 	dsp::SchmittTrigger purge_trigger;
 	dsp::SchmittTrigger purge_button_trigger;
 
-	float jitter_divisor = 1;
   unsigned int counter = 0;
 
 	// The filename of the loaded sample.  This is used to display the currently
@@ -35,6 +40,7 @@ struct Ghosts : VoxglitchSamplerModule
 		PURGE_BUTTON_PARAM,
 		TRIM_KNOB,
 		JITTER_SWITCH,
+    MODES_KNOB,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -68,7 +74,7 @@ struct Ghosts : VoxglitchSamplerModule
 		configParam(GHOST_PLAYBACK_LENGTH_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "GhostLengthAttnKnob");
 		configParam(GRAVEYARD_CAPACITY_KNOB, 0.0f, 1.0f, 0.2f, "GraveyardCapacityKnob");
 		configParam(GRAVEYARD_CAPACITY_ATTN_KNOB, 0.0f, 1.0f, 1.00f, "GraveyardCapacityAttnKnob");
-		configParam(GHOST_SPAWN_RATE_KNOB, 0.01f, 1.0f, 0.2f, "GhostSpawnRateKnob");  // max 24000
+		configParam(GHOST_SPAWN_RATE_KNOB, 0.0f, 10.0f, 5.0f, "GhostSpawnRateKnob");  // max 24000
 		configParam(GHOST_SPAWN_RATE_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "GhostSpawnRateAttnKnob");
 		configParam(SAMPLE_PLAYBACK_POSITION_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionKnob");
 		configParam(SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SamplePlaybackPositionAttnKnob");
@@ -77,8 +83,9 @@ struct Ghosts : VoxglitchSamplerModule
 		configParam(PURGE_BUTTON_PARAM, 0.f, 1.f, 0.f, "PurgeButtonParam");
 		configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
 		configParam(JITTER_SWITCH, 0.f, 1.f, 1.f, "Jitter");
-
-		jitter_divisor = static_cast <double> (RAND_MAX / 1024.0);
+    configParam(MODES_KNOB, 0.f, 3.f, 0.f, "MODES");
+    paramQuantities[MODES_KNOB]->snapEnabled = true;
+		// jitter_divisor = static_cast <double> (RAND_MAX / 1024.0);
 	}
 
 	json_t *dataToJson() override
@@ -111,19 +118,32 @@ struct Ghosts : VoxglitchSamplerModule
 
 	void process(const ProcessArgs &args) override
 	{
-		float spawn_rate = calculate_inputs(GHOST_SPAWN_RATE_INPUT, GHOST_SPAWN_RATE_KNOB, GHOST_SPAWN_RATE_ATTN_KNOB, 4) + 1;
-		float playback_length = calculate_inputs(GHOST_PLAYBACK_LENGTH_INPUT, GHOST_PLAYBACK_LENGTH_KNOB, GHOST_PLAYBACK_LENGTH_ATTN_KNOB, (args.sampleRate / 16));
+    unsigned int mode = params[MODES_KNOB].getValue();
+
+    float maximum_ghosts_per_second = modes[mode][2];
+    float minimum_ghosts_per_second = modes[mode][3];
+    float maximum_playback_length = APP->engine->getSampleRate() / modes[mode][0]; // 1/2 of a second
+    float minimum_playback_length = APP->engine->getSampleRate() / modes[mode][1]; // very fast
+    float jitter_spread = modes[mode][4];
+    float removal_mode = modes[mode][5];
+
+    // Compute spawn rate.  The spawn rate input should be 0.0 to 10.0 volts.
+		float spawn_rate = ((inputs[GHOST_SPAWN_RATE_INPUT].getVoltage() * params[GHOST_SPAWN_RATE_ATTN_KNOB].getValue())) + params[GHOST_SPAWN_RATE_KNOB].getValue();
+    spawn_rate = clamp(spawn_rate, 0.0, 10.0); // ensure 0.0 to 10.0 volts
+    spawn_rate = rescale(spawn_rate, 0.0, 10.0, minimum_ghosts_per_second, maximum_ghosts_per_second);
+
+    float playback_length = ((inputs[GHOST_PLAYBACK_LENGTH_INPUT].getVoltage() * params[GHOST_PLAYBACK_LENGTH_ATTN_KNOB].getValue())) + params[GHOST_PLAYBACK_LENGTH_KNOB].getValue();
+    playback_length = clamp(playback_length, 0.0, 10.0); // ensure 0.0 to 10.0 volts
+    playback_length = rescale(playback_length, 0.0, 10.0, minimum_playback_length, maximum_playback_length);
+
+    // calculate_inputs(GHOST_SPAWN_RATE_INPUT, GHOST_SPAWN_RATE_KNOB, GHOST_SPAWN_RATE_ATTN_KNOB, 4) + 1; // range from 1 to
+		// float playback_length = calculate_inputs(GHOST_PLAYBACK_LENGTH_INPUT, GHOST_PLAYBACK_LENGTH_KNOB, GHOST_PLAYBACK_LENGTH_ATTN_KNOB, sr_div_8);
 		float start_position = calculate_inputs(SAMPLE_PLAYBACK_POSITION_INPUT, SAMPLE_PLAYBACK_POSITION_KNOB, SAMPLE_PLAYBACK_POSITION_ATTN_KNOB, sample.size());
 
-		// Ensure that the inputs are within range
-		spawn_rate = pow(10.0, spawn_rate);
-		spawn_rate = clamp(spawn_rate, 0.0f, MAX_GHOST_SPAWN_RATE);
 		if(start_position >= (sample.size() - playback_length)) start_position = sample.size() - playback_length;
 
 		// Shorten the playback length if it would result in playback passing the end of the sample data.
 		if(playback_length > (sample.size() - start_position)) playback_length = sample.size() - start_position;
-
-
 
 		//
 		// This next conditional is a little tricky, so let me break it down...
@@ -137,11 +157,11 @@ struct Ghosts : VoxglitchSamplerModule
 
 		if(inputs[JITTER_CV_INPUT].isConnected() ? (inputs[JITTER_CV_INPUT].getVoltage() > 0) : params[JITTER_SWITCH].getValue())
 		{
-			double r = (static_cast <double> (rand()) / jitter_divisor) - 1024.0;
+			double r = (static_cast <double> (rand()) / (RAND_MAX / jitter_spread)) - (jitter_spread / 2.0);
 			start_position = start_position + r;
 		}
 
-		// Handle puge trigger input
+		// Handle purge trigger input
 		bool purge_is_triggered = purge_trigger.process(inputs[PURGE_TRIGGER_INPUT].getVoltage()) || purge_button_trigger.process(params[PURGE_BUTTON_PARAM].getValue());
 		if(purge_is_triggered)
 		{
@@ -150,7 +170,7 @@ struct Ghosts : VoxglitchSamplerModule
 		lights[PURGE_LIGHT].setSmoothBrightness(purge_is_triggered, args.sampleTime);
 
 		// Add more ghosts!
-		if(spawn_rate_counter >= spawn_rate)
+		if(spawn_rate_counter >= 1)
 		{
 			//
 			// I ain't afraid of no ghosts! ♫ ♪
@@ -168,8 +188,15 @@ struct Ghosts : VoxglitchSamplerModule
 
 		if(graveyard.size() > graveyard_capacity)
 		{
-			// Mark the oldest 'nth' ghosts for removal
-			graveyard.markOldestForRemoval(graveyard.size() - graveyard_capacity);
+			if(removal_mode == 0)
+      {
+        // Mark the oldest 'nth' ghosts for removal
+        graveyard.markOldestForRemoval(graveyard.size() - graveyard_capacity);
+      }
+      if(removal_mode == 1)
+      {
+        graveyard.markRandomForRemoval(graveyard.size() - graveyard_capacity);
+      }
 		}
 
 		if(sample.loaded)
@@ -189,27 +216,23 @@ struct Ghosts : VoxglitchSamplerModule
         step_amount = sample_rate_division * exp2(inputs[PITCH_INPUT].getVoltage() + params[PITCH_KNOB].getValue());
 
 				// Get the output from the graveyard and increase the age of each ghost
-        float left_output = 0;
-        float right_output = 0;
-
+        float left_output, right_output = 0;
 				graveyard.process(smooth_rate, step_amount, &left_output, &right_output);
 
-				float left_mix_output = left_output * params[TRIM_KNOB].getValue();
-				float right_mix_output = right_output  * params[TRIM_KNOB].getValue();
-
 				// Send audio to outputs
-				outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_mix_output);
-				outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_mix_output);
+				outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_output * params[TRIM_KNOB].getValue());
+				outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_output  * params[TRIM_KNOB].getValue());
 			}
 
 			// TODO: spawn_rate_counter should probably take into consideration the selected sample rate.
-			spawn_rate_counter = spawn_rate_counter + 1.0f;
+			spawn_rate_counter = spawn_rate_counter + (spawn_rate / APP->engine->getSampleRate());
 		}
 	}
 
   void onSampleRateChange(const SampleRateChangeEvent& e) override
   {
     smooth_rate = 128.0f / APP->engine->getSampleRate();
+    sr_div_8 = APP->engine->getSampleRate() / 8.0;
     if(sample.loaded) sample_rate_division = sample.sample_rate / APP->engine->getSampleRate();
   }
 };

@@ -1,6 +1,18 @@
 #pragma once
 #include <stack>
-#define REMOVAL_RAMP_ACCUMULATOR 0.01f
+
+template<class bidiiter>
+bidiiter random_unique(bidiiter begin, bidiiter end, size_t num_random) {
+    size_t left = std::distance(begin, end);
+    while (num_random--) {
+        bidiiter r = begin;
+        std::advance(r, rand()%left);
+        std::swap(*begin, *r);
+        ++begin;
+        --left;
+    }
+    return begin;
+}
 
 struct Ghost
 {
@@ -26,6 +38,9 @@ struct Ghost
   StereoSmooth stereo_smooth;
 
   float removal_smoothing_ramp = 1;
+  // float REMOVAL_RAMP_ACCUMULATOR = 2400.0 / APP->engine->getSampleRate(); // 480 == .01, 960 seems to work, as does 2400
+  // float REMOVAL_RAMP_ACCUMULATOR = 480.0 / APP->engine->getSampleRate();
+  float REMOVAL_RAMP_ACCUMULATOR = 2400.0 / APP->engine->getSampleRate();
 
   bool marked_for_removal = false;
   bool erase_me = false;
@@ -53,7 +68,6 @@ struct Ghost
       if(marked_for_removal && (removal_smoothing_ramp > 0))
       {
         removal_smoothing_ramp -= REMOVAL_RAMP_ACCUMULATOR;
-
         if(removal_smoothing_ramp <= 0)
         {
           erase_me = true;
@@ -66,6 +80,7 @@ struct Ghost
           *audio_right = (*audio_right * removal_smoothing_ramp);
         }
       }
+
     }
   }
 
@@ -107,8 +122,7 @@ struct GhostsEx
 
   virtual void markAllForRemoval()
   {
-    // Iterate over active grains, mark them for removal, and copy them
-    // into the deprecated_grains deque
+    // Iterate over active grains, mark them for removal
     for (Ghost &ghost : graveyard)
     {
       ghost.markForRemoval();
@@ -138,6 +152,8 @@ struct GhostsEx
     graveyard.push_back(ghost);
   }
 
+
+
   // Once there are too many active grains, we move a lot of the older active
   // grains into the deprecated grains bucket.  These deprecated grains will
   // quickly fade out, then be recycled by being placed into the available grain pool.
@@ -154,6 +170,17 @@ struct GhostsEx
     {
       graveyard[i].markForRemoval();
     }
+  }
+
+  virtual void markRandomForRemoval(unsigned int amount_to_remove)
+  {
+    random_unique(graveyard.begin(), graveyard.end(), amount_to_remove);
+
+    for(unsigned int i=0; i < amount_to_remove; i++)
+    {
+      graveyard[i].markForRemoval();
+    }
+
   }
 
   virtual void process(float smooth_rate, float step_amount, float *left_mix_output, float *right_mix_output)
