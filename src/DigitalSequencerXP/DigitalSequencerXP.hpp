@@ -17,10 +17,10 @@ struct DigitalSequencerXP : Module
 
   unsigned int tooltip_timer = 0;
 
-  VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
-  VoltageSequencer *selected_voltage_sequencer;
-  GateSequencer gate_sequencers[NUMBER_OF_SEQUENCERS];
-  GateSequencer *selected_gate_sequencer;
+  dsxp::VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
+  dsxp::VoltageSequencer *selected_voltage_sequencer;
+  dsxp::GateSequencer gate_sequencers[NUMBER_OF_SEQUENCERS];
+  dsxp::GateSequencer *selected_gate_sequencer;
 
   unsigned int selected_sequencer_index = 0;
   int voltage_outputs[NUMBER_OF_SEQUENCERS];

@@ -40,12 +40,12 @@ struct DigitalSequencerWidget : ModuleWidget
     addChild(createWidget<ScrewSilver>(mm2px(Vec(171.5, 0))));
 
     // Main voltage sequencer display
-    VoltageSequencerDisplay *voltage_sequencer_display = new VoltageSequencerDisplay();
+    dseq::VoltageSequencerDisplay *voltage_sequencer_display = new dseq::VoltageSequencerDisplay();
     voltage_sequencer_display->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
     voltage_sequencer_display->module = module;
     addChild(voltage_sequencer_display);
 
-    GateSequencerDisplay *gates_display = new GateSequencerDisplay();
+    dseq::GateSequencerDisplay *gates_display = new dseq::GateSequencerDisplay();
     gates_display->box.pos = mm2px(Vec(GATES_DRAW_AREA_POSITION_X, GATES_DRAW_AREA_POSITION_Y));
     gates_display->module = module;
     addChild(gates_display);
@@ -124,17 +124,17 @@ struct DigitalSequencerWidget : ModuleWidget
     menu->addChild(createMenuLabel("Sequencer Settings"));
 
     // Add "all" sequencer settings
-    AllSequencersItem *all_sequencer_items;
-    all_sequencer_items = createMenuItem<AllSequencersItem>("All Sequencers", RIGHT_ARROW);
+    dseq::AllSequencersItem *all_sequencer_items;
+    all_sequencer_items = createMenuItem<dseq::AllSequencersItem>("All Sequencers", RIGHT_ARROW);
     all_sequencer_items->module = module;
     menu->addChild(all_sequencer_items);
 
     // Add individual sequencer settings
-    SequencerItem *sequencer_items[6];
+    dseq::SequencerItem *sequencer_items[6];
 
     for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
     {
-      sequencer_items[i] = createMenuItem<SequencerItem>("Sequencer #" + std::to_string(i + 1), RIGHT_ARROW);
+      sequencer_items[i] = createMenuItem<dseq::SequencerItem>("Sequencer #" + std::to_string(i + 1), RIGHT_ARROW);
       sequencer_items[i]->module = module;
       sequencer_items[i]->sequencer_number = i;
       menu->addChild(sequencer_items[i]);
@@ -147,12 +147,12 @@ struct DigitalSequencerWidget : ModuleWidget
     menu->addChild(legacy_reset_option);
     */
 
-    ResetModeItem *reset_mode_item = createMenuItem<ResetModeItem>("Reset Mode", RIGHT_ARROW);
+    dseq::ResetModeItem *reset_mode_item = createMenuItem<dseq::ResetModeItem>("Reset Mode", RIGHT_ARROW);
     reset_mode_item->module = module;
     menu->addChild(reset_mode_item);
 
     menu->addChild(new MenuEntry); // For spacing only
-    menu->addChild(createMenuItem<QuickKeyMenu>("Quick Key Reference", RIGHT_ARROW));
+    menu->addChild(createMenuItem<dseq::QuickKeyMenu>("Quick Key Reference", RIGHT_ARROW));
   }
 
   void step() override {
