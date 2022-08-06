@@ -5,6 +5,7 @@
 * Added sorting code to wavbank modules to (hopefully) solve a problem where samples were being loaded out of order for some users.
 * Code clean-up: Consolidated all DSP helpers into the dsp folder instead of using submodules.hpp
 * Stripped out declicking code from Groovebox until I can implement a proper solution
+* For Ghosts, adjusted computation of grain properties.  Additionally, I added a new "mode" knob which offers different ranges for most of the knobs (Optional - for more inventive, but less consistent controls.)
 
 ### 2.19.0
 

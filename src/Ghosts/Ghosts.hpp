@@ -1,7 +1,6 @@
 //
-// TODO: In some modes, jitter should be replaced by a modulation source, such
-// as a triangle wav.
-// - test to see if removal smoothing is really doing anything at all
+// Voxglitch Ghosts
+//
 
 struct Ghosts : VoxglitchSamplerModule
 {
