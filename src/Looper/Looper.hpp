@@ -10,6 +10,7 @@ struct Looper : VoxglitchSamplerModule
   std::string root_dir;
 
   enum ParamIds {
+    VOLUME_SLIDER,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -24,9 +25,8 @@ struct Looper : VoxglitchSamplerModule
 
 	Looper()
 	{
-    sample_rate = APP->engine->getSampleRate();
-    sample_player.updateSampleRate(sample_rate);
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
+    configParam(VOLUME_SLIDER, 0.0f, 1.0f, 1.0f, "VolumeSlider");
 	}
 
 	// Autosave module data.  VCV Rack decides when this should be called.
@@ -47,7 +47,7 @@ struct Looper : VoxglitchSamplerModule
 		json_t *loaded_sample_path = json_object_get(root, ("loaded_sample_path"));
 		if (loaded_sample_path)
 		{
-			sample_player.loadSample(json_string_value(loaded_sample_path));
+			if(sample_player.loadSample(json_string_value(loaded_sample_path))) sample_player.trigger(0.0, true); // starting position=0.0, loop=true
 			loaded_filename = sample_player.getFilename();
 		}
 
@@ -59,19 +59,22 @@ struct Looper : VoxglitchSamplerModule
 	{
     if(resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
     {
-      sample_player.reset();
+      sample_player.trigger(); // starting position=0.0, loop=true
     }
 
     sample_player.getStereoOutput(&left_audio, &right_audio, interpolation);
-    sample_player.step();
 
-    outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_audio);
-    outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_audio);
+    // pitch = 0.0, sample_start = 0.0, sample_end = 1.0, loop = false
+    sample_player.step(0.0, 0.0, 1.0, true);
+
+    float volume = params[VOLUME_SLIDER].getValue();
+
+    outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_audio * volume);
+    outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_audio * volume);
   }
 
   void onSampleRateChange(const SampleRateChangeEvent& e) override
   {
-    sample_rate = e.sampleRate;
-    sample_player.updateSampleRate(sample_rate);
+    sample_player.updateSampleRate();
   }
 };

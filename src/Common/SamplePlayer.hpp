@@ -28,7 +28,7 @@ struct SamplePlayer
 
   // Trigger restarts sample playback by setting the playback position and
   // setting the "playing" boolean to true.
-  void trigger(float sample_start = 0, bool reverse = false)
+  void trigger(float sample_start = 0.0, bool reverse = false)
   {
     if(! reverse) // if forward playback
     {

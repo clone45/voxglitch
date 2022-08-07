@@ -21,9 +21,6 @@ struct VoxglitchSamplerModule : Module
     if (samples_root_dir_json) samples_root_dir = json_string_value(samples_root_dir_json);
   }
 
-  // Pure virtual function that must be implemented in the derived classes
-  // virtual void fileSelected(std::string filename) = 0;
-
 #ifndef USING_CARDINAL_NOT_RACK
   std::string selectFileVCV()
   {

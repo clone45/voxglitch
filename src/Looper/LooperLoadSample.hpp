@@ -23,6 +23,7 @@ struct LooperLoadSample : MenuItem
     if (filename != "")
 		{
 			module->sample_player.loadSample(filename);
+      module->sample_player.trigger();
 			module->loaded_filename = module->sample_player.getFilename();
 			module->setRoot(filename);
 		}
