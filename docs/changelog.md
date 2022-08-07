@@ -1,11 +1,33 @@
 ## Change Log
 
 ### 2.20.0
-* Breaking change: Wavbank and Ghosts modules now conform to the 1v/octave standard for pitch response
-* Added sorting code to wavbank modules to (hopefully) solve a problem where samples were being loaded out of order for some users.
-* Code clean-up: Consolidated all DSP helpers into the dsp folder instead of using submodules.hpp
+General:
+* Code clean-up:
+  - Consolidated all DSP helpers into the dsp folder instead of using submodules.hpp
+  - Added namespacing to Digital Sequencer and XP version to avoid conflicts.  I may do this of all modules eventually.
+
+Ghosts:
+* Added a new "mode" knob which offers different ranges for most of the knobs (Optional - for more inventive, but less consistent controls.)
+* Now conforms to the 1v/octave standard for pitch response
+* Adjusted how the math is done, which is now more "correct"
+
+Looper Module:
+* Double-clicking in the middle of the looper module replaces single-click for quickly loading samples.
+* Looper module no longer has visualization of playback, but it's scheduled to return again eventually.
+
+Groovebox:
 * Stripped out declicking code from Groovebox until I can implement a proper solution
-* For Ghosts, adjusted computation of grain properties.  Additionally, I added a new "mode" knob which offers different ranges for most of the knobs (Optional - for more inventive, but less consistent controls.)
+
+Digital Sequencer / Digital Sequencer XP
+* Added menu for updating all sequencer properties (snap and output range) at once
+
+Wavbank:
+* Now conforms to the 1v/octave standard for pitch response
+* Added sorting code to wavbank modules to (hopefully) solve a problem where samples were being loaded out of order for some users.
+
+Looper:
+* Replaced visualizer with a volume slider
+* Updated code to use common SamplePlayer class
 
 ### 2.19.0
 
