@@ -1,6 +1,5 @@
 #pragma once
 
-#include "dr_wav.h"
 #define MAX_BUFFER_SIZE 176400
 
 struct AudioBuffer

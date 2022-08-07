@@ -7,7 +7,6 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "settings.hpp"
-#include "Common/dr_wav.h"
 #include <vector>
 #include "cmath"
 
