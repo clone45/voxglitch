@@ -19,11 +19,11 @@ struct DigitalSequencer : Module
 
   unsigned int tooltip_timer = 0;
 
-  VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
-  VoltageSequencer *selected_voltage_sequencer;
+  dseq::VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
+  dseq::VoltageSequencer *selected_voltage_sequencer;
 
-  GateSequencer gate_sequencers[NUMBER_OF_SEQUENCERS];
-  GateSequencer *selected_gate_sequencer;
+  dseq::GateSequencer gate_sequencers[NUMBER_OF_SEQUENCERS];
+  dseq::GateSequencer *selected_gate_sequencer;
 
   int selected_sequencer_index = 0;
   int voltage_outputs[NUMBER_OF_SEQUENCERS];

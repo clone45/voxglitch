@@ -16,17 +16,19 @@
 #include <fstream>
 #include <array>
 
-#include "DigitalSequencerXP/defines.h"
-using namespace digital_sequencer_xp;
-
 #include "Common/VoxglitchWidget.hpp"
-#include "DigitalSequencerXP/Sequencer.hpp"
-#include "DigitalSequencerXP/VoltageSequencer.hpp"
-#include "DigitalSequencerXP/GateSequencer.hpp"
-#include "DigitalSequencerXP/DigitalSequencerXP.hpp"
-#include "DigitalSequencerXP/SequencerDisplay.hpp"
-#include "DigitalSequencerXP/VoltageSequencerDisplayXP.hpp"
-#include "DigitalSequencerXP/GateSequencerDisplayXP.hpp"
-#include "DigitalSequencerXP/DigitalSequencerXPWidget.hpp"
 
-Model* modelDigitalSequencerXP = createModel<DigitalSequencerXP, DigitalSequencerXPWidget>("digitalsequencerxp");
+namespace dsxp
+{
+  #include "DigitalSequencerXP/defines.h"
+  #include "DigitalSequencerXP/Sequencer.hpp"
+  #include "DigitalSequencerXP/VoltageSequencer.hpp"
+  #include "DigitalSequencerXP/GateSequencer.hpp"
+  #include "DigitalSequencerXP/DigitalSequencerXP.hpp"
+  #include "DigitalSequencerXP/SequencerDisplay.hpp"
+  #include "DigitalSequencerXP/VoltageSequencerDisplayXP.hpp"
+  #include "DigitalSequencerXP/GateSequencerDisplayXP.hpp"
+  #include "DigitalSequencerXP/DigitalSequencerXPWidget.hpp"
+}
+
+Model* modelDigitalSequencerXP = createModel<dsxp::DigitalSequencerXP, dsxp::DigitalSequencerXPWidget>("digitalsequencerxp");

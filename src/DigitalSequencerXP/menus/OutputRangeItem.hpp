@@ -1,7 +1,5 @@
-#include "OutputRangeValueItem.hpp"
-
 struct OutputRangeItem : MenuItem {
-  DigitalSequencer *module;
+  DigitalSequencerXP *module;
   int sequencer_number = 0;
 
   Menu *createChildMenu() override {
@@ -9,7 +7,7 @@ struct OutputRangeItem : MenuItem {
 
     for (unsigned int i=0; i < NUMBER_OF_VOLTAGE_RANGES; i++)
     {
-      dseq::OutputRangeValueItem *output_range_value_menu_item = createMenuItem<dseq::OutputRangeValueItem>(module->voltage_range_names[i], CHECKMARK(module->voltage_sequencers[sequencer_number].voltage_range_index == i));
+      dsxp::OutputRangeValueItem *output_range_value_menu_item = createMenuItem<dsxp::OutputRangeValueItem>(module->voltage_range_names[i], CHECKMARK(module->voltage_sequencers[sequencer_number].voltage_range_index == i));
       output_range_value_menu_item->module = module;
       output_range_value_menu_item->range_index = i;
       output_range_value_menu_item->sequencer_number = this->sequencer_number;

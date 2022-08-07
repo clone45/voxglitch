@@ -1,7 +1,7 @@
 #include "InputSnapValueItem.hpp"
 
 struct InputSnapItem : MenuItem {
-  DigitalSequencer *module;
+  DigitalSequencerXP *module;
   int sequencer_number = 0;
 
   Menu *createChildMenu() override {
@@ -9,7 +9,7 @@ struct InputSnapItem : MenuItem {
 
     for (unsigned int i=0; i < NUMBER_OF_SNAP_DIVISIONS; i++)
     {
-      dseq::InputSnapValueItem *input_snap_value_item = createMenuItem<dseq::InputSnapValueItem>(module->snap_division_names[i], CHECKMARK(module->voltage_sequencers[sequencer_number].snap_division_index == i));
+      dsxp::InputSnapValueItem *input_snap_value_item = createMenuItem<dsxp::InputSnapValueItem>(module->snap_division_names[i], CHECKMARK(module->voltage_sequencers[sequencer_number].snap_division_index == i));
       input_snap_value_item->module = module;
       input_snap_value_item->snap_division_index = i;
       input_snap_value_item->sequencer_number = this->sequencer_number;
