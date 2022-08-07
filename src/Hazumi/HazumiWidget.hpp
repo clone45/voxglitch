@@ -1,24 +1,27 @@
 struct HazumiWidget : ModuleWidget
 {
+  float gate_output_locations[SEQUENCER_COLUMNS] = {
+    48.1875, 58.226, 68.2656, 78.304, 88.34375, 98.3828, 108.4218, 118.461
+  };
+
   HazumiWidget(Hazumi* module)
   {
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/hazumi_front_panel.svg")));
 
     // Step & Reset inputs
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_14, ROW_1 AND_A_HALF_ROW)), module, Hazumi::STEP_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_14, ROW_3 AND_THREE_QUARTERS_ROW - 0.5)), module, Hazumi::RESET_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(75.25, 12.0468)), module, Hazumi::STEP_INPUT));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(75.25, 29.617)), module, Hazumi::RESET_INPUT));
 
-    // Outputs
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_14, ROW_6)), module, Hazumi::GATE_OUTPUT_1));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_14, ROW_7 AND_A_QUARTER_ROW)), module, Hazumi::GATE_OUTPUT_2));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_14, ROW_8 AND_A_HALF_ROW)), module, Hazumi::GATE_OUTPUT_3));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_14, ROW_9 AND_THREE_QUARTERS_ROW)), module, Hazumi::GATE_OUTPUT_4));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_14, ROW_11)), module, Hazumi::GATE_OUTPUT_5));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_14, ROW_12 AND_A_QUARTER_ROW)), module, Hazumi::GATE_OUTPUT_6));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_14, ROW_13 AND_A_HALF_ROW)), module, Hazumi::GATE_OUTPUT_7));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_14, ROW_14 AND_THREE_QUARTERS_ROW)), module, Hazumi::GATE_OUTPUT_8));
+    // Add outputs
+    for(unsigned int i=0; i<SEQUENCER_COLUMNS; i++)
+    {
+      float x = 75.25;
+      float y = gate_output_locations[i];
+      addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(x, y)), module, Hazumi::GATE_OUTPUTS + i));
+    }
 
+    // Add display
     HazumiSequencerDisplay *hazumi_sequencer_display = new HazumiSequencerDisplay();
     hazumi_sequencer_display->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
     hazumi_sequencer_display->module = module;
@@ -37,7 +40,7 @@ struct HazumiWidget : ModuleWidget
       }
       else
       {
-        for(unsigned int i=0; i < 8; i++)
+        for(unsigned int i=0; i < SEQUENCER_COLUMNS; i++)
         {
           module->hazumi_sequencer.trigger_options[i] = option;
         }
@@ -123,14 +126,13 @@ struct HazumiWidget : ModuleWidget
     // Add individual sequencer settings
     SequencerItem *sequencer_items[8];
 
-    for(unsigned int i=0; i < 8; i++)
+    for(unsigned int i=0; i < SEQUENCER_COLUMNS; i++)
     {
       sequencer_items[i] = createMenuItem<SequencerItem>("Column #" + std::to_string(i + 1), RIGHT_ARROW);
       sequencer_items[i]->module = module;
       sequencer_items[i]->column = i;
       menu->addChild(sequencer_items[i]);
     }
-
   }
 
 };

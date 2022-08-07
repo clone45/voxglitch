@@ -22,14 +22,7 @@ struct Hazumi : Module
 		NUM_INPUTS
 	};
 	enum OutputIds {
-    GATE_OUTPUT_1,
-    GATE_OUTPUT_2,
-    GATE_OUTPUT_3,
-    GATE_OUTPUT_4,
-    GATE_OUTPUT_5,
-    GATE_OUTPUT_6,
-    GATE_OUTPUT_7,
-    GATE_OUTPUT_8,
+    ENUMS(GATE_OUTPUTS, SEQUENCER_COLUMNS),
 		NUM_OUTPUTS
 	};
 	enum LightIds {
@@ -39,15 +32,6 @@ struct Hazumi : Module
 	Hazumi()
 	{
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-
-    gate_outputs[0] = GATE_OUTPUT_1;
-    gate_outputs[1] = GATE_OUTPUT_2;
-    gate_outputs[2] = GATE_OUTPUT_3;
-    gate_outputs[3] = GATE_OUTPUT_4;
-    gate_outputs[4] = GATE_OUTPUT_5;
-    gate_outputs[5] = GATE_OUTPUT_6;
-    gate_outputs[6] = GATE_OUTPUT_7;
-    gate_outputs[7] = GATE_OUTPUT_8;
 	}
 
   //
@@ -192,8 +176,8 @@ struct Hazumi : Module
     // Output gates
     for(unsigned int i=0; i < 8; i++)
     {
-      bool trigger_output_pulse = gateOutputPulseGenerators[i].process(1.0 / args.sampleRate);
-      outputs[gate_outputs[i]].setVoltage((trigger_output_pulse ? 10.0f : 0.0f));
+      bool trigger_output_pulse = gateOutputPulseGenerators[i].process(args.sampleTime);
+      outputs[GATE_OUTPUTS + i].setVoltage((trigger_output_pulse ? 10.0f : 0.0f));
     }
   }
 };
