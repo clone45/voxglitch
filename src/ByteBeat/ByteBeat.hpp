@@ -80,6 +80,7 @@ struct ByteBeat : Module
 	{
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
     configParam(EQUATION_KNOB, 0.0f, NUMBER_OF_EQUATIONS - 1, 0.0f, "EquationKnob");
+    paramQuantities[EQUATION_KNOB]->snapEnabled = true;
 
     configParam(PARAM_KNOB_1, 0.0f, 128, 0.0f, "ParamKnob1");
     configParam(PARAM_KNOB_2, 0.0f, 128, 0.0f, "ParamKnob2");
