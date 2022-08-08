@@ -12,7 +12,6 @@ void init(Plugin* p) {
   p->addModel(modelDigitalSequencerXP);
   p->addModel(modelGlitchSequencer);
   p->addModel(modelGhosts);
-  p->addModel(modelGoblins);
   p->addModel(modelGrainEngineMK2);
   p->addModel(modelGrainEngineMK2Expander);
   p->addModel(modelGrainFx);
