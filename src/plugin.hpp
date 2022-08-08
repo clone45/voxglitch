@@ -15,7 +15,6 @@ extern Model *modelDigitalSequencer;
 extern Model *modelDigitalSequencerXP;
 extern Model *modelGlitchSequencer;
 extern Model *modelGhosts;
-extern Model *modelGoblins;
 extern Model *modelGrainEngineMK2;
 extern Model *modelGrainEngineMK2Expander;
 extern Model *modelGrainFx;

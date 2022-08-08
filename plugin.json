@@ -58,14 +58,6 @@
         "tags": ["Granular", "Sampler"]
     },
     {
-        "slug": "goblins",
-        "name": "Goblins",
-        "description": "Antisocial .wav player/scanner using granular synthesis",
-        "tags": ["Granular", "Sampler"],
-        "deprecated": true,
-        "hidden": true
-    },
-    {
         "slug": "grainfx",
         "name": "Grain Fx",
         "description": "Granular effects for incoming audio.",
