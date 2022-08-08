@@ -16,7 +16,6 @@
 //
 
 // TODO: slave to clock and provide external clock
-// TODO: change knobs so that they snap into position instead of being continuous.
 // TODO: Add reset input
 
 struct ByteBeat : Module

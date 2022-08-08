@@ -38,7 +38,6 @@
         "description": "Six-in-one cv/gate sequencers with independent control over clock division and sequence length.",
         "tags": ["Sequencer"]
     },
-
     {
         "slug": "digitalsequencerxp",
         "name": "Digital Sequencer XP",
