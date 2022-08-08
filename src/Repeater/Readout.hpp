@@ -13,7 +13,7 @@ struct Readout : TransparentWidget
 		{
 			if(module->any_sample_has_been_loaded == true)
 			{
-				text_to_display = "#" + std::to_string(module->selected_sample_slot + 1) + ":" + module->samples[module->selected_sample_slot].filename;
+				text_to_display = "#" + std::to_string(module->selected_sample_slot + 1) + ":" + module->sample_players[module->selected_sample_slot].getFilename();
 				text_to_display.resize(30); // Truncate long text to fit in the display
 			}
 			else

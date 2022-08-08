@@ -1,9 +1,9 @@
 struct Repeater : VoxglitchSamplerModule
 {
 	unsigned int selected_sample_slot = 0;
-	double samplePos = 0;
 	int step = 0;
-	bool isPlaying = false;
+  float pitch = 0;
+  double sample_position = 0;
   DeclickFilter declick_filter;
 	int retrigger;
 	std::string root_dir;
@@ -16,7 +16,8 @@ struct Repeater : VoxglitchSamplerModule
 	// provide a clock signal.
 	bool trig_input_is_connected = false;
 
-	Sample samples[NUMBER_OF_SAMPLES];
+	// Sample samples[NUMBER_OF_SAMPLES];
+  SamplePlayer sample_players[NUMBER_OF_SAMPLES];
 	std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
 
 	dsp::SchmittTrigger playTrigger;
@@ -30,7 +31,7 @@ struct Repeater : VoxglitchSamplerModule
 		SAMPLE_SELECT_KNOB,
 		SAMPLE_SELECT_ATTN_KNOB,
 		PITCH_KNOB,
-		PITCH_ATTN_KNOB,
+		UNUSED,
 		SMOOTH_SWITCH,
 		NUM_PARAMS
 	};
@@ -57,8 +58,8 @@ struct Repeater : VoxglitchSamplerModule
 	Repeater()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(PITCH_KNOB, -1.0f, 1.0f, 0.0f, "PitchKnob");
-		configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "PitchAttnKnob");
+		configParam(PITCH_KNOB, -2.0f, 2.0f, 0.0f, "PitchKnob");
+		// configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "PitchAttnKnob");
 		configParam(CLOCK_DIVISION_KNOB, 0.0f, 1.0f, 0.0f, "ClockDivisionKnob");
 		configParam(CLOCK_DIVISION_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "ClockDivisionAttnKnob");
 		configParam(POSITION_KNOB, 0.0f, 1.0f, 0.0f, "PositionKnob");
@@ -77,7 +78,7 @@ struct Repeater : VoxglitchSamplerModule
 
 		for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
-			json_object_set_new(rootJ, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(samples[i].path.c_str()));
+			json_object_set_new(rootJ, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(sample_players[i].getPath().c_str()));
 		}
 
 		json_object_set_new(rootJ, "retrigger", json_integer(retrigger));
@@ -92,8 +93,8 @@ struct Repeater : VoxglitchSamplerModule
 			json_t *loaded_sample_path = json_object_get(rootJ, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
 			if (loaded_sample_path)
 			{
-				samples[i].load(json_string_value(loaded_sample_path));
-				loaded_filenames[i] = samples[i].filename;
+				sample_players[i].loadSample(json_string_value(loaded_sample_path));
+				loaded_filenames[i] = sample_players[i].getFilename();
 				this->any_sample_has_been_loaded = true;
 			}
 
@@ -128,12 +129,15 @@ struct Repeater : VoxglitchSamplerModule
 			// Start smoothing if the selected sample has changed
       declick_filter.trigger();
 
+      // Reset sample position so playback does not start at previous sample position
+      sample_players[selected_sample_slot].stop();
+
 			// Set the selected sample
 			selected_sample_slot = sample_select_input_value;
 		}
 
 		// This is just for convenience
-		Sample *selected_sample = &samples[selected_sample_slot];
+		SamplePlayer *selected_sample_player = &sample_players[selected_sample_slot];
 
 		if (inputs[TRIG_INPUT].isConnected())
 		{
@@ -153,10 +157,16 @@ struct Repeater : VoxglitchSamplerModule
 
 				if(step == 0)
 				{
-					isPlaying = true;
-					samplePos = calculate_inputs(POSITION_INPUT, POSITION_KNOB, POSITION_ATTN_KNOB, selected_sample->size());
+          // Read sample position from input (expecting 0-10 range, but adjust to 0.0 to 1.0v)
+					float position = calculate_inputs(POSITION_INPUT, POSITION_KNOB, POSITION_ATTN_KNOB, 1.0);
+          position = clamp(position, 0.0, 1.0);
+
+          sample_position = position; // conversion from float to integer
+
+          // Trigger playback on the sample player, declick filter, and output pulse
+          selected_sample_player->trigger(sample_position, false);
           declick_filter.trigger();
-					triggerOutputPulse.trigger(0.01f);
+          triggerOutputPulse.trigger(0.01f);
 				}
 			}
 		}
@@ -165,29 +175,13 @@ struct Repeater : VoxglitchSamplerModule
 			trig_input_is_connected = false;
 		}
 
-		// If the sample has completed playing and the retrigger option is true,
-		// then restart sample playback.
-
-		if(retrigger && abs(floor(samplePos)) >= selected_sample->size())
-		{
-			samplePos = 0;
-      declick_filter.trigger();
-		}
-
-		if (isPlaying && (! selected_sample->loading) && (selected_sample->loaded) && (selected_sample->size() > 0) && ((abs(floor(samplePos)) < selected_sample->size())))
+		if (selected_sample_player)
 		{
 			float wav_output_voltage;
       float left_output;
       float right_output;
 
-			if (samplePos >= 0)
-			{
-        selected_sample->read(floor(samplePos), &left_output, &right_output);
-			}
-			else
-			{
-        selected_sample->read(floor(selected_sample->size() - 1 + samplePos), &left_output, &right_output);
-			}
+      selected_sample_player->getStereoOutput(&left_output, &right_output, true);
 
       wav_output_voltage = GAIN * left_output;
 
@@ -197,23 +191,26 @@ struct Repeater : VoxglitchSamplerModule
 			// Output voltage
 			outputs[WAV_OUTPUT].setVoltage(wav_output_voltage);
 
-			// Increment sample offset (pitch)
-			if (inputs[PITCH_INPUT].isConnected())
-			{
-				samplePos = samplePos + (selected_sample->sample_rate / args.sampleRate) + (((inputs[PITCH_INPUT].getVoltage() / 10.0f) - 0.5f) * params[PITCH_ATTN_KNOB].getValue()) + params[PITCH_KNOB].getValue();
-			}
-			else
-			{
-				samplePos = samplePos + (selected_sample->sample_rate / args.sampleRate) + params[PITCH_KNOB].getValue();
-			}
+      // Read the pitch input
+      pitch = inputs[PITCH_INPUT].getVoltage() + params[PITCH_KNOB].getValue();
+
+      // Step the sample player
+      selected_sample_player->step(pitch, sample_position, 1.0, retrigger);
 		}
 		else
 		{
-			isPlaying = false;
 			outputs[WAV_OUTPUT].setVoltage(0);
 		}
 
 		trigger_output_pulse = triggerOutputPulse.process(1.0 / args.sampleRate);
 		outputs[TRG_OUTPUT].setVoltage((trigger_output_pulse ? 10.0f : 0.0f));
 	}
+
+  void onSampleRateChange(const SampleRateChangeEvent& e) override
+  {
+    for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
+    {
+      sample_players[i].updateSampleRate();
+    }
+  }
 };

@@ -25,8 +25,8 @@ struct MenuItemLoadSample : MenuItem
 		if (filename != "")
 		{
 			module->any_sample_has_been_loaded = true;
-			module->samples[sample_number].load(filename);
-			module->loaded_filenames[sample_number] = module->samples[sample_number].filename;
+			module->sample_players[sample_number].loadSample(filename);
+			module->loaded_filenames[sample_number] = module->sample_players[sample_number].getFilename();
       module->setRoot(filename);
 		}
 	}
