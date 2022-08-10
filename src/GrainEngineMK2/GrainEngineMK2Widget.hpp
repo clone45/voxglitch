@@ -73,7 +73,7 @@ struct GrainEngineMK2Widget : ModuleWidget
 
     // Pitch
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(vrule_b_4, hrule3)), module, GrainEngineMK2::PITCH_KNOB));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_b_4, hrule4)), module, GrainEngineMK2::PITCH_ATTN_KNOB));
+    // addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_b_4, hrule4)), module, GrainEngineMK2::PITCH_ATTN_KNOB));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_b_4, hrule5)), module, GrainEngineMK2::PITCH_INPUT));
 
     // Sample

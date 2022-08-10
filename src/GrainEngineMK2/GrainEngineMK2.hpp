@@ -1,7 +1,7 @@
 //
 // TODO: Provide options for different window max and min
 //
-/*
+
 struct LoadQueue
 {
   bool sample_queued_for_loading = false;
@@ -18,7 +18,7 @@ struct LoadQueue
     this->filename = filename;
   }
 };
-*/
+
 
 struct GrainEngineMK2 : VoxglitchSamplerModule
 {
@@ -33,7 +33,7 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
 	std::string root_dir;
 	std::string path;
   float pan = 0;
-  // LoadQueue load_queue;
+  LoadQueue load_queue;
   StereoFadeOut stereo_fade_out;
   StereoFadeIn stereo_fade_in;
 
@@ -51,16 +51,10 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
   enum ParamIds {
     WINDOW_KNOB,
     WINDOW_ATTN_KNOB,
-    /*
-    POSITION_COARSE_KNOB,
-    POSITION_COARSE_ATTN_KNOB,
-    POSITION_MEDIUM_ATTN_KNOB,
-    POSITION_FINE_ATTN_KNOB,
-    */
     POSITION_KNOB,
     POSITION_ATTN_KNOB,
     PITCH_KNOB,
-    PITCH_ATTN_KNOB,
+    PITCH_ATTN_KNOB, // unused
     TRIM_KNOB,
     JITTER_KNOB,
     GRAINS_KNOB,
@@ -74,11 +68,6 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
   enum InputIds {
     JITTER_INPUT,
     WINDOW_INPUT,
-    /*
-    POSITION_COARSE_INPUT,
-    POSITION_MEDIUM_INPUT,
-    POSITION_FINE_INPUT,
-    */
     POSITION_INPUT,
     PITCH_INPUT,
     SPAWN_TRIGGER_INPUT,
@@ -119,7 +108,7 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
     configParam(POSITION_FINE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PositionFineAttnKnob");
     */
     configParam(PITCH_KNOB, -2.0f, 2.0f, 0.0f, "PitchKnob");
-    configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PitchAttnKnob");
+    // configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "PitchAttnKnob");
     configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
     configParam(JITTER_KNOB, 0.f, 1.0f, 0.5f, "JitterKnob");
     configParam(GRAINS_KNOB, 0.0f, 1.0f, 0.5f, "GrainsKnob");
@@ -130,13 +119,6 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
     configParam(SAMPLE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SampleAttnKnob");
 
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
-
-    /*
-    for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
-    {
-      sample_pl[i] = new Sample();
-    }
-    */
 
     leftExpander.producerMessage = producer_message;
     leftExpander.consumerMessage = consumer_message;
@@ -267,40 +249,35 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
 
     // TODO: If sample selection changed, call updateSampleRateDivision();
 
-    /*
-
-
     // If there's an expander module attached, communicate with it and find
     // out if there's a new sample that needs to be loaded.
 
     this->processExpander();
 
-
-
     if(load_queue.sample_queued_for_loading)
     {
       // If either there's no loaded sample in the sample slot, or the fade out
       // of the existing sample has completed then load the new sample and start fading in.
-      if((stereo_fade_out.isFadingOut() == false) || (samples[load_queue.sample_number]->loaded == false))
+      if((stereo_fade_out.isFadingOut() == false) || (sample_players[load_queue.sample_number].isLoaded() == false))
       {
         // dequeue the request.  We're going to process it right now!
         load_queue.sample_queued_for_loading = false;
 
         // Load the sample!
         // DEBUG(("GrainEngineMK2 loading file " + load_queue.path_to_file + " into slot " + std::to_string(load_queue.sample_number)).c_str());
-        samples[load_queue.sample_number]->load(load_queue.path_to_file);
-        std::string path = samples[load_queue.sample_number]->path;
+        sample_players[load_queue.sample_number].loadSample(load_queue.path_to_file);
+        std::string path = sample_players[load_queue.sample_number].getPath();
 
         this->root_dir = path; // This is used by the widget class
         this->path = path;     // This is used by the widget class
-        loaded_filenames[load_queue.sample_number] = samples[load_queue.sample_number]->filename;
+        loaded_filenames[load_queue.sample_number] = sample_players[load_queue.sample_number].getFilename();
 
         stereo_fade_in.trigger();
       }
     }
 
-    if(! selected_sample->loaded) return;
-    */
+    // if(! selected_sample->loaded) return;
+
 
     if(sample_players[selected_sample_index].isLoaded() == false) return;
 
@@ -395,7 +372,7 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
     if(spawn_throttling_countdown > 0) spawn_throttling_countdown--;
     draw_position = start_position / sample_players[selected_sample_index].sample.size();
   }
-  /*
+
   void processExpander()
   {
     if (leftExpander.module && leftExpander.module->model == modelGrainEngineMK2Expander)
@@ -429,7 +406,6 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
       leftExpander.messageFlipRequested = true;
     }
   }
-  */
 
   void onSampleRateChange(const SampleRateChangeEvent& e) override
   {
