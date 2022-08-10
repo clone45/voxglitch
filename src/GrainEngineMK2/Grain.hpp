@@ -1,16 +1,18 @@
 struct Grain
 {
   // Start Position is the offset into the sample where playback should start.
-  double start_position;
+  // double start_position;
+
+  float start_position = 0.0;
 
   // Playback length for the grain, measuring in .. er.. ticks?
-  double playback_length;
+  // double playback_length;
 
   // sample_ptr points to the loaded sample in memory
   Sample *sample_ptr;
 
   // Eventually use inheritance to purge this sloppy pointer passing
-  Common *common;
+  // Common *common;
 
   // playback_position is similar to samplePos used in for samples.  However,
   // it's relative to the Grain's start_position rather than the sample
@@ -20,7 +22,7 @@ struct Grain
   int sample_position = 0;
   unsigned int age = 0;
   unsigned int lifespan = 0;
-  double pitch = 0;
+  float step_amount = 0;
 
   float output_voltage_left = 0;
   float output_voltage_right = 0;
@@ -32,10 +34,9 @@ struct Grain
   {
   }
 
-  std::pair<float, float> getStereoOutput(unsigned int contour_selection)
+  std::pair<float, float> getStereoOutput()
   {
-    if(age == 0 || (this->sample_ptr->size() == 0)) return {0,0};
-
+    if(age == 0) return {0,0};
 
     // Note that we're adding two floating point numbers, then casting them to an int, which is much faster than using floor()
     sample_position = (this->start_position + this->playback_position);
@@ -43,14 +44,16 @@ struct Grain
 
     this->sample_ptr->read(sample_position, &output_voltage_left, &output_voltage_right);
 
+
     // Apply amplitude slope
+
     int slope_index = (1.0 - ((float)age / (float)lifespan)) * 512.0;  // remember that age decrements instead of increments
     slope_index = clamp(slope_index, 0, 511);
 
     // At the moment, this slope_index is always 1, so the contour selection doesn't make a difference.  I had
     // at one time thought that offering differeing amplidue contours would be fun, but it ended up making
     // so little difference that I removed this feature.
-    float slope_value = common->CONTOURS[contour_selection][slope_index];
+    float slope_value = CONTOUR[slope_index];
 
     output_voltage_left  = slope_value * output_voltage_left;
     output_voltage_right = slope_value * output_voltage_right;
@@ -65,7 +68,9 @@ struct Grain
   {
     if(erase_me == false)
     {
-      playback_position = playback_position + pitch;
+      playback_position = playback_position + step_amount;
+      // void step(float pitch = 0.0, float sample_start = 0.0, float sample_end = 1.0, bool loop = false)
+      // sample_player_ptr->step(pitch, start_position, 1.0);
       if(! --age) erase_me = true;
     }
   }

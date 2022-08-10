@@ -25,8 +25,13 @@ struct GrainEngineMK2LoadSample : MenuItem
 	{
 		if (filename != "")
 		{
-			module->load_queue.queue_sample_for_loading(filename, sample_number);
-			module->stereo_fade_out.trigger();
+			// module->load_queue.queue_sample_for_loading(filename, sample_number);
+			// module->stereo_fade_out.trigger();
+
+      module->sample_players[module->selected_sample_index].loadSample(filename);
+			module->loaded_filenames[module->selected_sample_index] = module->sample_players[module->selected_sample_index].getFilename();
+      module->updateSampleRateDivision(); 
+			module->setRoot(filename);
 		}
 	}
 };

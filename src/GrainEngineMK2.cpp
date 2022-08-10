@@ -9,6 +9,7 @@
 #include "osdialog.h"
 #include "Common/common.hpp"
 #include "Common/sample.hpp"
+#include "Common/SamplePlayer.hpp"
 #include "Common/dsp/StereoPan.hpp"
 #include "Common/dsp/StereoFadeIn.hpp"
 #include "Common/dsp/StereoFadeOut.hpp"
@@ -18,7 +19,7 @@
 
 #include "GrainEngineMK2/defines.h"
 #include "GrainEngineMK2/Grain.hpp"
-#include "GrainEngineMK2/GrainEngineMK2Core.hpp"
+#include "GrainEngineMK2/GrainManager.hpp"
 #include "GrainEngineMK2/GrainEngineMK2.hpp"
 #include "GrainEngineMK2/GrainEngineMK2LoadSample.hpp"
 #include "GrainEngineMK2/GrainEngineMK2PosDisplay.hpp"

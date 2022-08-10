@@ -73,7 +73,7 @@ struct GrainEngineMK2Widget : ModuleWidget
 
     // Pitch
     addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(vrule_b_4, hrule3)), module, GrainEngineMK2::PITCH_KNOB));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_b_4, hrule4)), module, GrainEngineMK2::PITCH_ATTN_KNOB));
+    // addParam(createParamCentered<Trimpot>(mm2px(Vec(vrule_b_4, hrule4)), module, GrainEngineMK2::PITCH_ATTN_KNOB));
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(vrule_b_4, hrule5)), module, GrainEngineMK2::PITCH_INPUT));
 
     // Sample
@@ -88,6 +88,7 @@ struct GrainEngineMK2Widget : ModuleWidget
     addChild(pos_display);
   }
 
+  /*
   struct BipolarPitchOption : MenuItem {
     GrainEngineMK2 *module;
 
@@ -95,6 +96,7 @@ struct GrainEngineMK2Widget : ModuleWidget
       module->bipolar_pitch_mode ^= true; // flip the value
     }
   };
+  */
 
   void appendContextMenu(Menu *menu) override
   {
@@ -118,8 +120,10 @@ struct GrainEngineMK2Widget : ModuleWidget
 		}
 
     // Bipolar pitch mode selection
+    /*
     BipolarPitchOption *bipolar_pitch_option = createMenuItem<BipolarPitchOption>("Bipolar Pitch CV Input", CHECKMARK(module->bipolar_pitch_mode));
     bipolar_pitch_option->module = module;
     menu->addChild(bipolar_pitch_option);
+    */
   }
 };
