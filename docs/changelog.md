@@ -1,6 +1,6 @@
 ## Change Log
 
-### 2.20.0
+### 2.20.0 (development in progress)
 General:
 * Code clean-up:
   - Consolidated all DSP helpers into the dsp folder instead of using submodules.hpp
@@ -10,6 +10,9 @@ Ghosts:
 * Added a new "mode" knob which offers different ranges for most of the knobs (Optional - for more inventive, but less consistent controls.)
 * Now conforms to the 1v/octave standard for pitch response
 * Adjusted how the math is done, which is now more "correct"
+
+Grain Engine MK2:
+* Now conforms to the 1v/octave standard for pitch response
 
 Looper Module:
 * Double-clicking in the middle of the looper module replaces single-click for quickly loading samples.
