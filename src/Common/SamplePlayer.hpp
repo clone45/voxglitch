@@ -190,6 +190,16 @@ struct SamplePlayer
     step_amount = (sample.sample_rate / APP->engine->getSampleRate());
   }
 
+  unsigned int getSampleRate()
+  {
+    return(sample.sample_rate);
+  }
+
+  bool isLoaded()
+  {
+    return(sample.loaded);
+  }
+
   void initialize()
   {
     sample.unload();

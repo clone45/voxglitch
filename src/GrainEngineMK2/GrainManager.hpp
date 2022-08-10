@@ -1,15 +1,15 @@
-struct GrainEngineMK2Core
+struct GrainManager
 {
     Grain grain_array[MAX_GRAINS];
     Grain grain_array_tmp[MAX_GRAINS];
     unsigned int grain_array_length = 0;
-    Common *common;
+    // Common *common;
 
-    GrainEngineMK2Core()
+    GrainManager()
     {
     }
 
-    virtual ~GrainEngineMK2Core() {
+    virtual ~GrainManager() {
     }
 
     // Return number of active grains
@@ -28,7 +28,7 @@ struct GrainEngineMK2Core
       grain_array_length = 0;
     }
 
-    virtual void add(double start_position, unsigned int lifespan, float pan, Sample *sample_ptr, unsigned int max_grains, float pitch)
+    virtual void addGrain(double start_position, unsigned int lifespan, float pan, Sample *sample_ptr, unsigned int max_grains, float step_amount)
     {
         if(grain_array_length > max_grains || (grain_array_length >= (MAX_GRAINS - 1))) return;
         if(lifespan == 0) return;
@@ -41,15 +41,14 @@ struct GrainEngineMK2Core
         grain.lifespan = lifespan;
         grain.age = lifespan;
         grain.pan = pan;
-        grain.pitch = pitch;
-        grain.common = common;
+        grain.step_amount = step_amount;
 
         grain_array[grain_array_length] = grain;
 
         grain_array_length ++;
     }
 
-    virtual std::pair<float, float> process(float smooth_rate, unsigned int contour_selection)
+    virtual std::pair<float, float> process()
     {
         float left_mix_output = 0;
         float right_mix_output = 0;
@@ -63,7 +62,7 @@ struct GrainEngineMK2Core
         {
             if(grain_array[i].erase_me == false)
             {
-                std::pair<float, float> stereo_output = grain_array[i].getStereoOutput(contour_selection);
+                std::pair<float, float> stereo_output = grain_array[i].getStereoOutput();
                 left_mix_output  += stereo_output.first;
                 right_mix_output += stereo_output.second;
 
