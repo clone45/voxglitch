@@ -14,7 +14,7 @@ struct Readout : TransparentWidget
 			if(module->any_sample_has_been_loaded == true)
 			{
 				text_to_display = "#" + std::to_string(module->selected_sample_slot + 1) + ":" + module->sample_players[module->selected_sample_slot].getFilename();
-				text_to_display.resize(30); // Truncate long text to fit in the display
+				text_to_display.resize(26); // Truncate long text to fit in the display
 			}
 			else
 			{
@@ -29,10 +29,10 @@ struct Readout : TransparentWidget
 
     std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
   	if (font) {
-  		nvgFontSize(args.vg, 13);
+  		nvgFontSize(args.vg, 12);
   		nvgFontFaceId(args.vg, font->handle);
   		nvgTextLetterSpacing(args.vg, 0);
-  		nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+  		nvgFillColor(args.vg, nvgRGBA(245,236,229, 0xff));
     }
 
 		// void nvgTextBox(NVGcontext* ctx, float x, float y, float breakRowWidth, const char* string, const char* end);

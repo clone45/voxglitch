@@ -16,6 +16,7 @@
 #include "Common/VoxglitchSamplerModule.hpp"
 #include "Common/VoxglitchSamplerModuleWidget.hpp"
 #include "Common/GrainEngineExpanderMessage.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
 
 #include "GrainEngineMK2/defines.h"
 #include "GrainEngineMK2/Grain.hpp"

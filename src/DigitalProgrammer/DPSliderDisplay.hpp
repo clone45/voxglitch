@@ -36,6 +36,11 @@ struct DPSliderDisplay : TransparentWidget
     // Save the drawing context to restore later
     nvgSave(vg);
 
+    NVGcolor slider_background_color = nvgRGBA(31,39,42,255);
+    NVGcolor slider_mouse_over_color = nvgRGBA(154,212,191,255);
+    NVGcolor slider_background_mouse_over_color = nvgRGBA(52,60,63,255);
+    NVGcolor slider_color = nvgRGBA(132,190,169,255);
+
     if(module)
     {
       double value = module->sliders[module->selected_bank][column].getValue();
@@ -43,18 +48,18 @@ struct DPSliderDisplay : TransparentWidget
       if(module->is_moused_over_slider && (module->moused_over_slider == this->column))
       {
         // draw mouse-over background
-        drawSliderBackground(vg, nvgRGBA(66, 77, 97, 255));
+        drawSliderBackground(vg, slider_background_mouse_over_color);
 
-        NVGcolor fill_color = getSliderColor(nvgRGBA(156, 167, 185, 255));
+        NVGcolor fill_color = getSliderColor(slider_mouse_over_color);
         drawSlider(vg, value, fill_color);
         drawSlider(vg, value, nvgRGBA(255, 255, 255, 120));
       }
       else
       {
         // draw normal background
-        drawSliderBackground(vg, nvgRGBA(53, 64, 85, 255));
+        drawSliderBackground(vg, slider_background_color); // was 53, 64, 85, 255
 
-        NVGcolor fill_color = getSliderColor(nvgRGBA(156, 167, 185, 255));
+        NVGcolor fill_color = getSliderColor(slider_color);
         drawSlider(vg, value, fill_color);
 
         // Draw highlight for voltage additions
@@ -94,8 +99,8 @@ struct DPSliderDisplay : TransparentWidget
     }
     else
     {
-      drawSliderBackground(vg, nvgRGBA(66, 77, 97, 255));
-      drawSlider(vg, 0.6, nvgRGBA(156, 167, 185, 255));
+      drawSliderBackground(vg, slider_background_color);
+      drawSlider(vg, 0.6, slider_color);
     }
 
     nvgRestore(vg);

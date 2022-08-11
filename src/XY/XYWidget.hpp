@@ -1,27 +1,38 @@
-struct XYWidget : ModuleWidget
+struct XYWidget : VoxglitchModuleWidget
 {
   XYWidget(XY* module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/xy_front_panel.svg")));
 
-    // Cosmetic rack screws
-    // addChild(createWidget<ScrewSilver>(Vec(15, 0)));
-    addChild(createWidget<ScrewSilver>(Vec(15, 365)));
+    // Set the background SVG panel.  This should be blank
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/xy/xy_front_panel.svg")));
+
+    // Load up the background PNG and add it to the panel
+    PNGPanel *png_panel = new PNGPanel("res/xy/xy_base_small.png", 5.08 * 20, 128.5);
+    addChild(png_panel);
+
+    // Add typography layer
+    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/xy/xy_typography.svg"));
+    VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
+    voxglitch_panel->setBackground(svg);
+    addChild(voxglitch_panel);
+
+    // Clock and Reset inputs
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(32.696091,343.245789), module, XY::CLK_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(73.296082,343.245789), module, XY::RESET_INPUT));
 
     // X,Y outputs
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(75.508, MODULE_HEIGHT_MM - 13.891)), module, XY::X_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(92.294, MODULE_HEIGHT_MM - 13.891)), module, XY::Y_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(232.399994,343.099976), module, XY::X_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(270.450470,343.099976), module, XY::Y_OUTPUT));
 
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10.477, MODULE_HEIGHT_MM - 13.891)), module, XY::CLK_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(25, MODULE_HEIGHT_MM - 13.891)), module, XY::RESET_INPUT));
-    addParam(createParamCentered<CKSS>(mm2px(Vec(39.5, MODULE_HEIGHT_MM - 13.891)), module, XY::RETRIGGER_SWITCH));
-    addParam(createParamCentered<CKSS>(mm2px(Vec(54, MODULE_HEIGHT_MM - 13.891)), module, XY::PUNCH_SWITCH));
+    // Retrigger and punch switches
+    addParam(createParamCentered<squareToggle>(Vec(127.923843,342.953369), module, XY::RETRIGGER_SWITCH));
+    addParam(createParamCentered<squareToggle>(Vec(172.150040,342.799988), module, XY::PUNCH_SWITCH));
 
     // xy mouse entry box
     XYDisplay *xy_display;
     xy_display = new XYDisplay(module);
-    xy_display->box.pos = mm2px(Vec(3.4, MODULE_HEIGHT_MM - 30 - DRAW_AREA_HEIGHT_MM + .4));
+    xy_display->box.pos = Vec(19.750000,19.750000);  // 238.000000,279.750000    279.750000 - 19.750000 = 260
     addChild(xy_display);
   }
 

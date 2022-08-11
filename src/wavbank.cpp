@@ -10,12 +10,14 @@
 #include "Common/VoxglitchSamplerModule.hpp"
 #include "Common/VoxglitchSamplerModuleWidget.hpp"
 #include "Common/dsp/DeclickFilter.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
 #include "Common/SamplePlayer.hpp"
 
 #include "WavBank/defines.h"
 #include "WavBank/WavBank.hpp"
 #include "WavBank/WavBankReadout.hpp"
 #include "WavBank/MenuItemLoadBank.hpp"
+
 #include "WavBank/WavBankWidget.hpp"
 
 Model* modelWavBank = createModel<WavBank, WavBankWidget>("wavbank");

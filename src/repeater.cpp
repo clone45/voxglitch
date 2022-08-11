@@ -13,6 +13,7 @@
 #include "Common/dsp/DeclickFilter.hpp"
 
 #include "Repeater/defines.h"
+#include "Common/components/VoxglitchComponents.hpp"
 #include "Repeater/Repeater.hpp"
 #include "Repeater/Readout.hpp"
 #include "Repeater/MenuItemLoadSample.hpp"

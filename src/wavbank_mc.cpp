@@ -4,6 +4,7 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
+#include "Common/components/VoxglitchComponents.hpp"
 #include "Common/sample_mc.hpp"
 #include "Common/VoxglitchSamplerModule.hpp"
 #include "Common/VoxglitchSamplerModuleWidget.hpp"

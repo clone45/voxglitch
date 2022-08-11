@@ -18,7 +18,7 @@
 #include <array>
 
 #include "DigitalSequencer/defines.h"
-#include "Common/VoxglitchWidget.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
 
 namespace dseq
 {

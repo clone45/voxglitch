@@ -14,7 +14,7 @@
 #include "GrooveBox/defines.h"
 using namespace groove_box;
 
-#include "Common/VoxglitchWidget.hpp"
+#include "Common/components/VoxglitchWidget.hpp"
 #include "GrooveBox/SamplePlaybackSettings.hpp"
 #include "GrooveBoxExpander/ExpanderToGrooveboxMessage.hpp"
 #include "GrooveBox/GrooveboxToExpanderMessage.hpp"

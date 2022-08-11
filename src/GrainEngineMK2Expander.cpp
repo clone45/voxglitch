@@ -8,6 +8,7 @@
 #include "Common/common.hpp"
 #include "Common/sample.hpp"
 #include "Common/GrainEngineExpanderMessage.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
 
 #include "GrainEngineMK2Expander/defines.h"
 #include "GrainEngineMK2Expander/GrainEngineMK2Expander.hpp"

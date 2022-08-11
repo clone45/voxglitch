@@ -2,6 +2,8 @@
 #include "osdialog.h"
 #include "settings.hpp"
 
+#include "Common/components/VoxglitchComponents.hpp"
+
 #include "Hazumi/defines.h"
 #include "Hazumi/HazumiSequencer.hpp"
 #include "Hazumi/Hazumi.hpp"

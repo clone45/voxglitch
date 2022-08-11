@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="15.591"
+   height="15.591"
+   viewBox="0 0 4.1251186 4.1251188"
+   version="1.1"
+   id="svg849"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   sodipodi:docname="square-light-switch.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview851"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     units="px"
+     inkscape:zoom="49.773737"
+     inkscape:cx="5.4546838"
+     inkscape:cy="7.9057757"
+     inkscape:window-width="1893"
+     inkscape:window-height="1021"
+     inkscape:window-x="3740"
+     inkscape:window-y="534"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs846" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g983"
+       transform="matrix(1.0648796,0,0,1.0648796,-0.08847003,-0.30357307)">
+      <circle
+         class="st0"
+         cx="2.0199742"
+         cy="2.2219718"
+         r="1.9368944"
+         id="circle8"
+         style="fill:#f3d6c1;stroke-width:0.277531" />
+      <circle
+         class="st2"
+         cx="2.0199742"
+         cy="2.2219718"
+         r="1.8716743"
+         id="circle10"
+         style="fill:#f3dac8;stroke-width:0.277531" />
+      <circle
+         class="st3"
+         cx="2.0199742"
+         cy="2.2219718"
+         r="1.8061769"
+         id="circle12"
+         style="fill:#f2dece;stroke-width:0.277531" />
+      <circle
+         class="st4"
+         cx="2.0199742"
+         cy="2.2219718"
+         r="1.7406794"
+         id="circle14"
+         style="fill:#f2e2d4;stroke-width:0.277531" />
+      <circle
+         class="st5"
+         cx="2.0199742"
+         cy="2.2219718"
+         r="1.6754594"
+         id="circle16"
+         style="fill:#f2e5db;stroke-width:0.277531" />
+      <circle
+         class="st6"
+         cx="2.0199742"
+         cy="2.2219718"
+         r="1.609962"
+         id="circle18"
+         style="fill:#f1e9e1;stroke-width:0.277531" />
+      <circle
+         class="st7"
+         cx="2.0199742"
+         cy="2.2219718"
+         r="1.5447419"
+         id="circle20"
+         style="fill:#f1ede8;stroke-width:0.277531" />
+    </g>
+  </g>
+</svg>

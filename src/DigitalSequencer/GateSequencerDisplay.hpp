@@ -83,7 +83,7 @@ struct GateSequencerDisplay : SequencerDisplay
       }
 
       drawVerticalGuildes(vg, GATES_DRAW_AREA_HEIGHT);
-      drawBlueOverlay(vg, GATES_DRAW_AREA_WIDTH, GATES_DRAW_AREA_HEIGHT);
+      drawOverlay(vg, GATES_DRAW_AREA_WIDTH, GATES_DRAW_AREA_HEIGHT);
 
       nvgRestore(vg);
     }

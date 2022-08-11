@@ -1,4 +1,4 @@
-struct HazumiWidget : ModuleWidget
+struct HazumiWidget : VoxglitchModuleWidget
 {
   float gate_output_locations[SEQUENCER_COLUMNS] = {
     48.1875, 58.226, 68.2656, 78.304, 88.34375, 98.3828, 108.4218, 118.461
@@ -7,23 +7,33 @@ struct HazumiWidget : ModuleWidget
   HazumiWidget(Hazumi* module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/hazumi_front_panel.svg")));
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/hazumi/hazumi_front_panel.svg")));
 
-    // Step & Reset inputs
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(75.25, 12.0468)), module, Hazumi::STEP_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(75.25, 29.617)), module, Hazumi::RESET_INPUT));
+    // Load up the background PNG and add it to the panel
+    PNGPanel *png_panel = new PNGPanel("res/hazumi/hazumi_baseplate_small.png", 86.360, 128.5);
+    addChild(png_panel);
 
-    // Add outputs
-    for(unsigned int i=0; i<SEQUENCER_COLUMNS; i++)
-    {
-      float x = 75.25;
-      float y = gate_output_locations[i];
-      addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(x, y)), module, Hazumi::GATE_OUTPUTS + i));
-    }
+    // Add typography layer
+    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/hazumi/hazumi_typography.svg"));
+    VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
+    voxglitch_panel->setBackground(svg);
+    addChild(voxglitch_panel);
+
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(223.500000,41.499992), module, Hazumi::STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(223.500000,92.250000), module, Hazumi::RESET_INPUT));
+
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(229.750000,145.100006), module, Hazumi::GATE_OUTPUTS + 0));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(229.750000,174.400024), module, Hazumi::GATE_OUTPUTS + 1));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(229.750000,203.750031), module, Hazumi::GATE_OUTPUTS + 2));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(229.750000,233.000000), module, Hazumi::GATE_OUTPUTS + 3));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(229.750000,262.568787), module, Hazumi::GATE_OUTPUTS + 4));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(229.750000,292.013977), module, Hazumi::GATE_OUTPUTS + 5));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(229.750000,321.304443), module, Hazumi::GATE_OUTPUTS + 6));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(229.750000,350.698181), module, Hazumi::GATE_OUTPUTS + 7));
 
     // Add display
     HazumiSequencerDisplay *hazumi_sequencer_display = new HazumiSequencerDisplay();
-    hazumi_sequencer_display->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
+    hazumi_sequencer_display->box.pos = Vec(21.250000,21.000000);
     hazumi_sequencer_display->module = module;
     addChild(hazumi_sequencer_display);
   }

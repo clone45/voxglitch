@@ -16,7 +16,7 @@
 #include <fstream>
 #include <array>
 
-#include "Common/VoxglitchWidget.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
 
 namespace dsxp
 {
