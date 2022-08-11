@@ -3,15 +3,15 @@
 
 template<class bidiiter>
 bidiiter random_unique(bidiiter begin, bidiiter end, size_t num_random) {
-    size_t left = std::distance(begin, end);
-    while (num_random--) {
-        bidiiter r = begin;
-        std::advance(r, rand()%left);
-        std::swap(*begin, *r);
-        ++begin;
-        --left;
-    }
-    return begin;
+  size_t left = std::distance(begin, end);
+  while (num_random--) {
+    bidiiter r = begin;
+    std::advance(r, rand()%left);
+    std::swap(*begin, *r);
+    ++begin;
+    --left;
+  }
+  return begin;
 }
 
 struct Ghost
@@ -108,6 +108,9 @@ struct Ghost
   }
 };
 
+//
+// This structure manages the graveyard and all of the ghosts in the graveyard.
+//
 struct GhostsEx
 {
   std::deque<Ghost> graveyard;
@@ -119,15 +122,6 @@ struct GhostsEx
 
   virtual ~GhostsEx() {
   }
-
-  virtual void markAllForRemoval()
-  {
-    // Iterate over active grains, mark them for removal
-    for (Ghost &ghost : graveyard)
-    {
-      ghost.markForRemoval();
-    }
-  };
 
   // Return number of active grains
   virtual int size()
@@ -152,7 +146,14 @@ struct GhostsEx
     graveyard.push_back(ghost);
   }
 
-
+  virtual void markAllForRemoval()
+  {
+    // Iterate over active grains, mark them for removal
+    for (Ghost &ghost : graveyard)
+    {
+      ghost.markForRemoval();
+    }
+  };
 
   // Once there are too many active grains, we move a lot of the older active
   // grains into the deprecated grains bucket.  These deprecated grains will
@@ -182,7 +183,7 @@ struct GhostsEx
     }
 
   }
-
+  
   virtual void process(float smooth_rate, float step_amount, float *left_mix_output, float *right_mix_output)
   {
     *left_mix_output = 0;
@@ -212,5 +213,5 @@ struct GhostsEx
       [](const Ghost& ghost) {
         return ghost.erase_me;
       }), graveyard.end());
-  }
-};
+    }
+  };

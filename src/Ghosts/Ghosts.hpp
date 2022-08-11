@@ -14,6 +14,7 @@ struct Ghosts : VoxglitchSamplerModule
 	std::string root_dir;
 	std::string path;
 
+
 	GhostsEx graveyard;
 	Sample sample;
 	dsp::SchmittTrigger purge_trigger;
@@ -151,8 +152,7 @@ struct Ghosts : VoxglitchSamplerModule
 		//
 		// Additional Notes
 		// * The jitter switch is ignored if a cable is connected to the jitter CV input.
-		// * I'm not sure if (inputs[JITTER_CV_INPUT].getVoltage() > 0) is the proper way to
-		//   check if the voltage is "on", or if I should us 0.5 or some other number?
+
 
 		if(inputs[JITTER_CV_INPUT].isConnected() ? (inputs[JITTER_CV_INPUT].getVoltage() > 0) : params[JITTER_SWITCH].getValue())
 		{
