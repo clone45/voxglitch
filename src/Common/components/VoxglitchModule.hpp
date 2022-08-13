@@ -1,7 +1,6 @@
 struct VoxglitchModule : Module
 {
   // std::string theme_name = "dark";
-  Theme theme;
 
   VoxglitchModule()
   {
@@ -12,6 +11,7 @@ struct VoxglitchModule : Module
     // right now, each module runs this code
     //
 
+    /*
     json_t *json_root;
     json_error_t error;
 
@@ -27,6 +27,7 @@ struct VoxglitchModule : Module
         theme.name = json_string_value(theme_json);
       }
     }
+    */
   }
 
 };

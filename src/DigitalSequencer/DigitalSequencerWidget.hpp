@@ -10,16 +10,16 @@
 class TrimpotNoRandom : public Trimpot
 {
 public:
-  void randomize() override {} // do nothing. base class would actually randomize
+void randomize() override {} // do nothing. base class would actually randomize
 };
 */
 
 /* Abandoning this front-panel control for now
 struct FreezeToggle : app::SvgSwitch {
-	FreezeToggle() {
-		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance,"res/freeze-button-off.svg")));
-    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/freeze-button-on.svg")));
-	};
+FreezeToggle() {
+addFrame(APP->window->loadSvg(asset::plugin(pluginInstance,"res/freeze-button-off.svg")));
+addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/freeze-button-on.svg")));
+};
 };
 */
 
@@ -27,6 +27,7 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
 {
   DigitalSequencer* module;
   int copy_sequencer_index = -1;
+  Theme theme;
 
   DigitalSequencerWidget(DigitalSequencer* module)
   {
@@ -40,26 +41,87 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     if(module)
     {
       // Load up the theme information
-      Theme *theme = &this->module->theme;
-
-      if(theme->load("digital_sequencer"))
+      if(theme.load("digital_sequencer"))
       {
-        panel_path = theme->getString("panel_path");
-        background_path = theme->getString("background_path");
-        typography_path = theme->getString("typography_path");
+        panel_path = theme.getString("panel_svg");
+
+        json_t* layers_array = theme.getLayers();
+
+        if (layers_array)
+        {
+          size_t index;
+          json_t *value;
+
+          json_array_foreach(layers_array, index, value)
+          {
+            //
+            // Get the "type" from the object
+            json_t *json_type = json_object_get(value, "type");
+            if(json_type)
+            {
+              // Convert the "type" to a string
+              std::string layer_type = json_string_value(json_type);
+
+              // The type should be either svg, png, or rect.  Depending on the
+              // type, the other variables might differ, so we need to process
+              // each thing depending on the type.
+
+              if(layer_type == "svg")
+              {
+                // For the svg type, there's only one other property, and that's
+                // the path to the svg.  Get that path, convert it to a string,
+                // and use it to load the svg and add it to the panel.
+                json_t *json_path = json_object_get(value, "path");
+                std::string svg_path = json_string_value(json_path);
+
+                std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, svg_path));
+                VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
+                voxglitch_panel->setBackground(svg);
+                addChild(voxglitch_panel);
+              }
+
+              if(layer_type == "png")
+              {
+                json_t *json_path = json_object_get(value, "path");
+                std::string path = json_string_value(json_path);
+
+                json_t *json_width = json_object_get(value, "width");
+                float width = json_real_value(json_width);
+
+                json_t *json_height = json_object_get(value, "height");
+                float height = json_real_value(json_height);
+
+                DEBUG("bunnies loading");
+                DEBUG(std::to_string(width).c_str());
+                DEBUG(std::to_string(height).c_str());
+
+                PNGPanel *png_panel = new PNGPanel(path, width, height);
+                addChild(png_panel);
+              }
+            }
+          }
+        }
       }
     }
+    else // for module browser
+    {
+      // Add typography layer
+      std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, typography_path));
+      VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
+      voxglitch_panel->setBackground(svg);
+      addChild(voxglitch_panel);
+    }
+
 
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, panel_path)));
 
-    PNGPanel *png_panel = new PNGPanel(background_path, 182.88, 128.5);
-    addChild(png_panel);
-
+    /*
     // Add typography layer
     std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, typography_path));
     VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
     voxglitch_panel->setBackground(svg);
     addChild(voxglitch_panel);
+    */
 
     // Step
     addInput(createInputCentered<VoxglitchInputPort>(Vec(41.827522,290.250732), module, DigitalSequencer::STEP_INPUT));
@@ -155,14 +217,14 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
       }
 
       std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
-    	if (font) {
+      if (font) {
         nvgFontSize(vg, 9);
         nvgFontFaceId(vg, font->handle);
         nvgTextAlign(vg, NVG_ALIGN_CENTER);
         nvgTextLetterSpacing(vg, -1);
         nvgFillColor(vg, nvgRGBA(235, 229, 222, 240));
         nvgText(vg, 0, 0, text_to_display.c_str(), NULL);
-    	}
+      }
 
       nvgRestore(vg);
     }
@@ -381,65 +443,65 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
   //
   void onHoverKey(const event::HoverKey &e) override
   {
-      // Switch between seuences using the number keys 1-6
-      if (e.key >= GLFW_KEY_1 && e.key <= GLFW_KEY_6)
+    // Switch between seuences using the number keys 1-6
+    if (e.key >= GLFW_KEY_1 && e.key <= GLFW_KEY_6)
+    {
+
+      if(e.action == GLFW_PRESS)
       {
+        unsigned int sequencer_number = e.key - 49;
 
-        if(e.action == GLFW_PRESS)
+        // DEBUG(std::to_string(sequencer_number).c_str());
+        sequencer_number = clamp(sequencer_number,0,NUMBER_OF_SEQUENCERS-1);
+        module->selected_sequencer_index = sequencer_number;
+        e.consume(this);
+      }
+
+    }
+
+    if ((e.key == GLFW_KEY_F) && ((e.mods & RACK_MOD_MASK) != GLFW_MOD_CONTROL)) // F (no ctrl)
+    {
+      if(e.action == GLFW_PRESS)
+      {
+        module->frozen = ! module->frozen;
+        e.consume(this);
+      }
+    }
+
+
+    if ((e.key == GLFW_KEY_C) && ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL)) // Control-C
+    {
+      if(e.action == GLFW_PRESS)
+      {
+        copy_sequencer_index = module->selected_sequencer_index;
+        e.consume(this);
+      }
+    }
+
+    if ((e.key == GLFW_KEY_V) && ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL)) // Control-V
+    {
+      if(e.action == GLFW_PRESS)
+      {
+        if(copy_sequencer_index > -1)
         {
-          unsigned int sequencer_number = e.key - 49;
-
-          // DEBUG(std::to_string(sequencer_number).c_str());
-          sequencer_number = clamp(sequencer_number,0,NUMBER_OF_SEQUENCERS-1);
-          module->selected_sequencer_index = sequencer_number;
+          module->copy(copy_sequencer_index, module->selected_sequencer_index);
           e.consume(this);
         }
-
       }
+    }
 
-      if ((e.key == GLFW_KEY_F) && ((e.mods & RACK_MOD_MASK) != GLFW_MOD_CONTROL)) // F (no ctrl)
-      {
-        if(e.action == GLFW_PRESS)
-        {
-          module->frozen = ! module->frozen;
-          e.consume(this);
-        }
-      }
+    #ifdef DEV_MODE
+    if(e.action == GLFW_PRESS && e.key == GLFW_KEY_P)
+    {
+      std::string debug_string = "mouse at: " + std::to_string(e.pos.x) + "," + std::to_string(e.pos.y);
+      DEBUG(debug_string.c_str());
+    }
+    ModuleWidget::onHoverKey(e);
+    #endif
 
+    ModuleWidget::onHoverKey(e);
 
-      if ((e.key == GLFW_KEY_C) && ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL)) // Control-C
-      {
-        if(e.action == GLFW_PRESS)
-        {
-          copy_sequencer_index = module->selected_sequencer_index;
-          e.consume(this);
-        }
-      }
-
-      if ((e.key == GLFW_KEY_V) && ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL)) // Control-V
-      {
-        if(e.action == GLFW_PRESS)
-        {
-          if(copy_sequencer_index > -1)
-          {
-            module->copy(copy_sequencer_index, module->selected_sequencer_index);
-            e.consume(this);
-          }
-        }
-      }
-
-      #ifdef DEV_MODE
-        if(e.action == GLFW_PRESS && e.key == GLFW_KEY_P)
-        {
-          std::string debug_string = "mouse at: " + std::to_string(e.pos.x) + "," + std::to_string(e.pos.y);
-          DEBUG(debug_string.c_str());
-        }
-        ModuleWidget::onHoverKey(e);
-      #endif
-
-      ModuleWidget::onHoverKey(e);
-
-      // module->selected_voltage_sequencer->shiftRight();
-      // if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftRight();
+    // module->selected_voltage_sequencer->shiftRight();
+    // if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftRight();
   }
 };

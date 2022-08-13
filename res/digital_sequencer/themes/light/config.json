@@ -1,6 +1,15 @@
 {
-  "background_type":"png",
-  "background_path":"res/digital_sequencer/themes/default/baseplate.png",
-  "panel_path": "res/digital_sequencer/themes/default/panel.svg",
-  "typography_path": "res/digital_sequencer/themes/default/typography.svg"
+	"panel_svg": "res/digital_sequencer/themes/default/panel.svg",
+	"layers": [
+		{
+      "type": "png",
+      "path": "res/digital_sequencer/themes/default/baseplate.png",
+      "width": 182.88,
+      "height": 128.5
+    },
+    {
+      "type": "svg",
+      "path": "res/digital_sequencer/themes/default/typography.svg"
+    }
+	]
 }

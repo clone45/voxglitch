@@ -1,6 +1,7 @@
 #include "PNGPanel.hpp"
 #include "Theme.hpp"
 #include "VoxglitchModule.hpp"
+#include "VoxglitchModuleWidget.hpp"
 #include "VoxglitchSamplerModule.hpp"
 #include "VoxglitchSamplerModuleWidget.hpp"
 
@@ -9,5 +10,5 @@
 #include "VoxglitchPanel.hpp"
 #include "VoxglitchSwitches.hpp"
 #include "VoxglitchWidget.hpp"
-#include "VoxglitchModuleWidget.hpp"
+
 // #include "GrimeLayer.hpp"

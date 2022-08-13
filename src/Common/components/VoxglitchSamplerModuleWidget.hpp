@@ -1,4 +1,4 @@
-struct VoxglitchSamplerModuleWidget : ModuleWidget
+struct VoxglitchSamplerModuleWidget : VoxglitchModuleWidget
 {
   struct InterpolationOffOption : MenuItem {
     VoxglitchSamplerModule *module;
