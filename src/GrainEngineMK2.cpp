@@ -13,8 +13,6 @@
 #include "Common/dsp/StereoPan.hpp"
 #include "Common/dsp/StereoFadeIn.hpp"
 #include "Common/dsp/StereoFadeOut.hpp"
-#include "Common/VoxglitchSamplerModule.hpp"
-#include "Common/VoxglitchSamplerModuleWidget.hpp"
 #include "Common/GrainEngineExpanderMessage.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
 

@@ -7,7 +7,7 @@
 
 #include "GrooveBoxExpander/defines.h"
 
-#include "Common/components/VoxglitchWidget.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
 #include "GrooveBoxExpander/ExpanderToGrooveboxMessage.hpp"
 #include "GrooveBox/GrooveboxToExpanderMessage.hpp"
 #include "GrooveBoxExpander/GrooveBoxExpander.hpp"

@@ -1,4 +1,4 @@
-struct GlitchSequencer : Module
+struct GlitchSequencer : VoxglitchModule
 {
   CellularAutomatonSequencer sequencer;
 

@@ -2,7 +2,7 @@
 // TODO:
 //  * Add "mod" input and have it configurable
 
-struct DigitalSequencerXP : Module
+struct DigitalSequencerXP : VoxglitchModule
 {
   dsp::SchmittTrigger stepTriggers[NUMBER_OF_SEQUENCERS];
   dsp::SchmittTrigger sequencer_button_triggers[NUMBER_OF_SEQUENCERS];

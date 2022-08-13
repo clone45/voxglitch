@@ -1,4 +1,4 @@
-struct XY : Module
+struct XY : VoxglitchModule
 {
   Vec drag_position;
   std::vector<Vec> recording_memory;

@@ -1,4 +1,4 @@
-struct DigitalSequencer : Module
+struct DigitalSequencer : VoxglitchModule
 {
   dsp::SchmittTrigger stepTrigger;
   dsp::SchmittTrigger sequencer_step_triggers[NUMBER_OF_SEQUENCERS];

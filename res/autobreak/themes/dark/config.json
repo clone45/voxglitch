@@ -1,0 +1,6 @@
+{
+  "background_type":"png",
+  "background_path":"res/autobreak/themes/shared/baseplate.png",
+  "panel_path": "res/autobreak/themes/shared/panel.svg",
+  "typography_path": "res/autobreak/themes/shared/typography.svg"
+}

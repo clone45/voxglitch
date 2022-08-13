@@ -14,7 +14,7 @@
 #include "GrooveBox/defines.h"
 using namespace groove_box;
 
-#include "Common/components/VoxglitchWidget.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
 #include "GrooveBox/SamplePlaybackSettings.hpp"
 #include "GrooveBoxExpander/ExpanderToGrooveboxMessage.hpp"
 #include "GrooveBox/GrooveboxToExpanderMessage.hpp"
@@ -27,9 +27,6 @@ using namespace groove_box;
 // #include "Common/dsp/DeclickFilter.hpp"
 #include "Common/dsp/StereoFadeOut.hpp"
 #include "Common/dsp/StereoPan.hpp"
-#include "Common/VoxglitchModule.hpp"
-#include "Common/VoxglitchSamplerModule.hpp"
-#include "Common/VoxglitchSamplerModuleWidget.hpp"
 #include "Common/SamplePlayer.hpp"
 
 // Core components

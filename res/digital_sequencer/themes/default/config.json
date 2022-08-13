@@ -1,0 +1,6 @@
+{
+  "background_type":"png",
+  "background_path":"res/digital_sequencer/themes/default/baseplate.png",
+  "panel_path": "res/digital_sequencer/themes/default/panel.svg",
+  "typography_path": "res/digital_sequencer/themes/default/typography.svg"
+}

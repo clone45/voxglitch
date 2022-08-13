@@ -10,7 +10,7 @@
   #include "menus/SequencerItem.hpp"
 // }
 
-struct DigitalSequencerXPWidget : ModuleWidget
+struct DigitalSequencerXPWidget : VoxglitchModuleWidget
 {
   DigitalSequencerXP* module;
   int copy_sequencer_index = -1;

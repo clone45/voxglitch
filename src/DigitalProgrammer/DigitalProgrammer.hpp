@@ -6,7 +6,7 @@ By Bret Truchan
 - Thank you to Guenon from the VCV Community for sharing their feedback.
 */
 
-struct DigitalProgrammer : Module
+struct DigitalProgrammer : VoxglitchModule
 {
   dsp::SchmittTrigger bank_button_triggers[NUMBER_OF_BANKS];
   unsigned int selected_bank = 0;

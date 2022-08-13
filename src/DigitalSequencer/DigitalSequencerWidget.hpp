@@ -32,17 +32,31 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
   {
     this->module = module;
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_sequencer/digital_sequencer_front_panel.svg")));
 
-    PNGPanel *png_panel = new PNGPanel("res/digital_sequencer/digital_sequencer_baseplate_small.png", 182.88, 128.5);
+    std::string panel_path = "res/digital_sequencer/themes/default/panel.svg";
+    std::string background_path = "res/digital_sequencer/themes/default/baseplate.png";
+    std::string typography_path = "res/digital_sequencer/themes/default/typography.svg";
+
+    if(module)
+    {
+      // Load up the theme information
+      Theme *theme = &this->module->theme;
+
+      if(theme->load("digital_sequencer"))
+      {
+        panel_path = theme->getString("panel_path");
+        background_path = theme->getString("background_path");
+        typography_path = theme->getString("typography_path");
+      }
+    }
+
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, panel_path)));
+
+    PNGPanel *png_panel = new PNGPanel(background_path, 182.88, 128.5);
     addChild(png_panel);
 
-    // Add dust layer
-    // PNGPanel *dust_png_panel = new PNGPanel("res/digital_sequencer/dust_layer.png", 182.88, 128.5, .5);
-    // addChild(dust_png_panel);
-
     // Add typography layer
-    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_sequencer/digital_sequencer_typography.svg"));
+    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, typography_path));
     VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
     voxglitch_panel->setBackground(svg);
     addChild(voxglitch_panel);

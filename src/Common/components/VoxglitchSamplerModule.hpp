@@ -1,8 +1,13 @@
-struct VoxglitchSamplerModule : Module
+struct VoxglitchSamplerModule : VoxglitchModule
 {
   unsigned int interpolation = 1;
   float sample_rate = 44100;
   std::string samples_root_dir = "";
+
+  VoxglitchSamplerModule()
+  {
+    // required.  This ensures that the base class constructor is called
+  }
 
   void saveSamplerData(json_t *root)
   {

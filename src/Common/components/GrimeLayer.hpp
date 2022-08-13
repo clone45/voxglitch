@@ -1,3 +1,4 @@
+/*
 struct GrimeLayer : VoxglitchWidget
 {
 
@@ -47,3 +48,4 @@ struct GrimeLayer : VoxglitchWidget
   }
 
 };
+*/

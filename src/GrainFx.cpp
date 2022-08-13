@@ -9,6 +9,7 @@
 #include "Common/common.hpp"
 #include "Common/audio_buffer.hpp"
 #include "Common/dsp/StereoPan.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
 
 #include "GrainFx/defines.h"
 #include "GrainFx/SimpleTableOsc.hpp"

@@ -2,10 +2,8 @@
 #include "osdialog.h"
 #include "settings.hpp"
 
-#include "Common/sample.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
-#include "Common/VoxglitchSamplerModule.hpp"
-#include "Common/VoxglitchSamplerModuleWidget.hpp"
+#include "Common/sample.hpp"
 #include "Common/SamplePlayer.hpp"
 
 #include "Looper/defines.h"

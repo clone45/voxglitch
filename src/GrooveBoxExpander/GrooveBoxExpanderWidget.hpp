@@ -1,4 +1,4 @@
-struct GrooveBoxExpanderWidget : ModuleWidget
+struct GrooveBoxExpanderWidget : VoxglitchModuleWidget
 {
   // 1st columen 20
 
