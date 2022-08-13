@@ -27,209 +27,148 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
 {
   DigitalSequencer* module;
   int copy_sequencer_index = -1;
-  Theme theme;
-
-  void addSVGLayer(std::string svg_path)
-  {
-    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, svg_path));
-    VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
-    voxglitch_panel->setBackground(svg);
-    addChild(voxglitch_panel);
-  }
-
-  void apply_layers()
-  {
-    json_t* layers_array = theme.getLayers();
-
-    if (layers_array)
-    {
-      size_t index;
-      json_t *value;
-
-      json_array_foreach(layers_array, index, value)
-      {
-        //
-        // Get the "type" from the object
-        json_t *json_type = json_object_get(value, "type");
-        if(json_type)
-        {
-          // Convert the "type" to a string
-          std::string layer_type = json_string_value(json_type);
-
-          // The type should be either svg, png, or rect.  Depending on the
-          // type, the other variables might differ, so we need to process
-          // each thing depending on the type.
-
-          if(layer_type == "svg")
-          {
-            // For the svg type, there's only one other property, and that's
-            // the path to the svg.  Get that path, convert it to a string,
-            // and use it to load the svg and add it to the panel.
-            std::string svg_path = json_string_value(json_object_get(value, "path"));
-            addSVGLayer(svg_path);
-          }
-
-          if(layer_type == "png")
-          {
-            std::string path = json_string_value(json_object_get(value, "path"));
-            float width = json_real_value(json_object_get(value, "width"));
-            float height = json_real_value(json_object_get(value, "height"));
-
-            PNGPanel *png_panel = new PNGPanel(path, width, height);
-            addChild(png_panel);
-          }
-        }
-      }
-    }
-  }
 
   DigitalSequencerWidget(DigitalSequencer* module)
   {
     this->module = module;
     setModule(module);
 
+    DEBUG("running DS constructor");
+
     std::string panel_path = "res/digital_sequencer/themes/default/panel.svg";
-    std::string background_path = "res/digital_sequencer/themes/default/baseplate.png";
-    std::string typography_path = "res/digital_sequencer/themes/default/typography.svg";
 
     if(module)
     {
       // Load up the theme information
       if(theme.load("digital_sequencer"))
       {
-        panel_path = theme.getString("panel_svg");
-        apply_layers();
+        // Apply all layers found in the theme file.
+        // This function is defined in VoxglitchModuleWidget.hpp
+        applyLayers();
 
-        /*
-        json_t* layers_array = theme.getLayers();
+        // Set panel SVG
+        setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, theme.getString("panel_svg"))));
 
-
-        if (layers_array)
-        {
-          size_t index;
-          json_t *value;
-
-          json_array_foreach(layers_array, index, value)
-          {
-            //
-            // Get the "type" from the object
-            json_t *json_type = json_object_get(value, "type");
-            if(json_type)
-            {
-              // Convert the "type" to a string
-              std::string layer_type = json_string_value(json_type);
-
-              // The type should be either svg, png, or rect.  Depending on the
-              // type, the other variables might differ, so we need to process
-              // each thing depending on the type.
-
-              if(layer_type == "svg")
-              {
-                // For the svg type, there's only one other property, and that's
-                // the path to the svg.  Get that path, convert it to a string,
-                // and use it to load the svg and add it to the panel.
-                std::string svg_path = json_string_value(json_object_get(value, "path"));
-                addChildSVG(svg_path);
-              }
-
-              if(layer_type == "png")
-              {
-                std::string path = json_string_value(json_object_get(value, "path"));
-                float width = json_real_value(json_object_get(value, "width"));
-                float height = json_real_value(json_object_get(value, "height"));
-
-                PNGPanel *png_panel = new PNGPanel(path, width, height);
-                addChild(png_panel);
-              }
-            }
-          }
-        }
-        */
-        // ----
+        widgets_json = theme.getWidgets();
       }
     }
     else // for module browser
     {
-      PNGPanel *png_panel = new PNGPanel(background_path, 182.88, 128.5);
-      addChild(png_panel);
+      // Add pretty background
+      addChild(new PNGPanel("res/digital_sequencer/themes/default/baseplate.png", 182.88, 128.5));
 
       // Add typography layer
-      addSVGLayer(typography_path);
+      addSVGLayer("res/digital_sequencer/themes/default/typography.svg");
 
-      /*
-      std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, typography_path));
-      VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
-      voxglitch_panel->setBackground(svg);
-      addChild(voxglitch_panel);
-      */
+      // Set panel SVG
+      setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_sequencer/themes/default/panel.svg")));
+
+      // Set widget positions
+      json_error_t error;
+      json_t *loaded_json = json_loads(
+        R"json(
+          {
+            "widgets": {
+              "STEP_INPUT": {"x": 41.827522,"y": 290.250732},
+              "RESET_INPUT": {"x": 41.822453, "y": 349.650879},
+              "SEQUENCER_1_STEP_INPUT": {"x": 102.700012, "y": 349.749878},
+              "SEQUENCER_2_STEP_INPUT": {"x": 140.200043, "y": 349.749878},
+              "SEQUENCER_3_STEP_INPUT": {"x": 177.550018, "y": 349.749878},
+              "SEQUENCER_4_STEP_INPUT": {"x": 214.900024, "y": 349.749878},
+              "SEQUENCER_5_STEP_INPUT": {"x": 252.350006, "y": 349.749878},
+              "SEQUENCER_6_STEP_INPUT": {"x": 289.549988, "y": 349.749878},
+              "SEQUENCER_1_LENGTH_KNOB": {"x": 102.700012, "y": 311.750000},
+              "SEQUENCER_2_LENGTH_KNOB": {"x": 140.200043, "y": 311.750000},
+              "SEQUENCER_3_LENGTH_KNOB": {"x": 177.550018, "y": 311.750000},
+              "SEQUENCER_4_LENGTH_KNOB": {"x": 214.900024, "y": 311.750000},
+              "SEQUENCER_5_LENGTH_KNOB": {"x": 252.350006, "y": 311.750000},
+              "SEQUENCER_6_LENGTH_KNOB": {"x": 289.549988, "y": 311.750000},
+              "SEQUENCER_1_BUTTON": {"x": 102.700012, "y": 280.250000},
+              "SEQUENCER_2_BUTTON": {"x": 140.200043, "y": 280.250000},
+              "SEQUENCER_3_BUTTON": {"x": 177.550018, "y": 280.250000},
+              "SEQUENCER_4_BUTTON": {"x": 214.900024, "y": 280.250000},
+              "SEQUENCER_5_BUTTON": {"x": 252.350006, "y": 280.250000},
+              "SEQUENCER_6_BUTTON": {"x": 289.549988, "y": 280.250000},
+              "SEQ1_CV_OUTPUT": {"x": 359.299927, "y": 311.749878},
+              "SEQ2_CV_OUTPUT": {"x": 389.449951, "y": 311.749878},
+              "SEQ3_CV_OUTPUT": {"x": 419.799988, "y": 311.749878},
+              "SEQ4_CV_OUTPUT": {"x": 450.049988, "y": 311.749878},
+              "SEQ5_CV_OUTPUT": {"x": 480.449951, "y": 311.749878},
+              "SEQ6_CV_OUTPUT": {"x": 510.599976, "y": 311.749878},
+              "SEQ1_GATE_OUTPUT": {"x": 359.299927, "y": 349.699890},
+              "SEQ2_GATE_OUTPUT": {"x": 389.449951, "y": 349.699890},
+              "SEQ3_GATE_OUTPUT": {"x": 419.799988, "y": 349.699890},
+              "SEQ4_GATE_OUTPUT": {"x": 450.049988, "y": 349.699890},
+              "SEQ5_GATE_OUTPUT": {"x": 480.449951, "y": 349.699890},
+              "SEQ6_GATE_OUTPUT": {"x": 510.599976, "y": 349.699890},
+              "CV_SEQUENCER": {"x": 9.0, "y": 9.5},
+              "GATE_SEQUENCER": {"x": 9.0, "y": 77.0}
+            }
+          }
+        )json", 0, &error
+      );
+      widgets_json = json_object_get(loaded_json, "widgets");
     }
-
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, panel_path)));
 
     // Step
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(41.827522,290.250732), module, DigitalSequencer::STEP_INPUT));
+    // addInput(createInputCentered<VoxglitchInputPort>(Vec(41.827522,290.250732), module, DigitalSequencer::STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("STEP_INPUT"), module, DigitalSequencer::STEP_INPUT));
 
     // Reset
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(41.822453,349.650879), module, DigitalSequencer::RESET_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("RESET_INPUT"), module, DigitalSequencer::RESET_INPUT));
 
     // 6 step inputs
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(102.700012,349.749878), module, DigitalSequencer::SEQUENCER_1_STEP_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(140.200043,349.849854), module, DigitalSequencer::SEQUENCER_2_STEP_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(177.550018,349.799866), module, DigitalSequencer::SEQUENCER_3_STEP_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(214.900024,349.799805), module, DigitalSequencer::SEQUENCER_4_STEP_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(252.350006,349.799866), module, DigitalSequencer::SEQUENCER_5_STEP_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(289.549988,349.849915), module, DigitalSequencer::SEQUENCER_6_STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("SEQUENCER_1_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_1_STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("SEQUENCER_2_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_2_STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("SEQUENCER_3_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_3_STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("SEQUENCER_4_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_4_STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("SEQUENCER_5_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_5_STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("SEQUENCER_6_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_6_STEP_INPUT));
 
     // step length attenuators
-    auto L1 = createParamCentered<VoxglitchAttenuator>(Vec(102.700012, 311.750000), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 0); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
-    auto L2 = createParamCentered<VoxglitchAttenuator>(Vec(140.200043, 311.750000), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 1); dynamic_cast<Knob*>(L2)->snap = true; addParam(L2);
-    auto L3 = createParamCentered<VoxglitchAttenuator>(Vec(177.550018, 311.750000), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 2); dynamic_cast<Knob*>(L3)->snap = true; addParam(L3);
-    auto L4 = createParamCentered<VoxglitchAttenuator>(Vec(214.900024, 311.750000), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 3); dynamic_cast<Knob*>(L4)->snap = true; addParam(L4);
-    auto L5 = createParamCentered<VoxglitchAttenuator>(Vec(252.350006, 311.750000), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 4); dynamic_cast<Knob*>(L5)->snap = true; addParam(L5);
-    auto L6 = createParamCentered<VoxglitchAttenuator>(Vec(289.549988, 311.750000), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 5); dynamic_cast<Knob*>(L6)->snap = true; addParam(L6);
-
-    float sequencer_selection_buttons_x[NUMBER_OF_SEQUENCERS] = {
-      102.700012,
-      140.200043,
-      177.550018,
-      214.900024,
-      252.350006,
-      289.549988
-    };
+    auto L1 = createParamCentered<VoxglitchAttenuator>(widgetVec("SEQUENCER_1_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 0); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
+    auto L2 = createParamCentered<VoxglitchAttenuator>(widgetVec("SEQUENCER_2_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 1); dynamic_cast<Knob*>(L2)->snap = true; addParam(L2);
+    auto L3 = createParamCentered<VoxglitchAttenuator>(widgetVec("SEQUENCER_3_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 2); dynamic_cast<Knob*>(L3)->snap = true; addParam(L3);
+    auto L4 = createParamCentered<VoxglitchAttenuator>(widgetVec("SEQUENCER_4_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 3); dynamic_cast<Knob*>(L4)->snap = true; addParam(L4);
+    auto L5 = createParamCentered<VoxglitchAttenuator>(widgetVec("SEQUENCER_5_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 4); dynamic_cast<Knob*>(L5)->snap = true; addParam(L5);
+    auto L6 = createParamCentered<VoxglitchAttenuator>(widgetVec("SEQUENCER_6_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 5); dynamic_cast<Knob*>(L6)->snap = true; addParam(L6);
 
     // Sequence selection buttons
-    for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
-    {
-      addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(sequencer_selection_buttons_x[i], 280.250000), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + i));
-    }
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("SEQUENCER_1_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 0));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("SEQUENCER_2_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 1));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("SEQUENCER_3_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 2));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("SEQUENCER_4_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 3));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("SEQUENCER_5_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 4));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("SEQUENCER_6_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 5));
 
     // CV outputs
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(359.299927,311.749878), module, DigitalSequencer::SEQ1_CV_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(389.449951,311.749878), module, DigitalSequencer::SEQ2_CV_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(419.799988,311.749878), module, DigitalSequencer::SEQ3_CV_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(450.049988,311.749878), module, DigitalSequencer::SEQ4_CV_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(480.449951,311.749878), module, DigitalSequencer::SEQ5_CV_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(510.599976,311.749878), module, DigitalSequencer::SEQ6_CV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ1_CV_OUTPUT"), module, DigitalSequencer::SEQ1_CV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ2_CV_OUTPUT"), module, DigitalSequencer::SEQ2_CV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ3_CV_OUTPUT"), module, DigitalSequencer::SEQ3_CV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ4_CV_OUTPUT"), module, DigitalSequencer::SEQ4_CV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ5_CV_OUTPUT"), module, DigitalSequencer::SEQ5_CV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ6_CV_OUTPUT"), module, DigitalSequencer::SEQ6_CV_OUTPUT));
 
     // Gate outputs
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(359.299927,349.699890), module, DigitalSequencer::SEQ1_GATE_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(389.449951, 349.699890), module, DigitalSequencer::SEQ2_GATE_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(419.799988, 349.699890), module, DigitalSequencer::SEQ3_GATE_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(450.049988, 349.699890), module, DigitalSequencer::SEQ4_GATE_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(480.449951, 349.699890), module, DigitalSequencer::SEQ5_GATE_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(510.599976, 349.699890), module, DigitalSequencer::SEQ6_GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ1_GATE_OUTPUT"), module, DigitalSequencer::SEQ1_GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ2_GATE_OUTPUT"), module, DigitalSequencer::SEQ2_GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ3_GATE_OUTPUT"), module, DigitalSequencer::SEQ3_GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ4_GATE_OUTPUT"), module, DigitalSequencer::SEQ4_GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ5_GATE_OUTPUT"), module, DigitalSequencer::SEQ5_GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ6_GATE_OUTPUT"), module, DigitalSequencer::SEQ6_GATE_OUTPUT));
 
     // Main voltage sequencer display
     dseq::VoltageSequencerDisplay *voltage_sequencer_display = new dseq::VoltageSequencerDisplay();
-    voltage_sequencer_display->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
+    voltage_sequencer_display->box.pos = mm2px(widgetVec("CV_SEQUENCER"));
     voltage_sequencer_display->module = module;
     addChild(voltage_sequencer_display);
 
     dseq::GateSequencerDisplay *gates_display = new dseq::GateSequencerDisplay();
-    gates_display->box.pos = mm2px(Vec(GATES_DRAW_AREA_POSITION_X, GATES_DRAW_AREA_POSITION_Y));
+    gates_display->box.pos = mm2px(widgetVec("GATE_SEQUENCER"));
     gates_display->module = module;
     addChild(gates_display);
 
+    /* add this back in
     for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
     {
       LengthDisplay *length_display = new LengthDisplay();
@@ -238,6 +177,7 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
       length_display->module = module;
       addChild(length_display);
     }
+    */
   }
 
   void addLayers()

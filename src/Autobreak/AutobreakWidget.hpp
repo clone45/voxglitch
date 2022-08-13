@@ -3,7 +3,6 @@ struct AutobreakWidget : VoxglitchSamplerModuleWidget
 	AutobreakWidget(Autobreak* module)
 	{
 		setModule(module);
-    Theme theme;
 
     std::string panel_path = "res/autobreak/themes/default/panel.svg";
     std::string background_path = "res/autobreak/themes/default/baseplate.png";

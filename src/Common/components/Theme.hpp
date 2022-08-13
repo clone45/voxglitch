@@ -1,20 +1,8 @@
-struct Layer
-{
-  std::string type;
-  std::string value;
-
-  Layer(std::string type, std::string value)
-  {
-    this->type = type;
-    this->value = value;
-  }
-};
-
 struct Theme
 {
   std::string name = "dark";
   json_t *json_root;
-  std::vector<Layer*> layers;
+  json_t *widgets;
 
   Theme()
   {
@@ -48,74 +36,24 @@ struct Theme
     {
       DEBUG("unable to load JSON file");
       DEBUG(config_file_path.c_str());
+      return(false);
     }
 
-    if(json_root)
-    {
+    // Store this for quick access for later
+    widgets = json_object_get(json_root, "widgets");
 
-      //
-      // Load layers into an array that can be consumed by the module
-      //
-
-      DEBUG("loading layers from Theme.hpp");
-
-      /*
-
-      Example JSON:
-
-      {
-        "panel_svg": "res/digital_sequencer/themes/default/panel.svg",
-        "layers": {
-          "png": "res/digital_sequencer/themes/default/baseplate.png" },
-          "svg": "res/digital_sequencer/themes/default/typography.svg" }
-        }
-      }
-
-      */
-
-      /*
-      json_t* layers_object = json_object_get(json_root, "layers");
-      if (layers_object)
-      {
-        // size_t layer_number;
-        // json_t *json_layer_array;
-
-        DEBUG("got here! wof");
-
-        const char *key;
-        json_t *json_value;
-
-        json_object_foreach(layers_object, key, json_value) {
-
-          std::string layer_value = json_string_value(json_value);
-          std::string layer_type(key);
-
-          layers.push_back(new Layer(layer_type, layer_value));
-        }
-      }
-
-      DEBUG("setup complete");
-      */
-
-      /*
-      json_array_foreach(recording_memory_data, i, json_array_pair_xy)
-      {
-        float x = json_real_value(json_array_get(json_array_pair_xy, 0));
-        float y = json_real_value(json_array_get(json_array_pair_xy, 1));
-        recording_memory.push_back(Vec(x,y));
-      }
-      */
-
-
-      return(true);
-    }
-
-    return(false);
+    return(true);
   }
 
   json_t* getLayers()
   {
     json_t* array_json = json_object_get(json_root, "layers");
+    return(array_json);
+  }
+
+  json_t *getWidgets()
+  {
+    json_t* array_json = json_object_get(json_root, "widgets");
     return(array_json);
   }
 
@@ -144,11 +82,23 @@ struct Theme
     if (value_json) value_float = json_real_value(value_json);
     return(value_float);
   }
-/*
-  float getLayers()
-  {
 
-    return(???); // some iterator??
+  /*
+  In the future, I might update this to allow for different positions of
+  controls and such.
+
+  ,
+  "widgets": {
+    "STEP_INPUT": {
+      "x": 41.827522,
+      "y": 290.250732
+    },
+    "RESET_INPUT": {
+      "x": 41.822453,
+      "y": 349.650879
+    }
   }
+
   */
+
 };
