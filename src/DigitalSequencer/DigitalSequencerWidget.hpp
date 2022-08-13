@@ -29,6 +29,60 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
   int copy_sequencer_index = -1;
   Theme theme;
 
+  void addSVGLayer(std::string svg_path)
+  {
+    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, svg_path));
+    VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
+    voxglitch_panel->setBackground(svg);
+    addChild(voxglitch_panel);
+  }
+
+  void apply_layers()
+  {
+    json_t* layers_array = theme.getLayers();
+
+    if (layers_array)
+    {
+      size_t index;
+      json_t *value;
+
+      json_array_foreach(layers_array, index, value)
+      {
+        //
+        // Get the "type" from the object
+        json_t *json_type = json_object_get(value, "type");
+        if(json_type)
+        {
+          // Convert the "type" to a string
+          std::string layer_type = json_string_value(json_type);
+
+          // The type should be either svg, png, or rect.  Depending on the
+          // type, the other variables might differ, so we need to process
+          // each thing depending on the type.
+
+          if(layer_type == "svg")
+          {
+            // For the svg type, there's only one other property, and that's
+            // the path to the svg.  Get that path, convert it to a string,
+            // and use it to load the svg and add it to the panel.
+            std::string svg_path = json_string_value(json_object_get(value, "path"));
+            addSVGLayer(svg_path);
+          }
+
+          if(layer_type == "png")
+          {
+            std::string path = json_string_value(json_object_get(value, "path"));
+            float width = json_real_value(json_object_get(value, "width"));
+            float height = json_real_value(json_object_get(value, "height"));
+
+            PNGPanel *png_panel = new PNGPanel(path, width, height);
+            addChild(png_panel);
+          }
+        }
+      }
+    }
+  }
+
   DigitalSequencerWidget(DigitalSequencer* module)
   {
     this->module = module;
@@ -44,8 +98,11 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
       if(theme.load("digital_sequencer"))
       {
         panel_path = theme.getString("panel_svg");
+        apply_layers();
 
+        /*
         json_t* layers_array = theme.getLayers();
+
 
         if (layers_array)
         {
@@ -71,29 +128,15 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
                 // For the svg type, there's only one other property, and that's
                 // the path to the svg.  Get that path, convert it to a string,
                 // and use it to load the svg and add it to the panel.
-                json_t *json_path = json_object_get(value, "path");
-                std::string svg_path = json_string_value(json_path);
-
-                std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, svg_path));
-                VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
-                voxglitch_panel->setBackground(svg);
-                addChild(voxglitch_panel);
+                std::string svg_path = json_string_value(json_object_get(value, "path"));
+                addChildSVG(svg_path);
               }
 
               if(layer_type == "png")
               {
-                json_t *json_path = json_object_get(value, "path");
-                std::string path = json_string_value(json_path);
-
-                json_t *json_width = json_object_get(value, "width");
-                float width = json_real_value(json_width);
-
-                json_t *json_height = json_object_get(value, "height");
-                float height = json_real_value(json_height);
-
-                DEBUG("bunnies loading");
-                DEBUG(std::to_string(width).c_str());
-                DEBUG(std::to_string(height).c_str());
+                std::string path = json_string_value(json_object_get(value, "path"));
+                float width = json_real_value(json_object_get(value, "width"));
+                float height = json_real_value(json_object_get(value, "height"));
 
                 PNGPanel *png_panel = new PNGPanel(path, width, height);
                 addChild(png_panel);
@@ -101,27 +144,27 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
             }
           }
         }
+        */
+        // ----
       }
     }
     else // for module browser
     {
+      PNGPanel *png_panel = new PNGPanel(background_path, 182.88, 128.5);
+      addChild(png_panel);
+
       // Add typography layer
+      addSVGLayer(typography_path);
+
+      /*
       std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, typography_path));
       VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
       voxglitch_panel->setBackground(svg);
       addChild(voxglitch_panel);
+      */
     }
 
-
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, panel_path)));
-
-    /*
-    // Add typography layer
-    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, typography_path));
-    VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
-    voxglitch_panel->setBackground(svg);
-    addChild(voxglitch_panel);
-    */
 
     // Step
     addInput(createInputCentered<VoxglitchInputPort>(Vec(41.827522,290.250732), module, DigitalSequencer::STEP_INPUT));
@@ -195,6 +238,11 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
       length_display->module = module;
       addChild(length_display);
     }
+  }
+
+  void addLayers()
+  {
+
   }
 
   struct LengthDisplay : TransparentWidget
