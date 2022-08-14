@@ -13,42 +13,20 @@ struct LooperWidget : VoxglitchSamplerModuleWidget
   {
     setModule(module);
 
-    // Set the background SVG panel.  This should be blank
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/looper/looper_front_panel.svg")));
-
-    // Load up the background PNG and add it to the panel
-    PNGPanel *png_panel = new PNGPanel("res/looper/looper_3he_baseplate.png", 5.08 * 3, 128.5);
-    addChild(png_panel);
-
-    // Add typography layer
-    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/looper/looper_typography.svg"));
-    VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
-    voxglitch_panel->setBackground(svg);
-    addChild(voxglitch_panel);
+    // Load and apply theme
+    theme.load("looper");
+    applyTheme();
 
     // Add output jacks
-    addOutput(createOutputCentered<VoxglitchOutputPort>(mm2px(Vec(7.58, 103)), module, Looper::AUDIO_OUTPUT_LEFT));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(mm2px(Vec(7.58, 115.2)), module, Looper::AUDIO_OUTPUT_RIGHT));
-    addInput(createInputCentered<VoxglitchInputPort>(mm2px(Vec(7.55, 25.5)), module, Looper::RESET_INPUT));
-
-    // Add waveform display (see LooperWaveformDisplay.hpp)
-    /*
-    LooperWaveformDisplay *looper_waveform_display = new LooperWaveformDisplay();
-    looper_waveform_display->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
-    looper_waveform_display->box.size.x = DRAW_AREA_WIDTH;
-    looper_waveform_display->box.size.y = DRAW_AREA_HEIGHT;
-    looper_waveform_display->module = module;
-    addChild(looper_waveform_display);
-    */
-
-    // Add custom switch
-    // addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(Vec(22.393309,33.974804), module, Looper::SWITCH_TEST));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("AUDIO_OUTPUT_LEFT"), module, Looper::AUDIO_OUTPUT_LEFT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("AUDIO_OUTPUT_RIGHT"), module, Looper::AUDIO_OUTPUT_RIGHT));
+    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("RESET_INPUT"), module, Looper::RESET_INPUT));
 
     // Add volume slider
     //
     // Here's code for a longer slider:
     // https://github.com/algoritmarte/AlgoritmarteVCVPlugin/blob/main/src/Zefiro.hpp
-    addParam(createParamCentered<VoxglitchSliderLong>(mm2px(Vec(7.560, 60)), module, Looper::VOLUME_SLIDER));
+    addParam(createParamCentered<VoxglitchSliderLong>(widgetVec("VOLUME_SLIDER"), module, Looper::VOLUME_SLIDER));
   }
 
   void appendContextMenu(Menu *menu) override
