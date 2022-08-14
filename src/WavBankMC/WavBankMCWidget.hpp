@@ -31,8 +31,8 @@ struct WavBankMCWidget : VoxglitchModuleWidget
 		addParam(createParamCentered<squareToggle>(themePos("LOOP_SWITCH"), module, WavBankMC::LOOP_SWITCH));
 
     WavBankMCReadout *readout = new WavBankMCReadout();
-		readout->box.pos = mm2px(Vec(8, 8));
-		readout->box.size = themePos("READOUT"); // bounding box of the widget
+		readout->box.pos = themePos("READOUT");
+		readout->box.size = Vec(READOUT_WIDTH, READOUT_HEIGHT);
 		readout->module = module;
 		addChild(readout);
 	}
@@ -149,17 +149,5 @@ struct WavBankMCWidget : VoxglitchModuleWidget
 		menu_item_load_bank_mc->module = module;
 		menu->addChild(menu_item_load_bank_mc);
 	}
-
-  #ifdef DEV_MODE
-    void onHoverKey(const event::HoverKey &e) override
-    {
-      if(e.action == GLFW_PRESS && e.key == GLFW_KEY_P)
-      {
-        std::string debug_string = "mouse at: " + std::to_string(e.pos.x) + "," + std::to_string(e.pos.y);
-        DEBUG(debug_string.c_str());
-      }
-      ModuleWidget::onHoverKey(e);
-    }
-  #endif
 
 };

@@ -34,8 +34,8 @@ struct Theme
 
     if(! json_root)
     {
-      DEBUG("unable to load JSON file");
-      DEBUG(config_file_path.c_str());
+      // DEBUG("unable to load JSON file");
+      // DEBUG(config_file_path.c_str());
       return(false);
     }
 
@@ -82,23 +82,5 @@ struct Theme
     if (value_json) value_float = json_real_value(value_json);
     return(value_float);
   }
-
-  /*
-  In the future, I might update this to allow for different positions of
-  controls and such.
-
-  ,
-  "widgets": {
-    "STEP_INPUT": {
-      "x": 41.827522,
-      "y": 290.250732
-    },
-    "RESET_INPUT": {
-      "x": 41.822453,
-      "y": 349.650879
-    }
-  }
-
-  */
 
 };
