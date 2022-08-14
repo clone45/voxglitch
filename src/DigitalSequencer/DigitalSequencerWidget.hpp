@@ -6,23 +6,6 @@
 #include "menus/SampleAndHoldItem.hpp"
 #include "menus/SequencerItem.hpp"
 
-/*
-class TrimpotNoRandom : public Trimpot
-{
-public:
-void randomize() override {} // do nothing. base class would actually randomize
-};
-*/
-
-/* Abandoning this front-panel control for now
-struct FreezeToggle : app::SvgSwitch {
-FreezeToggle() {
-addFrame(APP->window->loadSvg(asset::plugin(pluginInstance,"res/freeze-button-off.svg")));
-addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/freeze-button-on.svg")));
-};
-};
-*/
-
 struct DigitalSequencerWidget : VoxglitchModuleWidget
 {
   DigitalSequencer* module;
@@ -33,85 +16,13 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     this->module = module;
     setModule(module);
 
-    DEBUG("running DS constructor");
+    // Load and apply theme
+    theme.load("digital_sequencer");
+    applyTheme();
 
-    std::string panel_path = "res/digital_sequencer/themes/default/panel.svg";
-
-    if(module)
-    {
-      // Load up the theme information
-      if(theme.load("digital_sequencer"))
-      {
-        // Apply all layers found in the theme file.
-        // This function is defined in VoxglitchModuleWidget.hpp
-        applyLayers();
-
-        // Set panel SVG
-        setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, theme.getString("panel_svg"))));
-
-        widgets_json = theme.getWidgets();
-      }
-    }
-    else // for module browser
-    {
-      // Add pretty background
-      addChild(new PNGPanel("res/digital_sequencer/themes/default/baseplate.png", 182.88, 128.5));
-
-      // Add typography layer
-      addSVGLayer("res/digital_sequencer/themes/default/typography.svg");
-
-      // Set panel SVG
-      setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_sequencer/themes/default/panel.svg")));
-
-      // Set widget positions
-      json_error_t error;
-      json_t *loaded_json = json_loads(
-        R"json(
-          {
-            "widgets": {
-              "STEP_INPUT": {"x": 41.827522,"y": 290.250732},
-              "RESET_INPUT": {"x": 41.822453, "y": 349.650879},
-              "SEQUENCER_1_STEP_INPUT": {"x": 102.700012, "y": 349.749878},
-              "SEQUENCER_2_STEP_INPUT": {"x": 140.200043, "y": 349.749878},
-              "SEQUENCER_3_STEP_INPUT": {"x": 177.550018, "y": 349.749878},
-              "SEQUENCER_4_STEP_INPUT": {"x": 214.900024, "y": 349.749878},
-              "SEQUENCER_5_STEP_INPUT": {"x": 252.350006, "y": 349.749878},
-              "SEQUENCER_6_STEP_INPUT": {"x": 289.549988, "y": 349.749878},
-              "SEQUENCER_1_LENGTH_KNOB": {"x": 102.700012, "y": 311.750000},
-              "SEQUENCER_2_LENGTH_KNOB": {"x": 140.200043, "y": 311.750000},
-              "SEQUENCER_3_LENGTH_KNOB": {"x": 177.550018, "y": 311.750000},
-              "SEQUENCER_4_LENGTH_KNOB": {"x": 214.900024, "y": 311.750000},
-              "SEQUENCER_5_LENGTH_KNOB": {"x": 252.350006, "y": 311.750000},
-              "SEQUENCER_6_LENGTH_KNOB": {"x": 289.549988, "y": 311.750000},
-              "SEQUENCER_1_BUTTON": {"x": 102.700012, "y": 280.250000},
-              "SEQUENCER_2_BUTTON": {"x": 140.200043, "y": 280.250000},
-              "SEQUENCER_3_BUTTON": {"x": 177.550018, "y": 280.250000},
-              "SEQUENCER_4_BUTTON": {"x": 214.900024, "y": 280.250000},
-              "SEQUENCER_5_BUTTON": {"x": 252.350006, "y": 280.250000},
-              "SEQUENCER_6_BUTTON": {"x": 289.549988, "y": 280.250000},
-              "SEQ1_CV_OUTPUT": {"x": 359.299927, "y": 311.749878},
-              "SEQ2_CV_OUTPUT": {"x": 389.449951, "y": 311.749878},
-              "SEQ3_CV_OUTPUT": {"x": 419.799988, "y": 311.749878},
-              "SEQ4_CV_OUTPUT": {"x": 450.049988, "y": 311.749878},
-              "SEQ5_CV_OUTPUT": {"x": 480.449951, "y": 311.749878},
-              "SEQ6_CV_OUTPUT": {"x": 510.599976, "y": 311.749878},
-              "SEQ1_GATE_OUTPUT": {"x": 359.299927, "y": 349.699890},
-              "SEQ2_GATE_OUTPUT": {"x": 389.449951, "y": 349.699890},
-              "SEQ3_GATE_OUTPUT": {"x": 419.799988, "y": 349.699890},
-              "SEQ4_GATE_OUTPUT": {"x": 450.049988, "y": 349.699890},
-              "SEQ5_GATE_OUTPUT": {"x": 480.449951, "y": 349.699890},
-              "SEQ6_GATE_OUTPUT": {"x": 510.599976, "y": 349.699890},
-              "CV_SEQUENCER": {"x": 9.0, "y": 9.5},
-              "GATE_SEQUENCER": {"x": 9.0, "y": 77.0}
-            }
-          }
-        )json", 0, &error
-      );
-      widgets_json = json_object_get(loaded_json, "widgets");
-    }
+    // =================== PLACE COMPONENTS ====================================
 
     // Step
-    // addInput(createInputCentered<VoxglitchInputPort>(Vec(41.827522,290.250732), module, DigitalSequencer::STEP_INPUT));
     addInput(createInputCentered<VoxglitchInputPort>(widgetVec("STEP_INPUT"), module, DigitalSequencer::STEP_INPUT));
 
     // Reset

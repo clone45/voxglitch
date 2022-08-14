@@ -4,33 +4,11 @@ struct AutobreakWidget : VoxglitchSamplerModuleWidget
 	{
 		setModule(module);
 
-    std::string panel_path = "res/autobreak/themes/default/panel.svg";
-    std::string background_path = "res/autobreak/themes/default/baseplate.png";
-    std::string typography_path = "res/autobreak/themes/default/typography.svg";
+    // Load and apply theme
+    theme.load("autobreak");
+    applyTheme();
 
-    /*
-    if(module)
-    {
-      // Load up the theme information
-      if(theme.load("autobreak"))
-      {
-        panel_path = theme.getString("panel_path");
-        background_path = theme.getString("background_path");
-        typography_path = theme.getString("typography_path");
-      }
-    }
-    */
-
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, panel_path)));
-
-    PNGPanel *png_panel = new PNGPanel(background_path, 40.64, 128.5);
-    addChild(png_panel);
-
-    // Add typography layer
-    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, typography_path));
-    VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
-    voxglitch_panel->setBackground(svg);
-    addChild(voxglitch_panel);
+    // =================== PLACE COMPONENTS ====================================
 
     addParam(createParamCentered<VoxglitchLargeKnob>(Vec(60.053509,83.487495), module, Autobreak::WAV_KNOB));
     addParam(createParamCentered<VoxglitchAttenuator>(Vec(32.749992,136.200012), module, Autobreak::WAV_ATTN_KNOB));

@@ -1,6 +1,19 @@
 {
-  "background_type":"png",
-  "background_path":"res/autobreak/themes/default/baseplate.png",
-  "panel_path": "res/autobreak/themes/default/panel.svg",
-  "typography_path": "res/autobreak/themes/default/typography.svg"
+	"panel_svg": "res/autobreak/themes/default/panel.svg",
+	"layers": [
+		{
+      "type": "png",
+      "path": "res/autobreak/themes/default/baseplate.png",
+      "width": 40.64,
+      "height": 128.5
+    },
+    {
+      "type": "svg",
+      "path": "res/autobreak/themes/default/typography.svg"
+    }
+	],
+  "widgets": {
+    "STEP_INPUT": {"x": 41.827522,"y": 290.250732},
+    "RESET_INPUT": {"x": 41.822453, "y": 349.650879}
+  }
 }

@@ -20,7 +20,7 @@ struct VoxglitchModuleWidget : ModuleWidget
     return(Vec(json_real_value(x_object), json_real_value(y_object)));
   }
 
-  void applyLayers()
+  void applyTheme()
   {
     json_t* layers_array = theme.getLayers();
 
@@ -64,6 +64,12 @@ struct VoxglitchModuleWidget : ModuleWidget
         }
       }
     }
+
+    // Set the SVG.  This must always be called panel_svg in the theme JSON
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, theme.getString("panel_svg")))); // Set panel SVG
+
+    // Precompile widgets_json and store it in this structure
+    this->widgets_json = theme.getWidgets();
   }
 
 #ifdef DEV_MODE
