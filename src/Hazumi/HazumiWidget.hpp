@@ -1,24 +1,34 @@
 struct HazumiWidget : VoxglitchModuleWidget
 {
-  float gate_output_locations[SEQUENCER_COLUMNS] = {
-    48.1875, 58.226, 68.2656, 78.304, 88.34375, 98.3828, 108.4218, 118.461
-  };
-
   HazumiWidget(Hazumi* module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/hazumi/hazumi_front_panel.svg")));
 
-    // Load up the background PNG and add it to the panel
-    PNGPanel *png_panel = new PNGPanel("res/hazumi/hazumi_baseplate_small.png", 86.360, 128.5);
-    addChild(png_panel);
+    // Load and apply theme
+    theme.load("hazumi");
+    applyTheme();
 
-    // Add typography layer
-    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/hazumi/hazumi_typography.svg"));
-    VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
-    voxglitch_panel->setBackground(svg);
-    addChild(voxglitch_panel);
+    // =================== PLACE COMPONENTS ====================================
 
+    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("STEP_INPUT"), module, Hazumi::STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("RESET_INPUT"), module, Hazumi::RESET_INPUT));
+
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("GATE_OUTPUTS_1"), module, Hazumi::GATE_OUTPUTS + 0));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("GATE_OUTPUTS_2"), module, Hazumi::GATE_OUTPUTS + 1));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("GATE_OUTPUTS_3"), module, Hazumi::GATE_OUTPUTS + 2));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("GATE_OUTPUTS_4"), module, Hazumi::GATE_OUTPUTS + 3));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("GATE_OUTPUTS_5"), module, Hazumi::GATE_OUTPUTS + 4));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("GATE_OUTPUTS_6"), module, Hazumi::GATE_OUTPUTS + 5));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("GATE_OUTPUTS_7"), module, Hazumi::GATE_OUTPUTS + 6));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("GATE_OUTPUTS_8"), module, Hazumi::GATE_OUTPUTS + 7));
+
+    // Add display
+    HazumiSequencerDisplay *hazumi_sequencer_display = new HazumiSequencerDisplay();
+    hazumi_sequencer_display->box.pos = widgetVec("GRID_DISPLAY");
+    hazumi_sequencer_display->module = module;
+    addChild(hazumi_sequencer_display);
+
+    /*
     addInput(createInputCentered<VoxglitchInputPort>(Vec(223.500000,41.499992), module, Hazumi::STEP_INPUT));
     addInput(createInputCentered<VoxglitchInputPort>(Vec(223.500000,92.250000), module, Hazumi::RESET_INPUT));
 
@@ -36,6 +46,7 @@ struct HazumiWidget : VoxglitchModuleWidget
     hazumi_sequencer_display->box.pos = Vec(21.250000,21.000000);
     hazumi_sequencer_display->module = module;
     addChild(hazumi_sequencer_display);
+    */
   }
 
   struct TriggerOptionValueItem : MenuItem {
