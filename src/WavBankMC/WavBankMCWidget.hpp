@@ -3,83 +3,38 @@ struct WavBankMCWidget : VoxglitchModuleWidget
 	WavBankMCWidget(WavBankMC* module)
 	{
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/wavbank_mc/wavbank_mc_front_panel.svg")));
 
-    // Load up the background PNG and add it to the panel
-    PNGPanel *png_panel = new PNGPanel("res/wavbank_mc/wavbank_mc_base_small.png", 101.6, 128.5);
-    addChild(png_panel);
+    // Load and apply theme
+    theme.load("wavbank_mc");
+    applyTheme();
 
-    // Add typography layer
-    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/wavbank_mc/wavbank_mc_typography.svg"));
-    VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
-    voxglitch_panel->setBackground(svg);
-    addChild(voxglitch_panel);
+    addParam(createParamCentered<VoxglitchLargeKnob>(themePos("WAV_KNOB"), module, WavBankMC::WAV_KNOB));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("WAV_INPUT"), module, WavBankMC::WAV_INPUT));
+    addParam(createParamCentered<VoxglitchAttenuator>(themePos("WAV_ATTN_KNOB"), module, WavBankMC::WAV_ATTN_KNOB));
 
-    addParam(createParamCentered<VoxglitchLargeKnob>(Vec(202.096863,80.255463), module, WavBankMC::WAV_KNOB));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(270.199890,97.450043), module, WavBankMC::WAV_INPUT));
-    // addParam(createParamCentered<Trimpot>(mm2px(Vec(COL18, ROW10)), module, WavBankMC::WAV_ATTN_KNOB));
-
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(179.650024,160.600006), module, WavBankMC::TRIG_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(225.000000,160.600006), module, WavBankMC::NEXT_WAV_TRIGGER_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(270.250000,160.600006), module, WavBankMC::PREV_WAV_TRIGGER_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("TRIG_INPUT"), module, WavBankMC::TRIG_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("NEXT_WAV_TRIGGER_INPUT"), module, WavBankMC::NEXT_WAV_TRIGGER_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("PREV_WAV_TRIGGER_INPUT"), module, WavBankMC::PREV_WAV_TRIGGER_INPUT));
 
     // TODO: Think of being able to light up the light without pressing the button
-    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(Vec(179.757858,189.357864), module, WavBankMC::TRIG_INPUT_BUTTON_PARAM));
-    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(Vec(225.100021,189.357864), module, WavBankMC::NEXT_WAV_BUTTON_PARAM));
-    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(Vec(270.250000,189.357864), module, WavBankMC::PREV_WAV_BUTTON_PARAM));
+    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("TRIG_INPUT_BUTTON_PARAM"), module, WavBankMC::TRIG_INPUT_BUTTON_PARAM));
+    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("NEXT_WAV_BUTTON_PARAM"), module, WavBankMC::NEXT_WAV_BUTTON_PARAM));
+    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("PREV_WAV_BUTTON_PARAM"), module, WavBankMC::PREV_WAV_BUTTON_PARAM));
 
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("PITCH_INPUT"), module, WavBankMC::PITCH_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("VOLUME_INPUT"), module, WavBankMC::VOLUME_INPUT));
 
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(179.650055,240.359680), module, WavBankMC::PITCH_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(225.000061,240.248474), module, WavBankMC::VOLUME_INPUT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("POLY_WAV_OUTPUT"), module, WavBankMC::POLY_WAV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_WAV_OUTPUT"), module, WavBankMC::LEFT_WAV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RIGHT_WAV_OUTPUT"), module, WavBankMC::RIGHT_WAV_OUTPUT));
 
-		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(270.199677,240.283936), module, WavBankMC::POLY_WAV_OUTPUT));
-
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(225.000000,349.589600), module, WavBankMC::LEFT_WAV_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(270.250549,349.739563), module, WavBankMC::RIGHT_WAV_OUTPUT));
-
-		addParam(createParamCentered<squareToggle>(Vec(173.499985,350.189453), module, WavBankMC::LOOP_SWITCH));
-
-    addParam(createParamCentered<VoxglitchAttenuator>(Vec(270.299652,60.532650), module, WavBankMC::WAV_ATTN_KNOB));
+		addParam(createParamCentered<squareToggle>(themePos("LOOP_SWITCH"), module, WavBankMC::LOOP_SWITCH));
 
     WavBankMCReadout *readout = new WavBankMCReadout();
 		readout->box.pos = mm2px(Vec(8, 8));
-		readout->box.size = Vec(READOUT_WIDTH, READOUT_HEIGHT); // bounding box of the widget
+		readout->box.size = themePos("READOUT"); // bounding box of the widget
 		readout->module = module;
 		addChild(readout);
-
-
-    // add grime layer
-    /*
-    GrimeLayer *grime_layer = new GrimeLayer(20, 0, 130.21875, 343.25);
-    grime_layer->box.pos = Vec(18.250000, 18.250000);
-    addChild(grime_layer);
-    */
-
-
-    //
-
-		// Input and label for the trigger input (which is labeled "CLK" on the front panel)
-/*
-
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COL18, ROW19 + 1.0)), module, WavBankMC::PITCH_INPUT));
-		addParam(createParamCentered<CKSS>(mm2px(Vec(COL18, ROW29)), module, WavBankMC::LOOP_SWITCH));
-
-    // Next wav button and input
-
-		addParam(createParamCentered<LEDButton>(mm2px(Vec(COL28, ROW12)), module, WavBankMC::NEXT_WAV_BUTTON_PARAM));
-		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(COL28, ROW12)), module, WavBankMC::NEXT_WAV_LIGHT));
-
-    // Prev wav button and input
-
-		addParam(createParamCentered<LEDButton>(mm2px(Vec(COL28, ROW17)), module, WavBankMC::PREV_WAV_BUTTON_PARAM));
-		addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(COL28, ROW17)), module, WavBankMC::PREV_WAV_LIGHT));
-
-		WavBankMCReadout *readout = new WavBankMCReadout();
-		readout->box.pos = mm2px(Vec(4, 3));
-		readout->box.size = Vec(READOUT_WIDTH, READOUT_HEIGHT); // bounding box of the widget
-		readout->module = module;
-		addChild(readout);
-    */
 	}
 
 
