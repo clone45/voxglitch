@@ -3,48 +3,40 @@ struct GlitchSequencerWidget : VoxglitchModuleWidget
   GlitchSequencerWidget(GlitchSequencer* module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/glitch_sequencer/glitch_sequencer_front_panel.svg")));
 
-    PNGPanel *png_panel = new PNGPanel("res/glitch_sequencer/glitch_sequencer_baseplate_small.png", 132.08, 128.5);
-    addChild(png_panel);
+    // Load and apply theme
+    theme.load("glitch_sequencer");
+    applyTheme();
 
-    // Add typography layer
-    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/glitch_sequencer/glitch_sequencer_typography.svg"));
-    VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
-    voxglitch_panel->setBackground(svg);
-    addChild(voxglitch_panel);
+    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("STEP_INPUT"), module, GlitchSequencer::STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("RESET_INPUT"), module, GlitchSequencer::RESET_INPUT));
+    addParam(createParamCentered<VoxglitchAttenuator>(widgetVec("LENGTH_KNOB"), module, GlitchSequencer::LENGTH_KNOB));
 
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("TRIGGER_GROUP_BUTTONS_1"), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 0));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("TRIGGER_GROUP_BUTTONS_2"), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 1));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("TRIGGER_GROUP_BUTTONS_3"), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 2));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("TRIGGER_GROUP_BUTTONS_4"), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 3));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("TRIGGER_GROUP_BUTTONS_5"), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 4));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("TRIGGER_GROUP_BUTTONS_6"), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 5));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("TRIGGER_GROUP_BUTTONS_7"), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 6));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("TRIGGER_GROUP_BUTTONS_8"), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 7));
 
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(32.627510,333.019562), module, GlitchSequencer::STEP_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(72.919708,333.169525), module, GlitchSequencer::RESET_INPUT));
-    addParam(createParamCentered<VoxglitchAttenuator>(Vec(112.711708,333.069550), module, GlitchSequencer::LENGTH_KNOB));
-
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(165.846024,324.900879), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 0));
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(193.594193,324.900879), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 1));
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(221.342362,324.900879), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 2));
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(249.090531,324.900879), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 3));
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(276.838700,324.900879), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 4));
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(304.586869,324.900879), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 5));
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(332.335038,324.900879), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 6));
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(Vec(360.083207,324.900879), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 7));
-
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(165.846024, 353.727386), module, GlitchSequencer::GATE_OUTPUTS + 0));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(193.594193, 353.727386), module, GlitchSequencer::GATE_OUTPUTS + 1));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(221.342362, 353.727386), module, GlitchSequencer::GATE_OUTPUTS + 2));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(249.090531, 353.727386), module, GlitchSequencer::GATE_OUTPUTS + 3));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(276.838700, 353.727386), module, GlitchSequencer::GATE_OUTPUTS + 4));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(304.586869, 353.727386), module, GlitchSequencer::GATE_OUTPUTS + 5));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(332.335038, 353.727386), module, GlitchSequencer::GATE_OUTPUTS + 6));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(360.083207, 353.727386), module, GlitchSequencer::GATE_OUTPUTS + 7));
-
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("GATE_OUTPUTS_1"), module, GlitchSequencer::GATE_OUTPUTS + 0));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("GATE_OUTPUTS_2"), module, GlitchSequencer::GATE_OUTPUTS + 1));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("GATE_OUTPUTS_3"), module, GlitchSequencer::GATE_OUTPUTS + 2));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("GATE_OUTPUTS_4"), module, GlitchSequencer::GATE_OUTPUTS + 3));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("GATE_OUTPUTS_5"), module, GlitchSequencer::GATE_OUTPUTS + 4));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("GATE_OUTPUTS_6"), module, GlitchSequencer::GATE_OUTPUTS + 5));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("GATE_OUTPUTS_7"), module, GlitchSequencer::GATE_OUTPUTS + 6));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("GATE_OUTPUTS_8"), module, GlitchSequencer::GATE_OUTPUTS + 7));
 
     CellularAutomatonDisplay *ca_display = new CellularAutomatonDisplay();
-    ca_display->box.pos = Vec(19.9, 19.9);
+    ca_display->box.pos = widgetVec("GRID_DISPLAY");
     ca_display->module = module;
     addChild(ca_display);
 
     LengthReadoutDisplay *length_readout_display = new LengthReadoutDisplay();
-    length_readout_display->box.pos = mm2px(Vec(30.0, 122.0));
+    length_readout_display->box.pos = mm2px(widgetVec("LENGTH_LABEL"));
     length_readout_display->module = module;
     addChild(length_readout_display);
   }
