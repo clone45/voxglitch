@@ -12,7 +12,7 @@ struct VoxglitchModuleWidget : ModuleWidget
     addChild(voxglitch_panel);
   }
 
-  Vec widgetVec(std::string widget_name)
+  Vec themePos(std::string widget_name)
   {
     json_t* widget_object = json_object_get(widgets_json, widget_name.c_str());
     json_t* x_object = json_object_get(widget_object, "x");

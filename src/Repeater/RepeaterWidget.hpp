@@ -3,51 +3,41 @@ struct RepeaterWidget : VoxglitchSamplerModuleWidget
 	RepeaterWidget(Repeater* module)
 	{
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/repeater/repeater_front_panel.svg")));
 
-    // Load up the background PNG and add it to the panel
-
-    PNGPanel *png_panel = new PNGPanel("res/repeater/repeater_base_small.png", 81.28, 128.5);
-    // PNGPanel *png_panel = new PNGPanel("res/repeater/repeater_base.png", 81.28, 128.5);
-    addChild(png_panel);
-
-
-    // Add typography layer
-    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/repeater/repeater_typography.svg"));
-    VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
-    voxglitch_panel->setBackground(svg);
-    addChild(voxglitch_panel);
+    // Load and apply theme
+    theme.load("repeater");
+    applyTheme();
 
     // Medium Knobs
-		addParam(createParamCentered<VoxglitchMediumKnob>(Vec(126.563736,122.269234), module, Repeater::CLOCK_DIVISION_KNOB));
-    addParam(createParamCentered<VoxglitchMediumKnob>(Vec(126.375656,191.931137), module, Repeater::POSITION_KNOB));
-		addParam(createParamCentered<VoxglitchMediumKnob>(Vec(126.425659,261.852417), module, Repeater::SAMPLE_SELECT_KNOB));
-    addParam(createParamCentered<VoxglitchMediumKnob>(Vec(126.402100,332.388794), module, Repeater::PITCH_KNOB));
+		addParam(createParamCentered<VoxglitchMediumKnob>(themePos("CLOCK_DIVISION_KNOB"), module, Repeater::CLOCK_DIVISION_KNOB));
+    addParam(createParamCentered<VoxglitchMediumKnob>(themePos("POSITION_KNOB"), module, Repeater::POSITION_KNOB));
+		addParam(createParamCentered<VoxglitchMediumKnob>(themePos("SAMPLE_SELECT_KNOB"), module, Repeater::SAMPLE_SELECT_KNOB));
+    addParam(createParamCentered<VoxglitchMediumKnob>(themePos("PITCH_KNOB"), module, Repeater::PITCH_KNOB));
 
     // CV Inputs
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(42.219269,121.665604), module, Repeater::CLOCK_DIVISION_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(42.219269,191.426514), module, Repeater::POSITION_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(42.219269,261.237152), module, Repeater::SAMPLE_SELECT_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(42.219269,331.698181), module, Repeater::PITCH_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("CLOCK_DIVISION_INPUT"), module, Repeater::CLOCK_DIVISION_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("POSITION_INPUT"), module, Repeater::POSITION_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("SAMPLE_SELECT_INPUT"), module, Repeater::SAMPLE_SELECT_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("PITCH_INPUT"), module, Repeater::PITCH_INPUT));
 
     // Attenuators
-    addParam(createParamCentered<VoxglitchAttenuator>(Vec(83.563423,121.868500), module, Repeater::CLOCK_DIVISION_ATTN_KNOB));
-    addParam(createParamCentered<VoxglitchAttenuator>(Vec(83.563423,191.479111), module, Repeater::POSITION_ATTN_KNOB));
-    addParam(createParamCentered<VoxglitchAttenuator>(Vec(83.563423,261.189728), module, Repeater::SAMPLE_SELECT_ATTN_KNOB));
+    addParam(createParamCentered<VoxglitchAttenuator>(themePos("CLOCK_DIVISION_ATTN_KNOB"), module, Repeater::CLOCK_DIVISION_ATTN_KNOB));
+    addParam(createParamCentered<VoxglitchAttenuator>(themePos("POSITION_ATTN_KNOB"), module, Repeater::POSITION_ATTN_KNOB));
+    addParam(createParamCentered<VoxglitchAttenuator>(themePos("SAMPLE_SELECT_ATTN_KNOB"), module, Repeater::SAMPLE_SELECT_ATTN_KNOB));
     // addParam(createParamCentered<VoxglitchAttenuator>(Vec(83.563423,331.700439), module, Repeater::PITCH_ATTN_KNOB));
 
     // Clock input
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(196.701385,121.515594), module, Repeater::TRIG_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("TRIG_INPUT"), module, Repeater::TRIG_INPUT));
 
     // Smooth switch
-    addParam(createParamCentered<squareToggle>(Vec(197.249832,193.950241), module, Repeater::SMOOTH_SWITCH));
+    addParam(createParamCentered<squareToggle>(themePos("SMOOTH_SWITCH"), module, Repeater::SMOOTH_SWITCH));
 
     // Outputs
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(204.649963,331.449402), module, Repeater::WAV_OUTPUT));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(204.699982,281.450653), module, Repeater::TRG_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("WAV_OUTPUT"), module, Repeater::WAV_OUTPUT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("TRG_OUTPUT"), module, Repeater::TRG_OUTPUT));
 
 		Readout *readout = new Readout();
-		readout->box.pos = mm2px(Vec(10.0, 19.5)); //22,22
+		readout->box.pos = themePos("READOUT"); //22,22
 		readout->box.size = Vec(110, 30); // bounding box of the widget
 		readout->module = module;
 		addChild(readout);

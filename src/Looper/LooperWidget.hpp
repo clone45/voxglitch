@@ -18,15 +18,15 @@ struct LooperWidget : VoxglitchSamplerModuleWidget
     applyTheme();
 
     // Add output jacks
-    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("AUDIO_OUTPUT_LEFT"), module, Looper::AUDIO_OUTPUT_LEFT));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("AUDIO_OUTPUT_RIGHT"), module, Looper::AUDIO_OUTPUT_RIGHT));
-    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("RESET_INPUT"), module, Looper::RESET_INPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_LEFT"), module, Looper::AUDIO_OUTPUT_LEFT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_RIGHT"), module, Looper::AUDIO_OUTPUT_RIGHT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, Looper::RESET_INPUT));
 
     // Add volume slider
     //
     // Here's code for a longer slider:
     // https://github.com/algoritmarte/AlgoritmarteVCVPlugin/blob/main/src/Zefiro.hpp
-    addParam(createParamCentered<VoxglitchSliderLong>(widgetVec("VOLUME_SLIDER"), module, Looper::VOLUME_SLIDER));
+    addParam(createParamCentered<VoxglitchSliderLong>(themePos("VOLUME_SLIDER"), module, Looper::VOLUME_SLIDER));
   }
 
   void appendContextMenu(Menu *menu) override

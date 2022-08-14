@@ -23,59 +23,59 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     // =================== PLACE COMPONENTS ====================================
 
     // Step
-    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("STEP_INPUT"), module, DigitalSequencer::STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("STEP_INPUT"), module, DigitalSequencer::STEP_INPUT));
 
     // Reset
-    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("RESET_INPUT"), module, DigitalSequencer::RESET_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, DigitalSequencer::RESET_INPUT));
 
     // 6 step inputs
-    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("SEQUENCER_1_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_1_STEP_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("SEQUENCER_2_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_2_STEP_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("SEQUENCER_3_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_3_STEP_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("SEQUENCER_4_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_4_STEP_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("SEQUENCER_5_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_5_STEP_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(widgetVec("SEQUENCER_6_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_6_STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("SEQUENCER_1_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_1_STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("SEQUENCER_2_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_2_STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("SEQUENCER_3_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_3_STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("SEQUENCER_4_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_4_STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("SEQUENCER_5_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_5_STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("SEQUENCER_6_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_6_STEP_INPUT));
 
     // step length attenuators
-    auto L1 = createParamCentered<VoxglitchAttenuator>(widgetVec("SEQUENCER_1_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 0); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
-    auto L2 = createParamCentered<VoxglitchAttenuator>(widgetVec("SEQUENCER_2_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 1); dynamic_cast<Knob*>(L2)->snap = true; addParam(L2);
-    auto L3 = createParamCentered<VoxglitchAttenuator>(widgetVec("SEQUENCER_3_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 2); dynamic_cast<Knob*>(L3)->snap = true; addParam(L3);
-    auto L4 = createParamCentered<VoxglitchAttenuator>(widgetVec("SEQUENCER_4_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 3); dynamic_cast<Knob*>(L4)->snap = true; addParam(L4);
-    auto L5 = createParamCentered<VoxglitchAttenuator>(widgetVec("SEQUENCER_5_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 4); dynamic_cast<Knob*>(L5)->snap = true; addParam(L5);
-    auto L6 = createParamCentered<VoxglitchAttenuator>(widgetVec("SEQUENCER_6_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 5); dynamic_cast<Knob*>(L6)->snap = true; addParam(L6);
+    auto L1 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_1_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 0); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
+    auto L2 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_2_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 1); dynamic_cast<Knob*>(L2)->snap = true; addParam(L2);
+    auto L3 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_3_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 2); dynamic_cast<Knob*>(L3)->snap = true; addParam(L3);
+    auto L4 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_4_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 3); dynamic_cast<Knob*>(L4)->snap = true; addParam(L4);
+    auto L5 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_5_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 4); dynamic_cast<Knob*>(L5)->snap = true; addParam(L5);
+    auto L6 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_6_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 5); dynamic_cast<Knob*>(L6)->snap = true; addParam(L6);
 
     // Sequence selection buttons
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("SEQUENCER_1_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 0));
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("SEQUENCER_2_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 1));
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("SEQUENCER_3_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 2));
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("SEQUENCER_4_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 3));
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("SEQUENCER_5_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 4));
-    addParam(createParamCentered<VoxglitchRoundLampSwitch>(widgetVec("SEQUENCER_6_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 5));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_1_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 0));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_2_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 1));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_3_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 2));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_4_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 3));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_5_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 4));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_6_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 5));
 
     // CV outputs
-    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ1_CV_OUTPUT"), module, DigitalSequencer::SEQ1_CV_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ2_CV_OUTPUT"), module, DigitalSequencer::SEQ2_CV_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ3_CV_OUTPUT"), module, DigitalSequencer::SEQ3_CV_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ4_CV_OUTPUT"), module, DigitalSequencer::SEQ4_CV_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ5_CV_OUTPUT"), module, DigitalSequencer::SEQ5_CV_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ6_CV_OUTPUT"), module, DigitalSequencer::SEQ6_CV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("SEQ1_CV_OUTPUT"), module, DigitalSequencer::SEQ1_CV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("SEQ2_CV_OUTPUT"), module, DigitalSequencer::SEQ2_CV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("SEQ3_CV_OUTPUT"), module, DigitalSequencer::SEQ3_CV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("SEQ4_CV_OUTPUT"), module, DigitalSequencer::SEQ4_CV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("SEQ5_CV_OUTPUT"), module, DigitalSequencer::SEQ5_CV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("SEQ6_CV_OUTPUT"), module, DigitalSequencer::SEQ6_CV_OUTPUT));
 
     // Gate outputs
-    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ1_GATE_OUTPUT"), module, DigitalSequencer::SEQ1_GATE_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ2_GATE_OUTPUT"), module, DigitalSequencer::SEQ2_GATE_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ3_GATE_OUTPUT"), module, DigitalSequencer::SEQ3_GATE_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ4_GATE_OUTPUT"), module, DigitalSequencer::SEQ4_GATE_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ5_GATE_OUTPUT"), module, DigitalSequencer::SEQ5_GATE_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(widgetVec("SEQ6_GATE_OUTPUT"), module, DigitalSequencer::SEQ6_GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("SEQ1_GATE_OUTPUT"), module, DigitalSequencer::SEQ1_GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("SEQ2_GATE_OUTPUT"), module, DigitalSequencer::SEQ2_GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("SEQ3_GATE_OUTPUT"), module, DigitalSequencer::SEQ3_GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("SEQ4_GATE_OUTPUT"), module, DigitalSequencer::SEQ4_GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("SEQ5_GATE_OUTPUT"), module, DigitalSequencer::SEQ5_GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("SEQ6_GATE_OUTPUT"), module, DigitalSequencer::SEQ6_GATE_OUTPUT));
 
     // Main voltage sequencer display
     dseq::VoltageSequencerDisplay *voltage_sequencer_display = new dseq::VoltageSequencerDisplay();
-    voltage_sequencer_display->box.pos = mm2px(widgetVec("CV_SEQUENCER"));
+    voltage_sequencer_display->box.pos = mm2px(themePos("CV_SEQUENCER"));
     voltage_sequencer_display->module = module;
     addChild(voltage_sequencer_display);
 
     dseq::GateSequencerDisplay *gates_display = new dseq::GateSequencerDisplay();
-    gates_display->box.pos = mm2px(widgetVec("GATE_SEQUENCER"));
+    gates_display->box.pos = mm2px(themePos("GATE_SEQUENCER"));
     gates_display->module = module;
     addChild(gates_display);
 
