@@ -94,7 +94,7 @@ struct squareToggle : VoxglitchSwitch {
   squareToggle() {
     momentary = false;
     addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/square_light_off.svg")));
-    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/square_light_on_2.svg")));
+    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/square_light_on.svg")));
     box.size = Vec(19.28,19.28); // was 15.5   (19.28)
   }
 

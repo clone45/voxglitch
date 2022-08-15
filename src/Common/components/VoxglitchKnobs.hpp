@@ -43,7 +43,7 @@ struct VoxglitchKnob : SvgKnob {
 template <typename TBase = VoxglitchKnob>
 struct TLargeKnob : TBase {
 	TLargeKnob() {
-		this->svgFile = "large_knob_overlay2.svg";
+		this->svgFile = "large_knob_overlay.svg";
 		this->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/" + this->svgFile)));
 	}
 };
