@@ -52,14 +52,18 @@ struct VoxglitchModuleWidget : ModuleWidget
             addSVGLayer(svg_path);
           }
 
-          if(layer_type == "png")
+          if(layer_type == "image" || layer_type == "png")
           {
             std::string path = json_string_value(json_object_get(value, "path"));
-            float width = json_real_value(json_object_get(value, "width"));
-            float height = json_real_value(json_object_get(value, "height"));
+            float module_width = json_real_value(json_object_get(value, "width"));
+            float module_height = json_real_value(json_object_get(value, "height"));
+            float zoom = json_real_value(json_object_get(value, "zoom"));
 
-            PNGPanel *png_panel = new PNGPanel(path, width, height);
-            addChild(png_panel);
+            float src_panel_offset_x = 0.0;
+            float src_panel_offset_y = 0.0;
+
+            PanelBackground *panel_background = new PanelBackground(path, module_width, module_height, src_panel_offset_x, src_panel_offset_y, zoom);
+            addChild(panel_background);
           }
         }
       }

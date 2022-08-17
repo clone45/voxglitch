@@ -2,8 +2,9 @@
 	"panel_svg": "res/hazumi/themes/default/panel.svg",
 	"layers": [
 		{
-      "type": "png",
-      "path": "res/hazumi/themes/default/baseplate.png",
+      "type": "image",
+      "path": "res/themes/default/background2.jpg",
+      "zoom": 0.15,
       "width": 86.360,
       "height": 128.5
     },

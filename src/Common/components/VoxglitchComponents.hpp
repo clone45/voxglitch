@@ -1,4 +1,6 @@
-#include "PNGPanel.hpp"
+#include "ImageWidget.hpp"
+#include "PanelBackground.hpp"
+
 #include "Theme.hpp"
 
 #include "VoxglitchPanel.hpp"

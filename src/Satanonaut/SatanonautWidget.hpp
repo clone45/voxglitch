@@ -5,7 +5,7 @@ struct SatanonautWidget : VoxglitchModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/satanonaut/satanonaut_front_panel.svg")));
 
-    PNGPanel *png_panel = new PNGPanel("res/satanonaut/satanonaut_baseplate.png", 152.4, 128.5);
+    ImageWidget *png_panel = new ImageWidget("res/satanonaut/satanonaut_baseplate.png", 152.4, 128.5);
     addChild(png_panel);
 
     // add_snapping_parameter_knob(COLUMN_15, ROW_7 + 8, Satanonaut::EFFECT_KNOB);
