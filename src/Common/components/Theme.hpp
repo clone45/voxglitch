@@ -18,9 +18,6 @@ struct Theme
     {
       json_t* theme_json = json_object_get(json_root, "theme");
       if (theme_json) name = json_string_value(theme_json);
-
-      json_t* show_screws_json = json_object_get(json_root, "show_screws");
-      if (show_screws_json) show_screws = json_boolean_value(show_screws_json);
     }
   }
 
@@ -42,6 +39,10 @@ struct Theme
 
     // Store this for quick access for later
     widgets = json_object_get(json_root, "widgets");
+
+    // Optionally show or hide screws.  Screws are shown by default.
+    json_t* show_screws_json = json_object_get(json_root, "show_screws");
+    if (show_screws_json) show_screws = json_boolean_value(show_screws_json);
 
     return(true);
   }

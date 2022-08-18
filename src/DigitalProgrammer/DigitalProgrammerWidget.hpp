@@ -11,6 +11,15 @@ struct DigitalProgrammerWidget : VoxglitchModuleWidget
     this->module = module;
     setModule(module);
 
+    // Add rack screws
+    if(theme.showScrews())
+    {
+  		addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, 0)));
+  		addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+  		addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+  		addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    }
+    
     // Load and apply theme
     theme.load("digital_programmer");
     applyTheme();

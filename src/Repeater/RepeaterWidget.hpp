@@ -8,6 +8,15 @@ struct RepeaterWidget : VoxglitchSamplerModuleWidget
     theme.load("repeater");
     applyTheme();
 
+    // Add rack screws
+    if(theme.showScrews())
+    {
+  		addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, 0)));
+  		addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+  		addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+  		addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    }
+    
     // Medium Knobs
 		addParam(createParamCentered<VoxglitchMediumKnob>(themePos("CLOCK_DIVISION_KNOB"), module, Repeater::CLOCK_DIVISION_KNOB));
     addParam(createParamCentered<VoxglitchMediumKnob>(themePos("POSITION_KNOB"), module, Repeater::POSITION_KNOB));

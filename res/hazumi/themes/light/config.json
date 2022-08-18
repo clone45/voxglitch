@@ -10,7 +10,7 @@
     },
     {
       "type": "svg",
-      "path": "res/hazumi/themes/default/typography.svg"
+      "path": "res/hazumi/themes/light/typography.svg"
     }
 	],
   "widgets": {
@@ -25,5 +25,6 @@
     "GATE_OUTPUTS_7": {"x": 229.750000,"y": 321.304443},
     "GATE_OUTPUTS_8": {"x": 229.750000,"y": 350.698181},
     "GRID_DISPLAY": {"x": 21.250000, "y": 21.000000}
-  }
+  },
+  "show_screws": false
 }

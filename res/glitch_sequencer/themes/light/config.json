@@ -10,7 +10,7 @@
     },
     {
       "type": "svg",
-      "path": "res/glitch_sequencer/themes/default/typography.svg"
+      "path": "res/glitch_sequencer/themes/light/typography.svg"
     }
 	],
   "widgets": {

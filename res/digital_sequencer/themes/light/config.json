@@ -10,7 +10,7 @@
     },
     {
       "type": "svg",
-      "path": "res/digital_sequencer/themes/default/typography.svg"
+      "path": "res/digital_sequencer/themes/light/typography.svg"
     }
 	],
   "widgets": {

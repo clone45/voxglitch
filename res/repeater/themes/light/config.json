@@ -10,7 +10,7 @@
     },
     {
       "type": "svg",
-      "path": "res/repeater/themes/default/typography.svg"
+      "path": "res/repeater/themes/light/typography.svg"
     }
 	],
   "widgets": {
@@ -30,5 +30,6 @@
     "WAV_OUTPUT": {"x": 204.649963,"y": 331.449402},
     "TRG_OUTPUT": {"x": 204.699982,"y": 281.450653},
     "READOUT": {"x": 29.5276,"y": 57.5787}
-  }
+  },
+  "show_screws": false
 }

@@ -48,5 +48,6 @@
     "AUDIO_OUTPUT_RIGHT": {"x": 266.140045,"y": 342.452545},
 
     "DISPLAY": {"x": 26.574804,"y": 124.0157}
-  }
+  },
+  "show_screws": false
 }
