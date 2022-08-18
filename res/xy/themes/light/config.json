@@ -2,8 +2,9 @@
 	"panel_svg": "res/xy/themes/default/panel.svg",
 	"layers": [
 		{
-      "type": "png",
-      "path": "res/xy/themes/default/baseplate.png",
+      "type": "image",
+      "path": "res/themes/light/background.jpg",
+      "zoom": 0.15,
       "width": 101.6,
       "height": 128.5
     },

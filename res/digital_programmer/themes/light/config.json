@@ -2,8 +2,9 @@
 	"panel_svg": "res/digital_programmer/themes/default/panel.svg",
 	"layers": [
 		{
-      "type": "png",
-      "path": "res/digital_programmer/themes/default/baseplate.png",
+      "type": "image",
+      "path": "res/themes/light/background.jpg",
+      "zoom": 0.15,
       "width": 259.08,
       "height": 128.5
     },

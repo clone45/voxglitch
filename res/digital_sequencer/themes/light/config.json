@@ -2,8 +2,9 @@
 	"panel_svg": "res/digital_sequencer/themes/default/panel.svg",
 	"layers": [
 		{
-      "type": "png",
-      "path": "res/digital_sequencer/themes/default/baseplate.png",
+      "type": "image",
+      "path": "res/themes/light/background.jpg",
+      "zoom": 0.15,
       "width": 182.88,
       "height": 128.5
     },
@@ -46,6 +47,6 @@
     "SEQ5_GATE_OUTPUT": {"x": 480.449951, "y": 349.699890},
     "SEQ6_GATE_OUTPUT": {"x": 510.599976, "y": 349.699890},
     "CV_SEQUENCER": {"x": 9.0, "y": 9.5},
-    "GATE_SEQUENCER": {"x": 9.0, "y": 77.0}       
+    "GATE_SEQUENCER": {"x": 9.0, "y": 77.0}
   }
 }

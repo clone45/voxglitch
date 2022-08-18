@@ -1,5 +1,10 @@
 struct VoxglitchPort : SvgPort {
 
+VoxglitchPort()
+{
+  this->shadow->opacity = 0;
+}
+
 //
 // When in "DEV_MODE", which is set in plugin.hpp, hover over components
 // and use the adsw keys to nudge the components into place.
@@ -38,13 +43,23 @@ struct BlankPort : VoxglitchPort {
 };
 
 struct VoxglitchInputPort : VoxglitchPort {
+  ImageWidget* shadow;
 	VoxglitchInputPort() {
 		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/voxglitch_input_port.svg")));
+
+    shadow = new ImageWidget(asset::plugin(pluginInstance, "res/themes/default/round_shadow.png"), 12.0, 12.0, 0.7);
+    this->addChildBottom(shadow);
+    shadow->setPosition(Vec(-5.0, 0.0));
 	}
 };
 
 struct VoxglitchOutputPort : VoxglitchPort {
+  ImageWidget* shadow;
 	VoxglitchOutputPort() {
 		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/voxglitch_output_port.svg")));
+
+    shadow = new ImageWidget(asset::plugin(pluginInstance, "res/themes/default/round_shadow.png"), 12.0, 12.0, 0.7);
+    this->addChildBottom(shadow);
+    shadow->setPosition(Vec(-5.0, 0.0));
 	}
 };

@@ -44,6 +44,7 @@ template <typename TBase = VoxglitchKnob>
 struct TLargeKnob : TBase
 {
   ImageWidget* bg;
+  ImageWidget* shadow;
 	TLargeKnob() {
 
 		this->svgFile = "large_knob_overlay.svg";
@@ -51,9 +52,11 @@ struct TLargeKnob : TBase
 
     bg = new ImageWidget(asset::plugin(pluginInstance, "res/components/png/Big-Knob.png"), 22.2, 24.2);
     this->addChildBottom(bg);
-
-    // Offset background to align with overlay
     bg->setPosition(Vec(-2.8, -2.25));
+
+    shadow = new ImageWidget(asset::plugin(pluginInstance, "res/themes/default/round_shadow.png"), 32.0, 32.0);
+    this->addChildBottom(shadow);
+    shadow->setPosition(Vec(-16.0, 0.0));
 	}
 };
 typedef TLargeKnob<> VoxglitchLargeKnob;
@@ -62,12 +65,18 @@ typedef TLargeKnob<> VoxglitchLargeKnob;
 template <typename TBase = VoxglitchKnob>
 struct TMediumKnob : TBase {
   ImageWidget* bg;
+  ImageWidget* shadow;
 	TMediumKnob() {
 		this->svgFile = "medium_knob_overlay.svg";
 		this->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/" + this->svgFile)));
 
     bg = new ImageWidget(asset::plugin(pluginInstance, "res/components/png/knob_medium_light.png"), 12.4, 12.4);
     this->addChildBottom(bg);
+
+    shadow = new ImageWidget(asset::plugin(pluginInstance, "res/themes/default/round_shadow.png"), 16.4, 16.4);
+    this->addChildBottom(shadow);
+    shadow->setPosition(Vec(-5.0, 3.0));
+
 	}
 };
 typedef TMediumKnob<> VoxglitchMediumKnob;
@@ -77,28 +86,18 @@ typedef TMediumKnob<> VoxglitchMediumKnob;
 template <typename TBase = VoxglitchKnob>
 struct TAttenuator : TBase {
   ImageWidget* bg;
+  ImageWidget* shadow;
 	TAttenuator() {
 		this->svgFile = "attenuator_overlay.svg";
 		this->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/" + this->svgFile)));
 
     bg = new ImageWidget(asset::plugin(pluginInstance, "res/components/png/knob_small.png"), 6.0, 6.0);
     this->addChildBottom(bg);
-
-    // TEMPORARY, for quick adjustments ========================================
-    /*
-    json_t *json_root;
-    json_error_t error;
-
-    std::string config_file_path = asset::plugin(pluginInstance, "res/voxglitch_config.json");
-
-    // Load theme selection, either "light" or "dark"
-    json_root = json_load_file(config_file_path.c_str(), 0, &error);
-    float offset_x = json_real_value(json_object_get(json_root, "x"));
-    float offset_y = json_real_value(json_object_get(json_root, "y"));
-    */
-    // =========================================================================
-
     bg->setPosition(Vec(0.2, 0.2));
+
+    shadow = new ImageWidget(asset::plugin(pluginInstance, "res/themes/default/round_shadow.png"), 8.4, 8.4);
+    this->addChildBottom(shadow);
+    shadow->setPosition(Vec(-3.0, 1.2));
 	}
 };
 typedef TAttenuator<> VoxglitchAttenuator;

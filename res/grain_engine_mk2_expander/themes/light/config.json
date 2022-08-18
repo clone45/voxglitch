@@ -2,8 +2,9 @@
 	"panel_svg": "res/grain_engine_mk2_expander/themes/default/panel.svg",
 	"layers": [
 		{
-      "type": "png",
-      "path": "res/grain_engine_mk2_expander/themes/default/baseplate.png",
+      "type": "image",
+      "path": "res/themes/light/background.jpg",
+      "zoom": 0.15,
       "width": 30.48,
       "height": 128.5
     },

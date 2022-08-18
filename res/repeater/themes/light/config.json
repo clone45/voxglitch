@@ -2,8 +2,9 @@
 	"panel_svg": "res/repeater/themes/default/panel.svg",
 	"layers": [
 		{
-      "type": "png",
-      "path": "res/repeater/themes/default/baseplate.png",
+      "type": "image",
+      "path": "res/themes/light/background.jpg",
+      "zoom": 0.15,
       "width": 81.28,
       "height": 128.5
     },

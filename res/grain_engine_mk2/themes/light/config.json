@@ -2,14 +2,15 @@
 	"panel_svg": "res/grain_engine_mk2/themes/default/panel.svg",
 	"layers": [
 		{
-      "type": "png",
-      "path": "res/grain_engine_mk2/themes/default/baseplate.png",
+      "type": "image",
+      "path": "res/themes/light/background.jpg",
+      "zoom": 0.15,
       "width": 101.6,
       "height": 128.5
     },
     {
       "type": "svg",
-      "path": "res/grain_engine_mk2/themes/default/typography.svg"
+      "path": "res/grain_engine_mk2/themes/light/typography.svg"
     }
 	],
   "widgets": {

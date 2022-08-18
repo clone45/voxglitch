@@ -12,5 +12,6 @@
 
 #include "VoxglitchPorts.hpp"
 #include "VoxglitchKnobs.hpp"
+#include "VoxglitchScrews.hpp"
 #include "VoxglitchSwitches.hpp"
 #include "VoxglitchWidget.hpp"

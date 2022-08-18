@@ -40,6 +40,8 @@ struct VoxglitchSwitch : SvgSwitch {
 
 struct VoxglitchRoundLampSwitch : VoxglitchSwitch {
 
+  ImageWidget* bg;
+
   VoxglitchRoundLampSwitch()
   {
     addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/round_light_off.svg")));
@@ -54,6 +56,7 @@ struct VoxglitchRoundLampSwitch : VoxglitchSwitch {
       //
       // Draw glow effect
       //
+      /*
       ParamQuantity *param_quantity = getParamQuantity();
 
       if(! (param_quantity->getValue() == param_quantity->getMinValue()))
@@ -70,8 +73,9 @@ struct VoxglitchRoundLampSwitch : VoxglitchSwitch {
         NVGpaint paint = nvgRadialGradient(args.vg, c.x, c.y, radius, oradius, icol, ocol);
         nvgFillPaint(args.vg, paint);
         nvgFill(args.vg);
-        SvgSwitch::draw(args);
       }
+              */
+      SvgSwitch::draw(args);
     }
   }
 

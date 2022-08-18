@@ -3,6 +3,7 @@ struct Theme
   std::string name = "dark";
   json_t *json_root;
   json_t *widgets;
+  bool show_screws = true;
 
   Theme()
   {
@@ -16,10 +17,10 @@ struct Theme
     if(json_root)
     {
       json_t* theme_json = json_object_get(json_root, "theme");
-      if (theme_json)
-      {
-        name = json_string_value(theme_json);
-      }
+      if (theme_json) name = json_string_value(theme_json);
+
+      json_t* show_screws_json = json_object_get(json_root, "show_screws");
+      if (show_screws_json) show_screws = json_boolean_value(show_screws_json);
     }
   }
 
@@ -81,6 +82,11 @@ struct Theme
     json_t* value_json = json_object_get(json_root, key.c_str());
     if (value_json) value_float = json_real_value(value_json);
     return(value_float);
+  }
+
+  bool showScrews()
+  {
+    return(this->show_screws);
   }
 
 };

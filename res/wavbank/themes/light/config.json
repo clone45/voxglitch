@@ -2,8 +2,9 @@
 	"panel_svg": "res/wavbank/themes/default/panel.svg",
 	"layers": [
 		{
-      "type": "png",
-      "path": "res/wavbank/themes/default/baseplate.png",
+      "type": "image",
+      "path": "res/themes/light/background.jpg",
+      "zoom": 0.15,
       "width": 50.8,
       "height": 128.5
     },

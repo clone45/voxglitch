@@ -2,14 +2,15 @@
 	"panel_svg": "res/wavbank_mc/themes/default/panel.svg",
 	"layers": [
 		{
-      "type": "png",
-      "path": "res/wavbank_mc/themes/default/baseplate.png",
+      "type": "image",
+      "path": "res/themes/light/background.jpg",
+      "zoom": 0.15,
       "width": 101.6,
       "height": 128.5
     },
     {
       "type": "svg",
-      "path": "res/wavbank_mc/themes/default/typography.svg"
+      "path": "res/wavbank_mc/themes/light/typography.svg"
     }
 	],
   "widgets": {
@@ -34,5 +35,6 @@
 
     "LOOP_SWITCH": {"x": 173.499985,"y": 350.189453},
     "READOUT": {"x": 23.6220, "y": 23.6220}
-  }
+  },
+  "show_screws": false
 }

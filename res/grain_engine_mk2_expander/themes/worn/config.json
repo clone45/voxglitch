@@ -1,0 +1,32 @@
+{
+	"panel_svg": "res/grain_engine_mk2_expander/themes/default/panel.svg",
+	"layers": [
+		{
+      "type": "image",
+      "path": "res/themes/worn/background.jpg",
+      "zoom": 0.15,
+      "width": 30.48,
+      "height": 128.5
+    },
+    {
+      "type": "svg",
+      "path": "res/grain_engine_mk2_expander/themes/default/typography.svg"
+    }
+	],
+  "widgets": {
+    "AUDIO_IN_LEFT": {"x": 40.417305,"y": 59.081532},
+    "AUDIO_IN_RIGHT": {"x": 50.382683,"y": 96.631500},
+
+    "RECORD_START_INPUT": {"x": 25.117329,"y": 178.481842},
+    "RECORD_START_BUTTON_PARAM": {"x": 24.996094,"y": 207.496094},
+
+    "RECORD_STOP_INPUT": {"x": 65.267303,"y": 178.482361},
+    "RECORD_STOP_BUTTON_PARAM": {"x": 65.250000,"y": 207.750000},
+
+    "SAMPLE_SLOT_INPUT": {"x": 25.067327,"y": 260.582733},
+    "SAMPLE_SLOT_KNOB_PARAM": {"x": 65.332687,"y": 261.082764},
+
+    "PASSTHROUGH_LEFT": {"x": 24.917328,"y": 342.437317},
+    "PASSTHROUGH_RIGHT": {"x": 65.082687,"y": 342.437317}
+  }
+}
