@@ -16,7 +16,7 @@ struct WavBankMCReadout : TransparentWidget
     // Set font information
     std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
     if (font) {
-  		nvgFontSize(args.vg, 10);
+  		nvgFontSize(args.vg, 11);
   		nvgFontFaceId(args.vg, font->handle);
   		nvgTextLetterSpacing(args.vg, 0);
       // nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 0xff));
@@ -79,11 +79,11 @@ struct WavBankMCReadout : TransparentWidget
 
           if(i == module->selected_sample_slot || (show_hover_effect && hover_row == i))
           {
-            nvgFillColor(args.vg, nvgRGBA(122, 179, 193, 0xff));
+            nvgFillColor(args.vg, nvgRGBA(150, 219, 234, 0xff));
           }
           else
           {
-            nvgFillColor(args.vg, nvgRGBA(73, 107, 116, 0xff));
+            nvgFillColor(args.vg, nvgRGBA(102, 151, 163, 0xff));
           }
 
           nvgText(args.vg, 0, 6.3 + ((i - window_start) * 16), text_to_display.c_str(), NULL);
@@ -124,11 +124,11 @@ struct WavBankMCReadout : TransparentWidget
 
         if(i == 12)
         {
-          nvgFillColor(args.vg, nvgRGBA(122, 179, 193, 0xff));
+          nvgFillColor(args.vg, nvgRGBA(150, 219, 234, 0xff));
         }
         else
         {
-          nvgFillColor(args.vg, nvgRGBA(73, 107, 116, 0xff));
+          nvgFillColor(args.vg, nvgRGBA(102, 151, 163, 0xff));
         }
 
         nvgText(args.vg, 0, 4 + (i * 16), text_to_display.c_str(), NULL);

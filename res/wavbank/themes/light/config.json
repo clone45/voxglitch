@@ -23,5 +23,11 @@
     "WAV_LEFT_OUTPUT": {"x": 74.990524,"y": 349.837158},
     "WAV_RIGHT_OUTPUT": {"x": 120.190491,"y": 349.837158},
     "READOUT": {"x": 13.300354,"y": 141.0}
+  },
+  "DISPLAY": {
+    "TEXT_RGBA": { "r":102, "g":151, "b":234, "a":163 },
+    "SELECTED_TEXT_RGBA": {"r":150, "g":219, "b":234, "a":255 },
+    "BACKGROUND_RGBA": {"r":150, "g":219, "b":234, "a":255 },
+    "FONT_SIZE": 11
   }
 }
