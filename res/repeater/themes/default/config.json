@@ -9,6 +9,13 @@
       "height": 128.5
     },
     {
+      "type": "image",
+      "path": "res/repeater/themes/default/details.png",
+      "width": 81.28,
+      "height": 128.5,
+      "zoom": 0.25
+    },
+    {
       "type": "svg",
       "path": "res/repeater/themes/default/typography.svg"
     }

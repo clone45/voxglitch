@@ -9,6 +9,13 @@
       "height": 128.5
     },
     {
+      "type": "image",
+      "path": "res/autobreak/themes/default/details.png",
+      "width": 40.64,
+      "height": 128.5,
+      "zoom": 0.25
+    },
+    {
       "type": "svg",
       "path": "res/autobreak/themes/default/typography.svg"
     }

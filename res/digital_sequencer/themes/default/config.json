@@ -9,6 +9,13 @@
       "height": 128.5
     },
     {
+      "type": "image",
+      "path": "res/digital_sequencer/themes/default/details.png",
+      "width": 182.88,
+      "height": 128.5,
+      "zoom": 0.25
+    },
+    {
       "type": "svg",
       "path": "res/digital_sequencer/themes/default/typography.svg"
     }

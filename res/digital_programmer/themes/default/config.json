@@ -9,6 +9,13 @@
       "height": 128.5
     },
     {
+      "type": "image",
+      "path": "res/digital_programmer/themes/default/details.png",
+      "width": 259.08,
+      "height": 128.5,
+      "zoom": 0.25
+    },
+    {
       "type": "svg",
       "path": "res/digital_programmer/themes/default/typography.svg"
     }

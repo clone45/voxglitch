@@ -9,6 +9,13 @@
       "height": 128.5
     },
     {
+      "type": "image",
+      "path": "res/grain_engine_mk2_expander/themes/default/details.png",
+      "width": 30.48,
+      "height": 128.5,
+      "zoom": 0.25
+    },
+    {
       "type": "svg",
       "path": "res/grain_engine_mk2_expander/themes/default/typography.svg"
     }

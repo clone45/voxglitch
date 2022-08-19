@@ -9,6 +9,13 @@
       "height": 128.5
     },
     {
+      "type": "image",
+      "path": "res/wavbank/themes/default/details.png",
+      "width": 50.8,
+      "height": 128.5,
+      "zoom": 0.25
+    },
+    {
       "type": "svg",
       "path": "res/wavbank/themes/default/typography.svg"
     }

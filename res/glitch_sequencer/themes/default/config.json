@@ -9,6 +9,13 @@
       "height": 128.5
     },
     {
+      "type": "image",
+      "path": "res/glitch_sequencer/themes/default/details.png",
+      "width": 132.08,
+      "height": 128.5,
+      "zoom": 0.25
+    },
+    {
       "type": "svg",
       "path": "res/glitch_sequencer/themes/default/typography.svg"
     }
