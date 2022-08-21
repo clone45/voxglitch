@@ -46,7 +46,8 @@ struct GlitchSequencer : VoxglitchModule
   {
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 
-    configParam(LENGTH_KNOB, 1, MAX_SEQUENCE_LENGTH, 16, "LengthKnob");
+    configParam(LENGTH_KNOB, 1, MAX_SEQUENCE_LENGTH, 16, "Sequence Length");
+    paramQuantities[LENGTH_KNOB]->snapEnabled = true;
 
     for(unsigned int i=0; i<NUMBER_OF_TRIGGER_GROUPS; i++)
     {

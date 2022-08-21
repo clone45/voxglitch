@@ -18,11 +18,11 @@ struct XYDisplay : VoxglitchWidget
     {
       if(i == (number_of_rectangles - 1))
       {
-        rectangle_colors[i] = nvgRGBA(242, 237, 231, 255);
+        rectangle_colors[i] = nvgRGBA(255, 255, 255, 255);
       }
       else
       {
-        rectangle_colors[i] = nvgRGBA(242, 237, 231, fade_breakpoint - (i * (fade_breakpoint/number_of_rectangles)));
+        rectangle_colors[i] = nvgRGBA(255, 255, 255, fade_breakpoint - (i * (fade_breakpoint/number_of_rectangles)));
       }
     }
   }
