@@ -14,12 +14,20 @@ struct DPBankButtonDisplay : TransparentWidget
     const auto vg = args.vg;
     nvgSave(vg);
 
+    /* bright colors
     NVGcolor button_default_color = nvgRGBA(31,39,42,255);
     NVGcolor highlight_color = nvgRGBA(45, 61, 60, 255);
     NVGcolor active_mini_map_color = nvgRGBA(174,255,223,255);
     NVGcolor inactive_mini_map_color = nvgRGBA(174,255,223,255);
     NVGcolor paste_mini_map_color = nvgRGBA(97,86,105,255);
-    // NVGcolor unhighligted_background = nvgRGBA(31,39,42,255);
+    */
+
+    NVGcolor button_default_color = nvgRGBA(31,39,42,255);
+    NVGcolor highlight_color = nvgRGBA(45, 61, 60, 255);
+    NVGcolor active_mini_map_color = nvgRGBA(223,234,236,255);
+    NVGcolor inactive_mini_map_color = nvgRGBA(149,163,165,255);
+    NVGcolor paste_mini_map_color = nvgRGBA(97,86,105,255);
+
 
     if(module)
     {

@@ -36,10 +36,19 @@ struct DPSliderDisplay : TransparentWidget
     // Save the drawing context to restore later
     nvgSave(vg);
 
+    /* old, bright colors
     NVGcolor slider_background_color = nvgRGBA(31,39,42,255);
     NVGcolor slider_mouse_over_color = nvgRGBA(154,212,191,255);
     NVGcolor slider_background_mouse_over_color = nvgRGBA(52,60,63,255);
     NVGcolor slider_color = nvgRGBA(132,190,169,255);
+    */
+
+    // New colors to match Digital Sequencer
+    NVGcolor slider_background_color = nvgRGBA(37,56,59,255);
+    NVGcolor slider_mouse_over_color = nvgRGBA(223,234,236,255);
+    NVGcolor slider_background_mouse_over_color = nvgRGBA(50,70,74,255);
+    NVGcolor slider_color = nvgRGBA(149,163,165,255);
+
 
     if(module)
     {

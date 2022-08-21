@@ -75,7 +75,8 @@ struct HazumiSequencerDisplay : TransparentWidget
             }
 
             // Paint a bright color for the ball
-            nvgFillColor(vg, nvgRGBA(176, 255, 224, 255));
+            // nvgFillColor(vg, nvgRGBA(176, 255, 224, 255));
+            nvgFillColor(vg, nvgRGBA(223,234,236,255));
 
             // This assumes a consistent draw frequency. I should probably
             // replace this with code that accurately fades out the alpha at
