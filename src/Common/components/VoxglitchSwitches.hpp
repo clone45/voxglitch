@@ -53,10 +53,12 @@ struct VoxglitchRoundLampSwitch : VoxglitchSwitch {
   {
     if(module)
     {
+
+      SvgSwitch::draw(args);
+
       //
       // Draw glow effect
       //
-      /*
       ParamQuantity *param_quantity = getParamQuantity();
 
       if(! (param_quantity->getValue() == param_quantity->getMinValue()))
@@ -68,14 +70,12 @@ struct VoxglitchRoundLampSwitch : VoxglitchSwitch {
         nvgBeginPath(args.vg);
         nvgRect(args.vg, c.x - oradius, c.y - oradius, 2 * oradius, 2 * oradius);
 
-        NVGcolor icol = nvgRGBA(174, 89, 43, 230);
+        NVGcolor icol = nvgRGBA(255, 208, 183, 60);
         NVGcolor ocol = nvgRGBA(0, 0, 0, 0);
         NVGpaint paint = nvgRadialGradient(args.vg, c.x, c.y, radius, oradius, icol, ocol);
         nvgFillPaint(args.vg, paint);
         nvgFill(args.vg);
       }
-              */
-      SvgSwitch::draw(args);
     }
   }
 
