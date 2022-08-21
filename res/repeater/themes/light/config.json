@@ -9,6 +9,13 @@
       "height": 128.5
     },
     {
+      "type": "image",
+      "path": "res/repeater/themes/light/details.png",
+      "width": 81.28,
+      "height": 128.5,
+      "zoom": 0.25
+    },
+    {
       "type": "svg",
       "path": "res/repeater/themes/light/typography.svg"
     }
@@ -26,7 +33,7 @@
     "POSITION_ATTN_KNOB": {"x": 83.563423,"y": 191.479111},
     "SAMPLE_SELECT_ATTN_KNOB": {"x": 83.563423,"y": 261.189728},
     "TRIG_INPUT": {"x": 196.701385,"y": 121.515594},
-    "SMOOTH_SWITCH": {"x": 197.249832,"y": 193.950241},
+    "SMOOTH_SWITCH": {"x": 195.566832,"y": 192.267241},
     "WAV_OUTPUT": {"x": 204.649963,"y": 331.449402},
     "TRG_OUTPUT": {"x": 204.699982,"y": 281.450653},
     "READOUT": {"x": 29.5276,"y": 57.5787}

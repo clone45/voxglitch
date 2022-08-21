@@ -97,8 +97,10 @@ struct squareToggle : VoxglitchSwitch {
 
   squareToggle() {
     momentary = false;
+
     addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/square_light_off.svg")));
-    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/square_light_on.svg")));
+    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/square_light_on.svg")));    
+
     box.size = Vec(19.28,19.28); // was 15.5   (19.28)
   }
 
@@ -126,8 +128,10 @@ struct squareToggle : VoxglitchSwitch {
         NVGpaint paint = nvgRadialGradient(args.vg, c.x, c.y, radius, oradius, icol, ocol);
         nvgFillPaint(args.vg, paint);
         nvgFill(args.vg);
-        SvgSwitch::draw(args);
+
       }
+
+      SvgSwitch::draw(args);
     }
   }
 

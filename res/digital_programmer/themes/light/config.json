@@ -9,6 +9,13 @@
       "height": 128.5
     },
     {
+      "type": "image",
+      "path": "res/digital_programmer/themes/light/details.png",
+      "width": 259.08,
+      "height": 128.5,
+      "zoom": 0.25
+    },
+    {
       "type": "svg",
       "path": "res/digital_programmer/themes/light/typography.svg"
     }
@@ -26,9 +33,9 @@
     "BANK_PREV_PARAM": {"x": 673.204956,"y": 85.108795},
     "BANK_NEXT_PARAM": {"x": 722.695557,"y": 85.108795},
 
-    "COPY_MODE_PARAM": {"x": 574.108398,"y": 291.704529},
-    "CLEAR_MODE_PARAM": {"x": 623.299927,"y": 291.799927},
-    "RANDOMIZE_MODE_PARAM": {"x": 672.949829,"y": 291.699951},
+    "COPY_MODE_PARAM": {"x": 572.425398,"y": 290.021529},
+    "CLEAR_MODE_PARAM": {"x": 621.616927,"y": 290.116927},
+    "RANDOMIZE_MODE_PARAM": {"x": 671.266829,"y": 290.016951},
 
     "SLIDER_1": {"x": 27.000000,"y": 25.250000},
     "SLIDER_2": {"x": 58.750000,"y": 25.250000},

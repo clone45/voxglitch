@@ -9,6 +9,13 @@
       "height": 128.5
     },
     {
+      "type": "image",
+      "path": "res/wavbank/themes/light/details.png",
+      "width": 50.8,
+      "height": 128.5,
+      "zoom": 0.25
+    },
+    {
       "type": "svg",
       "path": "res/wavbank/themes/light/typography.svg"
     }
@@ -16,7 +23,7 @@
   "widgets": {
     "WAV_KNOB": {"x": 48.800396,"y": 78.217896},
     "WAV_ATTN_KNOB": {"x": 112.900337,"y": 60.692520},
-    "LOOP_SWITCH": {"x": 120.186218,"y": 280.068604},
+    "LOOP_SWITCH": {"x": 118.503218,"y": 278.385604},
     "TRIG_INPUT": {"x": 29.850380,"y": 280.335236},
     "WAV_INPUT": {"x": 112.800354,"y": 97.550163},
     "PITCH_INPUT": {"x": 75.182068,"y": 280.500671},
