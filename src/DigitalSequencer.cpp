@@ -14,8 +14,6 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "settings.hpp"
-#include <fstream>
-#include <array>
 
 #include "DigitalSequencer/defines.h"
 #include "Common/components/VoxglitchComponents.hpp"

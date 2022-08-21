@@ -3,11 +3,8 @@
 // Voxglitch "Grain Engine MK2" module for VCV Rack
 //
 
-#include <stack>
-#include <vector>
 #include "plugin.hpp"
 #include "osdialog.h"
-#include "Common/common.hpp"
 #include "Common/sample.hpp"
 #include "Common/SamplePlayer.hpp"
 #include "Common/dsp/StereoPan.hpp"

@@ -1,3 +1,8 @@
+#pragma once
+#ifndef voxglitch_components_h
+#define voxglitch_components_h
+// =========================================
+
 #include "ImageWidget.hpp"
 #include "PanelBackground.hpp"
 
@@ -15,3 +20,6 @@
 #include "VoxglitchScrews.hpp"
 #include "VoxglitchSwitches.hpp"
 #include "VoxglitchWidget.hpp"
+
+// =========================================
+#endif

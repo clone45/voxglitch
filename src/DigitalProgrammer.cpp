@@ -2,8 +2,6 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "settings.hpp"
-#include <fstream>
-#include <array>
 
 #include "DigitalProgrammer/defines.h"
 using namespace digital_programmer;

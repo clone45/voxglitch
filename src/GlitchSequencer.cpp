@@ -4,7 +4,6 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "settings.hpp"
-#include "cmath"
 
 #include "GlitchSequencer/defines.h"
 #include "Common/components/VoxglitchComponents.hpp"

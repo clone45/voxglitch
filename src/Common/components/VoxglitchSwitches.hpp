@@ -99,13 +99,21 @@ struct squareToggle : VoxglitchSwitch {
     momentary = false;
 
     addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/square_light_off.svg")));
-    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/square_light_on.svg")));    
+    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/square_light_on.svg")));
 
-    box.size = Vec(19.28,19.28); // was 15.5   (19.28)
+    box.size = Vec(22.0, 22.0); // was 15.5   (19.28)
   }
 
   void draw(const DrawArgs& args) override
   {
+    // Draw background shadow
+    nvgBeginPath(args.vg);
+    nvgRect(args.vg, -1, -1, box.size.x + 3.0, box.size.y + 3.0);
+    nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 60));
+    nvgFill(args.vg);
+
+    SvgSwitch::draw(args);
+
     //
     // Draw glow effect
     //
@@ -123,15 +131,12 @@ struct squareToggle : VoxglitchSwitch {
         nvgBeginPath(args.vg);
         nvgRect(args.vg, c.x - oradius, c.y - oradius, 2 * oradius, 2 * oradius);
 
-        NVGcolor icol = nvgRGBA(255, 130, 62, 90);
+        NVGcolor icol = nvgRGBA(255, 208, 183, 60);
         NVGcolor ocol = nvgRGBA(0, 0, 0, 0);
         NVGpaint paint = nvgRadialGradient(args.vg, c.x, c.y, radius, oradius, icol, ocol);
         nvgFillPaint(args.vg, paint);
         nvgFill(args.vg);
-
       }
-
-      SvgSwitch::draw(args);
     }
   }
 

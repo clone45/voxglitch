@@ -13,8 +13,6 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "settings.hpp"
-#include <fstream>
-#include <array>
 
 #include "Common/components/VoxglitchComponents.hpp"
 

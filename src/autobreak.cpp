@@ -8,7 +8,6 @@
 #include "osdialog.h"
 #include "Common/sample.hpp"
 #include "Common/dsp/DeclickFilter.hpp"
-#include <fstream>
 
 #include "Common/components/VoxglitchComponents.hpp"
 
