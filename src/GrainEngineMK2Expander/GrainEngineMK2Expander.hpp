@@ -83,7 +83,8 @@ struct GrainEngineMK2Expander : Module
     // Send a message to the GrainEngineMK2 "mother" on the right to load the newly saved .wav file
     // Notice that no sample data is passed to the GrainEngineMK2.  That may change.
 
-		if (rightExpander.module && rightExpander.module->model == modelGrainEngineMK2)
+		// if (rightExpander.module && rightExpander.module->model == modelGrainEngineMK2)
+    if (leftExpander.module && leftExpander.module->model == modelGrainEngineMK2)
     {
       float left = inputs[AUDIO_IN_LEFT].getVoltage();
       float right = inputs[AUDIO_IN_RIGHT].getVoltage();
@@ -125,7 +126,8 @@ struct GrainEngineMK2Expander : Module
         std::string filename = "grain_engine_" + patch_uuid + "_s" + std::to_string(sample_slot) + ".wav";
 
         // Prepare message for sending to Grain Engine MK2
-        GrainEngineExpanderMessage *message_to_grain_engine = (GrainEngineExpanderMessage *) rightExpander.module->leftExpander.producerMessage;
+        // GrainEngineExpanderMessage *message_to_grain_engine = (GrainEngineExpanderMessage *) rightExpander.module->leftExpander.producerMessage;
+        GrainEngineExpanderMessage *message_to_grain_engine = (GrainEngineExpanderMessage *) leftExpander.module->rightExpander.producerMessage;
         message_to_grain_engine->sample_slot = sample_slot;
         message_to_grain_engine->path = path;
         message_to_grain_engine->filename = filename;
