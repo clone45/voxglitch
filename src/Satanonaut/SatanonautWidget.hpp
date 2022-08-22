@@ -33,18 +33,22 @@ struct SatanonautWidget : VoxglitchModuleWidget
     addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_13 + 5, ROW_15 - 8)), module, Satanonaut::PARAM_2_INPUT));
     */
 
+    addInput(createInputCentered<PJ301MPort>(Vec(374.5, 68.5), module, Satanonaut::EFFECT_INPUT));
+    addInput(createInputCentered<PJ301MPort>(Vec(374.5, 109.0), module, Satanonaut::BUFFER_SIZE_INPUT));
+    addInput(createInputCentered<PJ301MPort>(Vec(375.0, 149.0), module, Satanonaut::FEEDBACK_INPUT));
+    addInput(createInputCentered<PJ301MPort>(Vec(375.0, 190.0), module, Satanonaut::PARAM_1_INPUT));
+    addInput(createInputCentered<PJ301MPort>(Vec(375.0, 230.0), module, Satanonaut::PARAM_2_INPUT));
 
     // Drive knob
     addParam(createParamCentered<VoxglitchValve>(Vec(326.587891,296.511719), module, Satanonaut::DRIVE_KNOB));
 
     // Inputs and outputs
-    /*
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_1 - 1, ROW_13 AND_A_HALF_ROW + 1)), module, Satanonaut::AUDIO_INPUT_LEFT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_1 - 1, ROW_15 + 1)), module, Satanonaut::AUDIO_INPUT_RIGHT));
 
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_3 - 9, ROW_13 AND_A_HALF_ROW + 1)), module, Satanonaut::AUDIO_OUTPUT_LEFT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(COLUMN_3 - 9, ROW_15 + 1)), module, Satanonaut::AUDIO_OUTPUT_RIGHT));
-    */
+    addInput(createInputCentered<PJ301MPort>(Vec(34, 292), module, Satanonaut::AUDIO_INPUT_LEFT));
+    addInput(createInputCentered<PJ301MPort>(Vec(34, 326), module, Satanonaut::AUDIO_INPUT_RIGHT));
+
+    addOutput(createOutputCentered<PJ301MPort>(Vec(415, 292), module, Satanonaut::AUDIO_OUTPUT_LEFT));
+    addOutput(createOutputCentered<PJ301MPort>(Vec(415, 325), module, Satanonaut::AUDIO_OUTPUT_RIGHT));
   }
 
   void add_snapping_parameter_knob(float column, float row, int index)
