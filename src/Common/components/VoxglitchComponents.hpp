@@ -6,8 +6,6 @@
 #include "ImageWidget.hpp"
 #include "PanelBackground.hpp"
 
-#include "Theme.hpp"
-
 #include "VoxglitchPanel.hpp"
 
 #include "VoxglitchModule.hpp"

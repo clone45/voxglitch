@@ -2,6 +2,7 @@
 #include "osdialog.h"
 #include "settings.hpp"
 
+#include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
 
 #include "Hazumi/defines.h"

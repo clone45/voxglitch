@@ -47,15 +47,15 @@ struct VoxglitchRoundLampSwitch : VoxglitchSwitch {
     addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/round_light_off.svg")));
     addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/round_light_on.svg")));
     box.size = Vec(15.5,15.5);
+    shadow->opacity = 0;
   }
 
   void draw(const DrawArgs& args) override
   {
+    SvgSwitch::draw(args);
+
     if(module)
     {
-
-      SvgSwitch::draw(args);
-
       //
       // Draw glow effect
       //
@@ -101,6 +101,7 @@ struct squareToggle : VoxglitchSwitch {
 
   squareToggle() {
     momentary = false;
+    shadow->opacity = 0;
 
     addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/square_light_off.svg")));
     addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/square_light_on.svg")));

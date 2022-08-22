@@ -6,6 +6,7 @@
 #include "DigitalProgrammer/defines.h"
 using namespace digital_programmer;
 
+#include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
 #include "DigitalProgrammer/DPSlider.hpp"
 #include "DigitalProgrammer/DigitalProgrammer.hpp"

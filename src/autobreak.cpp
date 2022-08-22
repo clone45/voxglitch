@@ -9,6 +9,7 @@
 #include "Common/sample.hpp"
 #include "Common/dsp/DeclickFilter.hpp"
 
+#include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
 
 #include "Autobreak/defines.h"

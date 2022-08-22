@@ -7,6 +7,7 @@
 #include "osdialog.h"
 #include "Common/sample.hpp"
 #include "Common/GrainEngineExpanderMessage.hpp"
+#include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
 
 #include "GrainEngineMK2Expander/defines.h"

@@ -6,6 +6,7 @@
 #include "settings.hpp"
 
 #include "GlitchSequencer/defines.h"
+#include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
 #include "GlitchSequencer/CellularAutomatonSequencer.hpp"
 #include "GlitchSequencer/GlitchSequencer.hpp"

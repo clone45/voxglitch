@@ -16,6 +16,7 @@
 #include "settings.hpp"
 
 #include "DigitalSequencer/defines.h"
+#include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
 
 namespace dseq

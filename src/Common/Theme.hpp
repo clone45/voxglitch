@@ -10,7 +10,12 @@ struct Theme
     json_t *json_root;
     json_error_t error;
 
-    std::string config_file_path = asset::plugin(pluginInstance, "res/voxglitch_config.json");
+    if(! rack::system::exists(asset::user("Voxglitch.json")))
+    {
+      rack::system::copy(asset::plugin(pluginInstance, "res/voxglitch_config.json"), asset::user("Voxglitch.json"));
+    }
+
+    std::string config_file_path = asset::user("Voxglitch.json");
 
     // Load theme selection, either "light" or "dark"
     json_root = json_load_file(config_file_path.c_str(), 0, &error);

@@ -4,6 +4,8 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
+
+#include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
 #include "Common/sample_mc.hpp"
 #include "WavBankMC/defines.h"
