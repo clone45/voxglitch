@@ -47,13 +47,16 @@ struct TLargeKnob : TBase
   ImageWidget* shadow;
 	TLargeKnob() {
 
+    // Draw Knob Overlay
 		this->svgFile = "large_knob_overlay.svg";
 		this->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/" + this->svgFile)));
 
+    // Add the knob's PNG background to the bottom
     bg = new ImageWidget(asset::plugin(pluginInstance, "res/components/png/Big-Knob.png"), 22.2, 24.2);
     this->addChildBottom(bg);
     bg->setPosition(Vec(-2.8, -2.25));
 
+    // Add the shadow below everything
     shadow = new ImageWidget(asset::plugin(pluginInstance, "res/themes/default/round_shadow.png"), 32.0, 32.0);
     this->addChildBottom(shadow);
     shadow->setPosition(Vec(-16.0, 0.0));

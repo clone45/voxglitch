@@ -1,7 +1,7 @@
 struct VoxglitchSliderLong : app::SvgSlider {
 	VoxglitchSliderLong() {
-		maxHandlePos = mm2px(Vec(-.375, 12.0));
-		minHandlePos = mm2px(Vec(-.375, 52));
+		maxHandlePos = mm2px(Vec(-.10, -3.0));
+		minHandlePos = mm2px(Vec(-.10, 36.0));
 		setBackgroundSvg(APP->window->loadSvg(asset::plugin(pluginInstance,"res/components/VoxglitchSliderLong.svg")));
 		setHandleSvg(APP->window->loadSvg(asset::plugin(pluginInstance,"res/components/VoxglitchSliderHandle.svg")));
 	}

@@ -64,8 +64,12 @@ struct VoxglitchRoundLampSwitch : VoxglitchSwitch {
       if(! (param_quantity->getValue() == param_quantity->getMinValue()))
       {
         math::Vec c = box.size.div(2);
+
+        c.x += 1.46; // offset a little bit to correct for small box size
+        c.y += 1.46;
+
         float radius = std::min(box.size.x, box.size.y) / 2.0;
-        float oradius = radius + std::min(radius * 1.5f, 2.5f);
+        float oradius = radius + std::min(radius * 1.5f, 4.5f);  // was 2.5 f max
 
         nvgBeginPath(args.vg);
         nvgRect(args.vg, c.x - oradius, c.y - oradius, 2 * oradius, 2 * oradius);
