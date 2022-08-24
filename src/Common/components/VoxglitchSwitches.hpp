@@ -41,13 +41,23 @@ struct VoxglitchSwitch : SvgSwitch {
 struct VoxglitchRoundLampSwitch : VoxglitchSwitch {
 
   ImageWidget* bg;
+  ImageWidget* voxglitch_shadow;
 
   VoxglitchRoundLampSwitch()
   {
     addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/round_light_off.svg")));
     addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/round_light_on.svg")));
+
+    // Add the shadow below everything
+    voxglitch_shadow = new ImageWidget(asset::plugin(pluginInstance, "res/themes/default/round_shadow.png"), 10.0, 10.0, 0.8);
+    this->addChildBottom(voxglitch_shadow);
+    voxglitch_shadow->setPosition(Vec(-5.5, -3.3));
+
+    // Set box size.  This affects the center position
     box.size = Vec(15.5,15.5);
-    shadow->opacity = 0;
+
+    // Turn off Rack shadow
+    this->shadow->opacity = 0;
   }
 
   void draw(const DrawArgs& args) override
@@ -99,12 +109,19 @@ struct VoxglitchRoundMomentaryLampSwitch : VoxglitchRoundLampSwitch {
 
 struct squareToggle : VoxglitchSwitch {
 
+  ImageWidget* voxglitch_shadow;
+
   squareToggle() {
     momentary = false;
     shadow->opacity = 0;
 
     addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/square_light_off.svg")));
     addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/square_light_on.svg")));
+
+    // Add the shadow below everything
+    voxglitch_shadow = new ImageWidget(asset::plugin(pluginInstance, "res/themes/default/square_shadow.png"), 15.0, 15.0, 0.4);
+    this->addChildBottom(voxglitch_shadow);
+    voxglitch_shadow->setPosition(Vec(-11, -8));
 
     box.size = Vec(22.0, 22.0); // was 15.5   (19.28)
   }
