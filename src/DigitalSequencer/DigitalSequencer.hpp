@@ -128,7 +128,8 @@ struct DigitalSequencer : VoxglitchModule
     {
       configParam(SEQUENCER_SELECTION_BUTTONS + i, 0.f, 1.f, 0.f, "SequencerSelectionButton" + i);
       configParam(SEQUENCER_LENGTH_KNOBS + i, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "SequenceLengthKnob" + i);
-      getParamQuantity(SEQUENCER_LENGTH_KNOBS + i)->resetEnabled = false;  // Disable randomize for trimpots
+      getParamQuantity(SEQUENCER_LENGTH_KNOBS + i)->resetEnabled = false;
+      getParamQuantity(SEQUENCER_LENGTH_KNOBS + i)->randomizeEnabled = false;
     }
 
     configInput(STEP_INPUT, "Step");

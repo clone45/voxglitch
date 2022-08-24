@@ -83,7 +83,7 @@ struct VoltageSequencer : Sequencer
   {
     for(unsigned int i=0; i < this->sequence_length; i++)
     {
-      this->setValue(i, fmod(std::rand(), DRAW_AREA_HEIGHT));
+      this->setValue(i, ((double) std::rand() / (RAND_MAX)));
     }
   }
 
