@@ -1,6 +1,6 @@
 ## Digital Programmer
 
-![DigitalSequencerXP](images/digital-programmer/digital-programmer.jpg)
+![DigitalProgrammer](images/digital-programmer/digital-programmer.jpg)
 
 Digital Programmer consists of 16 slides with both individual and polyphonic outputs.  These 16 CV signals would typically be used to control other modules.  In addition, there are 24 memory banks for storing and recalling slider positions.
 
@@ -42,4 +42,3 @@ RAND is used to randomize one or more banks.
 1. Click on the RAND button.  It will light up red.  You are now in randomize mode.
 2. Click on one or more banks to randomize them.  Clicking on a randomized bank will randomize it again!
 3. One you are done, click on the RAND button again to exit randomize mode.
-
