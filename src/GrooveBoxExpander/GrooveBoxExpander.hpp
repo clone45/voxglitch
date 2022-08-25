@@ -1,4 +1,4 @@
-struct GrooveBoxExpander : Module
+struct GrooveBoxExpander : VoxglitchModule
 {
   dsp::SchmittTrigger mute_button_triggers[NUMBER_OF_TRACKS];
   dsp::SchmittTrigger mute_cv_triggers[NUMBER_OF_TRACKS];

@@ -37,6 +37,7 @@ struct SamplerX8 : VoxglitchSamplerModule
 		NUM_LIGHTS
 	};
 
+
 	SamplerX8()
 	{
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -58,7 +59,9 @@ struct SamplerX8 : VoxglitchSamplerModule
     }
 	}
 
-	// Autosave module data.  VCV Rack decides when this should be called.
+  //
+	// Save module data
+  //
 	json_t *dataToJson() override
 	{
 		json_t *root = json_object();
@@ -78,7 +81,9 @@ struct SamplerX8 : VoxglitchSamplerModule
 		return root;
 	}
 
+  //
 	// Load module data
+  //
 	void dataFromJson(json_t *root) override
 	{
     for(int i=0; i < NUMBER_OF_SAMPLES; i++)
@@ -130,6 +135,7 @@ struct SamplerX8 : VoxglitchSamplerModule
 
       lights[MUTE_BUTTON_LIGHTS + i].setBrightness(mute_states[i]);
 
+      //
       // Send audio to outputs
       float left_audio, right_audio;
       sample_players[i].getStereoOutput(&left_audio, &right_audio, interpolation);

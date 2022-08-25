@@ -1,0 +1,29 @@
+{
+	"panel_svg": "res/looper/themes/default/panel.svg",
+	"layers": [
+		{
+      "type": "image",
+      "path": "res/themes/default/background2.jpg",
+      "zoom": 0.15,
+      "width": 15.24,
+      "height": 128.5
+    },
+    {
+      "type": "image",
+      "path": "res/looper/themes/default/details.png",
+      "width": 15.24,
+      "height": 128.5,
+      "zoom": 0.25
+    },
+    {
+      "type": "svg",
+      "path": "res/looper/themes/default/typography.svg"
+    }
+	],
+  "widgets": {
+    "AUDIO_OUTPUT_LEFT": {"x": 22.3819,"y": 304.1339},
+    "AUDIO_OUTPUT_RIGHT": {"x": 22.3819,"y": 340.1575},
+    "RESET_INPUT": {"x": 22.2933,"y": 52.0},
+    "VOLUME_SLIDER": {"x": 22.3228,"y": 177.1654}
+  }
+}

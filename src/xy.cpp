@@ -7,10 +7,10 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "settings.hpp"
-#include <vector>
-#include "cmath"
 
-#include "Common/VoxglitchWidget.hpp"
+#include "Common/Theme.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
+
 #include "XY/defines.h"
 #include "XY/XY.hpp"
 #include "XY/XYDisplay.hpp"

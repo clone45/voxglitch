@@ -16,10 +16,10 @@ struct WavBankMCReadout : TransparentWidget
     // Set font information
     std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
     if (font) {
-  		nvgFontSize(args.vg, 10);
+  		nvgFontSize(args.vg, 11);
   		nvgFontFaceId(args.vg, font->handle);
   		nvgTextLetterSpacing(args.vg, 0);
-      nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 0xff));
+      // nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 0xff));
     }
 
 		if(module)
@@ -34,13 +34,6 @@ struct WavBankMCReadout : TransparentWidget
       nvgFill(args.vg);
       */
 
-      /*
-			if(module->samples.size() > module->selected_sample_slot)
-			{
-				text_to_display = module->samples[module->selected_sample_slot].filename;
-				text_to_display.resize(30); // truncate long text
-			}
-      */
       if(module->samples.size() > 0)
       {
         // When there are too many sample filenames to fit on the front panel,
@@ -86,11 +79,11 @@ struct WavBankMCReadout : TransparentWidget
 
           if(i == module->selected_sample_slot || (show_hover_effect && hover_row == i))
           {
-            nvgFillColor(args.vg, nvgRGBA(255, 215, 20, 0xff));
+            nvgFillColor(args.vg, nvgRGBA(150, 219, 234, 0xff));
           }
           else
           {
-            nvgFillColor(args.vg, nvgRGBA(136, 116, 19, 0xff));
+            nvgFillColor(args.vg, nvgRGBA(102, 151, 163, 0xff));
           }
 
           nvgText(args.vg, 0, 6.3 + ((i - window_start) * 16), text_to_display.c_str(), NULL);
@@ -131,11 +124,11 @@ struct WavBankMCReadout : TransparentWidget
 
         if(i == 12)
         {
-          nvgFillColor(args.vg, nvgRGBA(255, 215, 20, 0xff));
+          nvgFillColor(args.vg, nvgRGBA(150, 219, 234, 0xff));
         }
         else
         {
-          nvgFillColor(args.vg, nvgRGBA(136, 116, 19, 0xff));
+          nvgFillColor(args.vg, nvgRGBA(102, 151, 163, 0xff));
         }
 
         nvgText(args.vg, 0, 4 + (i * 16), text_to_display.c_str(), NULL);
@@ -151,7 +144,7 @@ struct WavBankMCReadout : TransparentWidget
 
       if(this->mouse_lock == false)
       {
-        unsigned int row = (e.pos.y / 360.0) * NUMBER_OF_SAMPLE_DISPLAY_ROWS;
+        unsigned int row = (e.pos.y / READOUT_HEIGHT) * NUMBER_OF_SAMPLE_DISPLAY_ROWS;
         if(module->wav_input_not_connected())
         {
           if((row + window_start) < module->number_of_samples)
@@ -183,7 +176,7 @@ struct WavBankMCReadout : TransparentWidget
 
     if(module->wav_input_not_connected())
     {
-      unsigned int row = (e.pos.y / 360.0) * NUMBER_OF_SAMPLE_DISPLAY_ROWS;
+      unsigned int row = (e.pos.y / READOUT_HEIGHT) * NUMBER_OF_SAMPLE_DISPLAY_ROWS;
 
       if((row + window_start) < module->number_of_samples)
       {

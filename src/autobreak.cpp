@@ -7,10 +7,10 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "Common/sample.hpp"
-#include "Common/VoxglitchSamplerModule.hpp"
-#include "Common/VoxglitchSamplerModuleWidget.hpp"
 #include "Common/dsp/DeclickFilter.hpp"
-#include <fstream>
+
+#include "Common/Theme.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
 
 #include "Autobreak/defines.h"
 #include "Autobreak/Autobreak.hpp"

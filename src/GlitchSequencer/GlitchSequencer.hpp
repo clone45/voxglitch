@@ -1,4 +1,4 @@
-struct GlitchSequencer : Module
+struct GlitchSequencer : VoxglitchModule
 {
   CellularAutomatonSequencer sequencer;
 
@@ -46,7 +46,8 @@ struct GlitchSequencer : Module
   {
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 
-    configParam(LENGTH_KNOB, 1, MAX_SEQUENCE_LENGTH, 16, "LengthKnob");
+    configParam(LENGTH_KNOB, 1, MAX_SEQUENCE_LENGTH, 16, "Sequence Length");
+    paramQuantities[LENGTH_KNOB]->snapEnabled = true;
 
     for(unsigned int i=0; i<NUMBER_OF_TRIGGER_GROUPS; i++)
     {
@@ -157,11 +158,17 @@ struct GlitchSequencer : Module
       sequencer.reset();
     }
 
-    // Process when the user presses one of the 5 buttons above the trigger outputs
+    // Process when the user presses one of the 8 buttons above the trigger outputs
     for(unsigned int i=0; i < NUMBER_OF_TRIGGER_GROUPS; i++)
     {
       trigger_button_is_triggered[i] = trigger_group_button_schmitt_trigger[i].process(params[TRIGGER_GROUP_BUTTONS + i].getValue());
       if(trigger_button_is_triggered[i]) toggleTriggerGroup(i);
+    }
+
+    // Highlight only selected sequence buttton
+    for(int i=0; i<NUMBER_OF_TRIGGER_GROUPS; i++)
+    {
+      params[TRIGGER_GROUP_BUTTONS + i].setValue(selected_trigger_group_index == i);
     }
 
     // Process Step Input

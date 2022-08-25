@@ -1,5 +1,6 @@
 struct CopyPasteLabel : TransparentWidget
 {
+  /*
 	DigitalProgrammer *module;
 	std::shared_ptr<Font> font;
 
@@ -32,5 +33,6 @@ struct CopyPasteLabel : TransparentWidget
 
 		nvgRestore(args.vg);
 	}
+  */
 
 };

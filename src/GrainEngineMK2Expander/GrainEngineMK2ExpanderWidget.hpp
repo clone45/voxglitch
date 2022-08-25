@@ -1,40 +1,27 @@
-struct GrainEngineMK2ExpanderWidget : ModuleWidget
+struct GrainEngineMK2ExpanderWidget : VoxglitchModuleWidget
 {
   GrainEngineMK2ExpanderWidget(GrainEngineMK2Expander* module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/grain_engine_mk2_expander_front_panel.svg")));
 
-    float col_1 = 9.878;
-    float col_2 = 20.602;
+    // Load and apply theme
+    theme.load("grain_engine_mk2_expander");
+    applyTheme();
 
-    float row_distance = 19.592;
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("AUDIO_IN_LEFT"), module, GrainEngineMK2Expander::AUDIO_IN_LEFT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("AUDIO_IN_RIGHT"), module, GrainEngineMK2Expander::AUDIO_IN_RIGHT));
 
-    float row_1 = 35.612 - 8;  // 35.612 - 6.264 =
-    float row_2 = row_1 + row_distance;
-    float row_3 = row_2 + row_distance;
-    float row_4 = row_3 + row_distance;
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("RECORD_START_INPUT"), module, GrainEngineMK2Expander::RECORD_START_INPUT));
+    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("RECORD_START_BUTTON_PARAM"), module, GrainEngineMK2Expander::RECORD_START_BUTTON_PARAM));
 
-    // Row 1
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(col_1, row_1)), module, GrainEngineMK2Expander::AUDIO_IN_LEFT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(col_2, row_1)), module, GrainEngineMK2Expander::AUDIO_IN_RIGHT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("RECORD_STOP_INPUT"), module, GrainEngineMK2Expander::RECORD_STOP_INPUT));
+    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("RECORD_STOP_BUTTON_PARAM"), module, GrainEngineMK2Expander::RECORD_STOP_BUTTON_PARAM));
 
-    // Row 2
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(col_1, row_2)), module, GrainEngineMK2Expander::RECORD_START_INPUT));
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(col_2, row_2)), module, GrainEngineMK2Expander::RECORD_START_BUTTON_PARAM));
-    addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(col_2, row_2)), module, GrainEngineMK2Expander::RECORDING_LIGHT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("SAMPLE_SLOT_INPUT"), module, GrainEngineMK2Expander::SAMPLE_SLOT_INPUT));
+    addParam(createParamCentered<VoxglitchAttenuator>(themePos("SAMPLE_SLOT_KNOB_PARAM"), module, GrainEngineMK2Expander::SAMPLE_SLOT_KNOB_PARAM));
 
-    // Row 3
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(col_1, row_3)), module, GrainEngineMK2Expander::RECORD_STOP_INPUT));
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(col_2, row_3)), module, GrainEngineMK2Expander::RECORD_STOP_BUTTON_PARAM));
-    addChild(createLightCentered<MediumLight<YellowLight>>(mm2px(Vec(col_2, row_3)), module, GrainEngineMK2Expander::STOPPED_LIGHT));
-
-    // Row 4
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(col_1, row_4)), module, GrainEngineMK2Expander::SAMPLE_SLOT_INPUT));
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(col_2, row_4)), module, GrainEngineMK2Expander::SAMPLE_SLOT_KNOB_PARAM));
-
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(col_1, 114.702)), module, GrainEngineMK2Expander::PASSTHROUGH_LEFT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(col_2, 114.702)), module, GrainEngineMK2Expander::PASSTHROUGH_RIGHT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("PASSTHROUGH_LEFT"), module, GrainEngineMK2Expander::PASSTHROUGH_LEFT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("PASSTHROUGH_RIGHT"), module, GrainEngineMK2Expander::PASSTHROUGH_RIGHT));
   }
 
   void appendContextMenu(Menu *menu) override

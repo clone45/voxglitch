@@ -22,19 +22,20 @@ struct GrainEngineMK2PosDisplay : TransparentWidget
       // unsigned int x = module->draw_position * (DRAW_AREA_WIDTH - 2);
       // ^ this is incorrect.  Instead, if x >= DRAW_AREA_WIDTH, x = DRAW_AREA_WIDTH - 1
 
-      unsigned int x = module->draw_position * DRAW_AREA_WIDTH;
-      if (x >= DRAW_AREA_WIDTH) x = DRAW_AREA_WIDTH - 2;
+      // TODO: multiply x instead of adjusting it
+      float x = (module->draw_position * DRAW_AREA_WIDTH) * .982;
+      // if (x >= DRAW_AREA_WIDTH) x = DRAW_AREA_WIDTH - 4;
 
       // Grey background
       nvgBeginPath(vg);
       nvgRect(vg, 0, 0, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
-      nvgFillColor(vg, nvgRGB(55, 55, 55));
+      nvgFillColor(vg, nvgRGBA(0, 0, 0, 255));
       nvgFill(vg);
 
-      // Red overlay
+      // overlay
       nvgBeginPath(vg);
-      nvgRect(vg, 1, 1, x, DRAW_AREA_HEIGHT - 2);
-      nvgFillColor(vg, nvgRGB(255, 255, 255));
+      nvgRect(vg, 2, 2, x, DRAW_AREA_HEIGHT - 4);
+      nvgFillColor(vg, nvgRGBA(255, 255, 255, 170));
       nvgFill(vg);
     }
     // Paint static content for library display

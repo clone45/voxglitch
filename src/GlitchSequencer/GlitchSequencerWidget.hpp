@@ -1,44 +1,46 @@
-struct GlitchSequencerWidget : ModuleWidget
+struct GlitchSequencerWidget : VoxglitchModuleWidget
 {
   GlitchSequencerWidget(GlitchSequencer* module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/glitch_sequencer_front_panel.svg")));
 
-    float button_spacing = 9.8; // 9.1
-    float button_group_x = 53.0;
-    float button_group_y = 109.0;
+    // Load and apply theme
+    theme.load("glitch_sequencer");
+    applyTheme();
 
-    float inputs_y = 116.0;
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("STEP_INPUT"), module, GlitchSequencer::STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, GlitchSequencer::RESET_INPUT));
+    addParam(createParamCentered<VoxglitchAttenuator>(themePos("LENGTH_KNOB"), module, GlitchSequencer::LENGTH_KNOB));
 
-    // Step
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, inputs_y)), module, GlitchSequencer::STEP_INPUT));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("TRIGGER_GROUP_BUTTONS_1"), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 0));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("TRIGGER_GROUP_BUTTONS_2"), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 1));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("TRIGGER_GROUP_BUTTONS_3"), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 2));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("TRIGGER_GROUP_BUTTONS_4"), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 3));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("TRIGGER_GROUP_BUTTONS_5"), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 4));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("TRIGGER_GROUP_BUTTONS_6"), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 5));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("TRIGGER_GROUP_BUTTONS_7"), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 6));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("TRIGGER_GROUP_BUTTONS_8"), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 7));
 
-    // Reset
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 13.544, inputs_y)), module, GlitchSequencer::RESET_INPUT));
-
-    // Length
-    addParam(createParamCentered<Trimpot>(mm2px(Vec(10 + (13.544 * 2), inputs_y)), module, GlitchSequencer::LENGTH_KNOB));
-
-    for(unsigned int i=0; i<NUMBER_OF_TRIGGER_GROUPS; i++)
-    {
-      // Trigger group buttons and lights
-      addParam(createParamCentered<LEDButton>(mm2px(Vec(button_group_x + (button_spacing * i), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + i));
-      addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(button_group_x + (button_spacing * i), button_group_y)), module, GlitchSequencer::TRIGGER_GROUP_LIGHTS + i));
-
-      // Add outputs
-      addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(button_group_x + (button_spacing * i), button_group_y + 10)), module, GlitchSequencer::GATE_OUTPUTS + i));
-    }
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("GATE_OUTPUTS_1"), module, GlitchSequencer::GATE_OUTPUTS + 0));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("GATE_OUTPUTS_2"), module, GlitchSequencer::GATE_OUTPUTS + 1));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("GATE_OUTPUTS_3"), module, GlitchSequencer::GATE_OUTPUTS + 2));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("GATE_OUTPUTS_4"), module, GlitchSequencer::GATE_OUTPUTS + 3));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("GATE_OUTPUTS_5"), module, GlitchSequencer::GATE_OUTPUTS + 4));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("GATE_OUTPUTS_6"), module, GlitchSequencer::GATE_OUTPUTS + 5));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("GATE_OUTPUTS_7"), module, GlitchSequencer::GATE_OUTPUTS + 6));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("GATE_OUTPUTS_8"), module, GlitchSequencer::GATE_OUTPUTS + 7));
 
     CellularAutomatonDisplay *ca_display = new CellularAutomatonDisplay();
-    ca_display->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
+    ca_display->box.pos = themePos("GRID_DISPLAY");
     ca_display->module = module;
     addChild(ca_display);
 
+    /*
     LengthReadoutDisplay *length_readout_display = new LengthReadoutDisplay();
-    length_readout_display->box.pos = mm2px(Vec(30.0, 122.0));
+    length_readout_display->box.pos = mm2px(themePos("LENGTH_LABEL"));
     length_readout_display->module = module;
     addChild(length_readout_display);
+    */
   }
 
   void appendContextMenu(Menu *menu) override

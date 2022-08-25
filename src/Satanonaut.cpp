@@ -5,6 +5,9 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 
+#include "Common/Theme.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
+
 // #include "ByteBeat/calculator.hpp"
 #include "Satanonaut/defines.h"
 #include "Satanonaut/SatanonautAudioBuffer.hpp"

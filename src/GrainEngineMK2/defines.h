@@ -7,10 +7,10 @@
 #define MAX_POSITION_MEDIUM 20000.0
 
 // For the position display
-#define DRAW_AREA_POSITION_X 5
-#define DRAW_AREA_POSITION_Y 43
-#define DRAW_AREA_WIDTH 270
-#define DRAW_AREA_HEIGHT 20
+#define DRAW_AREA_POSITION_X 9
+#define DRAW_AREA_POSITION_Y 42
+#define DRAW_AREA_WIDTH 249
+#define DRAW_AREA_HEIGHT 10
 
 float CONTOUR[512] =
 {

@@ -3,29 +3,29 @@ struct WavBankWidget : VoxglitchSamplerModuleWidget
 	WavBankWidget(WavBank* module)
 	{
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/wav_bank_front_panel.svg")));
 
-		// Cosmetic rack screws
-		addChild(createWidget<ScrewSilver>(Vec(15, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
+    // Load and apply theme
+    theme.load("wavbank");
+    applyTheme();
 
-		// Input and label for the trigger input (which is labeled "CLK" on the front panel)
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.185, 25.535)), module, WavBank::TRIG_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.185, 46)), module, WavBank::WAV_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(13.185, 114.893)), module, WavBank::PITCH_INPUT));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(13.185, 60)), module, WavBank::WAV_ATTN_KNOB));
-		addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(13.185, 75)), module, WavBank::WAV_KNOB));
-		addParam(createParamCentered<CKSS>(mm2px(Vec(13.185, 97)), module, WavBank::LOOP_SWITCH));
+    addParam(createParamCentered<VoxglitchLargeKnob>(themePos("WAV_KNOB"), module, WavBank::WAV_KNOB));
+    addParam(createParamCentered<VoxglitchAttenuator>(themePos("WAV_ATTN_KNOB"), module, WavBank::WAV_ATTN_KNOB));
+		addParam(createParamCentered<squareToggle>(themePos("LOOP_SWITCH"), module, WavBank::LOOP_SWITCH));
 
-		WavBankReadout *readout = new WavBankReadout();
-		readout->box.pos = mm2px(Vec(34.236, 82));
+    // Input jacks
+		addInput(createInputCentered<VoxglitchInputPort>(themePos("TRIG_INPUT"), module, WavBank::TRIG_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(themePos("WAV_INPUT"), module, WavBank::WAV_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(themePos("PITCH_INPUT"), module, WavBank::PITCH_INPUT));
+
+		// WAV output
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("WAV_LEFT_OUTPUT"), module, WavBank::WAV_LEFT_OUTPUT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("WAV_RIGHT_OUTPUT"), module, WavBank::WAV_RIGHT_OUTPUT));
+
+    WavBankReadout *readout = new WavBankReadout();
+		readout->box.pos = themePos("READOUT");
 		readout->box.size = Vec(110, 30); // bounding box of the widget
 		readout->module = module;
 		addChild(readout);
-
-		// WAV output
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 104)), module, WavBank::WAV_LEFT_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 114.9)), module, WavBank::WAV_RIGHT_OUTPUT));
 	}
 
   //

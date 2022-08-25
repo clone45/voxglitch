@@ -1,4 +1,4 @@
-struct GrainFx : Module
+struct GrainFx : VoxglitchModule
 {
   // Various internal variables
   double pitch = 0;

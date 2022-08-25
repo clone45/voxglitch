@@ -2,112 +2,66 @@
 static DrawTimer drawTimer("DigitalProgrammer");
 #endif
 
-struct DigitalProgrammerWidget : ModuleWidget
+struct DigitalProgrammerWidget : VoxglitchModuleWidget
 {
   DigitalProgrammer* module = NULL;
-
-  float bank_button_positions[24][2] = {
-    {189.56, 47.975}, {200.827, 47.975}, {212.093, 47.975}, {223.360, 47.975},
-    {189.56, 59.242}, {200.827, 59.242}, {212.093, 59.242}, {223.360, 59.242},
-    {189.56, 70.509}, {200.827, 70.509}, {212.093, 70.509}, {223.360, 70.509},
-    {189.56, 81.776}, {200.827, 81.776}, {212.093, 81.776}, {223.360, 81.776},
-    {189.56, 93.043}, {200.827, 93.043}, {212.093, 93.043}, {223.360, 93.043},
-    {189.56, 104.317}, {200.827, 104.317}, {212.093, 104.317}, {223.360, 104.317}
-  };
 
   DigitalProgrammerWidget(DigitalProgrammer* module)
   {
     this->module = module;
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_programmer_front_panel.svg")));
 
-    // panel_x_position and panel_y_position specify where a slider should
-    // be displayed on the front panel relative to 0,0.
-    float panel_x_position = 0;
-    float panel_y_position = 0;
+    // Add rack screws
+    if(theme.showScrews())
+    {
+  		addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, 0)));
+  		addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+  		addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+  		addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    }
+    
+    // Load and apply theme
+    theme.load("digital_programmer");
+    applyTheme();
 
-    float outputs_vertical_position = 118.0;
-    float slider_column_x[NUMBER_OF_SLIDERS] = { 7, 18, 29, 40, 51, 62, 73, 84, 95, 106, 117, 128, 139, 150, 161, 172 };
 
     //
-    // Loop through each column and draw the slider and outputs
+    // Loop through each column and draw the sliders
     //
     for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)
     {
-      // Calculate where to put the slider
-      // panel_x_position = (column * horizontal_padding) + margin_left;
-      panel_x_position = slider_column_x[column];
-      panel_y_position = 7.0;
-
-      // Add slider widget
-      DPSliderDisplay *dp_slider_display = new DPSliderDisplay(column);
-      dp_slider_display->setPosition(mm2px(Vec(panel_x_position, panel_y_position)));
-      dp_slider_display->setSize(Vec(DRAW_AREA_WIDTH, SLIDER_HEIGHT));
-      dp_slider_display->module = module;
-      addChild(dp_slider_display);
+      std::string slider_name("SLIDER_" + std::to_string(column + 1));
+      std::string output_name("OUTPUT_" + std::to_string(column + 1));
+      addSlider(column, themePos(slider_name));
+      addOutputEx(column, themePos(output_name));
     }
 
-    //
     // bank buttons
-    //
     for(unsigned int i = 0; i < NUMBER_OF_BANKS; i ++)
     {
-      // calculation panel_x_position, panel_y_position
-      panel_x_position = bank_button_positions[i][0];
-      panel_y_position = bank_button_positions[i][1] - 5.45;
-
-      // Add button widget
-      DPBankButtonDisplay *dp_bank_button_display = new DPBankButtonDisplay(i);
-      dp_bank_button_display->setPosition(mm2px(Vec(panel_x_position, panel_y_position)));
-      dp_bank_button_display->setSize(Vec(BANK_BUTTON_WIDTH, BANK_BUTTON_HEIGHT));
-      dp_bank_button_display->module = module;
-      addChild(dp_bank_button_display);
-    }
-
-    // add copy/paste label
-    /*
-    CopyPasteLabel *copy_paste_label = new CopyPasteLabel();
-    copy_paste_label->setPosition(mm2px(Vec(198.5, 123.4)));
-    copy_paste_label->module = module;
-    addChild(copy_paste_label);
-    */
-
-    for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)
-    {
-      // calculation panel_x_position, panel_y_position
-      panel_x_position = slider_column_x[column];
-      panel_y_position = 7.0;
-
-      // Add outputs
-      PortWidget *output_port = createOutput<PJ301MPort>(mm2px(Vec(panel_x_position, outputs_vertical_position)), module, column);
-      addOutput(output_port);
-
-      // Store pointer to outputs so that I can later fetch the cable informatiion
-      // (especially color) later.
-      if(module) module->output_ports[column] = output_port;
+      std::string bank_name("BANK_" + std::to_string(i + 1));
+      addBankButton(i, themePos(bank_name));
     }
 
     // Poly add input
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(202.404, 11.366)), module, DigitalProgrammer::POLY_ADD_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("POLY_ADD_INPUT"), module, DigitalProgrammer::POLY_ADD_INPUT));
 
     // Poly output
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(225.683, 11.366)), module, DigitalProgrammer::POLY_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("POLY_OUTPUT"), module, DigitalProgrammer::POLY_OUTPUT));
 
     // bank controls
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(193.162, 36.593 + 2.642 - 5.45)), module, DigitalProgrammer::BANK_CV_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(205.383, 36.593 + 2.642 - 5.45)), module, DigitalProgrammer::BANK_NEXT_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(217.612, 36.593 + 2.642 - 5.45)), module, DigitalProgrammer::BANK_PREV_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(229.824, 36.593 + 2.642 - 5.45)), module, DigitalProgrammer::BANK_RESET_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("BANK_CV_INPUT"), module, DigitalProgrammer::BANK_CV_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("BANK_RESET_INPUT"), module, DigitalProgrammer::BANK_RESET_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("BANK_PREV_INPUT"), module, DigitalProgrammer::BANK_PREV_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("BANK_NEXT_INPUT"), module, DigitalProgrammer::BANK_NEXT_INPUT));
+
+    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("BANK_PREV_PARAM"), module, DigitalProgrammer::BANK_PREV_PARAM));
+    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("BANK_NEXT_PARAM"), module, DigitalProgrammer::BANK_NEXT_PARAM));
 
     // copy/paste mode toggle
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_PARAM));
-    addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(193.162, 122)), module, DigitalProgrammer::COPY_MODE_LIGHT));
-
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(205, 122)), module, DigitalProgrammer::CLEAR_MODE_PARAM));
-    addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(205, 122)), module, DigitalProgrammer::CLEAR_MODE_LIGHT));
-
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(216.84, 122)), module, DigitalProgrammer::RANDOMIZE_MODE_PARAM));
-    addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(216.84, 122)), module, DigitalProgrammer::RANDOMIZE_MODE_LIGHT));
+    addParam(createParamCentered<squareToggle>(themePos("COPY_MODE_PARAM"), module, DigitalProgrammer::COPY_MODE_PARAM));
+    addParam(createParamCentered<squareToggle>(themePos("CLEAR_MODE_PARAM"), module, DigitalProgrammer::CLEAR_MODE_PARAM));
+    addParam(createParamCentered<squareToggle>(themePos("RANDOMIZE_MODE_PARAM"), module, DigitalProgrammer::RANDOMIZE_MODE_PARAM));
 
   }
 
@@ -268,6 +222,35 @@ struct DigitalProgrammerWidget : ModuleWidget
       return menu;
     }
   };
+
+  void addSlider(unsigned int column, Vec pos)
+  {
+    DPSliderDisplay *dp_slider_display = new DPSliderDisplay(column);
+    dp_slider_display->setPosition(pos);
+    dp_slider_display->setSize(Vec(DRAW_AREA_WIDTH, SLIDER_HEIGHT));
+    dp_slider_display->module = module;
+    addChild(dp_slider_display);
+  }
+
+  void addOutputEx(unsigned int column, Vec pos)
+  {
+    // Add outputs  39.333263,349.639343
+    PortWidget *output_port = createOutputCentered<VoxglitchOutputPort>(pos, module, column);
+    addOutput(output_port);
+
+    // Store pointer to outputs so that I can later fetch the cable informatiion
+    // (especially color) later.
+    if(module) module->output_ports[column] = output_port;
+  }
+
+  void addBankButton(unsigned int index, Vec pos)
+  {
+    DPBankButtonDisplay *dp_bank_button_display = new DPBankButtonDisplay(index);
+    dp_bank_button_display->setPosition(pos);
+    dp_bank_button_display->setSize(Vec(BANK_BUTTON_WIDTH, BANK_BUTTON_HEIGHT));
+    dp_bank_button_display->module = module;
+    addChild(dp_bank_button_display);
+  }
 
   void appendContextMenu(Menu *menu) override
   {

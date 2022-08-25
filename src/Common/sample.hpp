@@ -86,8 +86,12 @@ struct Sample
   Sample()
   {
     sample_audio_buffer.clear();
-    loading = false;
-    filename = "[ empty ]";
+		loading = false;
+		filename = "[ empty ]";
+    display_name = "[ empty ]";
+		path = "";
+		sample_rate = 0;
+		channels = 0;
 
     audioFile.setNumChannels(2);
     audioFile.setSampleRate(44100);

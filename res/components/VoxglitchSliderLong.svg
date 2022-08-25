@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="7.00002mm"
-   height="80mm"
-   viewBox="0 0 7.00002 80.000001"
+   width="7.6799998mm"
+   height="47.625mm"
+   viewBox="0 0 7.6799999 47.625002"
    version="1.1"
    id="svg163547"
    sodipodi:docname="VoxglitchSliderLong.svg"
@@ -23,9 +23,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="-33.335034"
-     inkscape:cy="143.6942"
+     inkscape:zoom="3.959798"
+     inkscape:cx="4.4194174"
+     inkscape:cy="65.407377"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -33,13 +33,15 @@
      fit-margin-left="2"
      fit-margin-right="2"
      fit-margin-bottom="0"
-     inkscape:window-width="1902"
-     inkscape:window-height="1033"
-     inkscape:window-x="0"
-     inkscape:window-y="1149"
-     inkscape:window-maximized="0"
+     inkscape:window-width="3840"
+     inkscape:window-height="2066"
+     inkscape:window-x="2869"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
      inkscape:document-rotation="0"
-     inkscape:pagecheckerboard="0" />
+     inkscape:pagecheckerboard="0"
+     units="mm"
+     width="11.339px" />
   <metadata
      id="metadata163544">
     <rdf:RDF>
@@ -55,10 +57,10 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-105.35713,-95.267905)">
+     transform="translate(-105.35713,-115.26791)">
     <path
        style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.429389"
-       d="m 110.35715,115.26791 v 39.99998 h -3.00002 v -39.99998 z m 0,0"
+       d="m 110.69714,119.08042 v 39.99998 h -3.00002 v -39.99998 z m 0,0"
        id="path159840"
        inkscape:connector-curvature="0" />
   </g>

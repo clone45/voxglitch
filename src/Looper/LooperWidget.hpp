@@ -1,7 +1,7 @@
 struct VoxglitchSliderLong : app::SvgSlider {
 	VoxglitchSliderLong() {
-		maxHandlePos = mm2px(Vec(-.375, 12.0));
-		minHandlePos = mm2px(Vec(-.375, 52));
+		maxHandlePos = mm2px(Vec(-.10, -3.0));
+		minHandlePos = mm2px(Vec(-.10, 36.0));
 		setBackgroundSvg(APP->window->loadSvg(asset::plugin(pluginInstance,"res/components/VoxglitchSliderLong.svg")));
 		setHandleSvg(APP->window->loadSvg(asset::plugin(pluginInstance,"res/components/VoxglitchSliderHandle.svg")));
 	}
@@ -12,30 +12,21 @@ struct LooperWidget : VoxglitchSamplerModuleWidget
   LooperWidget(Looper* module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/looper_front_panel.svg")));
+
+    // Load and apply theme
+    theme.load("looper");
+    applyTheme();
 
     // Add output jacks
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(7.560, 100.39)), module, Looper::AUDIO_OUTPUT_LEFT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(7.560, 112.4375)), module, Looper::AUDIO_OUTPUT_RIGHT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_LEFT"), module, Looper::AUDIO_OUTPUT_LEFT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_RIGHT"), module, Looper::AUDIO_OUTPUT_RIGHT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, Looper::RESET_INPUT));
 
-    // Add reset input
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(7.560, 24.09375)), module, Looper::RESET_INPUT));
-
-    // Add waveform display (see LooperWaveformDisplay.hpp)
-    /*
-    LooperWaveformDisplay *looper_waveform_display = new LooperWaveformDisplay();
-    looper_waveform_display->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
-    looper_waveform_display->box.size.x = DRAW_AREA_WIDTH;
-    looper_waveform_display->box.size.y = DRAW_AREA_HEIGHT;
-    looper_waveform_display->module = module;
-    addChild(looper_waveform_display);
-    */
     // Add volume slider
     //
     // Here's code for a longer slider:
     // https://github.com/algoritmarte/AlgoritmarteVCVPlugin/blob/main/src/Zefiro.hpp
-    addParam(createParamCentered<VoxglitchSliderLong>(mm2px(Vec(7.560, 60)), module, Looper::VOLUME_SLIDER));
-
+    addParam(createParamCentered<VoxglitchSliderLong>(themePos("VOLUME_SLIDER"), module, Looper::VOLUME_SLIDER));
   }
 
   void appendContextMenu(Menu *menu) override

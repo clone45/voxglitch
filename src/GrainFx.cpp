@@ -2,13 +2,13 @@
 // Voxglitch "Grain Fx" module for VCV Rack
 //
 
-#include <stack>
-#include <vector>
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "Common/common.hpp"
 #include "Common/audio_buffer.hpp"
 #include "Common/dsp/StereoPan.hpp"
+#include "Common/Theme.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
 
 #include "GrainFx/defines.h"
 #include "GrainFx/SimpleTableOsc.hpp"

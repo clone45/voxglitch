@@ -8,8 +8,8 @@
 #define DRAW_AREA_POSITION_X 4.45
 #define DRAW_AREA_POSITION_Y 6.55
 
-#define CELL_WIDTH 16.95
-#define CELL_HEIGHT 16.95
+#define CELL_WIDTH 16.30
+#define CELL_HEIGHT 16.30
 #define CELL_PADDING 0.4
 
 #define PLAY_MODE 0

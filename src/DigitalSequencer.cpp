@@ -14,11 +14,10 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "settings.hpp"
-#include <fstream>
-#include <array>
 
 #include "DigitalSequencer/defines.h"
-#include "Common/VoxglitchWidget.hpp"
+#include "Common/Theme.hpp"
+#include "Common/components/VoxglitchComponents.hpp"
 
 namespace dseq
 {

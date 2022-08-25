@@ -25,7 +25,6 @@ struct VoltageSequencerDisplay : SequencerDisplay
     {
 
       const auto vg = args.vg;
-      int value;
       NVGcolor bar_color;
       bool draw_from_center = false;
 
@@ -44,21 +43,21 @@ struct VoltageSequencerDisplay : SequencerDisplay
         //
         for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
         {
-          value = module->selected_voltage_sequencer->getValue(i);
+          float value = module->selected_voltage_sequencer->getValue(i);
 
           // Draw grey background bar
           if(i < module->selected_voltage_sequencer->getLength()) {
-            // nvgFillColor(vg, brightness(nvgRGB(55.0, 55.0, 55.0), dim));
-            bar_color = brightness(nvgRGBA(60, 60, 64, 255), settings::rackBrightness);
+            bar_color = brightness(nvgRGBA(42, 50, 52, 255), settings::rackBrightness);
           }
           else {
-            bar_color = brightness(nvgRGBA(45, 45, 45, 255), settings::rackBrightness);
+            bar_color = brightness(nvgRGBA(31, 39, 41, 255), settings::rackBrightness);
           }
 
           drawBar(vg, i, BAR_HEIGHT, DRAW_AREA_HEIGHT, bar_color);
 
           if(i == module->selected_voltage_sequencer->getPlaybackPosition())
           {
+            // Highlight current step
             bar_color = nvgRGBA(255, 255, 255, 250);
           }
           else if(i < module->selected_voltage_sequencer->getLength())
@@ -70,8 +69,14 @@ struct VoltageSequencerDisplay : SequencerDisplay
             bar_color = nvgRGBA(255, 255, 255, 10);
           }
 
+          // for debugging
+
+
           // Draw bars for the sequence values
-          if(value > 0) drawBar(vg, i, value, DRAW_AREA_HEIGHT, bar_color);
+          if(value > 0)
+          {
+            drawBar(vg, i, (value * DRAW_AREA_HEIGHT), DRAW_AREA_HEIGHT, bar_color);
+          }
 
           // Highlight the sequence playback column
           if(i == module->selected_voltage_sequencer->getPlaybackPosition())
@@ -94,6 +99,28 @@ struct VoltageSequencerDisplay : SequencerDisplay
           nvgFill(vg);
         }
 
+        //
+        // draw dirt overlay
+        //
+        /*
+        std::shared_ptr<Image> img = APP->window->loadImage(asset::plugin(pluginInstance, "res/digital_sequencer/dust_layer.png"));
+
+        int temp_width, temp_height;
+
+        // Get the image size and store it in the width and height variables
+        nvgImageSize(vg, img->handle, &temp_width, &temp_height);
+
+        // Set the bounding box of the widget
+        box.size = Vec(490, 220);
+
+        // Paint the .png background
+        NVGpaint paint = nvgImagePattern(vg, 0.0, 0.0, box.size.x, box.size.y, 0.0, img->handle, 1);
+        nvgBeginPath(vg);
+        nvgRect(vg, 0.0, 0.0, box.size.x, box.size.y);
+        nvgFillPaint(vg, paint);
+        nvgFill(vg);
+        */
+
       }
       else // Draw a demo sequence so that the sequencer looks nice in the library selector
       {
@@ -113,7 +140,7 @@ struct VoltageSequencerDisplay : SequencerDisplay
       }
 
       drawVerticalGuildes(vg, DRAW_AREA_HEIGHT);
-      drawBlueOverlay(vg, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
+      drawOverlay(vg, DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
 
       if(module)
       {
@@ -171,19 +198,19 @@ struct VoltageSequencerDisplay : SequencerDisplay
   //
   void editBar(Vec mouse_position)
   {
+    float value = 1 - (mouse_position.y / DRAW_AREA_HEIGHT);
+    value = clamp(value, 0.0, 1.0);
+
     double bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
     int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
-    int clicked_y = DRAW_AREA_HEIGHT - mouse_position.y;
-
     clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
-    clicked_y = clamp(clicked_y, 0, DRAW_AREA_HEIGHT);
 
-    module->selected_voltage_sequencer->setValue(clicked_bar_x_index, clicked_y);
+    module->selected_voltage_sequencer->setValue(clicked_bar_x_index, value);
 
     // Tooltip drawing is done in the draw method
     draw_tooltip = true;
     draw_tooltip_index = clicked_bar_x_index;
-    draw_tooltip_y = clicked_y;
+    draw_tooltip_y = value * DRAW_AREA_HEIGHT;
     tooltip_value = module->selected_voltage_sequencer->getOutput(clicked_bar_x_index);
   }
 

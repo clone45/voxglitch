@@ -120,8 +120,12 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
 
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 
-    leftExpander.producerMessage = producer_message;
-    leftExpander.consumerMessage = consumer_message;
+    // leftExpander.producerMessage = producer_message;
+    // leftExpander.consumerMessage = consumer_message;
+
+    rightExpander.producerMessage = producer_message;
+    rightExpander.consumerMessage = consumer_message;
+
   }
 
   ~GrainEngineMK2()
@@ -375,10 +379,12 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
 
   void processExpander()
   {
-    if (leftExpander.module && leftExpander.module->model == modelGrainEngineMK2Expander)
+    // if (leftExpander.module && leftExpander.module->model == modelGrainEngineMK2Expander)
+    if (rightExpander.module && rightExpander.module->model == modelGrainEngineMK2Expander)
     {
       // Receive message from expander
-      GrainEngineExpanderMessage *expander_message = (GrainEngineExpanderMessage *) leftExpander.producerMessage;
+      // GrainEngineExpanderMessage *expander_message = (GrainEngineExpanderMessage *) leftExpander.producerMessage;
+      GrainEngineExpanderMessage *expander_message = (GrainEngineExpanderMessage *) rightExpander.producerMessage;
 
       if(expander_message->message_received == false)
       {
@@ -403,7 +409,8 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
         expander_message->message_received = true;
       }
 
-      leftExpander.messageFlipRequested = true;
+      // leftExpander.messageFlipRequested = true;
+      rightExpander.messageFlipRequested = true;
     }
   }
 

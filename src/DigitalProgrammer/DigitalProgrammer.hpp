@@ -6,7 +6,7 @@ By Bret Truchan
 - Thank you to Guenon from the VCV Community for sharing their feedback.
 */
 
-struct DigitalProgrammer : Module
+struct DigitalProgrammer : VoxglitchModule
 {
   dsp::SchmittTrigger bank_button_triggers[NUMBER_OF_BANKS];
   unsigned int selected_bank = 0;
@@ -17,13 +17,10 @@ struct DigitalProgrammer : Module
   unsigned int moused_over_slider = 0;
   bool is_moused_over_slider = false;
 
-  // Copy/paste tracking
-  bool copy_paste_mode = false;
-  unsigned int copy_bank_id = 0;
+  unsigned int bank_interaction_mode = SELECT_MODE;
 
-  // Other modes
-  bool clear_mode = false;
-  bool randomize_mode = false;
+  // Copy/paste tracking
+  unsigned int copy_bank_id = 0;
 
   // Context menu options
   bool visualize_sums = false;
@@ -40,8 +37,10 @@ struct DigitalProgrammer : Module
   std::string snap_division_names[NUMBER_OF_SNAP_DIVISIONS] = { "None", "32", "16", "8", "4" };
   std::string labels[NUMBER_OF_SLIDERS] = {"","","","","","","","","","","","","","","",""};
 
-  dsp::SchmittTrigger bank_next_schmitt_trigger;
-  dsp::SchmittTrigger bank_prev_schmitt_trigger;
+  dsp::SchmittTrigger bank_next_input_schmitt_trigger;
+  dsp::SchmittTrigger bank_next_button_schmitt_trigger;
+  dsp::SchmittTrigger bank_prev_input_schmitt_trigger;
+  dsp::SchmittTrigger bank_prev_button_schmitt_trigger;
   dsp::SchmittTrigger bank_reset_schmitt_trigger;
   dsp::SchmittTrigger copy_mode_button_trigger;
   dsp::SchmittTrigger clear_mode_button_trigger;
@@ -63,6 +62,8 @@ struct DigitalProgrammer : Module
     COPY_MODE_PARAM,
     CLEAR_MODE_PARAM,
     RANDOMIZE_MODE_PARAM,
+    BANK_PREV_PARAM,
+    BANK_NEXT_PARAM,
     NUM_PARAMS
   };
   enum InputIds {
@@ -234,6 +235,12 @@ struct DigitalProgrammer : Module
     }
   }
 
+  /*
+  ==================================================================================================================================================
+    Helper Functions
+  ==================================================================================================================================================
+  */
+
   void incrementBank()
   {
     if(selected_bank < (NUMBER_OF_BANKS - 1))
@@ -311,20 +318,18 @@ struct DigitalProgrammer : Module
   }
 
   /*
-
-  ______
-  | ___ \
-  | |_/ / __ ___   ___ ___  ___ ___
-  |  __/ '__/ _ \ / __/ _ \/ __/ __|
-  | |  | | | (_) | (_|  __/\__ \__ \
-  \_|  |_|  \___/ \___\___||___/___/
-
-
+  ==================================================================================================================================================
+    Process
+  ==================================================================================================================================================
   */
-
 
   void process(const ProcessArgs &args) override
   {
+
+    //
+    // Process bank controls
+    //
+
     if(inputs[BANK_CV_INPUT].isConnected())
     {
       unsigned int bank_cv_value = (inputs[BANK_CV_INPUT].getVoltage() / 10.0) * NUMBER_OF_BANKS;
@@ -332,46 +337,56 @@ struct DigitalProgrammer : Module
       this->selected_bank = bank_cv_value;
     }
 
-    if(bank_next_schmitt_trigger.process(inputs[BANK_NEXT_INPUT].getVoltage())) incrementBank();
-    if(bank_prev_schmitt_trigger.process(inputs[BANK_PREV_INPUT].getVoltage())) decrementBank();
+    if(
+      bank_next_input_schmitt_trigger.process(inputs[BANK_NEXT_INPUT].getVoltage()) ||
+      bank_next_button_schmitt_trigger.process(params[BANK_NEXT_PARAM].getValue())
+    ) incrementBank();
+
+    if(
+      bank_prev_input_schmitt_trigger.process(inputs[BANK_PREV_INPUT].getVoltage()) ||
+      bank_prev_button_schmitt_trigger.process(params[BANK_PREV_PARAM].getValue())
+    ) decrementBank();
+
     if(bank_reset_schmitt_trigger.process(inputs[BANK_RESET_INPUT].getVoltage())) resetBank();
 
+    // Set input channels for poly add input
     inputs[POLY_ADD_INPUT].setChannels(NUMBER_OF_SLIDERS);
 
-    // Process copy/paste button
+    //
+    // Process bank mode buttons
+    //
+
     if(copy_mode_button_trigger.process(params[COPY_MODE_PARAM].getValue()))
     {
-      copy_paste_mode = ! copy_paste_mode; // toggle off/on
-      this->copy_bank_id = this->selected_bank;
-      clear_mode = false;
-      randomize_mode = false;
+      bank_interaction_mode = COPY_MODE;
+      copy_bank_id = selected_bank;
+      params[CLEAR_MODE_PARAM].setValue(false);
+      params[RANDOMIZE_MODE_PARAM].setValue(false);
     }
-
-    // Process clear mode button
-    if(clear_mode_button_trigger.process(params[CLEAR_MODE_PARAM].getValue()))
+    else if(clear_mode_button_trigger.process(params[CLEAR_MODE_PARAM].getValue()))
     {
-      clear_mode = ! clear_mode; // toggle off/on
-      copy_paste_mode = false;
-      randomize_mode = false;
+      bank_interaction_mode = CLEAR_MODE;
+      params[COPY_MODE_PARAM].setValue(false);
+      params[RANDOMIZE_MODE_PARAM].setValue(false);
     }
-
-    // Process randomize mode button
-    if(randomize_mode_button_trigger.process(params[RANDOMIZE_MODE_PARAM].getValue()))
+    else if(randomize_mode_button_trigger.process(params[RANDOMIZE_MODE_PARAM].getValue()))
     {
-      randomize_mode = ! randomize_mode; // toggle off/on
-      copy_paste_mode = false;
-      clear_mode = false;
+      bank_interaction_mode = RANDOMIZE_MODE;
+      params[COPY_MODE_PARAM].setValue(false);
+      params[CLEAR_MODE_PARAM].setValue(false);
     }
 
+    // If all buttons are disabled, set mode to select mode
+    if(! (params[CLEAR_MODE_PARAM].getValue() || params[COPY_MODE_PARAM].getValue() || params[RANDOMIZE_MODE_PARAM].getValue())) bank_interaction_mode = SELECT_MODE;
+
+    //
     // Output values
+    //
+
     for(unsigned int column = 0; column < NUMBER_OF_SLIDERS; column ++)
     {
       // Get voltage for the specific slider
       float scaled_output = sliders[selected_bank][column].getOutput(range_settings[column]);
-
-      // Eventually, I may add per-channel scaling
-      // float scaled_output = output_voltage * 10.0;
-      // float scaled_output = output_voltage * 10.0;
 
       // Add any value from the poly input
       float add_input_voltage = inputs[POLY_ADD_INPUT].getVoltage(column);
@@ -385,11 +400,6 @@ struct DigitalProgrammer : Module
 
     // output voltages and manage lights
     outputs[POLY_OUTPUT].setChannels(NUMBER_OF_SLIDERS);
-
-    // Light up mode displays, if active
-    lights[COPY_MODE_LIGHT].setBrightness(copy_paste_mode == true);
-    lights[CLEAR_MODE_LIGHT].setBrightness(clear_mode == true);
-    lights[RANDOMIZE_MODE_LIGHT].setBrightness(randomize_mode == true);
   }
 
 };

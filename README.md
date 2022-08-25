@@ -2,6 +2,8 @@
 
 Modules for VCV Rack.  My apologies if I fall behind on the documentation.
 
+## Module Documentation
+
 * [Autobreak](docs/autobreak.md)
 * [Digital Sequencer](docs/digital-sequencer.md)
 * [Ghosts](docs/ghosts.md)
@@ -12,6 +14,30 @@ Modules for VCV Rack.  My apologies if I fall behind on the documentation.
 * [Repeater](docs/repeater.md)
 * [Wavebank](docs/wavebank.md)
 * [XY Controller](docs/xy-controller.md)
+
+## Themes
+
+![Theme Screen Capture](docs/images/home/light-theme.jpg)
+
+As of version 2.20.0, Voxglitch modules now support themes!  I've created two themes that cover the basics: The "default" theme and the "light" theme.
+
+When you start using any Voxglitch modules that support themes, a new file called **"Voxglitch.json"** will be created in your Rack User folder.  The location of this file will change depending on your operating system. On windows, this is Documents/Rack2/ and looks like this:
+
+ ![user-folder-windows](docs/images/home/rack-user-folder.jpg)
+
+ You can edit this file with a text editor to switch between “default” and “light” theme:
+````
+{
+  "theme":"light"
+}
+````
+````
+{
+  "theme":"default"
+}
+````
+
+Just remember that you must use the modules once _before_ the Voxglitch.json file is created.  Creating new themes is beyond the scope of this documentation.  Please ask me directly if this interests you!
 
 ## The Hall of Heros
 
