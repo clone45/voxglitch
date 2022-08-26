@@ -14,10 +14,17 @@ struct VoxglitchModuleWidget : ModuleWidget
 
   Vec themePos(std::string widget_name)
   {
-    json_t* widget_object = json_object_get(widgets_json, widget_name.c_str());
-    json_t* x_object = json_object_get(widget_object, "x");
-    json_t* y_object = json_object_get(widget_object, "y");
-    return(Vec(json_real_value(x_object), json_real_value(y_object)));
+    if(widgets_json)
+    {
+      json_t* widget_object = json_object_get(widgets_json, widget_name.c_str());
+      json_t* x_object = json_object_get(widget_object, "x");
+      json_t* y_object = json_object_get(widget_object, "y");
+      return(Vec(json_real_value(x_object), json_real_value(y_object)));
+    }
+    else
+    {
+      return(Vec(0.0, 0.0));
+    }
   }
 
   void applyTheme()

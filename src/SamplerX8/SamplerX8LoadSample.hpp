@@ -22,6 +22,7 @@ struct SamplerX8LoadSample : MenuItem
 
   static void fileSelected(SamplerX8 *module, unsigned int sample_number, std::string filename)
 	{
+    /*
 		if (filename != "")
 		{
       if(module->sample_players[sample_number].loadSample(filename))
@@ -30,5 +31,6 @@ struct SamplerX8LoadSample : MenuItem
         module->setRoot(filename);
       }
 		}
+    */
 	}
 };

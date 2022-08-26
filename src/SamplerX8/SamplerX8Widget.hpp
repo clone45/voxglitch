@@ -2,12 +2,18 @@ struct SamplerX8Widget : VoxglitchSamplerModuleWidget
 {
   SamplerX8Widget(SamplerX8* module)
   {
+    this->module = module;
     setModule(module);
+
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/samplerx8_front_panel.svg")));
 
-    // Cosmetic rack screws
-		addChild(createWidget<ScrewSilver>(Vec(15, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(15, 365)));
+    /*
+
+    // Load and apply theme
+    theme.load("samplerx8");
+    applyTheme();
+
+
 
     float group_y = 30;
     float row_padding = 10.2;
@@ -68,8 +74,10 @@ struct SamplerX8Widget : VoxglitchSamplerModuleWidget
 
     addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_l_column, 114.702)), module, SamplerX8::AUDIO_MIX_OUTPUT_LEFT));
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(output_r_column, 114.702)), module, SamplerX8::AUDIO_MIX_OUTPUT_RIGHT));
+    */
   }
 
+/*
   void appendContextMenu(Menu *menu) override
   {
     SamplerX8 *module = dynamic_cast<SamplerX8*>(this->module);
@@ -77,10 +85,6 @@ struct SamplerX8Widget : VoxglitchSamplerModuleWidget
 
     menu->addChild(new MenuEntry); // For spacing only
     menu->addChild(createMenuLabel("Load individual samples"));
-
-    //
-    // Add the sample slots to the right-click context menu
-    //
 
     for(int i=0; i < NUMBER_OF_SAMPLES; i++)
     {
@@ -105,4 +109,5 @@ struct SamplerX8Widget : VoxglitchSamplerModuleWidget
     sample_interpolation_menu_item->module = module;
     menu->addChild(sample_interpolation_menu_item);
   }
+  */
 };
