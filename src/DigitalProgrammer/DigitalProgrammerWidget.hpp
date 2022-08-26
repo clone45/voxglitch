@@ -19,7 +19,7 @@ struct DigitalProgrammerWidget : VoxglitchModuleWidget
   		addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
   		addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     }
-    
+
     // Load and apply theme
     theme.load("digital_programmer");
     applyTheme();
@@ -47,7 +47,7 @@ struct DigitalProgrammerWidget : VoxglitchModuleWidget
     addInput(createInputCentered<VoxglitchInputPort>(themePos("POLY_ADD_INPUT"), module, DigitalProgrammer::POLY_ADD_INPUT));
 
     // Poly output
-    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("POLY_OUTPUT"), module, DigitalProgrammer::POLY_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchPolyPort>(themePos("POLY_OUTPUT"), module, DigitalProgrammer::POLY_OUTPUT));
 
     // bank controls
     addInput(createInputCentered<VoxglitchInputPort>(themePos("BANK_CV_INPUT"), module, DigitalProgrammer::BANK_CV_INPUT));

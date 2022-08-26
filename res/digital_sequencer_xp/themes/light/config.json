@@ -1,0 +1,51 @@
+{
+	"panel_svg": "res/digital_sequencer_xp/themes/light/panel.svg",
+	"layers": [
+		{
+      "type": "image",
+      "path": "res/themes/light/background.jpg",
+      "zoom": 0.15,
+      "width": 182.88,
+      "height": 128.5
+    },
+    {
+      "type": "image",
+      "path": "res/digital_sequencer_xp/themes/light/details.png",
+      "width": 182.88,
+      "height": 128.5,
+      "zoom": 0.25
+    },
+    {
+      "type": "svg",
+      "path": "res/digital_sequencer_xp/themes/light/typography.svg"
+    }
+	],
+  "widgets": {
+    "STEP_INPUT": {"x": 41.827522,"y": 290.250732},
+    "LENGTH_INPUT": {"x": 41.822453, "y": 349.650879},
+    "RESET_INPUT": {"x": 47.822453, "y": 349.650879},
+
+    "SEQUENCER_1_BUTTON": {"x": 101.017012, "y": 278.567},
+    "SEQUENCER_2_BUTTON": {"x": 138.517043, "y": 278.567},
+    "SEQUENCER_3_BUTTON": {"x": 175.867018, "y": 278.567},
+    "SEQUENCER_4_BUTTON": {"x": 213.217024, "y": 278.567},
+    "SEQUENCER_5_BUTTON": {"x": 250.667006, "y": 278.567},
+    "SEQUENCER_6_BUTTON": {"x": 287.866988, "y": 278.567},
+    "SEQUENCER_7_BUTTON": {"x": 101.017012, "y": 278.567},
+    "SEQUENCER_8_BUTTON": {"x": 138.517043, "y": 278.567},
+    "SEQUENCER_9_BUTTON": {"x": 175.867018, "y": 278.567},
+    "SEQUENCER_10_BUTTON": {"x": 213.217024, "y": 278.567},
+    "SEQUENCER_11_BUTTON": {"x": 250.667006, "y": 278.567},
+    "SEQUENCER_12_BUTTON": {"x": 287.866988, "y": 278.567},
+    "SEQUENCER_13_BUTTON": {"x": 138.517043, "y": 278.567},
+    "SEQUENCER_14_BUTTON": {"x": 175.867018, "y": 278.567},
+    "SEQUENCER_15_BUTTON": {"x": 213.217024, "y": 278.567},
+    "SEQUENCER_16_BUTTON": {"x": 250.667006, "y": 278.567},
+
+    "CV_OUTPUT": {"x": 510.599976, "y": 311.749878},
+    "GATE_OUTPUT": {"x": 510.599976, "y": 349.699890},
+
+    "CV_SEQUENCER": {"x": 9.0, "y": 9.5},
+    "GATE_SEQUENCER": {"x": 9.0, "y": 77.0}
+  }
+}

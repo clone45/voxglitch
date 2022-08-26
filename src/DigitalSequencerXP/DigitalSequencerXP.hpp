@@ -394,6 +394,11 @@ struct DigitalSequencerXP : VoxglitchModule
       }
     }
 
+    // Highlight only selected sequence buttton
+    for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
+    {
+      params[SEQUENCER_BUTTONS + i].setValue(selected_sequencer_index == i);
+    }
 
     //
     // Process POLY step input.  The end result is that the step[] array will

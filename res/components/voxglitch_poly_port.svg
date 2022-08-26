@@ -8,7 +8,7 @@
    version="1.1"
    id="svg5"
    inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
-   sodipodi:docname="voxglitch_mc_port.svg"
+   sodipodi:docname="voxglitch_poly_port.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -25,14 +25,14 @@
      showgrid="false"
      units="px"
      width="23.528px"
-     inkscape:zoom="8.7988368"
-     inkscape:cx="-21.366461"
-     inkscape:cy="9.3762394"
-     inkscape:window-width="1682"
-     inkscape:window-height="999"
-     inkscape:window-x="3032"
-     inkscape:window-y="152"
-     inkscape:window-maximized="0"
+     inkscape:zoom="35.195347"
+     inkscape:cx="11.734506"
+     inkscape:cy="18.894543"
+     inkscape:window-width="3840"
+     inkscape:window-height="2066"
+     inkscape:window-x="2869"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
      inkscape:current-layer="layer1" />
   <defs
      id="defs2">
@@ -153,7 +153,7 @@
        cy="3.1125584"
        r="2.9368751"
        id="circle6"
-       style="fill:#465a8c;fill-opacity:1;stroke:none;stroke-width:0.264583;opacity:1" />
+       style="opacity:1;fill:#5769a6;fill-opacity:1;stroke:none;stroke-width:0.264583" />
     <path
        class="st1"
        d="M 0.87973979,1.2295188 C 0.0097898,2.4021521 0.12991064,4.035425 1.1625794,5.0680937 2.1952482,6.1007625 3.8282565,6.2208833 5.0011544,5.3509333 3.8406919,6.3388875 2.1161378,6.2698312 1.0387544,5.1921833 -0.03862895,4.1145354 -0.10821436,2.3897167 0.87973979,1.2295188 Z"
@@ -252,35 +252,35 @@
        cy="5.123127"
        r="0.12699999"
        id="circle78"
-       style="fill:#4b4bb0;stroke-width:0.264583;fill-opacity:1" />
+       style="fill:#919dc5;fill-opacity:1;stroke-width:0.264583" />
     <circle
        class="st16"
        cx="5.7303462"
        cy="3.8301082"
        r="0.12699999"
        id="circle80"
-       style="fill:#4b4bb0;stroke-width:0.264583;fill-opacity:1" />
+       style="fill:#919dc5;fill-opacity:1;stroke-width:0.264583" />
     <circle
        class="st16"
        cx="3.9515524"
        cy="0.97816461"
        r="0.12699999"
        id="circle82"
-       style="fill:#3f567b;stroke-width:0.264583;fill-opacity:1" />
+       style="fill:#919dc5;fill-opacity:1;stroke-width:0.264583" />
     <circle
        class="st17"
        cx="5.2628274"
        cy="4.1359663"
        r="0.063499995"
        id="circle84"
-       style="fill:#4b4bb0;stroke-width:0.264583;fill-opacity:1" />
+       style="fill:#919dc5;fill-opacity:1;stroke-width:0.264583" />
     <circle
        class="st18"
        cx="0.83925855"
        cy="2.4238479"
        r="0.063499995"
        id="circle86"
-       style="fill:#4b4bb0;stroke-width:0.264583;fill-opacity:1" />
+       style="fill:#919dc5;fill-opacity:1;stroke-width:0.264583" />
     <path
        class="st19"
        d="M 1.1800419,3.1136167 C 1.2162898,3.7629041 1.564217,4.3545125 2.1137565,4.7019104 2.6632961,5.0493083 3.3469794,5.1096333 3.9491711,4.8638354 3.3496253,5.161227 2.6384253,5.12445 2.0727461,4.7667333 1.5073315,4.4092812 1.1689294,3.7827479 1.1800419,3.1136167 Z"

@@ -14,7 +14,7 @@ struct WavBankMCWidget : VoxglitchModuleWidget
       addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, 0)));
   		// addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
   		addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-  		// addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));      
+  		// addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     }
 
     addParam(createParamCentered<VoxglitchLargeKnob>(themePos("WAV_KNOB"), module, WavBankMC::WAV_KNOB));
@@ -33,7 +33,7 @@ struct WavBankMCWidget : VoxglitchModuleWidget
     addInput(createInputCentered<VoxglitchInputPort>(themePos("PITCH_INPUT"), module, WavBankMC::PITCH_INPUT));
     addInput(createInputCentered<VoxglitchInputPort>(themePos("VOLUME_INPUT"), module, WavBankMC::VOLUME_INPUT));
 
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("POLY_WAV_OUTPUT"), module, WavBankMC::POLY_WAV_OUTPUT));
+		addOutput(createOutputCentered<VoxglitchPolyPort>(themePos("POLY_WAV_OUTPUT"), module, WavBankMC::POLY_WAV_OUTPUT));
     addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_WAV_OUTPUT"), module, WavBankMC::LEFT_WAV_OUTPUT));
     addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RIGHT_WAV_OUTPUT"), module, WavBankMC::RIGHT_WAV_OUTPUT));
 
