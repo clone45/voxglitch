@@ -1,0 +1,15 @@
+{
+	"panel_svg": "res/samplerx8/themes/default/panel.svg",
+	"layers": [
+		{
+      "type": "image",
+      "path": "res/themes/default/background2.jpg",
+      "zoom": 0.15,
+      "width": 193.04,
+      "height": 128.5
+    }
+	],
+  "widgets": {
+
+  }
+}

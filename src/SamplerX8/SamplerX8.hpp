@@ -66,7 +66,6 @@ struct SamplerX8 : VoxglitchSamplerModule
 	{
 		json_t *root = json_object();
 
-    /*
     for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
 			json_object_set_new(root, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(sample_players[i].getPath().c_str()));
@@ -78,7 +77,6 @@ struct SamplerX8 : VoxglitchSamplerModule
 		}
 
     saveSamplerData(root);
-    */
 
 		return root;
 	}
@@ -88,7 +86,6 @@ struct SamplerX8 : VoxglitchSamplerModule
   //
 	void dataFromJson(json_t *root) override
 	{
-    /*
     for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
 			json_t *loaded_sample_path = json_object_get(root, ("loaded_sample_path_" +  std::to_string(i+1)).c_str());
@@ -107,10 +104,8 @@ struct SamplerX8 : VoxglitchSamplerModule
 			if (loaded_mute_value) mute_states[i] = json_integer_value(loaded_mute_value);
 		}
 
-
     // Call VoxglitchSamplerModule::loadSamplerData to load sampler specific data
     loadSamplerData(root);
-        */
 	}
 
 
@@ -119,7 +114,6 @@ struct SamplerX8 : VoxglitchSamplerModule
     float summed_output_left = 0;
     float summed_output_right = 0;
 
-    /*
     for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
     {
       // Process trigger inputs to start sample playback
@@ -174,7 +168,7 @@ struct SamplerX8 : VoxglitchSamplerModule
     // Output summed output
     outputs[AUDIO_MIX_OUTPUT_LEFT].setVoltage(summed_output_left);
     outputs[AUDIO_MIX_OUTPUT_RIGHT].setVoltage(summed_output_right);
-    */
+
   }
 
   void onSampleRateChange(const SampleRateChangeEvent& e) override
