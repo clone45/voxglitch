@@ -7,6 +7,10 @@
       "zoom": 0.15,
       "width": 193.04,
       "height": 128.5
+    },
+    {
+      "type": "svg",
+      "path": "res/samplerx8/themes/default/typography.svg"
     }
 	],
   "widgets": {
