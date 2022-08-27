@@ -9,91 +9,83 @@ struct SamplerX8Widget : VoxglitchSamplerModuleWidget
     theme.load("samplerx8");
     applyTheme();
 
+    if(theme.showScrews() == true)
+    {
+  		addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, 0)));
+  		addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+  		addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+  		addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    }
+
     // Add trigger inputs
-    addInput(createInputCentered<PJ301MPort>(themePos("TRIGGER_INPUTS_0"), module, SamplerX8::TRIGGER_INPUTS + 0));
-    addInput(createInputCentered<PJ301MPort>(themePos("TRIGGER_INPUTS_1"), module, SamplerX8::TRIGGER_INPUTS + 1));
-    addInput(createInputCentered<PJ301MPort>(themePos("TRIGGER_INPUTS_2"), module, SamplerX8::TRIGGER_INPUTS + 2));
-    addInput(createInputCentered<PJ301MPort>(themePos("TRIGGER_INPUTS_3"), module, SamplerX8::TRIGGER_INPUTS + 3));
-    addInput(createInputCentered<PJ301MPort>(themePos("TRIGGER_INPUTS_4"), module, SamplerX8::TRIGGER_INPUTS + 4));
-    addInput(createInputCentered<PJ301MPort>(themePos("TRIGGER_INPUTS_5"), module, SamplerX8::TRIGGER_INPUTS + 5));
-    addInput(createInputCentered<PJ301MPort>(themePos("TRIGGER_INPUTS_6"), module, SamplerX8::TRIGGER_INPUTS + 6));
-    addInput(createInputCentered<PJ301MPort>(themePos("TRIGGER_INPUTS_7"), module, SamplerX8::TRIGGER_INPUTS + 7));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("TRIGGER_INPUTS_0"), module, SamplerX8::TRIGGER_INPUTS + 0));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("TRIGGER_INPUTS_1"), module, SamplerX8::TRIGGER_INPUTS + 1));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("TRIGGER_INPUTS_2"), module, SamplerX8::TRIGGER_INPUTS + 2));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("TRIGGER_INPUTS_3"), module, SamplerX8::TRIGGER_INPUTS + 3));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("TRIGGER_INPUTS_4"), module, SamplerX8::TRIGGER_INPUTS + 4));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("TRIGGER_INPUTS_5"), module, SamplerX8::TRIGGER_INPUTS + 5));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("TRIGGER_INPUTS_6"), module, SamplerX8::TRIGGER_INPUTS + 6));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("TRIGGER_INPUTS_7"), module, SamplerX8::TRIGGER_INPUTS + 7));
 
     // Add position inputs
-    addInput(createInputCentered<PJ301MPort>(themePos("POSITION_INPUTS_0"), module, SamplerX8::POSITION_INPUTS + 0));
-    addInput(createInputCentered<PJ301MPort>(themePos("POSITION_INPUTS_1"), module, SamplerX8::POSITION_INPUTS + 1));
-    addInput(createInputCentered<PJ301MPort>(themePos("POSITION_INPUTS_2"), module, SamplerX8::POSITION_INPUTS + 2));
-    addInput(createInputCentered<PJ301MPort>(themePos("POSITION_INPUTS_3"), module, SamplerX8::POSITION_INPUTS + 3));
-    addInput(createInputCentered<PJ301MPort>(themePos("POSITION_INPUTS_4"), module, SamplerX8::POSITION_INPUTS + 4));
-    addInput(createInputCentered<PJ301MPort>(themePos("POSITION_INPUTS_5"), module, SamplerX8::POSITION_INPUTS + 5));
-    addInput(createInputCentered<PJ301MPort>(themePos("POSITION_INPUTS_6"), module, SamplerX8::POSITION_INPUTS + 6));
-    addInput(createInputCentered<PJ301MPort>(themePos("POSITION_INPUTS_7"), module, SamplerX8::POSITION_INPUTS + 7));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("POSITION_INPUTS_0"), module, SamplerX8::POSITION_INPUTS + 0));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("POSITION_INPUTS_1"), module, SamplerX8::POSITION_INPUTS + 1));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("POSITION_INPUTS_2"), module, SamplerX8::POSITION_INPUTS + 2));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("POSITION_INPUTS_3"), module, SamplerX8::POSITION_INPUTS + 3));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("POSITION_INPUTS_4"), module, SamplerX8::POSITION_INPUTS + 4));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("POSITION_INPUTS_5"), module, SamplerX8::POSITION_INPUTS + 5));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("POSITION_INPUTS_6"), module, SamplerX8::POSITION_INPUTS + 6));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("POSITION_INPUTS_7"), module, SamplerX8::POSITION_INPUTS + 7));
 
     // Add volume knobs
-    addParam(createParamCentered<Trimpot>(themePos("VOLUME_KNOBS_0"), module, SamplerX8::VOLUME_KNOBS + 0));
-    addParam(createParamCentered<Trimpot>(themePos("VOLUME_KNOBS_1"), module, SamplerX8::VOLUME_KNOBS + 1));
-    addParam(createParamCentered<Trimpot>(themePos("VOLUME_KNOBS_2"), module, SamplerX8::VOLUME_KNOBS + 2));
-    addParam(createParamCentered<Trimpot>(themePos("VOLUME_KNOBS_3"), module, SamplerX8::VOLUME_KNOBS + 3));
-    addParam(createParamCentered<Trimpot>(themePos("VOLUME_KNOBS_4"), module, SamplerX8::VOLUME_KNOBS + 4));
-    addParam(createParamCentered<Trimpot>(themePos("VOLUME_KNOBS_5"), module, SamplerX8::VOLUME_KNOBS + 5));
-    addParam(createParamCentered<Trimpot>(themePos("VOLUME_KNOBS_6"), module, SamplerX8::VOLUME_KNOBS + 6));
-    addParam(createParamCentered<Trimpot>(themePos("VOLUME_KNOBS_7"), module, SamplerX8::VOLUME_KNOBS + 7));
+    addParam(createParamCentered<VoxglitchMediumKnob>(themePos("VOLUME_KNOBS_0"), module, SamplerX8::VOLUME_KNOBS + 0));
+    addParam(createParamCentered<VoxglitchMediumKnob>(themePos("VOLUME_KNOBS_1"), module, SamplerX8::VOLUME_KNOBS + 1));
+    addParam(createParamCentered<VoxglitchMediumKnob>(themePos("VOLUME_KNOBS_2"), module, SamplerX8::VOLUME_KNOBS + 2));
+    addParam(createParamCentered<VoxglitchMediumKnob>(themePos("VOLUME_KNOBS_3"), module, SamplerX8::VOLUME_KNOBS + 3));
+    addParam(createParamCentered<VoxglitchMediumKnob>(themePos("VOLUME_KNOBS_4"), module, SamplerX8::VOLUME_KNOBS + 4));
+    addParam(createParamCentered<VoxglitchMediumKnob>(themePos("VOLUME_KNOBS_5"), module, SamplerX8::VOLUME_KNOBS + 5));
+    addParam(createParamCentered<VoxglitchMediumKnob>(themePos("VOLUME_KNOBS_6"), module, SamplerX8::VOLUME_KNOBS + 6));
+    addParam(createParamCentered<VoxglitchMediumKnob>(themePos("VOLUME_KNOBS_7"), module, SamplerX8::VOLUME_KNOBS + 7));
 
     // Add pan knobs
-    addParam(createParamCentered<Trimpot>(themePos("PAN_KNOBS_0"), module, SamplerX8::PAN_KNOBS + 0));
-    addParam(createParamCentered<Trimpot>(themePos("PAN_KNOBS_1"), module, SamplerX8::PAN_KNOBS + 1));
-    addParam(createParamCentered<Trimpot>(themePos("PAN_KNOBS_2"), module, SamplerX8::PAN_KNOBS + 2));
-    addParam(createParamCentered<Trimpot>(themePos("PAN_KNOBS_3"), module, SamplerX8::PAN_KNOBS + 3));
-    addParam(createParamCentered<Trimpot>(themePos("PAN_KNOBS_4"), module, SamplerX8::PAN_KNOBS + 4));
-    addParam(createParamCentered<Trimpot>(themePos("PAN_KNOBS_5"), module, SamplerX8::PAN_KNOBS + 5));
-    addParam(createParamCentered<Trimpot>(themePos("PAN_KNOBS_6"), module, SamplerX8::PAN_KNOBS + 6));
-    addParam(createParamCentered<Trimpot>(themePos("PAN_KNOBS_7"), module, SamplerX8::PAN_KNOBS + 7));
+    addParam(createParamCentered<VoxglitchMediumKnob>(themePos("PAN_KNOBS_0"), module, SamplerX8::PAN_KNOBS + 0));
+    addParam(createParamCentered<VoxglitchMediumKnob>(themePos("PAN_KNOBS_1"), module, SamplerX8::PAN_KNOBS + 1));
+    addParam(createParamCentered<VoxglitchMediumKnob>(themePos("PAN_KNOBS_2"), module, SamplerX8::PAN_KNOBS + 2));
+    addParam(createParamCentered<VoxglitchMediumKnob>(themePos("PAN_KNOBS_3"), module, SamplerX8::PAN_KNOBS + 3));
+    addParam(createParamCentered<VoxglitchMediumKnob>(themePos("PAN_KNOBS_4"), module, SamplerX8::PAN_KNOBS + 4));
+    addParam(createParamCentered<VoxglitchMediumKnob>(themePos("PAN_KNOBS_5"), module, SamplerX8::PAN_KNOBS + 5));
+    addParam(createParamCentered<VoxglitchMediumKnob>(themePos("PAN_KNOBS_6"), module, SamplerX8::PAN_KNOBS + 6));
+    addParam(createParamCentered<VoxglitchMediumKnob>(themePos("PAN_KNOBS_7"), module, SamplerX8::PAN_KNOBS + 7));
 
-    // LED button and light
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(50.66, 30.0)), module, SamplerX8::MUTE_BUTTONS + 0));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(50.66, 30.0)), module, SamplerX8::MUTE_BUTTON_LIGHTS + 0));
+    addParam(createParamCentered<squareToggle>(themePos("MUTE_BUTTONS_0"), module, SamplerX8::MUTE_BUTTONS + 0));
+    addParam(createParamCentered<squareToggle>(themePos("MUTE_BUTTONS_1"), module, SamplerX8::MUTE_BUTTONS + 1));
+    addParam(createParamCentered<squareToggle>(themePos("MUTE_BUTTONS_2"), module, SamplerX8::MUTE_BUTTONS + 2));
+    addParam(createParamCentered<squareToggle>(themePos("MUTE_BUTTONS_3"), module, SamplerX8::MUTE_BUTTONS + 3));
+    addParam(createParamCentered<squareToggle>(themePos("MUTE_BUTTONS_4"), module, SamplerX8::MUTE_BUTTONS + 4));
+    addParam(createParamCentered<squareToggle>(themePos("MUTE_BUTTONS_5"), module, SamplerX8::MUTE_BUTTONS + 5));
+    addParam(createParamCentered<squareToggle>(themePos("MUTE_BUTTONS_6"), module, SamplerX8::MUTE_BUTTONS + 6));
+    addParam(createParamCentered<squareToggle>(themePos("MUTE_BUTTONS_7"), module, SamplerX8::MUTE_BUTTONS + 7));
 
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(50.66, 40.2)), module, SamplerX8::MUTE_BUTTONS + 1));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(50.66, 40.2)), module, SamplerX8::MUTE_BUTTON_LIGHTS + 1));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_LEFT_OUTPUTS_0"), module, SamplerX8::AUDIO_LEFT_OUTPUTS + 0));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_LEFT_OUTPUTS_1"), module, SamplerX8::AUDIO_LEFT_OUTPUTS + 1));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_LEFT_OUTPUTS_2"), module, SamplerX8::AUDIO_LEFT_OUTPUTS + 2));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_LEFT_OUTPUTS_3"), module, SamplerX8::AUDIO_LEFT_OUTPUTS + 3));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_LEFT_OUTPUTS_4"), module, SamplerX8::AUDIO_LEFT_OUTPUTS + 4));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_LEFT_OUTPUTS_5"), module, SamplerX8::AUDIO_LEFT_OUTPUTS + 5));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_LEFT_OUTPUTS_6"), module, SamplerX8::AUDIO_LEFT_OUTPUTS + 6));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_LEFT_OUTPUTS_7"), module, SamplerX8::AUDIO_LEFT_OUTPUTS + 7));
 
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(50.66, 50.4)), module, SamplerX8::MUTE_BUTTONS + 2));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(50.66, 50.4)), module, SamplerX8::MUTE_BUTTON_LIGHTS + 2));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_RIGHT_OUTPUTS_0"), module, SamplerX8::AUDIO_RIGHT_OUTPUTS + 0));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_RIGHT_OUTPUTS_1"), module, SamplerX8::AUDIO_RIGHT_OUTPUTS + 1));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_RIGHT_OUTPUTS_2"), module, SamplerX8::AUDIO_RIGHT_OUTPUTS + 2));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_RIGHT_OUTPUTS_3"), module, SamplerX8::AUDIO_RIGHT_OUTPUTS + 3));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_RIGHT_OUTPUTS_4"), module, SamplerX8::AUDIO_RIGHT_OUTPUTS + 4));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_RIGHT_OUTPUTS_5"), module, SamplerX8::AUDIO_RIGHT_OUTPUTS + 5));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_RIGHT_OUTPUTS_6"), module, SamplerX8::AUDIO_RIGHT_OUTPUTS + 6));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_RIGHT_OUTPUTS_7"), module, SamplerX8::AUDIO_RIGHT_OUTPUTS + 7));
 
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(50.66, 60.6)), module, SamplerX8::MUTE_BUTTONS + 3));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(50.66, 60.6)), module, SamplerX8::MUTE_BUTTON_LIGHTS + 3));
-
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(50.66, 70.8)), module, SamplerX8::MUTE_BUTTONS + 4));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(50.66, 70.8)), module, SamplerX8::MUTE_BUTTON_LIGHTS + 4));
-
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(50.66, 81.0)), module, SamplerX8::MUTE_BUTTONS + 5));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(50.66, 81.0)), module, SamplerX8::MUTE_BUTTON_LIGHTS + 5));
-
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(50.66, 91.2)), module, SamplerX8::MUTE_BUTTONS + 6));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(50.66, 91.2)), module, SamplerX8::MUTE_BUTTON_LIGHTS + 6));
-
-    addParam(createParamCentered<LEDButton>(mm2px(Vec(50.66, 101.4)), module, SamplerX8::MUTE_BUTTONS + 7));
-    addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(50.66, 101.4)), module, SamplerX8::MUTE_BUTTON_LIGHTS + 7));
-
-    addOutput(createOutputCentered<PJ301MPort>(themePos("AUDIO_LEFT_OUTPUTS_0"), module, SamplerX8::AUDIO_LEFT_OUTPUTS + 0));
-    addOutput(createOutputCentered<PJ301MPort>(themePos("AUDIO_LEFT_OUTPUTS_1"), module, SamplerX8::AUDIO_LEFT_OUTPUTS + 1));
-    addOutput(createOutputCentered<PJ301MPort>(themePos("AUDIO_LEFT_OUTPUTS_2"), module, SamplerX8::AUDIO_LEFT_OUTPUTS + 2));
-    addOutput(createOutputCentered<PJ301MPort>(themePos("AUDIO_LEFT_OUTPUTS_3"), module, SamplerX8::AUDIO_LEFT_OUTPUTS + 3));
-    addOutput(createOutputCentered<PJ301MPort>(themePos("AUDIO_LEFT_OUTPUTS_4"), module, SamplerX8::AUDIO_LEFT_OUTPUTS + 4));
-    addOutput(createOutputCentered<PJ301MPort>(themePos("AUDIO_LEFT_OUTPUTS_5"), module, SamplerX8::AUDIO_LEFT_OUTPUTS + 5));
-    addOutput(createOutputCentered<PJ301MPort>(themePos("AUDIO_LEFT_OUTPUTS_6"), module, SamplerX8::AUDIO_LEFT_OUTPUTS + 6));
-    addOutput(createOutputCentered<PJ301MPort>(themePos("AUDIO_LEFT_OUTPUTS_7"), module, SamplerX8::AUDIO_LEFT_OUTPUTS + 7));
-
-    addOutput(createOutputCentered<PJ301MPort>(themePos("AUDIO_RIGHT_OUTPUTS_0"), module, SamplerX8::AUDIO_RIGHT_OUTPUTS + 0));
-    addOutput(createOutputCentered<PJ301MPort>(themePos("AUDIO_RIGHT_OUTPUTS_1"), module, SamplerX8::AUDIO_RIGHT_OUTPUTS + 1));
-    addOutput(createOutputCentered<PJ301MPort>(themePos("AUDIO_RIGHT_OUTPUTS_2"), module, SamplerX8::AUDIO_RIGHT_OUTPUTS + 2));
-    addOutput(createOutputCentered<PJ301MPort>(themePos("AUDIO_RIGHT_OUTPUTS_3"), module, SamplerX8::AUDIO_RIGHT_OUTPUTS + 3));
-    addOutput(createOutputCentered<PJ301MPort>(themePos("AUDIO_RIGHT_OUTPUTS_4"), module, SamplerX8::AUDIO_RIGHT_OUTPUTS + 4));
-    addOutput(createOutputCentered<PJ301MPort>(themePos("AUDIO_RIGHT_OUTPUTS_5"), module, SamplerX8::AUDIO_RIGHT_OUTPUTS + 5));
-    addOutput(createOutputCentered<PJ301MPort>(themePos("AUDIO_RIGHT_OUTPUTS_6"), module, SamplerX8::AUDIO_RIGHT_OUTPUTS + 6));
-    addOutput(createOutputCentered<PJ301MPort>(themePos("AUDIO_RIGHT_OUTPUTS_7"), module, SamplerX8::AUDIO_RIGHT_OUTPUTS + 7));
-
-    addOutput(createOutputCentered<PJ301MPort>(themePos("AUDIO_MIX_OUTPUT_LEFT"), module, SamplerX8::AUDIO_MIX_OUTPUT_LEFT));
-		addOutput(createOutputCentered<PJ301MPort>(themePos("AUDIO_MIX_OUTPUT_RIGHT"), module, SamplerX8::AUDIO_MIX_OUTPUT_RIGHT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_MIX_OUTPUT_LEFT"), module, SamplerX8::AUDIO_MIX_OUTPUT_LEFT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_MIX_OUTPUT_RIGHT"), module, SamplerX8::AUDIO_MIX_OUTPUT_RIGHT));
 
   }
 
