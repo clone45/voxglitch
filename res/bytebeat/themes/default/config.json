@@ -1,0 +1,29 @@
+{
+	"panel_svg": "res/bytebeat/themes/default/panel.svg",
+	"layers": [
+		{
+      "type": "image",
+      "path": "res/themes/default/background2.jpg",
+      "zoom": 0.15,
+      "width": 101.600,
+      "height": 128.5
+    },
+    {
+      "type": "image",
+      "path": "res/bytebeat/themes/default/details.png",
+      "width": 101.600,
+      "height": 128.5,
+      "zoom": 0.25
+    },
+    {
+      "type": "svg",
+      "path": "res/bytebeat/themes/default/typography.svg"
+    }
+	],
+  "widgets": {
+
+    "POLY_ADD_INPUT": {"x": 722.000000,"y": 292.000000},
+    "POLY_OUTPUT": {"x": 722.250000,"y": 349.500000}
+
+  }
+}

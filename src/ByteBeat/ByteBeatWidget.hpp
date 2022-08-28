@@ -1,9 +1,13 @@
-struct ByteBeatWidget : ModuleWidget
+struct ByteBeatWidget : VoxglitchModuleWidget
 {
   ByteBeatWidget(ByteBeat* module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/bytebeat_front_panel.svg")));
+
+    // Load and apply theme
+    theme.load("bytebeat");
+    applyTheme();
+
 
     // Equation inputs
 
