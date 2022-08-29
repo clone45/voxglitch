@@ -85,6 +85,26 @@ struct TMediumKnob : TBase {
 typedef TMediumKnob<> VoxglitchMediumKnob;
 
 
+// Medium Knob black
+template <typename TBase = VoxglitchKnob>
+struct TMediumBlackKnob : TBase {
+  ImageWidget* bg;
+  ImageWidget* shadow;
+	TMediumBlackKnob() {
+		this->svgFile = "medium_knob_black_overlay.svg";
+		this->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/" + this->svgFile)));
+
+    bg = new ImageWidget(asset::plugin(pluginInstance, "res/components/png/knob_medium_black.png"), 12.4, 12.4);
+    this->addChildBottom(bg);
+
+    shadow = new ImageWidget(asset::plugin(pluginInstance, "res/themes/default/round_shadow.png"), 16.4, 16.4);
+    this->addChildBottom(shadow);
+    shadow->setPosition(Vec(-5.0, 3.0));
+
+	}
+};
+typedef TMediumBlackKnob<> VoxglitchMediumBlackKnob;
+
 // Attenuator
 template <typename TBase = VoxglitchKnob>
 struct TAttenuator : TBase {
@@ -123,3 +143,13 @@ struct TPainfulMediumKnob : TBase {
 	}
 };
 typedef TPainfulMediumKnob<> PainfulMediumKnob;
+
+
+template <typename TBase = VoxglitchKnob>
+struct TEpicKnob : TBase {
+	TEpicKnob() {
+		this->svgFile = "epic_knob_overlay.svg";
+		this->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/" + this->svgFile)));
+	}
+};
+typedef TEpicKnob<> VoxglitchEpicKnob;
