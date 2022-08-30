@@ -14,8 +14,8 @@ struct DigitalSequencer : VoxglitchModule
 
   unsigned int tooltip_timer = 0;
 
-  dseq::VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
-  dseq::VoltageSequencer *selected_voltage_sequencer;
+  VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
+  VoltageSequencer *selected_voltage_sequencer;
 
   dseq::GateSequencer gate_sequencers[NUMBER_OF_SEQUENCERS];
   dseq::GateSequencer *selected_gate_sequencer;
@@ -122,12 +122,16 @@ struct DigitalSequencer : VoxglitchModule
     selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
     selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
 
+
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 
     for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
     {
-      configParam(SEQUENCER_SELECTION_BUTTONS + i, 0.f, 1.f, 0.f, "SequencerSelectionButton" + i);
-      configParam(SEQUENCER_LENGTH_KNOBS + i, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "SequenceLengthKnob" + i);
+      // This will set the size of the voltage sequencer, as well as assign zeros to each element.
+      voltage_sequencers[i].assign(MAX_SEQUENCER_STEPS, 0.0);
+
+      configParam(SEQUENCER_SELECTION_BUTTONS + i, 0.f, 1.f, 0.f, "Sequencer Selection Button #" + std::to_string(i));
+      configParam(SEQUENCER_LENGTH_KNOBS + i, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequence Length Knob #" + std::to_string(i));
       getParamQuantity(SEQUENCER_LENGTH_KNOBS + i)->resetEnabled = false;
       getParamQuantity(SEQUENCER_LENGTH_KNOBS + i)->randomizeEnabled = false;
     }

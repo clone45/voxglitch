@@ -15,14 +15,20 @@
 #include "osdialog.h"
 #include "settings.hpp"
 
+// These two includes are required for Mac
+#include <fstream>
+#include <array>
+
 #include "DigitalSequencer/defines.h"
 #include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
+#include "Common/sequencer/Sequencer.hpp"
+#include "Common/sequencer/VoltageSequencer.hpp"
 
 namespace dseq
 {
-  #include "DigitalSequencer/Sequencer.hpp"
-  #include "DigitalSequencer/VoltageSequencer.hpp"
+
+  // #include "DigitalSequencer/VoltageSequencer.hpp"
   #include "DigitalSequencer/GateSequencer.hpp"
   #include "DigitalSequencer/DigitalSequencer.hpp"
   #include "DigitalSequencer/SequencerDisplay.hpp"

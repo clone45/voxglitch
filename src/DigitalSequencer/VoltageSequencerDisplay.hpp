@@ -33,8 +33,8 @@ struct VoltageSequencerDisplay : SequencerDisplay
 
       if(module)
       {
-        double range_low = voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][0];
-        double range_high = voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][1];
+        double range_low = module->selected_voltage_sequencer->voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][0];
+        double range_high = module->selected_voltage_sequencer->voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][1];
 
         if(range_low < 0 && range_high > 0) draw_from_center = true;
 
@@ -205,6 +205,7 @@ struct VoltageSequencerDisplay : SequencerDisplay
     int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
     clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
 
+    // Apply snap setting to value
     module->selected_voltage_sequencer->setValue(clicked_bar_x_index, value);
 
     // Tooltip drawing is done in the draw method
@@ -336,6 +337,7 @@ struct VoltageSequencerDisplay : SequencerDisplay
       value = value + (.01 * (214.0 / 10.0));
       if (value > DRAW_AREA_HEIGHT) value = DRAW_AREA_HEIGHT;
 
+      // Apply snap setting to value
       module->selected_voltage_sequencer->setValue(bar_x_index, value);
 
       module->tooltip_timer = module->sample_rate * 2; // show tooltip for 2 seconds
@@ -352,6 +354,7 @@ struct VoltageSequencerDisplay : SequencerDisplay
       value = value - (.01 * (214.0 / 10.0));
       if (value > DRAW_AREA_HEIGHT) value = DRAW_AREA_HEIGHT;
 
+      // Apply snap setting to value
       module->selected_voltage_sequencer->setValue(bar_x_index, value);
 
       module->tooltip_timer = module->sample_rate * 2; // show tooltip for 2 seconds

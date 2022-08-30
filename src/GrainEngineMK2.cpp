@@ -3,6 +3,10 @@
 // Voxglitch "Grain Engine MK2" module for VCV Rack
 //
 
+// These two may be required only for Mac
+#include <stack>
+#include <vector>
+
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "Common/sample.hpp"

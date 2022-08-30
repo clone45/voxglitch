@@ -12,7 +12,7 @@ struct Sequencer
   {
     if(position < sequence_length)
     {
-      sequence_playback_position = position;      
+      sequence_playback_position = position;
     }
   }
 

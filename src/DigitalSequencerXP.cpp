@@ -14,14 +14,20 @@
 #include "osdialog.h"
 #include "settings.hpp"
 
+// These two includes are required for Mac
+#include <fstream>
+#include <array>
+
 #include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
+#include "Common/sequencer/Sequencer.hpp"
+#include "Common/sequencer/VoltageSequencer.hpp"
 
 namespace dsxp
 {
   #include "DigitalSequencerXP/defines.h"
-  #include "DigitalSequencerXP/Sequencer.hpp"
-  #include "DigitalSequencerXP/VoltageSequencer.hpp"
+
+  // #include "DigitalSequencerXP/VoltageSequencer.hpp"
   #include "DigitalSequencerXP/GateSequencer.hpp"
   #include "DigitalSequencerXP/DigitalSequencerXP.hpp"
   #include "DigitalSequencerXP/SequencerDisplay.hpp"

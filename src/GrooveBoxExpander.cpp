@@ -3,6 +3,10 @@
 #include "osdialog.h"
 #include "settings.hpp"
 
+// These two includes seem only necessary for Mac:
+#include <fstream>
+#include <array>
+
 #include "GrooveBoxExpander/defines.h"
 
 #include "Common/Theme.hpp"

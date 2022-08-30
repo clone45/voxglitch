@@ -1,14 +1,34 @@
 struct VoltageSequencer : Sequencer
 {
-  std::array<double, MAX_SEQUENCER_STEPS> sequence;
+  std::vector<double> sequence;
   unsigned int voltage_range_index = 0; // see voltage_ranges in DigitalSequencerXP.hpp
   unsigned int snap_division_index = 0;
   bool sample_and_hold = false;
 
+  double voltage_ranges[8][2] = {
+    { 0.0, 10.0 },
+    { -10.0, 10.0 },
+    { 0.0, 5.0 },
+    { -5.0, 5.0 },
+    { 0.0, 3.0 },
+    { -3.0, 3.0 },
+    { 0.0, 1.0},
+    { -1.0, 1.0}
+  };
+
+  double snap_divisions[8] = { 0,8,10,12,16,24,32,26 };
+
   // constructor
   VoltageSequencer()
   {
-    sequence.fill(0.0);
+    // sequence.assign(sequence_length, 0.0);
+  }
+
+  // This must be called before interacting with the voltage sequencer since
+  // it sets the size of the vector and initializes it with "value"
+  void assign(unsigned int length, double value)
+  {
+    sequence.assign(length, value);
   }
 
   // Returns the 'raw' output from the sequencer, which ranges from 0 to 214,
@@ -84,6 +104,7 @@ struct VoltageSequencer : Sequencer
 
   void clear()
   {
-    sequence.fill(0.0);
+    // sequence.fill(0.0);
+    sequence.assign(sequence.size(), 0);
   }
 };

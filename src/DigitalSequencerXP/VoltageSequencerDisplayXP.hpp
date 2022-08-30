@@ -38,8 +38,8 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
 
       if(module)
       {
-        double range_low = voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][0];
-        double range_high = voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][1];
+        double range_low = module->selected_voltage_sequencer->voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][0];
+        double range_high = module->selected_voltage_sequencer->voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][1];
 
         if(range_low < 0 && range_high > 0) draw_from_center = true;
 

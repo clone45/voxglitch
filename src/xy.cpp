@@ -7,6 +7,8 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "settings.hpp"
+#include <vector>
+#include "cmath"
 
 #include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"

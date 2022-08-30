@@ -17,8 +17,8 @@ struct DigitalSequencerXP : VoxglitchModule
 
   unsigned int tooltip_timer = 0;
 
-  dsxp::VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
-  dsxp::VoltageSequencer *selected_voltage_sequencer;
+  VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
+  VoltageSequencer *selected_voltage_sequencer;
   dsxp::GateSequencer gate_sequencers[NUMBER_OF_SEQUENCERS];
   dsxp::GateSequencer *selected_gate_sequencer;
 
@@ -79,6 +79,12 @@ struct DigitalSequencerXP : VoxglitchModule
 
     selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
     selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
+
+    // Set the size of the voltage sequencer, as well as assign zeros to each element.
+    for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
+    {
+      voltage_sequencers[i].assign(MAX_SEQUENCER_STEPS, 0.0);
+    }
 
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 
@@ -405,8 +411,6 @@ struct DigitalSequencerXP : VoxglitchModule
     // sequencer lengths immediately.  Unlike step inputs, there is no universal
     // sequencer length input if only 1 channel of the input is provided.
     set_sequencer_lengths();
-
-
 
     //
     // FROZEN, FROZEN, FROZEN
