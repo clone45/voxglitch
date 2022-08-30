@@ -148,6 +148,8 @@ typedef TPainfulMediumKnob<> PainfulMediumKnob;
 template <typename TBase = VoxglitchKnob>
 struct TEpicKnob : TBase {
 	TEpicKnob() {
+    this->minAngle = -0.76*M_PI;
+		this->maxAngle = 0.76*M_PI;
 		this->svgFile = "epic_knob_overlay.svg";
 		this->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/" + this->svgFile)));
 	}

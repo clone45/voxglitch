@@ -3,21 +3,21 @@
 	"layers": [
 		{
       "type": "image",
-      "path": "res/themes/default/background2.jpg",
+      "path": "res/themes/light/background.jpg",
       "zoom": 0.15,
       "width": 101.600,
       "height": 128.5
     },
     {
       "type": "image",
-      "path": "res/ghosts/themes/default/details.png",
+      "path": "res/ghosts/themes/light/details.png",
       "width": 101.600,
       "height": 128.5,
       "zoom": 0.25
     },
     {
       "type": "svg",
-      "path": "res/ghosts/themes/default/typography.svg"
+      "path": "res/ghosts/themes/light/typography.svg"
     }
 	],
   "widgets": {
