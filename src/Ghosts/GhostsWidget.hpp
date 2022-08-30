@@ -1,17 +1,8 @@
-struct GhostsModesKnob : RoundBlackKnob {
-	GhostsModesKnob() {
-		minAngle = -0.75*M_PI;
-		maxAngle = 0*M_PI;
-	}
-};
-
 struct GhostsWidget : VoxglitchSamplerModuleWidget
 {
 	GhostsWidget(Ghosts* module)
 	{
 		setModule(module);
-
-		// setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/ghosts_front_panel.svg")));
 
     // Load and apply theme
     theme.load("ghosts");
@@ -68,10 +59,8 @@ struct GhostsWidget : VoxglitchSamplerModuleWidget
 		addParam(createParamCentered<VoxglitchAttenuator>(themePos("TRIM_KNOB"), module, Ghosts::TRIM_KNOB));
 
 		// WAV output
-
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_LEFT"), module, Ghosts::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_RIGHT"), module, Ghosts::AUDIO_OUTPUT_RIGHT));
-		// addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(34.236, 124.893)), module, Ghosts::DEBUG_OUTPUT));
 	}
 
 	void appendContextMenu(Menu *menu) override
