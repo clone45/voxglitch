@@ -47,10 +47,10 @@ struct VoltageSequencerDisplay : SequencerDisplay
 
           // Draw grey background bar
           if(i < module->selected_voltage_sequencer->getLength()) {
-            bar_color = brightness(nvgRGBA(42, 50, 52, 255), settings::rackBrightness);
+            bar_color = brightness(bright_background_color, settings::rackBrightness);
           }
           else {
-            bar_color = brightness(nvgRGBA(31, 39, 41, 255), settings::rackBrightness);
+            bar_color = brightness(dark_background_color, settings::rackBrightness);
           }
 
           drawBar(vg, i, BAR_HEIGHT, DRAW_AREA_HEIGHT, bar_color);
@@ -58,15 +58,15 @@ struct VoltageSequencerDisplay : SequencerDisplay
           if(i == module->selected_voltage_sequencer->getPlaybackPosition())
           {
             // Highlight current step
-            bar_color = nvgRGBA(255, 255, 255, 250);
+            bar_color = current_step_highlight_color;
           }
           else if(i < module->selected_voltage_sequencer->getLength())
           {
-            bar_color = nvgRGBA(255, 255, 255, 150);
+            bar_color = lesser_step_highlight_color;
           }
           else
           {
-            bar_color = nvgRGBA(255, 255, 255, 10);
+            bar_color = default_step_highlight_color;
           }
 
           // for debugging
@@ -81,7 +81,7 @@ struct VoltageSequencerDisplay : SequencerDisplay
           // Highlight the sequence playback column
           if(i == module->selected_voltage_sequencer->getPlaybackPosition())
           {
-            drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
+            drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, sequence_position_highlight_color);
           }
         }
 
@@ -129,13 +129,13 @@ struct VoltageSequencerDisplay : SequencerDisplay
         for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
         {
           // Draw blue background bars
-          drawBar(vg, i, BAR_HEIGHT, DRAW_AREA_HEIGHT, nvgRGBA(60, 60, 64, 255));
+          drawBar(vg, i, BAR_HEIGHT, DRAW_AREA_HEIGHT, bright_background_color);
 
           // Draw bar for value at i
-          drawBar(vg, i, demo_sequence[i], DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 150));
+          drawBar(vg, i, demo_sequence[i], DRAW_AREA_HEIGHT, lesser_step_highlight_color);
 
           // Highlight active step
-          if(i == 5) drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
+          if(i == 5) drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, sequence_position_highlight_color);
         }
       }
 

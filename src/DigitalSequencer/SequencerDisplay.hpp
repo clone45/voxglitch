@@ -4,6 +4,14 @@ struct SequencerDisplay : VoxglitchWidget
   Vec drag_position;
   double bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
 
+  NVGcolor bright_background_color = nvgRGBA(42, 50, 52, 255);
+  NVGcolor dark_background_color = nvgRGBA(31, 39, 41, 255);
+  NVGcolor current_step_highlight_color = nvgRGBA(255, 255, 255, 250);
+  NVGcolor lesser_step_highlight_color = nvgRGBA(255, 255, 255, 150);
+  NVGcolor default_step_highlight_color = nvgRGBA(255, 255, 255, 10);
+  NVGcolor sequence_position_highlight_color = nvgRGBA(255, 255, 255, 20);
+  NVGcolor overlay_color = nvgRGBA(0, 100, 116, 28);
+
   void onDragStart(const event::DragStart &e) override
   {
     TransparentWidget::onDragStart(e);
@@ -75,7 +83,7 @@ struct SequencerDisplay : VoxglitchWidget
   {
     nvgBeginPath(vg);
     nvgRect(vg, 0, 0, width, height);
-    nvgFillColor(vg, nvgRGBA(0, 100, 116, 28));
+    nvgFillColor(vg, overlay_color);
     nvgFill(vg);
   }
 

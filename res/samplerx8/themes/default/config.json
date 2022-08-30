@@ -1,0 +1,92 @@
+{
+	"panel_svg": "res/samplerx8/themes/default/panel.svg",
+	"layers": [
+		{
+      "type": "image",
+      "path": "res/themes/default/background2.jpg",
+      "zoom": 0.15,
+      "width": 193.04,
+      "height": 128.5
+    },
+    {
+      "type": "image",
+      "path": "res/samplerx8/themes/default/details.png",
+      "width": 193.04,
+      "height": 128.5,
+      "zoom": 0.25
+    },
+    {
+      "type": "svg",
+      "path": "res/samplerx8/themes/default/typography.svg"
+    }
+	],
+  "widgets": {
+
+    "VOLUME_KNOBS_0": {"x": 73.6109,"y": 69.3359},
+    "VOLUME_KNOBS_1": {"x": 131.4259,"y": 69.3359},
+    "VOLUME_KNOBS_2": {"x": 189.2408,"y": 69.3359},
+    "VOLUME_KNOBS_3": {"x": 247.0385,"y": 69.3359},
+    "VOLUME_KNOBS_4": {"x": 304.9398,"y": 69.3359},
+    "VOLUME_KNOBS_5": {"x": 362.6684,"y": 69.3359},
+    "VOLUME_KNOBS_6": {"x": 420.3971,"y": 69.3359},
+    "VOLUME_KNOBS_7": {"x": 478.402,"y": 69.3359},
+
+    "PAN_KNOBS_0": {"x": 73.6109,"y": 119.5313},
+    "PAN_KNOBS_1": {"x": 131.4259,"y": 119.5313},
+    "PAN_KNOBS_2": {"x": 189.2408,"y": 119.5313},
+    "PAN_KNOBS_3": {"x": 247.0385,"y": 119.5313},
+    "PAN_KNOBS_4": {"x": 304.9398,"y": 119.5313},
+    "PAN_KNOBS_5": {"x": 362.6684,"y": 119.5313},
+    "PAN_KNOBS_6": {"x": 420.3971,"y": 119.5313},
+    "PAN_KNOBS_7": {"x": 478.402,"y": 119.5313},
+
+    "POSITION_INPUTS_0": {"x": 73.6109,"y": 170.8984},
+    "POSITION_INPUTS_1": {"x": 131.4259,"y": 170.8984},
+    "POSITION_INPUTS_2": {"x": 189.2408,"y": 170.8984},
+    "POSITION_INPUTS_3": {"x": 247.0385,"y": 170.8984},
+    "POSITION_INPUTS_4": {"x": 304.9398,"y": 170.8984},
+    "POSITION_INPUTS_5": {"x": 362.6684,"y": 170.8984},
+    "POSITION_INPUTS_6": {"x": 420.3971,"y": 170.8984},
+    "POSITION_INPUTS_7": {"x": 478.402,"y": 170.8984},
+
+    "TRIGGER_INPUTS_0": {"x": 73.6109,"y": 214.4531},
+    "TRIGGER_INPUTS_1": {"x": 131.4259,"y": 214.4531},
+    "TRIGGER_INPUTS_2": {"x": 189.2408,"y": 214.4531},
+    "TRIGGER_INPUTS_3": {"x": 247.0385,"y": 214.4531},
+    "TRIGGER_INPUTS_4": {"x": 304.9398,"y": 214.4531},
+    "TRIGGER_INPUTS_5": {"x": 362.6684,"y": 214.4531},
+    "TRIGGER_INPUTS_6": {"x": 420.3971,"y": 214.4531},
+    "TRIGGER_INPUTS_7": {"x": 478.402,"y": 214.4531},
+
+    "MUTE_BUTTONS_0": {"x": 73.6109,"y": 257.6172},
+    "MUTE_BUTTONS_1": {"x": 131.4259,"y": 257.6172},
+    "MUTE_BUTTONS_2": {"x": 189.2408,"y": 257.6172},
+    "MUTE_BUTTONS_3": {"x": 247.0385,"y": 257.6172},
+    "MUTE_BUTTONS_4": {"x": 304.9398,"y": 257.6172},
+    "MUTE_BUTTONS_5": {"x": 362.6684,"y": 257.6172},
+    "MUTE_BUTTONS_6": {"x": 420.3971,"y": 257.6172},
+    "MUTE_BUTTONS_7": {"x": 478.402,"y": 257.6172},
+
+    "AUDIO_LEFT_OUTPUTS_0": {"x": 73.6109,"y": 318.1981},
+    "AUDIO_LEFT_OUTPUTS_1": {"x": 131.4259,"y": 318.1981},
+    "AUDIO_LEFT_OUTPUTS_2": {"x": 189.2408,"y": 318.1981},
+    "AUDIO_LEFT_OUTPUTS_3": {"x": 247.0385,"y": 318.1981},
+    "AUDIO_LEFT_OUTPUTS_4": {"x": 304.9398,"y": 318.1981},
+    "AUDIO_LEFT_OUTPUTS_5": {"x": 362.6684,"y": 318.1981},
+    "AUDIO_LEFT_OUTPUTS_6": {"x": 420.3971,"y": 318.1981},
+    "AUDIO_LEFT_OUTPUTS_7": {"x": 478.402,"y": 318.1981},
+
+    "AUDIO_RIGHT_OUTPUTS_0": {"x": 73.6109,"y": 352.4485},
+    "AUDIO_RIGHT_OUTPUTS_1": {"x": 131.4259,"y": 352.4485},
+    "AUDIO_RIGHT_OUTPUTS_2": {"x": 189.2408,"y": 352.4485},
+    "AUDIO_RIGHT_OUTPUTS_3": {"x": 247.0385,"y": 352.4485},
+    "AUDIO_RIGHT_OUTPUTS_4": {"x": 304.9398,"y": 352.4485},
+    "AUDIO_RIGHT_OUTPUTS_5": {"x": 362.6684,"y": 352.4485},
+    "AUDIO_RIGHT_OUTPUTS_6": {"x": 420.3971,"y": 352.4485},
+    "AUDIO_RIGHT_OUTPUTS_7": {"x": 478.402,"y": 352.4485},
+
+    "AUDIO_MIX_OUTPUT_LEFT": {"x": 536.2687,"y": 318.1981},
+    "AUDIO_MIX_OUTPUT_RIGHT": {"x": 536.2687,"y": 352.4485}
+
+  }
+}
