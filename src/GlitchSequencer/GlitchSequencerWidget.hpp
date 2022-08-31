@@ -34,13 +34,6 @@ struct GlitchSequencerWidget : VoxglitchModuleWidget
     ca_display->box.pos = themePos("GRID_DISPLAY");
     ca_display->module = module;
     addChild(ca_display);
-
-    /*
-    LengthReadoutDisplay *length_readout_display = new LengthReadoutDisplay();
-    length_readout_display->box.pos = mm2px(themePos("LENGTH_LABEL"));
-    length_readout_display->module = module;
-    addChild(length_readout_display);
-    */
   }
 
   void appendContextMenu(Menu *menu) override
