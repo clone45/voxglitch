@@ -1,4 +1,4 @@
-struct VoltageSequencerDisplayXP : dsxp::SequencerDisplay
+struct VoltageSequencerDisplayXP : SequencerDisplay
 {
   DigitalSequencerXP *module;
 
