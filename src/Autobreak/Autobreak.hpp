@@ -1,3 +1,11 @@
+/*
+
+Autobreak
+
+Automatic Breakbeat module for VCV Rack by Voxglitch
+
+*/
+
 struct Autobreak : VoxglitchSamplerModule
 {
   unsigned int selected_sample_slot = 0;
