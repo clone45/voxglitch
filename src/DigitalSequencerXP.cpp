@@ -14,20 +14,21 @@
 #include "osdialog.h"
 #include "settings.hpp"
 
+// These two includes are required for Mac
+#include <fstream>
+#include <array>
+
 #include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
+#include "Common/sequencer/Sequencer.hpp"
+#include "Common/sequencer/VoltageSequencer.hpp"
 
-namespace dsxp
-{
-  #include "DigitalSequencerXP/defines.h"
-  #include "DigitalSequencerXP/Sequencer.hpp"
-  #include "DigitalSequencerXP/VoltageSequencer.hpp"
-  #include "DigitalSequencerXP/GateSequencer.hpp"
-  #include "DigitalSequencerXP/DigitalSequencerXP.hpp"
-  #include "DigitalSequencerXP/SequencerDisplay.hpp"
-  #include "DigitalSequencerXP/VoltageSequencerDisplayXP.hpp"
-  #include "DigitalSequencerXP/GateSequencerDisplayXP.hpp"
-  #include "DigitalSequencerXP/DigitalSequencerXPWidget.hpp"
-}
+#include "DigitalSequencerXP/defines.h"
+#include "DigitalSequencerXP/GateSequencer.hpp"
+#include "DigitalSequencerXP/DigitalSequencerXP.hpp"
+#include "DigitalSequencerXP/SequencerDisplay.hpp"
+#include "DigitalSequencerXP/VoltageSequencerDisplayXP.hpp"
+#include "DigitalSequencerXP/GateSequencerDisplayXP.hpp"
+#include "DigitalSequencerXP/DigitalSequencerXPWidget.hpp"
 
-Model* modelDigitalSequencerXP = createModel<dsxp::DigitalSequencerXP, dsxp::DigitalSequencerXPWidget>("digitalsequencerxp");
+Model* modelDigitalSequencerXP = createModel<DigitalSequencerXP, DigitalSequencerXPWidget>("digitalsequencerxp");

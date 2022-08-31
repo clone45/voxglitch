@@ -4,6 +4,8 @@
 // This code is heavily based on Clément Foulc's PLAY module
 // which can be found here:  https://github.com/cfoulc/cf/blob/v1/src/PLAY.cpp
 
+#include <fstream>
+
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "Common/sample.hpp"

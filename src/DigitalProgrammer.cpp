@@ -3,6 +3,10 @@
 #include "osdialog.h"
 #include "settings.hpp"
 
+// These two includes are required for Mac
+#include <fstream>
+#include <array>
+
 #include "DigitalProgrammer/defines.h"
 using namespace digital_programmer;
 

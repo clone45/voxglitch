@@ -1,6 +1,8 @@
 //
 // Voxglitch "Grain Fx" module for VCV Rack
 //
+#include <stack>
+#include <vector>
 
 #include "plugin.hpp"
 #include "osdialog.h"

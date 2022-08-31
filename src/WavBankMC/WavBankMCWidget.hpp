@@ -12,9 +12,7 @@ struct WavBankMCWidget : VoxglitchModuleWidget
     if(theme.showScrews())
     {
       addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, 0)));
-  		// addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
   		addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-  		// addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     }
 
     addParam(createParamCentered<VoxglitchLargeKnob>(themePos("WAV_KNOB"), module, WavBankMC::WAV_KNOB));

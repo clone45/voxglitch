@@ -9,6 +9,10 @@
 #include "osdialog.h"
 #include "settings.hpp"
 
+// These two includes seem only necessary for Mac:
+#include <fstream>
+#include <array>
+
 #include "GrooveBox/defines.h"
 using namespace groove_box;
 
