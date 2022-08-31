@@ -231,11 +231,11 @@ struct ByteBeat : Module
         break;
 
       case 3: // Landing gear
-        w = ((p1&t^mod((t>>2), p2))&w+1393+p3);
+        w = (((p1&t)^mod((t>>2), p2))&(w+1393+p3));
         break;
 
       case 4: // rampcode (https://github.com/gabochi/rampcode/blob/master/tutorial)
-        w = div((t*((t>>10&p1)+1)),((-t>>12&p2)+1))<<(t*p3>>(t>>14&3)&7|3);
+        w = div((t*((t>>10&p1)+1)),((-t>>12&p2)+1))<<((t*p3>>(t>>14&3)&7)|3);
         break;
 
       case 5:

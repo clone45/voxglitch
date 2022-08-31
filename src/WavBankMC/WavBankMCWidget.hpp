@@ -31,7 +31,7 @@ struct WavBankMCWidget : VoxglitchModuleWidget
     addInput(createInputCentered<VoxglitchInputPort>(themePos("PITCH_INPUT"), module, WavBankMC::PITCH_INPUT));
     addInput(createInputCentered<VoxglitchInputPort>(themePos("VOLUME_INPUT"), module, WavBankMC::VOLUME_INPUT));
 
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("POLY_WAV_OUTPUT"), module, WavBankMC::POLY_WAV_OUTPUT));
+		addOutput(createOutputCentered<VoxglitchPolyPort>(themePos("POLY_WAV_OUTPUT"), module, WavBankMC::POLY_WAV_OUTPUT));
     addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_WAV_OUTPUT"), module, WavBankMC::LEFT_WAV_OUTPUT));
     addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RIGHT_WAV_OUTPUT"), module, WavBankMC::RIGHT_WAV_OUTPUT));
 

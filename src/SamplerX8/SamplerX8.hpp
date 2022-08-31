@@ -3,7 +3,7 @@ struct SamplerX8 : VoxglitchSamplerModule
 	std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
   std::vector<SamplePlayer> sample_players;
   dsp::SchmittTrigger sample_triggers[NUMBER_OF_SAMPLES];
-  // StereoPanSubModule stereo_pan_submodule;
+
   StereoPan stereo_pan;
   dsp::SchmittTrigger mute_buttons_schmitt_triggers[NUMBER_OF_SAMPLES];
   bool mute_states[NUMBER_OF_SAMPLES];

@@ -19,11 +19,18 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
   {
     this->module = module;
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_sequencer_xp_front_panel.svg")));
 
-    // Cosmetic rack screws
-    addChild(createWidget<ScrewSilver>(Vec(15, 365)));
-    addChild(createWidget<ScrewSilver>(mm2px(Vec(171.5, 0))));
+    // Load and apply theme
+    theme.load("digital_sequencer_xp");
+    applyTheme();
+
+    if(theme.showScrews())
+    {
+  		addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, 0)));
+  		addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+  		addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+  		addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    }
 
     // Main voltage sequencer display
     VoltageSequencerDisplayXP *voltage_sequencer_display_xp = new VoltageSequencerDisplayXP();
@@ -32,36 +39,38 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
 
     GateSequencerDisplayXP *gates_display = new GateSequencerDisplayXP();
     gates_display->box.pos = mm2px(Vec(GATES_DRAW_AREA_POSITION_X, GATES_DRAW_AREA_POSITION_Y));
+
     gates_display->module = module;
 
     addChild(voltage_sequencer_display_xp);
     addChild(gates_display);
 
-    double button_spacing = 9.6; // 9.1
-    double vertical_button_spacing = 11.085;
-    double button_group_x = 72.0;
-    double button_group_y = 107.568;
-
-    // Draw sequence buttons
-    int half_number_of_sequencers = NUMBER_OF_SEQUENCERS / 2;
-
-    for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
-    {
-      float x_position = (button_group_x + (button_spacing * (i % half_number_of_sequencers)));
-      float y_position = button_group_y + (i / half_number_of_sequencers * vertical_button_spacing);
-      addParam(createParamCentered<LEDButton>(mm2px(Vec(x_position, y_position)), module, DigitalSequencerXP::SEQUENCER_BUTTONS + i));
-      addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(x_position, y_position)), module, DigitalSequencerXP::SEQUENCER_LIGHTS + i));
-    }
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_1_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 0));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_2_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 1));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_3_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 2));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_4_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 3));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_5_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 4));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_6_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 5));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_7_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 6));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_8_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 7));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_9_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 8));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_10_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 9));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_11_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 10));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_12_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 11));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_13_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 12));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_14_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 13));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_15_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 14));
+    addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_16_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 15));
 
     // Inputs
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10, 114.893)), module, DigitalSequencerXP::POLY_STEP_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 14.544, 114.893)), module, DigitalSequencerXP::POLY_LENGTH_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 29.088, 114.893)), module, DigitalSequencerXP::RESET_INPUT));
+    addInput(createInputCentered<VoxglitchPolyPort>(Vec(29.5276, 339.251), module, DigitalSequencerXP::POLY_STEP_INPUT));
+    addInput(createInputCentered<VoxglitchPolyPort>(Vec(72.4724, 339.251), module, DigitalSequencerXP::POLY_LENGTH_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(115.4173, 339.251), module, DigitalSequencerXP::RESET_INPUT));
     // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 43.632, 114.893)), module, DigitalSequencerXP::POLY_MOD_INPUT));
 
     // Poly CV and Gate outputs
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(170.321, 107.568)), module, DigitalSequencerXP::POLY_CV_OUTPUT));
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(170.321, 118.653)), module, DigitalSequencerXP::POLY_GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchPolyPort>(themePos("CV_OUTPUT"), module, DigitalSequencerXP::POLY_CV_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchPolyPort>(themePos("GATE_OUTPUT"), module, DigitalSequencerXP::POLY_GATE_OUTPUT));
   }
 
   void appendContextMenu(Menu *menu) override
