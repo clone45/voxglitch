@@ -25,16 +25,11 @@
 #include "Common/sequencer/Sequencer.hpp"
 #include "Common/sequencer/VoltageSequencer.hpp"
 
-namespace dseq
-{
+#include "DigitalSequencer/GateSequencer.hpp"
+#include "DigitalSequencer/DigitalSequencer.hpp"
+#include "DigitalSequencer/SequencerDisplay.hpp"
+#include "DigitalSequencer/VoltageSequencerDisplay.hpp"
+#include "DigitalSequencer/GateSequencerDisplay.hpp"
+#include "DigitalSequencer/DigitalSequencerWidget.hpp"
 
-  // #include "DigitalSequencer/VoltageSequencer.hpp"
-  #include "DigitalSequencer/GateSequencer.hpp"
-  #include "DigitalSequencer/DigitalSequencer.hpp"
-  #include "DigitalSequencer/SequencerDisplay.hpp"
-  #include "DigitalSequencer/VoltageSequencerDisplay.hpp"
-  #include "DigitalSequencer/GateSequencerDisplay.hpp"
-  #include "DigitalSequencer/DigitalSequencerWidget.hpp"
-}
-
-Model* modelDigitalSequencer = createModel<dseq::DigitalSequencer, dseq::DigitalSequencerWidget>("digitalsequencer");
+Model* modelDigitalSequencer = createModel<DigitalSequencer, DigitalSequencerWidget>("digitalsequencer");

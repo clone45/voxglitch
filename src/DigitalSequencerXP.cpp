@@ -23,17 +23,12 @@
 #include "Common/sequencer/Sequencer.hpp"
 #include "Common/sequencer/VoltageSequencer.hpp"
 
-namespace dsxp
-{
-  #include "DigitalSequencerXP/defines.h"
+#include "DigitalSequencerXP/defines.h"
+#include "DigitalSequencerXP/GateSequencer.hpp"
+#include "DigitalSequencerXP/DigitalSequencerXP.hpp"
+#include "DigitalSequencerXP/SequencerDisplay.hpp"
+#include "DigitalSequencerXP/VoltageSequencerDisplayXP.hpp"
+#include "DigitalSequencerXP/GateSequencerDisplayXP.hpp"
+#include "DigitalSequencerXP/DigitalSequencerXPWidget.hpp"
 
-  // #include "DigitalSequencerXP/VoltageSequencer.hpp"
-  #include "DigitalSequencerXP/GateSequencer.hpp"
-  #include "DigitalSequencerXP/DigitalSequencerXP.hpp"
-  #include "DigitalSequencerXP/SequencerDisplay.hpp"
-  #include "DigitalSequencerXP/VoltageSequencerDisplayXP.hpp"
-  #include "DigitalSequencerXP/GateSequencerDisplayXP.hpp"
-  #include "DigitalSequencerXP/DigitalSequencerXPWidget.hpp"
-}
-
-Model* modelDigitalSequencerXP = createModel<dsxp::DigitalSequencerXP, dsxp::DigitalSequencerXPWidget>("digitalsequencerxp");
+Model* modelDigitalSequencerXP = createModel<DigitalSequencerXP, DigitalSequencerXPWidget>("digitalsequencerxp");

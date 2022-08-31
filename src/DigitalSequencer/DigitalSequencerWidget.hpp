@@ -1,3 +1,4 @@
+/*
 #include "menus/AllSequencersItem.hpp"
 #include "menus/InputSnapItem.hpp"
 #include "menus/OutputRangeItem.hpp"
@@ -5,6 +6,7 @@
 #include "menus/ResetMenu.hpp"
 #include "menus/SampleAndHoldItem.hpp"
 #include "menus/SequencerItem.hpp"
+*/
 
 struct DigitalSequencerWidget : VoxglitchModuleWidget
 {
@@ -69,12 +71,12 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("SEQ6_GATE_OUTPUT"), module, DigitalSequencer::SEQ6_GATE_OUTPUT));
 
     // Main voltage sequencer display
-    dseq::VoltageSequencerDisplay *voltage_sequencer_display = new dseq::VoltageSequencerDisplay();
+    VoltageSequencerDisplay *voltage_sequencer_display = new VoltageSequencerDisplay();
     voltage_sequencer_display->box.pos = mm2px(themePos("CV_SEQUENCER"));
     voltage_sequencer_display->module = module;
     addChild(voltage_sequencer_display);
 
-    dseq::GateSequencerDisplay *gates_display = new dseq::GateSequencerDisplay();
+    GateSequencerDisplay *gates_display = new GateSequencerDisplay();
     gates_display->box.pos = mm2px(themePos("GATE_SEQUENCER"));
     gates_display->module = module;
     addChild(gates_display);
@@ -129,19 +131,126 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     }
   };
 
-  // Sample and Hold values
-  struct SampleAndHoldItem : MenuItem {
+  //
+  // ==========================================================================================
+  // MENUS
+  // ==========================================================================================
+  //
+
+  struct AllInputSnapsValueItem : MenuItem {
     DigitalSequencer *module;
-    int sequencer_number = 0;
+    int snap_division_index = 0;
 
     void onAction(const event::Action &e) override {
-      module->voltage_sequencers[sequencer_number].sample_and_hold ^= true; // flip the value
+      for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
+      {
+        module->voltage_sequencers[i].snap_division_index = snap_division_index;
+      }
     }
   };
 
-  //
-  // INPUT SNAP MENUS
-  //
+  struct AllInputSnapsItem : MenuItem {
+    DigitalSequencer *module;
+
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      for (unsigned int i=0; i < NUMBER_OF_SNAP_DIVISIONS; i++)
+      {
+        AllInputSnapsValueItem *all_input_snaps_value_item = createMenuItem<AllInputSnapsValueItem>(module->snap_division_names[i]);
+        all_input_snaps_value_item->module = module;
+        all_input_snaps_value_item->snap_division_index = i;
+        menu->addChild(all_input_snaps_value_item);
+      }
+
+      return menu;
+    }
+  };
+
+  struct AllOutputRangesValueItem : MenuItem {
+    DigitalSequencer *module;
+    int range_index = 0;
+
+    void onAction(const event::Action &e) override {
+      for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
+      {
+        module->voltage_sequencers[i].voltage_range_index = range_index;
+      }
+    }
+  };
+
+  struct AllOutputRangesItem : MenuItem {
+    DigitalSequencer *module;
+
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      for (unsigned int i=0; i < NUMBER_OF_VOLTAGE_RANGES; i++)
+      {
+        AllOutputRangesValueItem *all_output_ranges_value_item = createMenuItem<AllOutputRangesValueItem>(module->voltage_range_names[i]);
+        all_output_ranges_value_item->module = module;
+        all_output_ranges_value_item->range_index = i;
+        menu->addChild(all_output_ranges_value_item);
+      }
+
+      return menu;
+    }
+  };
+
+  struct AllSampleAndHoldsValueItem : MenuItem {
+    DigitalSequencer *module;
+    bool value = false;
+
+    void onAction(const event::Action &e) override {
+      for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
+      {
+        module->voltage_sequencers[i].sample_and_hold = value;
+      }
+    }
+  };
+
+  struct AllSampleAndHoldsItem : MenuItem {
+    DigitalSequencer *module;
+
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      AllSampleAndHoldsValueItem *sample_and_hold_off = createMenuItem<AllSampleAndHoldsValueItem>("Off");
+      sample_and_hold_off->module = module;
+      sample_and_hold_off->value = false;
+      menu->addChild(sample_and_hold_off);
+
+      AllSampleAndHoldsValueItem *sample_and_hold_on = createMenuItem<AllSampleAndHoldsValueItem>("On");
+      sample_and_hold_on->module = module;
+      sample_and_hold_on->value = true;
+      menu->addChild(sample_and_hold_on);
+
+      return menu;
+    }
+
+  };
+
+  struct AllSequencersItem : MenuItem {
+    DigitalSequencer *module;
+
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      AllOutputRangesItem *all_output_ranges_item = createMenuItem<AllOutputRangesItem>("Output Range", RIGHT_ARROW);
+      all_output_ranges_item->module = module;
+      menu->addChild(all_output_ranges_item);
+
+      AllInputSnapsItem *all_input_snaps_item = createMenuItem<AllInputSnapsItem>("Snap", RIGHT_ARROW);
+      all_input_snaps_item->module = module;
+      menu->addChild(all_input_snaps_item);
+
+      AllSampleAndHoldsItem *all_sample_and_holds_items = createMenuItem<AllSampleAndHoldsItem>("Sample & Hold", RIGHT_ARROW);
+      all_sample_and_holds_items->module = module;
+      menu->addChild(all_sample_and_holds_items);
+
+      return menu;
+    }
+  };
 
   struct InputSnapValueItem : MenuItem {
     DigitalSequencer *module;
@@ -173,10 +282,6 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     }
   };
 
-  //
-  // OUTPUT RANGE MENUS
-  //
-
   struct OutputRangeValueItem : MenuItem {
     DigitalSequencer *module;
     int range_index = 0;
@@ -207,27 +312,21 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     }
   };
 
-  struct SequencerItem : MenuItem {
-    DigitalSequencer *module;
-    unsigned int sequencer_number = 0;
-
+  struct QuickKeyMenu : MenuItem {
     Menu *createChildMenu() override {
       Menu *menu = new Menu;
 
-      OutputRangeItem *output_range_item = createMenuItem<OutputRangeItem>("Output Range", RIGHT_ARROW);
-      output_range_item->sequencer_number = this->sequencer_number;
-      output_range_item->module = module;
-      menu->addChild(output_range_item);
-
-      InputSnapItem *input_snap_item = createMenuItem<InputSnapItem>("Snap", RIGHT_ARROW);
-      input_snap_item->sequencer_number = this->sequencer_number;
-      input_snap_item->module = module;
-      menu->addChild(input_snap_item);
-
-      SampleAndHoldItem *sample_and_hold_item = createMenuItem<SampleAndHoldItem>("Sample & Hold", CHECKMARK(module->voltage_sequencers[sequencer_number].sample_and_hold));
-      sample_and_hold_item->sequencer_number = this->sequencer_number;
-      sample_and_hold_item->module = module;
-      menu->addChild(sample_and_hold_item);
+      menu->addChild(createMenuLabel("      f : Toggle Freeze Mode (for easy editing)"));
+      menu->addChild(createMenuLabel("      g : When frozen, press 'g' to send gate out"));
+      menu->addChild(createMenuLabel(""));
+      menu->addChild(createMenuLabel("      r : Randomize gate or voltage sequence"));
+      menu->addChild(createMenuLabel("      ↑ : Nudge up voltage for hovered step"));
+      menu->addChild(createMenuLabel("      ↓ : Nudge down voltage for hovered step"));
+      menu->addChild(createMenuLabel("      → : Shift hovered sequence to the right"));
+      menu->addChild(createMenuLabel("      ← : Shift hovered sequence to the left"));
+      menu->addChild(createMenuLabel("    1-6 : Quickly select active sequencer"));
+      menu->addChild(createMenuLabel("ctrl-c  : copy selected sequence"));
+      menu->addChild(createMenuLabel("ctrl-v  : paste selected sequence"));
 
       return menu;
     }
@@ -267,28 +366,40 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     }
   };
 
-  struct QuickKeyMenu : MenuItem {
-    Menu *createChildMenu() override {
-      Menu *menu = new Menu;
+  // Sample and Hold values
+  struct SampleAndHoldItem : MenuItem {
+    DigitalSequencer *module;
+    int sequencer_number = 0;
 
-      menu->addChild(createMenuLabel("      f : Toggle Freeze Mode (for easy editing)"));
-      menu->addChild(createMenuLabel("      g : When frozen, press 'g' to send gate out"));
-      menu->addChild(createMenuLabel(""));
-      menu->addChild(createMenuLabel("      r : Randomize gate or voltage sequence"));
-      menu->addChild(createMenuLabel("      ↑ : Nudge up voltage for hovered step"));
-      menu->addChild(createMenuLabel("      ↓ : Nudge down voltage for hovered step"));
-      menu->addChild(createMenuLabel("      → : Shift hovered sequence to the right"));
-      menu->addChild(createMenuLabel("      ← : Shift hovered sequence to the left"));
-      menu->addChild(createMenuLabel("    1-6 : Quickly select active sequencer"));
-      menu->addChild(createMenuLabel("ctrl-c  : copy selected sequence"));
-      menu->addChild(createMenuLabel("ctrl-v  : paste selected sequence"));
-
-      return menu;
+    void onAction(const event::Action &e) override {
+      module->voltage_sequencers[sequencer_number].sample_and_hold ^= true; // flip the value
     }
   };
 
-  struct AllSequencersItem : MenuItem {
+  struct SequencerItem : MenuItem {
+    DigitalSequencer *module;
+    unsigned int sequencer_number = 0;
 
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      OutputRangeItem *output_range_item = createMenuItem<OutputRangeItem>("Output Range", RIGHT_ARROW);
+      output_range_item->sequencer_number = this->sequencer_number;
+      output_range_item->module = module;
+      menu->addChild(output_range_item);
+
+      InputSnapItem *input_snap_item = createMenuItem<InputSnapItem>("Snap", RIGHT_ARROW);
+      input_snap_item->sequencer_number = this->sequencer_number;
+      input_snap_item->module = module;
+      menu->addChild(input_snap_item);
+
+      SampleAndHoldItem *sample_and_hold_item = createMenuItem<SampleAndHoldItem>("Sample & Hold", CHECKMARK(module->voltage_sequencers[sequencer_number].sample_and_hold));
+      sample_and_hold_item->sequencer_number = this->sequencer_number;
+      sample_and_hold_item->module = module;
+      menu->addChild(sample_and_hold_item);
+
+      return menu;
+    }
   };
 
   void appendContextMenu(Menu *menu) override
@@ -302,17 +413,17 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     menu->addChild(createMenuLabel("Sequencer Settings"));
 
     // Add "all" sequencer settings
-    dseq::AllSequencersItem *all_sequencer_items;
-    all_sequencer_items = createMenuItem<dseq::AllSequencersItem>("All Sequencers", RIGHT_ARROW);
+    AllSequencersItem *all_sequencer_items;
+    all_sequencer_items = createMenuItem<AllSequencersItem>("All Sequencers", RIGHT_ARROW);
     all_sequencer_items->module = module;
     menu->addChild(all_sequencer_items);
 
     // Add individual sequencer settings
-    dseq::SequencerItem *sequencer_items[6];
+    SequencerItem *sequencer_items[6];
 
     for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
     {
-      sequencer_items[i] = createMenuItem<dseq::SequencerItem>("Sequencer #" + std::to_string(i + 1), RIGHT_ARROW);
+      sequencer_items[i] = createMenuItem<SequencerItem>("Sequencer #" + std::to_string(i + 1), RIGHT_ARROW);
       sequencer_items[i]->module = module;
       sequencer_items[i]->sequencer_number = i;
       menu->addChild(sequencer_items[i]);
@@ -325,12 +436,12 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     menu->addChild(legacy_reset_option);
     */
 
-    dseq::ResetModeItem *reset_mode_item = createMenuItem<dseq::ResetModeItem>("Reset Mode", RIGHT_ARROW);
+    ResetModeItem *reset_mode_item = createMenuItem<ResetModeItem>("Reset Mode", RIGHT_ARROW);
     reset_mode_item->module = module;
     menu->addChild(reset_mode_item);
 
     menu->addChild(new MenuEntry); // For spacing only
-    menu->addChild(createMenuItem<dseq::QuickKeyMenu>("Quick Key Reference", RIGHT_ARROW));
+    menu->addChild(createMenuItem<QuickKeyMenu>("Quick Key Reference", RIGHT_ARROW));
   }
 
   void step() override {

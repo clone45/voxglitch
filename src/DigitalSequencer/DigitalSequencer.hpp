@@ -17,8 +17,8 @@ struct DigitalSequencer : VoxglitchModule
   VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
   VoltageSequencer *selected_voltage_sequencer;
 
-  dseq::GateSequencer gate_sequencers[NUMBER_OF_SEQUENCERS];
-  dseq::GateSequencer *selected_gate_sequencer;
+  GateSequencer gate_sequencers[NUMBER_OF_SEQUENCERS];
+  GateSequencer *selected_gate_sequencer;
 
   unsigned int selected_sequencer_index = 0;
   int voltage_outputs[NUMBER_OF_SEQUENCERS];
