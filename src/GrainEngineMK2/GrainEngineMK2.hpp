@@ -6,7 +6,6 @@ struct LoadQueue
 {
   bool sample_queued_for_loading = false;
   std::string path_to_file = "";
-  std::string filename = "";
   unsigned int sample_number = 0;
 
   void queue_sample_for_loading(std::string path_to_file, unsigned int sample_number)
@@ -15,7 +14,6 @@ struct LoadQueue
     this->sample_queued_for_loading = true;
     this->path_to_file = path_to_file;
     this->sample_number = sample_number;
-    this->filename = filename;
   }
 };
 

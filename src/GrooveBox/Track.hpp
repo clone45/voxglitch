@@ -74,7 +74,7 @@ struct Track
   {
     fade_out.reset();
 
-    if((getProbability(playback_position) < 0.98) && (((float) rand()/RAND_MAX) > getProbability(playback_position)))
+    if((getProbability(playback_position) < 0.98) && (((float) rand()/(float) RAND_MAX) > getProbability(playback_position)))
     {
       // Don't trigger
       skipped = true;

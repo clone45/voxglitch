@@ -4,3 +4,4 @@
 /plugin.dylib
 /plugin.dll
 .DS_Store
+/.vscode/settings.json

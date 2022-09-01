@@ -45,3 +45,18 @@ Thank you to my supporters on [Patreon](https://www.patreon.com/voxglitch):
 
 * fred lcc
 * Secret Cinema
+
+Thank you to the following VCV Rack community members for your continued support
+
+* Don Cross (cosinekitt)
+* Andras (FiroLFO)
+* Squinky Labs
+* Stephan (rsmus7)
+* Peter Vox (Yeager)
+* Yier Sansi (Andre_M)
+* Jeroen Verheij (secretcinema)
+* Steve (Steve)
+* Chaircrusher (chaircrusher)
+
+.. and likely more that I've lost track of!
+
