@@ -63,6 +63,46 @@ struct GhostsWidget : VoxglitchSamplerModuleWidget
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_RIGHT"), module, Ghosts::AUDIO_OUTPUT_RIGHT));
 	}
 
+  struct ModeValueItem : MenuItem {
+    Ghosts *module;
+    int option = 0;
+
+    void onAction(const event::Action &e) override {
+      module->mode = this->option;
+    }
+  };
+
+  struct ModeMenuItem : MenuItem {
+    Ghosts *module;
+
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      // trigger location == 0 (bottom) is default
+      ModeValueItem *mode_0 = createMenuItem<ModeValueItem>("Mode 0", CHECKMARK(module->mode == 0));
+      mode_0->module = module;
+      mode_0->option = 0;
+      menu->addChild(mode_0);
+
+      ModeValueItem *mode_1 = createMenuItem<ModeValueItem>("Mode 1", CHECKMARK(module->mode == 1));
+      mode_1->module = module;
+      mode_1->option = 1;
+      menu->addChild(mode_1);
+
+      ModeValueItem *mode_2 = createMenuItem<ModeValueItem>("Mode 2", CHECKMARK(module->mode == 2));
+      mode_2->module = module;
+      mode_2->option = 2;
+      menu->addChild(mode_2);
+
+      ModeValueItem *mode_3 = createMenuItem<ModeValueItem>("Mode 3", CHECKMARK(module->mode == 3));
+      mode_3->module = module;
+      mode_3->option = 3;
+      menu->addChild(mode_3);
+
+      return menu;
+    }
+  };
+
 	void appendContextMenu(Menu *menu) override
 	{
 		Ghosts *module = dynamic_cast<Ghosts*>(this->module);
@@ -75,6 +115,10 @@ struct GhostsWidget : VoxglitchSamplerModuleWidget
 		menu_item_load_sample->text = module->loaded_filename;
 		menu_item_load_sample->module = module;
 		menu->addChild(menu_item_load_sample);
+
+    ModeMenuItem *mode_menu_item = createMenuItem<ModeMenuItem>("Mode", RIGHT_ARROW);
+    mode_menu_item->module = module;
+    menu->addChild(mode_menu_item);
 	}
 
 };

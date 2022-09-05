@@ -1,5 +1,12 @@
 ## Change Log
 
+### 2.22.0
+* Exposed Ghosts for what it really is: Just creaky floorboards!  Also added new "modes" that can be changed through the context menu.
+
+### 2.21.0
+
+* Launched new front panels for most modules!
+
 ### 2.20.0 (development in progress)
 General:
 * Code clean-up:

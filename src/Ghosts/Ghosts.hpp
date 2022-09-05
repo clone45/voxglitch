@@ -13,7 +13,7 @@ struct Ghosts : VoxglitchSamplerModule
 	int step = 0;
 	std::string root_dir;
 	std::string path;
-
+  unsigned int mode = 0;
 
 	GhostsEx graveyard;
 	Sample sample;
@@ -40,7 +40,6 @@ struct Ghosts : VoxglitchSamplerModule
 		PURGE_BUTTON_PARAM,
 		TRIM_KNOB,
 		JITTER_SWITCH,
-    MODES_KNOB,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -83,28 +82,29 @@ struct Ghosts : VoxglitchSamplerModule
 		configParam(PURGE_BUTTON_PARAM, 0.f, 1.f, 0.f, "PurgeButtonParam");
 		configParam(TRIM_KNOB, 0.0f, 2.0f, 1.0f, "TrimKnob");
 		configParam(JITTER_SWITCH, 0.f, 1.f, 1.f, "Jitter");
-    configParam(MODES_KNOB, 0.f, 3.f, 0.f, "MODES");
-    paramQuantities[MODES_KNOB]->snapEnabled = true;
 		// jitter_divisor = static_cast <double> (RAND_MAX / 1024.0);
 	}
 
 	json_t *dataToJson() override
 	{
-		json_t *rootJ = json_object();
-		json_object_set_new(rootJ, "path", json_string(sample.path.c_str()));
-		return rootJ;
+		json_t *json_root = json_object();
+		json_object_set_new(json_root, "path", json_string(sample.path.c_str()));
+    json_object_set_new(json_root, "mode", json_integer(mode));
+		return json_root;
 	}
 
-	void dataFromJson(json_t *rootJ) override
+	void dataFromJson(json_t *json_root) override
 	{
-		json_t *loaded_path_json = json_object_get(rootJ, ("path"));
-
+		json_t *loaded_path_json = json_object_get(json_root, ("path"));
 		if(loaded_path_json)
 		{
 			this->path = json_string_value(loaded_path_json);
 			sample.load(path);
 			loaded_filename = sample.filename;
 		}
+
+    json_t *mode_json = json_object_get(json_root, ("mode"));
+    if(mode_json) this->mode = json_integer_value(mode_json);
 	}
 
 	float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
@@ -118,8 +118,6 @@ struct Ghosts : VoxglitchSamplerModule
 
 	void process(const ProcessArgs &args) override
 	{
-    unsigned int mode = params[MODES_KNOB].getValue();
-
     float maximum_ghosts_per_second = modes[mode][2];
     float minimum_ghosts_per_second = modes[mode][3];
     float maximum_playback_length = APP->engine->getSampleRate() / modes[mode][0]; // 1/2 of a second
