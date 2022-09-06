@@ -2,5 +2,6 @@
     "files.associations": {
         "xiosbase": "cpp",
         "xstring": "cpp"
-    }
+    },
+    "C_Cpp.errorSquiggles": "Disabled"
 }

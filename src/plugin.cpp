@@ -5,6 +5,7 @@ Plugin* pluginInstance;
 void init(Plugin* p) {
   pluginInstance = p;
   p->addModel(modelAutobreak);
+  p->addModel(modelAutobreakStudio);  
   p->addModel(modelByteBeat);
   p->addModel(modelDigitalProgrammer);
   p->addModel(modelDigitalSequencer);
