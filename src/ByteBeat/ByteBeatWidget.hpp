@@ -21,21 +21,20 @@ struct ByteBeatWidget : VoxglitchModuleWidget
     // Equation inputs
 
     // addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(COLUMN_3, ROW_3 AND_A_HALF_ROW)), module, ByteBeat::EQUATION_KNOB));
-    auto L1 = createParamCentered<VoxglitchLargeKnob>(mm2px(Vec(17.0, 27.0)), module, ByteBeat::EQUATION_KNOB); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
-    addInput(createInputCentered<VoxglitchInputPort>(mm2px(Vec(32.35, ROW_5)), module, ByteBeat::EQUATION_INPUT));
+    auto L1 = createParamCentered<VoxglitchLargeKnob>(themePos("EQUATION_KNOB"), module, ByteBeat::EQUATION_KNOB); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("EQUATION_INPUT"), module, ByteBeat::EQUATION_INPUT));
 
     // Parameter inputs
-    auto P1 = createParamCentered<VoxglitchMediumKnob>(mm2px(Vec(51.8, ROW_3)), module, ByteBeat::PARAM_KNOB_1); dynamic_cast<Knob*>(P1)->snap = true; addParam(P1);
-    addInput(createInputCentered<VoxglitchInputPort>(mm2px(Vec(51.8, ROW_5)), module, ByteBeat::PARAM_INPUT_1));
+    auto P1 = createParamCentered<VoxglitchMediumKnob>(themePos("PARAM_KNOB_1"), module, ByteBeat::PARAM_KNOB_1); dynamic_cast<Knob*>(P1)->snap = true; addParam(P1);
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("PARAM_INPUT_1"), module, ByteBeat::PARAM_INPUT_1));
 
-    auto P2 = createParamCentered<VoxglitchMediumKnob>(mm2px(Vec(69.85, ROW_3)), module, ByteBeat::PARAM_KNOB_2); dynamic_cast<Knob*>(P2)->snap = true; addParam(P2);
-    addInput(createInputCentered<VoxglitchInputPort>(mm2px(Vec(69.85, ROW_5)), module, ByteBeat::PARAM_INPUT_2));
+    auto P2 = createParamCentered<VoxglitchMediumKnob>(themePos("PARAM_KNOB_2"), module, ByteBeat::PARAM_KNOB_2); dynamic_cast<Knob*>(P2)->snap = true; addParam(P2);
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("PARAM_INPUT_2"), module, ByteBeat::PARAM_INPUT_2));
 
-    auto P3 = createParamCentered<VoxglitchMediumKnob>(mm2px(Vec(88.0, ROW_3)), module, ByteBeat::PARAM_KNOB_3); dynamic_cast<Knob*>(P3)->snap = true; addParam(P3);
-    addInput(createInputCentered<VoxglitchInputPort>(mm2px(Vec(88.0, ROW_5)), module, ByteBeat::PARAM_INPUT_3));
+    auto P3 = createParamCentered<VoxglitchMediumKnob>(themePos("PARAM_KNOB_3"), module, ByteBeat::PARAM_KNOB_3); dynamic_cast<Knob*>(P3)->snap = true; addParam(P3);
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("PARAM_INPUT_3"), module, ByteBeat::PARAM_INPUT_3));
 
-    // Other
-    addOutput(createOutputCentered<VoxglitchOutputPort>(mm2px(Vec(88.9, 112.4375)), module, ByteBeat::AUDIO_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT"), module, ByteBeat::AUDIO_OUTPUT));
 
     // addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(COLUMN_3, ROW_7)), module, ByteBeat::CLOCK_DIVISION_KNOB));
     // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(31.75, 64.25)), module, ByteBeat::CLOCK_CV_INPUT));
