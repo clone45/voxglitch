@@ -16,7 +16,7 @@ struct XYWidget : VoxglitchModuleWidget
   		addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
   		addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     }
-    
+
     // Clock and Reset inputs
     addInput(createInputCentered<VoxglitchInputPort>(themePos("CLK_INPUT"), module, XY::CLK_INPUT));
     addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, XY::RESET_INPUT));
