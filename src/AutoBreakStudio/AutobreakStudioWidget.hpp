@@ -25,9 +25,10 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 
 		for(unsigned int t=0; t<NUMBER_OF_STEPS; t++)
 		{
-			addParam(createParamCentered<squareToggle>(themePos("GATE_TOGGLE_" + std::to_string(t)), module, AutobreakStudio::GATE_TOGGLE_BUTTONS + t));
-			addParam(createParamCentered<squareToggle>(themePos("RATCHET_TOGGLE_" + std::to_string(t)), module, AutobreakStudio::RATCHET_TOGGLE_BUTTONS + t));
-
+			addParam(createParamCentered<squareToggle>(themePos("GATE_TOGGLE_" + std::to_string(t + 1)), module, AutobreakStudio::GATE_TOGGLE_BUTTONS + t));
+			addParam(createParamCentered<squareToggle>(themePos("RATCHET_TOGGLE_" + std::to_string(t + 1)), module, AutobreakStudio::RATCHET_TOGGLE_BUTTONS + t));
+			addParam(createParamCentered<VoxglitchAttenuator>(themePos("RATCHET_KNOB_" + std::to_string(t + 1)), module, AutobreakStudio::RATCHET_KNOBS + t));
+			addParam(createParamCentered<VoxglitchAttenuator>(themePos("SAMPLE_KNOB_" + std::to_string(t + 1)), module, AutobreakStudio::SAMPLE_KNOBS + t));
 		}
 
 	}

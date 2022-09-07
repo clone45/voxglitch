@@ -14,7 +14,11 @@
       "width": 355.600,
       "height": 128.5,
       "zoom": 0.25
-    }
+    },
+    {
+      "type": "svg",
+      "path": "res/autobreak_studio/themes/default/typography.svg"
+    }    
 	],
   "widgets": {
     "WAV_KNOB": {"x": 60.053509,"y": 83.487495},
