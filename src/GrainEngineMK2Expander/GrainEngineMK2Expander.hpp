@@ -61,6 +61,7 @@ struct GrainEngineMK2Expander : Module
   // Destructor
   ~GrainEngineMK2Expander()
   {
+    delete sample;
   }
 
   json_t *dataToJson() override
