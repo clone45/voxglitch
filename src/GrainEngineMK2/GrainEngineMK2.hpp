@@ -128,6 +128,8 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
 
   ~GrainEngineMK2()
   {
+    delete producer_message;
+    delete consumer_message;
     /*
     for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
     {

@@ -1,13 +1,13 @@
 struct Theme
 {
   std::string name = "dark";
-  json_t *json_root;
-  json_t *widgets;
+  json_t *json_root = NULL;
+  json_t *widgets = NULL;
   bool show_screws = true;
 
   Theme()
   {
-    json_t *json_root;
+    json_t *json_root_local;
     json_error_t error;
 
     if(! rack::system::exists(asset::user("Voxglitch.json")))
@@ -18,12 +18,19 @@ struct Theme
     std::string config_file_path = asset::user("Voxglitch.json");
 
     // Load theme selection, either "light" or "dark"
-    json_root = json_load_file(config_file_path.c_str(), 0, &error);
-    if(json_root)
+    json_root_local = json_load_file(config_file_path.c_str(), 0, &error);
+    if(json_root_local)
     {
-      json_t* theme_json = json_object_get(json_root, "theme");
+      json_t* theme_json = json_object_get(json_root_local, "theme");
       if (theme_json) name = json_string_value(theme_json);
+      json_decref(json_root_local);
     }
+  }
+
+  ~Theme()
+  {
+    if (json_root)
+      json_decref(json_root);
   }
 
   bool load(std::string slug)
@@ -85,8 +92,11 @@ struct Theme
   float getFloat(std::string key)
   {
     float value_float = 0.0;
-    json_t* value_json = json_object_get(json_root, key.c_str());
-    if (value_json) value_float = json_real_value(value_json);
+    if(json_root)
+    {
+      json_t* value_json = json_object_get(json_root, key.c_str());
+      if (value_json) value_float = json_real_value(value_json);
+    }
     return(value_float);
   }
 
