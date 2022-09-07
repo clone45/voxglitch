@@ -1,7 +1,10 @@
 struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 {
+	AutobreakStudio *module;
+
 	AutobreakStudioWidget(AutobreakStudio *module)
 	{
+		this->module = module;
 		setModule(module);
 
 		// Load and apply theme
@@ -9,6 +12,11 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		applyTheme();
 
 		// =================== PLACE COMPONENTS ====================================
+
+		VoltageSequencerDisplayABS *voltage_sequencer_display_abs = new VoltageSequencerDisplayABS();
+		voltage_sequencer_display_abs->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
+		voltage_sequencer_display_abs->module = module;
+		addChild(voltage_sequencer_display_abs);
 
 		addParam(createParamCentered<VoxglitchLargeKnob>(themePos("WAV_KNOB"), module, AutobreakStudio::WAV_KNOB));
 		addParam(createParamCentered<VoxglitchAttenuator>(themePos("WAV_ATTN_KNOB"), module, AutobreakStudio::WAV_ATTN_KNOB));
@@ -23,15 +31,14 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_LEFT"), module, AutobreakStudio::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_RIGHT"), module, AutobreakStudio::AUDIO_OUTPUT_RIGHT));
 
-		for(unsigned int t=0; t<NUMBER_OF_STEPS; t++)
+		for (unsigned int t = 0; t < NUMBER_OF_STEPS; t++)
 		{
 			addParam(createParamCentered<squareToggle>(themePos("GATE_TOGGLE_" + std::to_string(t + 1)), module, AutobreakStudio::GATE_TOGGLE_BUTTONS + t));
 			addParam(createParamCentered<squareToggle>(themePos("RATCHET_TOGGLE_" + std::to_string(t + 1)), module, AutobreakStudio::RATCHET_TOGGLE_BUTTONS + t));
 			addParam(createParamCentered<VoxglitchAttenuator>(themePos("RATCHET_KNOB_" + std::to_string(t + 1)), module, AutobreakStudio::RATCHET_KNOBS + t));
 			addParam(createParamCentered<VoxglitchAttenuator>(themePos("SAMPLE_KNOB_" + std::to_string(t + 1)), module, AutobreakStudio::SAMPLE_KNOBS + t));
-			addChild(createLightCentered<SmallLight<RedLight>>(themePos("STEP_LED_" + std::to_string(t + 1)), module, AutobreakStudio::STEP_LEDS + t));
+			// addChild(createLightCentered<SmallLight<RedLight>>(themePos("STEP_LED_" + std::to_string(t + 1)), module, AutobreakStudio::STEP_LEDS + t));
 		}
-
 	}
 
 	void appendContextMenu(Menu *menu) override

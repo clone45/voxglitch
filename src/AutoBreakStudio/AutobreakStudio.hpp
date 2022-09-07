@@ -44,6 +44,9 @@ struct AutobreakStudio : VoxglitchSamplerModule
   dsp::SchmittTrigger clockTrigger;
   dsp::SchmittTrigger ratchetTrigger;
 
+  VoltageSequencer voltage_sequencer;
+  VoltageSequencer *selected_voltage_sequencer = &voltage_sequencer;
+
   float left_output = 0;
   float right_output = 0;
 
@@ -76,7 +79,6 @@ struct AutobreakStudio : VoxglitchSamplerModule
   };
   enum LightIds
   {
-    ENUMS(STEP_LEDS, NUMBER_OF_STEPS),
     NUM_LIGHTS
   };
 
@@ -90,6 +92,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
     configParam(WAV_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "SampleSelectAttnKnob");
 
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
+
+    voltage_sequencer.assign(NUMBER_OF_STEPS, 0.0);
   }
 
   // Autosave settings

@@ -1,15 +1,3 @@
-/*
-#include "menus/AllSequencersItem.hpp"
-#include "menus/InputSnapItem.hpp"
-#include "menus/OutputRangeValueItem.hpp"
-#include "menus/OutputRangeItem.hpp"
-#include "menus/QuickKeyMenu.hpp"
-#include "menus/ResetMenu.hpp"
-#include "menus/SampleAndHoldItem.hpp"
-#include "menus/LabelTextField.hpp"
-#include "menus/SequencerItem.hpp"
-*/
-
 struct DigitalSequencerXPWidget : VoxglitchModuleWidget
 {
   DigitalSequencerXP *module;
@@ -36,13 +24,11 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
     VoltageSequencerDisplayXP *voltage_sequencer_display_xp = new VoltageSequencerDisplayXP();
     voltage_sequencer_display_xp->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
     voltage_sequencer_display_xp->module = module;
+    addChild(voltage_sequencer_display_xp);
 
     GateSequencerDisplayXP *gates_display = new GateSequencerDisplayXP();
     gates_display->box.pos = mm2px(Vec(GATES_DRAW_AREA_POSITION_X, GATES_DRAW_AREA_POSITION_Y));
-
     gates_display->module = module;
-
-    addChild(voltage_sequencer_display_xp);
     addChild(gates_display);
 
     addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_1_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 0));
