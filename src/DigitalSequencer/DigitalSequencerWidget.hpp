@@ -10,10 +10,10 @@
 
 struct DigitalSequencerWidget : VoxglitchModuleWidget
 {
-  DigitalSequencer* module;
+  DigitalSequencer *module;
   int copy_sequencer_index = -1;
 
-  DigitalSequencerWidget(DigitalSequencer* module)
+  DigitalSequencerWidget(DigitalSequencer *module)
   {
     this->module = module;
     setModule(module);
@@ -24,12 +24,12 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
 
     // =================== PLACE COMPONENTS ====================================
 
-    if(theme.showScrews())
+    if (theme.showScrews())
     {
-  		addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, 0)));
-  		addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-  		addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-  		addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+      addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, 0)));
+      addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+      addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+      addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     }
 
     // Step
@@ -47,12 +47,29 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     addInput(createInputCentered<VoxglitchInputPort>(themePos("SEQUENCER_6_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_6_STEP_INPUT));
 
     // step length attenuators
-    auto L1 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_1_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 0); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
-    auto L2 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_2_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 1); dynamic_cast<Knob*>(L2)->snap = true; addParam(L2);
-    auto L3 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_3_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 2); dynamic_cast<Knob*>(L3)->snap = true; addParam(L3);
-    auto L4 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_4_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 3); dynamic_cast<Knob*>(L4)->snap = true; addParam(L4);
-    auto L5 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_5_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 4); dynamic_cast<Knob*>(L5)->snap = true; addParam(L5);
-    auto L6 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_6_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 5); dynamic_cast<Knob*>(L6)->snap = true; addParam(L6);
+    auto L1 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_1_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 0);
+    dynamic_cast<Knob *>(L1)->snap = true;
+    addParam(L1);
+
+    auto L2 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_2_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 1);
+    dynamic_cast<Knob *>(L2)->snap = true;
+    addParam(L2);
+
+    auto L3 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_3_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 2);
+    dynamic_cast<Knob *>(L3)->snap = true;
+    addParam(L3);
+
+    auto L4 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_4_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 3);
+    dynamic_cast<Knob *>(L4)->snap = true;
+    addParam(L4);
+
+    auto L5 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_5_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 4);
+    dynamic_cast<Knob *>(L5)->snap = true;
+    addParam(L5);
+    
+    auto L6 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_6_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 5);
+    dynamic_cast<Knob *>(L6)->snap = true;
+    addParam(L6);
 
     // Sequence selection buttons
     addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("SEQUENCER_1_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 0));
@@ -103,7 +120,6 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
 
   void addLayers()
   {
-
   }
 
   struct LengthDisplay : TransparentWidget
@@ -120,13 +136,14 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
 
       std::string text_to_display = "16";
 
-      if(module)
+      if (module)
       {
         text_to_display = std::to_string(module->voltage_sequencers[sequencer_number].sequence_length);
       }
 
       std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
-      if (font) {
+      if (font)
+      {
         nvgFontSize(vg, 9);
         nvgFontFaceId(vg, font->handle);
         nvgTextAlign(vg, NVG_ALIGN_CENTER);
@@ -145,25 +162,29 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
   // ==========================================================================================
   //
 
-  struct AllInputSnapsValueItem : MenuItem {
+  struct AllInputSnapsValueItem : MenuItem
+  {
     DigitalSequencer *module;
     int snap_division_index = 0;
 
-    void onAction(const event::Action &e) override {
-      for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
+    void onAction(const event::Action &e) override
+    {
+      for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
       {
         module->voltage_sequencers[i].snap_division_index = snap_division_index;
       }
     }
   };
 
-  struct AllInputSnapsItem : MenuItem {
+  struct AllInputSnapsItem : MenuItem
+  {
     DigitalSequencer *module;
 
-    Menu *createChildMenu() override {
+    Menu *createChildMenu() override
+    {
       Menu *menu = new Menu;
 
-      for (unsigned int i=0; i < NUMBER_OF_SNAP_DIVISIONS; i++)
+      for (unsigned int i = 0; i < NUMBER_OF_SNAP_DIVISIONS; i++)
       {
         AllInputSnapsValueItem *all_input_snaps_value_item = createMenuItem<AllInputSnapsValueItem>(module->snap_division_names[i]);
         all_input_snaps_value_item->module = module;
@@ -175,25 +196,29 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     }
   };
 
-  struct AllOutputRangesValueItem : MenuItem {
+  struct AllOutputRangesValueItem : MenuItem
+  {
     DigitalSequencer *module;
     int range_index = 0;
 
-    void onAction(const event::Action &e) override {
-      for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
+    void onAction(const event::Action &e) override
+    {
+      for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
       {
         module->voltage_sequencers[i].voltage_range_index = range_index;
       }
     }
   };
 
-  struct AllOutputRangesItem : MenuItem {
+  struct AllOutputRangesItem : MenuItem
+  {
     DigitalSequencer *module;
 
-    Menu *createChildMenu() override {
+    Menu *createChildMenu() override
+    {
       Menu *menu = new Menu;
 
-      for (unsigned int i=0; i < NUMBER_OF_VOLTAGE_RANGES; i++)
+      for (unsigned int i = 0; i < NUMBER_OF_VOLTAGE_RANGES; i++)
       {
         AllOutputRangesValueItem *all_output_ranges_value_item = createMenuItem<AllOutputRangesValueItem>(module->voltage_range_names[i]);
         all_output_ranges_value_item->module = module;
@@ -205,22 +230,26 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     }
   };
 
-  struct AllSampleAndHoldsValueItem : MenuItem {
+  struct AllSampleAndHoldsValueItem : MenuItem
+  {
     DigitalSequencer *module;
     bool value = false;
 
-    void onAction(const event::Action &e) override {
-      for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
+    void onAction(const event::Action &e) override
+    {
+      for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
       {
         module->voltage_sequencers[i].sample_and_hold = value;
       }
     }
   };
 
-  struct AllSampleAndHoldsItem : MenuItem {
+  struct AllSampleAndHoldsItem : MenuItem
+  {
     DigitalSequencer *module;
 
-    Menu *createChildMenu() override {
+    Menu *createChildMenu() override
+    {
       Menu *menu = new Menu;
 
       AllSampleAndHoldsValueItem *sample_and_hold_off = createMenuItem<AllSampleAndHoldsValueItem>("Off");
@@ -235,13 +264,14 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
 
       return menu;
     }
-
   };
 
-  struct AllSequencersItem : MenuItem {
+  struct AllSequencersItem : MenuItem
+  {
     DigitalSequencer *module;
 
-    Menu *createChildMenu() override {
+    Menu *createChildMenu() override
+    {
       Menu *menu = new Menu;
 
       AllOutputRangesItem *all_output_ranges_item = createMenuItem<AllOutputRangesItem>("Output Range", RIGHT_ARROW);
@@ -260,24 +290,28 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     }
   };
 
-  struct InputSnapValueItem : MenuItem {
+  struct InputSnapValueItem : MenuItem
+  {
     DigitalSequencer *module;
     int snap_division_index = 0;
     int sequencer_number = 0;
 
-    void onAction(const event::Action &e) override {
+    void onAction(const event::Action &e) override
+    {
       module->voltage_sequencers[sequencer_number].snap_division_index = snap_division_index;
     }
   };
 
-  struct InputSnapItem : MenuItem {
+  struct InputSnapItem : MenuItem
+  {
     DigitalSequencer *module;
     int sequencer_number = 0;
 
-    Menu *createChildMenu() override {
+    Menu *createChildMenu() override
+    {
       Menu *menu = new Menu;
 
-      for (unsigned int i=0; i < NUMBER_OF_SNAP_DIVISIONS; i++)
+      for (unsigned int i = 0; i < NUMBER_OF_SNAP_DIVISIONS; i++)
       {
         InputSnapValueItem *input_snap_value_item = createMenuItem<InputSnapValueItem>(module->snap_division_names[i], CHECKMARK(module->voltage_sequencers[sequencer_number].snap_division_index == i));
         input_snap_value_item->module = module;
@@ -290,24 +324,28 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     }
   };
 
-  struct OutputRangeValueItem : MenuItem {
+  struct OutputRangeValueItem : MenuItem
+  {
     DigitalSequencer *module;
     int range_index = 0;
     int sequencer_number = 0;
 
-    void onAction(const event::Action &e) override {
+    void onAction(const event::Action &e) override
+    {
       module->voltage_sequencers[sequencer_number].voltage_range_index = range_index;
     }
   };
 
-  struct OutputRangeItem : MenuItem {
+  struct OutputRangeItem : MenuItem
+  {
     DigitalSequencer *module;
     int sequencer_number = 0;
 
-    Menu *createChildMenu() override {
+    Menu *createChildMenu() override
+    {
       Menu *menu = new Menu;
 
-      for (unsigned int i=0; i < NUMBER_OF_VOLTAGE_RANGES; i++)
+      for (unsigned int i = 0; i < NUMBER_OF_VOLTAGE_RANGES; i++)
       {
         OutputRangeValueItem *output_range_value_menu_item = createMenuItem<OutputRangeValueItem>(module->voltage_range_names[i], CHECKMARK(module->voltage_sequencers[sequencer_number].voltage_range_index == i));
         output_range_value_menu_item->module = module;
@@ -320,8 +358,10 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     }
   };
 
-  struct QuickKeyMenu : MenuItem {
-    Menu *createChildMenu() override {
+  struct QuickKeyMenu : MenuItem
+  {
+    Menu *createChildMenu() override
+    {
       Menu *menu = new Menu;
 
       menu->addChild(createMenuLabel("      f : Toggle Freeze Mode (for easy editing)"));
@@ -340,29 +380,35 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     }
   };
 
-  struct ResetOnNextOption : MenuItem {
+  struct ResetOnNextOption : MenuItem
+  {
     DigitalSequencer *module;
 
-    void onAction(const event::Action &e) override {
+    void onAction(const event::Action &e) override
+    {
       module->legacy_reset = false;
     }
   };
 
-  struct ResetInstantOption : MenuItem {
+  struct ResetInstantOption : MenuItem
+  {
     DigitalSequencer *module;
 
-    void onAction(const event::Action &e) override {
+    void onAction(const event::Action &e) override
+    {
       module->legacy_reset = true;
     }
   };
 
-  struct ResetModeItem : MenuItem {
+  struct ResetModeItem : MenuItem
+  {
     DigitalSequencer *module;
 
-    Menu *createChildMenu() override {
+    Menu *createChildMenu() override
+    {
       Menu *menu = new Menu;
 
-      ResetOnNextOption *reset_on_next = createMenuItem<ResetOnNextOption>("Next clock input.", CHECKMARK(! module->legacy_reset));
+      ResetOnNextOption *reset_on_next = createMenuItem<ResetOnNextOption>("Next clock input.", CHECKMARK(!module->legacy_reset));
       reset_on_next->module = module;
       menu->addChild(reset_on_next);
 
@@ -375,20 +421,24 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
   };
 
   // Sample and Hold values
-  struct SampleAndHoldItem : MenuItem {
+  struct SampleAndHoldItem : MenuItem
+  {
     DigitalSequencer *module;
     int sequencer_number = 0;
 
-    void onAction(const event::Action &e) override {
+    void onAction(const event::Action &e) override
+    {
       module->voltage_sequencers[sequencer_number].sample_and_hold ^= true; // flip the value
     }
   };
 
-  struct SequencerItem : MenuItem {
+  struct SequencerItem : MenuItem
+  {
     DigitalSequencer *module;
     unsigned int sequencer_number = 0;
 
-    Menu *createChildMenu() override {
+    Menu *createChildMenu() override
+    {
       Menu *menu = new Menu;
 
       OutputRangeItem *output_range_item = createMenuItem<OutputRangeItem>("Output Range", RIGHT_ARROW);
@@ -412,7 +462,7 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
 
   void appendContextMenu(Menu *menu) override
   {
-    DigitalSequencer *module = dynamic_cast<DigitalSequencer*>(this->module);
+    DigitalSequencer *module = dynamic_cast<DigitalSequencer *>(this->module);
     assert(module);
 
     // Menu in development
@@ -429,7 +479,7 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     // Add individual sequencer settings
     SequencerItem *sequencer_items[6];
 
-    for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
+    for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
     {
       sequencer_items[i] = createMenuItem<SequencerItem>("Sequencer #" + std::to_string(i + 1), RIGHT_ARROW);
       sequencer_items[i]->module = module;
@@ -452,7 +502,8 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     menu->addChild(createMenuItem<QuickKeyMenu>("Quick Key Reference", RIGHT_ARROW));
   }
 
-  void step() override {
+  void step() override
+  {
     ModuleWidget::step();
   }
 
@@ -465,31 +516,29 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     if (e.key >= GLFW_KEY_1 && e.key <= GLFW_KEY_6)
     {
 
-      if(e.action == GLFW_PRESS)
+      if (e.action == GLFW_PRESS)
       {
         unsigned int sequencer_number = e.key - 49;
 
         // DEBUG(std::to_string(sequencer_number).c_str());
-        sequencer_number = clamp(sequencer_number,0,NUMBER_OF_SEQUENCERS-1);
+        sequencer_number = clamp(sequencer_number, 0, NUMBER_OF_SEQUENCERS - 1);
         module->selected_sequencer_index = sequencer_number;
         e.consume(this);
       }
-
     }
 
     if ((e.key == GLFW_KEY_F) && ((e.mods & RACK_MOD_MASK) != GLFW_MOD_CONTROL)) // F (no ctrl)
     {
-      if(e.action == GLFW_PRESS)
+      if (e.action == GLFW_PRESS)
       {
-        module->frozen = ! module->frozen;
+        module->frozen = !module->frozen;
         e.consume(this);
       }
     }
 
-
     if ((e.key == GLFW_KEY_C) && ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL)) // Control-C
     {
-      if(e.action == GLFW_PRESS)
+      if (e.action == GLFW_PRESS)
       {
         copy_sequencer_index = module->selected_sequencer_index;
         e.consume(this);
@@ -498,9 +547,9 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
 
     if ((e.key == GLFW_KEY_V) && ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL)) // Control-V
     {
-      if(e.action == GLFW_PRESS)
+      if (e.action == GLFW_PRESS)
       {
-        if(copy_sequencer_index > -1)
+        if (copy_sequencer_index > -1)
         {
           module->copy(copy_sequencer_index, module->selected_sequencer_index);
           e.consume(this);
@@ -508,14 +557,14 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
       }
     }
 
-    #ifdef DEV_MODE
-    if(e.action == GLFW_PRESS && e.key == GLFW_KEY_P)
+#ifdef DEV_MODE
+    if (e.action == GLFW_PRESS && e.key == GLFW_KEY_P)
     {
       std::string debug_string = "mouse at: " + std::to_string(e.pos.x) + "," + std::to_string(e.pos.y);
       DEBUG(debug_string.c_str());
     }
     ModuleWidget::onHoverKey(e);
-    #endif
+#endif
 
     ModuleWidget::onHoverKey(e);
 

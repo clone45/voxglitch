@@ -76,6 +76,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
   };
   enum LightIds
   {
+    ENUMS(STEP_LEDS, NUMBER_OF_STEPS),
     NUM_LIGHTS
   };
 
