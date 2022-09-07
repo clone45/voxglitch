@@ -51,6 +51,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
   {
     WAV_KNOB,
     WAV_ATTN_KNOB,
+    ENUMS(GATE_TOGGLE_BUTTONS, NUMBER_OF_STEPS),
+    ENUMS(RATCHET_TOGGLE_BUTTONS, NUMBER_OF_STEPS),
     NUM_PARAMS
   };
   enum InputIds
