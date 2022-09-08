@@ -13,6 +13,7 @@
 #include "Common/components/VoxglitchComponents.hpp"
 #include "Common/sequencer/Sequencer.hpp"
 #include "Common/sequencer/VoltageSequencer.hpp"
+#include "Common/sequencer/GateSequencer.hpp"
 
 #include "AutobreakStudio/defines.h"
 #include "AutobreakStudio/AutobreakStudio.hpp"

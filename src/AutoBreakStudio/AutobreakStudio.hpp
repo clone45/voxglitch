@@ -47,6 +47,12 @@ struct AutobreakStudio : VoxglitchSamplerModule
   VoltageSequencer voltage_sequencer;
   VoltageSequencer *selected_voltage_sequencer = &voltage_sequencer;
 
+  GateSequencer play_sequencer;
+  GateSequencer *selected_play_sequencer = &play_sequencer;
+
+  GateSequencer reverse_sequencer;
+  GateSequencer *selected_reverse_sequencer = &reverse_sequencer;
+
   float left_output = 0;
   float right_output = 0;
 
@@ -91,9 +97,13 @@ struct AutobreakStudio : VoxglitchSamplerModule
     configParam(WAV_KNOB, 0.0f, 1.0f, 0.0f, "SampleSelectKnob");
     configParam(WAV_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "SampleSelectAttnKnob");
 
+    configInput(CLOCK_INPUT, "Clock Input");
+
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 
     voltage_sequencer.assign(NUMBER_OF_STEPS, 0.0);
+    play_sequencer.assign(NUMBER_OF_STEPS, 0.0);
+    reverse_sequencer.assign(NUMBER_OF_STEPS, 0.0);
   }
 
   // Autosave settings
@@ -141,6 +151,9 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
   void process(const ProcessArgs &args) override
   {
+    // 
+    // Handle wav selection
+    //
     unsigned int wav_input_value = calculate_inputs(WAV_INPUT, WAV_KNOB, WAV_ATTN_KNOB, NUMBER_OF_SAMPLES);
     wav_input_value = clamp(wav_input_value, 0, NUMBER_OF_SAMPLES - 1);
 
@@ -152,8 +165,16 @@ struct AutobreakStudio : VoxglitchSamplerModule
       // Set the selected sample
       selected_sample_slot = wav_input_value;
     }
-
     Sample *selected_sample = &samples[selected_sample_slot];
+
+    //
+    // Copy trigger buttons into the currently selected gate sequencer
+    //
+    for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
+    {
+      selected_play_sequencer->setValue(i, params[GATE_TOGGLE_BUTTONS + i].getValue());
+    }
+    
 
     //
     // Handle BPM detection
@@ -165,6 +186,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     {
       if (timer_before != 0)
       {
+        // Compute BPM based on incoming clock
         double elapsed_time = time_counter - timer_before;
         if (elapsed_time > 0)
           bpm = 30.0 / elapsed_time;
@@ -204,7 +226,16 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
       actual_playback_position = clamp(actual_playback_position, 0.0, selected_sample->size() - 1);
 
-      selected_sample->read((int)actual_playback_position, &left_output, &right_output);
+      if(selected_play_sequencer->getValue())
+      {
+        selected_sample->read((int)actual_playback_position, &left_output, &right_output);
+      }
+      else
+      {
+        left_output = 0.0;
+        right_output = 0.0;
+      }
+      
 
       // Handle smoothing
       // float smooth_rate = (128.0f / args.sampleRate);
@@ -228,8 +259,15 @@ struct AutobreakStudio : VoxglitchSamplerModule
       // Optionally jump to new breakbeat position
       if (clock_triggered)
       {
-        float sequence_input_value = inputs[SEQUENCE_INPUT].getVoltage() / 10.0;
-        int breakbeat_location = (sequence_input_value * 16) - 1;
+        // float sequence_value = inputs[SEQUENCE_INPUT].getVoltage() / 10.0;
+
+        // TODO: Dont step on first clock.  Bring over that logic from Digital Sequencer
+        // TODO: loop through and step all squencers once memory is implemented
+        voltage_sequencer.step();
+        selected_play_sequencer->step();
+
+        float sequence_value = voltage_sequencer.getValue();
+        int breakbeat_location = (sequence_value * 16) - 1;
         breakbeat_location = clamp(breakbeat_location, -1, 15);
 
         if (breakbeat_location != -1)
@@ -243,8 +281,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
       {
         if (ratchet_triggered)
         {
-          float sequence_input_value = inputs[SEQUENCE_INPUT].getVoltage() / 10.0;
-          int breakbeat_location = (sequence_input_value * 16) - 1;
+          float sequence_value = inputs[SEQUENCE_INPUT].getVoltage() / 10.0;
+          int breakbeat_location = (sequence_value * 16) - 1;
           breakbeat_location = clamp(breakbeat_location, -1, 15);
 
           if (breakbeat_location != -1)
