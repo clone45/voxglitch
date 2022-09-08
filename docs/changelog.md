@@ -1,6 +1,11 @@
 ## Change Log
 
-### 2.20.0 (development in progress)
+### 2.21.1
+
+* Fixed bug which crashed the library view on some Windows machines
+* Fixed memory leak caused when theme is missing
+
+### 2.20.0
 General:
 * Code clean-up:
   - Consolidated all DSP helpers into the dsp folder instead of using submodules.hpp
