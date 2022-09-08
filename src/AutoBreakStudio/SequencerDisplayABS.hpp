@@ -2,7 +2,7 @@ struct SequencerDisplayABS : VoxglitchWidget
 {
   AutobreakStudio *module;
   Vec drag_position;
-  double bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
+  double bar_width = (DRAW_AREA_WIDTH / (double) MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
 
   /*
   NVGcolor bright_background_color = nvgRGBA(42, 50, 52, 255);
@@ -76,6 +76,7 @@ struct SequencerDisplayABS : VoxglitchWidget
     return false;
   }
 
+  /*
   void drawVerticalGuildes(NVGcontext *vg, double height)
   {
     for(unsigned int i=1; i < 8; i++)
@@ -87,6 +88,7 @@ struct SequencerDisplayABS : VoxglitchWidget
       nvgFill(vg);
     }
   }
+  */
 
   void drawOverlay(NVGcontext *vg, double width, double height)
   {

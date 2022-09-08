@@ -96,7 +96,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
                 }
             }
 
-            drawVerticalGuildes(vg, DRAW_AREA_HEIGHT);
+            // drawVerticalGuildes(vg, DRAW_AREA_HEIGHT);
             drawOverlay(vg, OVERLAY_WIDTH, DRAW_AREA_HEIGHT);
 
             nvgRestore(vg);
@@ -113,7 +113,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
     {
         if (module)
         {
-            double bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
+            double bar_width = (DRAW_AREA_WIDTH / (double) MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
             int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
             int clicked_y = DRAW_AREA_HEIGHT - mouse_position.y;
 

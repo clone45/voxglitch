@@ -14,7 +14,7 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		// =================== PLACE COMPONENTS ====================================
 
 		VoltageSequencerDisplayABS *voltage_sequencer_display_abs = new VoltageSequencerDisplayABS();
-		voltage_sequencer_display_abs->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
+		voltage_sequencer_display_abs->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
 		voltage_sequencer_display_abs->module = module;
 		addChild(voltage_sequencer_display_abs);
 
