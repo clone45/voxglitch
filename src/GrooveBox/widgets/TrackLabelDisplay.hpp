@@ -72,7 +72,7 @@ struct TrackLabelDisplay : TransparentWidget
       std::vector<std::string> wav_files;
 
       // Folders might contain things that aren't .wav files, and we need to
-      // week those out. In order to do that, we iterate over the directory list
+      // weed those out. In order to do that, we iterate over the directory list
       // and populate a new vector called "wav_files".
       for (auto entry : directory_list)
       {

@@ -17,10 +17,10 @@ struct TScrewHexBlack : TBase
   ImageWidget* shadow;
   TScrewHexBlack() {
 
-    bg = new ImageWidget(asset::plugin(pluginInstance, "res/components/png/screw_light.png"), 5.0, 5.0);
+    bg = new ImageWidget("res/components/png/screw_light.png", 5.0, 5.0);
     this->addChild(bg);
 
-    shadow = new ImageWidget(asset::plugin(pluginInstance, "res/themes/default/round_shadow.png"), 6.0, 6.0);
+    shadow = new ImageWidget("res/themes/default/round_shadow.png", 6.0, 6.0);
     this->addChildBottom(shadow);
     shadow->setPosition(Vec(-1.5, 1.2));
   }

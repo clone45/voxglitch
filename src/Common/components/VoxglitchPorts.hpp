@@ -47,7 +47,7 @@ struct VoxglitchInputPort : VoxglitchPort {
 	VoxglitchInputPort() {
 		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/voxglitch_input_port.svg")));
 
-    shadow = new ImageWidget(asset::plugin(pluginInstance, "res/themes/default/round_shadow.png"), 12.0, 12.0, 0.7);
+    shadow = new ImageWidget("res/themes/default/round_shadow.png", 12.0, 12.0, 0.7);
     this->addChildBottom(shadow);
     shadow->setPosition(Vec(-5.0, 0.0));
 	}
@@ -58,7 +58,7 @@ struct VoxglitchOutputPort : VoxglitchPort {
 	VoxglitchOutputPort() {
 		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/voxglitch_output_port.svg")));
 
-    shadow = new ImageWidget(asset::plugin(pluginInstance, "res/themes/default/round_shadow.png"), 12.0, 12.0, 0.7);
+    shadow = new ImageWidget("res/themes/default/round_shadow.png", 12.0, 12.0, 0.7);
     this->addChildBottom(shadow);
     shadow->setPosition(Vec(-5.0, 0.0));
 	}
@@ -69,7 +69,7 @@ struct VoxglitchPolyPort : VoxglitchPort {
 	VoxglitchPolyPort() {
 		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/voxglitch_poly_port.svg")));
 
-    shadow = new ImageWidget(asset::plugin(pluginInstance, "res/themes/default/round_shadow.png"), 12.0, 12.0, 0.7);
+    shadow = new ImageWidget("res/themes/default/round_shadow.png", 12.0, 12.0, 0.7);
     this->addChildBottom(shadow);
     shadow->setPosition(Vec(-5.0, 0.0));
 	}

@@ -52,12 +52,12 @@ struct TLargeKnob : TBase
 		this->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/" + this->svgFile)));
 
     // Add the knob's PNG background to the bottom
-    bg = new ImageWidget(asset::plugin(pluginInstance, "res/components/png/Big-Knob.png"), 22.2, 24.2);
+    bg = new ImageWidget("res/components/png/Big-Knob.png", 22.2, 24.2);
     this->addChildBottom(bg);
     bg->setPosition(Vec(-2.8, -2.25));
 
     // Add the shadow below everything
-    shadow = new ImageWidget(asset::plugin(pluginInstance, "res/themes/default/round_shadow.png"), 32.0, 32.0);
+    shadow = new ImageWidget("res/themes/default/round_shadow.png", 32.0, 32.0);
     this->addChildBottom(shadow);
     shadow->setPosition(Vec(-16.0, 0.0));
 	}
@@ -73,10 +73,10 @@ struct TMediumKnob : TBase {
 		this->svgFile = "medium_knob_overlay.svg";
 		this->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/" + this->svgFile)));
 
-    bg = new ImageWidget(asset::plugin(pluginInstance, "res/components/png/knob_medium_light.png"), 12.4, 12.4);
+    bg = new ImageWidget("res/components/png/knob_medium_light.png", 12.4, 12.4);
     this->addChildBottom(bg);
 
-    shadow = new ImageWidget(asset::plugin(pluginInstance, "res/themes/default/round_shadow.png"), 16.4, 16.4);
+    shadow = new ImageWidget("res/themes/default/round_shadow.png", 16.4, 16.4);
     this->addChildBottom(shadow);
     shadow->setPosition(Vec(-5.0, 3.0));
 
@@ -94,10 +94,10 @@ struct TMediumBlackKnob : TBase {
 		this->svgFile = "medium_knob_black_overlay.svg";
 		this->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/" + this->svgFile)));
 
-    bg = new ImageWidget(asset::plugin(pluginInstance, "res/components/png/knob_medium_black.png"), 12.4, 12.4);
+    bg = new ImageWidget("res/components/png/knob_medium_black.png", 12.4, 12.4);
     this->addChildBottom(bg);
 
-    shadow = new ImageWidget(asset::plugin(pluginInstance, "res/themes/default/round_shadow.png"), 16.4, 16.4);
+    shadow = new ImageWidget("res/themes/default/round_shadow.png", 16.4, 16.4);
     this->addChildBottom(shadow);
     shadow->setPosition(Vec(-5.0, 3.0));
 
@@ -114,11 +114,11 @@ struct TAttenuator : TBase {
 		this->svgFile = "attenuator_overlay.svg";
 		this->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/" + this->svgFile)));
 
-    bg = new ImageWidget(asset::plugin(pluginInstance, "res/components/png/knob_small.png"), 6.0, 6.0);
+    bg = new ImageWidget("res/components/png/knob_small.png", 6.0, 6.0);
     this->addChildBottom(bg);
     bg->setPosition(Vec(0.2, 0.2));
 
-    shadow = new ImageWidget(asset::plugin(pluginInstance, "res/themes/default/round_shadow.png"), 8.4, 8.4);
+    shadow = new ImageWidget("res/themes/default/round_shadow.png", 8.4, 8.4);
     this->addChildBottom(shadow);
     shadow->setPosition(Vec(-3.0, 1.2));
 	}
