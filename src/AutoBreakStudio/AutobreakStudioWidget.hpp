@@ -26,7 +26,7 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, AutobreakStudio::RESET_INPUT));
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("SEQUENCE_INPUT"), module, AutobreakStudio::SEQUENCE_INPUT));
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("RATCHET_INPUT"), module, AutobreakStudio::RATCHET_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("REVERSE_INPUT"), module, AutobreakStudio::REVERSE_INPUT));
+		// addInput(createInputCentered<VoxglitchInputPort>(themePos("REVERSE_INPUT"), module, AutobreakStudio::REVERSE_INPUT));
 
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_LEFT"), module, AutobreakStudio::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_RIGHT"), module, AutobreakStudio::AUDIO_OUTPUT_RIGHT));
@@ -34,7 +34,7 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		for (unsigned int t = 0; t < NUMBER_OF_STEPS; t++)
 		{
 			addParam(createParamCentered<squareToggle>(themePos("GATE_TOGGLE_" + std::to_string(t + 1)), module, AutobreakStudio::GATE_TOGGLE_BUTTONS + t));
-			addParam(createParamCentered<squareToggle>(themePos("RATCHET_TOGGLE_" + std::to_string(t + 1)), module, AutobreakStudio::RATCHET_TOGGLE_BUTTONS + t));
+			addParam(createParamCentered<squareToggle>(themePos("REVERSE_TOGGLE_" + std::to_string(t + 1)), module, AutobreakStudio::REVERSE_TOGGLE_BUTTONS + t));
 			addParam(createParamCentered<VoxglitchAttenuator>(themePos("RATCHET_KNOB_" + std::to_string(t + 1)), module, AutobreakStudio::RATCHET_KNOBS + t));
 			addParam(createParamCentered<VoxglitchAttenuator>(themePos("SAMPLE_KNOB_" + std::to_string(t + 1)), module, AutobreakStudio::SAMPLE_KNOBS + t));
 			// addChild(createLightCentered<SmallLight<RedLight>>(themePos("STEP_LED_" + std::to_string(t + 1)), module, AutobreakStudio::STEP_LEDS + t));

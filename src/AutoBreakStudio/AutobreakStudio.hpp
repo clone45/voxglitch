@@ -61,7 +61,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     WAV_KNOB,
     WAV_ATTN_KNOB,
     ENUMS(GATE_TOGGLE_BUTTONS, NUMBER_OF_STEPS),
-    ENUMS(RATCHET_TOGGLE_BUTTONS, NUMBER_OF_STEPS),
+    ENUMS(REVERSE_TOGGLE_BUTTONS, NUMBER_OF_STEPS),
     ENUMS(RATCHET_KNOBS, NUMBER_OF_STEPS),
     ENUMS(SAMPLE_KNOBS, NUMBER_OF_STEPS),
     NUM_PARAMS
@@ -73,7 +73,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     SEQUENCE_INPUT,
     WAV_INPUT,
     RATCHET_INPUT,
-    REVERSE_INPUT,
+    // REVERSE_INPUT,
     NUM_INPUTS
   };
   enum OutputIds
@@ -167,14 +167,16 @@ struct AutobreakStudio : VoxglitchSamplerModule
     }
     Sample *selected_sample = &samples[selected_sample_slot];
 
-    //
-    // Copy trigger buttons into the currently selected gate sequencer
-    //
     for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
     {
+      // Copy trigger buttons into the currently selected gate sequencer
       selected_play_sequencer->setValue(i, params[GATE_TOGGLE_BUTTONS + i].getValue());
+
+      // Copy reverse buttons into the currently selected reverse sequencer
+      selected_reverse_sequencer->setValue(i, params[REVERSE_TOGGLE_BUTTONS + i].getValue());
     }
     
+
 
     //
     // Handle BPM detection
@@ -247,7 +249,18 @@ struct AutobreakStudio : VoxglitchSamplerModule
       outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_output * GAIN);
 
       // Step the theoretical playback position
+      /*
       if (inputs[REVERSE_INPUT].getVoltage() >= 5)
+      {
+        theoretical_playback_position = theoretical_playback_position - 1;
+      }
+      else
+      {
+        theoretical_playback_position = theoretical_playback_position + 1;
+      }
+      */
+
+      if(selected_reverse_sequencer->getValue())
       {
         theoretical_playback_position = theoretical_playback_position - 1;
       }
@@ -265,6 +278,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
         // TODO: loop through and step all squencers once memory is implemented
         voltage_sequencer.step();
         selected_play_sequencer->step();
+        selected_reverse_sequencer->step();
 
         float sequence_value = voltage_sequencer.getValue();
         int breakbeat_location = (sequence_value * 16) - 1;
