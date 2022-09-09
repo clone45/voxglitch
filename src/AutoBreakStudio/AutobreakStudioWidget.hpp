@@ -18,9 +18,14 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		voltage_sequencer_display_abs->module = module;
 		addChild(voltage_sequencer_display_abs);
 
+		LcdTabsWidget *lcd_tabs_widget = new LcdTabsWidget();
+		lcd_tabs_widget->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y - 40);
+		lcd_tabs_widget->module = module;
+		addChild(lcd_tabs_widget);
+
 		addParam(createParamCentered<VoxglitchLargeKnob>(themePos("WAV_KNOB"), module, AutobreakStudio::WAV_KNOB));
 		addParam(createParamCentered<VoxglitchAttenuator>(themePos("WAV_ATTN_KNOB"), module, AutobreakStudio::WAV_ATTN_KNOB));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("WAV_INPUT"), module, AutobreakStudio::WAV_INPUT));
+		// addInput(createInputCentered<VoxglitchInputPort>(themePos("WAV_INPUT"), module, AutobreakStudio::WAV_INPUT));
 
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("CLOCK_INPUT"), module, AutobreakStudio::CLOCK_INPUT));
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, AutobreakStudio::RESET_INPUT));

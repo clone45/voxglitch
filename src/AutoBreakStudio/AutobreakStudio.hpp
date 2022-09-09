@@ -71,7 +71,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     CLOCK_INPUT,
     RESET_INPUT,
     SEQUENCE_INPUT,
-    WAV_INPUT,
+    // WAV_INPUT,
     RATCHET_INPUT,
     // REVERSE_INPUT,
     NUM_INPUTS
@@ -104,6 +104,12 @@ struct AutobreakStudio : VoxglitchSamplerModule
     voltage_sequencer.assign(NUMBER_OF_STEPS, 0.0);
     play_sequencer.assign(NUMBER_OF_STEPS, 0.0);
     reverse_sequencer.assign(NUMBER_OF_STEPS, 0.0);
+
+    for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
+    {
+      configParam(SAMPLE_KNOBS + i, 0.0f, NUMBER_OF_SAMPLES - 1, 0.0f, "Sample Selection");
+      paramQuantities[SAMPLE_KNOBS + i]->snapEnabled = true;
+    }
   }
 
   // Autosave settings
@@ -154,16 +160,18 @@ struct AutobreakStudio : VoxglitchSamplerModule
     // 
     // Handle wav selection
     //
-    unsigned int wav_input_value = calculate_inputs(WAV_INPUT, WAV_KNOB, WAV_ATTN_KNOB, NUMBER_OF_SAMPLES);
-    wav_input_value = clamp(wav_input_value, 0, NUMBER_OF_SAMPLES - 1);
+    // unsigned int wav_input_value = calculate_inputs(WAV_INPUT, WAV_KNOB, WAV_ATTN_KNOB, NUMBER_OF_SAMPLES);
+    // wav_input_value = clamp(wav_input_value, 0, NUMBER_OF_SAMPLES - 1);
 
-    if (wav_input_value != selected_sample_slot)
+    unsigned int sample_knob_value = params[SAMPLE_KNOBS + selected_play_sequencer->getPlaybackPosition()].getValue();
+
+    if (sample_knob_value != selected_sample_slot)
     {
       // Reset the smooth ramp if the selected sample has changed
       declick_filter.trigger();
 
       // Set the selected sample
-      selected_sample_slot = wav_input_value;
+      selected_sample_slot = sample_knob_value;
     }
     Sample *selected_sample = &samples[selected_sample_slot];
 

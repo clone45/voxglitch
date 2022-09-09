@@ -5,11 +5,15 @@
 const int MAX_SEQUENCER_STEPS = 16;
 
 // Constants for patterns
-const int DRAW_AREA_WIDTH = 599.8;
-const int DRAW_AREA_HEIGHT = 185.0;
-const float BAR_HEIGHT = 185.0;
+const int DRAW_AREA_WIDTH = 400.0;
+const int DRAW_AREA_HEIGHT = 155.0;
+const float BAR_HEIGHT = 155.0;
 const float BAR_HORIZONTAL_PADDING = .8;
 const float DRAW_AREA_POSITION_X = 157.778;
-const float DRAW_AREA_POSITION_Y = 18.8;
+const float DRAW_AREA_POSITION_Y = 48.8;
 
-const float OVERLAY_WIDTH = 599.8;
+const float OVERLAY_WIDTH = 400.0;
+
+const float LCD_TABS_HEIGHT = 35.0;
+const float LCD_TABS_WIDTH = 90.0;
+const float TABS_HORIZONTAL_PADDING = 1.0;

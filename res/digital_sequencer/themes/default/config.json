@@ -1,5 +1,5 @@
 {
-	"panel_svg": "res/digital_sequencer/themes/default/panel.svg",
+	"panel_width": 540.0,
 	"layers": [
 		{
       "type": "image",

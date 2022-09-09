@@ -1,5 +1,5 @@
 {
-	"panel_svg": "res/wavbank_mc/themes/default/panel.svg",
+	"panel_width": 300.0,
 	"layers": [
 		{
       "type": "image",
