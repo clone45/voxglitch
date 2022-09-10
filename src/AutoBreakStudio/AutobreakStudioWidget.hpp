@@ -24,11 +24,18 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		volume_sequencer->hide();
 		addChild(volume_sequencer);
 
+		VoltageSequencerDisplayABS *sample_sequencer = new VoltageSequencerDisplayABS(this->module->selected_sample_sequencer);
+		sample_sequencer->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
+		sample_sequencer->module = module;
+		sample_sequencer->hide();
+		addChild(sample_sequencer);		
+
 		// Here, how about creating an array of pointers to the sequencer displays, and pass that array into LcdTabsWidget, which 
 		// will give it the ability to call the sequencer displays' show and hide methods?
 
-		VoltageSequencerDisplayABS *sequencer_displays[2] = {
+		VoltageSequencerDisplayABS *sequencer_displays[3] = {
 			position_sequencer,
+			sample_sequencer,
 			volume_sequencer
 		};
 

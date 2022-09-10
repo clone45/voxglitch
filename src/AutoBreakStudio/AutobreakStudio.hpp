@@ -47,6 +47,9 @@ struct AutobreakStudio : VoxglitchSamplerModule
   VoltageSequencer position_sequencer;
   VoltageSequencer *selected_position_sequencer = &position_sequencer;
 
+  VoltageSequencer sample_sequencer;
+  VoltageSequencer *selected_sample_sequencer = &sample_sequencer;
+
   VoltageSequencer volume_sequencer;
   VoltageSequencer *selected_volume_sequencer = &volume_sequencer;
 
@@ -103,6 +106,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
     position_sequencer.assign(NUMBER_OF_STEPS, 0.0);
     volume_sequencer.assign(NUMBER_OF_STEPS, 1.0);
+    sample_sequencer.assign(NUMBER_OF_STEPS, 0.0);
     reverse_sequencer.assign(NUMBER_OF_STEPS, 0.0);
 
     for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
@@ -165,15 +169,17 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
     // unsigned int sample_knob_value = params[SAMPLE_KNOBS + selected_volume_sequencer->getPlaybackPosition()].getValue();
 
-    unsigned int sample_knob_value = 0.0;
+    // unsigned int sample_knob_value = 0.0;
 
-    if (sample_knob_value != selected_sample_slot)
+    unsigned int sample_value = (sample_sequencer.getValue() * NUMBER_OF_SAMPLES);
+
+    if (sample_value != selected_sample_slot)
     {
       // Reset the smooth ramp if the selected sample has changed
       declick_filter.trigger();
 
       // Set the selected sample
-      selected_sample_slot = sample_knob_value;
+      selected_sample_slot = sample_value;
     }
     Sample *selected_sample = &samples[selected_sample_slot];
 
@@ -236,16 +242,11 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
       actual_playback_position = clamp(actual_playback_position, 0.0, selected_sample->size() - 1);
 
-      // TODO: Rewrite this
-      if(selected_volume_sequencer->getValue())
-      {
-        selected_sample->read((int)actual_playback_position, &left_output, &right_output);
-      }
-      else
-      {
-        left_output = 0.0;
-        right_output = 0.0;
-      }
+      selected_sample->read((int)actual_playback_position, &left_output, &right_output);
+
+      // Apply volume sequencer to output values
+      left_output = selected_volume_sequencer->getValue() * left_output;
+      right_output = selected_volume_sequencer->getValue() * right_output;
       
 
       // Handle smoothing
@@ -286,6 +287,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
         // TODO: Dont step on first clock.  Bring over that logic from Digital Sequencer
         // TODO: loop through and step all squencers once memory is implemented
         position_sequencer.step();
+        sample_sequencer.step();
         volume_sequencer.step();
         selected_reverse_sequencer->step();
 
