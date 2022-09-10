@@ -63,20 +63,12 @@ struct AutobreakStudio : VoxglitchSamplerModule
   {
     WAV_KNOB,
     WAV_ATTN_KNOB,
-    ENUMS(GATE_TOGGLE_BUTTONS, NUMBER_OF_STEPS),
-    ENUMS(REVERSE_TOGGLE_BUTTONS, NUMBER_OF_STEPS),
-    ENUMS(RATCHET_KNOBS, NUMBER_OF_STEPS),
-    ENUMS(SAMPLE_KNOBS, NUMBER_OF_STEPS),
     NUM_PARAMS
   };
   enum InputIds
   {
     CLOCK_INPUT,
     RESET_INPUT,
-    SEQUENCE_INPUT,
-    // WAV_INPUT,
-    RATCHET_INPUT,
-    // REVERSE_INPUT,
     NUM_INPUTS
   };
   enum OutputIds
@@ -111,8 +103,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
     for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
     {
-      configParam(SAMPLE_KNOBS + i, 0.0f, NUMBER_OF_SAMPLES - 1, 0.0f, "Sample Selection");
-      paramQuantities[SAMPLE_KNOBS + i]->snapEnabled = true;
+      // configParam(SAMPLE_KNOBS + i, 0.0f, NUMBER_OF_SAMPLES - 1, 0.0f, "Sample Selection");
+      // paramQuantities[SAMPLE_KNOBS + i]->snapEnabled = true;
     }
   }
 
@@ -183,14 +175,16 @@ struct AutobreakStudio : VoxglitchSamplerModule
     }
     Sample *selected_sample = &samples[selected_sample_slot];
 
+  /*
     for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
     {
       // Copy volume buttons into the currently selected gate sequencer
       // selected_volume_sequencer->setValue(i, params[GATE_TOGGLE_BUTTONS + i].getValue());
 
       // Copy reverse buttons into the currently selected reverse sequencer
-      selected_reverse_sequencer->setValue(i, params[REVERSE_TOGGLE_BUTTONS + i].getValue());
+      // selected_reverse_sequencer->setValue(i, params[REVERSE_TOGGLE_BUTTONS + i].getValue());
     }
+  */
 
     //
     // Handle BPM detection
@@ -212,10 +206,12 @@ struct AutobreakStudio : VoxglitchSamplerModule
       clock_triggered = true;
     }
 
+  /*
     if (ratchetTrigger.process(inputs[RATCHET_INPUT].getVoltage()))
     {
       ratchet_triggered = true;
     }
+  */
 
     //
     // Handle reset input
@@ -304,6 +300,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
       }
       else
       {
+        /*
         if (ratchet_triggered)
         {
           float sequence_value = inputs[SEQUENCE_INPUT].getVoltage() / 10.0;
@@ -316,6 +313,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
           }
           ratchet_triggered = false;
         }
+        */
       }
 
       // Loop the theoretical_playback_position

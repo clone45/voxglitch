@@ -44,27 +44,17 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		lcd_tabs_widget->module = module;
 		addChild(lcd_tabs_widget);
 
-		addParam(createParamCentered<VoxglitchLargeKnob>(themePos("WAV_KNOB"), module, AutobreakStudio::WAV_KNOB));
-		addParam(createParamCentered<VoxglitchAttenuator>(themePos("WAV_ATTN_KNOB"), module, AutobreakStudio::WAV_ATTN_KNOB));
+		// addParam(createParamCentered<VoxglitchLargeKnob>(themePos("WAV_KNOB"), module, AutobreakStudio::WAV_KNOB));
+		// addParam(createParamCentered<VoxglitchAttenuator>(themePos("WAV_ATTN_KNOB"), module, AutobreakStudio::WAV_ATTN_KNOB));
 		// addInput(createInputCentered<VoxglitchInputPort>(themePos("WAV_INPUT"), module, AutobreakStudio::WAV_INPUT));
 
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("CLOCK_INPUT"), module, AutobreakStudio::CLOCK_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, AutobreakStudio::RESET_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("SEQUENCE_INPUT"), module, AutobreakStudio::SEQUENCE_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("RATCHET_INPUT"), module, AutobreakStudio::RATCHET_INPUT));
+		// addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, AutobreakStudio::RESET_INPUT));
+		// addInput(createInputCentered<VoxglitchInputPort>(themePos("SEQUENCE_INPUT"), module, AutobreakStudio::SEQUENCE_INPUT));
 		// addInput(createInputCentered<VoxglitchInputPort>(themePos("REVERSE_INPUT"), module, AutobreakStudio::REVERSE_INPUT));
 
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_LEFT"), module, AutobreakStudio::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_RIGHT"), module, AutobreakStudio::AUDIO_OUTPUT_RIGHT));
-
-		for (unsigned int t = 0; t < NUMBER_OF_STEPS; t++)
-		{
-			addParam(createParamCentered<squareToggle>(themePos("GATE_TOGGLE_" + std::to_string(t + 1)), module, AutobreakStudio::GATE_TOGGLE_BUTTONS + t));
-			addParam(createParamCentered<squareToggle>(themePos("REVERSE_TOGGLE_" + std::to_string(t + 1)), module, AutobreakStudio::REVERSE_TOGGLE_BUTTONS + t));
-			addParam(createParamCentered<VoxglitchAttenuator>(themePos("RATCHET_KNOB_" + std::to_string(t + 1)), module, AutobreakStudio::RATCHET_KNOBS + t));
-			addParam(createParamCentered<VoxglitchAttenuator>(themePos("SAMPLE_KNOB_" + std::to_string(t + 1)), module, AutobreakStudio::SAMPLE_KNOBS + t));
-			// addChild(createLightCentered<SmallLight<RedLight>>(themePos("STEP_LED_" + std::to_string(t + 1)), module, AutobreakStudio::STEP_LEDS + t));
-		}
 	}
 
 	void appendContextMenu(Menu *menu) override
