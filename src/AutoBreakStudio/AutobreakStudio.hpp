@@ -165,7 +165,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
     // unsigned int sample_knob_value = params[SAMPLE_KNOBS + selected_volume_sequencer->getPlaybackPosition()].getValue();
 
-  unsigned int sample_knob_value = 0.0;
+    unsigned int sample_knob_value = 0.0;
 
     if (sample_knob_value != selected_sample_slot)
     {
@@ -180,7 +180,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
     {
       // Copy volume buttons into the currently selected gate sequencer
-      selected_volume_sequencer->setValue(i, params[GATE_TOGGLE_BUTTONS + i].getValue());
+      // selected_volume_sequencer->setValue(i, params[GATE_TOGGLE_BUTTONS + i].getValue());
 
       // Copy reverse buttons into the currently selected reverse sequencer
       selected_reverse_sequencer->setValue(i, params[REVERSE_TOGGLE_BUTTONS + i].getValue());

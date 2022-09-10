@@ -4,6 +4,8 @@ struct LcdTabsWidget : TransparentWidget
 
     unsigned int selected_tab = 0;
 
+    VoltageSequencerDisplayABS *sequencer_displays[2];
+
     NVGcolor tab_color_default = nvgRGBA(48, 75, 79, 255);
     NVGcolor tab_color_selected = nvgRGBA(68, 95, 99, 255);
     NVGcolor label_color = nvgRGBA(255, 255, 255, 255);
@@ -16,8 +18,11 @@ struct LcdTabsWidget : TransparentWidget
         "Ratchet"
     };
 
-    LcdTabsWidget()
+    LcdTabsWidget(VoltageSequencerDisplayABS *sequencer_displays[2])
     {
+        this->sequencer_displays[0] = sequencer_displays[0];
+        this->sequencer_displays[1] = sequencer_displays[1];
+
         box.size = Vec(DRAW_AREA_WIDTH, LCD_TABS_HEIGHT);
     }
 
@@ -86,5 +91,11 @@ struct LcdTabsWidget : TransparentWidget
     void switchTabs(unsigned int tab)
     {
         selected_tab = tab;
+
+        sequencer_displays[0]->hide();
+        sequencer_displays[1]->hide();
+
+        if(tab == 0) sequencer_displays[0]->show();
+        if(tab == 1) sequencer_displays[1]->show();
     }
 };
