@@ -13,13 +13,19 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 
 		// =================== PLACE COMPONENTS ====================================
 
-		VoltageSequencerDisplayABS *voltage_sequencer_display_abs = new VoltageSequencerDisplayABS();
-		voltage_sequencer_display_abs->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
-		voltage_sequencer_display_abs->module = module;
-		addChild(voltage_sequencer_display_abs);
+		VoltageSequencerDisplayABS *position_sequencer = new VoltageSequencerDisplayABS(this->module->selected_position_sequencer);
+		position_sequencer->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
+		position_sequencer->module = module;
+		addChild(position_sequencer);
+
+		VoltageSequencerDisplayABS *volume_sequencer = new VoltageSequencerDisplayABS(this->module->selected_volume_sequencer);
+		volume_sequencer->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
+		volume_sequencer->module = module;
+		volume_sequencer->hide();
+		addChild(volume_sequencer);
 
 		LcdTabsWidget *lcd_tabs_widget = new LcdTabsWidget();
-		lcd_tabs_widget->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y - 40);
+		lcd_tabs_widget->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y - 25);
 		lcd_tabs_widget->module = module;
 		addChild(lcd_tabs_widget);
 

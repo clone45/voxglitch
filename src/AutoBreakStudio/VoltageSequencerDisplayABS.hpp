@@ -1,6 +1,7 @@
 struct VoltageSequencerDisplayABS : SequencerDisplayABS
 {
     AutobreakStudio *module;
+    VoltageSequencer *sequencer;
 
     bool shift_key = false;
     bool ctrl_key = false;
@@ -11,10 +12,10 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
     int previous_control_sequence_column = 0;
     int control_sequence_column = 0;
 
-    bool logged = false;
-
-    VoltageSequencerDisplayABS()
+    VoltageSequencerDisplayABS(VoltageSequencer *sequencer_instance)
     {
+        this->sequencer = sequencer_instance;
+
         // The bounding box needs to be a little deeper than the visual
         // controls to allow mouse drags to indicate '0' (off) column heights,
         // which is why 16 is being added to the draw height to define the
@@ -40,10 +41,10 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
                 //
                 for (unsigned int i = 0; i < MAX_SEQUENCER_STEPS; i++)
                 {
-                    value = module->selected_voltage_sequencer->getValue(i);
+                    value = sequencer->getValue(i);
 
                     // Draw grey background bar
-                    if (i < module->selected_voltage_sequencer->getLength())
+                    if (i < sequencer->getLength())
                     {
                         bar_color = brightness(bright_background_color, settings::rackBrightness);
                     }
@@ -54,11 +55,11 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
 
                     drawBar(vg, i, BAR_HEIGHT, DRAW_AREA_HEIGHT, bar_color); // background
 
-                    if (i == module->selected_voltage_sequencer->getPlaybackPosition())
+                    if (i == sequencer->getPlaybackPosition())
                     {
                         bar_color = current_step_highlight_color;
                     }
-                    else if (i < module->selected_voltage_sequencer->getLength())
+                    else if (i < sequencer->getLength())
                     {
                         bar_color = lesser_step_highlight_color;
                     }
@@ -72,7 +73,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
                         drawBar(vg, i, (value * DRAW_AREA_HEIGHT), DRAW_AREA_HEIGHT, bar_color);
 
                     // Highlight the sequence playback column
-                    if (i == module->selected_voltage_sequencer->getPlaybackPosition())
+                    if (i == sequencer->getPlaybackPosition())
                     {
                         drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, sequence_position_highlight_color);
                     }
@@ -123,7 +124,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
             // convert the clicked_y position to a double between 0 and 1
             double value = (double)clicked_y / (double)DRAW_AREA_HEIGHT;
 
-            module->selected_voltage_sequencer->setValue(clicked_bar_x_index, value);
+            sequencer->setValue(clicked_bar_x_index, value);
         }
     }
 
@@ -138,7 +139,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
     {
         int clicked_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
         clicked_column = clamp(clicked_column, 0, MAX_SEQUENCER_STEPS);
-        module->selected_voltage_sequencer->setLength(clicked_column);
+        sequencer->setLength(clicked_column);
     }
 
     void dragShiftSequences(Vec mouse_position)
@@ -150,13 +151,13 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
 
             while (shift_offset < 0)
             {
-                module->selected_voltage_sequencer->shiftLeft();
+                sequencer->shiftLeft();
                 shift_offset++;
             }
 
             while (shift_offset > 0)
             {
-                module->selected_voltage_sequencer->shiftRight();
+                sequencer->shiftRight();
                 shift_offset--;
             }
 
@@ -170,7 +171,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
         {
             int drag_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
             drag_column = clamp(drag_column, 0, MAX_SEQUENCER_STEPS);
-            module->selected_voltage_sequencer->setLength(drag_column);
+            sequencer->setLength(drag_column);
         }
     }
 
@@ -237,7 +238,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
             // Do not randomize if CTRL-r is pressed.  That's for randomizing everything
             if ((e.mods & RACK_MOD_MASK) != GLFW_MOD_CONTROL)
             {
-                module->selected_voltage_sequencer->randomize();
+                sequencer->randomize();
             }
         }
     }

@@ -14,6 +14,7 @@ const float DRAW_AREA_POSITION_Y = 48.8;
 
 const float OVERLAY_WIDTH = 400.0;
 
-const float LCD_TABS_HEIGHT = 35.0;
-const float LCD_TABS_WIDTH = 90.0;
+const int NUMBER_OF_TABS = 5;
+const float LCD_TABS_HEIGHT = 20.0;
+const float LCD_TABS_WIDTH = 64.0;
 const float TABS_HORIZONTAL_PADDING = 1.0;

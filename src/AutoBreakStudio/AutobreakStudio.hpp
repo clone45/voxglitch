@@ -44,11 +44,11 @@ struct AutobreakStudio : VoxglitchSamplerModule
   dsp::SchmittTrigger clockTrigger;
   dsp::SchmittTrigger ratchetTrigger;
 
-  VoltageSequencer voltage_sequencer;
-  VoltageSequencer *selected_voltage_sequencer = &voltage_sequencer;
+  VoltageSequencer position_sequencer;
+  VoltageSequencer *selected_position_sequencer = &position_sequencer;
 
-  GateSequencer play_sequencer;
-  GateSequencer *selected_play_sequencer = &play_sequencer;
+  VoltageSequencer volume_sequencer;
+  VoltageSequencer *selected_volume_sequencer = &volume_sequencer;
 
   GateSequencer reverse_sequencer;
   GateSequencer *selected_reverse_sequencer = &reverse_sequencer;
@@ -101,8 +101,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 
-    voltage_sequencer.assign(NUMBER_OF_STEPS, 0.0);
-    play_sequencer.assign(NUMBER_OF_STEPS, 0.0);
+    position_sequencer.assign(NUMBER_OF_STEPS, 0.0);
+    volume_sequencer.assign(NUMBER_OF_STEPS, 1.0);
     reverse_sequencer.assign(NUMBER_OF_STEPS, 0.0);
 
     for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
@@ -163,7 +163,9 @@ struct AutobreakStudio : VoxglitchSamplerModule
     // unsigned int wav_input_value = calculate_inputs(WAV_INPUT, WAV_KNOB, WAV_ATTN_KNOB, NUMBER_OF_SAMPLES);
     // wav_input_value = clamp(wav_input_value, 0, NUMBER_OF_SAMPLES - 1);
 
-    unsigned int sample_knob_value = params[SAMPLE_KNOBS + selected_play_sequencer->getPlaybackPosition()].getValue();
+    // unsigned int sample_knob_value = params[SAMPLE_KNOBS + selected_volume_sequencer->getPlaybackPosition()].getValue();
+
+  unsigned int sample_knob_value = 0.0;
 
     if (sample_knob_value != selected_sample_slot)
     {
@@ -177,14 +179,12 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
     for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
     {
-      // Copy trigger buttons into the currently selected gate sequencer
-      selected_play_sequencer->setValue(i, params[GATE_TOGGLE_BUTTONS + i].getValue());
+      // Copy volume buttons into the currently selected gate sequencer
+      selected_volume_sequencer->setValue(i, params[GATE_TOGGLE_BUTTONS + i].getValue());
 
       // Copy reverse buttons into the currently selected reverse sequencer
       selected_reverse_sequencer->setValue(i, params[REVERSE_TOGGLE_BUTTONS + i].getValue());
     }
-    
-
 
     //
     // Handle BPM detection
@@ -236,7 +236,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
       actual_playback_position = clamp(actual_playback_position, 0.0, selected_sample->size() - 1);
 
-      if(selected_play_sequencer->getValue())
+      // TODO: Rewrite this
+      if(selected_volume_sequencer->getValue())
       {
         selected_sample->read((int)actual_playback_position, &left_output, &right_output);
       }
@@ -284,11 +285,11 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
         // TODO: Dont step on first clock.  Bring over that logic from Digital Sequencer
         // TODO: loop through and step all squencers once memory is implemented
-        voltage_sequencer.step();
-        selected_play_sequencer->step();
+        position_sequencer.step();
+        volume_sequencer.step();
         selected_reverse_sequencer->step();
 
-        float sequence_value = voltage_sequencer.getValue();
+        float sequence_value = position_sequencer.getValue();
         int breakbeat_location = (sequence_value * 16) - 1;
         breakbeat_location = clamp(breakbeat_location, -1, 15);
 
