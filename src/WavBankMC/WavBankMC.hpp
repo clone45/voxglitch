@@ -417,10 +417,20 @@ struct WavBankMC : VoxglitchSamplerModule
           // Increment sample offset (pitch)
     			if (inputs[PITCH_INPUT].isConnected())
     			{
+            float channel_pitch = 0.5;
+
+            if(channel < (unsigned int) inputs[PITCH_INPUT].getChannels())
+            {
+              channel_pitch = inputs[PITCH_INPUT].getVoltage(channel);
+            }
+            else
+            {
+              channel_pitch = inputs[PITCH_INPUT].getVoltage(0);
+            }
             // If there's a polyphonic cable at the pitch input with a channel
             // that matches the sample's channel, then use that cable to control
             // the pitch of the channel playback.
-    				playback_positions[channel] += (selected_sample->sample_rate / args.sampleRate) + ((inputs[PITCH_INPUT].getVoltage(channel) / 10.0f) - 0.5f);
+    				playback_positions[channel] += (selected_sample->sample_rate / args.sampleRate) + ((channel_pitch / 10.0f) - 0.5f);
     			}
     			else
     			{
