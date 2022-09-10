@@ -4,7 +4,7 @@ struct LcdTabsWidget : TransparentWidget
 
     unsigned int selected_tab = 0;
 
-    VoltageSequencerDisplayABS *sequencer_displays[3];
+    VoltageSequencerDisplayABS *sequencer_displays[NUMBER_OF_SEQUENCERS];
 
     NVGcolor tab_color_default = nvgRGBA(48, 75, 79, 255);
     NVGcolor tab_color_selected = nvgRGBA(68, 95, 99, 255);
@@ -12,18 +12,19 @@ struct LcdTabsWidget : TransparentWidget
 
     std::string tab_labels[NUMBER_OF_TABS] = {
         "Position",
-        "Sample",        
+        "Sample",
         "Volume",
         "Pan",
         "Reverse",
         "Ratchet"
     };
 
-    LcdTabsWidget(VoltageSequencerDisplayABS *sequencer_displays[3])
+    LcdTabsWidget(VoltageSequencerDisplayABS *sequencer_displays[4])
     {
-        this->sequencer_displays[0] = sequencer_displays[0];
-        this->sequencer_displays[1] = sequencer_displays[1];
-        this->sequencer_displays[2] = sequencer_displays[2];
+        for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
+        {
+            this->sequencer_displays[i] = sequencer_displays[i];
+        }
 
         box.size = Vec(DRAW_AREA_WIDTH, LCD_TABS_HEIGHT);
     }
@@ -57,7 +58,7 @@ struct LcdTabsWidget : TransparentWidget
         float x_position = (index * LCD_TABS_WIDTH) + (index * TABS_HORIZONTAL_PADDING);
         NVGcolor tab_color;
 
-        if(index == selected_tab)
+        if (index == selected_tab)
         {
             tab_color = tab_color_selected;
         }
@@ -65,7 +66,7 @@ struct LcdTabsWidget : TransparentWidget
         {
             tab_color = tab_color_default;
         }
-        
+
         nvgBeginPath(vg);
         nvgRect(vg, x_position, 0.0, LCD_TABS_WIDTH, LCD_TABS_HEIGHT);
         nvgFillColor(vg, tab_color);
@@ -93,12 +94,11 @@ struct LcdTabsWidget : TransparentWidget
     {
         selected_tab = tab;
 
-        sequencer_displays[0]->hide();
-        sequencer_displays[1]->hide();
-        sequencer_displays[2]->hide();
-
-        if(tab == 0) sequencer_displays[0]->show();
-        if(tab == 1) sequencer_displays[1]->show();
-        if(tab == 2) sequencer_displays[2]->show();
+        for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
+        {
+            sequencer_displays[i]->hide();
+            if (tab == i)
+                sequencer_displays[i]->show();
+        }
     }
 };

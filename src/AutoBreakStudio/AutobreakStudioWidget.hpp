@@ -13,36 +13,62 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 
 		// =================== PLACE COMPONENTS ====================================
 
-		VoltageSequencerDisplayABS *position_sequencer = new VoltageSequencerDisplayABS(this->module->selected_position_sequencer);
-		position_sequencer->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
-		position_sequencer->module = module;
-		addChild(position_sequencer);
+		if(module)
+		{
+			VoltageSequencerDisplayABS *position_sequencer = new VoltageSequencerDisplayABS(this->module->selected_position_sequencer);
+			position_sequencer->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
+			position_sequencer->module = module;
+			addChild(position_sequencer);
 
-		VoltageSequencerDisplayABS *volume_sequencer = new VoltageSequencerDisplayABS(this->module->selected_volume_sequencer);
-		volume_sequencer->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
-		volume_sequencer->module = module;
-		volume_sequencer->hide();
-		addChild(volume_sequencer);
+			VoltageSequencerDisplayABS *volume_sequencer = new VoltageSequencerDisplayABS(this->module->selected_volume_sequencer);
+			volume_sequencer->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
+			volume_sequencer->module = module;
+			volume_sequencer->hide();
+			addChild(volume_sequencer);
 
-		VoltageSequencerDisplayABS *sample_sequencer = new VoltageSequencerDisplayABS(this->module->selected_sample_sequencer);
-		sample_sequencer->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
-		sample_sequencer->module = module;
-		sample_sequencer->hide();
-		addChild(sample_sequencer);		
+			VoltageSequencerDisplayABS *sample_sequencer = new VoltageSequencerDisplayABS(this->module->selected_sample_sequencer);
+			sample_sequencer->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
+			sample_sequencer->module = module;
+			sample_sequencer->hide();
+			addChild(sample_sequencer);		
 
-		// Here, how about creating an array of pointers to the sequencer displays, and pass that array into LcdTabsWidget, which 
-		// will give it the ability to call the sequencer displays' show and hide methods?
+			VoltageSequencerDisplayABS *pan_sequencer = new VoltageSequencerDisplayABS(this->module->selected_pan_sequencer);
+			pan_sequencer->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
+			pan_sequencer->module = module;
+			pan_sequencer->hide();
+			addChild(pan_sequencer);	
 
-		VoltageSequencerDisplayABS *sequencer_displays[3] = {
-			position_sequencer,
-			sample_sequencer,
-			volume_sequencer
-		};
+			VoltageSequencerDisplayABS *ratchet_sequencer = new VoltageSequencerDisplayABS(this->module->selected_ratchet_sequencer);
+			ratchet_sequencer->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
+			ratchet_sequencer->module = module;
+			ratchet_sequencer->hide();
+			addChild(ratchet_sequencer);
 
-		LcdTabsWidget *lcd_tabs_widget = new LcdTabsWidget(sequencer_displays);
-		lcd_tabs_widget->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y - 25);
-		lcd_tabs_widget->module = module;
-		addChild(lcd_tabs_widget);
+			VoltageSequencerDisplayABS *reverse_sequencer = new VoltageSequencerDisplayABS(this->module->selected_reverse_sequencer);
+			reverse_sequencer->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
+			reverse_sequencer->module = module;
+			reverse_sequencer->hide();
+			addChild(reverse_sequencer);
+
+			// Here, how about creating an array of pointers to the sequencer displays, and pass that array into LcdTabsWidget, which 
+			// will give it the ability to call the sequencer displays' show and hide methods?
+
+			VoltageSequencerDisplayABS *sequencer_displays[NUMBER_OF_SEQUENCERS] = {
+				position_sequencer,
+				sample_sequencer,
+				volume_sequencer,
+				pan_sequencer,
+				ratchet_sequencer, 
+				reverse_sequencer
+			};
+
+			LcdTabsWidget *lcd_tabs_widget = new LcdTabsWidget(sequencer_displays);
+			lcd_tabs_widget->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y - 25);
+			lcd_tabs_widget->module = module;
+			addChild(lcd_tabs_widget);
+
+		}
+
 
 		// addParam(createParamCentered<VoxglitchLargeKnob>(themePos("WAV_KNOB"), module, AutobreakStudio::WAV_KNOB));
 		// addParam(createParamCentered<VoxglitchAttenuator>(themePos("WAV_ATTN_KNOB"), module, AutobreakStudio::WAV_ATTN_KNOB));

@@ -33,6 +33,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
   // StereoSmoothSubModule loop_smooth;
   DeclickFilter declick_filter;
+  StereoPan stereo_pan;
 
   std::string root_dir;
   std::string path;
@@ -42,7 +43,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
   dsp::SchmittTrigger resetTrigger;
   dsp::SchmittTrigger clockTrigger;
-  dsp::SchmittTrigger ratchetTrigger;
+  // dsp::SchmittTrigger ratchetTrigger;
 
   VoltageSequencer position_sequencer;
   VoltageSequencer *selected_position_sequencer = &position_sequencer;
@@ -53,8 +54,14 @@ struct AutobreakStudio : VoxglitchSamplerModule
   VoltageSequencer volume_sequencer;
   VoltageSequencer *selected_volume_sequencer = &volume_sequencer;
 
-  GateSequencer reverse_sequencer;
-  GateSequencer *selected_reverse_sequencer = &reverse_sequencer;
+  VoltageSequencer pan_sequencer;
+  VoltageSequencer *selected_pan_sequencer = &pan_sequencer;
+
+  VoltageSequencer reverse_sequencer;
+  VoltageSequencer *selected_reverse_sequencer = &reverse_sequencer;
+
+  VoltageSequencer ratchet_sequencer;
+  VoltageSequencer *selected_ratchet_sequencer = &ratchet_sequencer;
 
   float left_output = 0;
   float right_output = 0;
@@ -99,13 +106,9 @@ struct AutobreakStudio : VoxglitchSamplerModule
     position_sequencer.assign(NUMBER_OF_STEPS, 0.0);
     volume_sequencer.assign(NUMBER_OF_STEPS, 1.0);
     sample_sequencer.assign(NUMBER_OF_STEPS, 0.0);
+    pan_sequencer.assign(NUMBER_OF_STEPS, 0.5);
     reverse_sequencer.assign(NUMBER_OF_STEPS, 0.0);
-
-    for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
-    {
-      // configParam(SAMPLE_KNOBS + i, 0.0f, NUMBER_OF_SAMPLES - 1, 0.0f, "Sample Selection");
-      // paramQuantities[SAMPLE_KNOBS + i]->snapEnabled = true;
-    }
+    ratchet_sequencer.assign(NUMBER_OF_STEPS, 0.0);
   }
 
   // Autosave settings
@@ -190,7 +193,9 @@ struct AutobreakStudio : VoxglitchSamplerModule
     // Handle BPM detection
     //
 
-    time_counter += 1.0 / args.sampleRate;
+    // time_counter += 1.0 / args.sampleRate;
+
+    time_counter += args.sampleTime;
 
     if (clockTrigger.process(inputs[CLOCK_INPUT].getVoltage()))
     {
@@ -204,6 +209,11 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
       timer_before = time_counter;
       clock_triggered = true;
+    }
+
+    if(selected_ratchet_sequencer->getValue())
+    {
+      // do something
     }
 
   /*
@@ -244,10 +254,10 @@ struct AutobreakStudio : VoxglitchSamplerModule
       left_output = selected_volume_sequencer->getValue() * left_output;
       right_output = selected_volume_sequencer->getValue() * right_output;
       
+      // Apply pan sequencer to output values
+      stereo_pan.process(&left_output, &right_output, ((selected_pan_sequencer->getValue() * 2.0) - 1.0));
 
       // Handle smoothing
-      // float smooth_rate = (128.0f / args.sampleRate);
-      // loop_smooth.process(left_output * GAIN, right_output * GAIN, smooth_rate, &left_output, &right_output);
       declick_filter.process(&left_output, &right_output);
 
       // Output audio
@@ -255,17 +265,10 @@ struct AutobreakStudio : VoxglitchSamplerModule
       outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_output * GAIN);
 
       // Step the theoretical playback position
-      /*
-      if (inputs[REVERSE_INPUT].getVoltage() >= 5)
-      {
-        theoretical_playback_position = theoretical_playback_position - 1;
-      }
-      else
-      {
-        theoretical_playback_position = theoretical_playback_position + 1;
-      }
-      */
 
+      theoretical_playback_position = theoretical_playback_position + 1;
+
+      /*
       if(selected_reverse_sequencer->getValue())
       {
         theoretical_playback_position = theoretical_playback_position - 1;
@@ -274,6 +277,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
       {
         theoretical_playback_position = theoretical_playback_position + 1;
       }
+      */
 
       // Optionally jump to new breakbeat position
       if (clock_triggered)
@@ -285,7 +289,9 @@ struct AutobreakStudio : VoxglitchSamplerModule
         position_sequencer.step();
         sample_sequencer.step();
         volume_sequencer.step();
-        selected_reverse_sequencer->step();
+        pan_sequencer.step();
+        ratchet_sequencer.step();
+        reverse_sequencer.step();
 
         float sequence_value = position_sequencer.getValue();
         int breakbeat_location = (sequence_value * 16) - 1;
