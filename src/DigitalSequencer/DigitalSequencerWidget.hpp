@@ -88,17 +88,6 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     gates_display->box.pos = mm2px(themePos("GATE_SEQUENCER"));
     gates_display->module = module;
     addChild(gates_display);
-
-    /* add this back in
-    for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
-    {
-      LengthDisplay *length_display = new LengthDisplay();
-      length_display->sequencer_number = i;
-      length_display->box.pos = Vec(sequencer_selection_buttons_x[i], 331.0);
-      length_display->module = module;
-      addChild(length_display);
-    }
-    */
   }
 
   void addLayers()
