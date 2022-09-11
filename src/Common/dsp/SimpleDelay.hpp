@@ -14,11 +14,20 @@ struct SimpleDelay
   float mix = 0.5;
   uint32_t buffer_size = 44100;
 
+  SimpleDelay()
+  {
+    for(unsigned int i=0; i<MAX_BUFFER_SIZE; i++)
+    {
+      buffer_left[i] = 0.0;
+      buffer_right[i] = 0.0;
+    }
+  }
+
   virtual void process(float audio_left, float audio_right, float &read_audio_left, float &read_audio_right)
   {
-    unsigned int read_index = write_head + 1;
+    unsigned int read_index = (write_head + 1) % MAX_BUFFER_SIZE;
 
-    if (read_index < sizeof(buffer_left))
+    if (read_index < MAX_BUFFER_SIZE)
     {
       read_audio_left = (mix * buffer_left[read_index]) + ((1.0 - mix) * audio_left);
       read_audio_right = (mix * buffer_right[read_index]) + ((1.0 - mix) * audio_right);
@@ -29,9 +38,13 @@ struct SimpleDelay
       read_audio_right = audio_right;
     }
 
+    // Defensive programming in case the audio explodes for some reason
+    read_audio_left = clamp(read_audio_left, -100.0, 100.0);
+    read_audio_right = clamp(read_audio_right, -100.0, 100.0);
+
+    // Increment delay write head.  Wrap it to 0 if it's out of bounds.
     write_head++;
-    if (write_head >= buffer_size || write_head >= MAX_BUFFER_SIZE)
-      write_head = 0;
+    if (write_head >= buffer_size || write_head >= MAX_BUFFER_SIZE) write_head = 0;
 
     if (feedback == 0)
     {
@@ -42,9 +55,6 @@ struct SimpleDelay
     {
       float existing_audio_left = buffer_left[write_head];
       float existing_audio_right = buffer_right[write_head];
-
-      // float mixed_audio_left = (existing_audio_left * feedback) + (audio_left * (1.0 - feedback));
-      // float mixed_audio_right = (existing_audio_right * feedback) + (audio_right * (1.0 - feedback));
 
       float mixed_audio_left = (existing_audio_left * feedback) + audio_left;
       float mixed_audio_right = (existing_audio_right * feedback) + audio_right;
@@ -67,8 +77,7 @@ struct SimpleDelay
 
   void setBufferSize(uint32_t new_buffer_size)
   {
-    if (new_buffer_size > MAX_BUFFER_SIZE)
-      new_buffer_size = MAX_BUFFER_SIZE;
+    if (new_buffer_size > MAX_BUFFER_SIZE) new_buffer_size = MAX_BUFFER_SIZE;
     buffer_size = new_buffer_size;
   }
 
