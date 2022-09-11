@@ -19,9 +19,9 @@ struct VoltageSequencer : Sequencer
   double snap_divisions[8] = { 0,8,10,12,16,24,32,26 };
 
   // constructor
-  VoltageSequencer()
+  VoltageSequencer(unsigned int sequence_length = 32, float default_value = 0.0)
   {
-    // sequence.assign(sequence_length, 0.0);
+    sequence.assign(sequence_length, default_value);
   }
 
   // This must be called before interacting with the voltage sequencer since
@@ -29,6 +29,9 @@ struct VoltageSequencer : Sequencer
   void assign(unsigned int length, double value)
   {
     sequence.assign(length, value);
+
+    // Set the parent sequencer length to the correct length
+    this->setLength(length);    
   }
 
   // Returns the 'raw' output from the sequencer, which ranges from 0 to 214,
