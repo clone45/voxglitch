@@ -30,6 +30,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
   double timer_before = 0;
   bool clock_triggered = false;
   bool ratchet_triggered = false;
+  unsigned int ratchet_counter = 0;
 
   // StereoSmoothSubModule loop_smooth;
   DeclickFilter declick_filter;
@@ -211,17 +212,37 @@ struct AutobreakStudio : VoxglitchSamplerModule
       clock_triggered = true;
     }
 
-    if(selected_ratchet_sequencer->getValue())
-    {
-      // do something
-    }
+    //
+    // Handle ratcheting
+    //
 
-  /*
-    if (ratchetTrigger.process(inputs[RATCHET_INPUT].getVoltage()))
+    // Ratchet will range from 0 to 1.0
+    float ratchet = selected_ratchet_sequencer->getValue();
+
+    if(ratchet > 0)
     {
-      ratchet_triggered = true;
+      unsigned int samples_in_a_beat = ((60.0/bpm) * args.sampleRate);
+
+      // Ratchet divisions is an array defined in defines.h.  It contains 5 different
+      // ratchet divisors for controlling the ratchet timing.  The larger the number,
+      // the faster the ratchet.
+
+      float ratchet_division = ratchet_divisions[int(ratchet * 4.0)];
+
+      if(ratchet_counter >= (samples_in_a_beat / ratchet_division)) // double ratchet
+      {
+        ratchet_triggered = true;
+        ratchet_counter = 0;
+      }
+      else
+      {
+        ratchet_counter++;
+      }
     }
-  */
+    else
+    {
+      ratchet_counter = 0;
+    }
 
     //
     // Handle reset input
@@ -303,13 +324,13 @@ struct AutobreakStudio : VoxglitchSamplerModule
         }
 
         clock_triggered = false;
+        ratchet_counter = 0;
       }
       else
       {
-        /*
         if (ratchet_triggered)
         {
-          float sequence_value = inputs[SEQUENCE_INPUT].getVoltage() / 10.0;
+          float sequence_value = position_sequencer.getValue();
           int breakbeat_location = (sequence_value * 16) - 1;
           breakbeat_location = clamp(breakbeat_location, -1, 15);
 
@@ -319,7 +340,6 @@ struct AutobreakStudio : VoxglitchSamplerModule
           }
           ratchet_triggered = false;
         }
-        */
       }
 
       // Loop the theoretical_playback_position

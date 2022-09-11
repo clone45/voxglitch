@@ -27,6 +27,9 @@ struct VoltageSequencer : Sequencer
   void assign(unsigned int length, double value)
   {
     sequence.assign(length, value);
+
+    // Set the parent sequencer length to the correct length
+    this->setLength(length);
   }
 
   // Returns the 'raw' output from the sequencer, which ranges from 0 to 1.

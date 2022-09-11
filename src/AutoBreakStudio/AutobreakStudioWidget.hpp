@@ -58,8 +58,8 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 				sample_sequencer,
 				volume_sequencer,
 				pan_sequencer,
-				ratchet_sequencer, 
-				reverse_sequencer
+				reverse_sequencer,
+				ratchet_sequencer
 			};
 
 			LcdTabsWidget *lcd_tabs_widget = new LcdTabsWidget(sequencer_displays);

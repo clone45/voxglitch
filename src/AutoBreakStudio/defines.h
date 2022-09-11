@@ -19,3 +19,14 @@ const int NUMBER_OF_SEQUENCERS = 6;
 const float LCD_TABS_HEIGHT = 20.0;
 const float LCD_TABS_WIDTH = 64.0;
 const float TABS_HORIZONTAL_PADDING = 1.0;
+
+const float ratchet_divisions[5] = {
+    4.0, // 4 == double ratchet
+    6.0, // 6 == triplet ratchet
+    8.0, // 8 == quad ratchet
+    12.0, // ??
+    16.0 // etc
+};
+      
+      
+      
