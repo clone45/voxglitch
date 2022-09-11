@@ -407,9 +407,6 @@ struct DigitalSequencer : VoxglitchModule
     bool trigger_output_pulse = false;
     this->sample_rate = args.sampleRate;
 
-    selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
-    selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
-
     //
     // See if someone pressed one of the green sequence selection buttons
     //
@@ -424,6 +421,9 @@ struct DigitalSequencer : VoxglitchModule
         selected_sequencer_index = i;
       }
     }
+
+    selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
+    selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
 
     // Highlight only selected sequence buttton
     for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
