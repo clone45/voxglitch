@@ -14,6 +14,11 @@ struct AudioBuffer
 
 	AudioBuffer()
 	{
+    for(unsigned int i=0; i<MAX_BUFFER_SIZE; i++)
+    {
+      leftPlayBuffer[i] = 0.0;
+      rightPlayBuffer[i] = 0.0;
+    }
 	}
 
 	virtual ~AudioBuffer() {}
