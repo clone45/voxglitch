@@ -11,9 +11,6 @@ struct SampleAudioBuffer
 
   void clear()
   {
-    // left_buffer.resize(0);
-    // right_buffer.resize(0);
-
     // Trick to free up memory in buffers
     std::vector<float>().swap(left_buffer);
     std::vector<float>().swap(right_buffer);

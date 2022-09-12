@@ -16,6 +16,11 @@ struct SatanonautStereoAudioBuffer
 
 	SatanonautStereoAudioBuffer()
 	{
+    for(unsigned int i=0; i<MAX_BUFFER_SIZE; i++)
+    {
+      buffer_left[i] = 0.0;
+      buffer_right[i] = 0.0;
+    }
 	}
 
 	virtual ~SatanonautStereoAudioBuffer() {}
