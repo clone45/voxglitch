@@ -16,6 +16,10 @@ struct SatanonautAudioBuffer
 
 	SatanonautAudioBuffer()
 	{
+    for(unsigned int i=0; i<MAX_BUFFER_SIZE; i++)
+    {
+      playBuffer[i] = 0.0;
+    }
 	}
 
 	virtual ~SatanonautAudioBuffer() {}

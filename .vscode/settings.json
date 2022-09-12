@@ -3,6 +3,7 @@
         "xiosbase": "cpp",
         "xstring": "cpp",
         "system_error": "cpp",
-        "xtr1common": "cpp"
+        "xtr1common": "cpp",
+        "vector": "cpp"
     }
 }
