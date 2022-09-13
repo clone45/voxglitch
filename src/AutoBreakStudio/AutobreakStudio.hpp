@@ -157,7 +157,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
   void process(const ProcessArgs &args) override
   {
-    // 
+    //
     // Handle wav selection
     //
     // unsigned int wav_input_value = calculate_inputs(WAV_INPUT, WAV_KNOB, WAV_ATTN_KNOB, NUMBER_OF_SAMPLES);
@@ -179,16 +179,16 @@ struct AutobreakStudio : VoxglitchSamplerModule
     }
     Sample *selected_sample = &samples[selected_sample_slot];
 
-  /*
-    for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
-    {
-      // Copy volume buttons into the currently selected gate sequencer
-      // selected_volume_sequencer->setValue(i, params[GATE_TOGGLE_BUTTONS + i].getValue());
+    /*
+      for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
+      {
+        // Copy volume buttons into the currently selected gate sequencer
+        // selected_volume_sequencer->setValue(i, params[GATE_TOGGLE_BUTTONS + i].getValue());
 
-      // Copy reverse buttons into the currently selected reverse sequencer
-      // selected_reverse_sequencer->setValue(i, params[REVERSE_TOGGLE_BUTTONS + i].getValue());
-    }
-  */
+        // Copy reverse buttons into the currently selected reverse sequencer
+        // selected_reverse_sequencer->setValue(i, params[REVERSE_TOGGLE_BUTTONS + i].getValue());
+      }
+    */
 
     //
     // Handle BPM detection
@@ -219,9 +219,9 @@ struct AutobreakStudio : VoxglitchSamplerModule
     // Ratchet will range from 0 to 1.0
     float ratchet = selected_ratchet_sequencer->getValue();
 
-    if(ratchet > 0)
+    if (ratchet > 0)
     {
-      unsigned int samples_in_a_beat = ((60.0/bpm) * args.sampleRate);
+      unsigned int samples_in_a_beat = ((60.0 / bpm) * args.sampleRate);
 
       // Ratchet divisions is an array defined in defines.h.  It contains 5 different
       // ratchet divisors for controlling the ratchet timing.  The larger the number,
@@ -229,7 +229,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
       float ratchet_division = ratchet_divisions[int(ratchet * 4.0)];
 
-      if(ratchet_counter >= (samples_in_a_beat / ratchet_division)) // double ratchet
+      if (ratchet_counter >= (samples_in_a_beat / ratchet_division)) // double ratchet
       {
         ratchet_triggered = true;
         ratchet_counter = 0;
@@ -261,12 +261,12 @@ struct AutobreakStudio : VoxglitchSamplerModule
       }
     }
 
+    // 60.0 is for conversion from minutes to seconds
+    // 8.0 is for 8 beats (2 bars) of loops, which is a typical drum loop length
+    float samples_to_play_per_loop = ((60.0 / bpm) * args.sampleRate) * 8.0;
+
     if (selected_sample->loaded && (selected_sample->size() > 0))
     {
-      // 60.0 is for conversion from minutes to seconds
-      // 8.0 is for 8 beats (2 bars) of loops, which is a typical drum loop length
-      float samples_to_play_per_loop = ((60.0 / bpm) * args.sampleRate) * 8.0;
-
       actual_playback_position = clamp(actual_playback_position, 0.0, selected_sample->size() - 1);
 
       selected_sample->read((int)actual_playback_position, &left_output, &right_output);
@@ -274,7 +274,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
       // Apply volume sequencer to output values
       left_output = selected_volume_sequencer->getValue() * left_output;
       right_output = selected_volume_sequencer->getValue() * right_output;
-      
+
       // Apply pan sequencer to output values
       stereo_pan.process(&left_output, &right_output, ((selected_pan_sequencer->getValue() * 2.0) - 1.0));
 
@@ -284,36 +284,48 @@ struct AutobreakStudio : VoxglitchSamplerModule
       // Output audio
       outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_output * GAIN);
       outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_output * GAIN);
+    }
 
-      // Step the theoretical playback position
-
+    // Step the theoretical playback position
+    if (selected_reverse_sequencer->getValue() >= 0.5)
+    {
+      theoretical_playback_position = theoretical_playback_position - 1;
+    }
+    else
+    {
       theoretical_playback_position = theoretical_playback_position + 1;
+    }
 
-      /*
-      if(selected_reverse_sequencer->getValue())
+    // Optionally jump to new breakbeat position
+    if (clock_triggered)
+    {
+      // float sequence_value = inputs[SEQUENCE_INPUT].getVoltage() / 10.0;
+
+      // TODO: Dont step on first clock.  Bring over that logic from Digital Sequencer
+      // TODO: loop through and step all squencers once memory is implemented
+      position_sequencer.step();
+      sample_sequencer.step();
+      volume_sequencer.step();
+      pan_sequencer.step();
+      ratchet_sequencer.step();
+      reverse_sequencer.step();
+
+      float sequence_value = position_sequencer.getValue();
+      int breakbeat_location = (sequence_value * 16) - 1;
+      breakbeat_location = clamp(breakbeat_location, -1, 15);
+
+      if (breakbeat_location != -1)
       {
-        theoretical_playback_position = theoretical_playback_position - 1;
+        theoretical_playback_position = breakbeat_location * (samples_to_play_per_loop / 16.0f);
       }
-      else
+
+      clock_triggered = false;
+      ratchet_counter = 0;
+    }
+    else
+    {
+      if (ratchet_triggered)
       {
-        theoretical_playback_position = theoretical_playback_position + 1;
-      }
-      */
-
-      // Optionally jump to new breakbeat position
-      if (clock_triggered)
-      {
-        // float sequence_value = inputs[SEQUENCE_INPUT].getVoltage() / 10.0;
-
-        // TODO: Dont step on first clock.  Bring over that logic from Digital Sequencer
-        // TODO: loop through and step all squencers once memory is implemented
-        position_sequencer.step();
-        sample_sequencer.step();
-        volume_sequencer.step();
-        pan_sequencer.step();
-        ratchet_sequencer.step();
-        reverse_sequencer.step();
-
         float sequence_value = position_sequencer.getValue();
         int breakbeat_location = (sequence_value * 16) - 1;
         breakbeat_location = clamp(breakbeat_location, -1, 15);
@@ -322,40 +334,23 @@ struct AutobreakStudio : VoxglitchSamplerModule
         {
           theoretical_playback_position = breakbeat_location * (samples_to_play_per_loop / 16.0f);
         }
-
-        clock_triggered = false;
-        ratchet_counter = 0;
+        ratchet_triggered = false;
       }
-      else
-      {
-        if (ratchet_triggered)
-        {
-          float sequence_value = position_sequencer.getValue();
-          int breakbeat_location = (sequence_value * 16) - 1;
-          breakbeat_location = clamp(breakbeat_location, -1, 15);
-
-          if (breakbeat_location != -1)
-          {
-            theoretical_playback_position = breakbeat_location * (samples_to_play_per_loop / 16.0f);
-          }
-          ratchet_triggered = false;
-        }
-      }
-
-      // Loop the theoretical_playback_position
-      if (theoretical_playback_position >= samples_to_play_per_loop)
-      {
-        theoretical_playback_position = 0;
-        declick_filter.trigger();
-      }
-      else if (theoretical_playback_position < 0)
-      {
-        theoretical_playback_position = samples_to_play_per_loop;
-        declick_filter.trigger();
-      }
-
-      // Map the theoretical playback position to the actual sample playback position
-      actual_playback_position = ((float)theoretical_playback_position / samples_to_play_per_loop) * selected_sample->size();
     }
+
+    // Loop the theoretical_playback_position
+    if (theoretical_playback_position >= samples_to_play_per_loop)
+    {
+      theoretical_playback_position = 0;
+      declick_filter.trigger();
+    }
+    else if (theoretical_playback_position < 0)
+    {
+      theoretical_playback_position = samples_to_play_per_loop;
+      declick_filter.trigger();
+    }
+
+    // Map the theoretical playback position to the actual sample playback position
+    actual_playback_position = ((float)theoretical_playback_position / samples_to_play_per_loop) * selected_sample->size();
   }
 };
