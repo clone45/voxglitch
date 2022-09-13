@@ -37,8 +37,10 @@ struct ByteBeatWidget : VoxglitchModuleWidget
     // Other
     addOutput(createOutputCentered<VoxglitchOutputPort>(mm2px(Vec(88.9, 112.4375)), module, ByteBeat::AUDIO_OUTPUT));
 
-    // addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(COLUMN_3, ROW_7)), module, ByteBeat::CLOCK_DIVISION_KNOB));
-    // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(31.75, 64.25)), module, ByteBeat::CLOCK_CV_INPUT));
+    // Pitch
+    addParam(createParamCentered<VoxglitchMediumBlackKnob>(themePos("PITCH_KNOB"), module, ByteBeat::CLOCK_DIVISION_KNOB));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("PITCH_INPUT"), module, ByteBeat::CLOCK_CV_INPUT));
+
     // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_5, ROW_11)), module, ByteBeat::T_INPUT));
     // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_5, ROW_13)), module, ByteBeat::SYNC_CLOCK_INPUT));
 
