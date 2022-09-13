@@ -1,22 +1,22 @@
 struct GhostsWidget : VoxglitchSamplerModuleWidget
 {
-	GhostsWidget(Ghosts* module)
+	GhostsWidget(Ghosts *module)
 	{
 		setModule(module);
 
-    // Load and apply theme
-    theme.load("ghosts");
-    applyTheme();
+		// Load and apply theme
+		theme.load("ghosts");
+		applyTheme();
 
-    // =================== PLACE COMPONENTS ====================================
+		// =================== PLACE COMPONENTS ====================================
 
-    if(theme.showScrews())
-    {
-      addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, 0)));
-      addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-      addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-      addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    }
+		if (theme.showScrews())
+		{
+			addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, 0)));
+			addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+			addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+			addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		}
 
 		// Purge
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("PURGE_TRIGGER_INPUT"), module, Ghosts::PURGE_TRIGGER_INPUT));
@@ -27,8 +27,8 @@ struct GhostsWidget : VoxglitchSamplerModuleWidget
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("JITTER_CV_INPUT"), module, Ghosts::JITTER_CV_INPUT));
 		addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("JITTER_SWITCH"), module, Ghosts::JITTER_SWITCH));
 
-    // Modes
-    // addParam(createParamCentered<GhostsModesKnob>(mm2px(Vec(62.366, 65)), module, Ghosts::MODES_KNOB));
+		// Modes
+		// addParam(createParamCentered<GhostsModesKnob>(mm2px(Vec(62.366, 65)), module, Ghosts::MODES_KNOB));
 
 		// Position
 		addParam(createParamCentered<VoxglitchEpicKnob>(themePos("SAMPLE_PLAYBACK_POSITION_KNOB"), module, Ghosts::SAMPLE_PLAYBACK_POSITION_KNOB));
@@ -65,7 +65,7 @@ struct GhostsWidget : VoxglitchSamplerModuleWidget
 
 	void appendContextMenu(Menu *menu) override
 	{
-		Ghosts *module = dynamic_cast<Ghosts*>(this->module);
+		Ghosts *module = dynamic_cast<Ghosts *>(this->module);
 		assert(module);
 
 		menu->addChild(new MenuEntry); // For spacing only
@@ -76,5 +76,4 @@ struct GhostsWidget : VoxglitchSamplerModuleWidget
 		menu_item_load_sample->module = module;
 		menu->addChild(menu_item_load_sample);
 	}
-
 };
