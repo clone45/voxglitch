@@ -63,8 +63,8 @@ struct WaveformWidget : TransparentWidget
                     normalizeAverages();
                 }
 
-                // Draw the waveform
                 drawWaveform(vg);
+                drawPositionIndicator(vg, sample_size);
             }
 
             nvgRestore(vg);
@@ -129,15 +129,35 @@ struct WaveformWidget : TransparentWidget
 
         height = clamp(height, 0.0, 1.0);
 
+        /* TODO: Figure this out
+        float y = (44.0 - (44.0 * height)) / 2.0;
+
+        nvgBeginPath(vg);
+        nvgRect(vg, x_position, 0.0, y, height * 44.0);
+        nvgFillColor(vg, nvgRGBA(255, 255, 255, 200));
+        nvgFill(vg);
+        */
+
         nvgBeginPath(vg);
         nvgRect(vg, x_position, 23.99, 1.0, (height * 22.0 * -1));
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 200));
-        nvgFill(vg);
+        nvgFill(vg);     
+
 
         nvgBeginPath(vg);
         nvgRect(vg, x_position, 23.99, 1.0, (height * 22.0));
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 200));
-        nvgFill(vg);        
+        nvgFill(vg);     
+    }
+
+    void drawPositionIndicator(NVGcontext *vg, unsigned int sample_size)
+    {
+        float x_position = clamp((module->actual_playback_position / sample_size) * DRAW_AREA_WIDTH, (float) 0.0, (float) DRAW_AREA_WIDTH);
+
+        nvgBeginPath(vg);
+        nvgRect(vg, x_position, 0.0, 6.0, 44.0);
+        nvgFillColor(vg, nvgRGBA(255, 255, 255, 100));
+        nvgFill(vg);
     }
 
 };

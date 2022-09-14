@@ -26,7 +26,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
   // to true when the user is actively editing the current pattern.
 
   double time_counter = 0.0;
-  double bpm = 160;
+  double bpm = 0.0;
   double timer_before = 0;
   bool clock_triggered = false;
   bool ratchet_triggered = false;
@@ -232,6 +232,10 @@ struct AutobreakStudio : VoxglitchSamplerModule
       timer_before = time_counter;
       clock_triggered = true;
     }
+
+    // If BPM hasn't been determined yet, wait until it has to start 
+    // running the engine.
+    if(bpm == 0.0) return;
 
     //
     // Handle ratcheting
