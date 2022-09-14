@@ -119,7 +119,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     
     // Sample selection sequencer
     sample_sequencer.assign(NUMBER_OF_STEPS, 0.0);
-    sample_sequencer.snap_divisions[1] = 5;
+    sample_sequencer.snap_divisions[1] = NUMBER_OF_SAMPLES - 1;
     sample_sequencer.setSnapDivisionIndex(1);
     
     // Pan sequencer
@@ -181,12 +181,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     //
     // Handle wav selection
     //
-    // unsigned int wav_input_value = calculate_inputs(WAV_INPUT, WAV_KNOB, WAV_ATTN_KNOB, NUMBER_OF_SAMPLES);
-    // wav_input_value = clamp(wav_input_value, 0, NUMBER_OF_SAMPLES - 1);
 
-    // unsigned int sample_knob_value = params[SAMPLE_KNOBS + selected_volume_sequencer->getPlaybackPosition()].getValue();
-
-    // unsigned int sample_knob_value = 0.0;
 
     unsigned int sample_value = (sample_sequencer.getValue() * NUMBER_OF_SAMPLES);
 
@@ -200,22 +195,9 @@ struct AutobreakStudio : VoxglitchSamplerModule
     }
     Sample *selected_sample = &samples[selected_sample_slot];
 
-    /*
-      for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
-      {
-        // Copy volume buttons into the currently selected gate sequencer
-        // selected_volume_sequencer->setValue(i, params[GATE_TOGGLE_BUTTONS + i].getValue());
-
-        // Copy reverse buttons into the currently selected reverse sequencer
-        // selected_reverse_sequencer->setValue(i, params[REVERSE_TOGGLE_BUTTONS + i].getValue());
-      }
-    */
-
     //
     // Handle BPM detection
     //
-
-    // time_counter += 1.0 / args.sampleRate;
 
     time_counter += args.sampleTime;
 
@@ -325,8 +307,6 @@ struct AutobreakStudio : VoxglitchSamplerModule
     if (clock_triggered)
     {
       // float sequence_value = inputs[SEQUENCE_INPUT].getVoltage() / 10.0;
-
-      // TODO: Dont step on first clock.  Bring over that logic from Digital Sequencer
       // TODO: loop through and step all squencers once memory is implemented
       position_sequencer.step();
       sample_sequencer.step();

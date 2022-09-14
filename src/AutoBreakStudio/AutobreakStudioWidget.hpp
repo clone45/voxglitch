@@ -67,21 +67,18 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 			lcd_tabs_widget->module = module;
 			addChild(lcd_tabs_widget);
 
-			WaveformWidget *waveform_widget = new WaveformWidget(this->module);
-			waveform_widget->box.pos = Vec(DRAW_AREA_POSITION_X, 222.0);
-			addChild(waveform_widget);
+			for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
+			{
+				WaveformWidget *waveform_widget = new WaveformWidget(this->module, i);
+				waveform_widget->box.pos = Vec(DRAW_AREA_POSITION_X, 222.0);
+				waveform_widget->hide();
+				addChild(waveform_widget);
+			}
 
 		}
 
-
-		// addParam(createParamCentered<VoxglitchLargeKnob>(themePos("WAV_KNOB"), module, AutobreakStudio::WAV_KNOB));
-		// addParam(createParamCentered<VoxglitchAttenuator>(themePos("WAV_ATTN_KNOB"), module, AutobreakStudio::WAV_ATTN_KNOB));
-		// addInput(createInputCentered<VoxglitchInputPort>(themePos("WAV_INPUT"), module, AutobreakStudio::WAV_INPUT));
-
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("CLOCK_INPUT"), module, AutobreakStudio::CLOCK_INPUT));
 		// addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, AutobreakStudio::RESET_INPUT));
-		// addInput(createInputCentered<VoxglitchInputPort>(themePos("SEQUENCE_INPUT"), module, AutobreakStudio::SEQUENCE_INPUT));
-		// addInput(createInputCentered<VoxglitchInputPort>(themePos("REVERSE_INPUT"), module, AutobreakStudio::REVERSE_INPUT));
 
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_LEFT"), module, AutobreakStudio::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_RIGHT"), module, AutobreakStudio::AUDIO_OUTPUT_RIGHT));

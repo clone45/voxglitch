@@ -3,19 +3,21 @@ struct WaveformWidget : TransparentWidget
     Sample *sample;
     AutobreakStudio *module;
     std::string sample_filename = "";
-    float max_average = 0.0;
 
     bool refresh = true;
+    unsigned int sample_index = 0;
 
     NVGcolor tab_color_default = nvgRGBA(48, 75, 79, 255);
     NVGcolor tab_color_selected = nvgRGBA(68, 95, 99, 255);
     NVGcolor label_color = nvgRGBA(255, 255, 255, 255);
 
     float averages[DRAW_AREA_WIDTH];
+    float max_average = 0.0;
 
-    WaveformWidget(AutobreakStudio *module)
+    WaveformWidget(AutobreakStudio *module, unsigned int index)
     {
         this->module = module;
+        this->sample_index = index;
 
         box.size = Vec(DRAW_AREA_WIDTH, LCD_TABS_HEIGHT);
 
@@ -27,9 +29,9 @@ struct WaveformWidget : TransparentWidget
 
     void drawLayer(const DrawArgs &args, int layer) override
     {
-        if(module->samples[0].filename != this->sample_filename)
+        if(module->samples[sample_index].filename != this->sample_filename)
         {
-            this->sample_filename = module->samples[0].filename;
+            this->sample_filename = module->samples[sample_index].filename;
             refresh = true;
         }
 
@@ -40,10 +42,10 @@ struct WaveformWidget : TransparentWidget
             // Save the drawing context to restore later
             nvgSave(vg);
 
-            if (module && module->samples[0].loaded)
+            if (module && module->samples[sample_index].loaded)
             {
                 // Compute the values to output
-                unsigned int sample_size = module->samples[0].size();
+                unsigned int sample_size = module->samples[sample_index].size();
 
                 //
                 // Compute the values to draw
@@ -71,6 +73,20 @@ struct WaveformWidget : TransparentWidget
         }
     }
 
+    void step() override 
+    {
+        TransparentWidget::step();
+
+        if(this->sample_index == module->selected_sample_slot)
+        {
+            this->show();
+        }
+        else
+        {
+            this->hide();
+        }
+    }
+
     void computeAverages(unsigned int x, unsigned int sample_size)
     {
         // Get average height of line at index
@@ -89,7 +105,7 @@ struct WaveformWidget : TransparentWidget
         {
             if(i<sample_size)
             {
-                module->samples[0].read(i, &left, &right);
+                module->samples[this->sample_index].read(i, &left, &right);
                 left_sum = left_sum + std::abs(left);
                 right_sum = right_sum + std::abs(right);
                 count++;
