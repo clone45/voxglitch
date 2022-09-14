@@ -4,7 +4,7 @@ struct LcdTabsWidget : TransparentWidget
 
     unsigned int selected_tab = 0;
 
-    VoltageSequencerDisplayABS *sequencer_displays[NUMBER_OF_SEQUENCERS];
+    SequencerDisplayABS *sequencer_displays[NUMBER_OF_SEQUENCERS];
 
     NVGcolor tab_color_default = nvgRGBA(48, 75, 79, 255);
     NVGcolor tab_color_selected = nvgRGBA(68, 95, 99, 255);
@@ -19,7 +19,7 @@ struct LcdTabsWidget : TransparentWidget
         "Ratchet"
     };
 
-    LcdTabsWidget(VoltageSequencerDisplayABS *sequencer_displays[4])
+    LcdTabsWidget(SequencerDisplayABS *sequencer_displays[4])
     {
         for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
         {

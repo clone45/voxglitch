@@ -4,15 +4,6 @@ struct SequencerDisplayABS : VoxglitchWidget
   Vec drag_position;
   double bar_width = (DRAW_AREA_WIDTH / (double) MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
 
-  /*
-  NVGcolor bright_background_color = nvgRGBA(42, 50, 52, 255);
-  NVGcolor dark_background_color = nvgRGBA(31, 39, 41, 255);
-  NVGcolor current_step_highlight_color = nvgRGBA(255, 255, 255, 250);
-  NVGcolor lesser_step_highlight_color = nvgRGBA(255, 255, 255, 150);
-  NVGcolor default_step_highlight_color = nvgRGBA(255, 255, 255, 10);
-  NVGcolor sequence_position_highlight_color = nvgRGBA(255, 255, 255, 20);
-  */
-
   NVGcolor bright_background_color = nvgRGBA(37, 56, 59, 255);
   NVGcolor dark_background_color = nvgRGBA(31, 39, 41, 255);
   NVGcolor current_step_highlight_color = nvgRGBA(255, 255, 255, 250);

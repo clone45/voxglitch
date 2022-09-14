@@ -104,12 +104,33 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 
+    // There are some hacks here to modify the snap divisions
+    // that come standard with the voltage sequencer.  I should
+    // rethink how the voltage sequencer is assigned the snap
+    // division in the future, possibly moving the snap values
+    // array into the module. 
+
+    // Position sequencer
     position_sequencer.assign(NUMBER_OF_STEPS, 0.0);
+    position_sequencer.setSnapDivisionIndex(4);
+
+    // Volume sequencer
     volume_sequencer.assign(NUMBER_OF_STEPS, 1.0);
+    
+    // Sample selection sequencer
     sample_sequencer.assign(NUMBER_OF_STEPS, 0.0);
+    sample_sequencer.snap_divisions[1] = 5;
+    sample_sequencer.setSnapDivisionIndex(1);
+    
+    // Pan sequencer
     pan_sequencer.assign(NUMBER_OF_STEPS, 0.5);
+
+    // Reverse sequencer
     reverse_sequencer.assign(NUMBER_OF_STEPS, 0.0);
+    
     ratchet_sequencer.assign(NUMBER_OF_STEPS, 0.0);
+    ratchet_sequencer.snap_divisions[1] = 5;
+    ratchet_sequencer.setSnapDivisionIndex(1);    
   }
 
   // Autosave settings

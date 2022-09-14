@@ -71,6 +71,11 @@ struct VoltageSequencer : Sequencer
     }
   }
 
+  void setSnapDivisionIndex(unsigned int new_snap_division_index)
+  {
+    this->snap_division_index = new_snap_division_index;
+  }
+
   void shiftLeft()
   {
     double temp = sequence[0];

@@ -21,7 +21,9 @@
 #include "AutobreakStudio/AutobreakStudioLoadSample.hpp"
 #include "AutobreakStudio/SequencerDisplayABS.hpp"
 #include "AutobreakStudio/VoltageSequencerDisplayABS.hpp"
+#include "AutobreakStudio/VoltageToggleSequencerDisplay.hpp"
 #include "AutobreakStudio/LcdTabsWidget.hpp"
+#include "AutobreakStudio/WaveformWidget.hpp"
 #include "AutobreakStudio/AutobreakStudioWidget.hpp"
 
 Model* modelAutobreakStudio = createModel<AutobreakStudio, AutobreakStudioWidget>("AutobreakStudio");
