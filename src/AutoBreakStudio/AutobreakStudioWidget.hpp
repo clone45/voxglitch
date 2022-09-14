@@ -80,6 +80,24 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("CLOCK_INPUT"), module, AutobreakStudio::CLOCK_INPUT));
 		// addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, AutobreakStudio::RESET_INPUT));
 
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_1"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 0));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_2"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 1));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_3"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 2));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_4"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 3));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_5"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 4));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_6"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 5));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_7"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 6));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_8"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 7));
+
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RIGHT_OUTPUT_1"), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 0));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RIGHT_OUTPUT_2"), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 1));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RIGHT_OUTPUT_3"), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 2));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RIGHT_OUTPUT_4"), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 3));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RIGHT_OUTPUT_5"), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 4));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RIGHT_OUTPUT_6"), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 5));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RIGHT_OUTPUT_7"), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 6));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RIGHT_OUTPUT_8"), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 7));
+
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_LEFT"), module, AutobreakStudio::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_RIGHT"), module, AutobreakStudio::AUDIO_OUTPUT_RIGHT));
 	}
