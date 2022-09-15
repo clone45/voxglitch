@@ -78,7 +78,7 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		}
 
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("CLOCK_INPUT"), module, AutobreakStudio::CLOCK_INPUT));
-		// addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, AutobreakStudio::RESET_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, AutobreakStudio::RESET_INPUT));
 
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_1"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 0));
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_2"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 1));

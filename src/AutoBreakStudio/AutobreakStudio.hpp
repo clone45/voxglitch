@@ -31,6 +31,9 @@ struct AutobreakStudio : VoxglitchSamplerModule
   bool clock_triggered = false;
   bool ratchet_triggered = false;
   unsigned int ratchet_counter = 0;
+  bool reset_signal = false;
+  bool do_not_step_sequencers = false;
+  long clock_ignore_on_reset = 0;
 
   // StereoSmoothSubModule loop_smooth;
   DeclickFilter declick_filter;
@@ -69,8 +72,6 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
   enum ParamIds
   {
-    WAV_KNOB,
-    WAV_ATTN_KNOB,
     NUM_PARAMS
   };
   enum InputIds
@@ -98,10 +99,9 @@ struct AutobreakStudio : VoxglitchSamplerModule
   AutobreakStudio()
   {
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-    configParam(WAV_KNOB, 0.0f, 1.0f, 0.0f, "SampleSelectKnob");
-    configParam(WAV_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "SampleSelectAttnKnob");
 
     configInput(CLOCK_INPUT, "Clock Input");
+    configInput(RESET_INPUT, "Reset Input");
 
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 
@@ -131,7 +131,9 @@ struct AutobreakStudio : VoxglitchSamplerModule
     
     ratchet_sequencer.assign(NUMBER_OF_STEPS, 0.0);
     ratchet_sequencer.snap_divisions[1] = 5;
-    ratchet_sequencer.setSnapDivisionIndex(1);    
+    ratchet_sequencer.setSnapDivisionIndex(1);  
+
+    clock_ignore_on_reset = (long) (44100 / 100);  
   }
 
   // Autosave settings
@@ -179,13 +181,80 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
   void process(const ProcessArgs &args) override
   {
+
+    //
+    // Check to see if the reset input has been triggered.  If so, reset
+    // all of the sequencers and sample playback variables and set reset_signal
+    // to true.  The reset_signal flag is used to delay any additional execution
+    // until the next clock trigger happens.
+
+    if (inputs[RESET_INPUT].isConnected())
+    {
+      if (resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+      {
+        // Reset counters
+        actual_playback_position = 0;
+        theoretical_playback_position = 0;
+        ratchet_counter = 0;
+
+        // Smooth back into playback
+        declick_filter.trigger();
+
+        // Reset all of the sequencers
+        position_sequencer.reset();
+        sample_sequencer.reset();
+        volume_sequencer.reset();
+        pan_sequencer.reset();
+        ratchet_sequencer.reset();
+        reverse_sequencer.reset();
+
+        // set flag to wait for next trigger to continue
+        reset_signal = true;
+        clock_ignore_on_reset = (long) (args.sampleRate / 100);
+      }
+    }
+
+
+    // See if the clock input has triggered and store the results
+    bool clock_trigger = false;
+    
+    if(clock_ignore_on_reset == 0)
+    {
+      clock_trigger = clockTrigger.process(inputs[CLOCK_INPUT].getVoltage());
+    }
+    else
+    {
+      clock_ignore_on_reset--;
+    }
+
+    // The reset_signal flag is set when the reset input is triggered.  When reset
+    // is triggered, then we want to wait until the next clock pulse before
+    // doing any sample output or stepping the sequencers.
+    if(reset_signal == true)
+    {
+      // Once reset is triggered, don't run any sequencer stuff until
+      // the next clock trigger comes in.
+      if (! clock_trigger)
+      {
+        return;
+      } 
+      else // The clock trigger we've been waiting for has come!
+      {
+        // Clear the reset lock!
+        reset_signal = false;
+
+        // Don't step the sequencers ahead until next incoming clock trigger
+        do_not_step_sequencers = true;
+
+        // Don't compute new BPM until there's reasonable amounts of data
+        timer_before = 0.0;
+      }
+    }
+
     //
     // Handle wav selection
     //
-
-
     unsigned int sample_value = (sample_sequencer.getValue() * NUMBER_OF_SAMPLES);
-
     if (sample_value != selected_sample_slot)
     {
       // Reset the smooth ramp if the selected sample has changed
@@ -196,13 +265,12 @@ struct AutobreakStudio : VoxglitchSamplerModule
     }
     Sample *selected_sample = &samples[selected_sample_slot];
 
+
     //
     // Handle BPM detection
     //
-
     time_counter += args.sampleTime;
-
-    if (clockTrigger.process(inputs[CLOCK_INPUT].getVoltage()))
+    if (clock_trigger)
     {
       if (timer_before != 0)
       {
@@ -213,7 +281,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
       }
 
       timer_before = time_counter;
-      clock_triggered = true;
+      // clock_triggered = true;
     }
 
     // If BPM hasn't been determined yet, wait until it has to start 
@@ -252,22 +320,6 @@ struct AutobreakStudio : VoxglitchSamplerModule
       ratchet_counter = 0;
     }
 
-    //
-    // Handle reset input
-    //
-
-    if (inputs[RESET_INPUT].isConnected())
-    {
-      if (resetTrigger.process(inputs[RESET_INPUT].getVoltage()))
-      {
-        // Reset counters
-        actual_playback_position = 0;
-        theoretical_playback_position = 0;
-
-        // Smooth back into playback
-        declick_filter.trigger();
-      }
-    }
 
     // 60.0 is for conversion from minutes to seconds
     // 8.0 is for 8 beats (2 bars) of loops, which is a typical drum loop length
@@ -292,6 +344,10 @@ struct AutobreakStudio : VoxglitchSamplerModule
       // Output audio
       outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_output * GAIN);
       outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_output * GAIN);
+
+      // Output individual track
+      outputs[LEFT_INDIVIDUAL_OUTPUTS + selected_sample_slot].setVoltage(left_output * GAIN);
+      outputs[RIGHT_INDIVIDUAL_OUTPUTS + selected_sample_slot].setVoltage(right_output * GAIN);
     }
 
     // Step the theoretical playback position
@@ -305,16 +361,18 @@ struct AutobreakStudio : VoxglitchSamplerModule
     }
 
     // Optionally jump to new breakbeat position
-    if (clock_triggered)
+    // if (clock_triggered &&  (clock_ignore_on_reset == 0))
+    if (clock_trigger)
     {
-      // float sequence_value = inputs[SEQUENCE_INPUT].getVoltage() / 10.0;
-      // TODO: loop through and step all squencers once memory is implemented
-      position_sequencer.step();
-      sample_sequencer.step();
-      volume_sequencer.step();
-      pan_sequencer.step();
-      ratchet_sequencer.step();
-      reverse_sequencer.step();
+      if(do_not_step_sequencers == false)
+      {
+        position_sequencer.step();
+        sample_sequencer.step();
+        volume_sequencer.step();
+        pan_sequencer.step();
+        ratchet_sequencer.step();
+        reverse_sequencer.step();
+      }
 
       float sequence_value = position_sequencer.getValue();
       int breakbeat_location = (sequence_value * 16) - 1;
@@ -325,7 +383,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
         theoretical_playback_position = breakbeat_location * (samples_to_play_per_loop / 16.0f);
       }
 
-      clock_triggered = false;
+      // clock_triggered = false;
       ratchet_counter = 0;
     }
     else
@@ -344,6 +402,9 @@ struct AutobreakStudio : VoxglitchSamplerModule
       }
     }
 
+    // Clear out this do_not_step_sequencers flag
+    if(do_not_step_sequencers == true) do_not_step_sequencers = false;
+
     // Loop the theoretical_playback_position
     if (theoretical_playback_position >= samples_to_play_per_loop)
     {
@@ -358,5 +419,6 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
     // Map the theoretical playback position to the actual sample playback position
     actual_playback_position = ((float)theoretical_playback_position / samples_to_play_per_loop) * selected_sample->size();
+    
   }
 };
