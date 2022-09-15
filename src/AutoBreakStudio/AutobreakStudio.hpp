@@ -5,6 +5,16 @@ Autobreak Studio
 Automatic Breakbeat module for VCV Rack by Voxglitch,
 with extra stuff.
 
+To do:
+
+1. draw horizontal lines for some sequencers
+2. see if I can center pan sequencer
+3. add memory banks
+4. save/load
+5. add ability to load a folder of files
+6. Add ability to select sample length
+7. store and retrieve selected memory
+
 */
 
 struct AutobreakStudio : VoxglitchSamplerModule
@@ -35,6 +45,11 @@ struct AutobreakStudio : VoxglitchSamplerModule
   bool do_not_step_sequencers = false;
   long clock_ignore_on_reset = 0;
 
+  // Sequencer step keeps track of where the sequencers are.  This is important
+  // because when a memory slot is loaded, the sequencers need to be set to 
+  // the correct step.
+  unsigned int sequencer_step = 0;
+
   // StereoSmoothSubModule loop_smooth;
   DeclickFilter declick_filter;
   StereoPan stereo_pan;
@@ -47,25 +62,15 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
   dsp::SchmittTrigger resetTrigger;
   dsp::SchmittTrigger clockTrigger;
-  // dsp::SchmittTrigger ratchetTrigger;
 
-  VoltageSequencer position_sequencer;
-  VoltageSequencer *selected_position_sequencer = &position_sequencer;
+  AutobreakMemory autobreak_memory[16];
 
-  VoltageSequencer sample_sequencer;
-  VoltageSequencer *selected_sample_sequencer = &sample_sequencer;
-
-  VoltageSequencer volume_sequencer;
-  VoltageSequencer *selected_volume_sequencer = &volume_sequencer;
-
-  VoltageSequencer pan_sequencer;
-  VoltageSequencer *selected_pan_sequencer = &pan_sequencer;
-
-  VoltageSequencer reverse_sequencer;
-  VoltageSequencer *selected_reverse_sequencer = &reverse_sequencer;
-
-  VoltageSequencer ratchet_sequencer;
-  VoltageSequencer *selected_ratchet_sequencer = &ratchet_sequencer;
+  VoltageSequencer *position_sequencer = &autobreak_memory[0].position_sequencer;
+  VoltageSequencer *sample_sequencer = &autobreak_memory[0].sample_sequencer;
+  VoltageSequencer *volume_sequencer = &autobreak_memory[0].volume_sequencer;
+  VoltageSequencer *pan_sequencer = &autobreak_memory[0].pan_sequencer;
+  VoltageSequencer *reverse_sequencer = &autobreak_memory[0].reverse_sequencer;
+  VoltageSequencer *ratchet_sequencer = &autobreak_memory[0].ratchet_sequencer;
 
   float left_output = 0;
   float right_output = 0;
@@ -104,34 +109,6 @@ struct AutobreakStudio : VoxglitchSamplerModule
     configInput(RESET_INPUT, "Reset Input");
 
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
-
-    // There are some hacks here to modify the snap divisions
-    // that come standard with the voltage sequencer.  I should
-    // rethink how the voltage sequencer is assigned the snap
-    // division in the future, possibly moving the snap values
-    // array into the module. 
-
-    // Position sequencer
-    position_sequencer.assign(NUMBER_OF_STEPS, 0.0);
-    position_sequencer.setSnapDivisionIndex(4);
-
-    // Volume sequencer
-    volume_sequencer.assign(NUMBER_OF_STEPS, 1.0);
-    
-    // Sample selection sequencer
-    sample_sequencer.assign(NUMBER_OF_STEPS, 0.0);
-    sample_sequencer.snap_divisions[1] = NUMBER_OF_SAMPLES - 1;
-    sample_sequencer.setSnapDivisionIndex(1);
-    
-    // Pan sequencer
-    pan_sequencer.assign(NUMBER_OF_STEPS, 0.5);
-
-    // Reverse sequencer
-    reverse_sequencer.assign(NUMBER_OF_STEPS, 0.0);
-    
-    ratchet_sequencer.assign(NUMBER_OF_STEPS, 0.0);
-    ratchet_sequencer.snap_divisions[1] = 5;
-    ratchet_sequencer.setSnapDivisionIndex(1);  
 
     clock_ignore_on_reset = (long) (44100 / 100);  
   }
@@ -201,12 +178,12 @@ struct AutobreakStudio : VoxglitchSamplerModule
         declick_filter.trigger();
 
         // Reset all of the sequencers
-        position_sequencer.reset();
-        sample_sequencer.reset();
-        volume_sequencer.reset();
-        pan_sequencer.reset();
-        ratchet_sequencer.reset();
-        reverse_sequencer.reset();
+        position_sequencer->reset();
+        sample_sequencer->reset();
+        volume_sequencer->reset();
+        pan_sequencer->reset();
+        ratchet_sequencer->reset();
+        reverse_sequencer->reset();
 
         // set flag to wait for next trigger to continue
         reset_signal = true;
@@ -218,6 +195,10 @@ struct AutobreakStudio : VoxglitchSamplerModule
     // See if the clock input has triggered and store the results
     bool clock_trigger = false;
     
+    // A certain amount of time must pass after a reset before a clock input
+    // will trigger the sequencers to step.  This time is measured by the 
+    // clock_ignore_on_reset counter.  When it's 0, that means enough time
+    // has passed that the module should pay attention to clock inputs.
     if(clock_ignore_on_reset == 0)
     {
       clock_trigger = clockTrigger.process(inputs[CLOCK_INPUT].getVoltage());
@@ -254,7 +235,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     //
     // Handle wav selection
     //
-    unsigned int sample_value = (sample_sequencer.getValue() * NUMBER_OF_SAMPLES);
+    unsigned int sample_value = (sample_sequencer->getValue() * NUMBER_OF_SAMPLES);
     if (sample_value != selected_sample_slot)
     {
       // Reset the smooth ramp if the selected sample has changed
@@ -293,7 +274,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     //
 
     // Ratchet will range from 0 to 1.0
-    float ratchet = selected_ratchet_sequencer->getValue();
+    float ratchet = ratchet_sequencer->getValue();
 
     if (ratchet > 0)
     {
@@ -332,11 +313,11 @@ struct AutobreakStudio : VoxglitchSamplerModule
       selected_sample->read((int)actual_playback_position, &left_output, &right_output);
 
       // Apply volume sequencer to output values
-      left_output = selected_volume_sequencer->getValue() * left_output;
-      right_output = selected_volume_sequencer->getValue() * right_output;
+      left_output = volume_sequencer->getValue() * left_output;
+      right_output = volume_sequencer->getValue() * right_output;
 
       // Apply pan sequencer to output values
-      stereo_pan.process(&left_output, &right_output, ((selected_pan_sequencer->getValue() * 2.0) - 1.0));
+      stereo_pan.process(&left_output, &right_output, ((pan_sequencer->getValue() * 2.0) - 1.0));
 
       // Handle smoothing
       declick_filter.process(&left_output, &right_output);
@@ -351,7 +332,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     }
 
     // Step the theoretical playback position
-    if (selected_reverse_sequencer->getValue() >= 0.5)
+    if (reverse_sequencer->getValue() >= 0.5)
     {
       theoretical_playback_position = theoretical_playback_position - 1;
     }
@@ -361,20 +342,23 @@ struct AutobreakStudio : VoxglitchSamplerModule
     }
 
     // Optionally jump to new breakbeat position
-    // if (clock_triggered &&  (clock_ignore_on_reset == 0))
     if (clock_trigger)
     {
       if(do_not_step_sequencers == false)
       {
-        position_sequencer.step();
-        sample_sequencer.step();
-        volume_sequencer.step();
-        pan_sequencer.step();
-        ratchet_sequencer.step();
-        reverse_sequencer.step();
+        position_sequencer->step();
+        sample_sequencer->step();
+        volume_sequencer->step();
+        pan_sequencer->step();
+        ratchet_sequencer->step();
+        reverse_sequencer->step();
+
+        // Store the playback position so that we can restore the playback
+        // positions when the active memory slot is changed.
+        position_sequencer->getPlaybackPosition();
       }
 
-      float sequence_value = position_sequencer.getValue();
+      float sequence_value = position_sequencer->getValue();
       int breakbeat_location = (sequence_value * 16) - 1;
       breakbeat_location = clamp(breakbeat_location, -1, 15);
 
@@ -383,14 +367,13 @@ struct AutobreakStudio : VoxglitchSamplerModule
         theoretical_playback_position = breakbeat_location * (samples_to_play_per_loop / 16.0f);
       }
 
-      // clock_triggered = false;
       ratchet_counter = 0;
     }
     else
     {
       if (ratchet_triggered)
       {
-        float sequence_value = position_sequencer.getValue();
+        float sequence_value = position_sequencer->getValue();
         int breakbeat_location = (sequence_value * 16) - 1;
         breakbeat_location = clamp(breakbeat_location, -1, 15);
 
@@ -402,7 +385,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
       }
     }
 
-    // Clear out this do_not_step_sequencers flag
+    // Clear out the do_not_step_sequencers flag
     if(do_not_step_sequencers == true) do_not_step_sequencers = false;
 
     // Loop the theoretical_playback_position

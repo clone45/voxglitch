@@ -17,6 +17,7 @@
 #include "Common/sequencer/GateSequencer.hpp"
 
 #include "AutobreakStudio/defines.h"
+#include "AutobreakStudio/AutobreakMemory.hpp"
 #include "AutobreakStudio/AutobreakStudio.hpp"
 #include "AutobreakStudio/AutobreakStudioLoadSample.hpp"
 #include "AutobreakStudio/SequencerDisplayABS.hpp"
