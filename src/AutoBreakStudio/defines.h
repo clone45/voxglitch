@@ -2,6 +2,7 @@
 #define NUMBER_OF_SAMPLES 8
 #define NUMBER_OF_STEPS 16
 
+const int NUMBER_OF_MEMORY_SLOTS = 16;
 const int MAX_SEQUENCER_STEPS = 16;
 
 // Constants for patterns

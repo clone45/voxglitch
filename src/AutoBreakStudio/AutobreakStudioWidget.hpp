@@ -79,6 +79,23 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("CLOCK_INPUT"), module, AutobreakStudio::CLOCK_INPUT));
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, AutobreakStudio::RESET_INPUT));
 
+		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_1"), module, AutobreakStudio::MEMORY_BUTTONS + 0));
+		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_2"), module, AutobreakStudio::MEMORY_BUTTONS + 1));
+		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_3"), module, AutobreakStudio::MEMORY_BUTTONS + 2));
+		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_4"), module, AutobreakStudio::MEMORY_BUTTONS + 3));
+		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_5"), module, AutobreakStudio::MEMORY_BUTTONS + 4));
+		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_6"), module, AutobreakStudio::MEMORY_BUTTONS + 5));
+		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_7"), module, AutobreakStudio::MEMORY_BUTTONS + 6));
+		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_8"), module, AutobreakStudio::MEMORY_BUTTONS + 7));
+		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_9"), module, AutobreakStudio::MEMORY_BUTTONS + 8));
+		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_10"), module, AutobreakStudio::MEMORY_BUTTONS + 9));
+		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_11"), module, AutobreakStudio::MEMORY_BUTTONS + 10));
+		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_12"), module, AutobreakStudio::MEMORY_BUTTONS + 11));
+		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_13"), module, AutobreakStudio::MEMORY_BUTTONS + 12));
+		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_14"), module, AutobreakStudio::MEMORY_BUTTONS + 13));
+		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_15"), module, AutobreakStudio::MEMORY_BUTTONS + 14));
+		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_16"), module, AutobreakStudio::MEMORY_BUTTONS + 15));
+
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_1"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 0));
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_2"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 1));
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_3"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 2));

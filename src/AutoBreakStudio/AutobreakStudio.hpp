@@ -7,6 +7,9 @@ with extra stuff.
 
 To do:
 
+Next: Add functionality to memory buttons
+Then: save/load memory
+
 1. draw horizontal lines for some sequencers
 2. see if I can center pan sequencer
 3. add memory banks
@@ -77,6 +80,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
   enum ParamIds
   {
+    ENUMS(MEMORY_BUTTONS, NUMBER_OF_MEMORY_SLOTS),
     NUM_PARAMS
   };
   enum InputIds
