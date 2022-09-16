@@ -1,7 +1,7 @@
 struct VoltageToggleSequencerDisplay : SequencerDisplayABS
 {
     AutobreakStudio *module;
-    VoltageSequencer *sequencer;
+    VoltageSequencer **sequencer_ptr_ptr;
 
     bool shift_key = false;
     bool ctrl_key = false;
@@ -12,9 +12,9 @@ struct VoltageToggleSequencerDisplay : SequencerDisplayABS
     int previous_control_sequence_column = 0;
     int control_sequence_column = 0;
 
-    VoltageToggleSequencerDisplay(VoltageSequencer *sequencer_instance)
+    VoltageToggleSequencerDisplay(VoltageSequencer **sequencer_instance)
     {
-        this->sequencer = sequencer_instance;
+        this->sequencer_ptr_ptr = sequencer_instance;
 
         // The bounding box needs to be a little deeper than the visual
         // controls to allow mouse drags to indicate '0' (off) column heights,
@@ -36,6 +36,8 @@ struct VoltageToggleSequencerDisplay : SequencerDisplayABS
 
             if(module)
             {
+                VoltageSequencer *sequencer = *sequencer_ptr_ptr;
+
                 //
                 // Display the pattern
                 //
@@ -97,6 +99,8 @@ struct VoltageToggleSequencerDisplay : SequencerDisplayABS
     {
         if (module)
         {
+            VoltageSequencer *sequencer = *sequencer_ptr_ptr;
+
             double bar_width = (DRAW_AREA_WIDTH / (double) MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
             int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
             // int clicked_y = DRAW_AREA_HEIGHT - mouse_position.y;
@@ -123,6 +127,8 @@ struct VoltageToggleSequencerDisplay : SequencerDisplayABS
 
     void startControlSequence(Vec mouse_position)
     {
+        VoltageSequencer *sequencer = *sequencer_ptr_ptr;
+
         int clicked_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
         clicked_column = clamp(clicked_column, 0, MAX_SEQUENCER_STEPS);
         sequencer->setLength(clicked_column);
@@ -132,6 +138,8 @@ struct VoltageToggleSequencerDisplay : SequencerDisplayABS
     {
         if (module)
         {
+            VoltageSequencer *sequencer = *sequencer_ptr_ptr;
+
             int drag_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
             int shift_offset = drag_column - this->shift_sequence_column;
 
@@ -155,6 +163,8 @@ struct VoltageToggleSequencerDisplay : SequencerDisplayABS
     {
         if (module)
         {
+            VoltageSequencer *sequencer = *sequencer_ptr_ptr;
+
             int drag_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
             drag_column = clamp(drag_column, 0, MAX_SEQUENCER_STEPS);
             sequencer->setLength(drag_column);
@@ -209,6 +219,8 @@ struct VoltageToggleSequencerDisplay : SequencerDisplayABS
     {
         if (!module)
             return;
+
+        VoltageSequencer *sequencer = *sequencer_ptr_ptr;
 
         this->shift_key = ((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT);
         this->ctrl_key = ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL);

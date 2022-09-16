@@ -47,6 +47,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
   bool reset_signal = false;
   bool do_not_step_sequencers = false;
   long clock_ignore_on_reset = 0;
+  unsigned int selected_memory_index = 0;
 
   // Sequencer step keeps track of where the sequencers are.  This is important
   // because when a memory slot is loaded, the sequencers need to be set to 
@@ -65,15 +66,27 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
   dsp::SchmittTrigger resetTrigger;
   dsp::SchmittTrigger clockTrigger;
+  dsp::SchmittTrigger memory_button_triggers[NUMBER_OF_MEMORY_SLOTS];
 
   AutobreakMemory autobreak_memory[16];
 
-  VoltageSequencer *position_sequencer = &autobreak_memory[0].position_sequencer;
-  VoltageSequencer *sample_sequencer = &autobreak_memory[0].sample_sequencer;
-  VoltageSequencer *volume_sequencer = &autobreak_memory[0].volume_sequencer;
-  VoltageSequencer *pan_sequencer = &autobreak_memory[0].pan_sequencer;
-  VoltageSequencer *reverse_sequencer = &autobreak_memory[0].reverse_sequencer;
-  VoltageSequencer *ratchet_sequencer = &autobreak_memory[0].ratchet_sequencer;
+  VoltageSequencer* position_sequencer = &autobreak_memory[0].position_sequencer;
+  VoltageSequencer* sample_sequencer = &autobreak_memory[0].sample_sequencer;
+  VoltageSequencer* volume_sequencer = &autobreak_memory[0].volume_sequencer;
+  VoltageSequencer* pan_sequencer = &autobreak_memory[0].pan_sequencer;
+  VoltageSequencer* reverse_sequencer = &autobreak_memory[0].reverse_sequencer;
+  VoltageSequencer* ratchet_sequencer = &autobreak_memory[0].ratchet_sequencer;
+
+  /*
+  VoltageSequencer** all_sequencers[6] = {
+    &position_sequencer,
+    &sample_sequencer,
+    &volume_sequencer,
+    &pan_sequencer,
+    &reverse_sequencer,
+    &ratchet_sequencer
+  };
+  */
 
   float left_output = 0;
   float right_output = 0;
@@ -163,6 +176,39 @@ struct AutobreakStudio : VoxglitchSamplerModule
   void process(const ProcessArgs &args) override
   {
 
+    // Check if one of the memory buttons was pressed.  If so, change to 
+    // that memory location.
+    for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
+    {
+      if(memory_button_triggers[i].process(params[MEMORY_BUTTONS + i].getValue()))
+      {
+        selected_memory_index = i;
+
+        DEBUG(std::to_string(selected_memory_index).c_str());
+
+        // change memory locations here
+        position_sequencer = &autobreak_memory[selected_memory_index].position_sequencer;
+        sample_sequencer = &autobreak_memory[selected_memory_index].sample_sequencer;
+        volume_sequencer = &autobreak_memory[selected_memory_index].volume_sequencer;
+        pan_sequencer = &autobreak_memory[selected_memory_index].pan_sequencer;
+        reverse_sequencer = &autobreak_memory[selected_memory_index].reverse_sequencer;
+        ratchet_sequencer = &autobreak_memory[selected_memory_index].ratchet_sequencer;
+
+        position_sequencer->setPosition(sequencer_step);
+        sample_sequencer->setPosition(sequencer_step);
+        volume_sequencer->setPosition(sequencer_step);
+        pan_sequencer->setPosition(sequencer_step);
+        reverse_sequencer->setPosition(sequencer_step);
+        ratchet_sequencer->setPosition(sequencer_step);
+      }
+    }
+
+    // Highlight only selected memory buttton
+    for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
+    {
+      params[MEMORY_BUTTONS + i].setValue(selected_memory_index == i);
+    }
+
     //
     // Check to see if the reset input has been triggered.  If so, reset
     // all of the sequencers and sample playback variables and set reset_signal
@@ -186,8 +232,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
         sample_sequencer->reset();
         volume_sequencer->reset();
         pan_sequencer->reset();
-        ratchet_sequencer->reset();
         reverse_sequencer->reset();
+        ratchet_sequencer->reset();
 
         // set flag to wait for next trigger to continue
         reset_signal = true;
@@ -354,12 +400,12 @@ struct AutobreakStudio : VoxglitchSamplerModule
         sample_sequencer->step();
         volume_sequencer->step();
         pan_sequencer->step();
-        ratchet_sequencer->step();
         reverse_sequencer->step();
+        ratchet_sequencer->step();
 
         // Store the playback position so that we can restore the playback
         // positions when the active memory slot is changed.
-        position_sequencer->getPlaybackPosition();
+        sequencer_step = position_sequencer->getPlaybackPosition();
       }
 
       float sequence_value = position_sequencer->getValue();

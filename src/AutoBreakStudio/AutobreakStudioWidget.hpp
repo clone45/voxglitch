@@ -15,36 +15,36 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 
 		if(module)
 		{
-			VoltageSequencerDisplayABS *position_sequencer_display = new VoltageSequencerDisplayABS(this->module->position_sequencer);
+			VoltageSequencerDisplayABS *position_sequencer_display = new VoltageSequencerDisplayABS(& this->module->position_sequencer);
 			position_sequencer_display->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
 			position_sequencer_display->module = module;
 			addChild(position_sequencer_display);
 
-			VoltageSequencerDisplayABS *sample_sequencer_display = new VoltageSequencerDisplayABS(this->module->sample_sequencer);
+			VoltageSequencerDisplayABS *sample_sequencer_display = new VoltageSequencerDisplayABS(& this->module->sample_sequencer);
 			sample_sequencer_display->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
 			sample_sequencer_display->module = module;
 			sample_sequencer_display->hide();
 			addChild(sample_sequencer_display);	
 
-			VoltageSequencerDisplayABS *volume_sequencer_display = new VoltageSequencerDisplayABS(this->module->volume_sequencer);
+			VoltageSequencerDisplayABS *volume_sequencer_display = new VoltageSequencerDisplayABS(& this->module->volume_sequencer);
 			volume_sequencer_display->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
 			volume_sequencer_display->module = module;
 			volume_sequencer_display->hide();
 			addChild(volume_sequencer_display);
 
-			VoltageSequencerDisplayABS *pan_sequencer_display = new VoltageSequencerDisplayABS(this->module->pan_sequencer);
+			VoltageSequencerDisplayABS *pan_sequencer_display = new VoltageSequencerDisplayABS(& this->module->pan_sequencer);
 			pan_sequencer_display->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
 			pan_sequencer_display->module = module;
 			pan_sequencer_display->hide();
 			addChild(pan_sequencer_display);	
 
-			VoltageToggleSequencerDisplay *reverse_sequencer_display = new VoltageToggleSequencerDisplay(this->module->reverse_sequencer);
+			VoltageToggleSequencerDisplay *reverse_sequencer_display = new VoltageToggleSequencerDisplay(& this->module->reverse_sequencer);
 			reverse_sequencer_display->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
 			reverse_sequencer_display->module = module;
 			reverse_sequencer_display->hide();
 			addChild(reverse_sequencer_display);
 
-			VoltageSequencerDisplayABS *ratchet_sequencer_display = new VoltageSequencerDisplayABS(this->module->ratchet_sequencer);
+			VoltageSequencerDisplayABS *ratchet_sequencer_display = new VoltageSequencerDisplayABS(& this->module->ratchet_sequencer);
 			ratchet_sequencer_display->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
 			ratchet_sequencer_display->module = module;
 			ratchet_sequencer_display->hide();
