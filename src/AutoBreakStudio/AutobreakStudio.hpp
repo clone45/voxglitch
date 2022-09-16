@@ -3,20 +3,20 @@
 Autobreak Studio
 
 Automatic Breakbeat module for VCV Rack by Voxglitch,
-with extra stuff.
+with extra "stuff".
 
 To do:
 
-Next: Add functionality to memory buttons
-Then: save/load memory
+Next: save/load memory
+Then: Ability to select sample length
 
 1. draw horizontal lines for some sequencers
 2. see if I can center pan sequencer
-3. add memory banks
-4. save/load
-5. add ability to load a folder of files
-6. Add ability to select sample length
-7. store and retrieve selected memory
+3. save/load
+4. add ability to load a folder of files
+5. Add ability to select sample length
+6. store and retrieve selected memory
+7. Consider removing "position 0"
 
 */
 
@@ -77,17 +77,6 @@ struct AutobreakStudio : VoxglitchSamplerModule
   VoltageSequencer* reverse_sequencer = &autobreak_memory[0].reverse_sequencer;
   VoltageSequencer* ratchet_sequencer = &autobreak_memory[0].ratchet_sequencer;
 
-  /*
-  VoltageSequencer** all_sequencers[6] = {
-    &position_sequencer,
-    &sample_sequencer,
-    &volume_sequencer,
-    &pan_sequencer,
-    &reverse_sequencer,
-    &ratchet_sequencer
-  };
-  */
-
   float left_output = 0;
   float right_output = 0;
 
@@ -136,14 +125,46 @@ struct AutobreakStudio : VoxglitchSamplerModule
     //
     // Save selected samples
     //
-
     json_t *json_root = json_object();
     for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
     {
       json_object_set_new(json_root, ("loaded_sample_path_" + std::to_string(i + 1)).c_str(), json_string(samples[i].path.c_str()));
     }
 
+    //
+    // Save memory data (meaning, sequencer data)
+    //
+    json_t *memory_json = json_object();
+
+    for(unsigned int memory_index = 0; memory_index < NUMBER_OF_MEMORY_SLOTS; memory_index++)
+    {
+      json_t *sequencers_json = json_object();
+
+      // Save position sequencer values
+      saveSequencer(sequencers_json, &autobreak_memory[memory_index].position_sequencer, "position_sequencer");
+      saveSequencer(sequencers_json, &autobreak_memory[memory_index].sample_sequencer, "sample_sequencer");
+      saveSequencer(sequencers_json, &autobreak_memory[memory_index].volume_sequencer, "volume_sequencer");
+      saveSequencer(sequencers_json, &autobreak_memory[memory_index].pan_sequencer, "pan_sequencer");
+      saveSequencer(sequencers_json, &autobreak_memory[memory_index].reverse_sequencer, "reverse_sequencer");
+      saveSequencer(sequencers_json, &autobreak_memory[memory_index].ratchet_sequencer, "ratchet_sequencer");
+
+      json_object_set(memory_json, std::string("memory_slot_" + std::to_string(memory_index)).c_str(), sequencers_json);
+    }
+
+    json_object_set(json_root, "memory", memory_json);
+
     return json_root;
+  }
+
+  void saveSequencer(json_t *memory_json, VoltageSequencer* sequencer, std::string sequencer_name)
+  {
+      json_t *sequencer_values_json_array = json_array();
+      for(unsigned int column = 0; column < NUMBER_OF_STEPS; column++)
+      {
+        json_array_append_new(sequencer_values_json_array, json_real(sequencer->getValue(column)));
+      }
+
+      json_object_set(memory_json, sequencer_name.c_str(), sequencer_values_json_array);
   }
 
   // Autoload settings
@@ -152,7 +173,6 @@ struct AutobreakStudio : VoxglitchSamplerModule
     //
     // Load samples
     //
-
     for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
     {
       json_t *loaded_sample_path = json_object_get(json_root, ("loaded_sample_path_" + std::to_string(i + 1)).c_str());
@@ -162,6 +182,44 @@ struct AutobreakStudio : VoxglitchSamplerModule
         loaded_filenames[i] = samples[i].filename;
       }
     }
+
+    //
+    // Load Memory Data
+    //   
+    json_t *memory_json = json_object_get(json_root, "memory");
+
+    if(memory_json)
+    {
+      for(unsigned int memory_slot_index=0; memory_slot_index<NUMBER_OF_MEMORY_SLOTS; memory_slot_index++)
+      {
+        std::string key = "memory_slot_" + std::to_string(memory_slot_index);
+        json_t *memory_slot = json_object_get(memory_json, key.c_str());
+
+        if(memory_slot)
+        {
+          loadSequencer(memory_slot, &autobreak_memory[memory_slot_index].position_sequencer, "position_sequencer");
+          loadSequencer(memory_slot, &autobreak_memory[memory_slot_index].sample_sequencer, "sample_sequencer");
+          loadSequencer(memory_slot, &autobreak_memory[memory_slot_index].volume_sequencer, "volume_sequencer");
+          loadSequencer(memory_slot, &autobreak_memory[memory_slot_index].pan_sequencer, "pan_sequencer");
+          loadSequencer(memory_slot, &autobreak_memory[memory_slot_index].reverse_sequencer, "reverse_sequencer");
+          loadSequencer(memory_slot, &autobreak_memory[memory_slot_index].ratchet_sequencer, "ratchet_sequencer");
+        }
+      }
+    }
+  }
+
+  void loadSequencer(json_t *memory_slot_json, VoltageSequencer* sequencer, std::string sequencer_name)
+  {
+    json_t *sequencer_array_json = json_object_get(memory_slot_json, sequencer_name.c_str());
+    if(sequencer_array_json) 
+    {
+      size_t sequencer_index; 
+      json_t *value_json;
+      json_array_foreach(sequencer_array_json, sequencer_index, value_json) 
+      {
+        sequencer->setValue(sequencer_index, json_real_value(value_json));
+      }
+    } 
   }
 
   float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
