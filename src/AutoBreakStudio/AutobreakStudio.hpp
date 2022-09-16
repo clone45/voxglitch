@@ -153,6 +153,9 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
     json_object_set(json_root, "memory", memory_json);
 
+    // Save which memory is selected
+    json_object_set(json_root, "selected_memory_index", json_integer(selected_memory_index));
+
     return json_root;
   }
 
@@ -206,6 +209,11 @@ struct AutobreakStudio : VoxglitchSamplerModule
         }
       }
     }
+
+    // Load selected memory index
+    json_t *selected_memory_index_json = json_object_get(json_root, "selected_memory_index");
+    //if(selected_memory_index_json) selected_memory_index = json_integer_value(selected_memory_index_json);
+    if(selected_memory_index_json) selectMemory(json_integer_value(selected_memory_index_json));
   }
 
   void loadSequencer(json_t *memory_slot_json, VoltageSequencer* sequencer, std::string sequencer_name)
@@ -231,6 +239,26 @@ struct AutobreakStudio : VoxglitchSamplerModule
     return (((input_value * scale) * attenuator_value) + (knob_value * scale));
   }
 
+  void selectMemory(unsigned int i)
+  {
+    selected_memory_index = i;
+
+    // change memory locations here
+    position_sequencer = &autobreak_memory[selected_memory_index].position_sequencer;
+    sample_sequencer = &autobreak_memory[selected_memory_index].sample_sequencer;
+    volume_sequencer = &autobreak_memory[selected_memory_index].volume_sequencer;
+    pan_sequencer = &autobreak_memory[selected_memory_index].pan_sequencer;
+    reverse_sequencer = &autobreak_memory[selected_memory_index].reverse_sequencer;
+    ratchet_sequencer = &autobreak_memory[selected_memory_index].ratchet_sequencer;
+
+    position_sequencer->setPosition(sequencer_step);
+    sample_sequencer->setPosition(sequencer_step);
+    volume_sequencer->setPosition(sequencer_step);
+    pan_sequencer->setPosition(sequencer_step);
+    reverse_sequencer->setPosition(sequencer_step);
+    ratchet_sequencer->setPosition(sequencer_step);
+  }
+
   void process(const ProcessArgs &args) override
   {
 
@@ -240,24 +268,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     {
       if(memory_button_triggers[i].process(params[MEMORY_BUTTONS + i].getValue()))
       {
-        selected_memory_index = i;
-
-        DEBUG(std::to_string(selected_memory_index).c_str());
-
-        // change memory locations here
-        position_sequencer = &autobreak_memory[selected_memory_index].position_sequencer;
-        sample_sequencer = &autobreak_memory[selected_memory_index].sample_sequencer;
-        volume_sequencer = &autobreak_memory[selected_memory_index].volume_sequencer;
-        pan_sequencer = &autobreak_memory[selected_memory_index].pan_sequencer;
-        reverse_sequencer = &autobreak_memory[selected_memory_index].reverse_sequencer;
-        ratchet_sequencer = &autobreak_memory[selected_memory_index].ratchet_sequencer;
-
-        position_sequencer->setPosition(sequencer_step);
-        sample_sequencer->setPosition(sequencer_step);
-        volume_sequencer->setPosition(sequencer_step);
-        pan_sequencer->setPosition(sequencer_step);
-        reverse_sequencer->setPosition(sequencer_step);
-        ratchet_sequencer->setPosition(sequencer_step);
+        selectMemory(i);
       }
     }
 
