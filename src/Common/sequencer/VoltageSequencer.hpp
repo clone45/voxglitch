@@ -111,4 +111,12 @@ struct VoltageSequencer : Sequencer
     // sequence.fill(0.0);
     sequence.assign(sequence.size(), 0);
   }
+
+  void copy(VoltageSequencer *src_sequence)
+  {
+    this->sequence = src_sequence->sequence;
+    this->sequence_length = src_sequence->sequence_length;
+    this->snap_division_index = src_sequence->snap_division_index;
+    this->sample_and_hold = src_sequence->sample_and_hold;
+  }
 };

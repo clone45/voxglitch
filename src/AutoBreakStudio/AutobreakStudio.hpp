@@ -15,6 +15,7 @@ Next: Ability to select sample length [postponed]
 4. Consider removing "position 0"
 5. Update panel artwork
 6. Add instructional intro message for new users
+7. Copy / Save / Load sequence lengths
 
 */
 
@@ -47,7 +48,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
   long clock_ignore_on_reset = 0;
   unsigned int selected_memory_index = 0;
   unsigned int previously_selected_memory_index = 0;
-  
+  bool copy_mode = false;
 
   // Sequencer step keeps track of where the sequencers are.  This is important
   // because when a memory slot is loaded, the sequencers need to be set to 
@@ -67,6 +68,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
   dsp::SchmittTrigger resetTrigger;
   dsp::SchmittTrigger clockTrigger;
   dsp::SchmittTrigger memory_button_triggers[NUMBER_OF_MEMORY_SLOTS];
+  dsp::BooleanTrigger copyButtonTrigger;
 
   AutobreakMemory autobreak_memory[16];
 
@@ -83,6 +85,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
   enum ParamIds
   {
     ENUMS(MEMORY_BUTTONS, NUMBER_OF_MEMORY_SLOTS),
+    COPY_BUTTON,
     NUM_PARAMS
   };
   enum InputIds
@@ -102,6 +105,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
   };
   enum LightIds
   {
+    COPY_LIGHT,
     NUM_LIGHTS
   };
 
@@ -260,6 +264,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
     ratchet_sequencer->setPosition(sequencer_step);
   }
 
+
+
   /*
 
   ______
@@ -279,37 +285,59 @@ struct AutobreakStudio : VoxglitchSamplerModule
   void process(const ProcessArgs &args) override
   {
 
+    // Process copy button 
+    if (copyButtonTrigger.process(params[COPY_BUTTON].getValue())) {
+			copy_mode ^= true;
+		}
+
     // Memory selection
     //
-    if(inputs[MEMORY_SELECT_INPUT].isConnected())
+    if(copy_mode == false)
     {
-      // Read the memory input.  If the reading is different than the currently
-      // selected memory slot, then load up the newly selected slot.
-      unsigned int memory_input_value = int((inputs[MEMORY_SELECT_INPUT].getVoltage() / 10.0) * NUMBER_OF_MEMORY_SLOTS);
-      memory_input_value = clamp(memory_input_value, 0, NUMBER_OF_MEMORY_SLOTS - 1);
-      
-      if(memory_input_value != previously_selected_memory_index)
+      if(inputs[MEMORY_SELECT_INPUT].isConnected())
       {
-        selectMemory(memory_input_value);
-        previously_selected_memory_index = selected_memory_index;
+        // Read the memory input.  If the reading is different than the currently
+        // selected memory slot, then load up the newly selected slot.
+        unsigned int memory_input_value = int((inputs[MEMORY_SELECT_INPUT].getVoltage() / 10.0) * NUMBER_OF_MEMORY_SLOTS);
+        memory_input_value = clamp(memory_input_value, 0, NUMBER_OF_MEMORY_SLOTS - 1);
+        
+        if(memory_input_value != previously_selected_memory_index)
+        {
+          selectMemory(memory_input_value);
+          previously_selected_memory_index = selected_memory_index;
+        }
+      }
+      else
+      {
+        for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
+        {
+          if(memory_button_triggers[i].process(params[MEMORY_BUTTONS + i].getValue()))
+          {
+            selectMemory(i);
+          }
+        }
+      }
+
+      // Highlight only selected memory buttton
+      for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
+      {
+        params[MEMORY_BUTTONS + i].setValue(selected_memory_index == i);
       }
     }
-    else
+    else // copy_mode == true
     {
+      // copy_mode is true, so now, when a memory bank is clicked on, 
+      // copy the currently selected memory to that desination.
       for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
       {
         if(memory_button_triggers[i].process(params[MEMORY_BUTTONS + i].getValue()))
         {
-          selectMemory(i);
+          autobreak_memory[i].copy(&autobreak_memory[selected_memory_index]);
         }
       }
     }
 
-    // Highlight only selected memory buttton
-    for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
-    {
-      params[MEMORY_BUTTONS + i].setValue(selected_memory_index == i);
-    }
+
 
     // Process reset input
     //
@@ -561,5 +589,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     // Map the theoretical playback position to the actual sample playback position
     actual_playback_position = ((float)theoretical_playback_position / samples_to_play_per_loop) * selected_sample->size();
     
+    lights[COPY_LIGHT].setBrightness(copy_mode);
+
   }
 };

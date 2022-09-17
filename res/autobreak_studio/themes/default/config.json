@@ -32,6 +32,7 @@
     "AUDIO_OUTPUT_RIGHT": {"x": 530.0, "y": 352.4485},
 
     "MEMORY_SELECT_INPUT": {"x": 30.67076, "y": 141.75000},
+    "COPY_BUTTON": {"x": 30.67076, "y": 196.00},
 
     "LEFT_OUTPUT_1": {"x": 178.6329, "y": 318.1981},
     "LEFT_OUTPUT_2": {"x": 222.2084, "y": 318.1981},
