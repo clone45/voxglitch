@@ -8,7 +8,8 @@ struct LcdTabsWidget : TransparentWidget
 
     NVGcolor tab_color_default = nvgRGBA(48, 75, 79, 255);
     NVGcolor tab_color_selected = nvgRGBA(68, 95, 99, 255);
-    NVGcolor label_color = nvgRGBA(255, 255, 255, 255);
+    NVGcolor label_color_deselected = nvgRGBA(255, 255, 255, 100);
+    NVGcolor label_color_selected = nvgRGBA(255, 255, 255, 200);
 
     std::string tab_labels[NUMBER_OF_TABS] = {
         "Position",
@@ -57,14 +58,17 @@ struct LcdTabsWidget : TransparentWidget
     {
         float x_position = (index * LCD_TABS_WIDTH) + (index * TABS_HORIZONTAL_PADDING);
         NVGcolor tab_color;
+        NVGcolor label_color;
 
         if (index == selected_tab)
         {
             tab_color = tab_color_selected;
+            label_color = label_color_selected;
         }
         else
         {
             tab_color = tab_color_default;
+            label_color = label_color_deselected;
         }
 
         nvgBeginPath(vg);
@@ -72,13 +76,13 @@ struct LcdTabsWidget : TransparentWidget
         nvgFillColor(vg, tab_color);
         nvgFill(vg);
 
-        nvgFontSize(vg, 14);
+        nvgFontSize(vg, 12);
         nvgTextLetterSpacing(vg, 0);
         nvgFillColor(vg, label_color);
-        nvgTextAlign(vg, NVG_ALIGN_LEFT);
+        nvgTextAlign(vg, NVG_ALIGN_CENTER);
 
         float y_position = 0;
-        nvgTextBox(vg, x_position, y_position + 12.0, 900.0, label.c_str(), NULL);
+        nvgTextBox(vg, x_position, y_position + 14.0, LCD_TABS_WIDTH, label.c_str(), NULL);
     }
 
     void onButton(const event::Button &e) override

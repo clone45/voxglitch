@@ -7,16 +7,14 @@ with extra "stuff".
 
 To do:
 
-Next: save/load memory
-Then: Ability to select sample length
+Next: Ability to select sample length [postponed]
 
 1. draw horizontal lines for some sequencers
 2. see if I can center pan sequencer
-3. save/load
-4. add ability to load a folder of files
-5. Add ability to select sample length
-6. store and retrieve selected memory
-7. Consider removing "position 0"
+3. add ability to load a folder of files
+4. Consider removing "position 0"
+5. Update panel artwork
+6. Add instructional intro message for new users
 
 */
 
@@ -48,6 +46,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
   bool do_not_step_sequencers = false;
   long clock_ignore_on_reset = 0;
   unsigned int selected_memory_index = 0;
+  unsigned int previously_selected_memory_index = 0;
+  
 
   // Sequencer step keeps track of where the sequencers are.  This is important
   // because when a memory slot is loaded, the sequencers need to be set to 
@@ -89,6 +89,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
   {
     CLOCK_INPUT,
     RESET_INPUT,
+    MEMORY_SELECT_INPUT,
     NUM_INPUTS
   };
   enum OutputIds
@@ -113,6 +114,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
     configInput(CLOCK_INPUT, "Clock Input");
     configInput(RESET_INPUT, "Reset Input");
+    configInput(MEMORY_SELECT_INPUT, "Memory Select");
 
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 
@@ -212,7 +214,6 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
     // Load selected memory index
     json_t *selected_memory_index_json = json_object_get(json_root, "selected_memory_index");
-    //if(selected_memory_index_json) selected_memory_index = json_integer_value(selected_memory_index_json);
     if(selected_memory_index_json) selectMemory(json_integer_value(selected_memory_index_json));
   }
 
@@ -259,16 +260,48 @@ struct AutobreakStudio : VoxglitchSamplerModule
     ratchet_sequencer->setPosition(sequencer_step);
   }
 
+  /*
+
+  ______
+  | ___ \
+  | |_/ / __ ___   ___ ___  ___ ___
+  |  __/ '__/ _ \ / __/ _ \/ __/ __|  ==========================================
+  | |  | | | (_) | (_|  __/\__ \__ \  ==========================================
+  \_|  |_|  \___/ \___\___||___/___/  ==========================================
+================================================================================
+================================================================================
+================================================================================
+================================================================================
+================================================================================
+
+*/
+
   void process(const ProcessArgs &args) override
   {
 
-    // Check if one of the memory buttons was pressed.  If so, change to 
-    // that memory location.
-    for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
+    // Memory selection
+    //
+    if(inputs[MEMORY_SELECT_INPUT].isConnected())
     {
-      if(memory_button_triggers[i].process(params[MEMORY_BUTTONS + i].getValue()))
+      // Read the memory input.  If the reading is different than the currently
+      // selected memory slot, then load up the newly selected slot.
+      unsigned int memory_input_value = int((inputs[MEMORY_SELECT_INPUT].getVoltage() / 10.0) * NUMBER_OF_MEMORY_SLOTS);
+      memory_input_value = clamp(memory_input_value, 0, NUMBER_OF_MEMORY_SLOTS - 1);
+      
+      if(memory_input_value != previously_selected_memory_index)
       {
-        selectMemory(i);
+        selectMemory(memory_input_value);
+        previously_selected_memory_index = selected_memory_index;
+      }
+    }
+    else
+    {
+      for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
+      {
+        if(memory_button_triggers[i].process(params[MEMORY_BUTTONS + i].getValue()))
+        {
+          selectMemory(i);
+        }
       }
     }
 
@@ -278,6 +311,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
       params[MEMORY_BUTTONS + i].setValue(selected_memory_index == i);
     }
 
+    // Process reset input
     //
     // Check to see if the reset input has been triggered.  If so, reset
     // all of the sequencers and sample playback variables and set reset_signal
@@ -314,6 +348,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
     // See if the clock input has triggered and store the results
     bool clock_trigger = false;
     
+    // Read clock trigger
+    //
     // A certain amount of time must pass after a reset before a clock input
     // will trigger the sequencers to step.  This time is measured by the 
     // clock_ignore_on_reset counter.  When it's 0, that means enough time
@@ -327,6 +363,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
       clock_ignore_on_reset--;
     }
 
+    // Handle reset
+    //
     // The reset_signal flag is set when the reset input is triggered.  When reset
     // is triggered, then we want to wait until the next clock pulse before
     // doing any sample output or stepping the sequencers.
@@ -355,6 +393,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
     // Handle wav selection
     //
     unsigned int sample_value = (sample_sequencer->getValue() * NUMBER_OF_SAMPLES);
+    sample_value = clamp(sample_value, 0, 7);
+
     if (sample_value != selected_sample_slot)
     {
       // Reset the smooth ramp if the selected sample has changed
@@ -381,7 +421,6 @@ struct AutobreakStudio : VoxglitchSamplerModule
       }
 
       timer_before = time_counter;
-      // clock_triggered = true;
     }
 
     // If BPM hasn't been determined yet, wait until it has to start 

@@ -18,7 +18,7 @@ const float OVERLAY_WIDTH = 400.0;
 const int NUMBER_OF_TABS = 6;
 const int NUMBER_OF_SEQUENCERS = 6;
 const float LCD_TABS_HEIGHT = 20.0;
-const float LCD_TABS_WIDTH = 64.0;
+const float LCD_TABS_WIDTH = 65.7;
 const float TABS_HORIZONTAL_PADDING = 1.0;
 
 const float ratchet_divisions[5] = {
