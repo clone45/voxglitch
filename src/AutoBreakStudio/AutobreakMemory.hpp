@@ -47,4 +47,21 @@ struct AutobreakMemory
         this->reverse_sequencer.copy(&src_memory->reverse_sequencer);
         this->ratchet_sequencer.copy(&src_memory->ratchet_sequencer);
     }
+
+    void clear()
+    {
+        this->position_sequencer.clear();
+        this->sample_sequencer.clear();
+        this->volume_sequencer.fill(1.0);
+        this->pan_sequencer.fill(0.5);
+        this->reverse_sequencer.clear();
+        this->ratchet_sequencer.clear();
+
+        this->position_sequencer.setLength(MAX_SEQUENCER_STEPS);
+        this->sample_sequencer.setLength(MAX_SEQUENCER_STEPS);
+        this->volume_sequencer.setLength(MAX_SEQUENCER_STEPS);
+        this->pan_sequencer.setLength(MAX_SEQUENCER_STEPS);
+        this->reverse_sequencer.setLength(MAX_SEQUENCER_STEPS);
+        this->ratchet_sequencer.setLength(MAX_SEQUENCER_STEPS);
+    }
 };

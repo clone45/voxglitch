@@ -81,6 +81,7 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("MEMORY_SELECT_INPUT"), module, AutobreakStudio::MEMORY_SELECT_INPUT));
 
 		addParam(createLightParamCentered<VCVLightButton<MediumSimpleLight<WhiteLight>>>(themePos("COPY_BUTTON"), module, AutobreakStudio::COPY_BUTTON, AutobreakStudio::COPY_LIGHT));
+		addParam(createLightParamCentered<VCVLightButton<MediumSimpleLight<WhiteLight>>>(themePos("CLEAR_BUTTON"), module, AutobreakStudio::CLEAR_BUTTON, AutobreakStudio::CLEAR_LIGHT));
 
 		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_1"), module, AutobreakStudio::MEMORY_BUTTONS + 0));
 		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_2"), module, AutobreakStudio::MEMORY_BUTTONS + 1));

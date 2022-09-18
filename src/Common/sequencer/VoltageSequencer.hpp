@@ -71,6 +71,11 @@ struct VoltageSequencer : Sequencer
     }
   }
 
+  void fill(double value)
+  {
+   sequence.assign(sequence.size(), value);
+  }
+
   void setSnapDivisionIndex(unsigned int new_snap_division_index)
   {
     this->snap_division_index = new_snap_division_index;

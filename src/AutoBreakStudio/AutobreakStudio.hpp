@@ -12,10 +12,9 @@ Next: Ability to select sample length [postponed]
 1. draw horizontal lines for some sequencers
 2. see if I can center pan sequencer
 3. add ability to load a folder of files
-4. Consider removing "position 0"
-5. Update panel artwork
-6. Add instructional intro message for new users
-7. Copy / Save / Load sequence lengths
+4. Update panel artwork
+5. Add instructional intro message for new users
+6. Copy / Save / Load sequence lengths
 
 */
 
@@ -49,6 +48,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
   unsigned int selected_memory_index = 0;
   unsigned int previously_selected_memory_index = 0;
   bool copy_mode = false;
+  std::array<bool, NUMBER_OF_MEMORY_SLOTS> blink_memory_during_copy_mode;
 
   // Sequencer step keeps track of where the sequencers are.  This is important
   // because when a memory slot is loaded, the sequencers need to be set to 
@@ -69,6 +69,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
   dsp::SchmittTrigger clockTrigger;
   dsp::SchmittTrigger memory_button_triggers[NUMBER_OF_MEMORY_SLOTS];
   dsp::BooleanTrigger copyButtonTrigger;
+  dsp::BooleanTrigger clearButtonTrigger;
+  dsp::PulseGenerator clearPulse;
 
   AutobreakMemory autobreak_memory[16];
 
@@ -86,6 +88,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
   {
     ENUMS(MEMORY_BUTTONS, NUMBER_OF_MEMORY_SLOTS),
     COPY_BUTTON,
+    CLEAR_BUTTON,
     NUM_PARAMS
   };
   enum InputIds
@@ -106,6 +109,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
   enum LightIds
   {
     COPY_LIGHT,
+    CLEAR_LIGHT,
     NUM_LIGHTS
   };
 
@@ -121,6 +125,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     configInput(MEMORY_SELECT_INPUT, "Memory Select");
 
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
+    blink_memory_during_copy_mode.fill(true);
 
     clock_ignore_on_reset = (long) (44100 / 100);  
   }
@@ -285,9 +290,23 @@ struct AutobreakStudio : VoxglitchSamplerModule
   void process(const ProcessArgs &args) override
   {
 
+    // Process clear button
+    if (clearButtonTrigger.process(params[CLEAR_BUTTON].getValue())) 
+    {
+      autobreak_memory[selected_memory_index].clear();
+			clearPulse.trigger(1e-3f);
+		}
+
     // Process copy button 
-    if (copyButtonTrigger.process(params[COPY_BUTTON].getValue())) {
-			copy_mode ^= true;
+    if (copyButtonTrigger.process(params[COPY_BUTTON].getValue())) 
+    {
+      copy_mode ^= true;
+
+      if(copy_mode == true) 
+      {
+        blink_memory_during_copy_mode.fill(true);
+        blink_memory_during_copy_mode[selected_memory_index] = false;
+      }
 		}
 
     // Memory selection
@@ -591,5 +610,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     
     lights[COPY_LIGHT].setBrightness(copy_mode);
 
+    bool clearGate = clearPulse.process(args.sampleTime);
+    lights[CLEAR_LIGHT].setSmoothBrightness(clearGate, args.sampleTime);
   }
 };
