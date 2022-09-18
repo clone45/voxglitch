@@ -15,6 +15,7 @@ Next: Ability to select sample length [postponed]
 4. Update panel artwork
 5. Add instructional intro message for new users
 6. Copy / Save / Load sequence lengths
+7. Write documentation.  Make a video demonstration.
 
 */
 
