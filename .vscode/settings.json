@@ -4,6 +4,7 @@
         "xstring": "cpp",
         "system_error": "cpp",
         "xtr1common": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "string": "cpp"
     }
 }

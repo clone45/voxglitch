@@ -296,11 +296,17 @@ struct DigitalSequencer : VoxglitchModule
         {
           // Get pattern data, regardless if it's an int or real.  json_number_value
           // will convert the result to a real.
-          double value = json_integer_value(json_array_get(json_pattern_array, i));
+          double value = json_number_value(json_array_get(json_pattern_array, i));
 
           // If the value is greater than 1.0, it means that an older patch is being
           // loaded and we'll need to convert the voltage from 0 to 214
-          if(value > 1.0) value = value / 214.0;
+          if(value > 1.0) 
+          {
+            DEBUG(std::string("converting value" + std::to_string(value)).c_str());
+            value = value / 214.0;
+            DEBUG(std::string("new value is " + std::to_string(value)).c_str());
+
+          }
 
           this->voltage_sequencers[pattern_number].setValue(i, value);
         }
