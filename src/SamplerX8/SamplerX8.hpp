@@ -5,8 +5,8 @@ struct SamplerX8 : VoxglitchSamplerModule
   dsp::SchmittTrigger sample_triggers[NUMBER_OF_SAMPLES];
 
   StereoPan stereo_pan;
-  dsp::SchmittTrigger mute_buttons_schmitt_triggers[NUMBER_OF_SAMPLES];
-  bool mute_states[NUMBER_OF_SAMPLES];
+  // dsp::SchmittTrigger mute_buttons_schmitt_triggers[NUMBER_OF_SAMPLES];
+  // bool mute_states[NUMBER_OF_SAMPLES];
 
   enum ParamIds
   {
@@ -33,7 +33,6 @@ struct SamplerX8 : VoxglitchSamplerModule
 	};
 
 	enum LightIds {
-    ENUMS(MUTE_BUTTON_LIGHTS, NUMBER_OF_SAMPLES),
 		NUM_LIGHTS
 	};
 
@@ -44,9 +43,12 @@ struct SamplerX8 : VoxglitchSamplerModule
 
     for(unsigned int i=0; i < NUMBER_OF_SAMPLES; i++)
     {
-      configParam(VOLUME_KNOBS + i, 0.0, 1.0, 1.0);
-      configParam(PAN_KNOBS + i, -1.0, 1.0, 0.0);
-      configParam(MUTE_BUTTONS + i, 0.f, 1.f, 1.f);
+      configParam(VOLUME_KNOBS + i, 0.0, 1.0, 1.0, "volume");
+      configParam(PAN_KNOBS + i, -1.0, 1.0, 0.0, "pan");
+      configSwitch(MUTE_BUTTONS + i, false, true, true, "on/off");
+      
+      configOutput(AUDIO_LEFT_OUTPUTS + i, "left");
+      configOutput(AUDIO_RIGHT_OUTPUTS + i, "right");
     }
 
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
@@ -55,7 +57,7 @@ struct SamplerX8 : VoxglitchSamplerModule
     {
       SamplePlayer sample_player;
       sample_players.push_back(sample_player);
-      mute_states[i] = true;
+      // mute_states[i] = true;
     }
 	}
 
@@ -71,10 +73,12 @@ struct SamplerX8 : VoxglitchSamplerModule
 			json_object_set_new(root, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(sample_players[i].getPath().c_str()));
 		}
 
+    /*
     for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
 			json_object_set_new(root, ("mute_states_" + std::to_string(i+1)).c_str(), json_integer((unsigned int) mute_states[i]));
 		}
+    */
 
     saveSamplerData(root);
 
@@ -101,7 +105,10 @@ struct SamplerX8 : VoxglitchSamplerModule
     for(int i=0; i < NUMBER_OF_SAMPLES; i++)
 		{
 			json_t *loaded_mute_value = json_object_get(root, ("mute_states_" +  std::to_string(i+1)).c_str());
-			if (loaded_mute_value) mute_states[i] = json_integer_value(loaded_mute_value);
+			if (loaded_mute_value) 
+      {
+        params[MUTE_BUTTONS + i].setValue(json_boolean_value(loaded_mute_value));
+      }
 		}
 
     // Call VoxglitchSamplerModule::loadSamplerData to load sampler specific data
@@ -130,10 +137,9 @@ struct SamplerX8 : VoxglitchSamplerModule
       }
 
       // Process mute button
-      bool mute_button_is_triggered = mute_buttons_schmitt_triggers[i].process(params[MUTE_BUTTONS + i].getValue());
-      if(mute_button_is_triggered) mute_states[i] ^= true;
-
-      lights[MUTE_BUTTON_LIGHTS + i].setBrightness(mute_states[i]);
+      // bool mute_button_is_triggered = mute_buttons_schmitt_triggers[i].process(params[MUTE_BUTTONS + i].getValue());
+      // if(mute_button_is_triggered) mute_states[i] ^= true;
+      // mute_states[i] = params[MUTE_BUTTONS + i].getValue();
 
       //
       // Send audio to outputs
@@ -148,9 +154,9 @@ struct SamplerX8 : VoxglitchSamplerModule
       stereo_pan.process(&left_audio, &right_audio, params[PAN_KNOBS + i].getValue());
 
       // Output audio for the current sample
-      if(mute_states[i] == true)  // True means "play sample"
+      if(params[MUTE_BUTTONS + i].getValue() == true)  // True means "play sample"
       {
-        // LEFT OFF HERE>  THIS NEEDS figuring out
+        // Output individual outputs
         outputs[AUDIO_LEFT_OUTPUTS + i].setVoltage(left_audio);
         outputs[AUDIO_RIGHT_OUTPUTS + i].setVoltage(right_audio);
 
