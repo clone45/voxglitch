@@ -7,7 +7,7 @@ with extra "stuff".
 
 To do:
 
-. Add ability to load a folder of files
+. Blinking copy/paste buttons
 . draw horizontal lines for some sequencers
 . see if I can center pan sequencer
 . Add instructional intro message for new users
@@ -46,6 +46,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
   unsigned int previously_selected_memory_index = 0;
   bool copy_mode = false;
   std::array<bool, NUMBER_OF_MEMORY_SLOTS> blink_memory_during_copy_mode;
+  float blink_phase = 0.f;
 
   // Sequencer step keeps track of where the sequencers are.  This is important
   // because when a memory slot is loaded, the sequencers need to be set to 
@@ -120,6 +121,12 @@ struct AutobreakStudio : VoxglitchSamplerModule
     configInput(CLOCK_INPUT, "Clock Input");
     configInput(RESET_INPUT, "Reset Input");
     configInput(MEMORY_SELECT_INPUT, "Memory Select");
+
+    for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
+    {
+      configSwitch(MEMORY_BUTTONS + i, 0.0, 1.0, 0.0, "Memory Slot");
+    }
+
 
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
     blink_memory_during_copy_mode.fill(true);
@@ -312,6 +319,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
       {
         blink_memory_during_copy_mode.fill(true);
         blink_memory_during_copy_mode[selected_memory_index] = false;
+        blink_phase = 0.0;
       }
 		}
 
@@ -332,7 +340,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
           previously_selected_memory_index = selected_memory_index;
         }
       }
-      else
+      else // Listen for manual memory button presses
       {
         for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
         {
@@ -357,9 +365,38 @@ struct AutobreakStudio : VoxglitchSamplerModule
       {
         if(memory_button_triggers[i].process(params[MEMORY_BUTTONS + i].getValue()))
         {
-          autobreak_memory[i].copy(&autobreak_memory[selected_memory_index]);
+          if(i != selected_memory_index)
+          {
+            autobreak_memory[i].copy(&autobreak_memory[selected_memory_index]);
+            // blink_memory_during_copy_mode[i] = false;
+          }
         }
       }
+
+      //
+      // Manage blinking lights during copy/paste
+      //
+      // Blink light at 1Hz
+      /*
+
+      // Note: This code was attempting to use setValue() on the buttons to
+      // light them up, but when set, the code above this that tests if 
+      // someone clicked on a button will be "true", which will cause mayhem.
+      // In order to fix this properly, I may need to detach the "light" element
+      // from the button element.
+
+      blink_phase += args.sampleTime;
+      if (blink_phase >= 1.f) blink_phase = 0.0;
+
+      for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
+      {
+        if(blink_memory_during_copy_mode[i])
+        {
+
+        }
+      }
+      */
+
     }
 
 
