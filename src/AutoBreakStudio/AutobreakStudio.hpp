@@ -7,15 +7,13 @@ with extra "stuff".
 
 To do:
 
-Next: Ability to select sample length [postponed]
-
-1. draw horizontal lines for some sequencers
-2. see if I can center pan sequencer
-3. add ability to load a folder of files
-4. Update panel artwork
-5. Add instructional intro message for new users
-6. Copy / Save / Load sequence lengths
-7. Write documentation.  Make a video demonstration.
+. Copy / Save / Load sequence lengths
+. draw horizontal lines for some sequencers
+. see if I can center pan sequencer
+. add ability to load a folder of files
+. Update panel artwork
+. Add instructional intro message for new users
+. Write documentation.  Make a video demonstration.
 
 */
 
@@ -179,7 +177,11 @@ struct AutobreakStudio : VoxglitchSamplerModule
         json_array_append_new(sequencer_values_json_array, json_real(sequencer->getValue(column)));
       }
 
-      json_object_set(memory_json, sequencer_name.c_str(), sequencer_values_json_array);
+      json_t *data_json = json_object();
+      json_object_set(data_json, "values", sequencer_values_json_array);
+      json_object_set(data_json, "length", json_integer(sequencer->getLength()));
+
+      json_object_set_new(memory_json, sequencer_name.c_str(), data_json);
   }
 
   // Autoload settings
@@ -229,16 +231,30 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
   void loadSequencer(json_t *memory_slot_json, VoltageSequencer* sequencer, std::string sequencer_name)
   {
-    json_t *sequencer_array_json = json_object_get(memory_slot_json, sequencer_name.c_str());
-    if(sequencer_array_json) 
+    // Get the sequencer data by looking u pthe sequencer name
+    json_t *sequencer_data_json = json_object_get(memory_slot_json, sequencer_name.c_str());
+    if(! sequencer_data_json) return;
+
+    // 
+    // Load the sequencer values
+    //
+    json_t *sequencer_array_json = json_object_get(sequencer_data_json, "values");
+    if(! sequencer_array_json) return;
+    
+    size_t sequencer_index; 
+    json_t *value_json;
+    json_array_foreach(sequencer_array_json, sequencer_index, value_json) 
     {
-      size_t sequencer_index; 
-      json_t *value_json;
-      json_array_foreach(sequencer_array_json, sequencer_index, value_json) 
-      {
-        sequencer->setValue(sequencer_index, json_real_value(value_json));
-      }
-    } 
+      sequencer->setValue(sequencer_index, json_real_value(value_json));
+    }
+
+    //
+    // Load the sequencer length
+    //
+    json_t *sequencer_length_json = json_object_get(sequencer_data_json, "length");
+    if(! sequencer_length_json) return;
+
+    sequencer->setLength(json_integer_value(sequencer_length_json));
   }
 
   float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
