@@ -3,21 +3,21 @@
 	"layers": [
 		{
       "type": "image",
-      "path": "res/themes/default/background2.jpg",
+      "path": "res/themes/light/background.jpg",
       "zoom": 0.15,
       "width": 198.12,
       "height": 128.5
     },
     {
       "type": "image",
-      "path": "res/autobreak_studio/themes/default/details.png",
+      "path": "res/autobreak_studio/themes/light/details.png",
       "width": 198.12,
       "height": 128.5,
       "zoom": 0.25
     },
     {
       "type": "svg",
-      "path": "res/autobreak_studio/themes/default/typography.svg"
+      "path": "res/autobreak_studio/themes/light/typography.svg"
     }    
 	],
   "widgets": {
@@ -25,14 +25,15 @@
     "RATCHET_INPUT": {"x": 86.850021, "y": 250.800018},
     "REVERSE_INPUT": {"x": 32.900002, "y": 303.149841},
 
-    "CLOCK_INPUT": {"x": 43.61965, "y": 71.68296},
-    "RESET_INPUT": {"x": 93.75000, "y": 71.68296},
+    "CLOCK_INPUT": {"x": 40.89915, "y": 71.68296},
+    "RESET_INPUT": {"x": 106.21240, "y": 71.68296},
 
     "AUDIO_OUTPUT_LEFT": {"x": 530.0, "y": 318.1981},
     "AUDIO_OUTPUT_RIGHT": {"x": 530.0, "y": 352.4485},
 
-    "MEMORY_SELECT_INPUT": {"x": 30.67076, "y": 141.75000},
-    "COPY_BUTTON": {"x": 30.67076, "y": 160.00},
+    "MEMORY_SELECT_INPUT": {"x": 35.5389, "y": 141.75000},
+    "COPY_BUTTON": {"x": 35.5389, "y": 196.00},
+    "CLEAR_BUTTON": {"x": 35.5389, "y": 240.00},
 
     "LEFT_OUTPUT_1": {"x": 178.6329, "y": 318.1981},
     "LEFT_OUTPUT_2": {"x": 222.2084, "y": 318.1981},
@@ -52,23 +53,23 @@
     "RIGHT_OUTPUT_7": {"x": 440.0859, "y": 352.4485},
     "RIGHT_OUTPUT_8": {"x": 483.6614, "y": 352.4485},
 
-    "MEMORY_BUTTON_1":  {"x": 71.15625, "y": 127.28123},
-    "MEMORY_BUTTON_2":  {"x": 71.15625, "y": 157.9642},
-    "MEMORY_BUTTON_3":  {"x": 71.15625, "y": 188.64717},
-    "MEMORY_BUTTON_4":  {"x": 71.15625, "y": 219.33014},
-    "MEMORY_BUTTON_5":  {"x": 71.15625, "y": 250.01311},
-    "MEMORY_BUTTON_6":  {"x": 71.15625, "y": 280.69608},
-    "MEMORY_BUTTON_7":  {"x": 71.15625, "y": 311.37905},
-    "MEMORY_BUTTON_8":  {"x": 71.15625, "y": 342.06202},
+    "MEMORY_BUTTON_1":  {"x": 76.0244, "y": 127.28123},
+    "MEMORY_BUTTON_2":  {"x": 76.0244, "y": 157.9642},
+    "MEMORY_BUTTON_3":  {"x": 76.0244, "y": 188.64717},
+    "MEMORY_BUTTON_4":  {"x": 76.0244, "y": 219.33014},
+    "MEMORY_BUTTON_5":  {"x": 76.0244, "y": 250.01311},
+    "MEMORY_BUTTON_6":  {"x": 76.0244, "y": 280.69608},
+    "MEMORY_BUTTON_7":  {"x": 76.0244, "y": 311.37905},
+    "MEMORY_BUTTON_8":  {"x": 76.0244, "y": 342.06202},
     
-    "MEMORY_BUTTON_9":  {"x": 104.91697, "y": 127.28123},
-    "MEMORY_BUTTON_10":  {"x": 104.91697, "y": 157.9642},
-    "MEMORY_BUTTON_11":  {"x": 104.91697, "y": 188.64717},
-    "MEMORY_BUTTON_12":  {"x": 104.91697, "y": 219.33014},
-    "MEMORY_BUTTON_13":  {"x": 104.91697, "y": 250.01311},
-    "MEMORY_BUTTON_14":  {"x": 104.91697, "y": 280.69608},
-    "MEMORY_BUTTON_15":  {"x": 104.91697, "y": 311.37905},
-    "MEMORY_BUTTON_16":  {"x": 104.91697, "y": 342.06202}
+    "MEMORY_BUTTON_9":  {"x": 109.7851, "y": 127.28123},
+    "MEMORY_BUTTON_10":  {"x": 109.7851, "y": 157.9642},
+    "MEMORY_BUTTON_11":  {"x": 109.7851, "y": 188.64717},
+    "MEMORY_BUTTON_12":  {"x": 109.7851, "y": 219.33014},
+    "MEMORY_BUTTON_13":  {"x": 109.7851, "y": 250.01311},
+    "MEMORY_BUTTON_14":  {"x": 109.7851, "y": 280.69608},
+    "MEMORY_BUTTON_15":  {"x": 109.7851, "y": 311.37905},
+    "MEMORY_BUTTON_16":  {"x": 109.7851, "y": 342.06202}
 
   }
 }

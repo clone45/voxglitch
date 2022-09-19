@@ -7,11 +7,10 @@ with extra "stuff".
 
 To do:
 
-. Copy / Save / Load sequence lengths
+. Light theme
 . draw horizontal lines for some sequencers
 . see if I can center pan sequencer
 . add ability to load a folder of files
-. Update panel artwork
 . Add instructional intro message for new users
 . Write documentation.  Make a video demonstration.
 
@@ -255,15 +254,6 @@ struct AutobreakStudio : VoxglitchSamplerModule
     if(! sequencer_length_json) return;
 
     sequencer->setLength(json_integer_value(sequencer_length_json));
-  }
-
-  float calculate_inputs(int input_index, int knob_index, int attenuator_index, float scale)
-  {
-    float input_value = inputs[input_index].getVoltage() / 10.0;
-    float knob_value = params[knob_index].getValue();
-    float attenuator_value = params[attenuator_index].getValue();
-
-    return (((input_value * scale) * attenuator_value) + (knob_value * scale));
   }
 
   void selectMemory(unsigned int i)
