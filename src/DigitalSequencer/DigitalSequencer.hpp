@@ -302,10 +302,7 @@ struct DigitalSequencer : VoxglitchModule
           // loaded and we'll need to convert the voltage from 0 to 214
           if(value > 1.0) 
           {
-            DEBUG(std::string("converting value" + std::to_string(value)).c_str());
             value = value / 214.0;
-            DEBUG(std::string("new value is " + std::to_string(value)).c_str());
-
           }
 
           this->voltage_sequencers[pattern_number].setValue(i, value);
