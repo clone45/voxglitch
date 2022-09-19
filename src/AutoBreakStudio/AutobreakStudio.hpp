@@ -7,10 +7,9 @@ with extra "stuff".
 
 To do:
 
-. Light theme
+. Add ability to load a folder of files
 . draw horizontal lines for some sequencers
 . see if I can center pan sequencer
-. add ability to load a folder of files
 . Add instructional intro message for new users
 . Write documentation.  Make a video demonstration.
 

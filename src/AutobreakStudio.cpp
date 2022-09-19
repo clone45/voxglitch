@@ -20,6 +20,7 @@
 #include "AutobreakStudio/AutobreakMemory.hpp"
 #include "AutobreakStudio/AutobreakStudio.hpp"
 #include "AutobreakStudio/AutobreakStudioLoadSample.hpp"
+#include "AutobreakStudio/AutobreakStudioLoadFolder.hpp"
 #include "AutobreakStudio/SequencerDisplayABS.hpp"
 #include "AutobreakStudio/VoltageSequencerDisplayABS.hpp"
 #include "AutobreakStudio/VoltageToggleSequencerDisplay.hpp"
