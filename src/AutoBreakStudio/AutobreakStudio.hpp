@@ -7,7 +7,7 @@ with extra "stuff".
 
 To do:
 
-. Blinking copy/paste buttons
+. paint fake sequencer for module browser
 . draw horizontal lines for some sequencers
 . see if I can center pan sequencer
 . Add instructional intro message for new users
@@ -45,8 +45,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
   unsigned int selected_memory_index = 0;
   unsigned int previously_selected_memory_index = 0;
   bool copy_mode = false;
-  std::array<bool, NUMBER_OF_MEMORY_SLOTS> blink_memory_during_copy_mode;
-  float blink_phase = 0.f;
+
 
   // Sequencer step keeps track of where the sequencers are.  This is important
   // because when a memory slot is loaded, the sequencers need to be set to 
@@ -127,9 +126,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
       configSwitch(MEMORY_BUTTONS + i, 0.0, 1.0, 0.0, "Memory Slot");
     }
 
-
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
-    blink_memory_during_copy_mode.fill(true);
 
     clock_ignore_on_reset = (long) (44100 / 100);  
   }
@@ -314,13 +311,6 @@ struct AutobreakStudio : VoxglitchSamplerModule
     if (copyButtonTrigger.process(params[COPY_BUTTON].getValue())) 
     {
       copy_mode ^= true;
-
-      if(copy_mode == true) 
-      {
-        blink_memory_during_copy_mode.fill(true);
-        blink_memory_during_copy_mode[selected_memory_index] = false;
-        blink_phase = 0.0;
-      }
 		}
 
     // Memory selection
@@ -368,35 +358,9 @@ struct AutobreakStudio : VoxglitchSamplerModule
           if(i != selected_memory_index)
           {
             autobreak_memory[i].copy(&autobreak_memory[selected_memory_index]);
-            // blink_memory_during_copy_mode[i] = false;
           }
         }
       }
-
-      //
-      // Manage blinking lights during copy/paste
-      //
-      // Blink light at 1Hz
-      /*
-
-      // Note: This code was attempting to use setValue() on the buttons to
-      // light them up, but when set, the code above this that tests if 
-      // someone clicked on a button will be "true", which will cause mayhem.
-      // In order to fix this properly, I may need to detach the "light" element
-      // from the button element.
-
-      blink_phase += args.sampleTime;
-      if (blink_phase >= 1.f) blink_phase = 0.0;
-
-      for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
-      {
-        if(blink_memory_during_copy_mode[i])
-        {
-
-        }
-      }
-      */
-
     }
 
 
