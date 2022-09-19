@@ -5,8 +5,6 @@ struct SamplerX8 : VoxglitchSamplerModule
   dsp::SchmittTrigger sample_triggers[NUMBER_OF_SAMPLES];
 
   StereoPan stereo_pan;
-  // dsp::SchmittTrigger mute_buttons_schmitt_triggers[NUMBER_OF_SAMPLES];
-  // bool mute_states[NUMBER_OF_SAMPLES];
 
   enum ParamIds
   {
@@ -57,7 +55,6 @@ struct SamplerX8 : VoxglitchSamplerModule
     {
       SamplePlayer sample_player;
       sample_players.push_back(sample_player);
-      // mute_states[i] = true;
     }
 	}
 
@@ -72,13 +69,6 @@ struct SamplerX8 : VoxglitchSamplerModule
 		{
 			json_object_set_new(root, ("loaded_sample_path_" + std::to_string(i+1)).c_str(), json_string(sample_players[i].getPath().c_str()));
 		}
-
-    /*
-    for(int i=0; i < NUMBER_OF_SAMPLES; i++)
-		{
-			json_object_set_new(root, ("mute_states_" + std::to_string(i+1)).c_str(), json_integer((unsigned int) mute_states[i]));
-		}
-    */
 
     saveSamplerData(root);
 
@@ -100,15 +90,6 @@ struct SamplerX8 : VoxglitchSamplerModule
           loaded_filenames[i] = sample_players[i].getFilename();
         }
 			}
-		}
-
-    for(int i=0; i < NUMBER_OF_SAMPLES; i++)
-		{
-			json_t *loaded_mute_value = json_object_get(root, ("mute_states_" +  std::to_string(i+1)).c_str());
-			if (loaded_mute_value) 
-      {
-        params[MUTE_BUTTONS + i].setValue(json_integer_value(loaded_mute_value));
-      }
 		}
 
     // Call VoxglitchSamplerModule::loadSamplerData to load sampler specific data
@@ -135,11 +116,6 @@ struct SamplerX8 : VoxglitchSamplerModule
           sample_players[i].trigger();
         }
       }
-
-      // Process mute button
-      // bool mute_button_is_triggered = mute_buttons_schmitt_triggers[i].process(params[MUTE_BUTTONS + i].getValue());
-      // if(mute_button_is_triggered) mute_states[i] ^= true;
-      // mute_states[i] = params[MUTE_BUTTONS + i].getValue();
 
       //
       // Send audio to outputs
