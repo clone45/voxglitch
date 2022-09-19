@@ -107,7 +107,7 @@ struct SamplerX8 : VoxglitchSamplerModule
 			json_t *loaded_mute_value = json_object_get(root, ("mute_states_" +  std::to_string(i+1)).c_str());
 			if (loaded_mute_value) 
       {
-        params[MUTE_BUTTONS + i].setValue(json_boolean_value(loaded_mute_value));
+        params[MUTE_BUTTONS + i].setValue(json_integer_value(loaded_mute_value));
       }
 		}
 
