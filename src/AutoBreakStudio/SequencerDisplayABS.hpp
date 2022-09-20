@@ -67,9 +67,9 @@ struct SequencerDisplayABS : VoxglitchWidget
     return false;
   }
 
-  void drawVerticalGuildes(NVGcontext *vg, double height)
+  void drawVerticalGuildes(NVGcontext *vg, double height, unsigned int number_of_guides = 4)
   {
-    for(unsigned int i=1; i < 8; i++)
+    for(unsigned int i=1; i < number_of_guides; i++)
     {
       nvgBeginPath(vg);
       int x = (i * 4 * bar_width) + (i * 4 * BAR_HORIZONTAL_PADDING);

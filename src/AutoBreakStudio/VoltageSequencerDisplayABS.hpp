@@ -101,7 +101,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
                 }
             }
 
-            drawVerticalGuildes(vg, DRAW_AREA_HEIGHT);
+            drawVerticalGuildes(vg, DRAW_AREA_HEIGHT, 4);
             drawOverlay(vg, OVERLAY_WIDTH, DRAW_AREA_HEIGHT);
             if(draw_horizontal_guide) drawHorizontalGuide(vg);
 
