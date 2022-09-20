@@ -5,6 +5,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
 
     bool shift_key = false;
     bool ctrl_key = false;
+    bool draw_horizontal_guide = false;
 
     int previous_shift_sequence_column = 0;
     int shift_sequence_column = 0;
@@ -102,9 +103,23 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
 
             drawVerticalGuildes(vg, DRAW_AREA_HEIGHT);
             drawOverlay(vg, OVERLAY_WIDTH, DRAW_AREA_HEIGHT);
+            if(draw_horizontal_guide) drawHorizontalGuide(vg);
 
             nvgRestore(vg);
         }
+    }
+
+    void drawHorizontalGuide(NVGcontext *vg)
+    {
+        // This calculation for y takes advance of the fact that all
+        // ranges that would have the 0-guide visible are symmetric, so
+        // it will need updating if non-symmetric ranges are added.
+        double y = DRAW_AREA_HEIGHT / 2.0;
+
+        nvgBeginPath(vg);
+        nvgRect(vg, 1, y, (DRAW_AREA_WIDTH - 2), 1.0);
+        nvgFillColor(vg, nvgRGBA(240, 240, 255, 40));
+        nvgFill(vg);
     }
 
     //

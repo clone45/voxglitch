@@ -82,7 +82,7 @@ struct VoltageToggleSequencerDisplay : SequencerDisplayABS
                 }
             }
 
-            // drawVerticalGuildes(vg, DRAW_AREA_HEIGHT);
+            drawVerticalGuildes(vg, DRAW_AREA_HEIGHT);
             drawOverlay(vg, OVERLAY_WIDTH, DRAW_AREA_HEIGHT);
 
             nvgRestore(vg);

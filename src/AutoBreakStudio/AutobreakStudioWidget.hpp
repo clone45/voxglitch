@@ -42,6 +42,7 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 			pan_sequencer_display->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
 			pan_sequencer_display->module = module;
 			pan_sequencer_display->hide();
+			pan_sequencer_display->draw_horizontal_guide = true;
 			addChild(pan_sequencer_display);	
 
 			VoltageToggleSequencerDisplay *reverse_sequencer_display = new VoltageToggleSequencerDisplay(& this->module->reverse_sequencer);

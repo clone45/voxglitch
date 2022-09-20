@@ -7,9 +7,6 @@ with extra "stuff".
 
 To do:
 
-. paint fake sequencer for module browser
-. draw horizontal lines for some sequencers
-. see if I can center pan sequencer
 . Add instructional intro message for new users
 . Write documentation.  Make a video demonstration.
 
