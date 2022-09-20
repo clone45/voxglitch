@@ -25,8 +25,6 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
 
     void drawLayer(const DrawArgs &args, int layer) override
     {
-
-
         if (layer == 1)
         {
             const auto vg = args.vg;
@@ -74,8 +72,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
                     }
 
                     // Draw bars for the sequence values
-                    if (value > 0)
-                        drawBar(vg, i, (value * DRAW_AREA_HEIGHT), DRAW_AREA_HEIGHT, bar_color);
+                    if (value > 0) drawBar(vg, i, (value * DRAW_AREA_HEIGHT), DRAW_AREA_HEIGHT, bar_color);
 
                     // Highlight the sequence playback column
                     if (i == sequencer->getPlaybackPosition())
@@ -86,23 +83,24 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
             }
             else // Draw a demo sequence so that the sequencer looks nice in the library selector
             {
-                double demo_sequence[32] = {100.0, 100.0, 93.0, 80.0, 67.0, 55.0, 47.0, 44.0, 43.0, 44.0, 50.0, 69.0, 117.0, 137.0, 166, 170, 170, 164, 148, 120, 105, 77, 65, 41, 28, 23, 22, 22, 28, 48, 69, 94};
+                double demo_sequence[16] = {0.0, 0.0, 0.25,0.75,0.50,0.50,0.25,0.75,0.0,0.0,0.25,0.75,0.0,0.0,0.25,.75};
 
                 for (unsigned int i = 0; i < MAX_SEQUENCER_STEPS; i++)
                 {
+                    float value = demo_sequence[i];
 
                     // Draw blue background bars
-                    drawBar(vg, i, BAR_HEIGHT, DRAW_AREA_HEIGHT, nvgRGBA(60, 60, 64, 255));
+                    drawBar(vg, i, BAR_HEIGHT, DRAW_AREA_HEIGHT, bright_background_color);
 
                     // Draw bar for value at i
-                    drawBar(vg, i, demo_sequence[i], DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 150));
+                    if (value > 0) drawBar(vg, i, (value * DRAW_AREA_HEIGHT), DRAW_AREA_HEIGHT, lesser_step_highlight_color);
 
                     // Highlight active step
-                    if (i == 5) drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 20));
+                    if (i == 3) drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 150));
                 }
             }
 
-            // drawVerticalGuildes(vg, DRAW_AREA_HEIGHT);
+            drawVerticalGuildes(vg, DRAW_AREA_HEIGHT);
             drawOverlay(vg, OVERLAY_WIDTH, DRAW_AREA_HEIGHT);
 
             nvgRestore(vg);
@@ -126,7 +124,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
             int clicked_y = DRAW_AREA_HEIGHT - mouse_position.y;
 
             clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
-            clicked_y = clamp(clicked_y, 0, DRAW_AREA_HEIGHT);
+            clicked_y = clamp(clicked_y, 0, (int) DRAW_AREA_HEIGHT);
 
             // convert the clicked_y position to a double between 0 and 1
             double value = (double)clicked_y / (double)DRAW_AREA_HEIGHT;

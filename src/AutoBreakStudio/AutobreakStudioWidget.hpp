@@ -13,13 +13,19 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 
 		// =================== PLACE COMPONENTS ====================================
 
+
+		VoltageSequencerDisplayABS *position_sequencer_display = new VoltageSequencerDisplayABS(& this->module->position_sequencer);
+		position_sequencer_display->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
+		position_sequencer_display->module = module;
+		addChild(position_sequencer_display);
+
+		LcdTabsWidget *lcd_tabs_widget = new LcdTabsWidget(true);
+		lcd_tabs_widget->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y - 25);
+		lcd_tabs_widget->module = module;
+		addChild(lcd_tabs_widget);
+
 		if(module)
 		{
-			VoltageSequencerDisplayABS *position_sequencer_display = new VoltageSequencerDisplayABS(& this->module->position_sequencer);
-			position_sequencer_display->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
-			position_sequencer_display->module = module;
-			addChild(position_sequencer_display);
-
 			VoltageSequencerDisplayABS *sample_sequencer_display = new VoltageSequencerDisplayABS(& this->module->sample_sequencer);
 			sample_sequencer_display->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
 			sample_sequencer_display->module = module;
@@ -74,6 +80,14 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 				waveform_widget->hide();
 				addChild(waveform_widget);
 			}
+		}
+		else
+		{
+			std::string placeholder_waveform_file_path = asset::plugin(pluginInstance, "res/autobreak_studio/themes/default/waveform-placeholder.jpg");
+
+			ImageWidget *image_widget = new ImageWidget(placeholder_waveform_file_path, 900.0, 109.0, 1.0, 0.15);
+			image_widget->box.pos = Vec(DRAW_AREA_POSITION_X, 222.0);
+			addChild(image_widget);
 		}
 
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("CLOCK_INPUT"), module, AutobreakStudio::CLOCK_INPUT));
@@ -160,7 +174,5 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		SampleInterpolationMenuItem *sample_interpolation_menu_item = createMenuItem<SampleInterpolationMenuItem>("Interpolation", RIGHT_ARROW);
 		sample_interpolation_menu_item->module = module;
 		menu->addChild(sample_interpolation_menu_item);
-
-		
 	}
 };

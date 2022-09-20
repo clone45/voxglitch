@@ -67,7 +67,6 @@ struct SequencerDisplayABS : VoxglitchWidget
     return false;
   }
 
-  /*
   void drawVerticalGuildes(NVGcontext *vg, double height)
   {
     for(unsigned int i=1; i < 8; i++)
@@ -79,7 +78,6 @@ struct SequencerDisplayABS : VoxglitchWidget
       nvgFill(vg);
     }
   }
-  */
 
   void drawOverlay(NVGcontext *vg, double width, double height)
   {

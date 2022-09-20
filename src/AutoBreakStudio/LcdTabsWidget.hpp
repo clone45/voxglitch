@@ -30,6 +30,11 @@ struct LcdTabsWidget : TransparentWidget
         box.size = Vec(DRAW_AREA_WIDTH, LCD_TABS_HEIGHT);
     }
 
+    LcdTabsWidget(bool draw_in_library)
+    {
+        box.size = Vec(DRAW_AREA_WIDTH, LCD_TABS_HEIGHT);
+    }
+
     void drawLayer(const DrawArgs &args, int layer) override
     {
         if (layer == 1)
@@ -48,6 +53,16 @@ struct LcdTabsWidget : TransparentWidget
                 {
                     drawTab(vg, i, tab_labels[i]);
                 }
+            }
+            else
+            {
+                // I know that this is redundant, but perhaps in the future, 
+                // bringing attention to the fact that module may be undefined
+                // might avoid bugs.
+                for (unsigned int i = 0; i < NUMBER_OF_TABS; i++)
+                {
+                    drawTab(vg, i, tab_labels[i]);
+                }     
             }
 
             nvgRestore(vg);

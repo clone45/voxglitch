@@ -11,7 +11,7 @@ struct WaveformWidget : TransparentWidget
     NVGcolor tab_color_selected = nvgRGBA(68, 95, 99, 255);
     NVGcolor label_color = nvgRGBA(255, 255, 255, 255);
 
-    float averages[DRAW_AREA_WIDTH];
+    float averages[(int) DRAW_AREA_WIDTH];
     float max_average = 0.0;
 
     WaveformWidget(AutobreakStudio *module, unsigned int index)
@@ -171,7 +171,7 @@ struct WaveformWidget : TransparentWidget
         float x_position = clamp((module->actual_playback_position / sample_size) * DRAW_AREA_WIDTH, (float) 0.0, (float) DRAW_AREA_WIDTH);
 
         nvgBeginPath(vg);
-        nvgRect(vg, x_position, 0.0, 6.0, 44.0);
+        nvgRect(vg, x_position, 2.0, 6.0, 44.0);
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 100));
         nvgFill(vg);
     }

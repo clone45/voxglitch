@@ -6,8 +6,8 @@ const int NUMBER_OF_MEMORY_SLOTS = 16;
 const int MAX_SEQUENCER_STEPS = 16;
 
 // Constants for patterns
-const int DRAW_AREA_WIDTH = 400.0;
-const int DRAW_AREA_HEIGHT = 155.0;
+const float DRAW_AREA_WIDTH = 400.0;
+const float DRAW_AREA_HEIGHT = 155.0;
 const float BAR_HEIGHT = 155.0;
 const float BAR_HORIZONTAL_PADDING = .8;
 const float DRAW_AREA_POSITION_X = 157.778;
