@@ -7,8 +7,7 @@ with extra "stuff".
 
 To do:
 
-. Add instructional intro message for new users
-. Write documentation.  Make a video demonstration.
+. Update documentation
 
 */
 
@@ -61,6 +60,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
   dsp::SchmittTrigger resetTrigger;
   dsp::SchmittTrigger clockTrigger;
+  dsp::SchmittTrigger ratchetTrigger;
   dsp::SchmittTrigger memory_button_triggers[NUMBER_OF_MEMORY_SLOTS];
   dsp::BooleanTrigger copyButtonTrigger;
   dsp::BooleanTrigger clearButtonTrigger;
@@ -89,7 +89,17 @@ struct AutobreakStudio : VoxglitchSamplerModule
   {
     CLOCK_INPUT,
     RESET_INPUT,
+    RATCHET_INPUT,
     MEMORY_SELECT_INPUT,
+
+    // CV override inputs for sequencers
+    POSITION_CV_INPUT,
+    SAMPLE_CV_INPUT,
+    VOLUME_CV_INPUT,
+    PAN_CV_INPUT,
+    REVERSE_CV_INPUT,
+    RATCHET_CV_INPUT,
+
     NUM_INPUTS
   };
   enum OutputIds
@@ -98,6 +108,15 @@ struct AutobreakStudio : VoxglitchSamplerModule
     AUDIO_OUTPUT_RIGHT,
     ENUMS(LEFT_INDIVIDUAL_OUTPUTS, NUMBER_OF_SAMPLES),
     ENUMS(RIGHT_INDIVIDUAL_OUTPUTS, NUMBER_OF_SAMPLES),
+
+    // CV output for sequences
+    POSITION_CV_OUTPUT,
+    SAMPLE_CV_OUTPUT,
+    VOLUME_CV_OUTPUT,
+    PAN_CV_OUTPUT,
+    REVERSE_CV_OUTPUT,
+    RATCHET_CV_OUTPUT,
+
     NUM_OUTPUTS
   };
   enum LightIds
@@ -276,7 +295,77 @@ struct AutobreakStudio : VoxglitchSamplerModule
     ratchet_sequencer->setPosition(sequencer_step);
   }
 
+  float getVolume()
+  {
+    if(inputs[VOLUME_CV_INPUT].isConnected())
+    {
+      return(inputs[VOLUME_CV_INPUT].getVoltage() / 10.0);
+    }
+    else
+    {
+      return(volume_sequencer->getValue());
+    }
+  }
 
+  float getPan()
+  {
+    if(inputs[PAN_CV_INPUT].isConnected())
+    {
+      return(inputs[PAN_CV_INPUT].getVoltage() / 10.0);
+    }
+    else
+    {
+      return(pan_sequencer->getValue());
+    }
+  }
+
+  float getSample()
+  {
+    if(inputs[SAMPLE_CV_INPUT].isConnected())
+    {
+      return(inputs[SAMPLE_CV_INPUT].getVoltage() / 10.0);
+    }
+    else
+    {
+      return(sample_sequencer->getValue());
+    }
+  }
+
+  float getPosition()
+  {
+    if(inputs[POSITION_CV_INPUT].isConnected())
+    {
+      return(inputs[POSITION_CV_INPUT].getVoltage() / 10.0);
+    }
+    else
+    {
+      return(position_sequencer->getValue());
+    }
+  }
+
+  float getReverse()
+  {
+    if(inputs[REVERSE_CV_INPUT].isConnected())
+    {
+      return(inputs[REVERSE_CV_INPUT].getVoltage() / 10.0);
+    }
+    else
+    {
+      return(reverse_sequencer->getValue());
+    }
+  }
+
+  float getRatchet()
+  {
+    if(inputs[RATCHET_CV_INPUT].isConnected())
+    {
+      return(inputs[RATCHET_CV_INPUT].getVoltage() / 10.0);
+    }
+    else
+    {
+      return(ratchet_sequencer->getValue());
+    }
+  }
 
   /*
 
@@ -443,16 +532,16 @@ struct AutobreakStudio : VoxglitchSamplerModule
     //
     // Handle wav selection
     //
-    unsigned int sample_value = (sample_sequencer->getValue() * NUMBER_OF_SAMPLES);
-    sample_value = clamp(sample_value, 0, 7);
+    unsigned int sample_selection = getSample() * NUMBER_OF_SAMPLES;
+    sample_selection = clamp(sample_selection, 0, 7);
 
-    if (sample_value != selected_sample_slot)
+    if (sample_selection != selected_sample_slot)
     {
       // Reset the smooth ramp if the selected sample has changed
       declick_filter.trigger();
 
       // Set the selected sample
-      selected_sample_slot = sample_value;
+      selected_sample_slot = sample_selection;
     }
     Sample *selected_sample = &samples[selected_sample_slot];
 
@@ -483,7 +572,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
     //
 
     // Ratchet will range from 0 to 1.0
-    float ratchet = ratchet_sequencer->getValue();
+    float ratchet = getRatchet();
+    ratchet = clamp(ratchet, 0.0, 1.0);
 
     if (ratchet > 0)
     {
@@ -510,6 +600,11 @@ struct AutobreakStudio : VoxglitchSamplerModule
       ratchet_counter = 0;
     }
 
+    if(ratchetTrigger.process(inputs[RATCHET_INPUT].getVoltage()))
+    {
+      ratchet_triggered = true;
+      ratchet_counter = 0;
+    }
 
     // 60.0 is for conversion from minutes to seconds
     // 8.0 is for 8 beats (2 bars) of loops, which is a typical drum loop length
@@ -521,12 +616,12 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
       selected_sample->read((int)actual_playback_position, &left_output, &right_output);
 
-      // Apply volume sequencer to output values
-      left_output = volume_sequencer->getValue() * left_output;
-      right_output = volume_sequencer->getValue() * right_output;
+      // Apply volume to output values
+      left_output = getVolume() * left_output;
+      right_output = getVolume() * right_output;
 
-      // Apply pan sequencer to output values
-      stereo_pan.process(&left_output, &right_output, ((pan_sequencer->getValue() * 2.0) - 1.0));
+      // Apply pan
+      stereo_pan.process(&left_output, &right_output, ((getPan() * 2.0) - 1.0));
 
       // Handle smoothing
       declick_filter.process(&left_output, &right_output);
@@ -541,7 +636,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     }
 
     // Step the theoretical playback position
-    if (reverse_sequencer->getValue() >= 0.5)
+    if (getReverse() >= 0.5)
     {
       theoretical_playback_position = theoretical_playback_position - 1;
     }
@@ -567,8 +662,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
         sequencer_step = position_sequencer->getPlaybackPosition();
       }
 
-      float sequence_value = position_sequencer->getValue();
-      int breakbeat_location = (sequence_value * 16) - 1;
+      int breakbeat_location = (getPosition() * 16) - 1;
       breakbeat_location = clamp(breakbeat_location, -1, 15);
 
       if (breakbeat_location != -1)
@@ -612,6 +706,14 @@ struct AutobreakStudio : VoxglitchSamplerModule
     // Map the theoretical playback position to the actual sample playback position
     actual_playback_position = ((float)theoretical_playback_position / samples_to_play_per_loop) * selected_sample->size();
     
+    // Output the sequencer values
+    outputs[POSITION_CV_OUTPUT].setVoltage(position_sequencer->getValue() * 10.0);
+    outputs[SAMPLE_CV_OUTPUT].setVoltage(sample_sequencer->getValue() * 10.0);
+    outputs[VOLUME_CV_OUTPUT].setVoltage(volume_sequencer->getValue() * 10.0);
+    outputs[PAN_CV_OUTPUT].setVoltage(pan_sequencer->getValue() * 10.0);
+    outputs[REVERSE_CV_OUTPUT].setVoltage(reverse_sequencer->getValue() * 10.0);
+    outputs[RATCHET_CV_OUTPUT].setVoltage(ratchet_sequencer->getValue() * 10.0);
+
     lights[COPY_LIGHT].setBrightness(copy_mode);
 
     bool clearGate = clearPulse.process(args.sampleTime);

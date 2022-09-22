@@ -26,13 +26,11 @@ struct LcdTabsWidget : TransparentWidget
         {
             this->sequencer_displays[i] = sequencer_displays[i];
         }
-
-        box.size = Vec(DRAW_AREA_WIDTH, LCD_TABS_HEIGHT);
     }
 
     LcdTabsWidget(bool draw_in_library)
     {
-        box.size = Vec(DRAW_AREA_WIDTH, LCD_TABS_HEIGHT);
+        // do nothing
     }
 
     void drawLayer(const DrawArgs &args, int layer) override
@@ -105,7 +103,11 @@ struct LcdTabsWidget : TransparentWidget
         if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
         {
             e.consume(this);
-            this->switchTabs(e.pos.x / (LCD_TABS_WIDTH + TABS_HORIZONTAL_PADDING));
+
+            unsigned int new_tab = e.pos.x / (LCD_TABS_WIDTH + TABS_HORIZONTAL_PADDING);
+            new_tab = clamp(new_tab, 0, 5);
+
+            this->switchTabs(new_tab);
         }
     }
 

@@ -15,14 +15,9 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 
 
 		VoltageSequencerDisplayABS *position_sequencer_display = new VoltageSequencerDisplayABS(& this->module->position_sequencer);
-		position_sequencer_display->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
+		position_sequencer_display->box.pos = themePos("SEQUENCER_DISPLAY");
 		position_sequencer_display->module = module;
 		addChild(position_sequencer_display);
-
-		LcdTabsWidget *lcd_tabs_widget = new LcdTabsWidget(true);
-		lcd_tabs_widget->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y - 25);
-		lcd_tabs_widget->module = module;
-		addChild(lcd_tabs_widget);
 
 		if(module)
 		{
@@ -69,15 +64,16 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 				ratchet_sequencer_display
 			};
 
+
 			LcdTabsWidget *lcd_tabs_widget = new LcdTabsWidget(sequencer_displays);
-			lcd_tabs_widget->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y - 25);
+			lcd_tabs_widget->box.pos = themePos("TABS_DISPLAY");
 			lcd_tabs_widget->module = module;
 			addChild(lcd_tabs_widget);
 
 			for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
 			{
 				WaveformWidget *waveform_widget = new WaveformWidget(this->module, i);
-				waveform_widget->box.pos = Vec(DRAW_AREA_POSITION_X, 222.0);
+				waveform_widget->box.pos = themePos("WAVEFORM_DISPLAY");
 				waveform_widget->hide();
 				addChild(waveform_widget);
 			}
@@ -87,16 +83,40 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 			std::string placeholder_waveform_file_path = asset::plugin(pluginInstance, "res/autobreak_studio/themes/default/waveform-placeholder.jpg");
 
 			ImageWidget *image_widget = new ImageWidget(placeholder_waveform_file_path, 900.0, 109.0, 1.0, 0.15);
-			image_widget->box.pos = Vec(DRAW_AREA_POSITION_X, 222.0);
+			image_widget->box.pos = themePos("WAVEFORM_DISPLAY");
 			addChild(image_widget);
+
+			LcdTabsWidget *lcd_tabs_widget = new LcdTabsWidget(true);
+			lcd_tabs_widget->box.pos = themePos("TABS_DISPLAY");
+			lcd_tabs_widget->box.size = Vec(DRAW_AREA_WIDTH, LCD_TABS_HEIGHT);
+			lcd_tabs_widget->module = module;
+			addChild(lcd_tabs_widget);			
 		}
 
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("CLOCK_INPUT"), module, AutobreakStudio::CLOCK_INPUT));
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, AutobreakStudio::RESET_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(themePos("RATCHET_INPUT"), module, AutobreakStudio::RATCHET_INPUT));
+
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("MEMORY_SELECT_INPUT"), module, AutobreakStudio::MEMORY_SELECT_INPUT));
 
 		addParam(createLightParamCentered<VCVLightButton<MediumSimpleLight<WhiteLight>>>(themePos("COPY_BUTTON"), module, AutobreakStudio::COPY_BUTTON, AutobreakStudio::COPY_LIGHT));
 		addParam(createLightParamCentered<VCVLightButton<MediumSimpleLight<WhiteLight>>>(themePos("CLEAR_BUTTON"), module, AutobreakStudio::CLEAR_BUTTON, AutobreakStudio::CLEAR_LIGHT));
+
+		// Add inputs for CV sequencer override
+		addInput(createInputCentered<VoxglitchInputPort>(themePos("POSITION_CV_INPUT"), module, AutobreakStudio::POSITION_CV_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(themePos("SAMPLE_CV_INPUT"), module, AutobreakStudio::SAMPLE_CV_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(themePos("VOLUME_CV_INPUT"), module, AutobreakStudio::VOLUME_CV_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(themePos("PAN_CV_INPUT"), module, AutobreakStudio::PAN_CV_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(themePos("REVERSE_CV_INPUT"), module, AutobreakStudio::REVERSE_CV_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(themePos("RATCHET_CV_INPUT"), module, AutobreakStudio::RATCHET_CV_INPUT));
+
+		// Add outputs for CV sequencers
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("POSITION_CV_OUTPUT"), module, AutobreakStudio::POSITION_CV_OUTPUT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("SAMPLE_CV_OUTPUT"), module, AutobreakStudio::SAMPLE_CV_OUTPUT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("VOLUME_CV_OUTPUT"), module, AutobreakStudio::VOLUME_CV_OUTPUT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("PAN_CV_OUTPUT"), module, AutobreakStudio::PAN_CV_OUTPUT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("REVERSE_CV_OUTPUT"), module, AutobreakStudio::REVERSE_CV_OUTPUT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RATCHET_CV_OUTPUT"), module, AutobreakStudio::RATCHET_CV_OUTPUT));
 
 		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_1"), module, AutobreakStudio::MEMORY_BUTTONS + 0));
 		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_2"), module, AutobreakStudio::MEMORY_BUTTONS + 1));
