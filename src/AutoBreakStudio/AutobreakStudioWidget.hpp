@@ -22,32 +22,32 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		if(module)
 		{
 			VoltageSequencerDisplayABS *sample_sequencer_display = new VoltageSequencerDisplayABS(& this->module->sample_sequencer);
-			sample_sequencer_display->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
+			sample_sequencer_display->box.pos = themePos("SEQUENCER_DISPLAY");
 			sample_sequencer_display->module = module;
 			sample_sequencer_display->hide();
 			addChild(sample_sequencer_display);	
 
 			VoltageSequencerDisplayABS *volume_sequencer_display = new VoltageSequencerDisplayABS(& this->module->volume_sequencer);
-			volume_sequencer_display->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
+			volume_sequencer_display->box.pos = themePos("SEQUENCER_DISPLAY");
 			volume_sequencer_display->module = module;
 			volume_sequencer_display->hide();
 			addChild(volume_sequencer_display);
 
 			VoltageSequencerDisplayABS *pan_sequencer_display = new VoltageSequencerDisplayABS(& this->module->pan_sequencer);
-			pan_sequencer_display->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
+			pan_sequencer_display->box.pos = themePos("SEQUENCER_DISPLAY");
 			pan_sequencer_display->module = module;
 			pan_sequencer_display->hide();
 			pan_sequencer_display->draw_horizontal_guide = true;
 			addChild(pan_sequencer_display);	
 
 			VoltageToggleSequencerDisplay *reverse_sequencer_display = new VoltageToggleSequencerDisplay(& this->module->reverse_sequencer);
-			reverse_sequencer_display->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
+			reverse_sequencer_display->box.pos = themePos("SEQUENCER_DISPLAY");
 			reverse_sequencer_display->module = module;
 			reverse_sequencer_display->hide();
 			addChild(reverse_sequencer_display);
 
 			VoltageSequencerDisplayABS *ratchet_sequencer_display = new VoltageSequencerDisplayABS(& this->module->ratchet_sequencer);
-			ratchet_sequencer_display->box.pos = Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y);
+			ratchet_sequencer_display->box.pos = themePos("SEQUENCER_DISPLAY");
 			ratchet_sequencer_display->module = module;
 			ratchet_sequencer_display->hide();
 			addChild(ratchet_sequencer_display);
@@ -67,6 +67,7 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 
 			LcdTabsWidget *lcd_tabs_widget = new LcdTabsWidget(sequencer_displays);
 			lcd_tabs_widget->box.pos = themePos("TABS_DISPLAY");
+			lcd_tabs_widget->box.size = Vec(DRAW_AREA_WIDTH, LCD_TABS_HEIGHT);
 			lcd_tabs_widget->module = module;
 			addChild(lcd_tabs_widget);
 
