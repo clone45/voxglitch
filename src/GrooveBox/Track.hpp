@@ -329,15 +329,17 @@ struct Track
 
   void incrementSamplePosition()
   {
-    // -2.0 to 2.0 is a two octave range in either direction (4 octives total)
-    // TODO: update these to include the expander pitch
+    
+    float summed_pitch = clamp(settings.pitch + track_pitch, 0.0, 1.0);
+
     if(settings.reverse > .5)
     {
-      this->sample_player->stepReverse(rescale(settings.pitch, 0.0, 1.0, -2.0, 2.0), settings.sample_start, settings.sample_end, settings.loop);
+      // -2.0 to 2.0 is a two octave range in either direction (4 octives total)
+      this->sample_player->stepReverse(rescale(summed_pitch, 0.0, 1.0, -2.0, 2.0), settings.sample_start, settings.sample_end, settings.loop);
     }
     else
     {
-      this->sample_player->step(rescale(settings.pitch, 0.0, 1.0, -2.0, 2.0), settings.sample_start, settings.sample_end, settings.loop);
+      this->sample_player->step(rescale(summed_pitch, 0.0, 1.0, -2.0, 2.0), settings.sample_start, settings.sample_end, settings.loop);
     }
   }
 
