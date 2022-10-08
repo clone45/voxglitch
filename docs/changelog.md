@@ -1,5 +1,10 @@
 ## Change Log
 
+### 2.22.0
+
+* Added new module: Autobreak Studio
+* Fixed bug where the groovebox expander pitch controls weren't working
+
 ### 2.21.1
 
 * Fixed bug which crashed the library view on some Windows machines
