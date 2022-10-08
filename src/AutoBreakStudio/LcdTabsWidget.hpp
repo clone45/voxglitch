@@ -30,7 +30,9 @@ struct LcdTabsWidget : TransparentWidget
 
     LcdTabsWidget(bool draw_in_library)
     {
-        // do nothing
+        // Do nothing
+        // This function is called when the module object is not defined
+        // and is used when the module browser needs to render the front panel.
     }
 
     void drawLayer(const DrawArgs &args, int layer) override
