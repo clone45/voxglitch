@@ -5,10 +5,6 @@ Autobreak Studio
 Automatic Breakbeat module for VCV Rack by Voxglitch,
 with extra "stuff".
 
-To do:
-
-. Update documentation
-
 */
 
 struct AutobreakStudio : VoxglitchSamplerModule
@@ -44,7 +40,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
 
   // Sequencer step keeps track of where the sequencers are.  This is important
-  // because when a memory slot is loaded, the sequencers need to be set to 
+  // because when a memory slot is loaded, the sequencers need to be set to
   // the correct step.
   unsigned int sequencer_step = 0;
 
@@ -144,7 +140,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 
-    clock_ignore_on_reset = (long) (44100 / 100);  
+    clock_ignore_on_reset = (long) (44100 / 100);
   }
 
   // Autosave settings
@@ -220,7 +216,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
     //
     // Load Memory Data
-    //   
+    //
     json_t *memory_json = json_object_get(json_root, "memory");
 
     if(memory_json)
@@ -253,15 +249,15 @@ struct AutobreakStudio : VoxglitchSamplerModule
     json_t *sequencer_data_json = json_object_get(memory_slot_json, sequencer_name.c_str());
     if(! sequencer_data_json) return;
 
-    // 
+    //
     // Load the sequencer values
     //
     json_t *sequencer_array_json = json_object_get(sequencer_data_json, "values");
     if(! sequencer_array_json) return;
-    
-    size_t sequencer_index; 
+
+    size_t sequencer_index;
     json_t *value_json;
-    json_array_foreach(sequencer_array_json, sequencer_index, value_json) 
+    json_array_foreach(sequencer_array_json, sequencer_index, value_json)
     {
       sequencer->setValue(sequencer_index, json_real_value(value_json));
     }
@@ -387,14 +383,14 @@ struct AutobreakStudio : VoxglitchSamplerModule
   {
 
     // Process clear button
-    if (clearButtonTrigger.process(params[CLEAR_BUTTON].getValue())) 
+    if (clearButtonTrigger.process(params[CLEAR_BUTTON].getValue()))
     {
       autobreak_memory[selected_memory_index].clear();
 			clearPulse.trigger(1e-3f);
 		}
 
-    // Process copy button 
-    if (copyButtonTrigger.process(params[COPY_BUTTON].getValue())) 
+    // Process copy button
+    if (copyButtonTrigger.process(params[COPY_BUTTON].getValue()))
     {
       copy_mode ^= true;
 		}
@@ -409,7 +405,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
         // selected memory slot, then load up the newly selected slot.
         unsigned int memory_input_value = int((inputs[MEMORY_SELECT_INPUT].getVoltage() / 10.0) * NUMBER_OF_MEMORY_SLOTS);
         memory_input_value = clamp(memory_input_value, 0, NUMBER_OF_MEMORY_SLOTS - 1);
-        
+
         if(memory_input_value != previously_selected_memory_index)
         {
           selectMemory(memory_input_value);
@@ -435,7 +431,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     }
     else // copy_mode == true
     {
-      // copy_mode is true, so now, when a memory bank is clicked on, 
+      // copy_mode is true, so now, when a memory bank is clicked on,
       // copy the currently selected memory to that desination.
       for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
       {
@@ -487,11 +483,11 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
     // See if the clock input has triggered and store the results
     bool clock_trigger = false;
-    
+
     // Read clock trigger
     //
     // A certain amount of time must pass after a reset before a clock input
-    // will trigger the sequencers to step.  This time is measured by the 
+    // will trigger the sequencers to step.  This time is measured by the
     // clock_ignore_on_reset counter.  When it's 0, that means enough time
     // has passed that the module should pay attention to clock inputs.
     if(clock_ignore_on_reset == 0)
@@ -515,7 +511,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
       if (! clock_trigger)
       {
         return;
-      } 
+      }
       else // The clock trigger we've been waiting for has come!
       {
         // Clear the reset lock!
@@ -563,7 +559,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
       timer_before = time_counter;
     }
 
-    // If BPM hasn't been determined yet, wait until it has to start 
+    // If BPM hasn't been determined yet, wait until it has to start
     // running the engine.
     if(bpm == 0.0) return;
 
@@ -705,7 +701,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
     // Map the theoretical playback position to the actual sample playback position
     actual_playback_position = ((float)theoretical_playback_position / samples_to_play_per_loop) * selected_sample->size();
-    
+
     // Output the sequencer values
     outputs[POSITION_CV_OUTPUT].setVoltage(position_sequencer->getValue() * 10.0);
     outputs[SAMPLE_CV_OUTPUT].setVoltage(sample_sequencer->getValue() * 10.0);
