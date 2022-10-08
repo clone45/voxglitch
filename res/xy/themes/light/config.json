@@ -1,6 +1,6 @@
 {
-	"panel_svg": "res/xy/themes/default/panel.svg",
-	"layers": [
+	"panel_width": 300.0,
+  "layers": [
 		{
       "type": "image",
       "path": "res/themes/light/background.jpg",

@@ -111,7 +111,8 @@ struct squareToggle : VoxglitchSwitch {
 
   ImageWidget* voxglitch_shadow;
 
-  squareToggle() {
+  squareToggle() 
+  {
     momentary = false;
     shadow->opacity = 0;
 

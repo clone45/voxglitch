@@ -3,6 +3,7 @@ struct VoxglitchModuleWidget : ModuleWidget
 {
   Theme theme;
   json_t *widgets_json;
+  widget::Widget *panel = new Widget();
 
   void addSVGLayer(std::string svg_path)
   {
@@ -76,8 +77,12 @@ struct VoxglitchModuleWidget : ModuleWidget
       }
     }
 
+    // panel->box.size.x = theme.getFloat("panel_width");
+    panel->box.size.x = theme.getFloat("panel_width");
+    setPanel(panel);
+
     // Set the SVG.  This must always be called panel_svg in the theme JSON
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, theme.getString("panel_svg")))); // Set panel SVG
+    // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, theme.getString("panel_svg")))); // Set panel SVG
 
     // Precompile widgets_json and store it in this structure
     this->widgets_json = theme.getWidgets();

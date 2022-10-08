@@ -419,9 +419,9 @@ struct DigitalSequencer : VoxglitchModule
     this->sample_rate = args.sampleRate;
 
     //
-    // See if someone pressed one of the green sequence selection buttons
+    // See if someone pressed one of the sequence selection buttons
     //
-    // If any of the green sequence buttons were pressed, set the index "selected_sequencer_index"
+    // If any of the sequence buttons were pressed, set the index "selected_sequencer_index"
     // which will be used to look up the selected voltage and gate sequencers from
     // the voltage_sequencers[] and gate_sequencers[] arrays
 

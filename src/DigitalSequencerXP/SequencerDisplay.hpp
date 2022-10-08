@@ -2,6 +2,9 @@ struct SequencerDisplay : VoxglitchWidget
 {
   DigitalSequencerXP *module;
   Vec drag_position;
+
+  // This next line should be double bar_width = (DRAW_AREA_WIDTH / (double) MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
+  // TODO: Update and test.
   double bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
 
   /*

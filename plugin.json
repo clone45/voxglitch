@@ -20,6 +20,12 @@
         "tags": ["Sampler", "Drum"]
     },
     {
+        "slug": "AutobreakStudio",
+        "name": "Autobreak Studio",
+        "description": "Advanced automatic breakbeat sample chopper",
+        "tags": ["Sampler", "Drum"]
+    },    
+    {
         "slug": "bytebeat",
         "name": "Byte Beat",
         "description": "Bytebeat player with built-in presets.",

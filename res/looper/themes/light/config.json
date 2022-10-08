@@ -1,5 +1,5 @@
 {
-	"panel_svg": "res/looper/themes/default/panel.svg",
+	"panel_width": 45.0,
 	"layers": [
 		{
       "type": "image",

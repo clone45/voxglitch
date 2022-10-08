@@ -1,5 +1,5 @@
 {
-	"panel_svg": "res/hazumi/themes/default/panel.svg",
+	"panel_width": 255.0,
 	"layers": [
 		{
       "type": "image",

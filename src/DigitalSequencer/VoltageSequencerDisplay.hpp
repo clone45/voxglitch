@@ -98,29 +98,6 @@ struct VoltageSequencerDisplay : SequencerDisplay
           nvgFillColor(vg, nvgRGBA(240, 240, 255, 40));
           nvgFill(vg);
         }
-
-        //
-        // draw dirt overlay
-        //
-        /*
-        std::shared_ptr<Image> img = APP->window->loadImage(asset::plugin(pluginInstance, "res/digital_sequencer/dust_layer.png"));
-
-        int temp_width, temp_height;
-
-        // Get the image size and store it in the width and height variables
-        nvgImageSize(vg, img->handle, &temp_width, &temp_height);
-
-        // Set the bounding box of the widget
-        box.size = Vec(490, 220);
-
-        // Paint the .png background
-        NVGpaint paint = nvgImagePattern(vg, 0.0, 0.0, box.size.x, box.size.y, 0.0, img->handle, 1);
-        nvgBeginPath(vg);
-        nvgRect(vg, 0.0, 0.0, box.size.x, box.size.y);
-        nvgFillPaint(vg, paint);
-        nvgFill(vg);
-        */
-
       }
       else // Draw a demo sequence so that the sequencer looks nice in the library selector
       {
