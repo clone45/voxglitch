@@ -21,3 +21,4 @@ Then, to implement the detail layer, add it to the layers section in the theme c
   "zoom": 0.25
 },
 ````
+

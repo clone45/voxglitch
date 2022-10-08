@@ -294,7 +294,18 @@ struct DigitalSequencer : VoxglitchModule
       {
         for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
         {
-          this->voltage_sequencers[pattern_number].setValue(i, json_real_value(json_array_get(json_pattern_array, i)));
+          // Get pattern data, regardless if it's an int or real.  json_number_value
+          // will convert the result to a real.
+          double value = json_number_value(json_array_get(json_pattern_array, i));
+
+          // If the value is greater than 1.0, it means that an older patch is being
+          // loaded and we'll need to convert the voltage from 0 to 214
+          if(value > 1.0) 
+          {
+            value = value / 214.0;
+          }
+
+          this->voltage_sequencers[pattern_number].setValue(i, value);
         }
       }
     }
@@ -407,9 +418,6 @@ struct DigitalSequencer : VoxglitchModule
     bool trigger_output_pulse = false;
     this->sample_rate = args.sampleRate;
 
-    selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
-    selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
-
     //
     // See if someone pressed one of the sequence selection buttons
     //
@@ -424,6 +432,9 @@ struct DigitalSequencer : VoxglitchModule
         selected_sequencer_index = i;
       }
     }
+
+    selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
+    selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
 
     // Highlight only selected sequence buttton
     for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)

@@ -49,7 +49,7 @@ struct VoxglitchRoundLampSwitch : VoxglitchSwitch {
     addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/round_light_on.svg")));
 
     // Add the shadow below everything
-    voxglitch_shadow = new ImageWidget(asset::plugin(pluginInstance, "res/themes/default/round_shadow.png"), 10.0, 10.0, 0.8);
+    voxglitch_shadow = new ImageWidget("res/themes/default/round_shadow.png", 10.0, 10.0, 0.8);
     this->addChildBottom(voxglitch_shadow);
     voxglitch_shadow->setPosition(Vec(-5.5, -3.3));
 
@@ -120,7 +120,7 @@ struct squareToggle : VoxglitchSwitch {
     addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/square_light_on.svg")));
 
     // Add the shadow below everything
-    voxglitch_shadow = new ImageWidget(asset::plugin(pluginInstance, "res/themes/default/square_shadow.png"), 15.0, 15.0, 0.4);
+    voxglitch_shadow = new ImageWidget("res/themes/default/square_shadow.png", 15.0, 15.0, 0.4);
     this->addChildBottom(voxglitch_shadow);
     voxglitch_shadow->setPosition(Vec(-11, -8));
 
