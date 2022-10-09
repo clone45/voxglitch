@@ -8,6 +8,7 @@
 #include "widgets/SampleVisualizer.hpp"
 #include "widgets/RatchetVisualizer.hpp"
 #include "widgets/TrackLabelDisplay.hpp"
+#include "widgets/TrackSampleNudge.hpp"
 
 float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
     {125, 93},
@@ -52,10 +53,10 @@ float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
 };
 
 float track_button_positions[NUMBER_OF_TRACKS][2] = {
-    {265, 93},
-    {265, 124.33},
-    {265, 155.664},
-    {265, 187},
+    {258, 93},
+    {258, 124.33},
+    {258, 155.664},
+    {258, 187},
     {461.4, 93},
     {461.4, 124.33},
     {461.4, 155.664},
@@ -365,9 +366,21 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       */
 
       TrackLabelDisplay *track_label_display = new TrackLabelDisplay(i);
-      track_label_display->setPosition(Vec(x + 16, y - 14));
+      track_label_display->setPosition(Vec(x, y - 14));
       track_label_display->module = module;
       addChild(track_label_display);
+
+      TrackSampleNudge *track_sample_nudge_up = new TrackSampleNudge(i);
+      track_sample_nudge_up->setPosition(Vec(x + 153, y - 14));
+      track_sample_nudge_up->module = module;
+      track_sample_nudge_up->direction = -1;
+      addChild(track_sample_nudge_up);
+
+      TrackSampleNudge *track_sample_nudge_down = new TrackSampleNudge(i);
+      track_sample_nudge_down->setPosition(Vec(x + 153, y + 1));
+      track_sample_nudge_down->module = module;
+      track_sample_nudge_down->direction = 1;
+      addChild(track_sample_nudge_down);
     }
 
     // Individual track outputs
