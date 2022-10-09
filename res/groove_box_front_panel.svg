@@ -5,7 +5,7 @@
    viewBox="0 0 223.52001 128.5"
    version="1.1"
    id="svg8"
-   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
    sodipodi:docname="groove_box_front_panel.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -236,18 +236,18 @@
   </defs>
   <sodipodi:namedview
      inkscape:guide-bbox="true"
-     showguides="true"
-     inkscape:window-maximized="1"
-     inkscape:window-y="-11"
-     inkscape:window-x="2869"
-     inkscape:window-height="2066"
-     inkscape:window-width="3840"
+     showguides="false"
+     inkscape:window-maximized="0"
+     inkscape:window-y="1227"
+     inkscape:window-x="-8"
+     inkscape:window-height="1504"
+     inkscape:window-width="2858"
      showgrid="false"
      inkscape:document-rotation="0"
      inkscape:current-layer="layer1"
      inkscape:document-units="mm"
-     inkscape:cy="208.5"
-     inkscape:cx="468.5"
+     inkscape:cy="142.5"
+     inkscape:cx="344.25"
      inkscape:zoom="2"
      inkscape:pageshadow="2"
      inkscape:pageopacity="1"
@@ -259,7 +259,9 @@
      width="223.52mm"
      units="mm"
      inkscape:snap-object-midpoints="true"
-     inkscape:lockguides="true">
+     inkscape:lockguides="true"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1">
     <sodipodi:guide
        position="79.886862,106.70417"
        orientation="0,-1"
@@ -552,38 +554,50 @@
     <text
        xml:space="preserve"
        id="text1684"
-       style="font-size:4.23333px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect1686)" />
+       style="font-size:4.23333px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect1686);display:inline" />
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,0.25770479,13.583795)"
        id="text5907-4"
-       style="font-size:16px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect5909-1)"><tspan
+       style="font-size:16px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect5909-1);display:inline"><tspan
          x="514.5"
          y="140.06433"
-         id="tspan5872">
+         id="tspan1887">
 </tspan><tspan
          x="514.5"
          y="174.56433"
-         id="tspan5876"><tspan
-           dx="0 8.6399841 8.6399841 8.6399841 8.6399841 8.6399841"
-           id="tspan5874">CSnare</tspan></tspan></text>
+         id="tspan1891"><tspan
+           dx="0 8.6400146 8.6400146 8.6400146 8.6400146 8.6400146"
+           id="tspan1889">CSnare</tspan></tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,26.405231,1.7443286)"
        id="text26189-3"
-       style="font-size:16px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect26191-3)"><tspan
+       style="font-size:16px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect26191-3);display:inline"><tspan
          x="81.669922"
          y="121.69128"
-         id="tspan5880"><tspan
-           dx="0 8.6399841 8.6399841 8.6399841 8.6399841 8.6399841 8.6399841 8.6399841 8.6399841 8.6399841 8.6399841 8.6399841 8.6399841"
-           id="tspan5878">Global Memory</tspan></tspan></text>
+         id="tspan1895"><tspan
+           dx="0 8.6400146 8.6400146 8.6400146 8.6400146 8.6400146 8.6400146 120.96021 8.6400146 8.6400146 8.6400146 8.6400146 8.6400146"
+           id="tspan1893">Global Memory</tspan></tspan></text>
     <rect
-       style="fill:#414141;fill-opacity:1;fill-rule:evenodd;stroke-width:0.315795;stroke-linejoin:round"
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke-width:0.315795;stroke-linejoin:round"
        id="rect1762"
        width="133.74078"
        height="49.672039"
        x="83.348"
        y="21.795834" />
+    <rect
+       style="display:inline;fill:#3b4487;fill-opacity:1;fill-rule:evenodd;stroke-width:0.315796;stroke-linejoin:round"
+       id="rect1762-1"
+       width="131.741"
+       height="47.672001"
+       x="84.347893"
+       y="22.795853" />
+    <path
+       id="rect1762-5"
+       style="display:inline;fill:none;fill-rule:evenodd;stroke:#ffffff;stroke-width:0.315795;stroke-linejoin:round;stroke-opacity:0.27350429"
+       d="m 216.95161,71.410314 0.13717,-49.61448 -3.9e-4,49.671852 -133.74039,1.87e-4 z"
+       sodipodi:nodetypes="ccccc" />
     <rect
        style="fill:#414141;fill-opacity:1;fill-rule:evenodd;stroke-width:0.208381;stroke-linejoin:round"
        id="rect1762-9"
@@ -1020,7 +1034,7 @@
        xml:space="preserve"
        transform="scale(0.26458333)"
        id="text3829"
-       style="font-size:14.6667px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect3831);fill:#f5f5f5;fill-opacity:1" />
+       style="font-size:14.6667px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect3831);display:inline;fill:#f5f5f5;fill-opacity:1" />
     <g
        aria-label="MASTER VOLUME"
        transform="matrix(0.26458333,0,0,0.26458333,1.8708866,-3.7183871)"
@@ -1458,54 +1472,6 @@
        id="path2295-7-8-6-2-8-6"
        cx="62.650002"
        cy="42.106667"
-       r="3.4494472" />
-    <circle
-       style="opacity:0.830846;fill:#010000;fill-opacity:1;fill-rule:evenodd;stroke-width:0;stroke-linejoin:round"
-       id="path2295-7-8-6-2-6-4"
-       cx="89.746002"
-       cy="31.495001"
-       r="3.4494472" />
-    <circle
-       style="opacity:0.830846;fill:#010000;fill-opacity:1;fill-rule:evenodd;stroke-width:0;stroke-linejoin:round"
-       id="path2295-7-8-6-2-6-4-1"
-       cx="89.746002"
-       cy="42.106667"
-       r="3.4494472" />
-    <circle
-       style="opacity:0.830846;fill:#010000;fill-opacity:1;fill-rule:evenodd;stroke-width:0;stroke-linejoin:round"
-       id="path2295-7-8-6-2-6-4-1-5"
-       cx="89.746002"
-       cy="52.718334"
-       r="3.4494472" />
-    <circle
-       style="opacity:0.830846;fill:#010000;fill-opacity:1;fill-rule:evenodd;stroke-width:0;stroke-linejoin:round"
-       id="path2295-7-8-6-2-6-4-1-5-1"
-       cx="89.746002"
-       cy="63.329998"
-       r="3.4494472" />
-    <circle
-       style="opacity:0.830846;fill:#010000;fill-opacity:1;fill-rule:evenodd;stroke-width:0;stroke-linejoin:round"
-       id="path2295-7-8-6-2-6-4-1-5-1-1"
-       cx="156.26079"
-       cy="63.329998"
-       r="3.4494472" />
-    <circle
-       style="opacity:0.830846;fill:#010000;fill-opacity:1;fill-rule:evenodd;stroke-width:0;stroke-linejoin:round"
-       id="path2295-7-8-6-2-6-4-1-5-1-1-5"
-       cx="156.26079"
-       cy="52.718334"
-       r="3.4494472" />
-    <circle
-       style="opacity:0.830846;fill:#010000;fill-opacity:1;fill-rule:evenodd;stroke-width:0;stroke-linejoin:round"
-       id="path2295-7-8-6-2-6-4-1-5-1-1-5-4"
-       cx="156.26079"
-       cy="42.106667"
-       r="3.4494472" />
-    <circle
-       style="opacity:0.830846;fill:#010000;fill-opacity:1;fill-rule:evenodd;stroke-width:0;stroke-linejoin:round"
-       id="path2295-7-8-6-2-6-4-1-5-1-1-5-4-0"
-       cx="156.26079"
-       cy="31.495001"
        r="3.4494472" />
     <circle
        style="opacity:0.830846;fill:#010000;fill-opacity:1;fill-rule:evenodd;stroke-width:0;stroke-linejoin:round"
@@ -2856,7 +2822,7 @@
        xml:space="preserve"
        transform="scale(0.26458333)"
        id="text9536"
-       style="font-size:14.6667px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect9538)" />
+       style="font-size:14.6667px;line-height:1.25;font-family:'Share Tech Mono';-inkscape-font-specification:'Share Tech Mono, Normal';letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect9538);display:inline" />
     <g
        aria-label="CPY"
        transform="matrix(0.26458333,0,0,0.26458333,1.6867187,7.0118953)"

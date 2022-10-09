@@ -282,6 +282,14 @@ struct GrooveBox : VoxglitchSamplerModule
     updateKnobPositions();
   }
 
+  void selectTrack(unsigned int new_active_track)
+  {
+    track_index = new_active_track;
+    selected_track = selected_memory_slot->getTrack(track_index);
+
+    updateKnobPositions();
+  }
+
   void shiftAllTracks(unsigned int amount)
   {
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
@@ -566,6 +574,7 @@ struct GrooveBox : VoxglitchSamplerModule
     // If the user has pressed a track button, switch tracks and update the
     // knob positions for the selected function.
 
+    /*
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
     {
       if(track_button_triggers[i].process(params[TRACK_BUTTONS + i].getValue()))
@@ -576,6 +585,7 @@ struct GrooveBox : VoxglitchSamplerModule
         updateKnobPositions();
       }
     }
+    */
 
     //
     // If the user has pressed a memory slot button, switch memory slots and update the

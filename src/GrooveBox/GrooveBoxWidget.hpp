@@ -28,7 +28,8 @@ float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
     {125, 187},
     {155, 187},
     {185, 187},
-    {215, 187}};
+    {215, 187}
+};
 
 float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
     {18.8, 332.7667}, // FUNCTION_VOLUME
@@ -48,26 +49,6 @@ float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
     {414, 360.936},  // FUNCTION_SAMPLE_END
     {493, 360.936},  // Position #15
     {573, 360.936},  // Position #16
-
-    /*
-    {18.8, 332.7667}, // Position #1
-    {98, 332.7667},   // Position #2
-    {177, 332.7667},  // Position #3
-    {256, 332.7667},  // Position #4
-    {335, 332.7667},  // Position #5
-    {414, 332.7667},  // Position #6
-    {493, 332.7667},  // Position #7
-    {573, 332.7667},  // Position #8
-
-    {18.8, 360.936},  // Position #9
-    {98, 360.936},    // Position #10
-    {177, 360.936},   // Position #11
-    {256, 360.936},   // Position #12
-    {335, 360.936},   // Position #13
-    {414, 360.936},   // Position #14
-    {493, 360.936},   // Position #15
-    {573, 360.936},   // Position #16
-    */
 };
 
 float track_button_positions[NUMBER_OF_TRACKS][2] = {
@@ -372,12 +353,16 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     }
 
     // Track buttons and labels
+
     for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
+
       float x = track_button_positions[i][0];
       float y = track_button_positions[i][1];
+            /*
       addParam(createParamCentered<LEDButton>(Vec(x, y), module, GrooveBox::TRACK_BUTTONS + i));
       addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x, y), module, GrooveBox::TRACK_BUTTON_LIGHTS + i));
+      */
 
       TrackLabelDisplay *track_label_display = new TrackLabelDisplay(i);
       track_label_display->setPosition(Vec(x + 16, y - 14));

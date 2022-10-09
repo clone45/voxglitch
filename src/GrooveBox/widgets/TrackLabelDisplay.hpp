@@ -9,6 +9,9 @@ struct TrackLabelDisplay : TransparentWidget
   GrooveBox *module;
   unsigned int track_number = 0;
 
+  NVGcolor track_background_default = nvgRGBA(68, 77, 140, 255);
+  NVGcolor track_background_highlight = nvgRGBA(106, 113, 164, 255);
+
   TrackLabelDisplay(unsigned int track_number)
   {
     this->track_number = track_number;
@@ -34,6 +37,7 @@ struct TrackLabelDisplay : TransparentWidget
 
   void onButton(const event::Button &e) override
   {
+    module->selectTrack(this->track_number);
     e.consume(this);
   }
 
@@ -128,10 +132,12 @@ struct TrackLabelDisplay : TransparentWidget
     // Set up font parameters
     nvgFontSize(vg, 10);
     nvgTextLetterSpacing(vg, 0);
-    nvgFillColor(vg, nvgRGBA(255, 215, 20, 0xff));
+    // nvgFillColor(vg, nvgRGBA(255, 215, 20, 0xff));
+    nvgFillColor(vg, nvgRGBA(255, 255, 255, 0xff));
     nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
     float wrap_at = 130.0; // Just throw your hands in the air!  And wave them like you just don't 130.0
 
+    // Compute the number of lines that would be drawn
     const char *end = NULL;
     NVGtextRow rows[3];
     unsigned int max_rows = 3;
@@ -142,6 +148,7 @@ struct TrackLabelDisplay : TransparentWidget
     float bounds[4];
     nvgTextBoxBounds(vg, text_left_margin, 10, wrap_at, label.c_str(), end, bounds);
 
+    // Plot the name of the file loaded in the track
     float textHeight = bounds[3];
     nvgTextBox(vg, text_left_margin, (box.size.y / 2.0f) - (textHeight / 2.0f) + 8, wrap_at, label.c_str(), end);
   }
@@ -161,17 +168,24 @@ struct TrackLabelDisplay : TransparentWidget
     // Save the drawing context to restore later
     nvgSave(vg);
 
-    // Draw dark background
-    nvgBeginPath(vg);
-    nvgRect(vg, 0, 0, box.size.x, box.size.y);
-    nvgFillColor(vg, nvgRGBA(20, 20, 20, 255));
-    nvgFill(vg);
-
     //
     // Draw track names
     //
     if(module)
     {
+      // Draw track slot background
+      nvgBeginPath(vg);
+      nvgRect(vg, 0, 0, box.size.x, box.size.y);
+      if(module->track_index == this->track_number)
+      {
+        nvgFillColor(vg, track_background_highlight);
+      }
+      else
+      {
+        nvgFillColor(vg, track_background_default);
+      }
+      nvgFill(vg);
+
       std::string to_display = module->loaded_filenames[track_number];
 
       // If the track name is not empty, then display it
@@ -185,6 +199,12 @@ struct TrackLabelDisplay : TransparentWidget
     //
     else
     {
+      // Draw track slot background
+      nvgBeginPath(vg);
+      nvgRect(vg, 0, 0, box.size.x, box.size.y);
+      nvgFillColor(vg, track_background_default);
+      nvgFill(vg);
+
       draw_track_label(PLACEHOLDER_TRACK_NAMES[track_number], vg);
     }
     nvgRestore(vg);
