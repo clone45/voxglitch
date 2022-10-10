@@ -4,7 +4,8 @@
         "xtr1common": "cpp",
         "vector": "cpp",
         "string": "cpp",
-        "xiosbase": "cpp"
+        "xiosbase": "cpp",
+        "algorithm": "cpp"
     }
 
 }

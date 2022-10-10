@@ -27,7 +27,7 @@ struct RatchetVisualizerWidget : TransparentWidget
       TransparentWidget::draw(args);
       const auto vg = args.vg;
 
-      if(module && module->show_ratchet_visualizer > 0)
+      if(module && module->lcd_screen_mode == module->RATCHET)
       {
         nvgSave(vg);
 

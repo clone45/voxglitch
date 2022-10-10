@@ -15,7 +15,8 @@ struct TrackLabelDisplay : TransparentWidget
   TrackLabelDisplay(unsigned int track_number)
   {
     this->track_number = track_number;
-    box.size = Vec(152, 29);
+    // box.size = Vec(152, 29);
+    box.size = Vec(162, 29);
   }
 
   void onDoubleClick(const event::DoubleClick &e) override
@@ -137,7 +138,6 @@ struct TrackLabelDisplay : TransparentWidget
     // Set up font parameters
     nvgFontSize(vg, 10);
     nvgTextLetterSpacing(vg, 0);
-    // nvgFillColor(vg, nvgRGBA(255, 215, 20, 0xff));
     nvgFillColor(vg, nvgRGBA(255, 255, 255, 0xff));
     nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
     float wrap_at = 130.0; // Just throw your hands in the air!  And wave them like you just don't 130.0
@@ -168,6 +168,9 @@ struct TrackLabelDisplay : TransparentWidget
 
   void draw(const DrawArgs& args) override
   {
+
+    if(! module->lcd_screen_mode == module->TRACK) return;
+
     const auto vg = args.vg;
 
     // Save the drawing context to restore later

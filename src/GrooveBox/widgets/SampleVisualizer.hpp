@@ -24,22 +24,22 @@ struct SampleVisualizerWidget : TransparentWidget
       {
         nvgSave(vg);
 
-        if(module->show_sample_visualizer)
+        if(module->lcd_screen_mode == module->SAMPLE)
         {
           Sample *active_sample = & module->selected_track->sample_player->sample;
-
-          float x = 0;
-          float y = 0;
 
           unsigned int sample_size = active_sample->size();
           unsigned int index_offset = sample_size / columns;
 
           // Draw background
+          /*
+          float x = 0;
+          float y = 0;
           nvgBeginPath(vg);
           nvgRect(vg, x, y, width, height);
           nvgFillColor(vg, nvgRGB(0, 0, 0));
           nvgFill(vg);
-
+*/
           // Draw waveform
           for (unsigned int i = 0; i < columns; i++)
           {

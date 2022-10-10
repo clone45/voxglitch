@@ -187,6 +187,8 @@ struct TrackSampleNudge : TransparentWidget
 
   void draw(const DrawArgs& args) override
   {
+    if(! module->lcd_screen_mode == module->TRACK) return;
+
     const auto vg = args.vg;
 
     // Save the drawing context to restore later
