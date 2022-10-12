@@ -83,9 +83,12 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		{
 			std::string placeholder_waveform_file_path = asset::plugin(pluginInstance, "res/autobreak_studio/themes/default/waveform-placeholder.jpg");
 
-			ImageWidget *image_widget = new ImageWidget(placeholder_waveform_file_path, 900.0, 109.0, 1.0, 0.15);
-			image_widget->box.pos = themePos("WAVEFORM_DISPLAY");
-			addChild(image_widget);
+			if(rack::system::exists(placeholder_waveform_file_path))
+			{
+				ImageWidget *image_widget = new ImageWidget(placeholder_waveform_file_path, 900.0, 109.0, 1.0, 0.15);
+				image_widget->box.pos = themePos("WAVEFORM_DISPLAY");
+				addChild(image_widget);
+			}
 
 			LcdTabsWidget *lcd_tabs_widget = new LcdTabsWidget(true);
 			lcd_tabs_widget->box.pos = themePos("TABS_DISPLAY");

@@ -15,7 +15,6 @@ struct TrackLabelDisplay : TransparentWidget
   TrackLabelDisplay(unsigned int track_number)
   {
     this->track_number = track_number;
-    // box.size = Vec(152, 29);
     box.size = Vec(162, 29);
   }
 
@@ -168,9 +167,6 @@ struct TrackLabelDisplay : TransparentWidget
 
   void draw(const DrawArgs& args) override
   {
-
-    if(! module->lcd_screen_mode == module->TRACK) return;
-
     const auto vg = args.vg;
 
     // Save the drawing context to restore later
@@ -181,6 +177,12 @@ struct TrackLabelDisplay : TransparentWidget
     //
     if(module)
     {
+      if(! module->lcd_screen_mode == module->TRACK)
+      {
+        nvgRestore(vg);
+        return;
+      }
+
       // Draw track slot background
       nvgBeginPath(vg);
       nvgRect(vg, 0, 0, box.size.x, box.size.y);
