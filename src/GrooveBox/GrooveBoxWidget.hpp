@@ -412,16 +412,16 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
 
     // Sample Visualizer Widget
 
-    SampleVisualizerWidget *sampler_visualizer_widget = new SampleVisualizerWidget();
+    SampleVisualizerWidget *sampler_visualizer_widget = new SampleVisualizerWidget(389.0, 146.669);
     sampler_visualizer_widget->module = module;
-    sampler_visualizer_widget->box.pos.x = 83.348 * 2.952756;
-    sampler_visualizer_widget->box.pos.y = 21.796 * 2.952756;
+    sampler_visualizer_widget->box.pos.x = 249.0; // 246.1063;
+    sampler_visualizer_widget->box.pos.y = 64.358;
     addChild(sampler_visualizer_widget);
 
     RatchetVisualizerWidget *ratchet_visualizer_widget = new RatchetVisualizerWidget();
     ratchet_visualizer_widget->module = module;
-    ratchet_visualizer_widget->box.pos.x = 83.348 * 2.952756;
-    ratchet_visualizer_widget->box.pos.y = 21.796 * 2.952756;
+    ratchet_visualizer_widget->box.pos.x = 246.1063;
+    ratchet_visualizer_widget->box.pos.y = 64.358;
     addChild(ratchet_visualizer_widget);
   }
 
