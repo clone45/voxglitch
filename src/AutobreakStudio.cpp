@@ -16,6 +16,7 @@
 #include "Common/sequencer/VoltageSequencer.hpp"
 #include "Common/sequencer/GateSequencer.hpp"
 
+#include "Common/widgets/WaveformModel.hpp"
 #include "Common/widgets/WaveformWidget.hpp"
 
 #include "AutobreakStudio/defines.h"

@@ -1,15 +1,18 @@
 struct WaveformWidget : TransparentWidget
 {
-    Sample *sample;
     // AutobreakStudio *module;
     std::string sample_filename = "";
 
     bool refresh = true;
-    bool *visible;
-    float *playback_percentage;
+    float width = 0.0;
+    float height = 0.0;
+
+    // Sample *sample;
+    // bool *visible;
+    // float *playback_percentage;
+    WaveformModel *waveform_modal;
 
     unsigned int sample_index = 0;
-    float draw_area_width = 0.0;
 
     NVGcolor tab_color_default = nvgRGBA(48, 75, 79, 255);
     NVGcolor tab_color_selected = nvgRGBA(68, 95, 99, 255);
@@ -20,31 +23,22 @@ struct WaveformWidget : TransparentWidget
 
     float max_average = 0.0;
 
-    WaveformWidget(Sample *sample, float draw_area_width, float height, bool *visible, float *playback_percentage)
+    WaveformWidget(float width, float height, WaveformModel *waveform_modal)
     {
-        this->visible = visible;
-        this->sample = sample;
-        this->playback_percentage = playback_percentage;
-        this->draw_area_width = draw_area_width;
+        this->width = width;
+        this->height = height;
+        this->waveform_modal = waveform_modal;
 
-        box.size = Vec(draw_area_width, height);
-        sample_filename = sample->filename;
+        box.size = Vec(width, height);
+        sample_filename = waveform_modal->sample->filename;
 
-        averages.reserve(draw_area_width);
+        averages.reserve((unsigned int) width);
 
-        for (unsigned int i = 0; i < draw_area_width; i++)
+        for (unsigned int i = 0; i < width; i++)
         {
             averages[i] = 0.0;
         }
     }
-
-    /* This is not possible, nor necessary
-    void setSample(Sample *new_sample)
-    {
-        this->sample = new_sample;
-        refresh = true;
-    }
-    */
 
     void drawLayer(const DrawArgs &args, int layer) override
     {
@@ -55,18 +49,18 @@ struct WaveformWidget : TransparentWidget
             // Save the drawing context to restore later
             nvgSave(vg);
 
-            if (sample && sample->loaded)
+            if (waveform_modal->sample && waveform_modal->sample->loaded)
             {
                 // Compute the values to draw
                 if(refresh == true)
                 {
                     max_average = 0.0;
 
-                    if (sample->size() > draw_area_width)
+                    if (waveform_modal->sample->size() > this->width)
                     {
-                        for (unsigned int x = 0; x < draw_area_width; x++)
+                        for (unsigned int x = 0; x < this->width; x++)
                         {
-                            computeAverages(x, sample->size());
+                            computeAverages(x, waveform_modal->sample->size());
                         }
                     }
 
@@ -84,24 +78,15 @@ struct WaveformWidget : TransparentWidget
     void step() override 
     {
         TransparentWidget::step();
-        
-        /*
-        
-        Here's a bit of a riddle.  In order to decide if this widget should
-        be displayed, it's only possible to check a variable in the main
-        module class... unless the module class sends in a pointer to a 
-        boolean when the widget is first created?
-        
-        */
 
         // Sample has changed
-        if(sample_filename != sample->filename)
+        if(sample_filename != waveform_modal->sample->filename)
         {
-            sample_filename = sample->filename;
+            sample_filename = waveform_modal->sample->filename;
             refresh = true;
         }
 
-        if(*visible)
+        if(waveform_modal->visible)
         {
             this->show();
         }
@@ -121,7 +106,7 @@ struct WaveformWidget : TransparentWidget
         float left;
         float right;
 
-        float chunk_size = (float) sample_size / (float) draw_area_width;
+        float chunk_size = (float) sample_size / (float) width;
         unsigned int chunk_start = (x * chunk_size);
         unsigned int chunk_end = chunk_start +  chunk_size;
 
@@ -129,7 +114,7 @@ struct WaveformWidget : TransparentWidget
         {
             if(i<sample_size)
             {
-                this->sample->read(i, &left, &right);
+                waveform_modal->sample->read(i, &left, &right);
                 left_sum = left_sum + std::abs(left);
                 right_sum = right_sum + std::abs(right);
                 count++;
@@ -148,7 +133,7 @@ struct WaveformWidget : TransparentWidget
 
     void normalizeAverages()
     {
-        for(unsigned int x=0; x<draw_area_width; x++)
+        for(unsigned int x = 0; x < this->width; x++)
         {
             averages[x] = (1.0 / max_average) * averages[x];
         }
@@ -156,7 +141,7 @@ struct WaveformWidget : TransparentWidget
 
     void drawWaveform(NVGcontext *vg)
     {
-        for (unsigned int x = 0; x < draw_area_width; x++)
+        for (unsigned int x = 0; x < this->width; x++)
         {
             drawLine(vg, x);
         }
@@ -170,12 +155,12 @@ struct WaveformWidget : TransparentWidget
         height = clamp(height, 0.0, 1.0);
 
         nvgBeginPath(vg);
-        nvgRect(vg, x_position, 23.99, 1.0, (height * 22.0 * -1));
+        nvgRect(vg, x_position, 23.99, 1.0, (height * 22.0 * -1));  // todo: compute this instead of hard coded
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 200));
         nvgFill(vg);     
 
         nvgBeginPath(vg);
-        nvgRect(vg, x_position, 23.99, 1.0, (height * 22.0));
+        nvgRect(vg, x_position, 23.99, 1.0, (height * 22.0));  // todo: compute this instead of hard coded
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 200));
         nvgFill(vg);     
     }
@@ -184,10 +169,10 @@ struct WaveformWidget : TransparentWidget
     {
         // float x_position = clamp((module->actual_playback_position / sample_size) * DRAW_AREA_WIDTH, (float) 0.0, (float) DRAW_AREA_WIDTH);
 
-        float x_position = clamp(*playback_percentage * draw_area_width, (float) 0.0, (float) draw_area_width);
+        float x_position = clamp(waveform_modal->playback_percentage * width, (float) 0.0, (float) width);
 
         nvgBeginPath(vg);
-        nvgRect(vg, x_position, 2.0, 6.0, 44.0);
+        nvgRect(vg, x_position, 2.0, 6.0, 44.0); // todo: compute this instead of hard coded
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 100));
         nvgFill(vg);
     }

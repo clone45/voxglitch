@@ -38,6 +38,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
   unsigned int previously_selected_memory_index = 0;
   bool copy_mode = false;
 
+  WaveformModel waveform_model[NUMBER_OF_SAMPLES];
 
   // Sequencer step keeps track of where the sequencers are.  This is important
   // because when a memory slot is loaded, the sequencers need to be set to
@@ -51,8 +52,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
   std::string root_dir;
   std::string path;
 
-  bool waveform_visible[NUMBER_OF_SAMPLES];
-  float waveform_playback_percentage = 0.0;
+  // bool waveform_visible[NUMBER_OF_SAMPLES];
+  // float waveform_playback_percentage = 0.0;
 
   Sample samples[NUMBER_OF_SAMPLES];
   std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
@@ -141,12 +142,16 @@ struct AutobreakStudio : VoxglitchSamplerModule
       configSwitch(MEMORY_BUTTONS + i, 0.0, 1.0, 0.0, "Memory Slot");
     }
 
+    //
+    // Initialize all of the waveform displays
+    // 
     for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
     {
-      waveform_visible[i] = false;
+      waveform_model[i].sample = &samples[i];
+      waveform_model[i].visible = false;
+      waveform_model[i].playback_percentage = 0.0;
     }
-
-    waveform_visible[0] = true;
+    waveform_model[0].visible = true;
 
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 
@@ -544,8 +549,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
     if (sample_selection != selected_sample_slot)
     {
       // Display the new sample waveform
-      waveform_visible[selected_sample_slot] = false;
-      waveform_visible[sample_selection] = true;
+      waveform_model[selected_sample_slot].visible = false;
+      waveform_model[sample_selection].visible = true;
 
       // Reset the smooth ramp if the selected sample has changed
       declick_filter.trigger();
@@ -630,7 +635,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
       // Update the playback position so that the position indicator can be
       // drawn at the correct location on the waveform display
-      waveform_playback_percentage = actual_playback_position / selected_sample->size();
+      // waveform_playback_percentage = actual_playback_position / selected_sample->size();
+      waveform_model[selected_sample_slot].playback_percentage = actual_playback_position / selected_sample->size();
 
       // Read the sample
       selected_sample->read((int)actual_playback_position, &left_output, &right_output);
