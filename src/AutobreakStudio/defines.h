@@ -13,6 +13,9 @@ const float BAR_HORIZONTAL_PADDING = .8;
 const float DRAW_AREA_POSITION_X = 157.778;
 const float DRAW_AREA_POSITION_Y = 61.0;
 
+const float WAVEFORM_WIDGET_HEIGHT = 45.903; // 47
+const float WAVEFORM_WIDGET_WIDTH = 399.0;
+
 const float TABS_POSITION_Y = 48.8;
 
 const float OVERLAY_WIDTH = 400.0;

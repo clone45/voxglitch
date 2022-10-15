@@ -73,7 +73,7 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 
 			for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
 			{
-				WaveformWidget *waveform_widget = new WaveformWidget(DRAW_AREA_WIDTH, LCD_TABS_HEIGHT, &this->module->waveform_model[i]);
+				WaveformWidget *waveform_widget = new WaveformWidget(WAVEFORM_WIDGET_WIDTH, WAVEFORM_WIDGET_HEIGHT, &this->module->waveform_model[i]);
 				waveform_widget->box.pos = themePos("WAVEFORM_DISPLAY");
 				waveform_widget->hide();
 				addChild(waveform_widget);

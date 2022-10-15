@@ -67,6 +67,8 @@ struct WaveformWidget : TransparentWidget
                     normalizeAverages();
                 }
 
+                // drawContainer(vg); // for debugging
+
                 drawWaveform(vg);
                 drawPositionIndicator(vg);
             }
@@ -147,13 +149,23 @@ struct WaveformWidget : TransparentWidget
         }
     }
 
+    void drawContainer(NVGcontext *vg)
+    {
+        nvgBeginPath(vg);
+        nvgRect(vg, 0.0, 0.0, this->width, this->height);  // todo: compute this instead of hard coded
+        nvgFillColor(vg, nvgRGBA(26, 35, 255, 200));
+        nvgFill(vg);
+    }
+
     void drawLine(NVGcontext *vg, unsigned int x)
     {
-        float x_position = x;
-        float height = averages[x];
+        // float x_position = x;
+        float average_height = averages[x]; // ranges from 0.0 to 1.0
 
-        height = clamp(height, 0.0, 1.0);
+        average_height = clamp(average_height, 0.0, 1.0);
+        float line_height = (average_height * this->height);
 
+        /*
         nvgBeginPath(vg);
         nvgRect(vg, x_position, 23.99, 1.0, (height * 22.0 * -1));  // todo: compute this instead of hard coded
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 200));
@@ -162,7 +174,15 @@ struct WaveformWidget : TransparentWidget
         nvgBeginPath(vg);
         nvgRect(vg, x_position, 23.99, 1.0, (height * 22.0));  // todo: compute this instead of hard coded
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 200));
-        nvgFill(vg);     
+        nvgFill(vg);
+        */
+
+        nvgBeginPath(vg);
+        // x, y, width, height
+        nvgRect(vg, x, (this->height - line_height) / 2.0, 1.0, line_height);  // todo: compute this instead of hard coded
+        nvgFillColor(vg, nvgRGBA(255, 255, 255, 200));
+        nvgFill(vg);
+
     }
 
     void drawPositionIndicator(NVGcontext *vg)
