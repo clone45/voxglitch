@@ -2,6 +2,7 @@ struct VoltageToggleSequencerDisplay : SequencerDisplayABS
 {
     AutobreakStudio *module;
     VoltageSequencer **sequencer_ptr_ptr;
+    unsigned int sequencer_type;
 
     bool shift_key = false;
     bool ctrl_key = false;
@@ -12,9 +13,10 @@ struct VoltageToggleSequencerDisplay : SequencerDisplayABS
     int previous_control_sequence_column = 0;
     int control_sequence_column = 0;
 
-    VoltageToggleSequencerDisplay(VoltageSequencer **sequencer_instance)
+    VoltageToggleSequencerDisplay(VoltageSequencer **sequencer_instance, unsigned int sequencer_type)
     {
         this->sequencer_ptr_ptr = sequencer_instance;
+        this->sequencer_type = sequencer_type;
 
         // The bounding box needs to be a little deeper than the visual
         // controls to allow mouse drags to indicate '0' (off) column heights,

@@ -70,7 +70,9 @@ struct WaveformWidget : TransparentWidget
                 // drawContainer(vg); // for debugging
 
                 drawWaveform(vg);
-                drawPositionIndicator(vg);
+
+                if(waveform_modal->draw_position_indicator) drawPositionIndicator(vg);
+                if(waveform_modal->highlight_section) highlightSection(vg);
             }
 
             nvgRestore(vg);
@@ -165,35 +167,27 @@ struct WaveformWidget : TransparentWidget
         average_height = clamp(average_height, 0.0, 1.0);
         float line_height = (average_height * this->height);
 
-        /*
         nvgBeginPath(vg);
-        nvgRect(vg, x_position, 23.99, 1.0, (height * 22.0 * -1));  // todo: compute this instead of hard coded
-        nvgFillColor(vg, nvgRGBA(255, 255, 255, 200));
-        nvgFill(vg);     
-
-        nvgBeginPath(vg);
-        nvgRect(vg, x_position, 23.99, 1.0, (height * 22.0));  // todo: compute this instead of hard coded
-        nvgFillColor(vg, nvgRGBA(255, 255, 255, 200));
-        nvgFill(vg);
-        */
-
-        nvgBeginPath(vg);
-        // x, y, width, height
         nvgRect(vg, x, (this->height - line_height) / 2.0, 1.0, line_height);  // todo: compute this instead of hard coded
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 200));
         nvgFill(vg);
-
     }
 
     void drawPositionIndicator(NVGcontext *vg)
     {
-        // float x_position = clamp((module->actual_playback_position / sample_size) * DRAW_AREA_WIDTH, (float) 0.0, (float) DRAW_AREA_WIDTH);
-
         float x_position = clamp(waveform_modal->playback_percentage * width, (float) 0.0, (float) width);
 
         nvgBeginPath(vg);
         nvgRect(vg, x_position, 2.0, 6.0, 44.0); // todo: compute this instead of hard coded
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 100));
+        nvgFill(vg);
+    }
+
+    void highlightSection(NVGcontext *vg)
+    {
+        nvgBeginPath(vg);
+        nvgRect(vg, waveform_modal->highlight_section_x, 0.0, waveform_modal->highlight_section_width, this->height);
+        nvgFillColor(vg, nvgRGBA(255, 255, 255, 80));
         nvgFill(vg);
     }
 

@@ -12,10 +12,12 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
 
     int previous_control_sequence_column = 0;
     int control_sequence_column = 0;
+    unsigned int sequencer_type = 0;
 
-    VoltageSequencerDisplayABS(VoltageSequencer **sequencer_instance)
+    VoltageSequencerDisplayABS(VoltageSequencer **sequencer_instance, unsigned int sequencer_type)
     {
         this->sequencer_ptr_ptr = sequencer_instance;
+        this->sequencer_type = sequencer_type;
 
         // The bounding box needs to be a little deeper than the visual
         // controls to allow mouse drags to indicate '0' (off) column heights,
@@ -148,6 +150,54 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
         }
     }
 
+    void highlightSection(Vec mouse_position)
+    {
+        if(module)
+        {
+            int clicked_y = DRAW_AREA_HEIGHT - mouse_position.y;
+            clicked_y = clamp(clicked_y, 0, (int) DRAW_AREA_HEIGHT);
+
+            // convert the clicked_y position to a double between 0 and 1
+            float value = (float)clicked_y / (float) DRAW_AREA_HEIGHT;
+
+            value = roundf(value * 16.0);
+
+            if(value > 0)
+            {
+                value = value - 1;
+                
+                // Now muliply by 16
+                float highlight_x = value * (WAVEFORM_WIDGET_WIDTH / 16.0);
+                float highlight_width = WAVEFORM_WIDGET_WIDTH / 16.0;
+
+                for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
+                {
+                    module->waveform_model[i].highlight_section = true;
+                    module->waveform_model[i].highlight_section_x = highlight_x;
+                    module->waveform_model[i].highlight_section_width = highlight_width;
+                }
+            }
+            else
+            {
+                for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
+                {
+                    module->waveform_model[i].highlight_section = false;
+                }
+            }
+        }
+    }
+
+    void unhighlightSection()
+    {
+        if(module)
+        {
+            for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
+            {
+                module->waveform_model[i].highlight_section = false;
+            }
+        }
+    }
+
     void startShiftSequences(Vec mouse_position)
     {
         int clicked_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
@@ -240,7 +290,21 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
         else
         {
             editBar(drag_position);
+            //
+            // if the sequencer type is position
+            // then get the active waveform id and use it to se
+            //  module->waveform_model[id].hightlight_section = true
+            //  module->waveform_model[id].x = ??
+            //  module->waveform_model[id].width = ??
+
+            if(sequencer_type == 0) highlightSection(drag_position);
         }
+    }
+
+    void onDragEnd(const event::DragEnd &e) override
+    {
+        TransparentWidget::onDragEnd(e);
+        if(sequencer_type == 0) unhighlightSection();
     }
 
     void onHover(const event::Hover &e) override
