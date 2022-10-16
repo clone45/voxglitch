@@ -2,14 +2,18 @@ struct SampleVisualizerWidget : TransparentWidget
 {
   GrooveBox *module;
 
-  float width = 133.741 * 2.952756;
-  float height = 49.672 * 2.952756;
-  float mid_height = height / 2.0;
+  float width = 0;
+  float height = 0;
+  float mid_height = 0;
+
   unsigned int columns = 390;
   float stroke_width = 1;
 
-  SampleVisualizerWidget()
+  SampleVisualizerWidget(float width, float height)
   {
+    this->width = width;
+    this->height = height;
+    this->mid_height = height / 2.0;
     this->box.size = Vec(width, height);
   }
 
@@ -24,21 +28,12 @@ struct SampleVisualizerWidget : TransparentWidget
       {
         nvgSave(vg);
 
-        if(module->show_sample_visualizer)
+        if(module->lcd_screen_mode == module->SAMPLE)
         {
           Sample *active_sample = & module->selected_track->sample_player->sample;
 
-          float x = 0;
-          float y = 0;
-
           unsigned int sample_size = active_sample->size();
           unsigned int index_offset = sample_size / columns;
-
-          // Draw background
-          nvgBeginPath(vg);
-          nvgRect(vg, x, y, width, height);
-          nvgFillColor(vg, nvgRGB(0, 0, 0));
-          nvgFill(vg);
 
           // Draw waveform
           for (unsigned int i = 0; i < columns; i++)
@@ -79,7 +74,6 @@ struct SampleVisualizerWidget : TransparentWidget
             // Unhappy red highlight
             nvgFillColor(vg, nvgRGBA(143, 90, 90, 80));
           }
-
 
           nvgFill(vg);
         }

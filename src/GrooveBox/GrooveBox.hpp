@@ -47,11 +47,15 @@ struct GrooveBox : VoxglitchSamplerModule
 
   bool step_copy_paste_mode = false;
   unsigned int copied_step_index = 0;
+  unsigned int lcd_screen_mode = 0;
 
-  // TODO: merge these into enum show_visualizer
-  bool show_sample_visualizer = false;
-  bool show_ratchet_visualizer = false;
+
+  /*
+  bool lcd_show_sample = false;
+  bool lcd_show_ratchet_visualizer = false;
   bool show_updates_visualizer = false;
+  bool show_tracks = true;
+  */
 
   unsigned int visualizer_step = 0;
   unsigned int sample_position_snap_track_values[NUMBER_OF_TRACKS];
@@ -132,6 +136,13 @@ struct GrooveBox : VoxglitchSamplerModule
 		NUM_LIGHTS
 	};
 
+  enum LCD_MODES {
+    TRACK,
+    SAMPLE,
+    RATCHET,
+    UPDATE
+	};
+
 	GrooveBox()
 	{
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -183,7 +194,7 @@ struct GrooveBox : VoxglitchSamplerModule
       }
     }
 
-
+    lcd_screen_mode = TRACK;
 
     // Store a pointer to the active memory slot
     selected_memory_slot = &memory_slots[0];
@@ -278,6 +289,14 @@ struct GrooveBox : VoxglitchSamplerModule
     {
        selected_memory_slot->tracks[i].setPosition(playback_step);
     }
+
+    updateKnobPositions();
+  }
+
+  void selectTrack(unsigned int new_active_track)
+  {
+    track_index = new_active_track;
+    selected_track = selected_memory_slot->getTrack(track_index);
 
     updateKnobPositions();
   }
@@ -566,6 +585,7 @@ struct GrooveBox : VoxglitchSamplerModule
     // If the user has pressed a track button, switch tracks and update the
     // knob positions for the selected function.
 
+    /*
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
     {
       if(track_button_triggers[i].process(params[TRACK_BUTTONS + i].getValue()))
@@ -576,6 +596,7 @@ struct GrooveBox : VoxglitchSamplerModule
         updateKnobPositions();
       }
     }
+    */
 
     //
     // If the user has pressed a memory slot button, switch memory slots and update the

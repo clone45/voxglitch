@@ -8,6 +8,7 @@
 #include "widgets/SampleVisualizer.hpp"
 #include "widgets/RatchetVisualizer.hpp"
 #include "widgets/TrackLabelDisplay.hpp"
+#include "widgets/TrackSampleNudge.hpp"
 
 float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
     {125, 93},
@@ -28,7 +29,8 @@ float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
     {125, 187},
     {155, 187},
     {185, 187},
-    {215, 187}};
+    {215, 187}
+};
 
 float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
     {18.8, 332.7667}, // FUNCTION_VOLUME
@@ -48,37 +50,17 @@ float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
     {414, 360.936},  // FUNCTION_SAMPLE_END
     {493, 360.936},  // Position #15
     {573, 360.936},  // Position #16
-
-    /*
-    {18.8, 332.7667}, // Position #1
-    {98, 332.7667},   // Position #2
-    {177, 332.7667},  // Position #3
-    {256, 332.7667},  // Position #4
-    {335, 332.7667},  // Position #5
-    {414, 332.7667},  // Position #6
-    {493, 332.7667},  // Position #7
-    {573, 332.7667},  // Position #8
-
-    {18.8, 360.936},  // Position #9
-    {98, 360.936},    // Position #10
-    {177, 360.936},   // Position #11
-    {256, 360.936},   // Position #12
-    {335, 360.936},   // Position #13
-    {414, 360.936},   // Position #14
-    {493, 360.936},   // Position #15
-    {573, 360.936},   // Position #16
-    */
 };
 
 float track_button_positions[NUMBER_OF_TRACKS][2] = {
-    {265, 93},
-    {265, 124.33},
-    {265, 155.664},
-    {265, 187},
-    {461.4, 93},
-    {461.4, 124.33},
-    {461.4, 155.664},
-    {461.4, 187}};
+    {256, 93 - 1.6},
+    {256, 124.33 - 1.6},
+    {256, 155.664 - 1.6},
+    {256, 187 - 1.6},
+    {461.4 - 14, 93 - 1.6},
+    {461.4 - 14, 124.33 - 1.6},
+    {461.4 - 14, 155.664 - 1.6},
+    {461.4 - 14, 187 - 1.6}};
 
 struct ModdedCL1362 : SvgPort
 {
@@ -177,9 +159,9 @@ struct TrimpotMedium : SvgKnob
     {
       if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
       {
-        if (module->show_sample_visualizer == false)
+        if (module->lcd_screen_mode != module->SAMPLE)
         {
-          module->show_sample_visualizer = true;
+          module->lcd_screen_mode = module->SAMPLE;
           module->visualizer_step = step;
         }
       }
@@ -189,9 +171,9 @@ struct TrimpotMedium : SvgKnob
     {
       if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
       {
-        if (module->show_ratchet_visualizer == false)
+        if (module->lcd_screen_mode != module->RATCHET)
         {
-          module->show_ratchet_visualizer = true;
+          module->lcd_screen_mode = module->RATCHET;
           module->visualizer_step = step;
         }
       }
@@ -206,13 +188,13 @@ struct TrimpotMedium : SvgKnob
     if (module->selected_function == FUNCTION_SAMPLE_START || module->selected_function == FUNCTION_SAMPLE_END)
     {
       if (e.button == GLFW_MOUSE_BUTTON_LEFT)
-        module->show_sample_visualizer = false;
+        module->lcd_screen_mode = module->TRACK;
     }
 
     if (module->selected_function == FUNCTION_RATCHET)
     {
       if (e.button == GLFW_MOUSE_BUTTON_LEFT)
-        module->show_ratchet_visualizer = false;
+        module->lcd_screen_mode = module->TRACK;
     }
 
     SvgKnob::onDragEnd(e);
@@ -372,17 +354,29 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     }
 
     // Track buttons and labels
+
     for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
+
       float x = track_button_positions[i][0];
       float y = track_button_positions[i][1];
-      addParam(createParamCentered<LEDButton>(Vec(x, y), module, GrooveBox::TRACK_BUTTONS + i));
-      addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x, y), module, GrooveBox::TRACK_BUTTON_LIGHTS + i));
 
       TrackLabelDisplay *track_label_display = new TrackLabelDisplay(i);
-      track_label_display->setPosition(Vec(x + 16, y - 14));
+      track_label_display->setPosition(Vec(x, y - 14));
       track_label_display->module = module;
       addChild(track_label_display);
+
+      TrackSampleNudge *track_sample_nudge_up = new TrackSampleNudge(i);
+      track_sample_nudge_up->setPosition(Vec(x + 163, y - 14)); // 162
+      track_sample_nudge_up->module = module;
+      track_sample_nudge_up->direction = -1;
+      addChild(track_sample_nudge_up);
+
+      TrackSampleNudge *track_sample_nudge_down = new TrackSampleNudge(i);
+      track_sample_nudge_down->setPosition(Vec(x + 163, y + 1));
+      track_sample_nudge_down->module = module;
+      track_sample_nudge_down->direction = 1;
+      addChild(track_sample_nudge_down);
     }
 
     // Individual track outputs
@@ -418,16 +412,16 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
 
     // Sample Visualizer Widget
 
-    SampleVisualizerWidget *sampler_visualizer_widget = new SampleVisualizerWidget();
+    SampleVisualizerWidget *sampler_visualizer_widget = new SampleVisualizerWidget(389.0, 146.669);
     sampler_visualizer_widget->module = module;
-    sampler_visualizer_widget->box.pos.x = 83.348 * 2.952756;
-    sampler_visualizer_widget->box.pos.y = 21.796 * 2.952756;
+    sampler_visualizer_widget->box.pos.x = 249.0; // 246.1063;
+    sampler_visualizer_widget->box.pos.y = 64.358;
     addChild(sampler_visualizer_widget);
 
     RatchetVisualizerWidget *ratchet_visualizer_widget = new RatchetVisualizerWidget();
     ratchet_visualizer_widget->module = module;
-    ratchet_visualizer_widget->box.pos.x = 83.348 * 2.952756;
-    ratchet_visualizer_widget->box.pos.y = 21.796 * 2.952756;
+    ratchet_visualizer_widget->box.pos.x = 246.1063;
+    ratchet_visualizer_widget->box.pos.y = 64.358;
     addChild(ratchet_visualizer_widget);
   }
 
