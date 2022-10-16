@@ -16,6 +16,9 @@
 #include "Common/sequencer/VoltageSequencer.hpp"
 #include "Common/sequencer/GateSequencer.hpp"
 
+#include "Common/widgets/WaveformModel.hpp"
+#include "Common/widgets/WaveformWidget.hpp"
+
 #include "AutobreakStudio/defines.h"
 #include "AutobreakStudio/AutobreakMemory.hpp"
 #include "AutobreakStudio/AutobreakStudio.hpp"
@@ -25,7 +28,7 @@
 #include "AutobreakStudio/VoltageSequencerDisplayABS.hpp"
 #include "AutobreakStudio/VoltageToggleSequencerDisplay.hpp"
 #include "AutobreakStudio/LcdTabsWidget.hpp"
-#include "AutobreakStudio/WaveformWidget.hpp"
+
 #include "AutobreakStudio/AutobreakStudioWidget.hpp"
 
 Model* modelAutobreakStudio = createModel<AutobreakStudio, AutobreakStudioWidget>("AutobreakStudio");

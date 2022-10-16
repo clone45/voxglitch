@@ -14,39 +14,39 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		// =================== PLACE COMPONENTS ====================================
 
 
-		VoltageSequencerDisplayABS *position_sequencer_display = new VoltageSequencerDisplayABS(& this->module->position_sequencer);
+		VoltageSequencerDisplayABS *position_sequencer_display = new VoltageSequencerDisplayABS(& this->module->position_sequencer, 0);
 		position_sequencer_display->box.pos = themePos("SEQUENCER_DISPLAY");
 		position_sequencer_display->module = module;
 		addChild(position_sequencer_display);
 
 		if(module)
 		{
-			VoltageSequencerDisplayABS *sample_sequencer_display = new VoltageSequencerDisplayABS(& this->module->sample_sequencer);
+			VoltageSequencerDisplayABS *sample_sequencer_display = new VoltageSequencerDisplayABS(& this->module->sample_sequencer, 1);
 			sample_sequencer_display->box.pos = themePos("SEQUENCER_DISPLAY");
 			sample_sequencer_display->module = module;
 			sample_sequencer_display->hide();
 			addChild(sample_sequencer_display);	
 
-			VoltageSequencerDisplayABS *volume_sequencer_display = new VoltageSequencerDisplayABS(& this->module->volume_sequencer);
+			VoltageSequencerDisplayABS *volume_sequencer_display = new VoltageSequencerDisplayABS(& this->module->volume_sequencer, 2);
 			volume_sequencer_display->box.pos = themePos("SEQUENCER_DISPLAY");
 			volume_sequencer_display->module = module;
 			volume_sequencer_display->hide();
 			addChild(volume_sequencer_display);
 
-			VoltageSequencerDisplayABS *pan_sequencer_display = new VoltageSequencerDisplayABS(& this->module->pan_sequencer);
+			VoltageSequencerDisplayABS *pan_sequencer_display = new VoltageSequencerDisplayABS(& this->module->pan_sequencer, 3);
 			pan_sequencer_display->box.pos = themePos("SEQUENCER_DISPLAY");
 			pan_sequencer_display->module = module;
 			pan_sequencer_display->hide();
 			pan_sequencer_display->draw_horizontal_guide = true;
 			addChild(pan_sequencer_display);	
 
-			VoltageToggleSequencerDisplay *reverse_sequencer_display = new VoltageToggleSequencerDisplay(& this->module->reverse_sequencer);
+			VoltageToggleSequencerDisplay *reverse_sequencer_display = new VoltageToggleSequencerDisplay(& this->module->reverse_sequencer, 4);
 			reverse_sequencer_display->box.pos = themePos("SEQUENCER_DISPLAY");
 			reverse_sequencer_display->module = module;
 			reverse_sequencer_display->hide();
 			addChild(reverse_sequencer_display);
 
-			VoltageSequencerDisplayABS *ratchet_sequencer_display = new VoltageSequencerDisplayABS(& this->module->ratchet_sequencer);
+			VoltageSequencerDisplayABS *ratchet_sequencer_display = new VoltageSequencerDisplayABS(& this->module->ratchet_sequencer, 5);
 			ratchet_sequencer_display->box.pos = themePos("SEQUENCER_DISPLAY");
 			ratchet_sequencer_display->module = module;
 			ratchet_sequencer_display->hide();
@@ -73,7 +73,7 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 
 			for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
 			{
-				WaveformWidget *waveform_widget = new WaveformWidget(this->module, i);
+				WaveformWidget *waveform_widget = new WaveformWidget(WAVEFORM_WIDGET_WIDTH, WAVEFORM_WIDGET_HEIGHT, &this->module->waveform_model[i]);
 				waveform_widget->box.pos = themePos("WAVEFORM_DISPLAY");
 				waveform_widget->hide();
 				addChild(waveform_widget);
