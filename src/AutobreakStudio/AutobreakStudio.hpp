@@ -544,7 +544,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     // Handle wav selection
     //
     unsigned int sample_selection = getSample() * NUMBER_OF_SAMPLES;
-    sample_selection = clamp(sample_selection, 0, 7);
+    sample_selection = clamp(sample_selection, 0, NUMBER_OF_SAMPLES - 1);
 
     if (sample_selection != selected_sample_slot)
     {
@@ -571,8 +571,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
       {
         // Compute BPM based on incoming clock
         double elapsed_time = time_counter - timer_before;
-        if (elapsed_time > 0)
-          bpm = 30.0 / elapsed_time;
+        if (elapsed_time > 0) bpm = 30.0 / elapsed_time;
       }
 
       timer_before = time_counter;
