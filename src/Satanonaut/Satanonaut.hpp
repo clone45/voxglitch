@@ -65,6 +65,9 @@ struct Satanonaut : Module
 
     rack::random::init();
     audio_buffer.purge();
+
+		configBypass(AUDIO_INPUT_LEFT, AUDIO_OUTPUT_LEFT);
+		configBypass(AUDIO_INPUT_RIGHT, AUDIO_OUTPUT_RIGHT);
 	}
 
 	// Autosave module data.  VCV Rack decides when this should be called.

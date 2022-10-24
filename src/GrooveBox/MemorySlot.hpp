@@ -39,6 +39,15 @@ struct MemorySlot
     }
   }
 
+  void randomize()
+  {
+    for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
+    {
+      this->tracks[i].randomize();
+      // this->tracks[i].steps[i] = (rand() % 2 == 0);
+    }
+  }
+
 };
 
 }

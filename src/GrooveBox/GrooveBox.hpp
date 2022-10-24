@@ -247,6 +247,12 @@ struct GrooveBox : VoxglitchSamplerModule
     this->updateKnobPositions();
   }
 
+  void onRandomize() override {
+    for(unsigned int p=0; p<NUMBER_OF_MEMORY_SLOTS; p++) {
+      memory_slots[p].randomize();
+    }
+	}
+
   void updateKnobPositions()
   {
     for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)

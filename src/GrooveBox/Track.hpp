@@ -241,6 +241,18 @@ struct Track
     this->sample_player->initialize();
   }
 
+  void randomize()
+  {
+
+    // randomize steps
+    for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
+    {
+      this->sample_playback_settings[i].randomize();
+      this->steps[i] = (rand() % 2 == 0);
+    }
+    // this->settings[i].copy(& sample_playback_settings[i]);
+  }
+
   std::pair<float, float> getStereoOutput(unsigned int interpolation)
   {
     float left_output;

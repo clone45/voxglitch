@@ -27,6 +27,11 @@ struct AutobreakStudioLoadFolder : MenuItem
         if (path)
         {
             std::vector<std::string> dirList = system::getEntries(path);
+            
+            // Sort the vector.  This is in response to a user who's samples were being
+            // loaded out of order.  I think it's a mac thing.
+            sort(dirList.begin(), dirList.end());
+
             unsigned int i = 0;
 
             for (auto filename : dirList)

@@ -35,6 +35,28 @@ struct SamplePlaybackSettings
     this->delay_length = src_settings->delay_length;
     this->delay_feedback = src_settings->delay_feedback;
   }
+
+  void randomize()
+  {
+    this->volume = rack::random::uniform(); 	
+    this->pan = rack::random::uniform(); 
+    this->pitch = rack::random::uniform(); 
+    this->ratchet = rack::random::uniform(); 
+    this->sample_start = rack::random::uniform(); 
+    this->sample_end = rack::random::uniform(); 
+    this->probability = rack::random::uniform(); 
+    this->loop = rack::random::uniform(); 
+    this->reverse = rack::random::uniform(); 
+    this->attack = rack::random::uniform(); 
+    this->release = rack::random::uniform(); 
+    this->delay_mix = rack::random::uniform(); 
+    this->delay_length = rack::random::uniform(); 
+    this->delay_feedback = rack::random::uniform(); 
+
+    if(sample_start > sample_end) sample_start = 0;
+  }
+
+
 };
 
 }

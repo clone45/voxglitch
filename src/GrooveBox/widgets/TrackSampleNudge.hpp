@@ -28,6 +28,11 @@ struct TrackSampleNudge : TransparentWidget
       std::string filename = module->sample_players[track_number].getFilename();
 
       std::vector<std::string> directory_list = system::getEntries(directory);
+
+      // Sort the vector.  This is in response to a user who's samples were being
+      // loaded out of order.  I think it's a mac thing.
+      sort(directory_list.begin(), directory_list.end());
+
       std::vector<std::string> wav_files;
 
       // Folders might contain things that aren't .wav files, and we need to

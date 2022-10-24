@@ -108,6 +108,9 @@ struct GrainFx : VoxglitchModule
     configParam(INTERNAL_MODULATION_WAVEFORM_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "InternalModulateionWaveformAttnKnob");
     configParam(INTERNAL_MODULATION_OUTPUT_POLARITY_SWITCH, 0.0f, 1.0f, 0.0f, "InternalModulationOutputPolaritySwitch");
 
+		configBypass(AUDIO_INPUT_LEFT, AUDIO_OUTPUT_LEFT);
+		configBypass(AUDIO_INPUT_RIGHT, AUDIO_OUTPUT_RIGHT);
+
     grain_fx_core.common = &common;
   }
 

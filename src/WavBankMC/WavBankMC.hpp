@@ -257,6 +257,7 @@ struct WavBankMC : VoxglitchSamplerModule
 
 		std::vector<std::string> dirList = system::getEntries(path.c_str());
 
+
     // Sort the vector.  This is in response to a user who's samples were being
     // loaded out of order.  I think it's a mac thing.
     sort(dirList.begin(), dirList.end());
