@@ -1,5 +1,9 @@
 ## Change Log
 
+## 2.23.1
+* Fixed link to Autobreak Studio in documentation
+
+
 ## 2.23.0
 * In Autobreak Studio, when adjusting a position slider, the position is highlighted on the waveform display
 * The Groovebox track and sample selection area has been converted to an LCD screen and the ability to increment/decrement sample has been added

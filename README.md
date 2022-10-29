@@ -5,8 +5,8 @@ Modules for VCV Rack.  My apologies if I fall behind on the documentation.
 ## Module Documentation
 
 * [Autobreak](docs/autobreak.md)
-* [Autobreak Studio](docs/autobreak.md)
-* [Digital Sequencer](docs/autobreak-studio.md)
+* [Autobreak Studio](docs/autobreak-studio.md)
+* [Digital Sequencer](docs/digital-sequencer.md)
 * [Ghosts](docs/ghosts.md)
 * [Grain Engine MK2](docs/grain-engine-mk2.md)
 * [Grain Engine MK2 Expander](docs/grain-engine-mk2-expander.md)
