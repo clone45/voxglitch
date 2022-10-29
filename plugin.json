@@ -14,12 +14,6 @@
     "changelogUrl": "https://github.com/clone45/voxglitch/blob/master/docs/changelog.md",
     "modules": [
     {
-        "slug": "AudioPoop",
-        "name": "Audio Poop",
-        "description": "Record and publish free use audio to the cloud",
-        "tags": ["Recording"]
-    },
-    {
         "slug": "autobreak",
         "name": "Autobreak",
         "description": "Automatic breakbeat sample chopper",

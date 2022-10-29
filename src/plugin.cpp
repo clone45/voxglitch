@@ -4,7 +4,6 @@ Plugin* pluginInstance;
 
 void init(Plugin* p) {
   pluginInstance = p;
-  p->addModel(modelAudioPoop);  
   p->addModel(modelAutobreak);
   p->addModel(modelAutobreakStudio);  
   p->addModel(modelByteBeat);
