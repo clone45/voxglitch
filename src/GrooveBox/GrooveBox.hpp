@@ -401,6 +401,8 @@ struct GrooveBox : VoxglitchSamplerModule
     }
     json_object_set(json_root, "memory_slots", memory_slots_json_array);
 
+    json_object_set(json_root, "selected_memory_index", json_integer(memory_slot_index));
+
 		return json_root;
 	}
 
@@ -548,6 +550,9 @@ struct GrooveBox : VoxglitchSamplerModule
         } // end if tracks array data
       } // end foreach memory slot
     } // end if memory_slots array data
+
+    json_t *selected_memory_index_json = json_object_get(json_root, "selected_memory_index");
+    if(selected_memory_index_json) this->switchMemory(json_integer_value(selected_memory_index_json));
 
     updateKnobPositions();
 	}
