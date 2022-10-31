@@ -56,7 +56,6 @@ struct Ghosts : VoxglitchSamplerModule
 	enum OutputIds {
 		AUDIO_OUTPUT_LEFT,
 		AUDIO_OUTPUT_RIGHT,
-		DEBUG_OUTPUT,
 		NUM_OUTPUTS
 	};
 	enum LightIds {

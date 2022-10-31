@@ -2,7 +2,8 @@
 
 ## 2.23.1
 * Fixed link to Autobreak Studio in documentation
-
+* Updated Groovebox so that it recalls the selected memory slot upon load
+* Changed incorrect label on programmer module from "poly audio out" to "poly out"
 
 ## 2.23.0
 * In Autobreak Studio, when adjusting a position slider, the position is highlighted on the waveform display
