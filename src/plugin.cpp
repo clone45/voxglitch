@@ -18,6 +18,7 @@ void init(Plugin* p) {
   p->addModel(modelGrooveBox);
   p->addModel(modelGrooveBoxExpander);
   p->addModel(modelHazumi);
+  p->addModel(modelKodama);
   p->addModel(modelLooper);
   p->addModel(modelRepeater);
   p->addModel(modelSamplerX8);

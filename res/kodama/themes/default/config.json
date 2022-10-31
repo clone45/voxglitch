@@ -1,0 +1,30 @@
+{
+	"panel_width" : 585.0,
+	"layers": [
+		{
+      "type": "image",
+      "path": "res/themes/default/background2.jpg",
+      "zoom": 0.15,
+      "width": 198.12,
+      "height": 128.5
+    },
+    {
+      "type": "image",
+      "path": "res/kodama/themes/default/details.png",
+      "width": 198.12,
+      "height": 128.5,
+      "zoom": 0.25
+    },
+    {
+      "type": "svg",
+      "path": "res/kodama/themes/default/typography.svg"
+    }    
+	],
+  "widgets": {
+
+    "CLOCK_INPUT": {"x": 30.12117, "y": 71.68296},
+    "RESET_INPUT": {"x": 73.53734, "y": 71.68296},
+    "RATCHET_INPUT": {"x": 117.07335, "y": 71.68296}
+
+  }
+}
