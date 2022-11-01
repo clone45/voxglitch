@@ -7,6 +7,8 @@
 struct SequenceLengthWidget : TransparentWidget
 {
   GrooveBox *module;
+  // borrowing these dimensions from RangeGrabberLeftWidget
+  float overhang = 15.0;
 
   void draw(const DrawArgs &args) override
   {
@@ -17,15 +19,16 @@ struct SequenceLengthWidget : TransparentWidget
 
     if(module) {
       // Draw horizontal rectangle for track indictor with pretty rounded corners
-      float length = button_positions[module->selected_track->range_end][0] - button_positions[module->selected_track->range_start][0];
-      nvgRoundedRect(vg, button_positions[module->selected_track->range_start][0] - 20, 0, length, 12, 5);
+      float length = button_positions[module->selected_track->range_end][0] - button_positions[module->selected_track->range_start][0] + (overhang*2);
+      //nvgRoundedRect(vg, button_positions[module->selected_track->range_start][0] - 20, 0, length, 12, 5);
+      nvgRect(vg, button_positions[module->selected_track->range_start][0] - 19 - overhang, 0, length, 12);
     }
     else {
       // Paint static content for library display
       nvgRoundedRect(vg, 0, 0, mm2px(186.51), 12, 5);
     }
 
-    nvgFillColor(vg, nvgRGB(65, 65, 65));
+    nvgFillColor(vg, nvgRGB(83, 92, 91));
     nvgFill(vg);
 
     nvgRestore(vg);
