@@ -32,7 +32,8 @@ struct RangeGrabberRightWidget : TransparentWidget
     nvgRoundedRect(vg, box.size.x - width, box.size.y - height, width, height, 2.0);
 
     if(is_moused_over) {
-      nvgFillColor(vg, nvgRGB(110,120,115));
+      //nvgFillColor(vg, nvgRGB(110,120,115));
+      nvgFillColor(vg, nvgRGB(83,92,91));
     }
     else {
       nvgFillColor(vg, nvgRGBA(83,92,91,0));
@@ -126,7 +127,8 @@ struct RangeGrabberLeftWidget : TransparentWidget
     nvgRoundedRect(vg, box.size.x - width, box.size.y - height, width, height, 2.0);
 
     if(is_moused_over) {
-      nvgFillColor(vg, nvgRGB(110,120,115));
+      //nvgFillColor(vg, nvgRGB(110,120,115));
+      nvgFillColor(vg, nvgRGB(83,92,91));
     }
     else {
       nvgFillColor(vg, nvgRGBA(83,92,91,0));

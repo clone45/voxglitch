@@ -113,7 +113,7 @@ namespace groove_box
     {1,1,1,1,1,1,1}
   };
 
-  const float button_positions_y = mm2px(89.75);
+  const float button_positions_y = mm2px(88.5);
 
   const float button_positions[16][2] = {
     { mm2px(9.941), button_positions_y },
