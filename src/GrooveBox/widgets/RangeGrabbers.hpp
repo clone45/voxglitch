@@ -6,7 +6,7 @@ struct RangeGrabberRightWidget : TransparentWidget
   float diameter = 20.0;
   float radius = diameter / 2.0;
   float height = 20.0;
-  float width = 32.0;
+  float width = 34.0;
   Vec drag_position;
 
   RangeGrabberRightWidget()
@@ -100,7 +100,7 @@ struct RangeGrabberLeftWidget : TransparentWidget
   float diameter = 20.0;
   float radius = diameter / 2.0;
   float height = 20.0;
-  float width = 32.0;
+  float width = 34.0;
   Vec drag_position;
 
   RangeGrabberLeftWidget()

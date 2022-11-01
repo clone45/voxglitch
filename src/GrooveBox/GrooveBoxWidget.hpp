@@ -336,7 +336,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       //
       // Create attenuator knobs for each step
       //
-      TrimpotMedium *knob = createParamCentered<TrimpotMedium>(Vec(button_positions[i][0], button_positions[i][1] + 30), module, GrooveBox::STEP_KNOBS + i);
+      TrimpotMedium *knob = createParamCentered<TrimpotMedium>(Vec(button_positions[i][0], button_positions[i][1] + 35.65), module, GrooveBox::STEP_KNOBS + i);
       knob->module = module;
       knob->parameter_index = GrooveBox::STEP_KNOBS + i;
       knob->step = i;
