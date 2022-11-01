@@ -36,24 +36,28 @@ float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
     {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*3, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*3},
 };
 
+float function_button_left_col_X = 18.0;
+float function_button_col_Xstep =  81.16;
+float function_button_top_row_Y = 332.6;
+float function_button_row_Ystep =  28.0;
 float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
-    {18.8, 332.7667}, // FUNCTION_VOLUME
-    {98, 332.7667},   // FUNCTION_PAN
-    {177, 332.7667},  // FUNCTION_PITCH
-    {256, 332.7667},  // FUNCTION_RATCHET
-    {335, 360.936},   // FUNCTION_SAMPLE_START
-    {335, 332.7667},  // FUNCTION_PROBABILITY
-    {177, 360.936},   // FUNCTION_LOOP
-    {256, 360.936},   // FUNCTION_REVERSE
+    {function_button_left_col_X, function_button_top_row_Y}, // FUNCTION_VOLUME
+    {function_button_left_col_X + function_button_col_Xstep, function_button_top_row_Y},   // FUNCTION_PAN
+    {function_button_left_col_X + function_button_col_Xstep*2, function_button_top_row_Y},  // FUNCTION_PITCH
+    {function_button_left_col_X + function_button_col_Xstep*3, function_button_top_row_Y},  // FUNCTION_RATCHET
+    {function_button_left_col_X + function_button_col_Xstep*4, function_button_top_row_Y},   // FUNCTION_SAMPLE_START
+    {function_button_left_col_X + function_button_col_Xstep*5, function_button_top_row_Y},  // FUNCTION_PROBABILITY
+    {function_button_left_col_X + function_button_col_Xstep*6, function_button_top_row_Y},   // FUNCTION_LOOP
+    {function_button_left_col_X + function_button_col_Xstep*7, function_button_top_row_Y},   // FUNCTION_REVERSE
 
-    {18.8, 360.936}, // FUNCTION_ATTACK
-    {98, 360.936},   // FUNCTION_RELEASE
-    {414, 332.7667}, // FUNCTION_DELAY_MIX
-    {493, 332.7667}, // FUNCTION_DELAY_LENGTH
-    {573, 332.7667}, // FUNCTION_DELAY_FEEDBACK
-    {414, 360.936},  // FUNCTION_SAMPLE_END
-    {493, 360.936},  // Position #15
-    {573, 360.936},  // Position #16
+    {function_button_left_col_X, function_button_top_row_Y + function_button_row_Ystep}, // FUNCTION_ATTACK
+    {function_button_left_col_X + function_button_col_Xstep, function_button_top_row_Y + function_button_row_Ystep},   // FUNCTION_RELEASE
+    {function_button_left_col_X + function_button_col_Xstep*2, function_button_top_row_Y + function_button_row_Ystep}, // FUNCTION_DELAY_MIX
+    {function_button_left_col_X + function_button_col_Xstep*3, function_button_top_row_Y + function_button_row_Ystep}, // FUNCTION_DELAY_LENGTH
+    {function_button_left_col_X + function_button_col_Xstep*4, function_button_top_row_Y + function_button_row_Ystep}, // FUNCTION_DELAY_FEEDBACK
+    {function_button_left_col_X + function_button_col_Xstep*5, function_button_top_row_Y + function_button_row_Ystep},  // FUNCTION_SAMPLE_END
+    {function_button_left_col_X + function_button_col_Xstep*6, function_button_top_row_Y + function_button_row_Ystep},  // Position #15
+    {function_button_left_col_X + function_button_col_Xstep*7, function_button_top_row_Y + function_button_row_Ystep},  // Position #16
 };
 
 float track_button_positions[NUMBER_OF_TRACKS][2] = {
