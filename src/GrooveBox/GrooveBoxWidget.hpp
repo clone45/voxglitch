@@ -10,26 +10,30 @@
 #include "widgets/TrackLabelDisplay.hpp"
 #include "widgets/TrackSampleNudge.hpp"
 
+float memory_slot_button_left_col_X = 125.5;
+float memory_slot_button_col_Xstep =  31.4;
+float memory_slot_button_top_row_Y = 106.0;
+float memory_slot_button_row_Ystep =  31.4;
 float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
-    {125, 93},
-    {155, 93},
-    {185, 93},
-    {215, 93},
+    {memory_slot_button_left_col_X, memory_slot_button_top_row_Y},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep, memory_slot_button_top_row_Y},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*2, memory_slot_button_top_row_Y},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*3, memory_slot_button_top_row_Y},
 
-    {125, 124.33},
-    {155, 124.33},
-    {185, 124.33},
-    {215, 124.33},
+    {memory_slot_button_left_col_X, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*2, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*3, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep},
 
-    {125, 155.664},
-    {155, 155.664},
-    {185, 155.664},
-    {215, 155.664},
+    {memory_slot_button_left_col_X, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*2},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*2},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*2, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*2},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*3, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*2},
 
-    {125, 187},
-    {155, 187},
-    {185, 187},
-    {215, 187}
+    {memory_slot_button_left_col_X, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*3},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*3},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*2, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*3},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*3, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*3},
 };
 
 float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
@@ -53,14 +57,14 @@ float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
 };
 
 float track_button_positions[NUMBER_OF_TRACKS][2] = {
-    {256, 93 - 1.6},
-    {256, 124.33 - 1.6},
-    {256, 155.664 - 1.6},
-    {256, 187 - 1.6},
-    {461.4 - 14, 93 - 1.6},
-    {461.4 - 14, 124.33 - 1.6},
-    {461.4 - 14, 155.664 - 1.6},
-    {461.4 - 14, 187 - 1.6}};
+    {257, 102 - 1.6},
+    {257, 133.33 - 1.6},
+    {257, 164.664 - 1.6},
+    {257, 196 - 1.6},
+    {462.4 - 14, 102 - 1.6},
+    {462.4 - 14, 133.33 - 1.6},
+    {462.4 - 14, 164.664 - 1.6},
+    {462.4 - 14, 196 - 1.6}};
 
 struct ModdedCL1362 : SvgPort
 {
@@ -291,8 +295,8 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groove_box_front_panel.svg")));
 
-    addInput(createInputCentered<PJ301MPort>(Vec(39.4, 98), module, GrooveBox::STEP_INPUT));
-    addInput(createInputCentered<PJ301MPort>(Vec(39.4, 159), module, GrooveBox::RESET_INPUT));
+    addInput(createInputCentered<PJ301MPort>(Vec(39.2, 102), module, GrooveBox::STEP_INPUT));
+    addInput(createInputCentered<PJ301MPort>(Vec(39.2, 154), module, GrooveBox::RESET_INPUT));
 
     // sequence length indicator
     SequenceLengthWidget *sequence_length_widget = new SequenceLengthWidget();
@@ -386,8 +390,8 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     }
 
     // Mix output L/R
-    addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(203, 6)), module, GrooveBox::AUDIO_OUTPUT_LEFT));
-    addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(213, 6)), module, GrooveBox::AUDIO_OUTPUT_RIGHT));
+    addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(202.25, 6)), module, GrooveBox::AUDIO_OUTPUT_LEFT));
+    addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(213.25, 6)), module, GrooveBox::AUDIO_OUTPUT_RIGHT));
 
     // Master volume
     addParam(createParamCentered<Trimpot>(mm2px(Vec(188.8465, 6)), module, GrooveBox::MASTER_VOLUME));
@@ -404,11 +408,11 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     }
 
     // Memory CV input
-    addInput(createInputCentered<PJ301MPort>(Vec(87.622, 98), module, GrooveBox::MEM_INPUT));
+    addInput(createInputCentered<PJ301MPort>(Vec(87.622, 102), module, GrooveBox::MEM_INPUT));
 
     // Copy/Paste Memory buttons
-    addParam(createParamCentered<VCVButton>(Vec(87.622, 144.00), module, GrooveBox::COPY_BUTTON));
-    addParam(createParamCentered<VCVButton>(Vec(87.622, 187), module, GrooveBox::PASTE_BUTTON));
+    addParam(createParamCentered<VCVButton>(Vec(86.8, 152.00), module, GrooveBox::COPY_BUTTON));
+    addParam(createParamCentered<VCVButton>(Vec(86.8, 193), module, GrooveBox::PASTE_BUTTON));
 
     // Sample Visualizer Widget
 
