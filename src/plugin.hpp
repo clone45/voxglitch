@@ -22,7 +22,6 @@ extern Model *modelGrainFx;
 extern Model *modelGrooveBox;
 extern Model *modelGrooveBoxExpander;
 extern Model *modelHazumi;
-extern Model *modelKodama;
 extern Model *modelLooper;
 extern Model *modelRepeater;
 extern Model *modelSamplerX8;
