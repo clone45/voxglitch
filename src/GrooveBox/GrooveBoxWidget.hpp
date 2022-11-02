@@ -12,10 +12,10 @@
 #include "widgets/TrackLabelDisplay.hpp"
 #include "widgets/TrackSampleNudge.hpp"
 
-float memory_slot_button_left_col_X = 125.5;
-float memory_slot_button_col_Xstep =  31.4;
-float memory_slot_button_top_row_Y = 106.0;
-float memory_slot_button_row_Ystep =  31.4;
+float memory_slot_button_left_col_X = 126.05; // 125.5;
+float memory_slot_button_col_Xstep = 31.25; // 31.4;
+float memory_slot_button_top_row_Y = 106.35; // 106.0;
+float memory_slot_button_row_Ystep = 31.25; // 31.4;
 float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
     {memory_slot_button_left_col_X, memory_slot_button_top_row_Y},
     {memory_slot_button_left_col_X + memory_slot_button_col_Xstep, memory_slot_button_top_row_Y},
@@ -38,10 +38,10 @@ float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
     {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*3, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*3},
 };
 
-float function_button_left_col_X = 18.0;
-float function_button_col_Xstep =  81.16;
-float function_button_top_row_Y = 332.6;
-float function_button_row_Ystep =  28.0;
+float function_button_left_col_X = 18.2;
+float function_button_col_Xstep =  81.26; // 81.16;
+float function_button_top_row_Y = 333.5; // 332.6;
+float function_button_row_Ystep = 26.15; // 28.0;
 float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
     {function_button_left_col_X, function_button_top_row_Y}, // FUNCTION_VOLUME
     {function_button_left_col_X + function_button_col_Xstep, function_button_top_row_Y},   // FUNCTION_PAN
@@ -76,7 +76,7 @@ struct ModdedCL1362 : SvgPort
 {
   ModdedCL1362()
   {
-    setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/components/modded_CL1362.svg")));
+    setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/modded_CL1362.svg")));
   }
 };
 
@@ -92,9 +92,9 @@ struct TrimpotMedium : SvgKnob
     minAngle = -0.83 * M_PI;
     maxAngle = 0.83 * M_PI;
 
-    setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/components/TrimpotMedium.svg")));
+    setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/TrimpotMedium.svg")));
     bg = new widget::SvgWidget;
-    bg->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/components/TrimpotMedium_bg.svg")));
+    bg->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/TrimpotMedium_bg.svg")));
     fb->addChildBelow(bg, tw);
   }
 
@@ -431,8 +431,17 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     addInput(createInputCentered<PJ301MPort>(Vec(87.622, 102), module, GrooveBox::MEM_INPUT));
 
     // Copy/Paste Memory buttons
-    addParam(createParamCentered<VCVButton>(Vec(86.8, 152.00), module, GrooveBox::COPY_BUTTON));
-    addParam(createParamCentered<VCVButton>(Vec(86.8, 193), module, GrooveBox::PASTE_BUTTON));
+    // addParam(createParamCentered<GrooveboxSoftButton>(Vec(86.56, 152.50), module, GrooveBox::COPY_BUTTON));
+    // addParam(createParamCentered<GrooveboxSoftButton>(Vec(86.56, 193), module, GrooveBox::PASTE_BUTTON));
+
+    GrooveboxSoftButton *copy_button = createParamCentered<GrooveboxSoftButton>(Vec(86.56, 152.50), module, GrooveBox::COPY_BUTTON);
+    copy_button->momentary = true;
+    addParam(copy_button);
+
+    GrooveboxSoftButton *paste_button = createParamCentered<GrooveboxSoftButton>(Vec(86.56, 193), module, GrooveBox::PASTE_BUTTON);
+    paste_button->momentary = true;
+    addParam(paste_button);
+
 
     // Sample Visualizer Widget
 
