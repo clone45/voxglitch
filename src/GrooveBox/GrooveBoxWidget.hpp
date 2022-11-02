@@ -5,6 +5,7 @@
 #include "widgets/RangeGrabbers.hpp"
 #include "widgets/GrooveboxBlueLight.hpp"
 #include "widgets/GrooveboxStepButton.hpp"
+#include "widgets/GrooveboxSoftButton.hpp"
 #include "widgets/SequenceLengthWidget.hpp"
 #include "widgets/SampleVisualizer.hpp"
 #include "widgets/RatchetVisualizer.hpp"
@@ -355,7 +356,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       addParam(knob);
     }
 
-    // Function Buttons
+    // Parameter (Function) Buttons
     for (unsigned int i = 0; i < NUMBER_OF_FUNCTIONS; i++)
     {
 
@@ -365,8 +366,11 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       float x = function_button_positions[i][0];
       float y = function_button_positions[i][1];
 
+      /*
       addParam(createParamCentered<LEDButton>(Vec(x, y), module, GrooveBox::FUNCTION_BUTTONS + i));
       addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x, y), module, GrooveBox::FUNCTION_BUTTON_LIGHTS + i));
+      */
+      addParam(createParamCentered<GrooveboxSoftButton>(Vec(x, y), module, GrooveBox::FUNCTION_BUTTONS + i));
     }
 
     // Track buttons and labels
@@ -415,8 +419,12 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     {
       float x = memory_slot_button_positions[i][0];
       float y = memory_slot_button_positions[i][1];
+      /*
       addParam(createParamCentered<LEDButton>(Vec(x, y), module, GrooveBox::MEMORY_SLOT_BUTTONS + i));
       addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x, y), module, GrooveBox::MEMORY_SLOT_BUTTON_LIGHTS + i));
+      */
+      addParam(createParamCentered<GrooveboxSoftButton>(Vec(x, y), module, GrooveBox::MEMORY_SLOT_BUTTONS + i));
+     
     }
 
     // Memory CV input
@@ -589,7 +597,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     void onAction(const event::Action &e) override
     {
       module->selected_memory_slot->tracks[track_index].clear();
-      module->updateParameterControls();
+      module->updatePanelControls();
     }
   };
 

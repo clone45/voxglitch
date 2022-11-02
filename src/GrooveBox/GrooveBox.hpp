@@ -205,7 +205,7 @@ struct GrooveBox : VoxglitchSamplerModule
     selected_track = selected_memory_slot->getTrack(0);
 
     // Update parameter lock knobs.  I'm not sure if this is necessary.
-    updateParameterControls();
+    updatePanelControls();
 
     // Set the leftExpander pointers to the two message holders
     leftExpander.producerMessage = &expander_to_groovebox_message_a;
@@ -219,7 +219,7 @@ struct GrooveBox : VoxglitchSamplerModule
   void copyMemory(unsigned int src_index, unsigned int dst_index)
   {
       memory_slots[dst_index].copy(&memory_slots[src_index]);
-      updateParameterControls();
+      updatePanelControls();
   }
 
   // copyMemory(src_index, dst_index)
@@ -229,7 +229,7 @@ struct GrooveBox : VoxglitchSamplerModule
   void copyStep(unsigned int dst_index)
   {
       selected_track->copyStep(this->copied_step_index, dst_index);
-      updateParameterControls();
+      updatePanelControls();
   }
 
   void initialize()
@@ -246,10 +246,10 @@ struct GrooveBox : VoxglitchSamplerModule
       this->sample_position_snap_indexes[i] = 0;
     }
 
-    this->updateParameterControls();
+    this->updatePanelControls();
   }
 
-  void updateParameterControls()
+  void updatePanelControls()
   {
     for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
@@ -277,6 +277,12 @@ struct GrooveBox : VoxglitchSamplerModule
       params[STEP_KNOBS + step_number].setValue(value);
       params[DRUM_PADS + step_number].setValue(selected_track->getValue(step_number));
     }
+
+    // Update selected function button
+    for(unsigned int i=0; i < NUMBER_OF_FUNCTIONS; i++)
+    {
+      params[FUNCTION_BUTTONS + i].setValue(selected_function == i);
+    }    
   }
 
   void switchMemory(unsigned int new_memory_slot)
@@ -293,7 +299,12 @@ struct GrooveBox : VoxglitchSamplerModule
        selected_memory_slot->tracks[i].setPosition(playback_step);
     }
 
-    updateParameterControls();
+    for(unsigned int i=0; i < NUMBER_OF_MEMORY_SLOTS; i++)
+    {
+      params[MEMORY_SLOT_BUTTONS + i].setValue(memory_slot_index == i);
+    }
+
+    updatePanelControls();
   }
 
   void selectTrack(unsigned int new_active_track)
@@ -301,7 +312,7 @@ struct GrooveBox : VoxglitchSamplerModule
     track_index = new_active_track;
     selected_track = selected_memory_slot->getTrack(track_index);
 
-    updateParameterControls();
+    updatePanelControls();
   }
 
   void shiftAllTracks(unsigned int amount)
@@ -310,13 +321,13 @@ struct GrooveBox : VoxglitchSamplerModule
     {
        selected_memory_slot->tracks[i].shift(amount);
     }
-    updateParameterControls();
+    updatePanelControls();
   }
 
   void shiftTrack(unsigned int amount)
   {
     selected_memory_slot->tracks[this->track_index].shift(amount);
-    updateParameterControls();
+    updatePanelControls();
   }
 
   void setSamplePositionSnapIndex(unsigned int sample_position_snap_index, unsigned int track_index)
@@ -552,7 +563,7 @@ struct GrooveBox : VoxglitchSamplerModule
       } // end foreach memory slot
     } // end if memory_slots array data
 
-    updateParameterControls();
+    updatePanelControls();
 	}
 
   bool trigger(unsigned int track_id)
@@ -596,7 +607,7 @@ struct GrooveBox : VoxglitchSamplerModule
         track_index = i;
         selected_track = selected_memory_slot->getTrack(track_index);
 
-        updateParameterControls();
+        updatePanelControls();
       }
     }
     */
@@ -697,7 +708,7 @@ struct GrooveBox : VoxglitchSamplerModule
         {
           selected_function = i;
           old_selected_function = selected_function;
-          updateParameterControls();
+          updatePanelControls();
         }
       }
     }
