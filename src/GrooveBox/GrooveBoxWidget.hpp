@@ -4,6 +4,7 @@
 #include <componentlibrary.hpp>
 #include "widgets/RangeGrabbers.hpp"
 #include "widgets/GrooveboxBlueLight.hpp"
+#include "widgets/GrooveboxStepButton.hpp"
 #include "widgets/SequenceLengthWidget.hpp"
 #include "widgets/SampleVisualizer.hpp"
 #include "widgets/RatchetVisualizer.hpp"
@@ -74,7 +75,7 @@ struct ModdedCL1362 : SvgPort
 {
   ModdedCL1362()
   {
-    setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/modded_CL1362.svg")));
+    setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/components/modded_CL1362.svg")));
   }
 };
 
@@ -90,9 +91,9 @@ struct TrimpotMedium : SvgKnob
     minAngle = -0.83 * M_PI;
     maxAngle = 0.83 * M_PI;
 
-    setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/TrimpotMedium.svg")));
+    setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/components/TrimpotMedium.svg")));
     bg = new widget::SvgWidget;
-    bg->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/TrimpotMedium_bg.svg")));
+    bg->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/components/TrimpotMedium_bg.svg")));
     fb->addChildBelow(bg, tw);
   }
 
@@ -297,7 +298,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
   GrooveBoxWidget(GrooveBox *module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groove_box_front_panel.svg")));
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel.svg")));
 
     addInput(createInputCentered<PJ301MPort>(Vec(39.2, 102), module, GrooveBox::STEP_INPUT));
     addInput(createInputCentered<PJ301MPort>(Vec(39.2, 154), module, GrooveBox::RESET_INPUT));
@@ -324,13 +325,20 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     for (unsigned int i = 0; i < NUMBER_OF_STEPS; i++)
     {
       //
-      // Drum pad lights
+      // Drum step buttons
       //
+      /*
       VCVLightBezel<GrooveboxBlueLight> *groovebox_blue_light_bezel = createLightParamCentered<VCVLightBezel<GrooveboxBlueLight>>(Vec(button_positions[i][0], button_positions[i][1]), module, GrooveBox::DRUM_PADS + i, GrooveBox::DRUM_PAD_LIGHTS + i);
       GrooveboxBlueLight *groove_box_blue_light = dynamic_cast<GrooveboxBlueLight *>(groovebox_blue_light_bezel->getLight());
       groove_box_blue_light->module = module;
       groove_box_blue_light->index = i;
       addParam(groovebox_blue_light_bezel);
+      */
+      GrooveboxStepButton *step_button = createParamCentered<GrooveboxStepButton>(Vec(button_positions[i][0], button_positions[i][1]), module, GrooveBox::DRUM_PADS + i);
+      step_button->module = module;
+      step_button->index = i;
+      addParam(step_button);
+
 
       //
       // Step location indicators
@@ -581,7 +589,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     void onAction(const event::Action &e) override
     {
       module->selected_memory_slot->tracks[track_index].clear();
-      module->updateKnobPositions();
+      module->updateParameterControls();
     }
   };
 

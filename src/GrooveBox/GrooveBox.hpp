@@ -3,10 +3,12 @@
 //
 // By Bret Truchan
 //
-// TODO:
-//
 // - Thank you to all the friendly people on the VCV Rack Community for answering
 //   my questions and providing feedback on early builds.
+//
+// - Thank you to Jim Allman for his incredible design skills.
+// 
+// TODO:
 
 
 struct GrooveBox : VoxglitchSamplerModule
@@ -203,7 +205,7 @@ struct GrooveBox : VoxglitchSamplerModule
     selected_track = selected_memory_slot->getTrack(0);
 
     // Update parameter lock knobs.  I'm not sure if this is necessary.
-    updateKnobPositions();
+    updateParameterControls();
 
     // Set the leftExpander pointers to the two message holders
     leftExpander.producerMessage = &expander_to_groovebox_message_a;
@@ -217,7 +219,7 @@ struct GrooveBox : VoxglitchSamplerModule
   void copyMemory(unsigned int src_index, unsigned int dst_index)
   {
       memory_slots[dst_index].copy(&memory_slots[src_index]);
-      updateKnobPositions();
+      updateParameterControls();
   }
 
   // copyMemory(src_index, dst_index)
@@ -227,7 +229,7 @@ struct GrooveBox : VoxglitchSamplerModule
   void copyStep(unsigned int dst_index)
   {
       selected_track->copyStep(this->copied_step_index, dst_index);
-      updateKnobPositions();
+      updateParameterControls();
   }
 
   void initialize()
@@ -244,10 +246,10 @@ struct GrooveBox : VoxglitchSamplerModule
       this->sample_position_snap_indexes[i] = 0;
     }
 
-    this->updateKnobPositions();
+    this->updateParameterControls();
   }
 
-  void updateKnobPositions()
+  void updateParameterControls()
   {
     for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
@@ -273,6 +275,7 @@ struct GrooveBox : VoxglitchSamplerModule
       }
 
       params[STEP_KNOBS + step_number].setValue(value);
+      params[DRUM_PADS + step_number].setValue(selected_track->getValue(step_number));
     }
   }
 
@@ -290,7 +293,7 @@ struct GrooveBox : VoxglitchSamplerModule
        selected_memory_slot->tracks[i].setPosition(playback_step);
     }
 
-    updateKnobPositions();
+    updateParameterControls();
   }
 
   void selectTrack(unsigned int new_active_track)
@@ -298,7 +301,7 @@ struct GrooveBox : VoxglitchSamplerModule
     track_index = new_active_track;
     selected_track = selected_memory_slot->getTrack(track_index);
 
-    updateKnobPositions();
+    updateParameterControls();
   }
 
   void shiftAllTracks(unsigned int amount)
@@ -307,13 +310,13 @@ struct GrooveBox : VoxglitchSamplerModule
     {
        selected_memory_slot->tracks[i].shift(amount);
     }
-    updateKnobPositions();
+    updateParameterControls();
   }
 
   void shiftTrack(unsigned int amount)
   {
     selected_memory_slot->tracks[this->track_index].shift(amount);
-    updateKnobPositions();
+    updateParameterControls();
   }
 
   void setSamplePositionSnapIndex(unsigned int sample_position_snap_index, unsigned int track_index)
@@ -549,7 +552,7 @@ struct GrooveBox : VoxglitchSamplerModule
       } // end foreach memory slot
     } // end if memory_slots array data
 
-    updateKnobPositions();
+    updateParameterControls();
 	}
 
   bool trigger(unsigned int track_id)
@@ -593,7 +596,7 @@ struct GrooveBox : VoxglitchSamplerModule
         track_index = i;
         selected_track = selected_memory_slot->getTrack(track_index);
 
-        updateKnobPositions();
+        updateParameterControls();
       }
     }
     */
@@ -662,13 +665,21 @@ struct GrooveBox : VoxglitchSamplerModule
     for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
       // Process drum pads
+      /*
       if(drum_pad_triggers[step_number].process(params[DRUM_PADS + step_number].getValue()))
       {
         selected_track->toggleStep(step_number);
       }
+      */
+
+      selected_track->setValue(step_number, params[DRUM_PADS + step_number].getValue());
 
       // Light up drum pads
-      lights[DRUM_PAD_LIGHTS + step_number].setBrightness(selected_track->getValue(step_number));
+      // lights[DRUM_PAD_LIGHTS + step_number].setBrightness(selected_track->getValue(step_number));
+
+      // This is important to do in case a new track has been selected, or if
+      // a new memory slot has been selected.
+      // params[DRUM_PADS + step_number].setValue(selected_track->getValue(step_number));
 
       // Show location
       lights[STEP_LOCATION_LIGHTS + step_number].setBrightness(playback_step == step_number);
@@ -686,7 +697,7 @@ struct GrooveBox : VoxglitchSamplerModule
         {
           selected_function = i;
           old_selected_function = selected_function;
-          updateKnobPositions();
+          updateParameterControls();
         }
       }
     }
