@@ -3,7 +3,9 @@
 
 #include <componentlibrary.hpp>
 #include "widgets/RangeGrabbers.hpp"
-#include "widgets/GrooveboxBlueLight.hpp"
+// #include "widgets/GrooveboxBlueLight.hpp"
+#include "widgets/GrooveboxSmallLight.hpp"
+
 #include "widgets/GrooveboxStepButton.hpp"
 #include "widgets/GrooveboxSoftButton.hpp"
 #include "widgets/SequenceLengthWidget.hpp"
@@ -62,6 +64,8 @@ float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
     {function_button_left_col_X + function_button_col_Xstep*7, function_button_top_row_Y + function_button_row_Ystep},  // Position #16
 };
 
+bool dummy_boolean = false;
+
 float track_button_positions[NUMBER_OF_TRACKS][2] = {
     {257, 102 - 1.6},
     {257, 133.33 - 1.6},
@@ -92,9 +96,9 @@ struct TrimpotMedium : SvgKnob
     minAngle = -0.83 * M_PI;
     maxAngle = 0.83 * M_PI;
 
-    setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/TrimpotMedium.svg")));
+    setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_TrimpotMedium.svg")));
     bg = new widget::SvgWidget;
-    bg->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/TrimpotMedium_bg.svg")));
+    bg->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_TrimpotMedium_bg.svg")));
     fb->addChildBelow(bg, tw);
   }
 
@@ -328,24 +332,18 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       //
       // Drum step buttons
       //
-      /*
-      VCVLightBezel<GrooveboxBlueLight> *groovebox_blue_light_bezel = createLightParamCentered<VCVLightBezel<GrooveboxBlueLight>>(Vec(button_positions[i][0], button_positions[i][1]), module, GrooveBox::DRUM_PADS + i, GrooveBox::DRUM_PAD_LIGHTS + i);
-      GrooveboxBlueLight *groove_box_blue_light = dynamic_cast<GrooveboxBlueLight *>(groovebox_blue_light_bezel->getLight());
-      groove_box_blue_light->module = module;
-      groove_box_blue_light->index = i;
-      addParam(groovebox_blue_light_bezel);
-      */
       GrooveboxStepButton *step_button = createParamCentered<GrooveboxStepButton>(Vec(button_positions[i][0], button_positions[i][1]), module, GrooveBox::DRUM_PADS + i);
       step_button->module = module;
       step_button->index = i;
       addParam(step_button);
 
-
       //
       // Step location indicators
       //
-      addChild(createLightCentered<SmallLight<RedLight>>(Vec(button_positions[i][0], button_positions[i][1] - 25), module, GrooveBox::STEP_LOCATION_LIGHTS + i));
-
+      StepLightWidget *step_light_widget = new StepLightWidget((module) ? &module->light_booleans[i] : &dummy_boolean);
+      step_light_widget->box.pos = Vec(button_positions[i][0] - (step_light_widget->box.size.x / 2.0), button_positions[i][1] - 25 - (step_light_widget->box.size.y / 2.0));
+      addChild(step_light_widget);
+      
       //
       // Create attenuator knobs for each step
       //

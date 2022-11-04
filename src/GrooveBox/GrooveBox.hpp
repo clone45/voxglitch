@@ -51,6 +51,9 @@ struct GrooveBox : VoxglitchSamplerModule
   unsigned int copied_step_index = 0;
   unsigned int lcd_screen_mode = 0;
 
+  // These booleans tell the sequence position lights whether to be ON or OFF
+  bool light_booleans[NUMBER_OF_STEPS];
+
 
   /*
   bool lcd_show_sample = false;
@@ -155,6 +158,8 @@ struct GrooveBox : VoxglitchSamplerModule
       configParam(DRUM_PADS + i, 0.0, 1.0, 0.0, "Step Button");
       configParam(STEP_KNOBS + i, 0.0, 1.0, 0.0, "Parameter Lock Value " + std::to_string(i));
       configParam(FUNCTION_BUTTONS + i, 0.0, 1.0, 0.0, FUNCTION_NAMES[i]);
+
+      light_booleans[i] = false;
     }
 
     // Configure the track select buttons
@@ -675,14 +680,7 @@ struct GrooveBox : VoxglitchSamplerModule
 
     for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
-      // Process drum pads
-      /*
-      if(drum_pad_triggers[step_number].process(params[DRUM_PADS + step_number].getValue()))
-      {
-        selected_track->toggleStep(step_number);
-      }
-      */
-
+      // Process step key-buttons (awesome clackity clack!)
       selected_track->setValue(step_number, params[DRUM_PADS + step_number].getValue());
 
       // Light up drum pads
@@ -693,7 +691,9 @@ struct GrooveBox : VoxglitchSamplerModule
       // params[DRUM_PADS + step_number].setValue(selected_track->getValue(step_number));
 
       // Show location
-      lights[STEP_LOCATION_LIGHTS + step_number].setBrightness(playback_step == step_number);
+      // lights[STEP_LOCATION_LIGHTS + step_number].setBrightness(playback_step == step_number);
+      // light_booleans[i] = (track_index == i);
+      light_booleans[step_number] = (playback_step == step_number);
     }
 
     //
