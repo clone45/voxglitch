@@ -1,9 +1,13 @@
-struct RatchetVisualizerWidget : TransparentWidget
+struct RatchetVisualizerWidget : LCDDisplay
 {
-  GrooveBox *module;
+  // GrooveBox *module;
 
-  float lcd_width = 133.741 * 2.952756;
-  float lcd_height = 49.672 * 2.952756;
+  // float lcd_width = 133.741 * 2.952756;
+  // float lcd_height = 49.672 * 2.952756;
+  
+  float lcd_width = box.size.x;
+  float lcd_height = box.size.y;
+
   float mid_height = lcd_height / 2.0;
   unsigned int columns = 390;
   float stroke_width = 1;

@@ -6,9 +6,17 @@
 // - Thank you to all the friendly people on the VCV Rack Community for answering
 //   my questions and providing feedback on early builds.
 //
-// - Thank you to Jim Allman for his incredible design skills.
+// - Thank you to Jim Allman for his incredible front panel design.
 // 
 // TODO:
+// 
+//   * Fix alterative LCD displays
+//   * Add cool animation for when clock is unplugged
+//   * Prune out unused code, parameters, and lights
+//   * Restore shift-steps functionality (by dragging)
+//   * Implement lowpass filter
+//   * Possibly add alternative LCD colors
+//   
 
 
 struct GrooveBox : VoxglitchSamplerModule
@@ -50,6 +58,7 @@ struct GrooveBox : VoxglitchSamplerModule
   bool step_copy_paste_mode = false;
   unsigned int copied_step_index = 0;
   unsigned int lcd_screen_mode = 0;
+  LCDColorScheme lcd_color_scheme;
 
   // These booleans tell the sequence position lights whether to be ON or OFF
   bool light_booleans[NUMBER_OF_STEPS];

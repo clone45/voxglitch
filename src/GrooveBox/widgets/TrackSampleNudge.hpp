@@ -1,6 +1,7 @@
 //
 // TrackSampleNudge
 //
+/*
 struct TrackSampleNudge : TransparentWidget
 {
   GrooveBox *module;
@@ -160,3 +161,4 @@ struct TrackSampleNudge : TransparentWidget
     }
   }
 };
+*/

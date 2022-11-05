@@ -9,9 +9,11 @@
 #include "widgets/GrooveboxStepButton.hpp"
 #include "widgets/GrooveboxSoftButton.hpp"
 #include "widgets/SequenceLengthWidget.hpp"
+
+#include "widgets/LCDDisplay.hpp"
 #include "widgets/SampleVisualizer.hpp"
 #include "widgets/RatchetVisualizer.hpp"
-#include "widgets/TrackLabelDisplay.hpp"
+#include "widgets/LCDTrackDisplay.hpp"
 #include "widgets/TrackSampleNudge.hpp"
 
 float memory_slot_button_left_col_X = 126.05; // 125.5;
@@ -373,6 +375,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
 
     // Track buttons and labels
 
+    /*
     for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
 
@@ -396,6 +399,10 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       track_sample_nudge_down->direction = 1;
       addChild(track_sample_nudge_down);
     }
+    */
+
+    LCDTrackDisplay *lcd_track_display = new LCDTrackDisplay(module);
+    addChild(lcd_track_display);
 
     // Individual track outputs
     for (unsigned int i = 0; i < (NUMBER_OF_TRACKS * 2); i++)
