@@ -1,41 +1,50 @@
-struct SampleVisualizerWidget : TransparentWidget
+struct LCDSampleDisplay : LCDDisplay
 {
   GrooveBox *module;
 
-  float width = 0;
-  float height = 0;
+  // float width = 0;
+  // float height = 0;
   float mid_height = 0;
 
   unsigned int columns = 390;
   float stroke_width = 1;
 
-  SampleVisualizerWidget(float width, float height)
+  LCDSampleDisplay(GrooveBox *module)
   {
-    this->width = width;
-    this->height = height;
-    this->mid_height = height / 2.0;
-    this->box.size = Vec(width, height);
+    this->module = module;
+
+    box.pos.x = this->box_pos_x;
+    box.pos.y = this->box_pos_y;
+    box.size = Vec(this->box_width, this->box_height);
+
+    // this->width = width;
+    // this->height = height;
+    this->mid_height = box.size.y / 2.0;
+    // this->box.size = Vec(width, height);
   }
 
-  void drawLayer(const DrawArgs& args, int layer) override
+  void drawLayer(const DrawArgs &args, int layer) override
   {
-  	if (layer == 1)
+    if (layer == 1)
     {
       TransparentWidget::draw(args);
       const auto vg = args.vg;
 
-      if(module)
+      if (module)
       {
         nvgSave(vg);
 
-        if(module->lcd_screen_mode == module->SAMPLE)
+        if (module->lcd_screen_mode == module->SAMPLE)
         {
-          Sample *active_sample = & module->selected_track->sample_player->sample;
+          Sample *active_sample = &module->selected_track->sample_player->sample;
 
           unsigned int sample_size = active_sample->size();
           unsigned int index_offset = sample_size / columns;
 
+          //
           // Draw waveform
+          //
+
           for (unsigned int i = 0; i < columns; i++)
           {
             unsigned int sample_index = index_offset * i;
@@ -47,30 +56,39 @@ struct SampleVisualizerWidget : TransparentWidget
 
             left_audio = clamp(left_audio * 0.5f, -0.5, 0.5);
 
-            float rect_height = (height * left_audio);
-            float rect_x = (width / columns) * i;
+            float rect_height = ((box.size.y - ( 2.0 * display_padding)) * left_audio);
+            float rect_x = display_padding + (((box.size.x - (2.0 * display_padding)) / columns) * i);
 
             nvgBeginPath(vg);
             nvgStrokeWidth(vg, stroke_width);
-            nvgStrokeColor(vg, nvgRGB(240, 240, 240));
+            nvgStrokeColor(vg, nvgRGB(255, 255, 255));
             nvgMoveTo(vg, rect_x, mid_height);
             nvgLineTo(vg, rect_x, mid_height + rect_height);
             nvgStroke(vg);
           }
 
+          //
           // Draw range rectangle
+          //
+
           float sample_start = module->selected_track->sample_playback_settings[module->visualizer_step].sample_start;
           float sample_end = module->selected_track->sample_playback_settings[module->visualizer_step].sample_end;
 
           nvgBeginPath(vg);
 
-          nvgRect(vg, sample_start * width, 0, (sample_end * width) - (sample_start * width), height);
+          float waveform_width = box.size.x - (2.0 * display_padding);
 
-          if(sample_start <= sample_end){
+          float draw_from_x = display_padding + (sample_start * waveform_width);
+
+          nvgRect(vg, draw_from_x, display_padding, display_padding + (sample_end * waveform_width) - draw_from_x, box.size.y - (2.0 * display_padding));
+
+          if (sample_start <= sample_end)
+          {
             // Friendly blue highlight
-            nvgFillColor(vg, nvgRGBA(97, 143, 170, 50));
+            nvgFillColor(vg, module->lcd_color_scheme.getStrongHighlightOverlay());
           }
-          else {
+          else
+          {
             // Unhappy red highlight
             nvgFillColor(vg, nvgRGBA(143, 90, 90, 80));
           }
@@ -93,11 +111,13 @@ struct SampleVisualizerWidget : TransparentWidget
     TransparentWidget::onLeave(e);
   }
 
-  void onHover(const event::Hover& e) override {
+  void onHover(const event::Hover &e) override
+  {
     e.consume(this);
   }
 
-  void step() override {
+  void step() override
+  {
     TransparentWidget::step();
   }
 };

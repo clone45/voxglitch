@@ -11,15 +11,18 @@ namespace groove_box
   const int FUNCTION_PAN = 1;
   const int FUNCTION_PITCH = 2;
   const int FUNCTION_RATCHET = 3;
-  const int FUNCTION_SAMPLE_START = 4;
-  const int FUNCTION_PROBABILITY = 5;
-  const int FUNCTION_LOOP = 6;
-  const int FUNCTION_REVERSE = 7;
+  const int FUNCTION_PROBABILITY = 4;
+
+  const int FUNCTION_DELAY_MIX = 5;
+  const int FUNCTION_DELAY_LENGTH = 6;
+  const int FUNCTION_DELAY_FEEDBACK = 7;
+
   const int FUNCTION_ATTACK = 8;
   const int FUNCTION_RELEASE = 9;
-  const int FUNCTION_DELAY_MIX = 10;
-  const int FUNCTION_DELAY_LENGTH = 11;
-  const int FUNCTION_DELAY_FEEDBACK = 12;
+
+  const int FUNCTION_LOOP = 10;
+  const int FUNCTION_REVERSE = 11;
+  const int FUNCTION_SAMPLE_START = 12;
   const int FUNCTION_SAMPLE_END = 13;
 
   const float MODULE_WIDTH = 223.52000 * 2.952756;

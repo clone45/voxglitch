@@ -11,8 +11,7 @@
 #include "widgets/SequenceLengthWidget.hpp"
 
 #include "widgets/LCDDisplay.hpp"
-#include "widgets/SampleVisualizer.hpp"
-// #include "widgets/RatchetVisualizer.hpp"
+#include "widgets/LCDSampleDisplay.hpp"
 #include "widgets/LCDRatchetDisplay.hpp"
 #include "widgets/LCDTrackDisplay.hpp"
 #include "widgets/TrackSampleNudge.hpp"
@@ -40,7 +39,7 @@ float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
     {memory_slot_button_left_col_X, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*3},
     {memory_slot_button_left_col_X + memory_slot_button_col_Xstep, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*3},
     {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*2, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*3},
-    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*3, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*3},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*3, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*3}
 };
 
 float function_button_left_col_X = 18.2;
@@ -49,22 +48,22 @@ float function_button_top_row_Y = 333.5; // 332.6;
 float function_button_row_Ystep = 26.15; // 28.0;
 float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
     {function_button_left_col_X, function_button_top_row_Y}, // FUNCTION_VOLUME
-    {function_button_left_col_X + function_button_col_Xstep, function_button_top_row_Y},   // FUNCTION_PAN
-    {function_button_left_col_X + function_button_col_Xstep*2, function_button_top_row_Y},  // FUNCTION_PITCH
-    {function_button_left_col_X + function_button_col_Xstep*3, function_button_top_row_Y},  // FUNCTION_RATCHET
-    {function_button_left_col_X + function_button_col_Xstep*4, function_button_top_row_Y},   // FUNCTION_SAMPLE_START
-    {function_button_left_col_X + function_button_col_Xstep*5, function_button_top_row_Y},  // FUNCTION_PROBABILITY
-    {function_button_left_col_X + function_button_col_Xstep*6, function_button_top_row_Y},   // FUNCTION_LOOP
-    {function_button_left_col_X + function_button_col_Xstep*7, function_button_top_row_Y},   // FUNCTION_REVERSE
+    {function_button_left_col_X + function_button_col_Xstep, function_button_top_row_Y},
+    {function_button_left_col_X + function_button_col_Xstep*2, function_button_top_row_Y},
+    {function_button_left_col_X + function_button_col_Xstep*3, function_button_top_row_Y},
+    {function_button_left_col_X + function_button_col_Xstep*4, function_button_top_row_Y},
+    {function_button_left_col_X + function_button_col_Xstep*5, function_button_top_row_Y},
+    {function_button_left_col_X + function_button_col_Xstep*6, function_button_top_row_Y},
+    {function_button_left_col_X + function_button_col_Xstep*7, function_button_top_row_Y},
 
-    {function_button_left_col_X, function_button_top_row_Y + function_button_row_Ystep}, // FUNCTION_ATTACK
-    {function_button_left_col_X + function_button_col_Xstep, function_button_top_row_Y + function_button_row_Ystep},   // FUNCTION_RELEASE
-    {function_button_left_col_X + function_button_col_Xstep*2, function_button_top_row_Y + function_button_row_Ystep}, // FUNCTION_DELAY_MIX
-    {function_button_left_col_X + function_button_col_Xstep*3, function_button_top_row_Y + function_button_row_Ystep}, // FUNCTION_DELAY_LENGTH
-    {function_button_left_col_X + function_button_col_Xstep*4, function_button_top_row_Y + function_button_row_Ystep}, // FUNCTION_DELAY_FEEDBACK
-    {function_button_left_col_X + function_button_col_Xstep*5, function_button_top_row_Y + function_button_row_Ystep},  // FUNCTION_SAMPLE_END
-    {function_button_left_col_X + function_button_col_Xstep*6, function_button_top_row_Y + function_button_row_Ystep},  // Position #15
-    {function_button_left_col_X + function_button_col_Xstep*7, function_button_top_row_Y + function_button_row_Ystep},  // Position #16
+    {function_button_left_col_X, function_button_top_row_Y + function_button_row_Ystep},
+    {function_button_left_col_X + function_button_col_Xstep, function_button_top_row_Y + function_button_row_Ystep},
+    {function_button_left_col_X + function_button_col_Xstep*2, function_button_top_row_Y + function_button_row_Ystep},
+    {function_button_left_col_X + function_button_col_Xstep*3, function_button_top_row_Y + function_button_row_Ystep},
+    {function_button_left_col_X + function_button_col_Xstep*4, function_button_top_row_Y + function_button_row_Ystep},
+    {function_button_left_col_X + function_button_col_Xstep*5, function_button_top_row_Y + function_button_row_Ystep},
+    {function_button_left_col_X + function_button_col_Xstep*6, function_button_top_row_Y + function_button_row_Ystep},
+    {function_button_left_col_X + function_button_col_Xstep*7, function_button_top_row_Y + function_button_row_Ystep}
 };
 
 bool dummy_boolean = false;
@@ -451,11 +450,8 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
 
     // Sample Visualizer Widget
 
-    SampleVisualizerWidget *sampler_visualizer_widget = new SampleVisualizerWidget(389.0, 146.669);
-    sampler_visualizer_widget->module = module;
-    sampler_visualizer_widget->box.pos.x = 249.0; // 246.1063;
-    sampler_visualizer_widget->box.pos.y = 64.358;
-    addChild(sampler_visualizer_widget);
+    LCDSampleDisplay *lcd_sample_display = new LCDSampleDisplay(module);
+    addChild(lcd_sample_display);
 
     LCDRatchetDisplay *lcd_ratchet_display = new LCDRatchetDisplay(module);
     addChild(lcd_ratchet_display);
