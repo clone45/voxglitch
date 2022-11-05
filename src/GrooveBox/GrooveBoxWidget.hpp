@@ -12,7 +12,8 @@
 
 #include "widgets/LCDDisplay.hpp"
 #include "widgets/SampleVisualizer.hpp"
-#include "widgets/RatchetVisualizer.hpp"
+// #include "widgets/RatchetVisualizer.hpp"
+#include "widgets/LCDRatchetDisplay.hpp"
 #include "widgets/LCDTrackDisplay.hpp"
 #include "widgets/TrackSampleNudge.hpp"
 
@@ -456,11 +457,8 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     sampler_visualizer_widget->box.pos.y = 64.358;
     addChild(sampler_visualizer_widget);
 
-    RatchetVisualizerWidget *ratchet_visualizer_widget = new RatchetVisualizerWidget();
-    ratchet_visualizer_widget->module = module;
-    ratchet_visualizer_widget->box.pos.x = 246.1063;
-    ratchet_visualizer_widget->box.pos.y = 64.358;
-    addChild(ratchet_visualizer_widget);
+    LCDRatchetDisplay *lcd_ratchet_display = new LCDRatchetDisplay(module);
+    addChild(lcd_ratchet_display);
   }
 
   void onHoverKey(const event::HoverKey &e) override

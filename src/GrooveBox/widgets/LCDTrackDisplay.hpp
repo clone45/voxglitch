@@ -181,10 +181,11 @@ struct TrackSampleNudge : TransparentWidget
 
   int direction = 1;
 
-  TrackSampleNudge(unsigned int track_number)
+  TrackSampleNudge(unsigned int track_number, float width, float height)
   {
     this->track_number = track_number;
-    box.size = Vec(20, (29.0 / 2.0) - 0.5);
+    // box.size = Vec(20, (29.0 / 2.0) - 0.5);
+    box.size = Vec(width, height);
   }
 
   void onButton(const event::Button &e) override
@@ -362,12 +363,11 @@ struct LCDTrackDisplay : LCDDisplay
     float horizontal_padding_between_columns = display_padding;
     float vertical_padding_between_rows = 3.0;
 
-    // float track_label_height = 29.0;
-    // float track_label_width = 162.0;
-
+    // Calculate track label width and height
     float track_label_width = (this->box_width - (2.0 * display_padding) - horizontal_padding_between_columns - (2.0 * nudge_button_padding) - (2.0 * nudge_button_width)) / 2.0;
     float track_label_height = (this->box_height - (2.0 * display_padding) - (3.0 * vertical_padding_between_rows)) / 4.0;
 
+    // Calculate nudge button height
     float nudge_button_height = (track_label_height / 2.0) - (nudge_button_padding / 2.0);
 
     float x = 0;
@@ -397,13 +397,13 @@ struct LCDTrackDisplay : LCDDisplay
         //
         // Add nudge-up, nudge-down buttons
         //
-        TrackSampleNudge *track_sample_nudge_up = new TrackSampleNudge(i);
+        TrackSampleNudge *track_sample_nudge_up = new TrackSampleNudge(i, nudge_button_width, nudge_button_height);
         track_sample_nudge_up->setPosition(Vec(x + track_label_width + nudge_button_padding, y)); // 162
         track_sample_nudge_up->module = module;
         track_sample_nudge_up->direction = -1;
         addChild(track_sample_nudge_up);
 
-        TrackSampleNudge *track_sample_nudge_down = new TrackSampleNudge(i);
+        TrackSampleNudge *track_sample_nudge_down = new TrackSampleNudge(i, nudge_button_width, nudge_button_height);
         track_sample_nudge_down->setPosition(Vec(x + track_label_width + nudge_button_padding, y + nudge_button_height + nudge_button_padding)); // 162
         track_sample_nudge_down->module = module;
         track_sample_nudge_down->direction = 1;
@@ -416,45 +416,5 @@ struct LCDTrackDisplay : LCDDisplay
   {
     Widget::onButton(e);
   }  
-  /*
-  void draw(const DrawArgs &args) override
-  {
 
-
-  }
-
-  void drawLayer(const DrawArgs &args, int layer) override
-  {
-    if (layer == 1)
-    {
-      TransparentWidget::draw(args);
-    }
-  }
-  */
-  /*
-  void onButton(const event::Button &e) override
-  {
-    TransparentWidget::onButton(e);
-  }
-
-  void onEnter(const event::Enter &e) override
-  {
-    TransparentWidget::onEnter(e);
-  }
-
-  void onLeave(const event::Leave &e) override
-  {
-    TransparentWidget::onLeave(e);
-  }
-
-  void onHover(const event::Hover &e) override
-  {
-    e.consume(this);
-  }
-
-  void step() override
-  {
-    TransparentWidget::step();
-  }
-  */
 };
