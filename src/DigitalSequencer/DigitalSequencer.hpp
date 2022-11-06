@@ -155,14 +155,19 @@ struct DigitalSequencer : VoxglitchModule
     }
 	}
 
+  /*
   void copy(unsigned int src_sequencer_index, unsigned int dst_sequencer_index)
   {
+    // src_sequencer_index = clamp(src_sequencer_index, 0, NUMBER_OF_SEQUENCERS);
+    // dst_sequencer_index = clamp(dst_sequencer_index, 0, NUMBER_OF_SEQUENCERS);
+
     for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
     {
       this->voltage_sequencers[dst_sequencer_index].setValue(i,this->voltage_sequencers[src_sequencer_index].getValue(i));
       this->gate_sequencers[dst_sequencer_index].setValue(i,this->gate_sequencers[src_sequencer_index].getValue(i));
     }
   }
+  */
 
   void setLengthKnobPosition(unsigned int value)
   {

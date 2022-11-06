@@ -111,6 +111,8 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
       }
     }
 
+    /*  TODO: control-c, control-v is used for presets and I shouldn't steal
+              those clicks.  Rework this using right-click menu.
     if ((e.key == GLFW_KEY_C) && ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL)) // Control-C
     {
       if (e.action == GLFW_PRESS)
@@ -131,6 +133,7 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
         }
       }
     }
+    */
 
     // Switch between seuences using the number keys 1-8
     if (e.key >= GLFW_KEY_1 && e.key <= GLFW_KEY_8) // quick-select
