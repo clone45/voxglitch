@@ -176,15 +176,11 @@ struct TrackSampleNudge : TransparentWidget
   GrooveBox *module;
   unsigned int track_number = 0;
 
-  NVGcolor track_background_default = nvgRGBA(146, 42, 43, 140);
-  NVGcolor track_background_highlight = nvgRGBA(245, 141, 138, 140);
-
   int direction = 1;
 
   TrackSampleNudge(unsigned int track_number, float width, float height)
   {
     this->track_number = track_number;
-    // box.size = Vec(20, (29.0 / 2.0) - 0.5);
     box.size = Vec(width, height);
   }
 
@@ -282,11 +278,11 @@ struct TrackSampleNudge : TransparentWidget
       nvgRect(vg, 0, 0, box.size.x, box.size.y);
       if (module->track_index == this->track_number)
       {
-        nvgFillColor(vg, track_background_highlight);
+        nvgFillColor(vg, module->lcd_color_scheme.getLightColor());
       }
       else
       {
-        nvgFillColor(vg, track_background_default);
+        nvgFillColor(vg, module->lcd_color_scheme.getDarkColor());
       }
       nvgFill(vg);
 
@@ -300,7 +296,7 @@ struct TrackSampleNudge : TransparentWidget
       // Draw nudge rectangle background
       nvgBeginPath(vg);
       nvgRect(vg, 0, 0, box.size.x, box.size.y);
-      nvgFillColor(vg, track_background_default);
+      nvgFillColor(vg, nvgRGBA(146, 42, 43, 140));
       nvgFill(vg);
 
       drawArrow(vg, direction);

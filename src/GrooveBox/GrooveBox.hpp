@@ -10,7 +10,6 @@
 // 
 // TODO:
 // 
-//   * Fix alterative LCD displays
 //   * Add cool animation for when clock is unplugged
 //   * Prune out unused code, parameters, and lights
 //   * Restore shift-steps functionality (by dragging)
@@ -63,14 +62,6 @@ struct GrooveBox : VoxglitchSamplerModule
   // These booleans tell the sequence position lights whether to be ON or OFF
   bool light_booleans[NUMBER_OF_STEPS];
 
-
-  /*
-  bool lcd_show_sample = false;
-  bool lcd_show_ratchet_visualizer = false;
-  bool show_updates_visualizer = false;
-  bool show_tracks = true;
-  */
-
   unsigned int visualizer_step = 0;
   unsigned int sample_position_snap_track_values[NUMBER_OF_TRACKS];
   bool track_declicking_enabled[NUMBER_OF_TRACKS];
@@ -122,7 +113,6 @@ struct GrooveBox : VoxglitchSamplerModule
     ENUMS(STEP_SELECT_BUTTONS, NUMBER_OF_STEPS),
     ENUMS(STEP_KNOBS, NUMBER_OF_STEPS),
     ENUMS(FUNCTION_BUTTONS, NUMBER_OF_FUNCTIONS),
-    ENUMS(TRACK_BUTTONS, NUMBER_OF_TRACKS),
     ENUMS(MEMORY_SLOT_BUTTONS, NUMBER_OF_MEMORY_SLOTS),
     COPY_BUTTON,
     PASTE_BUTTON,
@@ -142,11 +132,6 @@ struct GrooveBox : VoxglitchSamplerModule
 		NUM_OUTPUTS
 	};
   enum LightIds {
-    ENUMS(DRUM_PAD_LIGHTS, NUMBER_OF_STEPS),
-    ENUMS(STEP_LOCATION_LIGHTS, NUMBER_OF_STEPS),
-    ENUMS(FUNCTION_BUTTON_LIGHTS, NUMBER_OF_FUNCTIONS),
-    ENUMS(TRACK_BUTTON_LIGHTS, NUMBER_OF_TRACKS),
-    ENUMS(MEMORY_SLOT_BUTTON_LIGHTS, NUMBER_OF_MEMORY_SLOTS),
 		NUM_LIGHTS
 	};
 
@@ -171,10 +156,9 @@ struct GrooveBox : VoxglitchSamplerModule
       light_booleans[i] = false;
     }
 
-    // Configure the track select buttons
+    // Make sure arrays are initialized with sane values
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
     {
-      configParam(TRACK_BUTTONS + i, 0.0, 1.0, 0.0, "Track Selection Button");
       this->mutes[i] = false;
       this->solos[i] = false;
       this->track_volumes[i] = 1.0;
@@ -717,8 +701,8 @@ struct GrooveBox : VoxglitchSamplerModule
         {
           selected_function = i;
           old_selected_function = selected_function;
-          updatePanelControls();
         }
+        updatePanelControls();
       }
     }
 
@@ -853,24 +837,6 @@ struct GrooveBox : VoxglitchSamplerModule
     // Summed output voltages at stereo outputs
     outputs[AUDIO_OUTPUT_LEFT].setVoltage(mix_left_output * master_volume);
     outputs[AUDIO_OUTPUT_RIGHT].setVoltage(mix_right_output * master_volume);
-
-    // function button lights
-    for(unsigned int i=0; i<NUMBER_OF_FUNCTIONS; i++)
-    {
-      lights[FUNCTION_BUTTON_LIGHTS + i].setBrightness(selected_function == i);
-    }
-
-    // memory slot button lights
-    for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
-    {
-      lights[MEMORY_SLOT_BUTTON_LIGHTS + i].setBrightness(memory_slot_index == i);
-    }
-
-    // track button lights
-    for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
-    {
-      lights[TRACK_BUTTON_LIGHTS + i].setBrightness(track_index == i);
-    }
 
     if(expander_connected) writeToExpander();
   }

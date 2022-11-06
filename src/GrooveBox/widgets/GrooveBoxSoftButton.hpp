@@ -18,51 +18,7 @@ struct GrooveboxSoftButton : SvgSwitch
 
     void draw(const DrawArgs &args) override
     {
-        // Draw background shadow
-        /*
-        nvgBeginPath(args.vg);
-        nvgRect(args.vg, -1, -1, box.size.x + 3.0, box.size.y + 3.0);
-        nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 60));
-        nvgFill(args.vg);
-        */
-
         SvgSwitch::draw(args);
-
-        // For testing, draw rectangle around box size
-        /*
-        nvgBeginPath(args.vg);
-        nvgStrokeColor(args.vg, nvgRGB(100, 120, 255));
-        nvgStrokeWidth(args.vg, 0.2f);
-        nvgFillColor(args.vg, nvgRGB(100, 120, 255));
-        nvgRect(args.vg, 0, 0, box.size.x, box.size.y);
-        nvgStroke(args.vg);
-        */
-
-        //
-        // Draw glow effect
-        //
-        /*
-        if(module)
-        {
-          ParamQuantity *param_quantity = getParamQuantity();
-
-          if(! (param_quantity->getValue() == param_quantity->getMinValue()))
-          {
-            math::Vec c = box.size.div(2);
-            float radius = std::min(box.size.x, box.size.y) / 2.0;
-            float oradius = radius + std::min(radius * 2.f, 8.f);
-
-            nvgBeginPath(args.vg);
-            nvgRect(args.vg, c.x - oradius, c.y - oradius, 2 * oradius, 2 * oradius);
-
-            NVGcolor icol = nvgRGBA(255, 208, 183, 60);
-            NVGcolor ocol = nvgRGBA(0, 0, 0, 0);
-            NVGpaint paint = nvgRadialGradient(args.vg, c.x, c.y, radius, oradius, icol, ocol);
-            nvgFillPaint(args.vg, paint);
-            nvgFill(args.vg);
-          }
-        }
-        */
     }
 
     /*

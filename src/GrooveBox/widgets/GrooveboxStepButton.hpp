@@ -4,12 +4,12 @@ struct GrooveboxStepButton : SvgSwitch
     bool is_moused_over = false;
     Vec drag_position;
     unsigned int index = 0;
-  
+
     GrooveboxStepButton()
     {
         momentary = false;
         shadow->opacity = 0;
-                                                                     
+
         addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_step_button.svg")));
         addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_step_button_lit.svg")));
 
@@ -18,136 +18,28 @@ struct GrooveboxStepButton : SvgSwitch
 
     void draw(const DrawArgs &args) override
     {
-        // Draw background shadow
-        /*
-        nvgBeginPath(args.vg);
-        nvgRect(args.vg, -1, -1, box.size.x + 3.0, box.size.y + 3.0);
-        nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 60));
-        nvgFill(args.vg);
-        */
-
         SvgSwitch::draw(args);
+    }
 
-        // For testing, draw rectangle around box size
-        /*
-        nvgBeginPath(args.vg);
-        nvgStrokeColor(args.vg, nvgRGB(100, 120, 255));
-        nvgStrokeWidth(args.vg, 0.2f);
-        nvgFillColor(args.vg, nvgRGB(100, 120, 255));
-        nvgRect(args.vg, 0, 0, box.size.x, box.size.y);
-        nvgStroke(args.vg);
-        */
+    struct CopyMenuItem : MenuItem
+    {
+        GrooveBox *module;
 
-        //
-        // Draw glow effect
-        //
-        /*
-        if(module)
+        void onAction(const event::Action &e) override
         {
-          ParamQuantity *param_quantity = getParamQuantity();
-
-          if(! (param_quantity->getValue() == param_quantity->getMinValue()))
-          {
-            math::Vec c = box.size.div(2);
-            float radius = std::min(box.size.x, box.size.y) / 2.0;
-            float oradius = radius + std::min(radius * 2.f, 8.f);
-
-            nvgBeginPath(args.vg);
-            nvgRect(args.vg, c.x - oradius, c.y - oradius, 2 * oradius, 2 * oradius);
-
-            NVGcolor icol = nvgRGBA(255, 208, 183, 60);
-            NVGcolor ocol = nvgRGBA(0, 0, 0, 0);
-            NVGpaint paint = nvgRadialGradient(args.vg, c.x, c.y, radius, oradius, icol, ocol);
-            nvgFillPaint(args.vg, paint);
-            nvgFill(args.vg);
-          }
+            // do the copy action
         }
-        */
-    }
+    };
 
-    /*
-
-    //
-    //
-    // TODO: Restore these special events before the module goes live
-    //
-    //
-
-
-    void onButton(const event::Button &e) override
+    void appendContextMenu(Menu *menu) override
     {
-        if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
-        {
-            e.consume(this);
-            if (module->step_copy_paste_mode)
-            {
-                module->copyStep(this->index);
-            }
-            else
-            {
-                drag_position = this->box.pos + Vec(this->box.size[0] / 2, 0);
-                // BlueLight::onButton(e);
-            }
-        }
+        GrooveBox *module = dynamic_cast<GrooveBox *>(this->module);
+        assert(module);
+
+        // menu->addChild(new MenuEntry); // For spacing only
+        // menu->addChild(createMenuLabel("GrooveBox"));
+        CopyMenuItem *copy_menu_item = createMenuItem<CopyMenuItem>("Copy");
+        copy_menu_item->module = module;
+        menu->addChild(copy_menu_item);
     }
-
-    void onEnter(const event::Enter &e) override
-    {
-        this->is_moused_over = true;
-        // BlueLight::onEnter(e);
-    }
-
-    void onLeave(const event::Leave &e) override
-    {
-        this->is_moused_over = false;
-        // BlueLight::onLeave(e);
-    }
-
-    void onHover(const event::Hover &e) override
-    {
-        e.consume(this);
-        this->is_moused_over = true;
-    }
-
-    void step() override
-    {
-        // BlueLight::step();
-    }
-
-    void onDragMove(const event::DragMove &e) override
-    {
-        float space_between_buttons = (button_positions[1][0] - button_positions[0][0]);
-
-        if (module && module->shift_key)
-        {
-            float zoom = getAbsoluteZoom();
-            drag_position = drag_position.plus(e.mouseDelta.div(zoom));
-
-            int amount = -1 * (drag_position.x / space_between_buttons);
-
-            if (amount != 0)
-            {
-                if (module->control_key)
-                {
-                    module->shiftAllTracks(amount);
-                }
-                else
-                {
-                    module->shiftTrack(amount);
-                }
-
-                drag_position.x = e.mouseDelta.div(zoom).x;
-            }
-        }
-    }
-
-    void onDoubleClick(const event::DoubleClick &e) override
-    {
-        if (module->shift_key)
-        {
-            module->step_copy_paste_mode = true;
-            module->copied_step_index = this->index;
-        }
-    }
-    */
 };

@@ -366,10 +366,6 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       float x = function_button_positions[i][0];
       float y = function_button_positions[i][1];
 
-      /*
-      addParam(createParamCentered<LEDButton>(Vec(x, y), module, GrooveBox::FUNCTION_BUTTONS + i));
-      addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x, y), module, GrooveBox::FUNCTION_BUTTON_LIGHTS + i));
-      */
       addParam(createParamCentered<GrooveboxSoftButton>(Vec(x, y), module, GrooveBox::FUNCTION_BUTTONS + i));
     }
 
@@ -424,12 +420,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     {
       float x = memory_slot_button_positions[i][0];
       float y = memory_slot_button_positions[i][1];
-      /*
-      addParam(createParamCentered<LEDButton>(Vec(x, y), module, GrooveBox::MEMORY_SLOT_BUTTONS + i));
-      addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x, y), module, GrooveBox::MEMORY_SLOT_BUTTON_LIGHTS + i));
-      */
       addParam(createParamCentered<GrooveboxSoftButton>(Vec(x, y), module, GrooveBox::MEMORY_SLOT_BUTTONS + i));
-     
     }
 
     // Memory CV input
