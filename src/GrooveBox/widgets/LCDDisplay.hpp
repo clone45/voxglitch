@@ -11,4 +11,24 @@ struct LCDDisplay : TransparentWidget
     float box_height = 140.764;
 
     float display_padding = 8.0;
+
+    /*
+    void draw(const DrawArgs &args) override
+    {
+        const auto vg = args.vg;
+
+        if (module)
+        {
+            nvgSave(vg);
+            nvgBeginPath(vg);
+            nvgFillColor(vg, module->lcd_color_scheme.getBackgroundColor());
+            nvgRect(vg, 0, 0, 20, 20);
+            nvgStroke(vg);
+            nvgRestore(vg);
+
+            // TransparentWidget::draw(args);
+        }
+    }
+    */
+
 };

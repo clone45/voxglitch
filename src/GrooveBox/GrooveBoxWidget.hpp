@@ -482,6 +482,11 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     all_tracks_menu->module = module;
     menu->addChild(all_tracks_menu);
 
+    // LCD color theme
+    LCDColorThemeMenu *lcd_color_theme_menu = createMenuItem<LCDColorThemeMenu>("LCD Color Theme", RIGHT_ARROW);
+    lcd_color_theme_menu->module = module;
+    menu->addChild(lcd_color_theme_menu);
+
     //
     // Start sample selection menu options
     //
@@ -692,4 +697,39 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       return menu;
     }
   };
+
+  struct LCDColorMenuItem : MenuItem {
+    GrooveBox *module;
+    unsigned int theme_id = 0;
+
+    void onAction(const event::Action &e) override {
+      module->lcd_color_scheme.selected_color_scheme = theme_id;
+    }
+  };
+
+  struct LCDColorThemeMenu : MenuItem
+  {
+    GrooveBox *module;
+
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      LCDColorMenuItem *lcd_color_menu_item_0 = createMenuItem<LCDColorMenuItem>("Vampire Red", CHECKMARK(module->lcd_color_scheme.selected_color_scheme == 0));
+      lcd_color_menu_item_0->module = module;
+      lcd_color_menu_item_0->theme_id = 0;
+      menu->addChild(lcd_color_menu_item_0);
+
+      LCDColorMenuItem *lcd_color_menu_item_1 = createMenuItem<LCDColorMenuItem>("Some Theme", CHECKMARK(module->lcd_color_scheme.selected_color_scheme == 1));
+      lcd_color_menu_item_1->module = module;
+      lcd_color_menu_item_1->theme_id = 1;
+      menu->addChild(lcd_color_menu_item_1);
+
+      LCDColorMenuItem *lcd_color_menu_item_2 = createMenuItem<LCDColorMenuItem>("Some other theme", CHECKMARK(module->lcd_color_scheme.selected_color_scheme == 2));
+      lcd_color_menu_item_2->module = module;
+      lcd_color_menu_item_2->theme_id = 2;
+      menu->addChild(lcd_color_menu_item_2);
+
+      return menu;
+    }
+  };  
 };

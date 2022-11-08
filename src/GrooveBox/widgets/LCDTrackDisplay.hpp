@@ -344,6 +344,7 @@ struct LCDTrackDisplay : LCDDisplay
     box.pos.y = this->box_pos_y;
     box.size = Vec(this->box_width, this->box_height);
 
+
     //
     // MAKE ADJUSTMENTS HERE 
     //
