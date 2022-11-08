@@ -1,5 +1,9 @@
 ## Change Log
 
+## 2.23.2
+* Added defensive code in case theme layer files don't exist
+* Fixed potential array index out-of-bounds errors detected by cppcheck
+
 ## 2.23.1
 * Fixed link to Autobreak Studio in documentation
 * Updated Groovebox so that it recalls the selected memory slot upon load
