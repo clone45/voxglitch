@@ -377,6 +377,14 @@ struct Track
     this->track_pitch = src_track->track_pitch;
   }
 
+  void randomizeSteps()
+  {
+    for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
+    {
+      steps[i] = (rand() > (RAND_MAX / 2));
+    }
+  }
+
   float getRangeStart()  {
     return(this->range_start);
   }

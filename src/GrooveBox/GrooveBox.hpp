@@ -11,8 +11,6 @@
 // TODO:
 // 
 //   * Add cool animation for when clock is unplugged
-//   * Prune out unused code, parameters, and lights
-//   * Restore shift-steps functionality (by dragging)
 //   * Implement lowpass filter
 //   * Possibly add alternative LCD colors
 //   
@@ -150,8 +148,13 @@ struct GrooveBox : VoxglitchSamplerModule
     for(unsigned int i=0; i < NUMBER_OF_STEPS; i++)
     {
       configParam(DRUM_PADS + i, 0.0, 1.0, 0.0, "Step Button");
+      configOnOff(DRUM_PADS + i, 0.0, "Step Button");
+
       configParam(STEP_KNOBS + i, 0.0, 1.0, 0.0, "Parameter Lock Value " + std::to_string(i));
-      configParam(FUNCTION_BUTTONS + i, 0.0, 1.0, 0.0, FUNCTION_NAMES[i]);
+      
+      configParam(FUNCTION_BUTTONS + i, 0.0, 1.0, 0.0);
+      configOnOff(FUNCTION_BUTTONS + i, 0.0, FUNCTION_NAMES[i]);
+      
 
       light_booleans[i] = false;
     }
@@ -179,7 +182,8 @@ struct GrooveBox : VoxglitchSamplerModule
 
     // Create tooltips for the memory slots
     for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++) {
-      configParam(MEMORY_SLOT_BUTTONS + i, 0.0, 1.0, 0.0, "Memory Slot #" + std::to_string(i+1));
+      configParam(MEMORY_SLOT_BUTTONS + i, 0.0, 1.0, 0.0);
+      configOnOff(MEMORY_SLOT_BUTTONS + i, 0.0, "Memory Slot #" + std::to_string(i+1));
     }
 
     // Configure the master output knob
@@ -220,11 +224,11 @@ struct GrooveBox : VoxglitchSamplerModule
       updatePanelControls();
   }
 
-  // copyMemory(src_index, dst_index)
+  // pasteStep(src_index, dst_index)
   //
-  // Helper function to copy one memory slot to another memory slot
+  // Helper function to copy one step to another, including all parameter locks
   //
-  void copyStep(unsigned int dst_index)
+  void pasteStep(unsigned int dst_index)
   {
       selected_track->copyStep(this->copied_step_index, dst_index);
       updatePanelControls();
@@ -325,6 +329,18 @@ struct GrooveBox : VoxglitchSamplerModule
   void shiftTrack(unsigned int amount)
   {
     selected_memory_slot->tracks[this->track_index].shift(amount);
+    updatePanelControls();
+  }
+
+  void randomizeSteps()
+  {
+    this->selected_track->randomizeSteps();
+    updatePanelControls();
+  }
+
+  void clearSteps()
+  {
+    this->selected_track->clear();
     updatePanelControls();
   }
 
