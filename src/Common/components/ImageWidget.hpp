@@ -5,6 +5,7 @@ struct ImageWidget : TransparentWidget
   float height;
   float alpha = 1.0;
   float zoom = 1.0;
+  bool image_exists = true;
 
   ImageWidget(std::string image_file_path, float width, float height, float alpha = 1.0, float zoom = 1.0)
   {
@@ -13,10 +14,14 @@ struct ImageWidget : TransparentWidget
     this->height = height; // 1525
     this->alpha = alpha;
     this->zoom = zoom;
+
+    image_exists = rack::system::exists(asset::plugin(pluginInstance, this->image_file_path));
   }
 
   void draw(const DrawArgs &args) override
   {
+    if(image_exists == false) return;
+
     std::shared_ptr<Image> img = APP->window->loadImage(asset::plugin(pluginInstance, this->image_file_path));
 
     int temp_width, temp_height;
