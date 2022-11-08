@@ -23,6 +23,7 @@ struct Track
   // DSP classes
   ADSR adsr;
   SimpleDelay delay;
+
   StereoFadeOut fade_out;
   rack::dsp::SlewLimiter volume_slew_limiter;
   rack::dsp::SlewLimiter pan_slew_limiter;
