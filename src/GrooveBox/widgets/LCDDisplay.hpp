@@ -12,23 +12,28 @@ struct LCDDisplay : TransparentWidget
 
     float display_padding = 8.0;
 
-    /*
-    void draw(const DrawArgs &args) override
+    LCDDisplay()
     {
-        const auto vg = args.vg;
-
-        if (module)
-        {
-            nvgSave(vg);
-            nvgBeginPath(vg);
-            nvgFillColor(vg, module->lcd_color_scheme.getBackgroundColor());
-            nvgRect(vg, 0, 0, 20, 20);
-            nvgStroke(vg);
-            nvgRestore(vg);
-
-            // TransparentWidget::draw(args);
-        }
+        box.size.x = box_width;
+        box.size.y = box_height;
+        box.pos.x = box_pos_x;
+        box.pos.y = box_pos_y;
     }
-    */
 
+    void drawLayer(const DrawArgs &args, int layer) override
+    {
+        if (layer == 1)
+        {
+            const auto vg = args.vg;
+
+            if (module)
+            {
+                nvgBeginPath(vg);
+                nvgRect(vg, 0, 0, box.size.x, box.size.y);
+                nvgFillColor(vg, module->lcd_color_scheme.getBackgroundColor());
+                nvgFill(vg);
+            }
+        }
+        Widget::drawLayer(args, layer);
+    }
 };

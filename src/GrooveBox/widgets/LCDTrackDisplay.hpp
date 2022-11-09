@@ -110,59 +110,66 @@ struct TrackLabelDisplay : TransparentWidget
     nvgFill(vg);
   }
 
-  void draw(const DrawArgs &args) override
+  // void draw(const DrawArgs &args) override
+  // {
+
+  void drawLayer(const DrawArgs &args, int layer) override
   {
-    const auto vg = args.vg;
-
-    // Save the drawing context to restore later
-    nvgSave(vg);
-
-    //
-    // Draw track names
-    //
-    if (module)
+    if (layer == 1)
     {
-      if (!module->lcd_screen_mode == module->TRACK)
-      {
-        nvgRestore(vg);
-        return;
-      }
+      const auto vg = args.vg;
 
-      // Draw track slot background
-      nvgBeginPath(vg);
-      nvgRect(vg, 0, 0, box.size.x, box.size.y);
-      if (module->track_index == this->track_number)
+      // Save the drawing context to restore later
+      nvgSave(vg);
+
+      //
+      // Draw track names
+      //
+      if (module)
       {
-        nvgFillColor(vg, module->lcd_color_scheme.getLightColor());
+        if (!module->lcd_screen_mode == module->TRACK)
+        {
+          nvgRestore(vg);
+          return;
+        }
+
+        // Draw track slot background
+        nvgBeginPath(vg);
+        nvgRect(vg, 0, 0, box.size.x, box.size.y);
+        if (module->track_index == this->track_number)
+        {
+          nvgFillColor(vg, module->lcd_color_scheme.getLightColor());
+        }
+        else
+        {
+          nvgFillColor(vg, module->lcd_color_scheme.getDarkColor());
+        }
+        nvgFill(vg);
+
+        std::string to_display = module->loaded_filenames[track_number];
+
+        // If the track name is not empty, then display it
+        if ((to_display != "") && (to_display != "[ empty ]"))
+        {
+          draw_track_label(to_display, vg);
+        }
       }
+      //
+      // Draw placeholder track names for library view
+      //
       else
       {
-        nvgFillColor(vg, module->lcd_color_scheme.getDarkColor());
+        // Draw track slot background
+        nvgBeginPath(vg);
+        nvgRect(vg, 0, 0, box.size.x, box.size.y);
+        nvgFillColor(vg, nvgRGBA(146, 42, 43, 140));
+        nvgFill(vg);
+
+        draw_track_label(PLACEHOLDER_TRACK_NAMES[track_number], vg);
       }
-      nvgFill(vg);
-
-      std::string to_display = module->loaded_filenames[track_number];
-
-      // If the track name is not empty, then display it
-      if ((to_display != "") && (to_display != "[ empty ]"))
-      {
-        draw_track_label(to_display, vg);
-      }
+      nvgRestore(vg);
     }
-    //
-    // Draw placeholder track names for library view
-    //
-    else
-    {
-      // Draw track slot background
-      nvgBeginPath(vg);
-      nvgRect(vg, 0, 0, box.size.x, box.size.y);
-      nvgFillColor(vg, nvgRGBA(146, 42, 43, 140));
-      nvgFill(vg);
-
-      draw_track_label(PLACEHOLDER_TRACK_NAMES[track_number], vg);
-    }
-    nvgRestore(vg);
+    Widget::drawLayer(args, layer);
   }
 };
 
@@ -227,6 +234,7 @@ struct TrackSampleNudge : TransparentWidget
 
       e.consume(this);
     }
+    
   }
 
   void onEnter(const event::Enter &e) override
@@ -255,53 +263,57 @@ struct TrackSampleNudge : TransparentWidget
     }
   }
 
-  void draw(const DrawArgs &args) override
+  void drawLayer(const DrawArgs &args, int layer) override
   {
-    const auto vg = args.vg;
-
-    // Save the drawing context to restore later
-    nvgSave(vg);
-
-    //
-    // Draw nudge button
-    //
-    if (module)
+    if (layer == 1)
     {
-      if (!module->lcd_screen_mode == module->TRACK)
-      {
-        nvgRestore(vg);
-        return;
-      }
+      const auto vg = args.vg;
 
-      // Draw nudge rectangle background
-      nvgBeginPath(vg);
-      nvgRect(vg, 0, 0, box.size.x, box.size.y);
-      if (module->track_index == this->track_number)
+      // Save the drawing context to restore later
+      nvgSave(vg);
+
+      //
+      // Draw nudge button
+      //
+      if (module)
       {
-        nvgFillColor(vg, module->lcd_color_scheme.getLightColor());
+        if (!module->lcd_screen_mode == module->TRACK)
+        {
+          nvgRestore(vg);
+          return;
+        }
+
+        // Draw nudge rectangle background
+        nvgBeginPath(vg);
+        nvgRect(vg, 0, 0, box.size.x, box.size.y);
+        if (module->track_index == this->track_number)
+        {
+          nvgFillColor(vg, module->lcd_color_scheme.getLightColor());
+        }
+        else
+        {
+          nvgFillColor(vg, module->lcd_color_scheme.getDarkColor());
+        }
+        nvgFill(vg);
+
+        drawArrow(vg, direction);
       }
+      //
+      // Nudge button
+      //
       else
       {
-        nvgFillColor(vg, module->lcd_color_scheme.getDarkColor());
+        // Draw nudge rectangle background
+        nvgBeginPath(vg);
+        nvgRect(vg, 0, 0, box.size.x, box.size.y);
+        nvgFillColor(vg, nvgRGBA(146, 42, 43, 140));
+        nvgFill(vg);
+
+        drawArrow(vg, direction);
       }
-      nvgFill(vg);
-
-      drawArrow(vg, direction);
+      nvgRestore(vg);
     }
-    //
-    // Nudge button
-    //
-    else
-    {
-      // Draw nudge rectangle background
-      nvgBeginPath(vg);
-      nvgRect(vg, 0, 0, box.size.x, box.size.y);
-      nvgFillColor(vg, nvgRGBA(146, 42, 43, 140));
-      nvgFill(vg);
-
-      drawArrow(vg, direction);
-    }
-    nvgRestore(vg);
+    Widget::drawLayer(args, layer);
   }
 
   void drawArrow(NVGcontext *vg, int direction)
@@ -328,7 +340,6 @@ struct TrackSampleNudge : TransparentWidget
   }
 };
 
-
 //
 //==============================================================================
 // LCDTrackDisplay
@@ -344,9 +355,8 @@ struct LCDTrackDisplay : LCDDisplay
     box.pos.y = this->box_pos_y;
     box.size = Vec(this->box_width, this->box_height);
 
-
     //
-    // MAKE ADJUSTMENTS HERE 
+    // MAKE ADJUSTMENTS HERE
     //
     // Certain sizes are fixed, and some are caculationed.
     // The fixed sizes are the paddings and the nudge button sizes.
@@ -372,46 +382,44 @@ struct LCDTrackDisplay : LCDDisplay
 
     for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
-        if(i >= 4)
-        {
-          x = display_padding + track_label_width + nudge_button_padding + nudge_button_width + horizontal_padding_between_columns;
-          y = display_padding + ((i - 4) * (track_label_height + vertical_padding_between_rows));
-        }
-        else
-        {
-          x = display_padding;
-          y = display_padding + (i * (track_label_height + vertical_padding_between_rows));
-        }
+      if (i >= 4)
+      {
+        x = display_padding + track_label_width + nudge_button_padding + nudge_button_width + horizontal_padding_between_columns;
+        y = display_padding + ((i - 4) * (track_label_height + vertical_padding_between_rows));
+      }
+      else
+      {
+        x = display_padding;
+        y = display_padding + (i * (track_label_height + vertical_padding_between_rows));
+      }
 
-        //
-        // Add track label boxes
-        //
-        TrackLabelDisplay *track_label_display = new TrackLabelDisplay(i, track_label_width, track_label_height);
-        track_label_display->setPosition(Vec(x, y));
-        track_label_display->module = module;
-        addChild(track_label_display);
+      //
+      // Add track label boxes
+      //
+      TrackLabelDisplay *track_label_display = new TrackLabelDisplay(i, track_label_width, track_label_height);
+      track_label_display->setPosition(Vec(x, y));
+      track_label_display->module = module;
+      addChild(track_label_display);
 
-        //
-        // Add nudge-up, nudge-down buttons
-        //
-        TrackSampleNudge *track_sample_nudge_up = new TrackSampleNudge(i, nudge_button_width, nudge_button_height);
-        track_sample_nudge_up->setPosition(Vec(x + track_label_width + nudge_button_padding, y)); // 162
-        track_sample_nudge_up->module = module;
-        track_sample_nudge_up->direction = -1;
-        addChild(track_sample_nudge_up);
+      //
+      // Add nudge-up, nudge-down buttons
+      //
+      TrackSampleNudge *track_sample_nudge_up = new TrackSampleNudge(i, nudge_button_width, nudge_button_height);
+      track_sample_nudge_up->setPosition(Vec(x + track_label_width + nudge_button_padding, y)); // 162
+      track_sample_nudge_up->module = module;
+      track_sample_nudge_up->direction = -1;
+      addChild(track_sample_nudge_up);
 
-        TrackSampleNudge *track_sample_nudge_down = new TrackSampleNudge(i, nudge_button_width, nudge_button_height);
-        track_sample_nudge_down->setPosition(Vec(x + track_label_width + nudge_button_padding, y + nudge_button_height + nudge_button_padding)); // 162
-        track_sample_nudge_down->module = module;
-        track_sample_nudge_down->direction = 1;
-        addChild(track_sample_nudge_down);
+      TrackSampleNudge *track_sample_nudge_down = new TrackSampleNudge(i, nudge_button_width, nudge_button_height);
+      track_sample_nudge_down->setPosition(Vec(x + track_label_width + nudge_button_padding, y + nudge_button_height + nudge_button_padding)); // 162
+      track_sample_nudge_down->module = module;
+      track_sample_nudge_down->direction = 1;
+      addChild(track_sample_nudge_down);
     }
-
   }
 
   void onButton(const event::Button &e) override
   {
     Widget::onButton(e);
-  }  
-
+  }
 };

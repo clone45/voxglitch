@@ -27,7 +27,6 @@ struct LCDSampleDisplay : LCDDisplay
   {
     if (layer == 1)
     {
-      TransparentWidget::draw(args);
       const auto vg = args.vg;
 
       if (module)
@@ -99,6 +98,7 @@ struct LCDSampleDisplay : LCDDisplay
         nvgRestore(vg);
       }
     }
+    Widget::drawLayer(args, layer);
   }
 
   void onEnter(const event::Enter &e) override

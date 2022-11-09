@@ -36,7 +36,6 @@ struct LCDRatchetDisplay : LCDDisplay
     {
         if (layer == 1)
         {
-            TransparentWidget::draw(args);
             const auto vg = args.vg;
 
             if (module && module->lcd_screen_mode == module->RATCHET)
@@ -97,5 +96,6 @@ struct LCDRatchetDisplay : LCDDisplay
                 nvgRestore(vg);
             }
         }
+        Widget::drawLayer(args, layer);
     }
 };
