@@ -273,6 +273,8 @@ struct GrooveBox : VoxglitchSamplerModule
         case FUNCTION_DELAY_MIX: value = selected_track->getDelayMix(step_number); break;
         case FUNCTION_DELAY_LENGTH: value = selected_track->getDelayLength(step_number); break;
         case FUNCTION_DELAY_FEEDBACK: value = selected_track->getDelayFeedback(step_number); break;
+        case FUNCTION_FILTER_CUTOFF: value = selected_track->getFilterCutoff(step_number); break;
+        case FUNCTION_FILTER_RESONANCE: value = selected_track->getFilterResonance(step_number); break;
         default: value = 0;
       }
 
@@ -411,6 +413,8 @@ struct GrooveBox : VoxglitchSamplerModule
           json_object_set(step_data, "delay_mix", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getDelayMix(step_index)));
           json_object_set(step_data, "delay_length", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getDelayLength(step_index)));
           json_object_set(step_data, "delay_feedback", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getDelayFeedback(step_index)));
+          json_object_set(step_data, "filter_cutoff", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getFilterCutoff(step_index)));
+          json_object_set(step_data, "filter_resonance", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getFilterResonance(step_index)));
 
           json_array_append_new(steps_json_array, step_data);
         }
@@ -569,6 +573,12 @@ struct GrooveBox : VoxglitchSamplerModule
 
                 json_t *delay_feedback_json = json_object_get(json_step_object, "delay_feedback");
                 if(delay_feedback_json) this->memory_slots[memory_slot_index].tracks[track_index].setDelayFeedback(step_index, json_real_value(delay_feedback_json));
+
+                json_t *filter_cutoff_json = json_object_get(json_step_object, "filter_cutoff");
+                if(filter_cutoff_json) this->memory_slots[memory_slot_index].tracks[track_index].setFilterCutoff(step_index, json_real_value(filter_cutoff_json));
+
+                json_t *filter_resonance_json = json_object_get(json_step_object, "filter_resonance");
+                if(filter_resonance_json) this->memory_slots[memory_slot_index].tracks[track_index].setFilterResonance(step_index, json_real_value(filter_resonance_json));
 
               }
             }
@@ -746,6 +756,8 @@ struct GrooveBox : VoxglitchSamplerModule
         case FUNCTION_DELAY_MIX: selected_track->setDelayMix(step_number, value); break;
         case FUNCTION_DELAY_LENGTH: selected_track->setDelayLength(step_number, value); break;
         case FUNCTION_DELAY_FEEDBACK: selected_track->setDelayFeedback(step_number, value); break;
+        case FUNCTION_FILTER_CUTOFF: selected_track->setFilterCutoff(step_number, value); break;
+        case FUNCTION_FILTER_RESONANCE: selected_track->setFilterResonance(step_number, value); break;
       }
     }
 

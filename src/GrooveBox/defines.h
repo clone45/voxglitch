@@ -12,18 +12,17 @@ namespace groove_box
   const int FUNCTION_PITCH = 2;
   const int FUNCTION_RATCHET = 3;
   const int FUNCTION_PROBABILITY = 4;
-
   const int FUNCTION_DELAY_MIX = 5;
   const int FUNCTION_DELAY_LENGTH = 6;
   const int FUNCTION_DELAY_FEEDBACK = 7;
-
   const int FUNCTION_ATTACK = 8;
   const int FUNCTION_RELEASE = 9;
-
   const int FUNCTION_LOOP = 10;
   const int FUNCTION_REVERSE = 11;
   const int FUNCTION_SAMPLE_START = 12;
   const int FUNCTION_SAMPLE_END = 13;
+  const int FUNCTION_FILTER_CUTOFF = 14;
+  const int FUNCTION_FILTER_RESONANCE = 15;
 
   const float MODULE_WIDTH = 223.52000 * 2.952756;
   const float MODULE_HEIGHT = 128.50000 * 2.952756;
@@ -43,6 +42,8 @@ namespace groove_box
   const float default_delay_mix = 0.0;
   const float default_delay_length = 0.5;
   const float default_delay_feedback = 0.5;
+  const float default_filter_cutoff = 1.0;
+  const float default_filter_resonance = 0.0;
 
   const std::string PLACEHOLDER_TRACK_NAMES[NUMBER_OF_TRACKS] = {
     "kick_drum.wav",

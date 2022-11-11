@@ -17,6 +17,8 @@ struct SamplePlaybackSettings
   float delay_mix = default_delay_mix;
   float delay_length = default_delay_length;
   float delay_feedback = default_delay_feedback;
+  float filter_cutoff = default_filter_cutoff;
+  float filter_resonance = default_filter_resonance;
 
   void copy(SamplePlaybackSettings *src_settings)
   {
@@ -34,6 +36,8 @@ struct SamplePlaybackSettings
     this->delay_mix = src_settings->delay_mix;
     this->delay_length = src_settings->delay_length;
     this->delay_feedback = src_settings->delay_feedback;
+    this->filter_cutoff = src_settings->filter_cutoff;
+    this->filter_resonance = src_settings->filter_resonance;
   }
 };
 

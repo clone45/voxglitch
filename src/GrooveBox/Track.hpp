@@ -23,8 +23,8 @@ struct Track
   // DSP classes
   ADSR adsr;
   SimpleDelay delay;
-
   StereoFadeOut fade_out;
+  Filter filter;
   rack::dsp::SlewLimiter volume_slew_limiter;
   rack::dsp::SlewLimiter pan_slew_limiter;
   float volume_slew_target = 0.0;
@@ -103,6 +103,8 @@ struct Track
         settings.delay_mix = getDelayMix(playback_position);
         settings.delay_length = getDelayLength(playback_position);
         settings.delay_feedback = getDelayFeedback(playback_position);
+        settings.filter_cutoff = getFilterCutoff(playback_position);
+        settings.filter_resonance = getFilterResonance(playback_position);
 
         // If the sample start settings is set and snap is on, then quantize the sample start position.
         if(sample_position_snap_value > 0 && settings.sample_start > 0)
@@ -302,6 +304,10 @@ struct Track
     left_output *= adsr_value;
     right_output *= adsr_value;
 
+    // Apply filter
+    filter.setCutoffAndResonance(settings.filter_cutoff, settings.filter_resonance);
+    filter.process(&left_output, &right_output);
+
     // If the delay mix is above 0 for this track, then compute the delay and
     // output it.  This if statement is an attempt to trim down CPU usage when
     // the delay is effectively turned off.
@@ -426,6 +432,8 @@ struct Track
       setDelayMix(i, default_delay_mix);
       setDelayLength(i, default_delay_length);
       setDelayFeedback(i, default_delay_feedback);
+      setFilterCutoff(i, default_filter_cutoff);
+      setFilterResonance(i, default_filter_resonance);
     }
   }
 
@@ -539,6 +547,8 @@ struct Track
     this->sample_playback_settings[step].release = release;
   }
 
+  // =-==================================================================
+
   //
   // Delay Mix
   //
@@ -587,6 +597,27 @@ struct Track
     this->track_pitch = track_pitch;
   }
 
+  // =-==================================================================
+
+  //
+  // Filter Cutoff
+  //
+  float getFilterCutoff(unsigned int step)  {
+    return(this->sample_playback_settings[step].filter_cutoff);
+  }
+  void setFilterCutoff(unsigned int step, float filter_cutoff)  {
+    this->sample_playback_settings[step].filter_cutoff = filter_cutoff;
+  }
+
+  //
+  // Filter Resonance
+  //
+  float getFilterResonance(unsigned int step)  {
+    return(this->sample_playback_settings[step].filter_resonance);
+  }
+  void setFilterResonance(unsigned int step, float filter_resonance)  {
+    this->sample_playback_settings[step].filter_resonance = filter_resonance;
+  }
 
 };
 
