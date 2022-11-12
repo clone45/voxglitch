@@ -194,6 +194,7 @@ struct Track
     fade_out.reset();
   }
 
+
   void clear()
   {
     for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
@@ -204,6 +205,23 @@ struct Track
     this->range_start = 0;
     this->resetAllParameterLocks();
   }
+
+  void clearSteps()
+  {
+    for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
+    {
+      setValue(i, false);
+    }
+  }
+  /*
+  void randomizeParameter()
+  {
+    for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
+    {
+      setValue(i, false);
+    }
+  }
+  */
 
   void shift(unsigned int amount)
   {

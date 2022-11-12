@@ -3,7 +3,6 @@ struct GrooveboxSoftButton : SvgSwitch
     GrooveBox *module;
     bool is_moused_over = false;
     Vec drag_position;
-    unsigned int index = 0;
   
     GrooveboxSoftButton()
     {

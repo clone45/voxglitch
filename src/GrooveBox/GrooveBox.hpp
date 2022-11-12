@@ -9,11 +9,12 @@
 // - Thank you to Jim Allman for his incredible front panel design.
 // 
 // TODO:
-// 
 //   * Add cool animation for when clock is unplugged
-//   * Implement lowpass filter
-//   * Possibly add alternative LCD colors
-//   
+//   * Save/Load color scheme
+//   * Add reset all knobs context menu on knobs
+//   * update randomize steps to not randomize knobs
+//   * Adjust range selector design
+//   * Suppress LPF computations when cutoff is 0
 
 
 struct GrooveBox : VoxglitchSamplerModule
@@ -339,11 +340,34 @@ struct GrooveBox : VoxglitchSamplerModule
     this->selected_track->randomizeSteps();
     updatePanelControls();
   }
-
+  
   void clearSteps()
   {
-    this->selected_track->clear();
+    this->selected_track->clearSteps();
     updatePanelControls();
+  }
+
+  /*
+  void randomizeParameter(unsigned int parameter_number)
+  {
+    this->selected_track->randomizeParameter(parameter_number)
+  }
+  */
+
+  void randomizeSelectedParameter()
+  {
+    for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
+    {
+      params[STEP_KNOBS + step_number].setValue(rand() / double(RAND_MAX));
+    }
+  }
+
+  void resetSelectedParameter()
+  {
+    for(unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
+    {
+      params[STEP_KNOBS + step_number].setValue(default_parameter_values[selected_function]);
+    }
   }
 
   void setSamplePositionSnapIndex(unsigned int sample_position_snap_index, unsigned int track_index)
