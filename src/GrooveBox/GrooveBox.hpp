@@ -11,8 +11,6 @@
 // TODO:
 //   * Add cool animation for when clock is unplugged
 //   * Save/Load color scheme
-//   * Add reset all knobs context menu on knobs
-//   * update randomize steps to not randomize knobs
 //   * Adjust range selector design
 //   * Suppress LPF computations when cutoff is 0
 //   * Ensure that older patches don't break due to the repositioned params
@@ -263,28 +261,6 @@ struct GrooveBox : VoxglitchSamplerModule
     {
       float value = 0;
 
-      /*
-      switch(selected_function)
-      {
-        case FUNCTION_SAMPLE_START: value = selected_track->getSampleStart(step_number); break;
-        case FUNCTION_SAMPLE_END: value = selected_track->getSampleEnd(step_number); break;
-        case FUNCTION_PAN: value = selected_track->getPan(step_number); break;
-        case FUNCTION_VOLUME: value = selected_track->getVolume(step_number); break;
-        case FUNCTION_PITCH: value = selected_track->getPitch(step_number); break;
-        case FUNCTION_RATCHET: value = selected_track->getRatchet(step_number); break;
-        case FUNCTION_REVERSE: value = selected_track->getReverse(step_number); break;
-        case FUNCTION_PROBABILITY: value = selected_track->getProbability(step_number); break;
-        case FUNCTION_LOOP: value = selected_track->getLoop(step_number); break;
-        case FUNCTION_ATTACK: value = selected_track->getAttack(step_number); break;
-        case FUNCTION_RELEASE: value = selected_track->getRelease(step_number); break;
-        case FUNCTION_DELAY_MIX: value = selected_track->getDelayMix(step_number); break;
-        case FUNCTION_DELAY_LENGTH: value = selected_track->getDelayLength(step_number); break;
-        case FUNCTION_DELAY_FEEDBACK: value = selected_track->getDelayFeedback(step_number); break;
-        case FUNCTION_FILTER_CUTOFF: value = selected_track->getFilterCutoff(step_number); break;
-        case FUNCTION_FILTER_RESONANCE: value = selected_track->getFilterResonance(step_number); break;
-        default: value = 0;
-      }
-      */
       value = selected_track->getParameter(selected_function, step_number);
 
       params[STEP_KNOBS + step_number].setValue(value);
@@ -455,6 +431,9 @@ struct GrooveBox : VoxglitchSamplerModule
     }
     json_object_set(json_root, "memory_slots", memory_slots_json_array);
 
+    // Save selected color theme
+    json_object_set(json_root, "selected_color_theme", json_integer(lcd_color_scheme.selected_color_scheme));
+
     return json_root;
   }
 
@@ -580,6 +559,10 @@ struct GrooveBox : VoxglitchSamplerModule
     }     // end if memory_slots array data
 
     updatePanelControls();
+
+    json_t *selected_color_theme_json = json_object_get(json_root, "selected_color_theme");
+    if (selected_color_theme_json) lcd_color_scheme.selected_color_scheme = json_integer_value(selected_color_theme_json);
+
   }
 
   bool trigger(unsigned int track_id)
@@ -742,59 +725,6 @@ struct GrooveBox : VoxglitchSamplerModule
 
       selected_track->setParameter(selected_function, step_number, value);
 
-      /*
-      switch (selected_function)
-      {
-      case FUNCTION_SAMPLE_START:
-        selected_track->setSampleStart(step_number, value);
-        break;
-      case FUNCTION_SAMPLE_END:
-        selected_track->setSampleEnd(step_number, value);
-        break;
-      case FUNCTION_PAN:
-        selected_track->setPan(step_number, value);
-        break;
-      case FUNCTION_VOLUME:
-        selected_track->setVolume(step_number, value);
-        break;
-      case FUNCTION_PITCH:
-        selected_track->setPitch(step_number, value);
-        break;
-      case FUNCTION_RATCHET:
-        selected_track->setRatchet(step_number, value);
-        break;
-      case FUNCTION_REVERSE:
-        selected_track->setReverse(step_number, value);
-        break;
-      case FUNCTION_PROBABILITY:
-        selected_track->setProbability(step_number, value);
-        break;
-      case FUNCTION_LOOP:
-        selected_track->setLoop(step_number, value);
-        break;
-      case FUNCTION_ATTACK:
-        selected_track->setAttack(step_number, value);
-        break;
-      case FUNCTION_RELEASE:
-        selected_track->setRelease(step_number, value);
-        break;
-      case FUNCTION_DELAY_MIX:
-        selected_track->setDelayMix(step_number, value);
-        break;
-      case FUNCTION_DELAY_LENGTH:
-        selected_track->setDelayLength(step_number, value);
-        break;
-      case FUNCTION_DELAY_FEEDBACK:
-        selected_track->setDelayFeedback(step_number, value);
-        break;
-      case FUNCTION_FILTER_CUTOFF:
-        selected_track->setFilterCutoff(step_number, value);
-        break;
-      case FUNCTION_FILTER_RESONANCE:
-        selected_track->setFilterResonance(step_number, value);
-        break;
-      }
-      */
     }
 
     //
