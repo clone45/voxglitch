@@ -22,54 +22,6 @@ struct ParameterKnob : SvgKnob
 
     value = default_parameter_values[module->selected_function];
 
-    /*
-    switch (module->selected_function)
-    {
-    case FUNCTION_VOLUME:
-      value = default_volume;
-      break;
-    case FUNCTION_PAN:
-      value = default_pan;
-      break;
-    case FUNCTION_PITCH:
-      value = default_pitch;
-      break;
-    case FUNCTION_RATCHET:
-      value = default_ratchet;
-      break;
-    case FUNCTION_SAMPLE_START:
-      value = default_sample_start;
-      break;
-    case FUNCTION_SAMPLE_END:
-      value = default_sample_end;
-      break;
-    case FUNCTION_PROBABILITY:
-      value = default_probability;
-      break;
-    case FUNCTION_REVERSE:
-      value = default_reverse;
-      break;
-    case FUNCTION_LOOP:
-      value = default_loop;
-      break;
-    case FUNCTION_ATTACK:
-      value = default_attack;
-      break;
-    case FUNCTION_RELEASE:
-      value = default_release;
-      break;
-    case FUNCTION_DELAY_MIX:
-      value = default_delay_mix;
-      break;
-    case FUNCTION_DELAY_LENGTH:
-      value = default_delay_length;
-      break;
-    case FUNCTION_DELAY_FEEDBACK:
-      value = default_delay_feedback;
-      break;
-    }
-    */
-
     if (module->shift_key)
     {
       // set _all_ knob values to the default

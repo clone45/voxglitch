@@ -42,7 +42,7 @@ struct GrooveBox : VoxglitchSamplerModule
   unsigned int track_index = 0;
   unsigned int playback_step = 0;
   unsigned int selected_function = 0;
-  unsigned int old_selected_function = 0;
+  unsigned int selected_parameter_slot = 0;
   unsigned int clock_division = 8;
   unsigned int clock_counter = clock_division;
   bool first_step = true;
@@ -293,7 +293,8 @@ struct GrooveBox : VoxglitchSamplerModule
     // Update selected function button
     for (unsigned int i = 0; i < NUMBER_OF_FUNCTIONS; i++)
     {
-      params[FUNCTION_BUTTONS + i].setValue(selected_function == i);
+      // params[FUNCTION_BUTTONS + i].setValue(selected_function == i);
+      params[FUNCTION_BUTTONS + i].setValue(selected_parameter_slot == i);
     }
   }
 
@@ -805,11 +806,12 @@ struct GrooveBox : VoxglitchSamplerModule
     {
       if (function_button_triggers[i].process(params[FUNCTION_BUTTONS + i].getValue()))
       {
-        if (old_selected_function != i)
-        {
-          selected_function = i;
-          old_selected_function = selected_function;
-        }
+        // selected_function = i;
+        selected_parameter_slot = i;
+
+        // parameter_slots keep track of this parameter is associated with which parameter slot
+        selected_function = parameter_slots[selected_parameter_slot];
+
         updatePanelControls();
       }
     }
