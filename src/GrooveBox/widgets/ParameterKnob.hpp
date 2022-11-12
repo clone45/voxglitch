@@ -20,6 +20,9 @@ struct ParameterKnob : SvgKnob
   {
     float value = 0.0;
 
+    value = default_parameter_values[module->selected_function];
+
+    /*
     switch (module->selected_function)
     {
     case FUNCTION_VOLUME:
@@ -65,6 +68,7 @@ struct ParameterKnob : SvgKnob
       value = default_delay_feedback;
       break;
     }
+    */
 
     if (module->shift_key)
     {

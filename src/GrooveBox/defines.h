@@ -27,60 +27,45 @@ namespace groove_box
   const float MODULE_WIDTH = 223.52000 * 2.952756;
   const float MODULE_HEIGHT = 128.50000 * 2.952756;
 
+  const float maximum_release_time = 4.0;
+
+  
   enum Parameters
   {
     VOLUME,
     PAN,
     PITCH,
     RATCHET,
-    SAMPLE_START,
-    SAMPLE_END,
-    PROBABILITY,
-    LOOP,
-    REVERSE,
-    ATTACK,
-    RELEASE,
+    PROBABILITY, 
     DELAY_MIX,
     DELAY_LENGTH,
-    DELAY_FEEDBACK,
+    DELAY_FEEDBACK,       
+    ATTACK,
+    RELEASE,
+    LOOP,
+    REVERSE,
+    SAMPLE_START,
+    SAMPLE_END,
     FILTER_CUTOFF,
     FILTER_RESONANCE
   };
 
-  const float default_volume = 0.5;
-  const float default_pan = 0.5;
-  const float default_pitch = 0.5;
-  const float default_ratchet = 0.0;
-  const float default_sample_start = 0.0;
-  const float default_sample_end = 1.0;
-  const float default_probability = 1.0;
-  const float default_loop = 0.0;
-  const bool default_reverse = false;
-  const float default_attack = 0.0;
-  const float default_release = 1.0;
-  const float default_delay_mix = 0.0;
-  const float default_delay_length = 0.5;
-  const float default_delay_feedback = 0.5;
-  const float default_filter_cutoff = 1.0;
-  const float default_filter_resonance = 0.0;
-
-  const float maximum_release_time = 4.0;
 
   const float default_parameter_values[NUMBER_OF_FUNCTIONS] = {
       0.5, // 0) default volume
       0.5, // 1) default pan
       0.5, // 2) default pitch
       0.0, // 3) default ratchet
-      0.0, // 4) default sample_start
-      1.0, // 5) default sample_end
-      1.0, // 6) default probability
-      0.0, // 7) default loop
-      0.0, // 8) default reverse
-      0.0, // 9) default attack
-      1.0, // 10) default release
-      0.0, // 11) default delay mix
-      0.5, // 12) default delay length
-      0.5, // 13) default delay feedback
+      1.0, // 4) default probability
+      0.0, // 5) default delay mix
+      0.5, // 6) default delay length
+      0.5, // 7) default delay feedback
+      0.0, // 8) default attack
+      1.0, // 9) default release
+      0.0, // 10) default loop
+      0.0, // 11) default reverse      
+      0.0, // 12) default sample_start
+      1.0, // 13) default sample_end
       1.0, // 14) default filter cutoff
       0.0  // 15) default filter resonance
   };
@@ -90,16 +75,16 @@ namespace groove_box
       "Pan",
       "Pitch",
       "Ratchet",
-      "Sample Start",
-      "Sample End",
       "Probability",
-      "Loop",
-      "Reverse",
-      "Attack",
-      "Release",
       "Delay Mix",
       "Delay Length",
       "Delay Feedback",
+      "Attack",
+      "Release",
+      "Loop",
+      "Reverse",
+      "Sample Start",
+      "Sample End",
       "Filter Cutoff",
       "Filter Resonance"};
 
@@ -172,3 +157,42 @@ namespace groove_box
       {mm2px(213.67), button_positions_y}};
 
 }
+
+    /* previous version:
+  enum Parameters
+  {
+    VOLUME,
+    PAN,
+    PITCH,
+    RATCHET,
+    SAMPLE_START,
+    SAMPLE_END,
+    PROBABILITY,
+    LOOP,
+    REVERSE,
+    ATTACK,
+    RELEASE,
+    DELAY_MIX,
+    DELAY_LENGTH,
+    DELAY_FEEDBACK,
+    FILTER_CUTOFF,
+    FILTER_RESONANCE
+  };
+
+  const float default_volume = 0.5;
+  const float default_pan = 0.5;
+  const float default_pitch = 0.5;
+  const float default_ratchet = 0.0;
+  const float default_sample_start = 0.0;
+  const float default_sample_end = 1.0;
+  const float default_probability = 1.0;
+  const float default_loop = 0.0;
+  const bool default_reverse = false;
+  const float default_attack = 0.0;
+  const float default_release = 1.0;
+  const float default_delay_mix = 0.0;
+  const float default_delay_length = 0.5;
+  const float default_delay_feedback = 0.5;
+  const float default_filter_cutoff = 1.0;
+  const float default_filter_resonance = 0.0;
+  */
