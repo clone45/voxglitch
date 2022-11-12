@@ -126,6 +126,7 @@ namespace groove_box
     int parameter_slots[NUMBER_OF_FUNCTIONS] = {
         VOLUME,
         PAN,
+        PITCH,
         RATCHET,
         PROBABILITY,
         DELAY_MIX,

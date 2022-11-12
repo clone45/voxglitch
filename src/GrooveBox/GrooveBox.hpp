@@ -110,6 +110,7 @@ struct GrooveBox : VoxglitchSamplerModule
     ENUMS(STEP_SELECT_BUTTONS, NUMBER_OF_STEPS),
     ENUMS(STEP_KNOBS, NUMBER_OF_STEPS),
     ENUMS(FUNCTION_BUTTONS, NUMBER_OF_FUNCTIONS),
+    ENUMS(DUMMY_UNUSED_PARAMS, NUMBER_OF_TRACKS),
     ENUMS(MEMORY_SLOT_BUTTONS, NUMBER_OF_MEMORY_SLOTS),
     COPY_BUTTON,
     PASTE_BUTTON,
@@ -437,28 +438,6 @@ struct GrooveBox : VoxglitchSamplerModule
 
             json_object_set(step_data, key.c_str(), json_real(this->memory_slots[memory_slot_number].tracks[track_number].getParameter(parameter_index, step_index)));
           }
-          
-
-
-          /*
-          json_object_set(step_data, "sample_start", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getSampleStart(step_index)));
-          json_object_set(step_data, "sample_end", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getSampleEnd(step_index)));
-          json_object_set(step_data, "volume", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getVolume(step_index)));
-          json_object_set(step_data, "pitch", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getPitch(step_index)));
-          json_object_set(step_data, "pan", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getPan(step_index)));
-          json_object_set(step_data, "ratchet", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getRatchet(step_index)));
-          json_object_set(step_data, "reverse", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getReverse(step_index)));
-          json_object_set(step_data, "probability", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getProbability(step_index)));
-          json_object_set(step_data, "loop", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getLoop(step_index)));
-          json_object_set(step_data, "attack", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getAttack(step_index)));
-          json_object_set(step_data, "release", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getRelease(step_index)));
-          json_object_set(step_data, "delay_mix", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getDelayMix(step_index)));
-          json_object_set(step_data, "delay_length", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getDelayLength(step_index)));
-          json_object_set(step_data, "delay_feedback", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getDelayFeedback(step_index)));
-          json_object_set(step_data, "filter_cutoff", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getFilterCutoff(step_index)));
-          json_object_set(step_data, "filter_resonance", json_real(this->memory_slots[memory_slot_number].tracks[track_number].getFilterResonance(step_index)));
-          */
-
           json_array_append_new(steps_json_array, step_data);
         }
 
@@ -584,78 +563,15 @@ struct GrooveBox : VoxglitchSamplerModule
                   std::replace( key.begin(), key.end(), ' ', '_'); // replace all ' ' to '_'
 
                   json_t *parameter_json = json_object_get(json_step_object, key.c_str());
-                  if (parameter_json) this->memory_slots[memory_slot_index].tracks[track_index].setParameter(parameter_index, step_index, json_real_value(parameter_json));
+                  if (parameter_json) 
+                  {
+                    this->memory_slots[memory_slot_index].tracks[track_index].setParameter(parameter_index, step_index, json_real_value(parameter_json));
+                  }
+                  else
+                  {
+                    this->memory_slots[memory_slot_index].tracks[track_index].setParameter(parameter_index, step_index, default_parameter_values[parameter_index]);
+                  }
                 }
-
-                /*
-                json_t *offset_json = json_object_get(json_step_object, "offset"); // Deprecated.  Will be removed eventually
-                if (offset_json)
-                  this->memory_slots[memory_slot_index].tracks[track_index].setSampleStart(step_index, json_real_value(offset_json));
-
-                json_t *sample_start_json = json_object_get(json_step_object, "sample_start");
-                if (sample_start_json)
-                  this->memory_slots[memory_slot_index].tracks[track_index].setSampleStart(step_index, json_real_value(sample_start_json));
-
-                json_t *sample_end_json = json_object_get(json_step_object, "sample_end");
-                if (sample_end_json)
-                  this->memory_slots[memory_slot_index].tracks[track_index].setSampleEnd(step_index, json_real_value(sample_end_json));
-
-                json_t *volume_json = json_object_get(json_step_object, "volume");
-                if (volume_json)
-                  this->memory_slots[memory_slot_index].tracks[track_index].setVolume(step_index, json_real_value(volume_json));
-
-                json_t *pitch_json = json_object_get(json_step_object, "pitch");
-                if (pitch_json)
-                  this->memory_slots[memory_slot_index].tracks[track_index].setPitch(step_index, json_real_value(pitch_json));
-
-                json_t *pan_json = json_object_get(json_step_object, "pan");
-                if (pan_json)
-                  this->memory_slots[memory_slot_index].tracks[track_index].setPan(step_index, json_real_value(pan_json));
-
-                json_t *ratchet_json = json_object_get(json_step_object, "ratchet");
-                if (ratchet_json)
-                  this->memory_slots[memory_slot_index].tracks[track_index].setRatchet(step_index, json_real_value(ratchet_json));
-
-                json_t *reverse_json = json_object_get(json_step_object, "reverse");
-                if (reverse_json)
-                  this->memory_slots[memory_slot_index].tracks[track_index].setReverse(step_index, json_real_value(reverse_json));
-
-                json_t *probability_json = json_object_get(json_step_object, "probability");
-                if (probability_json)
-                  this->memory_slots[memory_slot_index].tracks[track_index].setProbability(step_index, json_real_value(probability_json));
-
-                json_t *loop_json = json_object_get(json_step_object, "loop");
-                if (loop_json)
-                  this->memory_slots[memory_slot_index].tracks[track_index].setLoop(step_index, json_real_value(loop_json));
-
-                json_t *attack_json = json_object_get(json_step_object, "attack");
-                if (attack_json)
-                  this->memory_slots[memory_slot_index].tracks[track_index].setAttack(step_index, json_real_value(attack_json));
-
-                json_t *release_json = json_object_get(json_step_object, "release");
-                if (release_json)
-                  this->memory_slots[memory_slot_index].tracks[track_index].setRelease(step_index, json_real_value(release_json));
-
-                json_t *delay_mix_json = json_object_get(json_step_object, "delay_mix");
-                if (delay_mix_json)
-                  this->memory_slots[memory_slot_index].tracks[track_index].setDelayMix(step_index, json_real_value(delay_mix_json));
-
-                json_t *delay_length_json = json_object_get(json_step_object, "delay_length");
-                if (delay_length_json)
-                  this->memory_slots[memory_slot_index].tracks[track_index].setDelayLength(step_index, json_real_value(delay_length_json));
-
-                json_t *delay_feedback_json = json_object_get(json_step_object, "delay_feedback");
-                if (delay_feedback_json)
-                  this->memory_slots[memory_slot_index].tracks[track_index].setDelayFeedback(step_index, json_real_value(delay_feedback_json));
-
-                json_t *filter_cutoff_json = json_object_get(json_step_object, "filter_cutoff");
-                if (filter_cutoff_json)
-                  this->memory_slots[memory_slot_index].tracks[track_index].setFilterCutoff(step_index, json_real_value(filter_cutoff_json));
-
-                json_t *filter_resonance_json = json_object_get(json_step_object, "filter_resonance");
-                if (filter_resonance_json)
-                  this->memory_slots[memory_slot_index].tracks[track_index].setFilterResonance(step_index, json_real_value(filter_resonance_json));
-                */
               }
             }
           }
