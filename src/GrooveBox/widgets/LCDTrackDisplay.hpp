@@ -43,6 +43,12 @@ struct TrackLabelDisplay : TransparentWidget
       e.consume(this);
       module->selectTrack(this->track_number);
     }
+
+    if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_RIGHT && (e.mods & RACK_MOD_MASK) == 0)
+    {
+      createContextMenu();
+      e.consume(this);
+    }
   }
 
   void onEnter(const event::Enter &e) override
@@ -171,6 +177,153 @@ struct TrackLabelDisplay : TransparentWidget
     }
     Widget::drawLayer(args, layer);
   }
+
+  struct ClearTrackStepsMenuItem : MenuItem
+  {
+    GrooveBox *module;
+    unsigned int track_number = 0;
+
+    void onAction(const event::Action &e) override
+    {
+      module->clearTrackSteps(this->track_number);
+    }
+  };
+
+  struct ClearTrackParametersMenuItem : MenuItem
+  {
+    GrooveBox *module;
+    unsigned int track_number = 0;
+
+    void onAction(const event::Action &e) override
+    {
+      module->clearTrackParameters(this->track_number);
+    }
+  };
+
+  struct ClearTrackMenuItem : MenuItem
+  {
+    GrooveBox *module;
+    unsigned int track_number = 0;
+
+    void onAction(const event::Action &e) override
+    {
+      module->clearTrack(this->track_number);
+    }
+  };
+
+  // This code is s copy of the same thing in GrooveBoxWidget.hpp.  I should
+  // find some way of removing this code duplication.
+
+  struct LoadSampleMenuItem : MenuItem
+  {
+    GrooveBox *module;
+    unsigned int track_number = 0;
+
+    void onAction(const event::Action &e) override
+    {
+#ifdef USING_CARDINAL_NOT_RACK
+      GrooveBox *module = this->module;
+      unsigned int track_number = this->track_number;
+      async_dialog_filebrowser(false, NULL, module->samples_root_dir.c_str(), "Load sample", [module, track_number](char *filename)
+                               {
+      if(filename)
+      {
+        fileSelected(module, track_number, std::string(filename));
+        free(filename);
+      } });
+#else
+      fileSelected(module, this->track_number, module->selectFileVCV());
+#endif
+    }
+
+    static void fileSelected(GrooveBox *module, unsigned int track_number, std::string filename)
+    {
+      if (filename != "")
+      {
+        module->sample_players[track_number].loadSample(filename);
+        module->loaded_filenames[track_number] = module->sample_players[track_number].getFilename();
+        module->setRoot(filename);
+      }
+    }
+  };
+
+  void createContextMenu()
+  {
+    GrooveBox *module = dynamic_cast<GrooveBox *>(this->module);
+    assert(module);
+
+    ui::Menu *menu = createMenu();
+
+    menu->addChild(createMenuLabel("Track Menu"));
+
+    LoadSampleMenuItem *load_sample_menu_item = createMenuItem<LoadSampleMenuItem>("Load Sample");
+    load_sample_menu_item->module = module;
+    load_sample_menu_item->track_number = track_number;
+    menu->addChild(load_sample_menu_item);
+
+    menu->addChild(new MenuSeparator());
+
+    ClearTrackStepsMenuItem *clear_track_steps_menu_item = createMenuItem<ClearTrackStepsMenuItem>("Clear Track Steps");
+    clear_track_steps_menu_item->module = module;
+    clear_track_steps_menu_item->track_number = track_number;
+    menu->addChild(clear_track_steps_menu_item);
+
+    ClearTrackParametersMenuItem *clear_track_parameters_menu_item = createMenuItem<ClearTrackParametersMenuItem>("Reset Track Parameters");
+    clear_track_parameters_menu_item->module = module;
+    clear_track_parameters_menu_item->track_number = track_number;
+    menu->addChild(clear_track_parameters_menu_item);
+
+    ClearTrackMenuItem *clear_track_menu_item = createMenuItem<ClearTrackMenuItem>("Clear and Reset Both");
+    clear_track_menu_item->module = module;
+    clear_track_menu_item->track_number = track_number;
+    menu->addChild(clear_track_menu_item);
+
+    // menu->addChild(createMenuLabel("Hello World"));
+  }
+
+  //
+  // Context Menu
+  //
+  /*
+  struct RandomizeParamMenuItem : MenuItem
+  {
+    GrooveBox *module;
+
+    void onAction(const event::Action &e) override
+    {
+      // module->randomizeSelectedParameter();
+    }
+  };
+
+  struct ResetParamMenuItem : MenuItem
+  {
+    GrooveBox *module;
+
+    void onAction(const event::Action &e) override
+    {
+      // module->resetSelectedParameter();
+    }
+  };
+
+
+  void appendContextMenu(Menu *menu) override
+  {
+    GrooveBox *module = dynamic_cast<GrooveBox *>(this->module);
+    assert(module);
+
+    menu->addChild(new MenuSeparator);
+
+    // Randomize parameters
+    RandomizeParamMenuItem *randomize_param_menu_item = createMenuItem<RandomizeParamMenuItem>("Randomize Knobs");
+    randomize_param_menu_item->module = module;
+    menu->addChild(randomize_param_menu_item);
+
+    // Reset all knobs
+    ResetParamMenuItem *reset_param_menu_item = createMenuItem<ResetParamMenuItem>("Reset Knobs");
+    reset_param_menu_item->module = module;
+    menu->addChild(reset_param_menu_item);
+  }
+  */
 };
 
 //
@@ -234,7 +387,6 @@ struct TrackSampleNudge : TransparentWidget
 
       e.consume(this);
     }
-    
   }
 
   void onEnter(const event::Enter &e) override

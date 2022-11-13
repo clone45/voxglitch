@@ -10,10 +10,10 @@
 //
 // TODO:
 //   * Add cool animation for when clock is unplugged
-//   * Save/Load color scheme
 //   * Adjust range selector design
-//   * Suppress LPF computations when cutoff is 0
-//   * Ensure that older patches don't break due to the repositioned params
+//   * Groovebox allows manual MEM selection when CV is attached (https://github.com/clone45/voxglitch/issues/198)
+//   * See if I can improve buttons so you can't toggle them when you shouldn't be able to
+//   * Right-click menu on tracks to clear and randomize certain things
 
 struct GrooveBox : VoxglitchSamplerModule
 {
@@ -330,6 +330,27 @@ struct GrooveBox : VoxglitchSamplerModule
   {
     this->selected_track->clearSteps();
     updatePanelControls();
+  }
+
+  void clearTrackSteps(unsigned int track_id)
+  {
+    Track *track = this->selected_memory_slot->getTrack(track_id);
+    track->clearSteps();
+    updatePanelControls();
+  }
+
+  void clearTrackParameters(unsigned int track_id)
+  {
+    Track *track = this->selected_memory_slot->getTrack(track_id);
+    track->clearParameters();
+    updatePanelControls();
+  }
+
+  void clearTrack(unsigned int track_id)
+  {
+      Track *track = this->selected_memory_slot->getTrack(track_id);
+      track->clear();
+      updatePanelControls();
   }
 
   /*

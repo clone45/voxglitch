@@ -27,8 +27,12 @@ namespace groove_box
     Filter filter;
     rack::dsp::SlewLimiter volume_slew_limiter;
     rack::dsp::SlewLimiter pan_slew_limiter;
+    rack::dsp::SlewLimiter filter_cutoff_slew_limiter;
+    rack::dsp::SlewLimiter filter_resonance_slew_limiter;
     float volume_slew_target = 0.0;
     float pan_slew_target = 0.0;
+    float filter_cutoff_slew_target = 0.0;
+    float filter_resonance_slew_target = 0.0;
 
     // StereoPanSubModule stereo_pan_submodule;
     StereoPan stereo_pan;
@@ -54,6 +58,8 @@ namespace groove_box
 
       volume_slew_limiter.setRiseFall(900.0f, 900.0f); // 900 works.  I want the highest number possible for the shortest slew
       pan_slew_limiter.setRiseFall(900.0f, 900.0f);
+      filter_cutoff_slew_limiter.setRiseFall(900.0f, 900.0f);
+      filter_resonance_slew_limiter.setRiseFall(900.0f, 900.0f);
 
       delay.setBufferSize(APP->engine->getSampleRate() / 30.0);
     }
@@ -90,11 +96,12 @@ namespace groove_box
         {
           // It's necessary to slew the volume and pan, otherwise these will
           // introduce a pop or click when modulated between distant values
-          // volume_slew_target = getVolume(playback_position);
-          // pan_slew_target = getPan(playback_position);
+          // I'm doing the same for filter cutoff and resonance, just out of paranoia.
 
           volume_slew_target = getParameter(VOLUME, playback_position);
           pan_slew_target = getParameter(PAN, playback_position);
+          filter_cutoff_slew_target = getParameter(FILTER_CUTOFF, playback_position);
+          filter_resonance_slew_target = getParameter(FILTER_RESONANCE, playback_position);
 
           for (unsigned int parameter_number = 0; parameter_number < NUMBER_OF_FUNCTIONS; parameter_number++)
           {
@@ -211,7 +218,13 @@ namespace groove_box
         setValue(i, false);
       }
     }
-    /*
+
+    void clearParameters()
+    {
+      this->resetAllParameterLocks();
+    }
+
+    /* Possibly adding this in the future
     void randomizeParameter()
     {
       for(unsigned int i=0; i<NUMBER_OF_STEPS; i++)
@@ -268,6 +281,8 @@ namespace groove_box
       // -===== Slew Limiter Processing =====-
       settings.setParameter(VOLUME, volume_slew_limiter.process(APP->engine->getSampleTime(), volume_slew_target));
       settings.setParameter(PAN, pan_slew_limiter.process(APP->engine->getSampleTime(), pan_slew_target));
+      settings.setParameter(FILTER_CUTOFF, filter_cutoff_slew_limiter.process(APP->engine->getSampleTime(), filter_cutoff_slew_target));
+      settings.setParameter(FILTER_RESONANCE, filter_resonance_slew_limiter.process(APP->engine->getSampleTime(), filter_resonance_slew_target));
 
       // Mostly cosmetic: Load up the settings into easily readable variables
       // The "settings" structure is populated when the track is stepped.  It
@@ -335,8 +350,12 @@ namespace groove_box
       right_output *= adsr_value;
 
       // Apply filter
-      filter.setCutoffAndResonance(filter_cutoff, filter_resonance);
-      filter.process(&left_output, &right_output);
+      if(filter_cutoff > 0)
+      {
+        filter.setCutoff(filter_cutoff);
+        filter.setResonance(filter_resonance);
+        filter.process(&left_output, &right_output);
+      }
 
       // If the delay mix is above 0 for this track, then compute the delay and
       // output it.  This if statement is an attempt to trim down CPU usage when

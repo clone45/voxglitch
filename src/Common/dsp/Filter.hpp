@@ -1,6 +1,7 @@
 #pragma once
 
-// See https://github.com/surge-synthesizer/clap-saw-demo/blob/main/src/saw-voice.cpp
+// From: https://github.com/surge-synthesizer/clap-saw-demo/blob/main/src/saw-voice.cpp
+// Reformatted to fit my personal coding style.
 
 enum Mode
 {
@@ -14,14 +15,10 @@ enum Mode
 
 struct Filter
 {
-    // Filter characteristics. After adjusting these call 'recalcFilter'.
     int mode = LP;
-    float cutoff = 69.0;
+    float cutoff = 1.0;
     float resonance = 0.7;
-    // float cutoffMod = 0.0;
-    // float resMod = 0.0;
     float pival = 3.14159265358979323846;
-    float sample_time = 1.0 / 44100;
 
     float ic1eq[2] = {0.0, 0.0};
     float ic2eq[2] = {0.0, 0.0};
@@ -33,32 +30,32 @@ struct Filter
     float a3 = 0.0;
     float ak = 0.0;
 
+    bool dirty = true;
+
     Filter()
     {
-        sample_time = APP->engine->getSampleTime();
-        this->recalculate();
+        dirty = true;
     }
 
-    void setCutoffAndResonance(float cutoff, float resonance)
-    {
-        // this->cutoff = (cutoff * 128.0);
-        this->cutoff = cutoff;
-        this->resonance = resonance;
-        this->recalculate();
-    }
-
+    // cutoff value should range from 0 to 1
     void setCutoff(float cutoff)
     {
-        // this->cutoff = (cutoff * 128.0);
         this->cutoff = cutoff;
-        this->recalculate();
+        dirty = true;
+    }
+    
+    // resonance should range from 0 to 1
+    void setResonance(float resonance)
+    {
+        this->resonance = resonance;
+        dirty = true;
     }
 
     void setMode(int mode)
     {
         init();
         this->mode = mode;
-        this->recalculate();
+        dirty = true;
     }
 
     void recalculate()
@@ -68,7 +65,7 @@ struct Filter
         tuned_cutoff = clamp(tuned_cutoff, 10.0, 15000.0); // just to be safe/lazy
 
         resonance = clamp(resonance, 0.01f, 0.99f);
-        g = std::tan(pival * tuned_cutoff * this->sample_time);
+        g = std::tan(pival * tuned_cutoff * APP->engine->getSampleTime());
         k = 2.0 - 2.0 * resonance;
         gk = g + k;
         a1 = 1.0 / (1.0 + g * gk);
@@ -88,10 +85,10 @@ struct Filter
 
     void process(float *left, float *right)
     {
+        if(dirty) recalculate();
+
         float vin[2] = {*left, *right};
         float result[2] = {0, 0};
-
-        // float result[2] = {*left, *right};
 
         for (int channel = 0; channel < 2; channel++)
         {
@@ -103,8 +100,6 @@ struct Filter
             ic1eq[channel] = 2 * v1 - ic1eq[channel];
             ic2eq[channel] = 2 * v2 - ic2eq[channel];
 
-            // I know that a branch in this loop is inefficient and so on
-            // remember this is mostly showing you how it hangs together.
             switch (mode)
             {
             case LP:
