@@ -10,10 +10,8 @@
 //
 // TODO:
 //   * Add cool animation for when clock is unplugged
-//   * Adjust range selector design
 //   * Groovebox allows manual MEM selection when CV is attached (https://github.com/clone45/voxglitch/issues/198)
 //   * See if I can improve buttons so you can't toggle them when you shouldn't be able to
-//   * Right-click menu on tracks to clear and randomize certain things
 
 struct GrooveBox : VoxglitchSamplerModule
 {
