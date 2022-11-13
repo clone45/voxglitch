@@ -9,7 +9,6 @@
 // - Thank you to Jim Allman for his incredible front panel design.
 //
 // TODO:
-//   * Add cool animation for when clock is unplugged
 //   * Groovebox allows manual MEM selection when CV is attached (https://github.com/clone45/voxglitch/issues/198)
 //   * See if I can improve buttons so you can't toggle them when you shouldn't be able to
 
@@ -137,7 +136,8 @@ struct GrooveBox : VoxglitchSamplerModule
     TRACK,
     SAMPLE,
     RATCHET,
-    UPDATE
+    UPDATE,
+    INTRO
   };
 
   GrooveBox()
@@ -601,6 +601,8 @@ struct GrooveBox : VoxglitchSamplerModule
 
   void process(const ProcessArgs &args) override
   {
+    // TODO: Is there a way to move this code into an isConnected type of event?
+
     if (!this->shift_key)
       step_copy_paste_mode = false;
 
@@ -617,23 +619,6 @@ struct GrooveBox : VoxglitchSamplerModule
 
     if (expander_connected)
       readFromExpander();
-
-    //
-    // If the user has pressed a track button, switch tracks and update the
-    // knob positions for the selected function.
-
-    /*
-    for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
-    {
-      if(track_button_triggers[i].process(params[TRACK_BUTTONS + i].getValue()))
-      {
-        track_index = i;
-        selected_track = selected_memory_slot->getTrack(track_index);
-
-        updatePanelControls();
-      }
-    }
-    */
 
     //
     // If the user has pressed a memory slot button, switch memory slots and update the

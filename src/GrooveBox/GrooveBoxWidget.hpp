@@ -242,9 +242,6 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       addParam(groovebox_parameter_button);
     }
 
-    LCDTrackDisplay *lcd_track_display = new LCDTrackDisplay(module);
-    addChild(lcd_track_display);
-
     // Individual track outputs
     for (unsigned int i = 0; i < (NUMBER_OF_TRACKS * 2); i++)
     {
@@ -280,7 +277,10 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     addParam(paste_button);
 
 
-    // Sample Visualizer Widget
+    // LCD displays
+
+    LCDTrackDisplay *lcd_track_display = new LCDTrackDisplay(module);
+    addChild(lcd_track_display);
 
     LCDSampleDisplay *lcd_sample_display = new LCDSampleDisplay(module);
     addChild(lcd_sample_display);
