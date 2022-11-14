@@ -87,7 +87,7 @@ struct TrackLabelDisplay : TransparentWidget
     // Set up font parameters
     nvgFontSize(vg, 10);
     nvgTextLetterSpacing(vg, 0);
-    nvgFillColor(vg, nvgRGBA(255, 255, 255, 0xff));
+    nvgFillColor(vg, module->lcd_color_scheme.getTextColor());
     nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
     float wrap_at = 130.0; // Just throw your hands in the air!  And wave them like you just don't 130.0
 
@@ -472,9 +472,9 @@ struct TrackSampleNudge : TransparentWidget
   {
     nvgFontSize(vg, 10);
 
-    nvgFillColor(vg, nvgRGBA(255, 255, 255, 100));
+    nvgFillColor(vg, module->lcd_color_scheme.getStrongHighlightOverlay());
     if (module && module->track_index == this->track_number)
-      nvgFillColor(vg, nvgRGBA(255, 255, 255, 0xff));
+      nvgFillColor(vg, module->lcd_color_scheme.getTextColor());
 
     nvgTextAlign(vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
 
