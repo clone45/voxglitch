@@ -30,7 +30,7 @@ struct LCDDisplay : TransparentWidget
             {
                 nvgBeginPath(vg);
                 nvgRect(vg, 0, 0, box.size.x, box.size.y);
-                nvgFillColor(vg, module->lcd_color_scheme.getBackgroundColor());
+                nvgFillColor(vg, LCDColorScheme::getBackgroundColor());
                 nvgFill(vg);
             }
         }

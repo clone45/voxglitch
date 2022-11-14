@@ -82,14 +82,7 @@ struct TrackLabelDisplay : TransparentWidget
     // Set up font parameters
     nvgFontSize(vg, 10);
     nvgTextLetterSpacing(vg, 0);
-    if(module)
-    {
-      nvgFillColor(vg, module->lcd_color_scheme.getTextColor());
-    }
-    else
-    {
-      nvgFillColor(vg, nvgRGBA(255, 180, 180, 255));
-    }
+    nvgFillColor(vg, LCDColorScheme::getTextColor());
     
     nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
     float wrap_at = 130.0; // Just throw your hands in the air!  And wave them like you just don't 130.0
@@ -148,11 +141,11 @@ struct TrackLabelDisplay : TransparentWidget
         nvgRect(vg, 0, 0, box.size.x, box.size.y);
         if (module->track_index == this->track_number)
         {
-          nvgFillColor(vg, module->lcd_color_scheme.getLightColor());
+          nvgFillColor(vg, LCDColorScheme::getLightColor());
         }
         else
         {
-          nvgFillColor(vg, module->lcd_color_scheme.getDarkColor());
+          nvgFillColor(vg, LCDColorScheme::getDarkColor());
         }
         nvgFill(vg);
 
@@ -403,11 +396,11 @@ struct TrackSampleNudge : TransparentWidget
         nvgRect(vg, 0, 0, box.size.x, box.size.y);
         if (module->track_index == this->track_number)
         {
-          nvgFillColor(vg, module->lcd_color_scheme.getLightColor());
+          nvgFillColor(vg, LCDColorScheme::getLightColor());
         }
         else
         {
-          nvgFillColor(vg, module->lcd_color_scheme.getDarkColor());
+          nvgFillColor(vg, LCDColorScheme::getDarkColor());
         }
         nvgFill(vg);
 
@@ -421,7 +414,7 @@ struct TrackSampleNudge : TransparentWidget
         // Draw nudge rectangle background
         nvgBeginPath(vg);
         nvgRect(vg, 0, 0, box.size.x, box.size.y);
-        nvgFillColor(vg, nvgRGBA(146, 42, 43, 140));
+        nvgFillColor(vg, LCDColorScheme::getLightColor());
         nvgFill(vg);
 
         drawArrow(vg, direction);
@@ -435,9 +428,8 @@ struct TrackSampleNudge : TransparentWidget
   {
     nvgFontSize(vg, 10);
 
-    nvgFillColor(vg, module->lcd_color_scheme.getStrongHighlightOverlay());
-    if (module && module->track_index == this->track_number)
-      nvgFillColor(vg, module->lcd_color_scheme.getTextColor());
+    nvgFillColor(vg, LCDColorScheme::getStrongHighlightOverlay());
+    if (module && module->track_index == this->track_number) nvgFillColor(vg, LCDColorScheme::getTextColor());
 
     nvgTextAlign(vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
 

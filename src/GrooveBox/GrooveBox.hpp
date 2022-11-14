@@ -51,7 +51,7 @@ struct GrooveBox : VoxglitchSamplerModule
   bool step_copy_paste_mode = false;
   unsigned int copied_step_index = 0;
   unsigned int lcd_screen_mode = 0;
-  LCDColorScheme lcd_color_scheme;
+  // LCDColorScheme lcd_color_scheme;
 
   // These booleans tell the sequence position lights whether to be ON or OFF
   bool light_booleans[NUMBER_OF_STEPS];
@@ -451,7 +451,7 @@ struct GrooveBox : VoxglitchSamplerModule
     json_object_set(json_root, "memory_slots", memory_slots_json_array);
 
     // Save selected color theme
-    json_object_set(json_root, "selected_color_theme", json_integer(lcd_color_scheme.selected_color_scheme));
+    json_object_set(json_root, "selected_color_theme", json_integer(LCDColorScheme::selected_color_scheme));
 
     return json_root;
   }
@@ -580,7 +580,7 @@ struct GrooveBox : VoxglitchSamplerModule
     updatePanelControls();
 
     json_t *selected_color_theme_json = json_object_get(json_root, "selected_color_theme");
-    if (selected_color_theme_json) lcd_color_scheme.selected_color_scheme = json_integer_value(selected_color_theme_json);
+    if (selected_color_theme_json) LCDColorScheme::selected_color_scheme = json_integer_value(selected_color_theme_json);
 
   }
 
