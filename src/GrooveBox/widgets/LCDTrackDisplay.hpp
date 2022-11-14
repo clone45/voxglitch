@@ -165,7 +165,7 @@ struct TrackLabelDisplay : TransparentWidget
         // Draw track slot background
         nvgBeginPath(vg);
         nvgRect(vg, 0, 0, box.size.x, box.size.y);
-        nvgFillColor(vg, nvgRGBA(146, 42, 43, 140));
+        nvgFillColor(vg, LCDColorScheme::getLightColor());
         nvgFill(vg);
 
         draw_track_label(PLACEHOLDER_TRACK_NAMES[track_number], vg);
