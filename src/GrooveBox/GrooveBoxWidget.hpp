@@ -276,17 +276,21 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     paste_button->momentary = true;
     addParam(paste_button);
 
-
+    //
     // LCD displays
+    //
 
     LCDTrackDisplay *lcd_track_display = new LCDTrackDisplay(module);
     addChild(lcd_track_display);
 
-    LCDSampleDisplay *lcd_sample_display = new LCDSampleDisplay(module);
-    addChild(lcd_sample_display);
+    if(module) // skip these when viewinng the module in the library
+    {
+      LCDSampleDisplay *lcd_sample_display = new LCDSampleDisplay(module);
+      addChild(lcd_sample_display);
 
-    LCDRatchetDisplay *lcd_ratchet_display = new LCDRatchetDisplay(module);
-    addChild(lcd_ratchet_display);
+      LCDRatchetDisplay *lcd_ratchet_display = new LCDRatchetDisplay(module);
+      addChild(lcd_ratchet_display);
+    }
   }
 
   void onHoverKey(const event::HoverKey &e) override
