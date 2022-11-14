@@ -66,8 +66,8 @@ namespace groove_box
         1.0, // probability
         0.0, // loop
         0.0, // reverse
-        0.0, // attack
-        1.0, // release
+        0.0, // AR attack
+        1.0, // AR release
         0.0, // delay mix
         0.5, // delay length
         0.5, // delay feedback

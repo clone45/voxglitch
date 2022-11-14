@@ -298,13 +298,6 @@ namespace groove_box
       float delay_length = settings.getParameter(DELAY_LENGTH);
       float delay_feedback = settings.getParameter(DELAY_FEEDBACK);
 
-      // -===== ADSR Processing =====-
-      //
-      adsr.setAttackRate(attack * APP->engine->getSampleRate());
-      adsr.setReleaseRate(release * maximum_release_time * APP->engine->getSampleRate());
-
-      float adsr_value = adsr.process();
-
       // When the ADSR reaches the sustain state, then switch to the release
       // state.  Only do this when the release is less than max release, otherwise
       // sustain until the nex time the track is triggered.
@@ -322,8 +315,12 @@ namespace groove_box
       // settings.pan ranges from 0 to 1
       // track_pan ranges from -1 to 0
       float computed_pan = (pan * 2.0) - 1.0; // convert settings.pan to range from -1 to 1
-      computed_pan = clamp(computed_pan + track_pan, -1.0, 1.0);
-      stereo_pan.process(&left_output, &right_output, computed_pan);
+      if(computed_pan != 0)
+      {
+        computed_pan = clamp(computed_pan + track_pan, -1.0, 1.0);
+        stereo_pan.process(&left_output, &right_output, computed_pan);
+      }
+      
 
       // Apply volume parameters
       left_output *= (volume * 2);  // Range from 0 to 2 times normal volume
@@ -345,12 +342,21 @@ namespace groove_box
         this->sample_player->stop();
       }
 
-      // Apply ADSR to volume
-      left_output *= adsr_value;
-      right_output *= adsr_value;
+      // -===== ADSR Processing =====-
+      //
+      if(attack > 0.0 || release < 1.0) // skip computations if not used
+      {
+        adsr.setAttackRate(attack * APP->engine->getSampleRate());
+        adsr.setReleaseRate(release * maximum_release_time * APP->engine->getSampleRate());
+        float adsr_value = adsr.process();
+
+        // Apply ADSR to volume
+        left_output *= adsr_value;
+        right_output *= adsr_value;
+      }
 
       // Apply filter
-      if(filter_cutoff > 0)
+      if(filter_cutoff > 0) // Skip if cutoff is zero
       {
         filter.setCutoff(filter_cutoff);
         filter.setResonance(filter_resonance);

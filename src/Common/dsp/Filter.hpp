@@ -40,22 +40,31 @@ struct Filter
     // cutoff value should range from 0 to 1
     void setCutoff(float cutoff)
     {
-        this->cutoff = cutoff;
-        dirty = true;
+        if(this->cutoff != cutoff)
+        {
+            this->cutoff = cutoff;
+            dirty = true;
+        }
     }
     
     // resonance should range from 0 to 1
     void setResonance(float resonance)
     {
-        this->resonance = resonance;
-        dirty = true;
+        if(this->resonance != resonance)
+        {
+            this->resonance = resonance;
+            dirty = true;
+        }
     }
 
     void setMode(int mode)
     {
-        init();
-        this->mode = mode;
-        dirty = true;
+        if(this->mode != mode)
+        {
+            init();
+            this->mode = mode;
+            dirty = true;
+        }
     }
 
     void recalculate()
