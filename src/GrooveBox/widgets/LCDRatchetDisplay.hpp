@@ -43,7 +43,8 @@ struct LCDRatchetDisplay : LCDDisplay
                 nvgSave(vg);
 
                 // Determine the selected ratchet pattern
-                float ratchet_float_value = module->selected_track->sample_playback_settings[module->visualizer_step].ratchet;
+                // float ratchet_float_value = module->selected_track->sample_playback_settings[module->visualizer_step].ratchet;
+                float ratchet_float_value = module->selected_track->sample_playback_settings[module->visualizer_step].getParameter(RATCHET);
                 unsigned int ratchet_pattern_index = ratchet_float_value * NUMBER_OF_RATCHET_PATTERNS;
 
                 float column_x = 0;

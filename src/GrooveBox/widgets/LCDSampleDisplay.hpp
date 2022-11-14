@@ -70,8 +70,12 @@ struct LCDSampleDisplay : LCDDisplay
           // Draw range rectangle
           //
 
-          float sample_start = module->selected_track->sample_playback_settings[module->visualizer_step].sample_start;
-          float sample_end = module->selected_track->sample_playback_settings[module->visualizer_step].sample_end;
+          // float sample_start = module->selected_track->sample_playback_settings[module->visualizer_step].sample_start;
+          // float sample_end = module->selected_track->sample_playback_settings[module->visualizer_step].sample_end;
+
+          float sample_start = module->selected_track->getParameter(SAMPLE_START, module->visualizer_step);
+          float sample_end = module->selected_track->getParameter(SAMPLE_END, module->visualizer_step);
+
 
           nvgBeginPath(vg);
 

@@ -3,11 +3,12 @@
 
 #include <componentlibrary.hpp>
 #include "widgets/RangeGrabbers.hpp"
-// #include "widgets/GrooveboxBlueLight.hpp"
+#include "widgets/ParameterKnob.hpp"
 #include "widgets/GrooveboxSmallLight.hpp"
 
 #include "widgets/GrooveboxStepButton.hpp"
 #include "widgets/GrooveboxSoftButton.hpp"
+#include "widgets/GrooveboxParameterButton.hpp"
 #include "widgets/SequenceLengthWidget.hpp"
 
 #include "widgets/LCDDisplay.hpp"
@@ -86,136 +87,6 @@ struct ModdedCL1362 : SvgPort
   }
 };
 
-struct TrimpotMedium : SvgKnob
-{
-  widget::SvgWidget *bg;
-  GrooveBox *module;
-  unsigned int parameter_index = 0;
-  unsigned int step = 0;
-
-  TrimpotMedium()
-  {
-    minAngle = -0.83 * M_PI;
-    maxAngle = 0.83 * M_PI;
-
-    setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_TrimpotMedium.svg")));
-    bg = new widget::SvgWidget;
-    bg->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_TrimpotMedium_bg.svg")));
-    fb->addChildBelow(bg, tw);
-  }
-
-  void onDoubleClick(const DoubleClickEvent &e) override
-  {
-    float value = 0.0;
-
-    switch (module->selected_function)
-    {
-    case FUNCTION_VOLUME:
-      value = default_volume;
-      break;
-    case FUNCTION_PAN:
-      value = default_pan;
-      break;
-    case FUNCTION_PITCH:
-      value = default_pitch;
-      break;
-    case FUNCTION_RATCHET:
-      value = default_ratchet;
-      break;
-    case FUNCTION_SAMPLE_START:
-      value = default_sample_start;
-      break;
-    case FUNCTION_SAMPLE_END:
-      value = default_sample_end;
-      break;
-    case FUNCTION_PROBABILITY:
-      value = default_probability;
-      break;
-    case FUNCTION_REVERSE:
-      value = default_reverse;
-      break;
-    case FUNCTION_LOOP:
-      value = default_loop;
-      break;
-    case FUNCTION_ATTACK:
-      value = default_attack;
-      break;
-    case FUNCTION_RELEASE:
-      value = default_release;
-      break;
-    case FUNCTION_DELAY_MIX:
-      value = default_delay_mix;
-      break;
-    case FUNCTION_DELAY_LENGTH:
-      value = default_delay_length;
-      break;
-    case FUNCTION_DELAY_FEEDBACK:
-      value = default_delay_feedback;
-      break;
-    }
-
-    if (module->shift_key)
-    {
-      // set _all_ knob values to the default
-      for (unsigned int i = 0; i < NUMBER_OF_STEPS; i++)
-      {
-        module->params[module->STEP_KNOBS + i].setValue(value);
-      }
-    }
-    else
-    {
-      // set _this_ knob's values to the default
-      module->params[parameter_index].setValue(value);
-    }
-  }
-
-  void onButton(const event::Button &e) override
-  {
-    if (module->selected_function == FUNCTION_SAMPLE_START || module->selected_function == FUNCTION_SAMPLE_END)
-    {
-      if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
-      {
-        if (module->lcd_screen_mode != module->SAMPLE)
-        {
-          module->lcd_screen_mode = module->SAMPLE;
-          module->visualizer_step = step;
-        }
-      }
-    }
-
-    if (module->selected_function == FUNCTION_RATCHET)
-    {
-      if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
-      {
-        if (module->lcd_screen_mode != module->RATCHET)
-        {
-          module->lcd_screen_mode = module->RATCHET;
-          module->visualizer_step = step;
-        }
-      }
-    }
-
-    SvgKnob::onButton(e);
-  }
-
-  void onDragEnd(const DragEndEvent &e) override
-  {
-
-    if (module->selected_function == FUNCTION_SAMPLE_START || module->selected_function == FUNCTION_SAMPLE_END)
-    {
-      if (e.button == GLFW_MOUSE_BUTTON_LEFT)
-        module->lcd_screen_mode = module->TRACK;
-    }
-
-    if (module->selected_function == FUNCTION_RATCHET)
-    {
-      if (e.button == GLFW_MOUSE_BUTTON_LEFT)
-        module->lcd_screen_mode = module->TRACK;
-    }
-
-    SvgKnob::onDragEnd(e);
-  }
-};
 
 struct LoadSamplesFromFolderMenuItem : MenuItem
 {
@@ -347,9 +218,9 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       addChild(step_light_widget);
       
       //
-      // Create attenuator knobs for each step
+      // Create parameter knobs for each step
       //
-      TrimpotMedium *knob = createParamCentered<TrimpotMedium>(Vec(button_positions[i][0], button_positions[i][1] + 35.65), module, GrooveBox::STEP_KNOBS + i);
+      ParameterKnob *knob = createParamCentered<ParameterKnob>(Vec(button_positions[i][0], button_positions[i][1] + 35.65), module, GrooveBox::STEP_KNOBS + i);
       knob->module = module;
       knob->parameter_index = GrooveBox::STEP_KNOBS + i;
       knob->step = i;
@@ -366,39 +237,10 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       float x = function_button_positions[i][0];
       float y = function_button_positions[i][1];
 
-      addParam(createParamCentered<GrooveboxSoftButton>(Vec(x, y), module, GrooveBox::FUNCTION_BUTTONS + i));
+      GrooveboxParameterButton *groovebox_parameter_button = createParamCentered<GrooveboxParameterButton>(Vec(x, y), module, GrooveBox::FUNCTION_BUTTONS + i);
+      groovebox_parameter_button->parameter_index = i;
+      addParam(groovebox_parameter_button);
     }
-
-    // Track buttons and labels
-
-    /*
-    for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
-    {
-
-      float x = track_button_positions[i][0];
-      float y = track_button_positions[i][1];
-
-      TrackLabelDisplay *track_label_display = new TrackLabelDisplay(i);
-      track_label_display->setPosition(Vec(x, y - 14));
-      track_label_display->module = module;
-      addChild(track_label_display);
-
-      TrackSampleNudge *track_sample_nudge_up = new TrackSampleNudge(i);
-      track_sample_nudge_up->setPosition(Vec(x + 163, y - 14)); // 162
-      track_sample_nudge_up->module = module;
-      track_sample_nudge_up->direction = -1;
-      addChild(track_sample_nudge_up);
-
-      TrackSampleNudge *track_sample_nudge_down = new TrackSampleNudge(i);
-      track_sample_nudge_down->setPosition(Vec(x + 163, y + 1));
-      track_sample_nudge_down->module = module;
-      track_sample_nudge_down->direction = 1;
-      addChild(track_sample_nudge_down);
-    }
-    */
-
-    LCDTrackDisplay *lcd_track_display = new LCDTrackDisplay(module);
-    addChild(lcd_track_display);
 
     // Individual track outputs
     for (unsigned int i = 0; i < (NUMBER_OF_TRACKS * 2); i++)
@@ -426,10 +268,6 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     // Memory CV input
     addInput(createInputCentered<PJ301MPort>(Vec(87.622, 102), module, GrooveBox::MEM_INPUT));
 
-    // Copy/Paste Memory buttons
-    // addParam(createParamCentered<GrooveboxSoftButton>(Vec(86.56, 152.50), module, GrooveBox::COPY_BUTTON));
-    // addParam(createParamCentered<GrooveboxSoftButton>(Vec(86.56, 193), module, GrooveBox::PASTE_BUTTON));
-
     GrooveboxSoftButton *copy_button = createParamCentered<GrooveboxSoftButton>(Vec(86.56, 152.50), module, GrooveBox::COPY_BUTTON);
     copy_button->momentary = true;
     addParam(copy_button);
@@ -439,7 +277,10 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     addParam(paste_button);
 
 
-    // Sample Visualizer Widget
+    // LCD displays
+
+    LCDTrackDisplay *lcd_track_display = new LCDTrackDisplay(module);
+    addChild(lcd_track_display);
 
     LCDSampleDisplay *lcd_sample_display = new LCDSampleDisplay(module);
     addChild(lcd_sample_display);
