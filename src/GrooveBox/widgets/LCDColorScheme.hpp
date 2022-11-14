@@ -9,7 +9,7 @@ struct LCDColorScheme
             nvgRGBA(128, 35, 35, 140),    // dark blocks
             nvgRGBA(200, 50, 50, 140),  // light blocks
             nvgRGBA(255, 0, 0, 50),       // normal highlight overlay
-            nvgRGBA(255, 0, 0, 100),       // strong highlight overlay
+            nvgRGBA(255, 30, 30, 100),       // strong highlight overlay
             nvgRGBA(255, 180, 180, 255)       // text and icons
 
         },

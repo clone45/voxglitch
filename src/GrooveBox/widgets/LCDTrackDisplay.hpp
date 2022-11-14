@@ -472,7 +472,7 @@ struct TrackSampleNudge : TransparentWidget
   {
     nvgFontSize(vg, 10);
 
-    nvgFillColor(vg, module->lcd_color_scheme.getHighlightOverlay());
+    nvgFillColor(vg, module->lcd_color_scheme.getStrongHighlightOverlay());
     if (module && module->track_index == this->track_number)
       nvgFillColor(vg, module->lcd_color_scheme.getTextColor());
 
