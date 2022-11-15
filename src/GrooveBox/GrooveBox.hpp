@@ -9,6 +9,7 @@
 // - Thank you to Jim Allman for his incredible front panel design.
 //
 // TODO:
+//   * Update documentation
 //   * Groovebox allows manual MEM selection when CV is attached (https://github.com/clone45/voxglitch/issues/198)
 //   * See if I can improve buttons so you can't toggle them when you shouldn't be able to
 
@@ -688,16 +689,7 @@ struct GrooveBox : VoxglitchSamplerModule
       // Process step key-buttons (awesome clackity clack!)
       selected_track->setValue(step_number, params[DRUM_PADS + step_number].getValue());
 
-      // Light up drum pads
-      // lights[DRUM_PAD_LIGHTS + step_number].setBrightness(selected_track->getValue(step_number));
-
-      // This is important to do in case a new track has been selected, or if
-      // a new memory slot has been selected.
-      // params[DRUM_PADS + step_number].setValue(selected_track->getValue(step_number));
-
       // Show location
-      // lights[STEP_LOCATION_LIGHTS + step_number].setBrightness(playback_step == step_number);
-      // light_booleans[i] = (track_index == i);
       light_booleans[step_number] = (playback_step == step_number);
     }
 
