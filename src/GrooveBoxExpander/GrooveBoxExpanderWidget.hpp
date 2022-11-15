@@ -40,7 +40,7 @@ struct GrooveBoxExpanderWidget : VoxglitchModuleWidget
   GrooveBoxExpanderWidget(GrooveBoxExpander* module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groove_box_expander_front_panel.svg")));
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox_expander/groove_box_expander_front_panel.svg")));
 
     for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
     {
