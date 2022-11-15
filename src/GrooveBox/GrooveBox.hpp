@@ -150,11 +150,9 @@ struct GrooveBox : VoxglitchSamplerModule
     {
       configParam(DRUM_PADS + i, 0.0, 1.0, 0.0, "Step Button");
       configOnOff(DRUM_PADS + i, 0.0, "Step Button");
-
       configParam(STEP_KNOBS + i, 0.0, 1.0, 0.0, "Parameter Lock Value " + std::to_string(i));
-
       configParam(FUNCTION_BUTTONS + i, 0.0, 1.0, 0.0);
-      configOnOff(FUNCTION_BUTTONS + i, 0.0, FUNCTION_NAMES[i]);
+      configOnOff(FUNCTION_BUTTONS + i, 0.0, FUNCTION_NAMES[parameter_slots[i]]);
 
       light_booleans[i] = false;
     }
@@ -175,6 +173,10 @@ struct GrooveBox : VoxglitchSamplerModule
       configOutput(TRACK_OUTPUTS + i, "Track " + std::to_string((i / 2) + 1) + ": left");
       configOutput(TRACK_OUTPUTS + i + 1, "Track " + std::to_string((i / 2) + 1) + ": right");
     }
+
+    configInput(STEP_INPUT, "Clock Input x32");
+    configInput(RESET_INPUT, "Reset Input");
+    configInput(MEM_INPUT, "Memory CV Select Input (0-10v)");
 
     // Configure the stereo mix outputs
     configOutput(AUDIO_OUTPUT_LEFT, "Left Mix");

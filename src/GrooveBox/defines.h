@@ -79,28 +79,6 @@ namespace groove_box
         "Filter Resonance"
     };
 
-    /*
-      enum Parameters
-      {
-        VOLUME,
-        PAN,
-        PITCH,
-        RATCHET,
-        PROBABILITY,
-        DELAY_MIX,
-        DELAY_LENGTH,
-        DELAY_FEEDBACK,
-        ATTACK,
-        RELEASE,
-        LOOP,
-        REVERSE,
-        SAMPLE_START,
-        SAMPLE_END,
-        FILTER_CUTOFF,
-        FILTER_RESONANCE
-      };
-      */
-
     // This is an array that maps the slot to the slot's associated parameter
     // It's purpose is to allow for the parameters to be rearranged on the front
     // panel without changing the parameter ids, which would break people's patches
