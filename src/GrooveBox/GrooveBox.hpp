@@ -375,6 +375,24 @@ struct GrooveBox : VoxglitchSamplerModule
     }
   }
 
+  void boostSelectedParameter()
+  {
+    for (unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
+    {
+      float boosted_value = std::min(1.0, params[STEP_KNOBS + step_number].getValue() + 0.125);
+      params[STEP_KNOBS + step_number].setValue(boosted_value);
+    }
+  }
+
+  void reduceSelectedParameter()
+  {
+    for (unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
+    {
+      float reduced_value = std::max(0.0, params[STEP_KNOBS + step_number].getValue() - 0.125);
+      params[STEP_KNOBS + step_number].setValue(reduced_value);
+    }
+  }
+
   void setSamplePositionSnapIndex(unsigned int sample_position_snap_index, unsigned int track_index)
   {
     this->sample_position_snap_indexes[track_index] = sample_position_snap_index;
