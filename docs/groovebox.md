@@ -6,6 +6,18 @@ _Graphic Design by [Jim Allman](https://www.linkedin.com/in/jim-allman-399a72/)_
 
 The Voxglitch Groove Box is an 8-track, sample based drum machine with per-step parameter locks.  
 
+### Minimal Usage
+
+![GrooveBoxMinimalUsage](/docs/images/groovebox/minimal-usage.jpg)
+
+1. Attach a clock to the CLK input.  The clock needs to be fast -- x32 times.
+2. Connect the mix outputs to your audio output
+3. Load samples into tracks by double-clicking on a track box (on the LCD screen)
+4. Click on the step buttons to set trigger points
+
+That should be enough to get some sound!
+
+
 ### Tracks
 
 
@@ -89,11 +101,18 @@ Here's how they work:
 
 1. Select which track you'd like to modify.
 2. Select what type of thing you want to modify by using the buttons at the very bottom of the module.
-3. Adjust the small knob underneath whichever steps you want to modify.
+3. Adjust knob underneath whichever steps you want to modify.
 
 ![GrooveBoxParameterLocks](/docs/images/groovebox/parameter_locks.jpg)
 
 For example, if you wanted to raise the volume on the 5th step of a sequence, select VOLUME, then adjust the 5th knob.
+
+### Parameter Knobs
+Parameter knobs are used to adjust parameter locks, which are applied to steps.  For example, you might modulate PITCH for different steps in the track.
+
+![GrooveBoxParameterKnobs](/docs/images/groovebox/parameter-knobs.jpg)
+
+Right click on a parater knob to access some helpful actions, such as clearing, randomizing, and nudging the knob values.
 
 ### Memory
 
@@ -132,11 +151,6 @@ Individual sample outputs are available at the top of the module  A stereo mix o
 
 You can crank up the MIX OUT by using the master volume attenuator.  The master volume does
 not affect the individual stereo track outputs.
-
-### Minimal Usage
-
-![GrooveBoxMinimalUsage](/docs/images/groovebox/minimal-usage.jpg)
-
 
 
 ### Video Tutorial
