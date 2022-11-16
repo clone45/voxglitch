@@ -1,39 +1,42 @@
-## Groovebox
+## Voxglitch Groovebox
 
 ![GrooveBox](/docs/images/groovebox/groovebox.jpg)
+
+_Graphic Design by [Jim Allman](https://www.linkedin.com/in/jim-allman-399a72/)_
 
 The Voxglitch Groove Box is an 8-track, sample based drum machine with per-step parameter locks.  
 
 ### Tracks
 
-The Groove Box has 8 track slots.  Each track slot may contain a sample.  Pressing a track button will select it for editing.
 
-Tracks store:
+The Groove Box has 8 track slots.  Click on a track slot on the LCD screen to select the track for editing.
+
+Tracks are composed of:
 
 * Step button selections
-* Selected sample location on the hard drive.
+* Assigned samples
 * All parameter lock values
-* Track length
+* Step start and end positions
 
-![GrooveBoxTracks](/docs/images/groovebox/tracks.jpg)
 
 ### Samples
 
-Groove Box doesn't ship with built-in sounds.  It's up to the user to provide samples.  Samples should be .wav files, with a 44,100  or higher sample rate for best quality.
+The Groove Box doesn't ship with built-in sounds.  It's up to the user to provide samples.  Samples should be .wav files, with a 44,100  or higher sample rate for best quality.
 
 #### Loading Samples
 
-There are three ways of loading samples:
+There are multiple ways of loading samples:
 
-- Double clicking on a track's filename display screen (preferred way!)
-- Using the context-menu (right-click menu) to select individual samples (tedious)
-- Using the context-menu to select a folder containing samples (good for setting up preset "kits")
 
-Once a sample is loaded, you can over over the track label and scroll through other sounds in the same folder by holding SHIFT + CTRL while using your mouse wheel.
+- Double click on a track's filename to select a replacement sample
+- Right-click on a track's filename and select "Load Sample" from the context menu
+- Use the module's context-menu to select a folder containing samples (good for setting up preset "kits")
+
+Once a sample is loaded, you can use the up and down arrows displayed to the right of the sample to browse sounds in the same folder.
 
 ### Step Buttons
 
-The blue Step Buttons are used to program the rythm used for playback -- just like in a typical drum machine.
+The clackity-clack Step Buttons are used to program the rythm used for playback.
 
 ![GrooveBoxStepButtons](/docs/images/groovebox/step_buttons.jpg)
 
@@ -45,32 +48,35 @@ It's possible to copy all step data (including parameter lock settings) from one
 
 Here's how:
 
-* Hold down the shift key
-* While continuing to holding the shift key, double-click on the blue step button that you wish to copy.
-* Don’t lift up the shift yet! Keep it pressed!
-* While continuing to hold the shift key, click on the destination step(s). All step data will be copied to the destination steps.
-* Finally, release the shift key. This will return the module to normal operation.
+![GrooveBoxCopyStep](/docs/images/groovebox/copying_step_data.jpg)
 
-#### Shifting Patterns
 
-Sometimes it may be helpful to shift a pattern left or right.  There are two ways to
-do this:
+1. Right click on a source step button
+2. Select "Copy Step"
+3. Right click on a destination step button
+4. Select "Paste Step"
 
-In order to shift a single track's data left or right:
+At the moment, information can only be copied between steps in the same track.
 
-1. Hold down the __shift key__
-2. Click on one of the blue step buttons
-3. Drag left or right
 
-In order to shift all 8 of the tracks' data left or right:
+#### Shifting All Steps Left or Right
 
-1. Hold down the __shift & control keys__
-2. Click on one of the blue step buttons
-3. Drag left or right
+Sometimes it may be helpful to shift a pattern left or right.  Here's how:
+
+1. Right click on any step button
+2. Select either "Shift Steps Right" or "Shift Steps Left"
+
+#### Randomizing or Clearing All Steps
+
+Here's an easy to to randomize or clear all steps in a track:
+
+1. Right click on any step button
+2. Select either Randomize Steps or Clear Steps
+3. All steps for the selected track will either be randomized or cleared
 
 ### Changing Track Start and End
 
-This has changed recently! Changing the sequence start and end is now accomplished by dragging the sequence length indicator from the endpoints.  Click either the start or end location indicated in the screen capture below, then drag left or right.
+Changing the sequence start and end is done by dragging the sequence length indicator from the endpoints.  Click either the start or end location as indicated in the screen capture below, then drag left or right.
 
 ![GrooveBoxTracks](/docs/images/groovebox/change-start-and-end.jpg)
 
@@ -101,9 +107,6 @@ Basic Method:
 * To copy a memory slot, select the memory slot that you'd with to copy and click the CPY button
 * To past a memory slot, select the destination memory slot and click PST
 
-Sneaky Method:
-* To copy a memory slot, select the memory slot that you'd with to copy and click the CPY button
-* While holding the shift key, click on one or more memory slots to paste the copied memory.  This allows you to copy the currently selected memory slot without having to switch memory slots.
 
 ### Clock and Reset
 
