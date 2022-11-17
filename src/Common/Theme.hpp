@@ -10,11 +10,14 @@ struct Theme
     json_t *json_root_local;
     json_error_t error;
 
+    // Check to see if the Voxglitch config file does not exist.  If it's missing,
+    // then copy it from the res/ folder to the user folder.
     if(! rack::system::exists(asset::user("Voxglitch.json")))
     {
       rack::system::copy(asset::plugin(pluginInstance, "res/voxglitch_config.json"), asset::user("Voxglitch.json"));
     }
 
+    // Get the path to the config file
     std::string config_file_path = asset::user("Voxglitch.json");
 
     // Load theme selection, either "light" or "default"
