@@ -2,7 +2,7 @@
 
 ![GrooveBox](/docs/images/groovebox/groovebox.jpg)
 
-_Graphic Design by [Jim Allman](https://ibang.com/)_
+_Graphic Design by [Jim Allman (Interrobang Digital Media)](https://ibang.com/)_
 
 The Voxglitch Groove Box is an 8-track, sample based drum machine with per-step parameter locks.  
 
