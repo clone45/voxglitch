@@ -276,17 +276,21 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     paste_button->momentary = true;
     addParam(paste_button);
 
-
+    //
     // LCD displays
+    //
 
     LCDTrackDisplay *lcd_track_display = new LCDTrackDisplay(module);
     addChild(lcd_track_display);
 
-    LCDSampleDisplay *lcd_sample_display = new LCDSampleDisplay(module);
-    addChild(lcd_sample_display);
+    if(module) // skip these when viewinng the module in the library
+    {
+      LCDSampleDisplay *lcd_sample_display = new LCDSampleDisplay(module);
+      addChild(lcd_sample_display);
 
-    LCDRatchetDisplay *lcd_ratchet_display = new LCDRatchetDisplay(module);
-    addChild(lcd_ratchet_display);
+      LCDRatchetDisplay *lcd_ratchet_display = new LCDRatchetDisplay(module);
+      addChild(lcd_ratchet_display);
+    }
   }
 
   void onHoverKey(const event::HoverKey &e) override
@@ -544,7 +548,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     unsigned int theme_id = 0;
 
     void onAction(const event::Action &e) override {
-      module->lcd_color_scheme.selected_color_scheme = theme_id;
+      LCDColorScheme::selected_color_scheme = theme_id;
     }
   };
 
@@ -555,27 +559,27 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     Menu *createChildMenu() override {
       Menu *menu = new Menu;
 
-      LCDColorMenuItem *lcd_color_menu_item_0 = createMenuItem<LCDColorMenuItem>("Legacy Red", CHECKMARK(module->lcd_color_scheme.selected_color_scheme == 0));
+      LCDColorMenuItem *lcd_color_menu_item_0 = createMenuItem<LCDColorMenuItem>("Legacy Red", CHECKMARK(LCDColorScheme::selected_color_scheme == 0));
       lcd_color_menu_item_0->module = module;
       lcd_color_menu_item_0->theme_id = 0;
       menu->addChild(lcd_color_menu_item_0);
 
-      LCDColorMenuItem *lcd_color_menu_item_1 = createMenuItem<LCDColorMenuItem>("Soft Yellow", CHECKMARK(module->lcd_color_scheme.selected_color_scheme == 1));
+      LCDColorMenuItem *lcd_color_menu_item_1 = createMenuItem<LCDColorMenuItem>("Soft Yellow", CHECKMARK(LCDColorScheme::selected_color_scheme == 1));
       lcd_color_menu_item_1->module = module;
       lcd_color_menu_item_1->theme_id = 1;
       menu->addChild(lcd_color_menu_item_1);
 
-      LCDColorMenuItem *lcd_color_menu_item_2 = createMenuItem<LCDColorMenuItem>("Cool White", CHECKMARK(module->lcd_color_scheme.selected_color_scheme == 2));
+      LCDColorMenuItem *lcd_color_menu_item_2 = createMenuItem<LCDColorMenuItem>("Cool White", CHECKMARK(LCDColorScheme::selected_color_scheme == 2));
       lcd_color_menu_item_2->module = module;
       lcd_color_menu_item_2->theme_id = 2;
       menu->addChild(lcd_color_menu_item_2);
 
-      LCDColorMenuItem *lcd_color_menu_item_3 = createMenuItem<LCDColorMenuItem>("Ice Blue", CHECKMARK(module->lcd_color_scheme.selected_color_scheme == 3));
+      LCDColorMenuItem *lcd_color_menu_item_3 = createMenuItem<LCDColorMenuItem>("Ice Blue", CHECKMARK(LCDColorScheme::selected_color_scheme == 3));
       lcd_color_menu_item_3->module = module;
       lcd_color_menu_item_3->theme_id = 3;
       menu->addChild(lcd_color_menu_item_3);
 
-      LCDColorMenuItem *lcd_color_menu_item_4 = createMenuItem<LCDColorMenuItem>("Data Green", CHECKMARK(module->lcd_color_scheme.selected_color_scheme == 4));
+      LCDColorMenuItem *lcd_color_menu_item_4 = createMenuItem<LCDColorMenuItem>("Data Green", CHECKMARK(LCDColorScheme::selected_color_scheme == 4));
       lcd_color_menu_item_4->module = module;
       lcd_color_menu_item_4->theme_id = 4;
       menu->addChild(lcd_color_menu_item_4);

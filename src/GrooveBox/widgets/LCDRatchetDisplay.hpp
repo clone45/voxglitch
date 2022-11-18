@@ -75,11 +75,11 @@ struct LCDRatchetDisplay : LCDDisplay
 
                         if (ratchet_array_boolean)
                         {
-                            nvgFillColor(vg, module->lcd_color_scheme.getLightColor()); // Friendly blue highlight
+                            nvgFillColor(vg, LCDColorScheme::getLightColor()); // Friendly blue highlight
                         }
                         else
                         {
-                            nvgFillColor(vg, module->lcd_color_scheme.getDarkColor()); // Grey color
+                            nvgFillColor(vg, LCDColorScheme::getDarkColor()); // Grey color
                         }
                         nvgFill(vg);
                     }
@@ -89,7 +89,7 @@ struct LCDRatchetDisplay : LCDDisplay
                     {
                         nvgBeginPath(vg);
                         nvgRect(vg, column_x, y, column_width, cell_height);
-                        nvgFillColor(vg, module->lcd_color_scheme.getHighlightOverlay());
+                        nvgFillColor(vg, LCDColorScheme::getHighlightOverlay());
                         nvgFill(vg);
                     }
                 }

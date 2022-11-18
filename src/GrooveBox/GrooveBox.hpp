@@ -9,6 +9,7 @@
 // - Thank you to Jim Allman for his incredible front panel design.
 //
 // TODO:
+//   * Update documentation
 //   * Groovebox allows manual MEM selection when CV is attached (https://github.com/clone45/voxglitch/issues/198)
 //   * See if I can improve buttons so you can't toggle them when you shouldn't be able to
 
@@ -51,7 +52,7 @@ struct GrooveBox : VoxglitchSamplerModule
   bool step_copy_paste_mode = false;
   unsigned int copied_step_index = 0;
   unsigned int lcd_screen_mode = 0;
-  LCDColorScheme lcd_color_scheme;
+  // LCDColorScheme lcd_color_scheme;
 
   // These booleans tell the sequence position lights whether to be ON or OFF
   bool light_booleans[NUMBER_OF_STEPS];
@@ -149,11 +150,9 @@ struct GrooveBox : VoxglitchSamplerModule
     {
       configParam(DRUM_PADS + i, 0.0, 1.0, 0.0, "Step Button");
       configOnOff(DRUM_PADS + i, 0.0, "Step Button");
-
       configParam(STEP_KNOBS + i, 0.0, 1.0, 0.0, "Parameter Lock Value " + std::to_string(i));
-
       configParam(FUNCTION_BUTTONS + i, 0.0, 1.0, 0.0);
-      configOnOff(FUNCTION_BUTTONS + i, 0.0, FUNCTION_NAMES[i]);
+      configOnOff(FUNCTION_BUTTONS + i, 0.0, FUNCTION_NAMES[parameter_slots[i]]);
 
       light_booleans[i] = false;
     }
@@ -174,6 +173,10 @@ struct GrooveBox : VoxglitchSamplerModule
       configOutput(TRACK_OUTPUTS + i, "Track " + std::to_string((i / 2) + 1) + ": left");
       configOutput(TRACK_OUTPUTS + i + 1, "Track " + std::to_string((i / 2) + 1) + ": right");
     }
+
+    configInput(STEP_INPUT, "Clock Input x32");
+    configInput(RESET_INPUT, "Reset Input");
+    configInput(MEM_INPUT, "Memory CV Select Input (0-10v)");
 
     // Configure the stereo mix outputs
     configOutput(AUDIO_OUTPUT_LEFT, "Left Mix");
@@ -374,6 +377,24 @@ struct GrooveBox : VoxglitchSamplerModule
     }
   }
 
+  void boostSelectedParameter()
+  {
+    for (unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
+    {
+      float boosted_value = std::min(1.0, params[STEP_KNOBS + step_number].getValue() + 0.125);
+      params[STEP_KNOBS + step_number].setValue(boosted_value);
+    }
+  }
+
+  void reduceSelectedParameter()
+  {
+    for (unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
+    {
+      float reduced_value = std::max(0.0, params[STEP_KNOBS + step_number].getValue() - 0.125);
+      params[STEP_KNOBS + step_number].setValue(reduced_value);
+    }
+  }
+
   void setSamplePositionSnapIndex(unsigned int sample_position_snap_index, unsigned int track_index)
   {
     this->sample_position_snap_indexes[track_index] = sample_position_snap_index;
@@ -451,7 +472,7 @@ struct GrooveBox : VoxglitchSamplerModule
     json_object_set(json_root, "memory_slots", memory_slots_json_array);
 
     // Save selected color theme
-    json_object_set(json_root, "selected_color_theme", json_integer(lcd_color_scheme.selected_color_scheme));
+    json_object_set(json_root, "selected_color_theme", json_integer(LCDColorScheme::selected_color_scheme));
 
     return json_root;
   }
@@ -580,7 +601,7 @@ struct GrooveBox : VoxglitchSamplerModule
     updatePanelControls();
 
     json_t *selected_color_theme_json = json_object_get(json_root, "selected_color_theme");
-    if (selected_color_theme_json) lcd_color_scheme.selected_color_scheme = json_integer_value(selected_color_theme_json);
+    if (selected_color_theme_json) LCDColorScheme::selected_color_scheme = json_integer_value(selected_color_theme_json);
 
   }
 
@@ -688,16 +709,7 @@ struct GrooveBox : VoxglitchSamplerModule
       // Process step key-buttons (awesome clackity clack!)
       selected_track->setValue(step_number, params[DRUM_PADS + step_number].getValue());
 
-      // Light up drum pads
-      // lights[DRUM_PAD_LIGHTS + step_number].setBrightness(selected_track->getValue(step_number));
-
-      // This is important to do in case a new track has been selected, or if
-      // a new memory slot has been selected.
-      // params[DRUM_PADS + step_number].setValue(selected_track->getValue(step_number));
-
       // Show location
-      // lights[STEP_LOCATION_LIGHTS + step_number].setBrightness(playback_step == step_number);
-      // light_booleans[i] = (track_index == i);
       light_booleans[step_number] = (playback_step == step_number);
     }
 

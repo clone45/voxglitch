@@ -7,11 +7,9 @@
 //
 struct TrackLabelDisplay : TransparentWidget
 {
+
   GrooveBox *module;
   unsigned int track_number = 0;
-
-  // NVGcolor track_background_default = nvgRGBA(146, 42, 43, 140);
-  // NVGcolor track_background_highlight = nvgRGBA(245, 141, 138, 140);
 
   TrackLabelDisplay(unsigned int track_number, float width, float height)
   {
@@ -81,13 +79,11 @@ struct TrackLabelDisplay : TransparentWidget
   {
     float text_left_margin = 6;
 
-    // Draw background color
-    // if(this->focused) draw_focus_overlay(vg);
-
     // Set up font parameters
     nvgFontSize(vg, 10);
     nvgTextLetterSpacing(vg, 0);
-    nvgFillColor(vg, module->lcd_color_scheme.getTextColor());
+    nvgFillColor(vg, LCDColorScheme::getTextColor());
+    
     nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
     float wrap_at = 130.0; // Just throw your hands in the air!  And wave them like you just don't 130.0
 
@@ -121,6 +117,7 @@ struct TrackLabelDisplay : TransparentWidget
 
   void drawLayer(const DrawArgs &args, int layer) override
   {
+
     if (layer == 1)
     {
       const auto vg = args.vg;
@@ -144,11 +141,11 @@ struct TrackLabelDisplay : TransparentWidget
         nvgRect(vg, 0, 0, box.size.x, box.size.y);
         if (module->track_index == this->track_number)
         {
-          nvgFillColor(vg, module->lcd_color_scheme.getLightColor());
+          nvgFillColor(vg, LCDColorScheme::getLightColor());
         }
         else
         {
-          nvgFillColor(vg, module->lcd_color_scheme.getDarkColor());
+          nvgFillColor(vg, LCDColorScheme::getDarkColor());
         }
         nvgFill(vg);
 
@@ -168,7 +165,7 @@ struct TrackLabelDisplay : TransparentWidget
         // Draw track slot background
         nvgBeginPath(vg);
         nvgRect(vg, 0, 0, box.size.x, box.size.y);
-        nvgFillColor(vg, nvgRGBA(146, 42, 43, 140));
+        nvgFillColor(vg, LCDColorScheme::getLightColor());
         nvgFill(vg);
 
         draw_track_label(PLACEHOLDER_TRACK_NAMES[track_number], vg);
@@ -176,6 +173,7 @@ struct TrackLabelDisplay : TransparentWidget
       nvgRestore(vg);
     }
     Widget::drawLayer(args, layer);
+
   }
 
   struct ClearTrackStepsMenuItem : MenuItem
@@ -252,78 +250,36 @@ struct TrackLabelDisplay : TransparentWidget
     GrooveBox *module = dynamic_cast<GrooveBox *>(this->module);
     assert(module);
 
-    ui::Menu *menu = createMenu();
+    if(module)
+    {
+      ui::Menu *menu = createMenu();
 
-    menu->addChild(createMenuLabel("Track Menu"));
+      menu->addChild(createMenuLabel("Track Menu"));
 
-    LoadSampleMenuItem *load_sample_menu_item = createMenuItem<LoadSampleMenuItem>("Load Sample");
-    load_sample_menu_item->module = module;
-    load_sample_menu_item->track_number = track_number;
-    menu->addChild(load_sample_menu_item);
+      LoadSampleMenuItem *load_sample_menu_item = createMenuItem<LoadSampleMenuItem>("Load Sample");
+      load_sample_menu_item->module = module;
+      load_sample_menu_item->track_number = track_number;
+      menu->addChild(load_sample_menu_item);
 
-    menu->addChild(new MenuSeparator());
+      menu->addChild(new MenuSeparator());
 
-    ClearTrackStepsMenuItem *clear_track_steps_menu_item = createMenuItem<ClearTrackStepsMenuItem>("Clear Track Steps");
-    clear_track_steps_menu_item->module = module;
-    clear_track_steps_menu_item->track_number = track_number;
-    menu->addChild(clear_track_steps_menu_item);
+      ClearTrackStepsMenuItem *clear_track_steps_menu_item = createMenuItem<ClearTrackStepsMenuItem>("Clear Track Steps");
+      clear_track_steps_menu_item->module = module;
+      clear_track_steps_menu_item->track_number = track_number;
+      menu->addChild(clear_track_steps_menu_item);
 
-    ClearTrackParametersMenuItem *clear_track_parameters_menu_item = createMenuItem<ClearTrackParametersMenuItem>("Reset Track Parameters");
-    clear_track_parameters_menu_item->module = module;
-    clear_track_parameters_menu_item->track_number = track_number;
-    menu->addChild(clear_track_parameters_menu_item);
+      ClearTrackParametersMenuItem *clear_track_parameters_menu_item = createMenuItem<ClearTrackParametersMenuItem>("Reset Track Parameters");
+      clear_track_parameters_menu_item->module = module;
+      clear_track_parameters_menu_item->track_number = track_number;
+      menu->addChild(clear_track_parameters_menu_item);
 
-    ClearTrackMenuItem *clear_track_menu_item = createMenuItem<ClearTrackMenuItem>("Clear and Reset Both");
-    clear_track_menu_item->module = module;
-    clear_track_menu_item->track_number = track_number;
-    menu->addChild(clear_track_menu_item);
-
-    // menu->addChild(createMenuLabel("Hello World"));
+      ClearTrackMenuItem *clear_track_menu_item = createMenuItem<ClearTrackMenuItem>("Clear and Reset Both");
+      clear_track_menu_item->module = module;
+      clear_track_menu_item->track_number = track_number;
+      menu->addChild(clear_track_menu_item);
+    }
   }
 
-  //
-  // Context Menu
-  //
-  /*
-  struct RandomizeParamMenuItem : MenuItem
-  {
-    GrooveBox *module;
-
-    void onAction(const event::Action &e) override
-    {
-      // module->randomizeSelectedParameter();
-    }
-  };
-
-  struct ResetParamMenuItem : MenuItem
-  {
-    GrooveBox *module;
-
-    void onAction(const event::Action &e) override
-    {
-      // module->resetSelectedParameter();
-    }
-  };
-
-
-  void appendContextMenu(Menu *menu) override
-  {
-    GrooveBox *module = dynamic_cast<GrooveBox *>(this->module);
-    assert(module);
-
-    menu->addChild(new MenuSeparator);
-
-    // Randomize parameters
-    RandomizeParamMenuItem *randomize_param_menu_item = createMenuItem<RandomizeParamMenuItem>("Randomize Knobs");
-    randomize_param_menu_item->module = module;
-    menu->addChild(randomize_param_menu_item);
-
-    // Reset all knobs
-    ResetParamMenuItem *reset_param_menu_item = createMenuItem<ResetParamMenuItem>("Reset Knobs");
-    reset_param_menu_item->module = module;
-    menu->addChild(reset_param_menu_item);
-  }
-  */
 };
 
 //
@@ -440,11 +396,11 @@ struct TrackSampleNudge : TransparentWidget
         nvgRect(vg, 0, 0, box.size.x, box.size.y);
         if (module->track_index == this->track_number)
         {
-          nvgFillColor(vg, module->lcd_color_scheme.getLightColor());
+          nvgFillColor(vg, LCDColorScheme::getLightColor());
         }
         else
         {
-          nvgFillColor(vg, module->lcd_color_scheme.getDarkColor());
+          nvgFillColor(vg, LCDColorScheme::getDarkColor());
         }
         nvgFill(vg);
 
@@ -458,7 +414,7 @@ struct TrackSampleNudge : TransparentWidget
         // Draw nudge rectangle background
         nvgBeginPath(vg);
         nvgRect(vg, 0, 0, box.size.x, box.size.y);
-        nvgFillColor(vg, nvgRGBA(146, 42, 43, 140));
+        nvgFillColor(vg, LCDColorScheme::getLightColor());
         nvgFill(vg);
 
         drawArrow(vg, direction);
@@ -472,9 +428,8 @@ struct TrackSampleNudge : TransparentWidget
   {
     nvgFontSize(vg, 10);
 
-    nvgFillColor(vg, module->lcd_color_scheme.getStrongHighlightOverlay());
-    if (module && module->track_index == this->track_number)
-      nvgFillColor(vg, module->lcd_color_scheme.getTextColor());
+    nvgFillColor(vg, LCDColorScheme::getStrongHighlightOverlay());
+    if (module && module->track_index == this->track_number) nvgFillColor(vg, LCDColorScheme::getTextColor());
 
     nvgTextAlign(vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
 

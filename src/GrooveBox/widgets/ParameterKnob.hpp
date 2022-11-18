@@ -39,7 +39,7 @@ struct ParameterKnob : SvgKnob
 
   void onButton(const event::Button &e) override
   {
-    if (module->selected_function == FUNCTION_SAMPLE_START || module->selected_function == FUNCTION_SAMPLE_END)
+    if (module->selected_function == SAMPLE_START || module->selected_function == SAMPLE_END)
     {
       if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
       {
@@ -51,7 +51,7 @@ struct ParameterKnob : SvgKnob
       }
     }
 
-    if (module->selected_function == FUNCTION_RATCHET)
+    if (module->selected_function == RATCHET)
     {
       if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
       {
@@ -69,13 +69,13 @@ struct ParameterKnob : SvgKnob
   void onDragEnd(const DragEndEvent &e) override
   {
 
-    if (module->selected_function == FUNCTION_SAMPLE_START || module->selected_function == FUNCTION_SAMPLE_END)
+    if (module->selected_function == SAMPLE_START || module->selected_function == SAMPLE_END)
     {
       if (e.button == GLFW_MOUSE_BUTTON_LEFT)
         module->lcd_screen_mode = module->TRACK;
     }
 
-    if (module->selected_function == FUNCTION_RATCHET)
+    if (module->selected_function == RATCHET)
     {
       if (e.button == GLFW_MOUSE_BUTTON_LEFT)
         module->lcd_screen_mode = module->TRACK;
@@ -104,6 +104,26 @@ struct ParameterKnob : SvgKnob
     }
   };
 
+  struct BoostParamMenuItem : MenuItem
+  {
+    GrooveBox *module;
+
+    void onAction(const event::Action &e) override
+    {
+      module->boostSelectedParameter();
+    }
+  };
+
+  struct ReduceParamMenuItem : BoostParamMenuItem
+  {
+    GrooveBox *module;
+
+    void onAction(const event::Action &e) override
+    {
+      module->reduceSelectedParameter();
+    }
+  };
+
   void appendContextMenu(Menu *menu) override
   {
     GrooveBox *module = dynamic_cast<GrooveBox *>(this->module);
@@ -119,6 +139,18 @@ struct ParameterKnob : SvgKnob
     // Reset all knobs
     ResetParamMenuItem *reset_param_menu_item = createMenuItem<ResetParamMenuItem>("Reset Knobs");
     reset_param_menu_item->module = module;
-    menu->addChild(reset_param_menu_item);    
+    menu->addChild(reset_param_menu_item);  
+
+    menu->addChild(new MenuSeparator);
+
+    // Adjust knobs up!
+    BoostParamMenuItem *boost_param_menu_item = createMenuItem<BoostParamMenuItem>("Increase all knobs by 1 notch");
+    boost_param_menu_item->module = module;
+    menu->addChild(boost_param_menu_item); 
+
+    // Adjust knobs down!
+    ReduceParamMenuItem *reduce_param_menu_item = createMenuItem<ReduceParamMenuItem>("Decrese all knobs by 1 notch");
+    reduce_param_menu_item->module = module;
+    menu->addChild(reduce_param_menu_item);     
   }
 };

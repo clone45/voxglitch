@@ -7,33 +7,18 @@ namespace groove_box
     const int NUMBER_OF_SAMPLE_POSITION_SNAP_OPTIONS = 8;
     const int NUMBER_OF_RATCHET_PATTERNS = 16;
 
-    const int FUNCTION_VOLUME = 0;
-    const int FUNCTION_PAN = 1;
-    const int FUNCTION_PITCH = 2;
-    const int FUNCTION_RATCHET = 3;
-    const int FUNCTION_PROBABILITY = 4;
-    const int FUNCTION_DELAY_MIX = 5;
-    const int FUNCTION_DELAY_LENGTH = 6;
-    const int FUNCTION_DELAY_FEEDBACK = 7;
-    const int FUNCTION_ATTACK = 8;
-    const int FUNCTION_RELEASE = 9;
-    const int FUNCTION_LOOP = 10;
-    const int FUNCTION_REVERSE = 11;
-    const int FUNCTION_SAMPLE_START = 12;
-    const int FUNCTION_SAMPLE_END = 13;
-    const int FUNCTION_FILTER_CUTOFF = 14;
-    const int FUNCTION_FILTER_RESONANCE = 15;
-
     const float MODULE_WIDTH = 223.52000 * 2.952756;
     const float MODULE_HEIGHT = 128.50000 * 2.952756;
 
     const float maximum_release_time = 4.0;
 
-    // WARNING!  Do not reorder these, otherwise it will break people's patches.
+    // WARNING!  Do not reorder the elements in the Parameters array, otherwise 
+    // it will break people's patches.
+    //
     // If you wish to reorder the parameters, change the "parameter_slots" array
     // below in this file.
-
-    // It might be worth thinking about making this more object-oriented
+    //
+    // TODO: It might be worth thinking about making this more object-oriented
 
     enum Parameters
     {
@@ -93,28 +78,6 @@ namespace groove_box
         "Filter Cutoff",
         "Filter Resonance"
     };
-
-    /*
-      enum Parameters
-      {
-        VOLUME,
-        PAN,
-        PITCH,
-        RATCHET,
-        PROBABILITY,
-        DELAY_MIX,
-        DELAY_LENGTH,
-        DELAY_FEEDBACK,
-        ATTACK,
-        RELEASE,
-        LOOP,
-        REVERSE,
-        SAMPLE_START,
-        SAMPLE_END,
-        FILTER_CUTOFF,
-        FILTER_RESONANCE
-      };
-      */
 
     // This is an array that maps the slot to the slot's associated parameter
     // It's purpose is to allow for the parameters to be rearranged on the front

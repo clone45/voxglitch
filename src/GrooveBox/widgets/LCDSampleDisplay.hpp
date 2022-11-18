@@ -88,7 +88,7 @@ struct LCDSampleDisplay : LCDDisplay
           if (sample_start <= sample_end)
           {
             // Friendly blue highlight
-            nvgFillColor(vg, module->lcd_color_scheme.getStrongHighlightOverlay());
+            nvgFillColor(vg, LCDColorScheme::getStrongHighlightOverlay());
           }
           else
           {

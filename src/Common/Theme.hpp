@@ -44,8 +44,6 @@ struct Theme
 
     if(! json_root)
     {
-      //DEBUG("unable to load JSON file");
-      // DEBUG(config_file_path.c_str());
       return(false);
     }
 
