@@ -9,9 +9,7 @@
 // - Thank you to Jim Allman for his incredible front panel design.
 //
 // TODO:
-//   * Update documentation
 //   * Groovebox allows manual MEM selection when CV is attached (https://github.com/clone45/voxglitch/issues/198)
-//   * See if I can improve buttons so you can't toggle them when you shouldn't be able to
 
 struct GrooveBox : VoxglitchSamplerModule
 {
@@ -714,8 +712,8 @@ struct GrooveBox : VoxglitchSamplerModule
     }
 
     //
-    //  Function selection
-    //
+    //  Parameter selection
+    //  TODO: try and move this into GrooveboxParameterButton.hpp
 
     for (unsigned int i = 0; i < NUMBER_OF_FUNCTIONS; i++)
     {

@@ -9,6 +9,7 @@
 #include "widgets/GrooveboxStepButton.hpp"
 #include "widgets/GrooveboxSoftButton.hpp"
 #include "widgets/GrooveboxParameterButton.hpp"
+#include "widgets/GrooveboxMemoryButton.hpp"
 #include "widgets/SequenceLengthWidget.hpp"
 
 #include "widgets/LCDDisplay.hpp"
@@ -228,19 +229,26 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     }
 
     // Parameter (Function) Buttons
-    for (unsigned int i = 0; i < NUMBER_OF_FUNCTIONS; i++)
-    {
+    // for (unsigned int i = 0; i < NUMBER_OF_FUNCTIONS; i++)
+    // {
 
-      // The function buttons got shifted around at some point during the evolution
-      // of the module.  The "ordering_of_functions" array maps the function index
-      // to the correct location on the front panel.
-      float x = function_button_positions[i][0];
-      float y = function_button_positions[i][1];
+      for(unsigned int parameter_slot = 0; parameter_slot<NUMBER_OF_FUNCTIONS; parameter_slot++)
+      {
+        unsigned int parameter_index = parameter_slots[parameter_slot];
 
-      GrooveboxParameterButton *groovebox_parameter_button = createParamCentered<GrooveboxParameterButton>(Vec(x, y), module, GrooveBox::FUNCTION_BUTTONS + i);
-      groovebox_parameter_button->parameter_index = i;
-      addParam(groovebox_parameter_button);
-    }
+        float x = function_button_positions[parameter_slot][0];
+        float y = function_button_positions[parameter_slot][1];
+
+
+        GrooveboxParameterButton *groovebox_parameter_button = createParamCentered<GrooveboxParameterButton>(Vec(x, y), module, GrooveBox::FUNCTION_BUTTONS + parameter_index);
+        groovebox_parameter_button->parameter_index = parameter_index;
+        groovebox_parameter_button->parameter_slot = parameter_slot;
+        groovebox_parameter_button->module = module;
+        addParam(groovebox_parameter_button);
+      }
+
+
+    // }
 
     // Individual track outputs
     for (unsigned int i = 0; i < (NUMBER_OF_TRACKS * 2); i++)
@@ -262,7 +270,11 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     {
       float x = memory_slot_button_positions[i][0];
       float y = memory_slot_button_positions[i][1];
-      addParam(createParamCentered<GrooveboxSoftButton>(Vec(x, y), module, GrooveBox::MEMORY_SLOT_BUTTONS + i));
+
+      GrooveboxMemoryButton *groovebox_memory_button = createParamCentered<GrooveboxMemoryButton>(Vec(x, y), module, GrooveBox::MEMORY_SLOT_BUTTONS + i);
+      groovebox_memory_button->module = module;
+      groovebox_memory_button->memory_slot = i;
+      addParam(groovebox_memory_button);
     }
 
     // Memory CV input
