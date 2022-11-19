@@ -13,6 +13,5 @@ struct GrooveboxParameterButton : GrooveboxSoftButton
         {
             SvgSwitch::onButton(e);
         }
-       
     }
 };
