@@ -1,3 +1,9 @@
+
+// include "../GrooveBox/GrooveBox.hpp"
+#include "widgets/GrooveboxExpanderSoftButton.hpp"
+#include "widgets/GrooveboxExpanderSoftButtonGreen.hpp"
+// include "widgets/GrooveboxParameterButton.hpp"
+
 struct GrooveBoxExpanderWidget : VoxglitchModuleWidget
 {
   // 1st columen 20
@@ -54,13 +60,16 @@ struct GrooveBoxExpanderWidget : VoxglitchModuleWidget
       //
       // Add mute buttons and inputs
       //
-      addParam(createLightParamCentered<VCVLightBezel<RedLight>>(Vec(x, mute_buttons_row), module, GrooveBoxExpander::MUTE_BUTTONS + i, GrooveBoxExpander::MUTE_BUTTON_LIGHTS + i));
+      //addParam(createLightParamCentered<VCVLightBezel<RedLight>>(Vec(x, mute_buttons_row), module, GrooveBoxExpander::MUTE_BUTTONS + i, GrooveBoxExpander::MUTE_BUTTON_LIGHTS + i));
+      //addParam(createLightParamCentered<GrooveboxExpanderSoftButton>(Vec(x, mute_buttons_row), module, GrooveBoxExpander::MUTE_BUTTONS + i, GrooveBoxExpander::MUTE_BUTTON_LIGHTS + i));
+      addParam(createParamCentered<GrooveboxExpanderSoftButton>(Vec(x, mute_buttons_row), module, GrooveBoxExpander::MUTE_BUTTONS + i));
       addInput(createInputCentered<PJ301MPort>(Vec(x, mute_buttons_row + 29.52756), module, GrooveBoxExpander::MUTE_INPUTS + i));
 
       //
       // Add solo buttons
       //
-      addParam(createLightParamCentered<VCVLightBezel<GreenLight>>(Vec(x, solo_buttons_row), module, GrooveBoxExpander::SOLO_BUTTONS + i, GrooveBoxExpander::SOLO_BUTTON_LIGHTS + i));
+      //addParam(createLightParamCentered<VCVLightBezel<GreenLight>>(Vec(x, solo_buttons_row), module, GrooveBoxExpander::SOLO_BUTTONS + i, GrooveBoxExpander::SOLO_BUTTON_LIGHTS + i));
+      addParam(createParamCentered<GrooveboxExpanderSoftButtonGreen>(Vec(x, solo_buttons_row), module, GrooveBoxExpander::SOLO_BUTTONS + i));
 
       //
       // Add track trigger outputs
