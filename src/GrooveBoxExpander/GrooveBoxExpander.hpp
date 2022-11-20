@@ -1,6 +1,5 @@
 struct GrooveBoxExpander : VoxglitchModule
 {
-  // dsp::SchmittTrigger mute_button_triggers[NUMBER_OF_TRACKS];
   dsp::SchmittTrigger mute_cv_triggers[NUMBER_OF_TRACKS];
   dsp::SchmittTrigger solo_button_triggers[NUMBER_OF_TRACKS];
   dsp::SchmittTrigger solo_cv_triggers[NUMBER_OF_TRACKS];
@@ -152,10 +151,6 @@ struct GrooveBoxExpander : VoxglitchModule
       writeToGroovebox();
       readFromGroovebox();
     }
-
-    // This is required after the flip
-    // rightExpander.producerMessage = producer_message;
-    // rightExpander.consumerMessage = consumer_message;
 
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
     {
