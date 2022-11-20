@@ -907,7 +907,6 @@ struct GrooveBox : VoxglitchSamplerModule
           if (fade_out)
           {
             track->fadeOut();
-            DEBUG("called track->fadeOut()");
           }
         }
 
