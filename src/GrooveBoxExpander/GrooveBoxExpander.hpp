@@ -1,6 +1,6 @@
 struct GrooveBoxExpander : VoxglitchModule
 {
-  dsp::SchmittTrigger mute_button_triggers[NUMBER_OF_TRACKS];
+  // dsp::SchmittTrigger mute_button_triggers[NUMBER_OF_TRACKS];
   dsp::SchmittTrigger mute_cv_triggers[NUMBER_OF_TRACKS];
   dsp::SchmittTrigger solo_button_triggers[NUMBER_OF_TRACKS];
   dsp::SchmittTrigger solo_cv_triggers[NUMBER_OF_TRACKS];
@@ -13,7 +13,6 @@ struct GrooveBoxExpander : VoxglitchModule
   bool mutes[NUMBER_OF_TRACKS];
   bool solos[NUMBER_OF_TRACKS];
   bool send_update_to_groovebox = false;
-  // float old_track_volumes[NUMBER_OF_TRACKS];
   bool track_triggers[NUMBER_OF_TRACKS];
   bool expander_connected = false;
   bool shift_key = false;
@@ -38,6 +37,7 @@ struct GrooveBoxExpander : VoxglitchModule
     ENUMS(MUTE_BUTTON_LIGHTS, NUMBER_OF_TRACKS),
     ENUMS(SOLO_BUTTON_LIGHTS, NUMBER_OF_TRACKS),
     ENUMS(GATE_OUTPUT_LIGHTS, NUMBER_OF_TRACKS),
+    CONNECTED_LIGHT,
     NUM_LIGHTS
   };
 
@@ -114,6 +114,9 @@ struct GrooveBoxExpander : VoxglitchModule
       configParam(VOLUME_KNOBS + i, 0.0, 2.0, 1.0, "Volume");
       configParam(PAN_KNOBS + i, -1.0, 1.0, 0.0, "Pan");
       configParam(PITCH_KNOBS + i, -1.0, 1.0, 0.0, "Pitch");
+
+      configOnOff(MUTE_BUTTONS + i, 0.0, "Mute Track " + std::to_string(i + 1));
+      configOnOff(SOLO_BUTTONS + i, 0.0, "Solo Track "+ std::to_string(i + 1));
     }
 
     rightExpander.producerMessage = &groovebox_to_expander_message_a;
@@ -130,40 +133,13 @@ struct GrooveBoxExpander : VoxglitchModule
   {
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
     {
-      //
       // Read mute buttons and inputs
-      //
-      bool mute_button_pressed = mute_button_triggers[i].process(params[MUTE_BUTTONS + i].getValue());
-      bool mute_button_triggered = mute_cv_triggers[i].process(rescale(inputs[MUTE_INPUTS + i].getVoltage(), 0.0f, 10.0f, 0.f, 1.f));
-      if(mute_button_pressed || mute_button_triggered) mutes[i] = !mutes[i];
+      bool mute_button_value = params[MUTE_BUTTONS + i].getValue();
+      bool mute_button_triggered = rescale(inputs[MUTE_INPUTS + i].getVoltage(), 0.0f, 10.0f, 0.f, 1.f);
+      mutes[i] = (mute_button_value || mute_button_triggered);
 
-      //
-      // Read solo buttons and inputs
-      //
-      bool solo_button_pressed = solo_button_triggers[i].process(params[SOLO_BUTTONS + i].getValue());
-      if(solo_button_pressed)
-      {
-        // Special behavior: If the shift key is held and a track is soloed,
-        // then solo the track and un-solo any other track that is soloed
-        if(this->shift_key)
-        {
-          exclusiveSolo(i);
-        }
-        else
-        {
-          toggleSolo(i);
-        }
-      }
-
-      //
-      // See if track volumes have changed
-      //
-      // float new_track_volume = params[VOLUME_KNOBS + i].getValue();
-      // if(old_track_volumes[i] != new_track_volume) old_track_volumes[i] = new_track_volume;
-
-      // Set mute and solo lights
-      lights[MUTE_BUTTON_LIGHTS + i].setBrightness(mutes[i]);
-      lights[SOLO_BUTTON_LIGHTS + i].setBrightness(solos[i]);
+      // Read solo buttons
+      solos[i] = params[SOLO_BUTTONS + i].getValue();
     }
 
     expander_connected = (rightExpander.module && rightExpander.module->model == modelGrooveBox);
@@ -189,8 +165,12 @@ struct GrooveBoxExpander : VoxglitchModule
       bool light_output_pulse = triggerLightPulseGenerators[i].process(args.sampleTime);
       lights[GATE_OUTPUT_LIGHTS + i].setBrightness(light_output_pulse ? 1.0f : 0.0f);
     }
+
+    lights[CONNECTED_LIGHT].setBrightness(expander_connected);
 	}
 
+  // TODO: Move this feature into a context-menu : double check Jim's recommendations
+  /*
   void exclusiveSolo(unsigned int track_index)
   {
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
@@ -198,11 +178,14 @@ struct GrooveBoxExpander : VoxglitchModule
       solos[i] = (i == track_index);
     }
   }
+  */
 
+  /*
   void toggleSolo(unsigned int track_index)
   {
     solos[track_index] = !solos[track_index];
   }
+  */
 
   void writeToGroovebox()
   {

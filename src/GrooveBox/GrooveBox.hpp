@@ -896,15 +896,19 @@ struct GrooveBox : VoxglitchSamplerModule
           bool fade_out = false;
 
           // Is any track is soloed and this one is not, then fade out
+          // TODO: commented out for testing.  Restore this!
           if (any_track_soloed && (expander_solo_value == false))
-            fade_out = true;
+             fade_out = true;
 
           // If this track is muted but not soloed, then fade it out
           if (expander_mute_value == true && (expander_solo_value == false))
             fade_out = true;
 
           if (fade_out)
+          {
             track->fadeOut();
+            DEBUG("called track->fadeOut()");
+          }
         }
 
         this->mutes[i] = expander_mute_value;

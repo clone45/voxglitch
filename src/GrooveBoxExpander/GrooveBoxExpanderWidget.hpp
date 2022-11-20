@@ -1,12 +1,9 @@
-
-// include "../GrooveBox/GrooveBox.hpp"
 #include "widgets/GrooveboxExpanderSoftButton.hpp"
 #include "widgets/GrooveboxExpanderSoftButtonGreen.hpp"
-// include "widgets/GrooveboxParameterButton.hpp"
 
 struct GrooveBoxExpanderWidget : VoxglitchModuleWidget
 {
-  // 1st columen 20
+  // 1st column 20
 
   float columns[NUMBER_OF_TRACKS] = {
     10 * 2.952756,
@@ -31,7 +28,7 @@ struct GrooveBoxExpanderWidget : VoxglitchModuleWidget
   };
 
   float mute_buttons_row = 40.74;
-  float solo_buttons_row = 118.11024 ;
+  float solo_buttons_row = 118.11024;
   float gate_outputs_row = 345.898;
   float volume_knobs_row = 178.79;
   float pan_knobs_row = 233.69;
@@ -78,6 +75,10 @@ struct GrooveBoxExpanderWidget : VoxglitchModuleWidget
       addChild(createLightCentered<SmallLight<RedLight>>(Vec(x, gate_outputs_row + 20), module, GrooveBoxExpander::GATE_OUTPUT_LIGHTS + i));
 
     }
+
+    // Add "connected" light indicator
+    addChild(createLightCentered<SmallLight<RedLight>>(Vec(75.0, 7.5), module, GrooveBoxExpander::CONNECTED_LIGHT));
+    
   }
 
   void onHoverKey(const event::HoverKey &e) override
