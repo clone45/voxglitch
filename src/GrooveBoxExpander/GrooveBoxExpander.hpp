@@ -169,23 +169,24 @@ struct GrooveBoxExpander : VoxglitchModule
     lights[CONNECTED_LIGHT].setBrightness(expander_connected);
 	}
 
-  // TODO: Move this feature into a context-menu : double check Jim's recommendations
-  /*
   void exclusiveSolo(unsigned int track_index)
   {
     for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
     {
-      solos[i] = (i == track_index);
+      bool value = (i == track_index);
+      solos[i] = value;
+      params[SOLO_BUTTONS + i].setValue(value);
     }
   }
-  */
 
-  /*
-  void toggleSolo(unsigned int track_index)
+  void unmuteAll()
   {
-    solos[track_index] = !solos[track_index];
+    for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+    {
+      mutes[i] = false;
+      params[MUTE_BUTTONS + i].setValue(false);
+    }
   }
-  */
 
   void writeToGroovebox()
   {
