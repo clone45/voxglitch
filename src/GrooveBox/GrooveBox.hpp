@@ -619,6 +619,11 @@ struct GrooveBox : VoxglitchSamplerModule
     return (!mutes[track_id]);
   }
 
+  bool memCableIsConnected()
+  {
+    return(inputs[MEM_INPUT].isConnected());
+  }
+
   void process(const ProcessArgs &args) override
   {
     // TODO: Is there a way to move this code into an isConnected type of event?
@@ -707,7 +712,7 @@ struct GrooveBox : VoxglitchSamplerModule
     {
       // Process step key-buttons (awesome clackity clack!)
       bool step_button_value = params[DRUM_PADS + step_number].getValue();
-      
+
       selected_track->setValue(step_number, step_button_value);
       inner_light_booleans[step_number] = step_button_value;
 

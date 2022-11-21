@@ -8,7 +8,7 @@ struct GrooveboxMemoryButton : GrooveboxSoftButton
         // Memory buttons aren't meant to be toggled.  They're used more like
         // a radio button in HTML.
 
-        if (!(module->memory_slot_index == this->memory_slot))
+        if (!(module->memory_slot_index == this->memory_slot) && (!module->memCableIsConnected()))
         {
             SvgSwitch::onButton(e);
         }
