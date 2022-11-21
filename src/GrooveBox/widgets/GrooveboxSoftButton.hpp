@@ -13,8 +13,25 @@ struct GrooveboxSoftButton : SvgSwitch
         box.size = Vec(16.240, 16.240); // was 15.5   (19.28)
     }
 
+    /*
     void draw(const DrawArgs &args) override
     {
-        SvgSwitch::draw(args);
+        if(this->getParamQuantity()->getValue() == false)
+        {
+            SvgSwitch::draw(args);
+        }
     }  
+    */
+
+    void drawLayer(const DrawArgs& args, int layer) override {
+        if (layer == 1 && (this->getParamQuantity()->getValue())) {
+            // Use the formula `lightColor * (1 - dest) + dest` for blending
+            nvgGlobalCompositeBlendFunc(args.vg, NVG_ONE_MINUS_DST_COLOR, NVG_ONE);
+            // drawLight(args);
+            // drawHalo(args);
+            SvgSwitch::draw(args);
+        }
+        
+        Widget::drawLayer(args, layer);
+    }    
 };
