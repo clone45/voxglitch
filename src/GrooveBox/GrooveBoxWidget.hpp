@@ -209,12 +209,15 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       GrooveboxStepButton *step_button = createParamCentered<GrooveboxStepButton>(Vec(button_positions[i][0], button_positions[i][1]), module, GrooveBox::DRUM_PADS + i);
       step_button->module = module;
       step_button->index = i;
+      GrooveboxSmallLight *inner_button = new GrooveboxSmallLight((module) ? &module->inner_light_booleans[i] : &dummy_boolean);
+      inner_button->box.pos = Vec(10.358, 6.710);
+      step_button->addChild(inner_button);
       addParam(step_button);
 
       //
       // Step location indicators
       //
-      StepLightWidget *step_light_widget = new StepLightWidget((module) ? &module->light_booleans[i] : &dummy_boolean);
+      GrooveboxSmallLight *step_light_widget = new GrooveboxSmallLight((module) ? &module->light_booleans[i] : &dummy_boolean);
       step_light_widget->box.pos = Vec(button_positions[i][0] - (step_light_widget->box.size.x / 2.0), button_positions[i][1] - 25 - (step_light_widget->box.size.y / 2.0));
       addChild(step_light_widget);
       
@@ -228,27 +231,20 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       addParam(knob);
     }
 
-    // Parameter (Function) Buttons
-    // for (unsigned int i = 0; i < NUMBER_OF_FUNCTIONS; i++)
-    // {
+    for(unsigned int parameter_slot = 0; parameter_slot<NUMBER_OF_FUNCTIONS; parameter_slot++)
+    {
+      unsigned int parameter_index = parameter_slots[parameter_slot];
 
-      for(unsigned int parameter_slot = 0; parameter_slot<NUMBER_OF_FUNCTIONS; parameter_slot++)
-      {
-        unsigned int parameter_index = parameter_slots[parameter_slot];
+      float x = function_button_positions[parameter_slot][0];
+      float y = function_button_positions[parameter_slot][1];
 
-        float x = function_button_positions[parameter_slot][0];
-        float y = function_button_positions[parameter_slot][1];
+      GrooveboxParameterButton *groovebox_parameter_button = createParamCentered<GrooveboxParameterButton>(Vec(x, y), module, GrooveBox::FUNCTION_BUTTONS + parameter_index);
+      groovebox_parameter_button->parameter_index = parameter_index;
+      groovebox_parameter_button->parameter_slot = parameter_slot;
+      groovebox_parameter_button->module = module;
+      addParam(groovebox_parameter_button);
+    }
 
-
-        GrooveboxParameterButton *groovebox_parameter_button = createParamCentered<GrooveboxParameterButton>(Vec(x, y), module, GrooveBox::FUNCTION_BUTTONS + parameter_index);
-        groovebox_parameter_button->parameter_index = parameter_index;
-        groovebox_parameter_button->parameter_slot = parameter_slot;
-        groovebox_parameter_button->module = module;
-        addParam(groovebox_parameter_button);
-      }
-
-
-    // }
 
     // Individual track outputs
     for (unsigned int i = 0; i < (NUMBER_OF_TRACKS * 2); i++)

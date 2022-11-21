@@ -54,6 +54,7 @@ struct GrooveBox : VoxglitchSamplerModule
 
   // These booleans tell the sequence position lights whether to be ON or OFF
   bool light_booleans[NUMBER_OF_STEPS];
+  bool inner_light_booleans[NUMBER_OF_STEPS];
 
   unsigned int visualizer_step = 0;
   unsigned int sample_position_snap_track_values[NUMBER_OF_TRACKS];
@@ -705,7 +706,10 @@ struct GrooveBox : VoxglitchSamplerModule
     for (unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
       // Process step key-buttons (awesome clackity clack!)
-      selected_track->setValue(step_number, params[DRUM_PADS + step_number].getValue());
+      bool step_button_value = params[DRUM_PADS + step_number].getValue();
+      
+      selected_track->setValue(step_number, step_button_value);
+      inner_light_booleans[step_number] = step_button_value;
 
       // Show location
       light_booleans[step_number] = (playback_step == step_number);

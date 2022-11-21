@@ -1,11 +1,11 @@
-struct StepLightWidget : SvgWidget
+struct GrooveboxSmallLight : SvgWidget
 {
 
   bool *state_bool_ptr = NULL;
   std::vector<std::shared_ptr<window::Svg>> frames;
   NVGcolor halo_color = nvgRGBA(202, 16, 21, 255);
 
-  StepLightWidget(bool *state)
+  GrooveboxSmallLight(bool *state)
   {
     addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_led.svg")));
     addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_led_lit.svg")));
