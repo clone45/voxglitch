@@ -268,10 +268,13 @@ struct GrooveBox : VoxglitchSamplerModule
     }
 
     // Update selected function button
-    for (unsigned int i = 0; i < NUMBER_OF_FUNCTIONS; i++)
+
+    for (unsigned int slot_id = 0; slot_id < NUMBER_OF_FUNCTIONS; slot_id++)
     {
-      // params[FUNCTION_BUTTONS + i].setValue(selected_function == i);
-      params[FUNCTION_BUTTONS + i].setValue(selected_parameter_slot == i);
+      unsigned int parameter_id = parameter_slots[slot_id];
+      params[FUNCTION_BUTTONS + parameter_id].setValue(selected_parameter_slot == slot_id);
+
+      // parameter_slots
     }
   }
 
@@ -724,15 +727,22 @@ struct GrooveBox : VoxglitchSamplerModule
     //  Parameter selection
     //  TODO: try and move this into GrooveboxParameterButton.hpp
 
-    for (unsigned int i = 0; i < NUMBER_OF_FUNCTIONS; i++)
+    for (unsigned int slot_id = 0; slot_id < NUMBER_OF_FUNCTIONS; slot_id++)
     {
-      if (function_button_triggers[i].process(params[FUNCTION_BUTTONS + i].getValue()))
-      {
-        // selected_function = i;
-        selected_parameter_slot = i;
+      // parameter_slots keep track of this parameter is associated with which parameter slot
+      // parameter_slots is defined in defines.h
+      unsigned int parameter_id = parameter_slots[slot_id];
 
-        // parameter_slots keep track of this parameter is associated with which parameter slot
-        selected_function = parameter_slots[selected_parameter_slot];
+      if (function_button_triggers[slot_id].process(params[FUNCTION_BUTTONS + parameter_id].getValue()))
+      {
+        DEBUG("selected slot ");
+        DEBUG(std::to_string(slot_id).c_str());
+
+        selected_function = parameter_id;
+        selected_parameter_slot = slot_id;
+
+        DEBUG("selected function ");
+        DEBUG(std::to_string(selected_function).c_str());
 
         updatePanelControls();
       }
@@ -745,9 +755,7 @@ struct GrooveBox : VoxglitchSamplerModule
     for (unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
       float value = params[STEP_KNOBS + step_number].getValue();
-
       selected_track->setParameter(selected_function, step_number, value);
-
     }
 
     //
