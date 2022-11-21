@@ -238,6 +238,12 @@ struct GrooveBox : VoxglitchSamplerModule
     updatePanelControls();
   }
 
+  void clearStepParameters(unsigned int step_index)
+  {
+    selected_track->clearStepParameters(step_index);
+    updatePanelControls();
+  }
+
   void initialize()
   {
     for (unsigned int i = 0; i < NUMBER_OF_MEMORY_SLOTS; i++)

@@ -224,6 +224,14 @@ namespace groove_box
       this->resetAllParameterLocks();
     }
 
+    void clearStepParameters(unsigned int step_id)
+    {
+      for (unsigned int parameter_number = 0; parameter_number < NUMBER_OF_FUNCTIONS; parameter_number++)
+      {
+        setParameter(parameter_number, step_id, default_parameter_values[parameter_number]);
+      }
+    }
+
     /* Possibly adding this in the future
     void randomizeParameter()
     {

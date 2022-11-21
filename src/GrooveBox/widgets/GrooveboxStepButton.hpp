@@ -21,6 +21,17 @@ struct GrooveboxStepButton : SvgSwitch
         SvgSwitch::draw(args);
     }
 
+    struct ClearLocksMenuItem : MenuItem
+    {
+        GrooveBox *module;
+        unsigned int index;
+
+        void onAction(const event::Action &e) override
+        {
+            module->clearStepParameters(index);
+        }
+    };
+
     struct CopyMenuItem : MenuItem
     {
         GrooveBox *module;
@@ -87,6 +98,14 @@ struct GrooveboxStepButton : SvgSwitch
     {
         GrooveBox *module = dynamic_cast<GrooveBox *>(this->module);
         assert(module);
+
+        menu->addChild(new MenuSeparator);
+
+        // Clear all parameter locks for this step
+        ClearLocksMenuItem *clear_locks_menu_item = createMenuItem<ClearLocksMenuItem>("Clear All Parameter Locks for this Step");
+        clear_locks_menu_item->module = module;
+        clear_locks_menu_item->index = index;
+        menu->addChild(clear_locks_menu_item);
 
         menu->addChild(new MenuSeparator);
 
