@@ -29,8 +29,8 @@ struct GrooveBoxExpanderWidget : VoxglitchModuleWidget
     {25.411 + 6.0, 100 * 2.952756}
   };
 
-  float mute_buttons_row = 40.74;
-  float solo_buttons_row = 118.11024;
+  float mute_buttons_row = 46.8;
+  float solo_buttons_row = 121.3;
   float gate_outputs_row = 345.898;
   float volume_knobs_row = 178.79;
   float pan_knobs_row = 233.69;
@@ -81,7 +81,7 @@ struct GrooveBoxExpanderWidget : VoxglitchModuleWidget
     }
 
     // Add "connected" light indicator
-    addChild(createLightCentered<SmallLight<RedLight>>(Vec(75.0, 7.5), module, GrooveBoxExpander::CONNECTED_LIGHT));
+    addChild(createLightCentered<SmallLight<RedLight>>(Vec(252.8, 8.0), module, GrooveBoxExpander::CONNECTED_LIGHT));
     
   }
 
