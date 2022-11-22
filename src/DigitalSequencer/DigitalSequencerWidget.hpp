@@ -525,6 +525,7 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
       }
     }
 
+    /* TODO: Rethink copy/paste
     if ((e.key == GLFW_KEY_C) && ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL)) // Control-C
     {
       if (e.action == GLFW_PRESS)
@@ -540,11 +541,14 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
       {
         if (copy_sequencer_index > -1)
         {
+          // Be careful.  The compiler is suggesting that one of these indexes
+          // could go out of bounds.
           module->copy(copy_sequencer_index, module->selected_sequencer_index);
           e.consume(this);
         }
       }
     }
+    */
 
 #ifdef DEV_MODE
     if (e.action == GLFW_PRESS && e.key == GLFW_KEY_P)

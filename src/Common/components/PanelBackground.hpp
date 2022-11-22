@@ -7,6 +7,7 @@ struct PanelBackground : TransparentWidget
   float src_panel_offset_y_px = 0.0;
   float alpha = 1.0;
   float zoom = 0.1;
+  bool image_exists = true;
 
   PanelBackground(std::string image_file_path, float module_width_mm, float module_height_mm, float src_panel_offset_x_px, float src_panel_offset_y_px, float zoom = 0.1)
   {
@@ -16,10 +17,14 @@ struct PanelBackground : TransparentWidget
     this->src_panel_offset_x_px = src_panel_offset_x_px;
     this->src_panel_offset_y_px = src_panel_offset_y_px;
     this->zoom = zoom;
+
+    this->image_exists = rack::system::exists(asset::plugin(pluginInstance, this->image_file_path));
   }
 
   void draw(const DrawArgs &args) override
   {
+    if(! this->image_exists) return;
+
     std::shared_ptr<Image> img = APP->window->loadImage(asset::plugin(pluginInstance, this->image_file_path));
 
   	int background_width_px, background_height_px;

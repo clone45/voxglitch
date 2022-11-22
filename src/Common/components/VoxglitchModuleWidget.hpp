@@ -7,10 +7,13 @@ struct VoxglitchModuleWidget : ModuleWidget
 
   void addSVGLayer(std::string svg_path)
   {
-    std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, svg_path));
-    VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
-    voxglitch_panel->setBackground(svg);
-    addChild(voxglitch_panel);
+    if(rack::system::exists(asset::plugin(pluginInstance, svg_path)))
+    {
+      std::shared_ptr<Svg> svg = APP->window->loadSvg(asset::plugin(pluginInstance, svg_path));
+      VoxglitchPanel *voxglitch_panel = new VoxglitchPanel;
+      voxglitch_panel->setBackground(svg);
+      addChild(voxglitch_panel);
+    }
   }
 
   Vec themePos(std::string widget_name)
@@ -77,12 +80,8 @@ struct VoxglitchModuleWidget : ModuleWidget
       }
     }
 
-    // panel->box.size.x = theme.getFloat("panel_width");
     panel->box.size.x = theme.getFloat("panel_width");
     setPanel(panel);
-
-    // Set the SVG.  This must always be called panel_svg in the theme JSON
-    // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, theme.getString("panel_svg")))); // Set panel SVG
 
     // Precompile widgets_json and store it in this structure
     this->widgets_json = theme.getWidgets();

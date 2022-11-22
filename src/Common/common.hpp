@@ -27,7 +27,7 @@ struct Common
       debug_counter = 1000;
     }
   }
-  */
+
 
   void DEBUG_INT(int value)
   {
@@ -38,7 +38,8 @@ struct Common
       debug_counter = 1000;
     }
   }
-
+  */
+ 
   float CONTOURS[10][512] =
   {
       // Classic

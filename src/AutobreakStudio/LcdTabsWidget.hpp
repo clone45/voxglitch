@@ -20,7 +20,7 @@ struct LcdTabsWidget : TransparentWidget
         "Ratchet"
     };
 
-    LcdTabsWidget(SequencerDisplayABS *sequencer_displays[4])
+    LcdTabsWidget(SequencerDisplayABS *sequencer_displays[NUMBER_OF_SEQUENCERS])
     {
         for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
         {

@@ -481,9 +481,10 @@ struct GrooveBox : VoxglitchSamplerModule
 
     // Save selected color theme
     json_object_set(json_root, "selected_color_theme", json_integer(LCDColorScheme::selected_color_scheme));
+    json_object_set(json_root, "selected_memory_index", json_integer(memory_slot_index));
 
-    return json_root;
-  }
+		return json_root;
+	}
 
   //
   // LOAD module data
@@ -606,12 +607,14 @@ struct GrooveBox : VoxglitchSamplerModule
       }   // end foreach memory slot
     }     // end if memory_slots array data
 
-    updatePanelControls();
-
     json_t *selected_color_theme_json = json_object_get(json_root, "selected_color_theme");
     if (selected_color_theme_json) LCDColorScheme::selected_color_scheme = json_integer_value(selected_color_theme_json);
 
-  }
+    json_t *selected_memory_index_json = json_object_get(json_root, "selected_memory_index");
+    if(selected_memory_index_json) this->switchMemory(json_integer_value(selected_memory_index_json));
+
+    updatePanelControls();
+	}
 
   bool trigger(unsigned int track_id)
   {
