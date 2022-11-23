@@ -1,13 +1,14 @@
 //
 // TrackSampleNudge
 //
+/*
 struct TrackSampleNudge : TransparentWidget
 {
   GrooveBox *module;
   unsigned int track_number = 0;
 
-  NVGcolor track_background_default = nvgRGBA(68, 77, 140, 255);
-  NVGcolor track_background_highlight = nvgRGBA(106, 113, 164, 255);
+  NVGcolor track_background_default = nvgRGBA(146, 42, 43, 140);
+  NVGcolor track_background_highlight = nvgRGBA(245, 141, 138, 140);
 
   int direction = 1;
 
@@ -160,3 +161,4 @@ struct TrackSampleNudge : TransparentWidget
     }
   }
 };
+*/

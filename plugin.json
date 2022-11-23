@@ -97,7 +97,7 @@
         "name": "Hazumi",
         "description": "Bouncing ball sequencer",
         "tags": ["Sequencer"]
-    },
+    },   
     {
         "slug": "looper",
         "name": "Looper",

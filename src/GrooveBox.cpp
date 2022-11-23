@@ -29,9 +29,11 @@ using namespace groove_box;
 #include "Common/dsp/SimpleDelay.hpp"
 #include "Common/dsp/StereoFadeOut.hpp"
 #include "Common/dsp/StereoPan.hpp"
+#include "Common/dsp/Filter.hpp"
 #include "Common/SamplePlayer.hpp"
 
 // Core components
+#include "GrooveBox/widgets/LCDColorScheme.hpp"
 #include "GrooveBox/Track.hpp"
 #include "GrooveBox/MemorySlot.hpp"
 #include "GrooveBox/GrooveBox.hpp"

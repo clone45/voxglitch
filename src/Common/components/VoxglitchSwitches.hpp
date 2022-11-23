@@ -6,12 +6,16 @@
 //    to the page.
 
 struct VoxglitchSwitch : SvgSwitch {
-#ifdef DEV_MODE
 
   VoxglitchSwitch()
   {
-    shadow->opacity = 0;
+
   }
+
+
+#ifdef DEV_MODE
+
+
 
   void onHoverKey(const event::HoverKey &e) override
   {
