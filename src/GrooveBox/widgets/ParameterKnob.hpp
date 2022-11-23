@@ -124,6 +124,26 @@ struct ParameterKnob : SvgKnob
     }
   };
 
+  struct ShiftLeftMenuItem : MenuItem
+  {
+    GrooveBox *module;
+
+    void onAction(const event::Action &e) override
+    {
+      module->shiftKnobValuesLeft();
+    }
+  };
+
+  struct ShiftRightMenuItem : MenuItem
+  {
+    GrooveBox *module;
+
+    void onAction(const event::Action &e) override
+    {
+      module->shiftKnobValuesRight();
+    }
+  };
+
   void appendContextMenu(Menu *menu) override
   {
     GrooveBox *module = dynamic_cast<GrooveBox *>(this->module);
@@ -151,6 +171,18 @@ struct ParameterKnob : SvgKnob
     // Adjust knobs down!
     ReduceParamMenuItem *reduce_param_menu_item = createMenuItem<ReduceParamMenuItem>("Decrese all knobs by 1 notch");
     reduce_param_menu_item->module = module;
-    menu->addChild(reduce_param_menu_item);     
+    menu->addChild(reduce_param_menu_item);
+
+    menu->addChild(new MenuSeparator);
+
+    // Shift Left
+    ShiftLeftMenuItem *shift_left_menu_item = createMenuItem<ShiftLeftMenuItem>("Shift all knob values left «");
+    shift_left_menu_item->module = module;
+    menu->addChild(shift_left_menu_item);
+
+    // Shift Right
+    ShiftRightMenuItem *shift_right_menu_item = createMenuItem<ShiftRightMenuItem>("Shift all knob values right »");
+    shift_right_menu_item->module = module;
+    menu->addChild(shift_right_menu_item);    
   }
 };

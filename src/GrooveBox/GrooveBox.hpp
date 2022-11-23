@@ -369,6 +369,30 @@ struct GrooveBox : VoxglitchSamplerModule
   }
   */
 
+  void shiftKnobValuesLeft()
+  {
+    float temp = params[STEP_KNOBS + 0].getValue();
+
+    for (unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
+    {
+      params[STEP_KNOBS + step_number].setValue(params[STEP_KNOBS + step_number + 1].getValue());
+    }
+
+    params[STEP_KNOBS + NUMBER_OF_STEPS - 1].setValue(temp);
+  }
+
+  void shiftKnobValuesRight()
+  {
+    float temp = params[STEP_KNOBS + NUMBER_OF_STEPS - 1].getValue();
+
+    for (unsigned int step_number = NUMBER_OF_STEPS; step_number > 0; step_number--)
+    {
+      params[STEP_KNOBS + step_number].setValue(params[STEP_KNOBS + step_number - 1].getValue());
+    }
+
+    params[STEP_KNOBS + 0].setValue(temp);
+  }
+
   void randomizeSelectedParameter()
   {
     for (unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
