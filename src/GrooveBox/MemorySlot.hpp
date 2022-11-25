@@ -11,23 +11,23 @@ namespace groove_box
 
 struct MemorySlot
 {
-  Track tracks[NUMBER_OF_TRACKS];
+  std::array<Track, NUMBER_OF_TRACKS> tracks;
 
   void setSamplePlayer(unsigned int track_index, SamplePlayer *sample_player)
   {
-    tracks[track_index].setSamplePlayer(sample_player);
+    tracks.at(track_index).setSamplePlayer(sample_player);
   }
 
   Track *getTrack(unsigned int track_index)
   {
-    return(&tracks[track_index]);
+    return(&tracks.at(track_index));
   }
 
   void copy(MemorySlot *src_memory)
   {
     for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
     {
-      this->tracks[i].copy(&src_memory->tracks[i]);
+      this->tracks.at(i).copy(&src_memory->tracks[i]);
     }
   }
 
@@ -35,7 +35,7 @@ struct MemorySlot
   {
     for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
     {
-      this->tracks[i].initialize();
+      this->tracks.at(i).initialize();
     }
   }
 

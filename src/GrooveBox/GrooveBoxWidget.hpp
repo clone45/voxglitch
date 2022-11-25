@@ -307,7 +307,6 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     assert(module);
 
     module->shift_key = ((e.mods & RACK_MOD_MASK) & GLFW_MOD_SHIFT);
-    module->control_key = ((e.mods & RACK_MOD_MASK) & RACK_MOD_CTRL);
 
     ModuleWidget::onHoverKey(e);
   }

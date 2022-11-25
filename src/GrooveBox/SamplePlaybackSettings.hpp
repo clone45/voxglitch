@@ -3,33 +3,31 @@ namespace groove_box
 
   struct SamplePlaybackSettings
   {
-    float parameters[NUMBER_OF_FUNCTIONS];
+    private:
+    
+      std::array<float, NUMBER_OF_FUNCTIONS> parameters;
 
-    SamplePlaybackSettings()
-    {
-      for (unsigned int i = 0; i < NUMBER_OF_FUNCTIONS; i++)
+    public:
+
+      SamplePlaybackSettings()
       {
-        parameters[i] = default_parameter_values[i];
+        parameters = default_parameter_values;
       }
-    }
 
-    float getParameter(unsigned int parameter_index)
-    {
-      return (parameters[parameter_index]);
-    }
-
-    void setParameter(unsigned int parameter_index, float parameter_value)
-    {
-      parameters[parameter_index] = parameter_value;
-    }
-
-    void copy(SamplePlaybackSettings *src_settings)
-    {
-      for (unsigned int i = 0; i < NUMBER_OF_FUNCTIONS; i++)
+      float getParameter(unsigned int parameter_index)
       {
-        parameters[i] = src_settings->parameters[i];
+        return (parameters.at(parameter_index));
       }
-    }
+
+      void setParameter(unsigned int parameter_index, float parameter_value)
+      {
+        parameters.at(parameter_index) = parameter_value;
+      }
+
+      void copy(SamplePlaybackSettings *src_settings)
+      {
+        parameters = src_settings->parameters;
+      }
   };
 
 }

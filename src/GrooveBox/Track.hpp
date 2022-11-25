@@ -105,11 +105,12 @@ namespace groove_box
 
           for (unsigned int parameter_number = 0; parameter_number < NUMBER_OF_FUNCTIONS; parameter_number++)
           {
-            settings.parameters[parameter_number] = getParameter(parameter_number, playback_position);
+            settings.setParameter(parameter_number, getParameter(parameter_number, playback_position));
           }
 
           // If the sample start settings is set and snap is on, then quantize the sample start position.
-          float sample_start = settings.parameters[SAMPLE_START];
+          // float sample_start = settings.parameters[SAMPLE_START];
+          float sample_start = settings.getParameter(SAMPLE_START);
 
           if (sample_position_snap_value > 0 && sample_start > 0)
           {
@@ -118,14 +119,15 @@ namespace groove_box
             // float quantized_sample_start = settings.sample_start * (float)sample_position_snap_value;
             float quantized_sample_start = sample_start * (float)sample_position_snap_value;
             quantized_sample_start = std::floor(quantized_sample_start);
-            settings.parameters[SAMPLE_START] = quantized_sample_start / (float)sample_position_snap_value;
+            // settings.parameters[SAMPLE_START] = quantized_sample_start / (float)sample_position_snap_value;
+            settings.setParameter(SAMPLE_START, quantized_sample_start / (float)sample_position_snap_value);
           }
 
           // Trigger the ADSR
           adsr.gate(true);
 
           // trigger sample playback
-          sample_player->trigger(sample_start, settings.parameters[REVERSE]);
+          sample_player->trigger(sample_start, settings.getParameter(REVERSE));
 
           return (true);
         }
@@ -147,10 +149,11 @@ namespace groove_box
 
       if (steps[playback_position] && (skipped == false))
       {
-        unsigned int ratchet_pattern = settings.parameters[RATCHET] * (NUMBER_OF_RATCHET_PATTERNS - 1);
+        // unsigned int ratchet_pattern = settings.parameters[RATCHET] * (NUMBER_OF_RATCHET_PATTERNS - 1);
+        unsigned int ratchet_pattern = settings.getParameter(RATCHET) * (NUMBER_OF_RATCHET_PATTERNS - 1);
         if (ratchet_patterns[ratchet_pattern][ratchet_counter])
         {
-          sample_player->trigger(settings.parameters[SAMPLE_START], settings.parameters[REVERSE]);
+          sample_player->trigger(settings.getParameter(SAMPLE_START), settings.getParameter(REVERSE));
           adsr.gate(true); // retrigger the ADSR
           ratcheted = true;
         }

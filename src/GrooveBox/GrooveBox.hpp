@@ -6,25 +6,20 @@
 // - Thank you to all the friendly people on the VCV Rack Community for answering
 //   my questions and providing feedback on early builds.
 //
-// - Thank you to Jim Allman for his incredible front panel design.
-//
-// TODO:
-//   * Groovebox allows manual MEM selection when CV is attached (https://github.com/clone45/voxglitch/issues/198)
+// - Thank you to Jim Allman (https://ibang.com/) for his incredible front panel design.
+
 
 struct GrooveBox : VoxglitchSamplerModule
 {
   MemorySlot memory_slots[NUMBER_OF_MEMORY_SLOTS];
 
   // Schmitt Triggers
-  dsp::SchmittTrigger drum_pad_triggers[NUMBER_OF_STEPS];
-  dsp::SchmittTrigger step_select_triggers[NUMBER_OF_STEPS];
-  dsp::SchmittTrigger track_button_triggers[NUMBER_OF_TRACKS];
   dsp::SchmittTrigger memory_slot_button_triggers[NUMBER_OF_MEMORY_SLOTS];
   dsp::SchmittTrigger function_button_triggers[NUMBER_OF_FUNCTIONS];
   dsp::SchmittTrigger copy_button_trigger;
   dsp::SchmittTrigger paste_button_trigger;
-  dsp::SchmittTrigger stepTrigger;
-  dsp::SchmittTrigger resetTrigger;
+  dsp::SchmittTrigger step_trigger;
+  dsp::SchmittTrigger reset_trigger;
 
   // Pointers to select track and memory
   Track *selected_track = NULL;
@@ -41,16 +36,13 @@ struct GrooveBox : VoxglitchSamplerModule
   unsigned int clock_counter = clock_division;
   bool first_step = true;
   bool shift_key = false;
-  bool control_key = false;
   bool mutes[NUMBER_OF_TRACKS];
   bool solos[NUMBER_OF_TRACKS];
   bool any_track_soloed = false;
   bool expander_connected = false;
 
-  bool step_copy_paste_mode = false;
   unsigned int copied_step_index = 0;
   unsigned int lcd_screen_mode = 0;
-  // LCDColorScheme lcd_color_scheme;
 
   // These booleans tell the sequence position lights whether to be ON or OFF
   bool light_booleans[NUMBER_OF_STEPS];
@@ -58,7 +50,6 @@ struct GrooveBox : VoxglitchSamplerModule
 
   unsigned int visualizer_step = 0;
   unsigned int sample_position_snap_track_values[NUMBER_OF_TRACKS];
-  bool track_declicking_enabled[NUMBER_OF_TRACKS];
 
   // A pair of GrooveBoxExpanderMessage structures for sending information
   // from the expander to the groovebox.  Note that they both essentially
@@ -140,6 +131,15 @@ struct GrooveBox : VoxglitchSamplerModule
     INTRO
   };
 
+  /*
+ 
+
+    █▀▀ █▀█ █▄░█ █▀ ▀█▀ █▀█ █░█ █▀▀ ▀█▀ █▀█ █▀█
+    █▄▄ █▄█ █░▀█ ▄█ ░█░ █▀▄ █▄█ █▄▄ ░█░ █▄█ █▀▄
+    Text created using https://fsymbols.com/generators/carty/
+
+  */
+
   GrooveBox()
   {
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -163,7 +163,6 @@ struct GrooveBox : VoxglitchSamplerModule
       this->solos[i] = false;
       this->track_volumes[i] = 1.0;
       this->sample_position_snap_indexes[i] = 0;
-      this->track_declicking_enabled[i] = false;
     }
 
     // Configure the individual track outputs
@@ -218,6 +217,14 @@ struct GrooveBox : VoxglitchSamplerModule
     leftExpander.consumerMessage = &expander_to_groovebox_message_b;
   }
 
+  /*
+ 
+    █░█ █▀▀ █░░ █▀█ █▀▀ █▀█   █▀▀ █░█ █▄░█ █▀▀ ▀█▀ █ █▀█ █▄░█ █▀
+    █▀█ ██▄ █▄▄ █▀▀ ██▄ █▀▄   █▀░ █▄█ █░▀█ █▄▄ ░█░ █ █▄█ █░▀█ ▄█
+    Text created using https://fsymbols.com/generators/carty/
+
+  */
+
   // copyMemory(src_index, dst_index)
   //
   // Helper function to copy one memory slot to another memory slot
@@ -253,7 +260,6 @@ struct GrooveBox : VoxglitchSamplerModule
 
     for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
-      // this->sample_players[i].initialize();
       this->loaded_filenames[i] = "";
       this->sample_position_snap_indexes[i] = 0;
     }
@@ -362,13 +368,6 @@ struct GrooveBox : VoxglitchSamplerModule
       updatePanelControls();
   }
 
-  /*
-  void randomizeParameter(unsigned int parameter_number)
-  {
-    this->selected_track->randomizeParameter(parameter_number)
-  }
-  */
-
   void shiftKnobValuesLeft()
   {
     float temp = params[STEP_KNOBS + 0].getValue();
@@ -432,6 +431,36 @@ struct GrooveBox : VoxglitchSamplerModule
     this->sample_position_snap_indexes[track_index] = sample_position_snap_index;
     this->sample_position_snap_track_values[track_index] = sample_position_snap_values[sample_position_snap_index];
   }
+
+  bool trigger(unsigned int track_id)
+  {
+    unsigned int sample_position_snap_value = sample_position_snap_track_values[track_id];
+    if (notMuted(track_id))
+      return (selected_memory_slot->tracks[track_id].trigger(sample_position_snap_value));
+    return (false);
+  }
+
+  bool notMuted(unsigned int track_id)
+  {
+    if (any_track_soloed)
+      return (solos[track_id]);
+    return (!mutes[track_id]);
+  }
+
+  bool memCableIsConnected()
+  {
+    return(inputs[MEM_INPUT].isConnected());
+  }
+
+
+  /*
+ 
+
+    █▀ ▄▀█ █░█ █▀▀   ▄▀█ █▄░█ █▀▄   █░░ █▀█ ▄▀█ █▀▄
+    ▄█ █▀█ ▀▄▀ ██▄   █▀█ █░▀█ █▄▀   █▄▄ █▄█ █▀█ █▄▀
+    Text created using https://fsymbols.com/generators/carty/
+
+  */
 
   //
   // SAVE module data
@@ -640,33 +669,17 @@ struct GrooveBox : VoxglitchSamplerModule
     updatePanelControls();
 	}
 
-  bool trigger(unsigned int track_id)
-  {
-    unsigned int sample_position_snap_value = sample_position_snap_track_values[track_id];
-    if (notMuted(track_id))
-      return (selected_memory_slot->tracks[track_id].trigger(sample_position_snap_value));
-    return (false);
-  }
 
-  bool notMuted(unsigned int track_id)
-  {
-    if (any_track_soloed)
-      return (solos[track_id]);
-    return (!mutes[track_id]);
-  }
+  /*
+ 
+    █▀█ █▀█ █▀█ █▀▀ █▀▀ █▀ █▀
+    █▀▀ █▀▄ █▄█ █▄▄ ██▄ ▄█ ▄█
+    Text created using https://fsymbols.com/generators/carty/
 
-  bool memCableIsConnected()
-  {
-    return(inputs[MEM_INPUT].isConnected());
-  }
+  */
 
   void process(const ProcessArgs &args) override
   {
-    // TODO: Is there a way to move this code into an isConnected type of event?
-
-    if (!this->shift_key)
-      step_copy_paste_mode = false;
-
     if (leftExpander.module && leftExpander.module->model == modelGrooveBoxExpander)
     {
       expander_connected = true;
@@ -723,7 +736,7 @@ struct GrooveBox : VoxglitchSamplerModule
     }
 
     // On incoming RESET, reset the sequencers
-    if (resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+    if (reset_trigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
     {
       // Set up a (reverse) counter so that the clock input will ignore
       // incoming clock pulses for 1 millisecond after a reset input. This
@@ -768,15 +781,8 @@ struct GrooveBox : VoxglitchSamplerModule
 
       if (function_button_triggers[slot_id].process(params[FUNCTION_BUTTONS + parameter_id].getValue()))
       {
-        DEBUG("selected slot ");
-        DEBUG(std::to_string(slot_id).c_str());
-
         selected_function = parameter_id;
         selected_parameter_slot = slot_id;
-
-        DEBUG("selected function ");
-        DEBUG(std::to_string(selected_function).c_str());
-
         updatePanelControls();
       }
     }
@@ -794,7 +800,7 @@ struct GrooveBox : VoxglitchSamplerModule
     //
     // Clock and step features
     //
-    if (stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+    if (step_trigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
     {
       if (clock_counter == clock_division)
       {
@@ -899,6 +905,14 @@ struct GrooveBox : VoxglitchSamplerModule
     if (expander_connected)
       writeToExpander();
   }
+
+  /*
+ 
+    █▀▀ ▀▄▀ █▀█ ▄▀█ █▄░█ █▀▄ █▀▀ █▀█   █▀█ █▀█ █▀█ █▀▀ █▀▀ █▀ █▀ █ █▄░█ █▀▀
+    ██▄ █░█ █▀▀ █▀█ █░▀█ █▄▀ ██▄ █▀▄   █▀▀ █▀▄ █▄█ █▄▄ ██▄ ▄█ ▄█ █ █░▀█ █▄█
+    Text created using https://fsymbols.com/generators/carty/
+
+  */
 
   void readFromExpander()
   {

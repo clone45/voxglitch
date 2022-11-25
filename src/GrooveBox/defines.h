@@ -41,7 +41,7 @@ namespace groove_box
     };
 
     // These must be in the same order as the Parameters enum above
-    const float default_parameter_values[NUMBER_OF_FUNCTIONS] = {
+    const std::array<float, NUMBER_OF_FUNCTIONS> default_parameter_values = {
         0.5, // volume
         0.5, // pan
         0.5, // pitch
