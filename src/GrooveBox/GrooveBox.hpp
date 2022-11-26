@@ -18,7 +18,7 @@ struct GrooveBox : VoxglitchSamplerModule
 
   // Schmitt Triggers
   dsp::SchmittTrigger memory_slot_button_triggers[NUMBER_OF_MEMORY_SLOTS];
-  dsp::SchmittTrigger function_button_triggers[NUMBER_OF_FUNCTIONS];
+  dsp::SchmittTrigger parameter_lock_button_triggers[NUMBER_OF_PARAMETER_LOCKS];
   dsp::SchmittTrigger copy_button_trigger;
   dsp::SchmittTrigger paste_button_trigger;
   dsp::SchmittTrigger step_trigger;
@@ -33,8 +33,8 @@ struct GrooveBox : VoxglitchSamplerModule
   unsigned int copied_memory_index = 0;
   unsigned int track_index = 0;
   unsigned int playback_step = 0;
-  unsigned int selected_function = 0;
-  unsigned int selected_parameter_slot = 0;
+  unsigned int selected_parameter_lock_id = 0;
+  unsigned int selected_parameter_slot_id = 0;
   unsigned int clock_division = 8;
   unsigned int clock_counter = clock_division;
   bool first_step = true;
@@ -99,7 +99,7 @@ struct GrooveBox : VoxglitchSamplerModule
     ENUMS(DRUM_PADS, NUMBER_OF_STEPS),
     ENUMS(STEP_SELECT_BUTTONS, NUMBER_OF_STEPS),
     ENUMS(STEP_KNOBS, NUMBER_OF_STEPS),
-    ENUMS(FUNCTION_BUTTONS, NUMBER_OF_FUNCTIONS),
+    ENUMS(PARAMETER_LOCK_BUTTONS, NUMBER_OF_PARAMETER_LOCKS),
     ENUMS(DUMMY_UNUSED_PARAMS, NUMBER_OF_TRACKS),
     ENUMS(MEMORY_SLOT_BUTTONS, NUMBER_OF_MEMORY_SLOTS),
     COPY_BUTTON,
@@ -154,8 +154,8 @@ struct GrooveBox : VoxglitchSamplerModule
       configParam(DRUM_PADS + i, 0.0, 1.0, 0.0, "Step Button");
       configOnOff(DRUM_PADS + i, 0.0, "Step Button");
       configParam(STEP_KNOBS + i, 0.0, 1.0, 0.0, "Parameter Lock Value " + std::to_string(i));
-      configParam(FUNCTION_BUTTONS + i, 0.0, 1.0, 0.0);
-      configOnOff(FUNCTION_BUTTONS + i, 0.0, FUNCTION_NAMES[parameter_slots[i]]);
+      configParam(PARAMETER_LOCK_BUTTONS + i, 0.0, 1.0, 0.0);
+      configOnOff(PARAMETER_LOCK_BUTTONS + i, 0.0, PARAMETER_LOCK_NAMES[parameter_slots[i]]);
 
       light_booleans[i] = false;
     }
@@ -277,17 +277,17 @@ struct GrooveBox : VoxglitchSamplerModule
     {
       float value = 0;
 
-      value = selected_track->getParameter(selected_function, step_number);
+      value = selected_track->getParameter(selected_parameter_lock_id, step_number);
 
       params[STEP_KNOBS + step_number].setValue(value);
       params[DRUM_PADS + step_number].setValue(selected_track->getValue(step_number));
     }
 
     // Update selected function button
-    for (unsigned int slot_id = 0; slot_id < NUMBER_OF_FUNCTIONS; slot_id++)
+    for (unsigned int slot_id = 0; slot_id < NUMBER_OF_PARAMETER_LOCKS; slot_id++)
     {
       unsigned int parameter_id = parameter_slots[slot_id];
-      params[FUNCTION_BUTTONS + parameter_id].setValue(selected_parameter_slot == slot_id);
+      params[PARAMETER_LOCK_BUTTONS + parameter_id].setValue(selected_parameter_slot_id == slot_id);
     }
   }
 
@@ -405,7 +405,7 @@ struct GrooveBox : VoxglitchSamplerModule
   {
     for (unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
-      params[STEP_KNOBS + step_number].setValue(default_parameter_values[selected_function]);
+      params[STEP_KNOBS + step_number].setValue(default_parameter_values[selected_parameter_lock_id]);
     }
   }
 
@@ -508,9 +508,9 @@ struct GrooveBox : VoxglitchSamplerModule
           json_t *step_data = json_object();
           json_object_set(step_data, "trigger", json_integer(this->memory_slots[memory_slot_number].tracks[track_number].getValue(step_index)));
 
-          for(unsigned int parameter_index = 0; parameter_index < NUMBER_OF_FUNCTIONS; parameter_index++)
+          for(unsigned int parameter_index = 0; parameter_index < NUMBER_OF_PARAMETER_LOCKS; parameter_index++)
           {
-            std::string key = FUNCTION_NAMES[parameter_index];
+            std::string key = PARAMETER_LOCK_NAMES[parameter_index];
             std::transform(key.begin(), key.end(), key.begin(), ::tolower);
             std::replace( key.begin(), key.end(), ' ', '_'); // replace all ' ' to '_'
 
@@ -637,10 +637,10 @@ struct GrooveBox : VoxglitchSamplerModule
 
                 
                 // Load all parameter information for all steps
-                for(unsigned int parameter_index=0; parameter_index < NUMBER_OF_FUNCTIONS; parameter_index++)
+                for(unsigned int parameter_index=0; parameter_index < NUMBER_OF_PARAMETER_LOCKS; parameter_index++)
                 {
 
-                  std::string key = FUNCTION_NAMES[parameter_index];
+                  std::string key = PARAMETER_LOCK_NAMES[parameter_index];
                   std::transform(key.begin(), key.end(), key.begin(), ::tolower);
                   std::replace( key.begin(), key.end(), ' ', '_'); // replace all ' ' to '_'
 
@@ -776,16 +776,16 @@ struct GrooveBox : VoxglitchSamplerModule
     //  Parameter selection
     //  TODO: try and move this into GrooveboxParameterButton.hpp
 
-    for (unsigned int slot_id = 0; slot_id < NUMBER_OF_FUNCTIONS; slot_id++)
+    for (unsigned int slot_id = 0; slot_id < NUMBER_OF_PARAMETER_LOCKS; slot_id++)
     {
       // parameter_slots keep track of this parameter is associated with which parameter slot
       // parameter_slots is defined in defines.h
       unsigned int parameter_id = parameter_slots[slot_id];
 
-      if (function_button_triggers[slot_id].process(params[FUNCTION_BUTTONS + parameter_id].getValue()))
+      if (parameter_lock_button_triggers[slot_id].process(params[PARAMETER_LOCK_BUTTONS + parameter_id].getValue()))
       {
-        selected_function = parameter_id;
-        selected_parameter_slot = slot_id;
+        selected_parameter_lock_id = parameter_id;
+        selected_parameter_slot_id = slot_id;
         updatePanelControls();
       }
     }
@@ -797,7 +797,7 @@ struct GrooveBox : VoxglitchSamplerModule
     for (unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
       float value = params[STEP_KNOBS + step_number].getValue();
-      selected_track->setParameter(selected_function, step_number, value);
+      selected_track->setParameter(selected_parameter_lock_id, step_number, value);
     }
 
     //

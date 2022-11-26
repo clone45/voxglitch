@@ -20,7 +20,7 @@ struct ParameterKnob : SvgKnob
   {
     float value = 0.0;
 
-    value = default_parameter_values[module->selected_function];
+    value = default_parameter_values[module->selected_parameter_lock_id];
 
     if (module->shift_key)
     {
@@ -39,7 +39,7 @@ struct ParameterKnob : SvgKnob
 
   void onButton(const event::Button &e) override
   {
-    if (module->selected_function == SAMPLE_START || module->selected_function == SAMPLE_END)
+    if (module->selected_parameter_lock_id == SAMPLE_START || module->selected_parameter_lock_id == SAMPLE_END)
     {
       if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
       {
@@ -51,7 +51,7 @@ struct ParameterKnob : SvgKnob
       }
     }
 
-    if (module->selected_function == RATCHET)
+    if (module->selected_parameter_lock_id == RATCHET)
     {
       if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
       {
@@ -69,13 +69,13 @@ struct ParameterKnob : SvgKnob
   void onDragEnd(const DragEndEvent &e) override
   {
 
-    if (module->selected_function == SAMPLE_START || module->selected_function == SAMPLE_END)
+    if (module->selected_parameter_lock_id == SAMPLE_START || module->selected_parameter_lock_id == SAMPLE_END)
     {
       if (e.button == GLFW_MOUSE_BUTTON_LEFT)
         module->lcd_screen_mode = module->TRACK;
     }
 
-    if (module->selected_function == RATCHET)
+    if (module->selected_parameter_lock_id == RATCHET)
     {
       if (e.button == GLFW_MOUSE_BUTTON_LEFT)
         module->lcd_screen_mode = module->TRACK;

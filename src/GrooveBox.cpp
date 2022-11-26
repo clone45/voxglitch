@@ -18,7 +18,7 @@ using namespace groove_box;
 
 #include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
-#include "GrooveBox/SamplePlaybackSettings.hpp"
+#include "GrooveBox/ParameterLockSettings.hpp"
 #include "GrooveBoxExpander/ExpanderToGrooveboxMessage.hpp"
 #include "GrooveBox/GrooveboxToExpanderMessage.hpp"
 
@@ -34,6 +34,7 @@ using namespace groove_box;
 
 // Core components
 #include "GrooveBox/widgets/LCDColorScheme.hpp"
+#include "GrooveBox/TrackModel.hpp"
 #include "GrooveBox/Track.hpp"
 #include "GrooveBox/MemorySlot.hpp"
 #include "GrooveBox/GrooveBox.hpp"

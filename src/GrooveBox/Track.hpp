@@ -7,18 +7,36 @@ namespace groove_box
 
   struct Track
   {
+    TrackModel m;
+    /*
     bool steps[NUMBER_OF_STEPS] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    unsigned int playback_position = 0;
-    unsigned int range_end = NUMBER_OF_STEPS - 1; // was length
-    unsigned int range_start = 0;
-    SamplePlaybackSettings sample_playback_settings[NUMBER_OF_STEPS]; // settings assigned to each step
-    SamplePlaybackSettings settings;                                  // currently used settings
+    unsigned int m.playback_position = 0;
+    unsigned int m.range_end = NUMBER_OF_STEPS - 1; // was length
+    unsigned int m.range_start = 0;
+    unsigned int m.ratchet_counter = 0;
 
     // Global track values set by the expandcer
     float track_pan = 0.0;
     float track_pitch = 0.0;
     float track_volume = 0.0;
+
+    float m.volume_slew_target = 0.0;
+    float m.pan_slew_target = 0.0;
+    float m.filter_cutoff_slew_target = 0.0;
+    float m.filter_resonance_slew_target = 0.0;
+
+    // The "m.skipped" variable keep track of when a trigger has been m.skipped because
+    // the "Percentage" funtion is non-zero and didn't fire on the current step.
+    // When a step is m.skipped, then ratcheting should not be applied to it for
+    // that m.skipped step.
+
+    bool m.skipped = false;
+
+
+    ParameterLockSettings parameter_lock_settings[NUMBER_OF_STEPS]; // settings assigned to each step
+    ParameterLockSettings m.local_parameter_lock_settings;            // currently used settings
+    */
 
     // DSP classes
     ADSR adsr;
@@ -30,28 +48,22 @@ namespace groove_box
     rack::dsp::SlewLimiter filter_cutoff_slew_limiter;
     rack::dsp::SlewLimiter filter_resonance_slew_limiter;
 
-    float volume_slew_target = 0.0;
-    float pan_slew_target = 0.0;
-    float filter_cutoff_slew_target = 0.0;
-    float filter_resonance_slew_target = 0.0;
-
-    // StereoPanSubModule stereo_pan_submodule;
     StereoPan stereo_pan;
-    unsigned int ratchet_counter = 0;
+
+    // Each memory slot has 8 tracks, and there are 16 memory slots.  That
+    // means that there are ... (computing) ... 128 tracks total.  However,
+    // the module only contains 8 sample players.
+    // Memory slot #0, track #0 points to the SamplePlayer[0]
+    // Memory slot #1, track #0 points to the SamplePlayer[0]
+    // Memory slot #2, track #0 points to the SamplePlayer[0]
+    // and so on...
+    //
+    // In other words, sample players are shared between tracks. I didn't think
+    // it would be feasible to have 128 different sample players, but I might
+    // rethink this in the future.  As long as the sample waveform data isn't
+    // duplicated, the overhead wouldn't be too bad.
+
     SamplePlayer *sample_player;
-
-    // The "skipped" variable keep track of when a trigger has been skipped because
-    // the "Percentage" funtion is non-zero and didn't fire on the current step.
-    // When a step is skipped, then ratcheting should not be applied to it for
-    // that skipped step.
-
-    bool skipped = false;
-
-    // Transitory variables
-    int shift_starting_column = 0;
-
-    // Sample rate
-    float rack_sample_rate = APP->engine->getSampleRate();
 
     Track()
     {
@@ -76,46 +88,46 @@ namespace groove_box
 
     void step()
     {
-      playback_position = playback_position + 1;
-      if (playback_position > range_end)
-        playback_position = range_start;
-      ratchet_counter = 0;
+      m.playback_position = m.playback_position + 1;
+      if (m.playback_position > m.range_end)
+        m.playback_position = m.range_start;
+      m.ratchet_counter = 0;
     }
 
     bool trigger(unsigned int sample_position_snap_value)
     {
       fade_out.reset();
 
-      float probability = getParameter(PROBABILITY, playback_position);
+      float probability = getParameter(PROBABILITY, m.playback_position);
 
       if ((probability < 0.98) && (((float)rand() / (float)RAND_MAX) > probability))
       {
         // Don't trigger
-        skipped = true;
+        m.skipped = true;
       }
       else
       {
-        skipped = false;
+        m.skipped = false;
 
-        if (steps[playback_position])
+        if (m.steps[m.playback_position])
         {
           // It's necessary to slew the volume and pan, otherwise these will
           // introduce a pop or click when modulated between distant values
           // I'm doing the same for filter cutoff and resonance, just out of paranoia.
 
-          volume_slew_target = getParameter(VOLUME, playback_position);
-          pan_slew_target = getParameter(PAN, playback_position);
-          filter_cutoff_slew_target = getParameter(FILTER_CUTOFF, playback_position);
-          filter_resonance_slew_target = getParameter(FILTER_RESONANCE, playback_position);
+          m.volume_slew_target = getParameter(VOLUME, m.playback_position);
+          m.pan_slew_target = getParameter(PAN, m.playback_position);
+          m.filter_cutoff_slew_target = getParameter(FILTER_CUTOFF, m.playback_position);
+          m.filter_resonance_slew_target = getParameter(FILTER_RESONANCE, m.playback_position);
 
-          for (unsigned int parameter_number = 0; parameter_number < NUMBER_OF_FUNCTIONS; parameter_number++)
+          for (unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETER_LOCKS; parameter_number++)
           {
-            settings.setParameter(parameter_number, getParameter(parameter_number, playback_position));
+            m.local_parameter_lock_settings.setParameter(parameter_number, getParameter(parameter_number, m.playback_position));
           }
 
           // If the sample start settings is set and snap is on, then quantize the sample start position.
           // float sample_start = settings.parameters[SAMPLE_START];
-          float sample_start = settings.getParameter(SAMPLE_START);
+          float sample_start = m.local_parameter_lock_settings.getParameter(SAMPLE_START);
 
           if (sample_position_snap_value > 0 && sample_start > 0)
           {
@@ -124,14 +136,14 @@ namespace groove_box
             // float quantized_sample_start = settings.sample_start * (float)sample_position_snap_value;
             float quantized_sample_start = sample_start * (float)sample_position_snap_value;
             quantized_sample_start = std::floor(quantized_sample_start);
-            settings.setParameter(SAMPLE_START, quantized_sample_start / (float)sample_position_snap_value);
+            m.local_parameter_lock_settings.setParameter(SAMPLE_START, quantized_sample_start / (float)sample_position_snap_value);
           }
 
           // Trigger the ADSR
           adsr.gate(true);
 
           // trigger sample playback
-          sample_player->trigger(sample_start, settings.getParameter(REVERSE));
+          sample_player->trigger(sample_start, m.local_parameter_lock_settings.getParameter(REVERSE));
 
           return (true);
         }
@@ -151,22 +163,22 @@ namespace groove_box
     {
       bool ratcheted = false;
 
-      if (steps[playback_position] && (skipped == false))
+      if (m.steps[m.playback_position] && (m.skipped == false))
       {
         // unsigned int ratchet_pattern = settings.parameters[RATCHET] * (NUMBER_OF_RATCHET_PATTERNS - 1);
-        unsigned int ratchet_pattern = settings.getParameter(RATCHET) * (NUMBER_OF_RATCHET_PATTERNS - 1);
-        if (ratchet_patterns[ratchet_pattern][ratchet_counter])
+        unsigned int ratchet_pattern = m.local_parameter_lock_settings.getParameter(RATCHET) * (NUMBER_OF_RATCHET_PATTERNS - 1);
+        if (ratchet_patterns[ratchet_pattern][m.ratchet_counter])
         {
-          sample_player->trigger(settings.getParameter(SAMPLE_START), settings.getParameter(REVERSE));
+          sample_player->trigger(m.local_parameter_lock_settings.getParameter(SAMPLE_START), m.local_parameter_lock_settings.getParameter(REVERSE));
           adsr.gate(true); // retrigger the ADSR
           ratcheted = true;
         }
-        if (++ratchet_counter >= 8)
-          ratchet_counter = 0;
+        if (++m.ratchet_counter >= 8)
+          m.ratchet_counter = 0;
       }
       else
       {
-        ratchet_counter = 0;
+        m.ratchet_counter = 0;
       }
 
       return (ratcheted);
@@ -174,36 +186,36 @@ namespace groove_box
 
     unsigned int getPosition()
     {
-      return (playback_position);
+      return (m.playback_position);
     }
 
     void setPosition(unsigned int playback_position)
     {
       if (playback_position < NUMBER_OF_STEPS)
       {
-        this->playback_position = playback_position;
+        this->m.playback_position = playback_position;
       }
     }
 
     void toggleStep(unsigned int i)
     {
-      steps[i] ^= true;
+      m.steps[i] ^= true;
     }
 
     bool getValue(unsigned int i)
     {
-      return (steps[i]);
+      return (m.steps[i]);
     }
 
     void setValue(unsigned int i, bool value)
     {
-      steps[i] = value;
+      m.steps[i] = value;
     }
 
     void reset()
     {
-      playback_position = range_start;
-      ratchet_counter = 0;
+      m.playback_position = m.range_start;
+      m.ratchet_counter = 0;
       fade_out.reset();
     }
 
@@ -213,8 +225,8 @@ namespace groove_box
       {
         setValue(i, false);
       }
-      this->range_end = NUMBER_OF_STEPS - 1;
-      this->range_start = 0;
+      this->m.range_end = NUMBER_OF_STEPS - 1;
+      this->m.range_start = 0;
       this->resetAllParameterLocks();
     }
 
@@ -233,7 +245,7 @@ namespace groove_box
 
     void clearStepParameters(unsigned int step_id)
     {
-      for (unsigned int parameter_number = 0; parameter_number < NUMBER_OF_FUNCTIONS; parameter_number++)
+      for (unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETER_LOCKS; parameter_number++)
       {
         setParameter(parameter_number, step_id, default_parameter_values[parameter_number]);
       }
@@ -254,21 +266,21 @@ namespace groove_box
       if (amount > 0)
       {
         // Create a copy of all of the playback settings for this track
-        SamplePlaybackSettings temp_settings[NUMBER_OF_STEPS];
+        ParameterLockSettings temp_settings[NUMBER_OF_STEPS];
         bool temp_steps[NUMBER_OF_STEPS];
 
         for (unsigned int i = 0; i < NUMBER_OF_STEPS; i++)
         {
-          temp_settings[i].copy(&sample_playback_settings[i]);
-          temp_steps[i] = this->steps[i];
+          temp_settings[i].copy(&m.parameter_lock_settings[i]);
+          temp_steps[i] = this->m.steps[i];
         }
 
         // Now copy the track information back into the shifted location
         for (unsigned int i = 0; i < NUMBER_OF_STEPS; i++)
         {
           unsigned int copy_from_index = (i + amount) % NUMBER_OF_STEPS;
-          sample_playback_settings[i].copy(&temp_settings[copy_from_index]);
-          this->steps[i] = temp_steps[copy_from_index];
+          m.parameter_lock_settings[i].copy(&temp_settings[copy_from_index]);
+          this->m.steps[i] = temp_steps[copy_from_index];
         }
       }
     }
@@ -277,8 +289,8 @@ namespace groove_box
     {
       if (copy_from_index != copy_to_index)
       {
-        sample_playback_settings[copy_to_index].copy(&sample_playback_settings[copy_from_index]);
-        this->steps[copy_to_index] = this->steps[copy_from_index];
+        m.parameter_lock_settings[copy_to_index].copy(&m.parameter_lock_settings[copy_from_index]);
+        this->m.steps[copy_to_index] = this->m.steps[copy_from_index];
       }
     }
 
@@ -294,30 +306,30 @@ namespace groove_box
       float right_output;
 
       // -===== Slew Limiter Processing =====-
-      settings.setParameter(VOLUME, volume_slew_limiter.process(APP->engine->getSampleTime(), volume_slew_target));
-      settings.setParameter(PAN, pan_slew_limiter.process(APP->engine->getSampleTime(), pan_slew_target));
-      settings.setParameter(FILTER_CUTOFF, filter_cutoff_slew_limiter.process(APP->engine->getSampleTime(), filter_cutoff_slew_target));
-      settings.setParameter(FILTER_RESONANCE, filter_resonance_slew_limiter.process(APP->engine->getSampleTime(), filter_resonance_slew_target));
+      m.local_parameter_lock_settings.setParameter(VOLUME, volume_slew_limiter.process(APP->engine->getSampleTime(), m.volume_slew_target));
+      m.local_parameter_lock_settings.setParameter(PAN, pan_slew_limiter.process(APP->engine->getSampleTime(), m.pan_slew_target));
+      m.local_parameter_lock_settings.setParameter(FILTER_CUTOFF, filter_cutoff_slew_limiter.process(APP->engine->getSampleTime(), m.filter_cutoff_slew_target));
+      m.local_parameter_lock_settings.setParameter(FILTER_RESONANCE, filter_resonance_slew_limiter.process(APP->engine->getSampleTime(), m.filter_resonance_slew_target));
 
       // Mostly cosmetic: Load up the settings into easily readable variables
-      // The "settings" structure is populated when the track is stepped.  It
-      // contains of snapshot of the settings related to the active step.
+      // The "m.local_parameter_lock_settings" structure is populated when the track is stepped.  It
+      // contains of snapshot of the m.local_parameter_lock_settings related to the active step.
 
-      float attack = settings.getParameter(ATTACK);
-      float release = settings.getParameter(RELEASE);
-      float volume = settings.getParameter(VOLUME);      
-      float pan = settings.getParameter(PAN);
-      float filter_cutoff = settings.getParameter(FILTER_CUTOFF);
-      float filter_resonance = settings.getParameter(FILTER_RESONANCE);
-      float delay_mix = settings.getParameter(DELAY_MIX);
-      float delay_length = settings.getParameter(DELAY_LENGTH);
-      float delay_feedback = settings.getParameter(DELAY_FEEDBACK);
+      float attack = m.local_parameter_lock_settings.getParameter(ATTACK);
+      float release = m.local_parameter_lock_settings.getParameter(RELEASE);
+      float volume = m.local_parameter_lock_settings.getParameter(VOLUME);      
+      float pan = m.local_parameter_lock_settings.getParameter(PAN);
+      float filter_cutoff = m.local_parameter_lock_settings.getParameter(FILTER_CUTOFF);
+      float filter_resonance = m.local_parameter_lock_settings.getParameter(FILTER_RESONANCE);
+      float delay_mix = m.local_parameter_lock_settings.getParameter(DELAY_MIX);
+      float delay_length = m.local_parameter_lock_settings.getParameter(DELAY_LENGTH);
+      float delay_feedback = m.local_parameter_lock_settings.getParameter(DELAY_FEEDBACK);
 
       // When the ADSR reaches the sustain state, then switch to the release
       // state.  Only do this when the release is less than max release, otherwise
       // sustain until the nex time the track is triggered.
       //
-      // * Reminder: settings.getParameter(RELEASE) ranges from 0.0 to 1.0
+      // * Reminder: m.local_parameter_lock_settings.getParameter(RELEASE) ranges from 0.0 to 1.0
       //
       if (adsr.getState() == ADSR::env_sustain && release < 1.0)
         adsr.gate(false);
@@ -327,12 +339,12 @@ namespace groove_box
 
       // Apply pan parameters
       //
-      // settings.pan ranges from 0 to 1
+      // m.local_parameter_lock_settings.pan ranges from 0 to 1
       // track_pan ranges from -1 to 0
-      float computed_pan = (pan * 2.0) - 1.0; // convert settings.pan to range from -1 to 1
+      float computed_pan = (pan * 2.0) - 1.0; // convert m.local_parameter_lock_settings.pan to range from -1 to 1
       if(computed_pan != 0)
       {
-        computed_pan = clamp(computed_pan + track_pan, -1.0, 1.0);
+        computed_pan = clamp(computed_pan + m.track_pan, -1.0, 1.0);
         stereo_pan.process(&left_output, &right_output, computed_pan);
       }
       
@@ -405,13 +417,13 @@ namespace groove_box
 
     void incrementSamplePosition()
     {
-      float pitch = settings.getParameter(PITCH);
-      float reverse = settings.getParameter(REVERSE);
-      float sample_start = settings.getParameter(SAMPLE_START);
-      float sample_end = settings.getParameter(SAMPLE_END);
-      float loop = settings.getParameter(LOOP);
+      float pitch = m.local_parameter_lock_settings.getParameter(PITCH);
+      float reverse = m.local_parameter_lock_settings.getParameter(REVERSE);
+      float sample_start = m.local_parameter_lock_settings.getParameter(SAMPLE_START);
+      float sample_end = m.local_parameter_lock_settings.getParameter(SAMPLE_END);
+      float loop = m.local_parameter_lock_settings.getParameter(LOOP);
 
-      float summed_pitch = clamp(pitch + track_pitch, 0.0, 1.0);
+      float summed_pitch = clamp(pitch + m.track_pitch, 0.0, 1.0);
 
       if (reverse > .5)
       {
@@ -426,7 +438,6 @@ namespace groove_box
 
     void updateRackSampleRate()
     {
-      rack_sample_rate = APP->engine->getSampleRate();
       this->sample_player->updateSampleRate();
     }
 
@@ -437,54 +448,36 @@ namespace groove_box
 
     void copy(Track *src_track)
     {
-      // First copy step data
-      for (unsigned int i = 0; i < NUMBER_OF_STEPS; i++)
-      {
-        this->steps[i] = src_track->steps[i];
-        this->sample_playback_settings[i].copy(&src_track->sample_playback_settings[i]);
-      }
-
-      this->settings.copy(&src_track->settings);
-
-      // Copy single variables
-      this->range_end = src_track->range_end;
-      this->range_start = src_track->range_start;
-      this->playback_position = src_track->playback_position;
-      this->ratchet_counter = src_track->ratchet_counter;
-      this->skipped = src_track->skipped;
-
-      this->track_volume = src_track->track_volume;
-      this->track_pan = src_track->track_pan;
-      this->track_pitch = src_track->track_pitch;
+      this->m = src_track->m;
     }
 
     void randomizeSteps()
     {
       for (unsigned int i = 0; i < NUMBER_OF_STEPS; i++)
       {
-        steps[i] = (rand() > (RAND_MAX / 2));
+        m.steps[i] = (rand() > (RAND_MAX / 2));
       }
     }
 
-    float getRangeStart()
+    unsigned int getRangeStart()
     {
-      return (this->range_start);
+      return (this->m.range_start);
     }
 
     void setRangeStart(unsigned int range_start)
     {
-      if (playback_position < range_start) playback_position = range_start;
-      this->range_start = range_start;
+      if (m.playback_position < range_start) m.playback_position = range_start;
+      this->m.range_start = range_start;
     }
 
-    float getRangeEnd()
+    unsigned int getRangeEnd()
     {
-      return (this->range_end);
+      return (this->m.range_end);
     }
 
     void setRangeEnd(unsigned int range_end)
     {
-      this->range_end = range_end;
+      this->m.range_end = range_end;
     }
 
     // Parameter locks
@@ -493,7 +486,7 @@ namespace groove_box
     {
       for (unsigned int step = 0; step < NUMBER_OF_STEPS; step++)
       {
-        for (unsigned int parameter_number = 0; parameter_number < NUMBER_OF_FUNCTIONS; parameter_number++)
+        for (unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETER_LOCKS; parameter_number++)
         {
           setParameter(parameter_number, step, default_parameter_values[parameter_number]);
         }
@@ -501,33 +494,33 @@ namespace groove_box
     }
 
     // Be careful here.  setParameter and getParameter are helper functions.  There's 
-    // also similar methods in SamplePlaybackSettings.hpp which are specific
+    // also similar methods in ParameterLockSettings.hpp which are specific
     // to a track's current step's parameters.
 
     float getParameter(unsigned int parameter_number, unsigned int step)
     {
-      return (this->sample_playback_settings[step].getParameter(parameter_number)); // [parameter_number])
+      return (m.parameter_lock_settings[step].getParameter(parameter_number)); // [parameter_number])
     }
 
     void setParameter(unsigned int parameter_number, unsigned int step, float value)
     {
-      this->sample_playback_settings[step].setParameter(parameter_number, value);
+      m.parameter_lock_settings[step].setParameter(parameter_number, value);
     }
 
     // "track_pan" is the global pan applied by the expander module
     float getTrackPan()  {
-      return(this->track_pan);
+      return(this->m.track_pan);
     }
     void setTrackPan(float track_pan) {
-      this->track_pan = track_pan;
+      this->m.track_pan = track_pan;
     }
 
     // "track_pitch" is the global pitch applied by the expander module
     float getTrackPitch()  {
-      return(this->track_pitch);
+      return(this->m.track_pitch);
     }
     void setTrackPitch(float track_pitch) {
-      this->track_pitch = track_pitch;
+      this->m.track_pitch = track_pitch;
     }
 
   };

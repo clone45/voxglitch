@@ -25,7 +25,7 @@ struct RangeGrabberRightWidget : TransparentWidget
       nvgSave(vg);
       nvgBeginPath(vg);
 
-      this->box.pos = Vec(button_positions[module->selected_track->range_end][0] - width/2, this->box.pos.y);
+      this->box.pos = Vec(button_positions[module->selected_track->m.range_end][0] - width/2, this->box.pos.y);
 
       nvgRoundedRect(vg, box.size.x - width, box.size.y - height, width, height, 2.0);
       nvgFillColor(vg, nvgRGB(83,92,91));
@@ -77,7 +77,7 @@ struct RangeGrabberRightWidget : TransparentWidget
     int quantized_x = ((drag_position.x - button_positions[0][0]) + width) / (button_positions[1][0] - button_positions[0][0]);
     quantized_x = clamp(quantized_x, 0, NUMBER_OF_STEPS - 1);
 
-    if((unsigned int) quantized_x > module->selected_track->range_start) module->selected_track->range_end = quantized_x;
+    if((unsigned int) quantized_x > module->selected_track->m.range_start) module->selected_track->m.range_end = quantized_x;
   }
 };
 
@@ -108,7 +108,7 @@ struct RangeGrabberLeftWidget : TransparentWidget
       nvgSave(vg);
       nvgBeginPath(vg);
 
-      this->box.pos = Vec(button_positions[module->selected_track->range_start][0] - width/2, this->box.pos.y);
+      this->box.pos = Vec(button_positions[module->selected_track->m.range_start][0] - width/2, this->box.pos.y);
 
       nvgRoundedRect(vg, box.size.x - width, box.size.y - height, width, height, 2.0);
       nvgFillColor(vg, nvgRGB(83,92,91));
@@ -161,6 +161,6 @@ struct RangeGrabberLeftWidget : TransparentWidget
     int quantized_x = ((drag_position.x - button_positions[0][0]) + width) / (button_positions[1][0] - button_positions[0][0]);
     quantized_x = clamp(quantized_x, 0, NUMBER_OF_STEPS - 1);
 
-    if((unsigned int) quantized_x < module->selected_track->range_end) module->selected_track->range_start = quantized_x;
+    if((unsigned int) quantized_x < module->selected_track->m.range_end) module->selected_track->m.range_start = quantized_x;
   }
 };

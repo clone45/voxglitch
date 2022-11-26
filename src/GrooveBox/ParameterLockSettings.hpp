@@ -1,15 +1,15 @@
 namespace groove_box
 {
 
-  struct SamplePlaybackSettings
+  struct ParameterLockSettings
   {
     private:
     
-      std::array<float, NUMBER_OF_FUNCTIONS> parameters;
+      std::array<float, NUMBER_OF_PARAMETER_LOCKS> parameters;
 
     public:
 
-      SamplePlaybackSettings()
+      ParameterLockSettings()
       {
         parameters = default_parameter_values;
       }
@@ -24,7 +24,7 @@ namespace groove_box
         parameters.at(parameter_index) = parameter_value;
       }
 
-      void copy(SamplePlaybackSettings *src_settings)
+      void copy(ParameterLockSettings *src_settings)
       {
         parameters = src_settings->parameters;
       }
