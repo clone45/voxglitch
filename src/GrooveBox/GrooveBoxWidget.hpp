@@ -16,7 +16,6 @@
 #include "widgets/LCDSampleDisplay.hpp"
 #include "widgets/LCDRatchetDisplay.hpp"
 #include "widgets/LCDTrackDisplay.hpp"
-#include "widgets/TrackSampleNudge.hpp"
 
 float memory_slot_button_left_col_X = 126.05; // 125.5;
 float memory_slot_button_col_Xstep = 31.25; // 31.4;

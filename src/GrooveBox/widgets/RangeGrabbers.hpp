@@ -14,42 +14,32 @@ struct RangeGrabberRightWidget : TransparentWidget
     box.size = Vec(width, height);
   }
 
+
   void draw(const DrawArgs &args) override
   {
     const auto vg = args.vg;
 
-    nvgSave(vg);
-    nvgBeginPath(vg);
+    // Draw grabber
+    if(is_moused_over && module) {
 
-    if(module) {
+      nvgSave(vg);
+      nvgBeginPath(vg);
+
       this->box.pos = Vec(button_positions[module->selected_track->range_end][0] - width/2, this->box.pos.y);
-    }
-    else {
-      this->box.pos = Vec(button_positions[10][0] - width/2, this->box.pos.y);
-    }
 
-    //nvgCircle(vg, box.size.x - radius, box.size.y - radius, radius);
-    nvgRoundedRect(vg, box.size.x - width, box.size.y - height, width, height, 2.0);
-
-    if(is_moused_over) {
-      //nvgFillColor(vg, nvgRGB(110,120,115));
+      nvgRoundedRect(vg, box.size.x - width, box.size.y - height, width, height, 2.0);
       nvgFillColor(vg, nvgRGB(83,92,91));
-    }
-    else {
-      nvgFillColor(vg, nvgRGBA(83,92,91,0));
-    }
 
-    nvgFill(vg);
-    nvgRestore(vg);
+      nvgFill(vg);
+      nvgRestore(vg);
+    }
   }
-
 
   void onButton(const event::Button &e) override
   {
     if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
     {
       e.consume(this);
-      // drag_position = e.pos;
       drag_position = this->box.pos;
     }
   }
@@ -112,30 +102,20 @@ struct RangeGrabberLeftWidget : TransparentWidget
   {
     const auto vg = args.vg;
 
-    // Draw circle
-    nvgSave(vg);
-    nvgBeginPath(vg);
+    // Draw grabber
+    if(is_moused_over && module) {
 
-    if(module) {
+      nvgSave(vg);
+      nvgBeginPath(vg);
+
       this->box.pos = Vec(button_positions[module->selected_track->range_start][0] - width/2, this->box.pos.y);
-    }
-    else {
-      this->box.pos = Vec(button_positions[10][0] - width/2, this->box.pos.y);
-    }
 
-    //nvgCircle(vg, box.size.x - radius, box.size.y - radius, radius);
-    nvgRoundedRect(vg, box.size.x - width, box.size.y - height, width, height, 2.0);
-
-    if(is_moused_over) {
-      //nvgFillColor(vg, nvgRGB(110,120,115));
+      nvgRoundedRect(vg, box.size.x - width, box.size.y - height, width, height, 2.0);
       nvgFillColor(vg, nvgRGB(83,92,91));
-    }
-    else {
-      nvgFillColor(vg, nvgRGBA(83,92,91,0));
-    }
 
-    nvgFill(vg);
-    nvgRestore(vg);
+      nvgFill(vg);
+      nvgRestore(vg);
+    }
   }
 
 

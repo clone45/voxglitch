@@ -65,6 +65,7 @@ namespace groove_box
       filter_cutoff_slew_limiter.setRiseFall(900.0f, 900.0f);
       filter_resonance_slew_limiter.setRiseFall(900.0f, 900.0f);
 
+
       delay.setBufferSize(APP->engine->getSampleRate() / 30.0);
     }
 

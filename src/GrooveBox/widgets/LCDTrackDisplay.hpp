@@ -1,4 +1,3 @@
-
 //==============================================================================
 // TrackLabelDisplay
 //==============================================================================
@@ -277,6 +276,12 @@ struct TrackLabelDisplay : TransparentWidget
 //==============================================================================
 // TrackSampleNudge
 //==============================================================================
+//
+// TODO: Nudge buttons sometimes don't do anything.  This happens, for example,
+// if you're at the first sample in a folder and try to nudge "up" (previous).
+// It would be nice if there were some indication that the nudge button is 
+// essentially disabled (maybe a darker color or something).
+//
 
 struct TrackSampleNudge : TransparentWidget
 {
@@ -397,9 +402,6 @@ struct TrackSampleNudge : TransparentWidget
 
         drawArrow(vg, direction);
       }
-      //
-      // Nudge button
-      //
       else
       {
         // Draw nudge rectangle background and arrow for the module browser
@@ -454,13 +456,21 @@ struct LCDTrackDisplay : LCDDisplay
     //
     // MAKE ADJUSTMENTS HERE
     //
-    // Certain sizes are fixed, and some are caculationed.
-    // The fixed sizes are the paddings and the nudge button sizes.
-    // The track labels are fluid to fill the space.
+    // A while back, I had hard coded almost all of the position values for the
+    // track display.  Then, the design and widget placement was completely 
+    // changed, and I would have had to go through and recalculate all of the
+    // positions.  Instead, I decided to spend a bit more effort in creating a 
+    // positioning system that would be more flexible.
+    // 
+    // I decided that certain things should be "fixed", and some should be "fluid":
+    // -> Paddings and the nudge button sizes should be fixed
+    // -> Track labels should be "fluid"
     //
     // If you wish to change the box sizes, please update the padding and
     // allow the box sizes to adjust based on the available space.
-
+    //
+    // Here are the variables that I suggest modifying if the LCDTrackDisplay 
+    // ever changes dimensions:
     float nudge_button_padding = 1.0;
     float nudge_button_width = 20.0;
     float horizontal_padding_between_columns = display_padding;

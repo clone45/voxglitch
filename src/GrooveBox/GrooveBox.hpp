@@ -7,7 +7,10 @@
 //   my questions and providing feedback on early builds.
 //
 // - Thank you to Jim Allman (https://ibang.com/) for his incredible front panel design.
-
+//
+// TODO: 
+// 
+//  - Use a real delay library that de-clicks.  My hack solution is prone to clicks and pops.
 
 struct GrooveBox : VoxglitchSamplerModule
 {
@@ -281,13 +284,10 @@ struct GrooveBox : VoxglitchSamplerModule
     }
 
     // Update selected function button
-
     for (unsigned int slot_id = 0; slot_id < NUMBER_OF_FUNCTIONS; slot_id++)
     {
       unsigned int parameter_id = parameter_slots[slot_id];
       params[FUNCTION_BUTTONS + parameter_id].setValue(selected_parameter_slot == slot_id);
-
-      // parameter_slots
     }
   }
 
@@ -681,6 +681,8 @@ struct GrooveBox : VoxglitchSamplerModule
 
   void process(const ProcessArgs &args) override
   {
+    // Is there some type of expander event that I can check instead of running
+    // this code every frame??
     if (leftExpander.module && leftExpander.module->model == modelGrooveBoxExpander)
     {
       expander_connected = true;
@@ -961,7 +963,6 @@ struct GrooveBox : VoxglitchSamplerModule
           bool fade_out = false;
 
           // Is any track is soloed and this one is not, then fade out
-          // TODO: commented out for testing.  Restore this!
           if (any_track_soloed && (expander_solo_value == false))
              fade_out = true;
 
