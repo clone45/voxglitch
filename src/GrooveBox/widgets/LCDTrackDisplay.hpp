@@ -59,12 +59,6 @@ struct TrackLabelDisplay : TransparentWidget
     TransparentWidget::onLeave(e);
   }
 
-  void onHover(const event::Hover &e) override
-  {
-    TransparentWidget::onHover(e);
-    e.consume(this);
-  }
-
   static void fileSelected(GrooveBox *module, unsigned int track_number, std::string filename)
   {
     if (filename != "")
@@ -112,9 +106,6 @@ struct TrackLabelDisplay : TransparentWidget
     nvgFill(vg);
   }
 
-  // void draw(const DrawArgs &args) override
-  // {
-
   void drawLayer(const DrawArgs &args, int layer) override
   {
 
@@ -149,7 +140,7 @@ struct TrackLabelDisplay : TransparentWidget
         }
         nvgFill(vg);
 
-        std::string to_display = module->loaded_filenames[track_number];
+        std::string to_display = module->sample_players[track_number].getFilename();
 
         // If the track name is not empty, then display it
         if ((to_display != "") && (to_display != "[ empty ]"))
@@ -411,7 +402,7 @@ struct TrackSampleNudge : TransparentWidget
       //
       else
       {
-        // Draw nudge rectangle background
+        // Draw nudge rectangle background and arrow for the module browser
         nvgBeginPath(vg);
         nvgRect(vg, 0, 0, box.size.x, box.size.y);
         nvgFillColor(vg, LCDColorScheme::getLightColor());
@@ -433,16 +424,14 @@ struct TrackSampleNudge : TransparentWidget
 
     nvgTextAlign(vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
 
-    char *end = NULL;
-
     // Plot character
     if (direction < 0)
     {
-      nvgText(vg, 10.0, 6.0, "▲", end);
+      nvgText(vg, 10.0, 6.0, "▲", NULL);
     }
     else
     {
-      nvgText(vg, 10.0, 7.0, "▼", end);
+      nvgText(vg, 10.0, 7.0, "▼", NULL);
     }
   }
 };
@@ -528,5 +517,5 @@ struct LCDTrackDisplay : LCDDisplay
   void onButton(const event::Button &e) override
   {
     Widget::onButton(e);
-  }
+  } 
 };

@@ -29,6 +29,7 @@ namespace groove_box
     rack::dsp::SlewLimiter pan_slew_limiter;
     rack::dsp::SlewLimiter filter_cutoff_slew_limiter;
     rack::dsp::SlewLimiter filter_resonance_slew_limiter;
+
     float volume_slew_target = 0.0;
     float pan_slew_target = 0.0;
     float filter_cutoff_slew_target = 0.0;
@@ -40,7 +41,10 @@ namespace groove_box
     SamplePlayer *sample_player;
 
     // The "skipped" variable keep track of when a trigger has been skipped because
-    // the "Percentage" funtion is non-zero and didn't fire on the current step.``
+    // the "Percentage" funtion is non-zero and didn't fire on the current step.
+    // When a step is skipped, then ratcheting should not be applied to it for
+    // that skipped step.
+
     bool skipped = false;
 
     // Transitory variables
@@ -119,7 +123,6 @@ namespace groove_box
             // float quantized_sample_start = settings.sample_start * (float)sample_position_snap_value;
             float quantized_sample_start = sample_start * (float)sample_position_snap_value;
             quantized_sample_start = std::floor(quantized_sample_start);
-            // settings.parameters[SAMPLE_START] = quantized_sample_start / (float)sample_position_snap_value;
             settings.setParameter(SAMPLE_START, quantized_sample_start / (float)sample_position_snap_value);
           }
 
@@ -505,10 +508,8 @@ namespace groove_box
       return (this->sample_playback_settings[step].getParameter(parameter_number)); // [parameter_number])
     }
 
-
     void setParameter(unsigned int parameter_number, unsigned int step, float value)
     {
-      // this->sample_playback_settings[step]->parameters[parameter_number] = value;
       this->sample_playback_settings[step].setParameter(parameter_number, value);
     }
 

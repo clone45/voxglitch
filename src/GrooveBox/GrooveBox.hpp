@@ -73,6 +73,7 @@ struct GrooveBox : VoxglitchSamplerModule
   // loaded_filenames: Filenames are displayed next to the tracks.  This variable
   // keeps track of the filenames to display.
   //
+  // TODO: remove the loaded_filenames array, which is not necessary
   std::string loaded_filenames[NUMBER_OF_TRACKS]; // for display on the front panel
   std::string path;
 
