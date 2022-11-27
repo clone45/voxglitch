@@ -291,6 +291,33 @@ struct GrooveBox : VoxglitchSamplerModule
     }
   }
 
+
+  // void switchMemory(unsigned int new_memory_slot)
+  // 
+  // What happens when the user switches memory?
+  //
+  // #1. There's a pointer to a memory structure called "selected_memory_slot".
+  //     This pointer points to the new memory slot.
+  // 
+  // #2. Each memory holds 8 tracks.  None of these tracks are stepped unless
+  //     they belong to the active memory slot.  So, after switching memory
+  //     slots, all 8 tracks need to have their "position" set to the current
+  //     step.
+  //
+  // #3. The selected memory slot needs to be highlighted on the front panel.
+  //     This is achieved by setting the param[MEMORY_SLOT_BUTTONS + i] = true
+  //     for the selected memory slot.
+  //
+  // #4. The panel controls (knobs) need to be positioned to match the track's
+  //     new values.
+  //
+  // Clicking is an issue right now when the memory is changed while a sample
+  // is playing back.  Let's find out why!!
+  //
+  // Findings so far.  It seems to have something to do with the slew on the
+  // parameters.  When a memory slot is selected for the first time, a click
+  // happens.  But after that, there's no clicking.
+  // 
   void switchMemory(unsigned int new_memory_slot)
   {
     memory_slot_index = new_memory_slot;
@@ -789,7 +816,7 @@ struct GrooveBox : VoxglitchSamplerModule
         updatePanelControls();
       }
     }
-
+    /*
     // Process the knobs below the steps.  These change behavior depending on the selected function.
     // This loop add 2% CPU and should be contemplated.
     // What about turning this inside out?  Switch first, then iterate?  That didn't make any noticeable difference.
@@ -799,6 +826,7 @@ struct GrooveBox : VoxglitchSamplerModule
       float value = params[STEP_KNOBS + step_number].getValue();
       selected_track->setParameter(selected_parameter_lock_id, step_number, value);
     }
+    */
 
     //
     // Clock and step features

@@ -22,14 +22,14 @@ namespace groove_box
     unsigned int range_start = 0;
     unsigned int ratchet_counter = 0;
 
-    // Global track values set by the expandcer
+    // Global track values set by the expander
     float track_pan = 0.0;
     float track_pitch = 0.0;
     float track_volume = 0.0;
 
-    float volume_slew_target = 0.0;
-    float pan_slew_target = 0.0;
-    float filter_cutoff_slew_target = 0.0;
+    float volume_slew_target = 0.5;
+    float pan_slew_target = 0.5;
+    float filter_cutoff_slew_target = 1.0;
     float filter_resonance_slew_target = 0.0;
 
     // The "skipped" variable keep track of when a trigger has been skipped because

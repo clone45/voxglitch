@@ -8,35 +8,6 @@ namespace groove_box
   struct Track
   {
     TrackModel m;
-    /*
-    bool steps[NUMBER_OF_STEPS] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-    unsigned int m.playback_position = 0;
-    unsigned int m.range_end = NUMBER_OF_STEPS - 1; // was length
-    unsigned int m.range_start = 0;
-    unsigned int m.ratchet_counter = 0;
-
-    // Global track values set by the expandcer
-    float track_pan = 0.0;
-    float track_pitch = 0.0;
-    float track_volume = 0.0;
-
-    float m.volume_slew_target = 0.0;
-    float m.pan_slew_target = 0.0;
-    float m.filter_cutoff_slew_target = 0.0;
-    float m.filter_resonance_slew_target = 0.0;
-
-    // The "m.skipped" variable keep track of when a trigger has been m.skipped because
-    // the "Percentage" funtion is non-zero and didn't fire on the current step.
-    // When a step is m.skipped, then ratcheting should not be applied to it for
-    // that m.skipped step.
-
-    bool m.skipped = false;
-
-
-    ParameterLockSettings parameter_lock_settings[NUMBER_OF_STEPS]; // settings assigned to each step
-    ParameterLockSettings m.local_parameter_lock_settings;            // currently used settings
-    */
 
     // DSP classes
     ADSR adsr;
@@ -126,7 +97,6 @@ namespace groove_box
           }
 
           // If the sample start settings is set and snap is on, then quantize the sample start position.
-          // float sample_start = settings.parameters[SAMPLE_START];
           float sample_start = m.local_parameter_lock_settings.getParameter(SAMPLE_START);
 
           if (sample_position_snap_value > 0 && sample_start > 0)
@@ -327,7 +297,7 @@ namespace groove_box
 
       // When the ADSR reaches the sustain state, then switch to the release
       // state.  Only do this when the release is less than max release, otherwise
-      // sustain until the nex time the track is triggered.
+      // sustain until the next time the track is triggered.
       //
       // * Reminder: m.local_parameter_lock_settings.getParameter(RELEASE) ranges from 0.0 to 1.0
       //
@@ -336,6 +306,7 @@ namespace groove_box
 
       // Read sample output
       this->sample_player->getStereoOutput(&left_output, &right_output, interpolation);
+
 
       // Apply pan parameters
       //
@@ -347,7 +318,6 @@ namespace groove_box
         computed_pan = clamp(computed_pan + m.track_pan, -1.0, 1.0);
         stereo_pan.process(&left_output, &right_output, computed_pan);
       }
-      
 
       // Apply volume parameters
       left_output *= (volume * 2);  // Range from 0 to 2 times normal volume
@@ -369,6 +339,8 @@ namespace groove_box
         this->sample_player->stop();
       }
 
+
+
       // -===== ADSR Processing =====-
       //
       if(attack > 0.0 || release < 1.0) // skip computations if not used
@@ -383,7 +355,7 @@ namespace groove_box
       }
 
       // Apply filter
-      if(filter_cutoff > 0) // Skip if cutoff is zero
+      if(filter_cutoff < 1.0) // Skip if cutoff is max value
       {
         filter.setCutoff(filter_cutoff);
         filter.setResonance(filter_resonance);
@@ -407,12 +379,11 @@ namespace groove_box
         // Return audio with the delay applied
         return {delay_output_left, delay_output_right};
       }
-      else
-      {
-        // In this case, the delay is turned off, so skip all of the delay computations
-        // and simply return the output computed up to now.
-        return {left_output, right_output};
-      }
+
+
+      // In this case, the delay is turned off, so skip all of the delay computations
+      // and simply return the output computed up to now.
+      return {left_output, right_output};
     }
 
     void incrementSamplePosition()
