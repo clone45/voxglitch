@@ -11,6 +11,12 @@
 // TODO: 
 // 
 //  - Use a real delay library that de-clicks.  My hack solution is prone to clicks and pops.
+//  - instead of each track having 4 slew limiters for vol, pan, etc., 
+//    they could all share slew limiters.  Then, switching memory shouldn't
+//    cause any pops due to the slew limiters readjusting.
+//  - Rethink how the delay buffers are used.  Right not there are a LOT of
+//    delay buffers created.
+//  - todo: restore filter slew limiters
 
 struct GrooveBox : VoxglitchSamplerModule
 {
@@ -86,6 +92,12 @@ struct GrooveBox : VoxglitchSamplerModule
   // it affecting all memory banks.
 
   SamplePlayer sample_players[NUMBER_OF_TRACKS];
+
+  // Each of the 8 tracks has dedicated slew limiters:
+  rack::dsp::SlewLimiter volume_slew_limiters[NUMBER_OF_TRACKS];
+  rack::dsp::SlewLimiter pan_slew_limiters[NUMBER_OF_TRACKS];
+  rack::dsp::SlewLimiter filter_cutoff_slew_limiters[NUMBER_OF_TRACKS];
+  rack::dsp::SlewLimiter filter_resonance_slew_limiters[NUMBER_OF_TRACKS];
 
   // sample position snap settings
   unsigned int sample_position_snap_indexes[NUMBER_OF_TRACKS];
@@ -169,6 +181,28 @@ struct GrooveBox : VoxglitchSamplerModule
       this->sample_position_snap_indexes[i] = 0;
     }
 
+    // Configure slew limiters
+    /* 
+      Be careful when setting the slew limiter values.  
+      See: https://community.vcvrack.com/t/difficulty-understanding-how-to-use-the-dsp-library-in-the-sdk/16225/3?u=clone45
+      
+        const float MS_1{1000.0f}; // 1000 Hz = 1 millisecond
+        const float MS_5{200.0f};  // 200 Hz  = 5 milliseconds
+        const float MS_10{100.0f}; // 100 Hz  = 10 milliseconds
+        const float MS_25{40.0f};  // 40 Hz   = 25 milliseconds
+        const float MS_50{20.0f};  // 20 Hz   = 50 milliseconds
+        const float MS_100{10.0f}; // 10 Hz   = 100 milliseconds
+    
+    */    
+    for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
+    {
+      volume_slew_limiters[i].setRiseFall(10.0f, 10.0f);
+      pan_slew_limiters[i].setRiseFall(10.0f, 10.0f);
+      filter_cutoff_slew_limiters[i].setRiseFall(10.0f, 10.0f);
+      filter_resonance_slew_limiters[i].setRiseFall(10.0f, 10.0f);
+    }
+    
+
     // Configure the individual track outputs
     for (unsigned int i = 0; i < (NUMBER_OF_TRACKS * 2); i += 2)
     {
@@ -195,13 +229,20 @@ struct GrooveBox : VoxglitchSamplerModule
     configParam(MASTER_VOLUME, 0.0, 1.0, 0.5, "Master Volume");
     paramQuantities[MASTER_VOLUME]->randomizeEnabled = false;
 
-    // There are 8 sample players, one for each track.  These sample players
-    // are shared across the tracks contained in the memory slots.
-    for (unsigned int p = 0; p < NUMBER_OF_MEMORY_SLOTS; p++)
+
+    for (unsigned int m = 0; m < NUMBER_OF_MEMORY_SLOTS; m++)
     {
       for (unsigned int t = 0; t < NUMBER_OF_TRACKS; t++)
       {
-        memory_slots[p].setSamplePlayer(t, &sample_players[t]);
+        // There are 8 sample players, one for each track.  These sample players
+        // are shared across the tracks contained in the memory slots.
+        memory_slots[m].setSamplePlayer(t, &sample_players[t]);
+
+        // Similarly, set the shared slew limiters
+        memory_slots[m].setVolumeSlewLimiter(t, &volume_slew_limiters[t]);
+        memory_slots[m].setPanSlewLimiter(t, &pan_slew_limiters[t]);
+        memory_slots[m].setFilterCutoffSlewLimiter(t, &filter_cutoff_slew_limiters[t]);
+        memory_slots[m].setFilterResonanceSlewLimiter(t, &filter_resonance_slew_limiters[t]);
       }
     }
 
@@ -316,7 +357,7 @@ struct GrooveBox : VoxglitchSamplerModule
   //
   // Findings so far.  It seems to have something to do with the slew on the
   // parameters.  When a memory slot is selected for the first time, a click
-  // happens.  But after that, there's no clicking.
+  // happens.  But after that, there's no clicking.  Remove slew??
   // 
   void switchMemory(unsigned int new_memory_slot)
   {
@@ -783,8 +824,7 @@ struct GrooveBox : VoxglitchSamplerModule
     }
 
     //
-    // Pad editing features:
-    // Handle drum pads, drum location, and drum selection interactions and lights.
+    // step button processing
     //
 
     for (unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
@@ -816,7 +856,7 @@ struct GrooveBox : VoxglitchSamplerModule
         updatePanelControls();
       }
     }
-    /*
+
     // Process the knobs below the steps.  These change behavior depending on the selected function.
     // This loop add 2% CPU and should be contemplated.
     // What about turning this inside out?  Switch first, then iterate?  That didn't make any noticeable difference.
@@ -826,7 +866,6 @@ struct GrooveBox : VoxglitchSamplerModule
       float value = params[STEP_KNOBS + step_number].getValue();
       selected_track->setParameter(selected_parameter_lock_id, step_number, value);
     }
-    */
 
     //
     // Clock and step features

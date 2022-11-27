@@ -27,10 +27,12 @@ namespace groove_box
     float track_pitch = 0.0;
     float track_volume = 0.0;
 
+    /*
     float volume_slew_target = 0.5;
     float pan_slew_target = 0.5;
     float filter_cutoff_slew_target = 1.0;
     float filter_resonance_slew_target = 0.0;
+    */
 
     // The "skipped" variable keep track of when a trigger has been skipped because
     // the "Percentage" funtion is non-zero and didn't fire on the current step.

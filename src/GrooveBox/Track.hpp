@@ -14,13 +14,16 @@ namespace groove_box
     SimpleDelay delay;
     StereoFadeOut fade_out;
     Filter filter;
-    rack::dsp::SlewLimiter volume_slew_limiter;
-    rack::dsp::SlewLimiter pan_slew_limiter;
-    rack::dsp::SlewLimiter filter_cutoff_slew_limiter;
-    rack::dsp::SlewLimiter filter_resonance_slew_limiter;
+    rack::dsp::SlewLimiter *volume_slew_limiter;
+    rack::dsp::SlewLimiter *pan_slew_limiter;
+    rack::dsp::SlewLimiter *filter_cutoff_slew_limiter;
+    rack::dsp::SlewLimiter *filter_resonance_slew_limiter;
 
     StereoPan stereo_pan;
 
+    // Notes on the next line of code: 
+    SamplePlayer *sample_player;
+    //
     // Each memory slot has 8 tracks, and there are 16 memory slots.  That
     // means that there are ... (computing) ... 128 tracks total.  However,
     // the module only contains 8 sample players.
@@ -33,8 +36,7 @@ namespace groove_box
     // it would be feasible to have 128 different sample players, but I might
     // rethink this in the future.  As long as the sample waveform data isn't
     // duplicated, the overhead wouldn't be too bad.
-
-    SamplePlayer *sample_player;
+    
 
     Track()
     {
@@ -43,18 +45,32 @@ namespace groove_box
       adsr.setReleaseRate(1 * APP->engine->getSampleRate()); // 1 second
       adsr.setSustainLevel(1.0);
 
-      volume_slew_limiter.setRiseFall(900.0f, 900.0f); // 900 works.  I want the highest number possible for the shortest slew
-      pan_slew_limiter.setRiseFall(900.0f, 900.0f);
-      filter_cutoff_slew_limiter.setRiseFall(900.0f, 900.0f);
-      filter_resonance_slew_limiter.setRiseFall(900.0f, 900.0f);
-
-
       delay.setBufferSize(APP->engine->getSampleRate() / 30.0);
     }
 
     void setSamplePlayer(SamplePlayer *sample_player)
     {
       this->sample_player = sample_player;
+    }
+
+    void setVolumeSlewLimiter(rack::dsp::SlewLimiter *slew_limiter)
+    {
+      volume_slew_limiter = slew_limiter;
+    }
+
+    void setPanSlewLimiter(rack::dsp::SlewLimiter *slew_limiter)
+    {
+      pan_slew_limiter = slew_limiter;
+    }
+
+    void setFilterCutoffSlewLimiter(rack::dsp::SlewLimiter *slew_limiter)
+    {
+      filter_cutoff_slew_limiter = slew_limiter;
+    }
+
+    void setFilterResonanceSlewLimiter(rack::dsp::SlewLimiter *slew_limiter)
+    {
+      filter_resonance_slew_limiter = slew_limiter;
     }
 
     void step()
@@ -86,11 +102,15 @@ namespace groove_box
           // introduce a pop or click when modulated between distant values
           // I'm doing the same for filter cutoff and resonance, just out of paranoia.
 
-          m.volume_slew_target = getParameter(VOLUME, m.playback_position);
-          m.pan_slew_target = getParameter(PAN, m.playback_position);
-          m.filter_cutoff_slew_target = getParameter(FILTER_CUTOFF, m.playback_position);
-          m.filter_resonance_slew_target = getParameter(FILTER_RESONANCE, m.playback_position);
+          // m.volume_slew_target = getParameter(VOLUME, m.playback_position);
+          // m.pan_slew_target = getParameter(PAN, m.playback_position);
+          // m.filter_cutoff_slew_target = getParameter(FILTER_CUTOFF, m.playback_position);
+          // m.filter_resonance_slew_target = getParameter(FILTER_RESONANCE, m.playback_position);
 
+          // TODO: It's likely that right now the slew limiters aren't effective
+          // because this next block of code sets the local parameter locks
+          // equal to the playback_position's parameter locks, which leaves
+          // nothing for the slew limiters to do.
           for (unsigned int parameter_number = 0; parameter_number < NUMBER_OF_PARAMETER_LOCKS; parameter_number++)
           {
             m.local_parameter_lock_settings.setParameter(parameter_number, getParameter(parameter_number, m.playback_position));
@@ -276,19 +296,22 @@ namespace groove_box
       float right_output;
 
       // -===== Slew Limiter Processing =====-
-      m.local_parameter_lock_settings.setParameter(VOLUME, volume_slew_limiter.process(APP->engine->getSampleTime(), m.volume_slew_target));
-      m.local_parameter_lock_settings.setParameter(PAN, pan_slew_limiter.process(APP->engine->getSampleTime(), m.pan_slew_target));
-      m.local_parameter_lock_settings.setParameter(FILTER_CUTOFF, filter_cutoff_slew_limiter.process(APP->engine->getSampleTime(), m.filter_cutoff_slew_target));
-      m.local_parameter_lock_settings.setParameter(FILTER_RESONANCE, filter_resonance_slew_limiter.process(APP->engine->getSampleTime(), m.filter_resonance_slew_target));
+
+      float volume = volume_slew_limiter->process(APP->engine->getSampleTime(), m.local_parameter_lock_settings.getParameter(VOLUME));
+      float pan = pan_slew_limiter->process(APP->engine->getSampleTime(), m.local_parameter_lock_settings.getParameter(PAN));
+
+      // m.local_parameter_lock_settings.setParameter(PAN, pan_slew_limiter.process(APP->engine->getSampleTime(), m.pan_slew_target));
+      // m.local_parameter_lock_settings.setParameter(FILTER_CUTOFF, filter_cutoff_slew_limiter.process(APP->engine->getSampleTime(), m.filter_cutoff_slew_target));
+      // m.local_parameter_lock_settings.setParameter(FILTER_RESONANCE, filter_resonance_slew_limiter.process(APP->engine->getSampleTime(), m.filter_resonance_slew_target));
 
       // Mostly cosmetic: Load up the settings into easily readable variables
       // The "m.local_parameter_lock_settings" structure is populated when the track is stepped.  It
       // contains of snapshot of the m.local_parameter_lock_settings related to the active step.
 
+      // float volume = m.local_parameter_lock_settings.getParameter(VOLUME);      
+      // float pan = m.local_parameter_lock_settings.getParameter(PAN);
       float attack = m.local_parameter_lock_settings.getParameter(ATTACK);
       float release = m.local_parameter_lock_settings.getParameter(RELEASE);
-      float volume = m.local_parameter_lock_settings.getParameter(VOLUME);      
-      float pan = m.local_parameter_lock_settings.getParameter(PAN);
       float filter_cutoff = m.local_parameter_lock_settings.getParameter(FILTER_CUTOFF);
       float filter_resonance = m.local_parameter_lock_settings.getParameter(FILTER_RESONANCE);
       float delay_mix = m.local_parameter_lock_settings.getParameter(DELAY_MIX);
