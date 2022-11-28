@@ -124,6 +124,17 @@ struct ParameterKnob : SvgKnob
     }
   };
 
+  struct MatchParamMenuItem : MenuItem
+  {
+    GrooveBox *module;
+    unsigned int source_parameter_id = 0;
+
+    void onAction(const event::Action &e) override
+    {
+      module->matchSelectedParameter(source_parameter_id);
+    }
+  };
+
   struct ShiftLeftMenuItem : MenuItem
   {
     GrooveBox *module;
@@ -174,6 +185,14 @@ struct ParameterKnob : SvgKnob
     menu->addChild(reduce_param_menu_item);
 
     menu->addChild(new MenuSeparator);
+
+    // Match this knob
+    MatchParamMenuItem *match_param_menu_item = createMenuItem<MatchParamMenuItem>("Set all knobs' values to this knob's value");
+    match_param_menu_item->module = module;
+    match_param_menu_item->source_parameter_id = this->step;
+    menu->addChild(match_param_menu_item);
+
+    menu->addChild(new MenuSeparator);    
 
     // Shift Left
     ShiftLeftMenuItem *shift_left_menu_item = createMenuItem<ShiftLeftMenuItem>("Shift all knob values left «");

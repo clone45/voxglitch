@@ -40,6 +40,11 @@ struct MemorySlot
     tracks.at(track_index).setFilterResonanceSlewLimiter(slew_limiter);
   }
 
+  void setDelayDsp(unsigned int track_index, SimpleDelay *delay_dsp)
+  {
+    tracks.at(track_index).setDelayDsp(delay_dsp);
+  }
+
   Track *getTrack(unsigned int track_index)
   {
     return(&tracks.at(track_index));

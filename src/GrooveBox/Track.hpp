@@ -11,7 +11,7 @@ namespace groove_box
 
     // DSP classes
     ADSR adsr;
-    SimpleDelay delay;
+    SimpleDelay *delay;
     StereoFadeOut fade_out;
     Filter filter;
     rack::dsp::SlewLimiter *volume_slew_limiter;
@@ -44,8 +44,6 @@ namespace groove_box
       adsr.setDecayRate(0);                                  // no decay stage for this module
       adsr.setReleaseRate(1 * APP->engine->getSampleRate()); // 1 second
       adsr.setSustainLevel(1.0);
-
-      delay.setBufferSize(APP->engine->getSampleRate() / 30.0);
     }
 
     void setSamplePlayer(SamplePlayer *sample_player)
@@ -71,6 +69,11 @@ namespace groove_box
     void setFilterResonanceSlewLimiter(rack::dsp::SlewLimiter *slew_limiter)
     {
       filter_resonance_slew_limiter = slew_limiter;
+    }
+
+    void setDelayDsp(SimpleDelay *delay_dsp)
+    {
+      delay = delay_dsp;
     }
 
     void step()
@@ -290,30 +293,24 @@ namespace groove_box
       this->sample_player->initialize();
     }
 
-    std::pair<float, float> getStereoOutput(unsigned int interpolation)
+    void getStereoOutput(float *final_left_output, float *final_right_output, unsigned int interpolation)
     {
       float left_output;
       float right_output;
 
       // -===== Slew Limiter Processing =====-
-
       float volume = volume_slew_limiter->process(APP->engine->getSampleTime(), m.local_parameter_lock_settings.getParameter(VOLUME));
-      float pan = pan_slew_limiter->process(APP->engine->getSampleTime(), m.local_parameter_lock_settings.getParameter(PAN));
-
-      // m.local_parameter_lock_settings.setParameter(PAN, pan_slew_limiter.process(APP->engine->getSampleTime(), m.pan_slew_target));
-      // m.local_parameter_lock_settings.setParameter(FILTER_CUTOFF, filter_cutoff_slew_limiter.process(APP->engine->getSampleTime(), m.filter_cutoff_slew_target));
-      // m.local_parameter_lock_settings.setParameter(FILTER_RESONANCE, filter_resonance_slew_limiter.process(APP->engine->getSampleTime(), m.filter_resonance_slew_target));
+      float filter_cutoff = filter_cutoff_slew_limiter->process(APP->engine->getSampleTime(), m.local_parameter_lock_settings.getParameter(FILTER_CUTOFF));
+      float filter_resonance = filter_resonance_slew_limiter->process(APP->engine->getSampleTime(), m.local_parameter_lock_settings.getParameter(FILTER_RESONANCE));
+      // Pan is processed below, after the track pan is applied
 
       // Mostly cosmetic: Load up the settings into easily readable variables
       // The "m.local_parameter_lock_settings" structure is populated when the track is stepped.  It
       // contains of snapshot of the m.local_parameter_lock_settings related to the active step.
 
-      // float volume = m.local_parameter_lock_settings.getParameter(VOLUME);      
-      // float pan = m.local_parameter_lock_settings.getParameter(PAN);
+      float pan = m.local_parameter_lock_settings.getParameter(PAN);
       float attack = m.local_parameter_lock_settings.getParameter(ATTACK);
       float release = m.local_parameter_lock_settings.getParameter(RELEASE);
-      float filter_cutoff = m.local_parameter_lock_settings.getParameter(FILTER_CUTOFF);
-      float filter_resonance = m.local_parameter_lock_settings.getParameter(FILTER_RESONANCE);
       float delay_mix = m.local_parameter_lock_settings.getParameter(DELAY_MIX);
       float delay_length = m.local_parameter_lock_settings.getParameter(DELAY_LENGTH);
       float delay_feedback = m.local_parameter_lock_settings.getParameter(DELAY_FEEDBACK);
@@ -336,9 +333,12 @@ namespace groove_box
       // m.local_parameter_lock_settings.pan ranges from 0 to 1
       // track_pan ranges from -1 to 0
       float computed_pan = (pan * 2.0) - 1.0; // convert m.local_parameter_lock_settings.pan to range from -1 to 1
+      computed_pan = clamp(computed_pan + m.track_pan, -1.0, 1.0);
+      computed_pan = pan_slew_limiter->process(APP->engine->getSampleTime(), computed_pan);
+      
       if(computed_pan != 0)
       {
-        computed_pan = clamp(computed_pan + m.track_pan, -1.0, 1.0);
+        computed_pan = pan_slew_limiter->process(APP->engine->getSampleTime(), computed_pan);
         stereo_pan.process(&left_output, &right_output, computed_pan);
       }
 
@@ -361,8 +361,6 @@ namespace groove_box
         // If so, stop the sample player
         this->sample_player->stop();
       }
-
-
 
       // -===== ADSR Processing =====-
       //
@@ -394,19 +392,20 @@ namespace groove_box
         float delay_output_right = 0.0;
 
         // Apply delay
-        delay.setMix(delay_mix);
-        delay.setBufferSize(delay_length * (APP->engine->getSampleRate() / 4));
-        delay.setFeedback(delay_feedback);
-        delay.process(left_output, right_output, delay_output_left, delay_output_right);
+        delay->setMix(delay_mix);
+        delay->setBufferSize(delay_length * (APP->engine->getSampleRate() / 4));
+        delay->setFeedback(delay_feedback);
+        delay->process(left_output, right_output, delay_output_left, delay_output_right);
 
         // Return audio with the delay applied
-        return {delay_output_left, delay_output_right};
+        *final_left_output = delay_output_left;
+        *final_right_output = delay_output_right;
       }
-
-
-      // In this case, the delay is turned off, so skip all of the delay computations
-      // and simply return the output computed up to now.
-      return {left_output, right_output};
+      else
+      {
+        *final_left_output = left_output;
+        *final_right_output = right_output;        
+      }
     }
 
     void incrementSamplePosition()
@@ -418,15 +417,16 @@ namespace groove_box
       float loop = m.local_parameter_lock_settings.getParameter(LOOP);
 
       float summed_pitch = clamp(pitch + m.track_pitch, 0.0, 1.0);
+      float rescaled_pitch = rescale(summed_pitch, 0.0, 1.0, -2.0, 2.0);
 
       if (reverse > .5)
       {
         // -2.0 to 2.0 is a two octave range in either direction (4 octives total)
-        this->sample_player->stepReverse(rescale(summed_pitch, 0.0, 1.0, -2.0, 2.0), sample_start, sample_end, loop);
+        this->sample_player->stepReverse(rescaled_pitch, sample_start, sample_end, loop);
       }
       else
       {
-        this->sample_player->step(rescale(summed_pitch, 0.0, 1.0, -2.0, 2.0), sample_start, sample_end, loop);
+        this->sample_player->step(rescaled_pitch, sample_start, sample_end, loop);
       }
     }
 

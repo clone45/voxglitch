@@ -139,7 +139,7 @@ struct SamplePlayer
 
   double getSampleIncrement(float pitch_cv_input)
   {
-    return(this->step_amount * exp2(pitch_cv_input));
+    return(this->step_amount * rack::dsp::approxExp2_taylor5(pitch_cv_input));
   }
 
   void stop()

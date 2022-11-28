@@ -14,9 +14,13 @@
 //  - instead of each track having 4 slew limiters for vol, pan, etc., 
 //    they could all share slew limiters.  Then, switching memory shouldn't
 //    cause any pops due to the slew limiters readjusting.
-//  - Rethink how the delay buffers are used.  Right not there are a LOT of
-//    delay buffers created.
-//  - todo: restore filter slew limiters
+//
+// Quick overview of the architecture:
+//
+// - The groovebox contains memory slots.  
+// - The memory slots contain 8 Track objects each
+// - Some resources, such as the sample players, slew limiters, and delay 
+//   buffers are shared amongst tracks and are passed in as pointers to the tracks.
 
 struct GrooveBox : VoxglitchSamplerModule
 {
@@ -45,17 +49,19 @@ struct GrooveBox : VoxglitchSamplerModule
   unsigned int clock_counter = clock_division;
   bool first_step = true;
   bool shift_key = false;
-  bool mutes[NUMBER_OF_TRACKS];
-  bool solos[NUMBER_OF_TRACKS];
+
+  std::array<bool, NUMBER_OF_TRACKS> mutes{};
+  std::array<bool, NUMBER_OF_TRACKS> solos{};
+  
   bool any_track_soloed = false;
   bool expander_connected = false;
 
   unsigned int copied_step_index = 0;
-  unsigned int lcd_screen_mode = 0;
+  unsigned int lcd_screen_mode = TRACK;
 
   // These booleans tell the sequence position lights whether to be ON or OFF
-  bool light_booleans[NUMBER_OF_STEPS];
-  bool inner_light_booleans[NUMBER_OF_STEPS];
+  std::array<bool, NUMBER_OF_STEPS> light_booleans{};
+  std::array<bool, NUMBER_OF_STEPS> inner_light_booleans{};
 
   unsigned int visualizer_step = 0;
   unsigned int sample_position_snap_track_values[NUMBER_OF_TRACKS];
@@ -65,12 +71,11 @@ struct GrooveBox : VoxglitchSamplerModule
   // serve the same purpose, but are rotated during read/write cycles
   ExpanderToGrooveboxMessage expander_to_groovebox_message_a;
   ExpanderToGrooveboxMessage expander_to_groovebox_message_b;
-  float track_volumes[NUMBER_OF_TRACKS];
-
+  std::array<float, NUMBER_OF_TRACKS> track_volumes{};
+  
   // The track_triggers array is used to send trigger information to the
-  // expansion module.  Once a trigger is sent, it's immediately set back to
-  // zero.
-  bool track_triggers[NUMBER_OF_TRACKS];
+  // expansion module.  Once a trigger is sent, it's immediately set back to zero.
+  std::array<bool, NUMBER_OF_TRACKS> track_triggers{};
 
   //
   // Sample related variables
@@ -99,8 +104,10 @@ struct GrooveBox : VoxglitchSamplerModule
   rack::dsp::SlewLimiter filter_cutoff_slew_limiters[NUMBER_OF_TRACKS];
   rack::dsp::SlewLimiter filter_resonance_slew_limiters[NUMBER_OF_TRACKS];
 
+  SimpleDelay delay_dsps[NUMBER_OF_TRACKS];
+
   // sample position snap settings
-  unsigned int sample_position_snap_indexes[NUMBER_OF_TRACKS];
+  std::array<unsigned int, NUMBER_OF_TRACKS> sample_position_snap_indexes{};
 
   //
   // Basic VCV Parameter, Input, Output, and Light definitions
@@ -167,33 +174,24 @@ struct GrooveBox : VoxglitchSamplerModule
       configOnOff(DRUM_PADS + i, 0.0, "Step Button");
       configParam(STEP_KNOBS + i, 0.0, 1.0, 0.0, "Parameter Lock Value " + std::to_string(i));
       configParam(PARAMETER_LOCK_BUTTONS + i, 0.0, 1.0, 0.0);
-      configOnOff(PARAMETER_LOCK_BUTTONS + i, 0.0, PARAMETER_LOCK_NAMES[parameter_slots[i]]);
-
-      light_booleans[i] = false;
+      configOnOff(PARAMETER_LOCK_BUTTONS + i, 0.0, PARAMETER_LOCK_NAMES[i]);
     }
 
-    // Make sure arrays are initialized with sane values
-    for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
-    {
-      this->mutes[i] = false;
-      this->solos[i] = false;
-      this->track_volumes[i] = 1.0;
-      this->sample_position_snap_indexes[i] = 0;
-    }
 
     // Configure slew limiters
-    /* 
-      Be careful when setting the slew limiter values.  
-      See: https://community.vcvrack.com/t/difficulty-understanding-how-to-use-the-dsp-library-in-the-sdk/16225/3?u=clone45
-      
-        const float MS_1{1000.0f}; // 1000 Hz = 1 millisecond
-        const float MS_5{200.0f};  // 200 Hz  = 5 milliseconds
-        const float MS_10{100.0f}; // 100 Hz  = 10 milliseconds
-        const float MS_25{40.0f};  // 40 Hz   = 25 milliseconds
-        const float MS_50{20.0f};  // 20 Hz   = 50 milliseconds
-        const float MS_100{10.0f}; // 10 Hz   = 100 milliseconds
-    
-    */    
+    // 
+    //  Be careful when setting the slew limiter values.  You'd think that 
+    //  larger numbers would increase the slew time, but it's actually the opposite.
+    //
+    //  See: https://community.vcvrack.com/t/difficulty-understanding-how-to-use-the-dsp-library-in-the-sdk/16225/3?u=clone45
+    //  
+    //  const float MS_1{1000.0f}; // 1000 Hz = 1 millisecond
+    //  const float MS_5{200.0f};  // 200 Hz  = 5 milliseconds
+    //  const float MS_10{100.0f}; // 100 Hz  = 10 milliseconds
+    //  const float MS_25{40.0f};  // 40 Hz   = 25 milliseconds
+    //  const float MS_50{20.0f};  // 20 Hz   = 50 milliseconds
+    //  const float MS_100{10.0f}; // 10 Hz   = 100 milliseconds
+        
     for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
       volume_slew_limiters[i].setRiseFall(10.0f, 10.0f);
@@ -201,7 +199,12 @@ struct GrooveBox : VoxglitchSamplerModule
       filter_cutoff_slew_limiters[i].setRiseFall(10.0f, 10.0f);
       filter_resonance_slew_limiters[i].setRiseFall(10.0f, 10.0f);
     }
-    
+
+    // Configure delay dsps
+    for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
+    {
+      delay_dsps[i].setBufferSize(APP->engine->getSampleRate() / 30.0);
+    }
 
     // Configure the individual track outputs
     for (unsigned int i = 0; i < (NUMBER_OF_TRACKS * 2); i += 2)
@@ -229,7 +232,12 @@ struct GrooveBox : VoxglitchSamplerModule
     configParam(MASTER_VOLUME, 0.0, 1.0, 0.5, "Master Volume");
     paramQuantities[MASTER_VOLUME]->randomizeEnabled = false;
 
-
+    //
+    // Some objects, such as sample players, slew limiters, and delays apply
+    // to tracks.  However, having an instance of each for each track is undesireable.
+    // It's much better to share these resources amongst tracks.  Here's the code
+    // which sends the tracks pointers to the resources.
+    //
     for (unsigned int m = 0; m < NUMBER_OF_MEMORY_SLOTS; m++)
     {
       for (unsigned int t = 0; t < NUMBER_OF_TRACKS; t++)
@@ -243,10 +251,12 @@ struct GrooveBox : VoxglitchSamplerModule
         memory_slots[m].setPanSlewLimiter(t, &pan_slew_limiters[t]);
         memory_slots[m].setFilterCutoffSlewLimiter(t, &filter_cutoff_slew_limiters[t]);
         memory_slots[m].setFilterResonanceSlewLimiter(t, &filter_resonance_slew_limiters[t]);
+
+        // Same idea with the dsp::delay objects
+        SimpleDelay *simple_delay = &delay_dsps[t];
+        memory_slots[m].setDelayDsp(t, simple_delay);
       }
     }
-
-    lcd_screen_mode = TRACK;
 
     // Store a pointer to the active memory slot
     selected_memory_slot = &memory_slots[0];
@@ -271,9 +281,7 @@ struct GrooveBox : VoxglitchSamplerModule
   */
 
   // copyMemory(src_index, dst_index)
-  //
   // Helper function to copy one memory slot to another memory slot
-  //
   void copyMemory(unsigned int src_index, unsigned int dst_index)
   {
     memory_slots[dst_index].copy(&memory_slots[src_index]);
@@ -281,9 +289,7 @@ struct GrooveBox : VoxglitchSamplerModule
   }
 
   // pasteStep(src_index, dst_index)
-  //
   // Helper function to copy one step to another, including all parameter locks
-  //
   void pasteStep(unsigned int dst_index)
   {
     selected_track->copyStep(this->copied_step_index, dst_index);
@@ -351,13 +357,6 @@ struct GrooveBox : VoxglitchSamplerModule
   //
   // #4. The panel controls (knobs) need to be positioned to match the track's
   //     new values.
-  //
-  // Clicking is an issue right now when the memory is changed while a sample
-  // is playing back.  Let's find out why!!
-  //
-  // Findings so far.  It seems to have something to do with the slew on the
-  // parameters.  When a memory slot is selected for the first time, a click
-  // happens.  But after that, there's no clicking.  Remove slew??
   // 
   void switchMemory(unsigned int new_memory_slot)
   {
@@ -381,6 +380,10 @@ struct GrooveBox : VoxglitchSamplerModule
     updatePanelControls();
   }
 
+  //
+  // Track helper functions
+  // 
+
   void selectTrack(unsigned int new_active_track)
   {
     track_index = new_active_track;
@@ -403,6 +406,21 @@ struct GrooveBox : VoxglitchSamplerModule
     selected_memory_slot->tracks[this->track_index].shift(amount);
     updatePanelControls();
   }
+
+  bool trigger(unsigned int track_id)
+  {
+    unsigned int sample_position_snap_value = sample_position_snap_track_values[track_id];
+    if (notMuted(track_id))
+      return (selected_memory_slot->tracks[track_id].trigger(sample_position_snap_value));
+    return (false);
+  }
+
+  bool notMuted(unsigned int track_id)
+  {
+    if (any_track_soloed)
+      return (solos[track_id]);
+    return (!mutes[track_id]);
+  }  
 
   void randomizeSteps()
   {
@@ -436,6 +454,10 @@ struct GrooveBox : VoxglitchSamplerModule
       track->clear();
       updatePanelControls();
   }
+
+  //
+  // Knobs and parameter helper functions
+  //
 
   void shiftKnobValuesLeft()
   {
@@ -495,27 +517,25 @@ struct GrooveBox : VoxglitchSamplerModule
     }
   }
 
+  void matchSelectedParameter(unsigned int src_index)
+  {
+    for (unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
+    {
+      if(src_index != step_number)
+      {
+        params[STEP_KNOBS + step_number].setValue(params[STEP_KNOBS + src_index].getValue());
+      }
+    }
+  }
+
   void setSamplePositionSnapIndex(unsigned int sample_position_snap_index, unsigned int track_index)
   {
     this->sample_position_snap_indexes[track_index] = sample_position_snap_index;
     this->sample_position_snap_track_values[track_index] = sample_position_snap_values[sample_position_snap_index];
   }
 
-  bool trigger(unsigned int track_id)
-  {
-    unsigned int sample_position_snap_value = sample_position_snap_track_values[track_id];
-    if (notMuted(track_id))
-      return (selected_memory_slot->tracks[track_id].trigger(sample_position_snap_value));
-    return (false);
-  }
-
-  bool notMuted(unsigned int track_id)
-  {
-    if (any_track_soloed)
-      return (solos[track_id]);
-    return (!mutes[track_id]);
-  }
-
+  // This function is called from GrooveboxMemoryButton and is used to ignore
+  // user input when a cable is connected to the memory CV input.
   bool memCableIsConnected()
   {
     return(inputs[MEM_INPUT].isConnected());
@@ -702,7 +722,6 @@ struct GrooveBox : VoxglitchSamplerModule
                 json_t *trigger_json = json_object_get(json_step_object, "trigger");
                 if (trigger_json)
                   this->memory_slots[memory_slot_index].tracks[track_index].setValue(step_index, json_integer_value(trigger_json));
-
                 
                 // Load all parameter information for all steps
                 for(unsigned int parameter_index=0; parameter_index < NUMBER_OF_PARAMETER_LOCKS; parameter_index++)
@@ -749,19 +768,6 @@ struct GrooveBox : VoxglitchSamplerModule
 
   void process(const ProcessArgs &args) override
   {
-    // Is there some type of expander event that I can check instead of running
-    // this code every frame??
-    if (leftExpander.module && leftExpander.module->model == modelGrooveBoxExpander)
-    {
-      expander_connected = true;
-    }
-    else
-    {
-      if (expander_connected)
-        detachExpander();
-      expander_connected = false;
-    }
-
     if (expander_connected)
       readFromExpander();
 
@@ -769,16 +775,18 @@ struct GrooveBox : VoxglitchSamplerModule
     // If the user has pressed a memory slot button, switch memory slots and update the
     // knob positions for the selected function.
 
-    for (unsigned int i = 0; i < NUMBER_OF_MEMORY_SLOTS; i++)
+    if (inputs[MEM_INPUT].isConnected())
     {
-      if (inputs[MEM_INPUT].isConnected())
-      {
-        unsigned int memory_selection = (inputs[MEM_INPUT].getVoltage() / 10.0) * NUMBER_OF_MEMORY_SLOTS;
-        memory_selection = clamp(memory_selection, 0, NUMBER_OF_MEMORY_SLOTS - 1);
-        if (memory_selection != memory_slot_index)
-          switchMemory(memory_selection);
-      }
-      else
+      unsigned int memory_selection = (inputs[MEM_INPUT].getVoltage() / 10.0) * NUMBER_OF_MEMORY_SLOTS;
+      memory_selection = clamp(memory_selection, 0, NUMBER_OF_MEMORY_SLOTS - 1);
+      if (memory_selection != memory_slot_index)
+        switchMemory(memory_selection);
+    }
+    else
+    {
+      // Would it be more efficient to move this code into the memory button's
+      // onClick method, or something like that?
+      for (unsigned int i = 0; i < NUMBER_OF_MEMORY_SLOTS; i++)
       {
         if (memory_slot_button_triggers[i].process(params[MEMORY_SLOT_BUTTONS + i].getValue()))
         {
@@ -841,7 +849,6 @@ struct GrooveBox : VoxglitchSamplerModule
 
     //
     //  Parameter selection
-    //  TODO: try and move this into GrooveboxParameterButton.hpp
 
     for (unsigned int slot_id = 0; slot_id < NUMBER_OF_PARAMETER_LOCKS; slot_id++)
     {
@@ -857,10 +864,7 @@ struct GrooveBox : VoxglitchSamplerModule
       }
     }
 
-    // Process the knobs below the steps.  These change behavior depending on the selected function.
-    // This loop add 2% CPU and should be contemplated.
-    // What about turning this inside out?  Switch first, then iterate?  That didn't make any noticeable difference.
-
+    // Process the knobs below the steps.
     for (unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
       float value = params[STEP_KNOBS + step_number].getValue();
@@ -930,7 +934,7 @@ struct GrooveBox : VoxglitchSamplerModule
     //
     for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
-      std::tie(track_left_output, track_right_output) = selected_memory_slot->tracks[i].getStereoOutput(this->interpolation);
+      selected_memory_slot->tracks[i].getStereoOutput(&track_left_output, &track_right_output, this->interpolation);
 
       //
       // Apply track volumes from expander
@@ -983,6 +987,22 @@ struct GrooveBox : VoxglitchSamplerModule
     Text created using https://fsymbols.com/generators/carty/
 
   */
+
+  void onExpanderChange(const ExpanderChangeEvent &e) override
+  {
+    if(e.side == false) // false == left, true == right
+    {
+      if (leftExpander.module && leftExpander.module->model == modelGrooveBoxExpander)
+      {
+        expander_connected = true;
+      }
+      else
+      {
+        if (expander_connected) detachExpander();
+        expander_connected = false;
+      }
+    }
+  }
 
   void readFromExpander()
   {

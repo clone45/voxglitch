@@ -328,9 +328,7 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
     if(inputs[PAN_INPUT].isConnected()) pan = (inputs[PAN_INPUT].getVoltage() / 10.0);
 
     // Process Pitch input
-    // float pitch_input = inputs[PITCH_INPUT].getVoltage() + params[PITCH_KNOB].getValue();
-    // float step_amount = sample_players[selected_sample_index].getSampleIncrement(pitch_input);
-    float step_amount = sample_rate_division * exp2(inputs[PITCH_INPUT].getVoltage() + params[PITCH_KNOB].getValue());
+    float step_amount = sample_rate_division * rack::dsp::approxExp2_taylor5(inputs[PITCH_INPUT].getVoltage() + params[PITCH_KNOB].getValue());
 
 
     // If there's a cable connected to the EXT CLOCK input, it takes priority over the internal clock
