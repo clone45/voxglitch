@@ -1,4 +1,3 @@
-
 //==============================================================================
 // TrackLabelDisplay
 //==============================================================================
@@ -59,12 +58,6 @@ struct TrackLabelDisplay : TransparentWidget
     TransparentWidget::onLeave(e);
   }
 
-  void onHover(const event::Hover &e) override
-  {
-    TransparentWidget::onHover(e);
-    e.consume(this);
-  }
-
   static void fileSelected(GrooveBox *module, unsigned int track_number, std::string filename)
   {
     if (filename != "")
@@ -112,9 +105,6 @@ struct TrackLabelDisplay : TransparentWidget
     nvgFill(vg);
   }
 
-  // void draw(const DrawArgs &args) override
-  // {
-
   void drawLayer(const DrawArgs &args, int layer) override
   {
 
@@ -149,7 +139,7 @@ struct TrackLabelDisplay : TransparentWidget
         }
         nvgFill(vg);
 
-        std::string to_display = module->loaded_filenames[track_number];
+        std::string to_display = module->sample_players[track_number].getFilename();
 
         // If the track name is not empty, then display it
         if ((to_display != "") && (to_display != "[ empty ]"))
@@ -286,6 +276,12 @@ struct TrackLabelDisplay : TransparentWidget
 //==============================================================================
 // TrackSampleNudge
 //==============================================================================
+//
+// TODO: Nudge buttons sometimes don't do anything.  This happens, for example,
+// if you're at the first sample in a folder and try to nudge "up" (previous).
+// It would be nice if there were some indication that the nudge button is 
+// essentially disabled (maybe a darker color or something).
+//
 
 struct TrackSampleNudge : TransparentWidget
 {
@@ -406,12 +402,9 @@ struct TrackSampleNudge : TransparentWidget
 
         drawArrow(vg, direction);
       }
-      //
-      // Nudge button
-      //
       else
       {
-        // Draw nudge rectangle background
+        // Draw nudge rectangle background and arrow for the module browser
         nvgBeginPath(vg);
         nvgRect(vg, 0, 0, box.size.x, box.size.y);
         nvgFillColor(vg, LCDColorScheme::getLightColor());
@@ -433,16 +426,14 @@ struct TrackSampleNudge : TransparentWidget
 
     nvgTextAlign(vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
 
-    char *end = NULL;
-
     // Plot character
     if (direction < 0)
     {
-      nvgText(vg, 10.0, 6.0, "▲", end);
+      nvgText(vg, 10.0, 6.0, "▲", NULL);
     }
     else
     {
-      nvgText(vg, 10.0, 7.0, "▼", end);
+      nvgText(vg, 10.0, 7.0, "▼", NULL);
     }
   }
 };
@@ -465,13 +456,21 @@ struct LCDTrackDisplay : LCDDisplay
     //
     // MAKE ADJUSTMENTS HERE
     //
-    // Certain sizes are fixed, and some are caculationed.
-    // The fixed sizes are the paddings and the nudge button sizes.
-    // The track labels are fluid to fill the space.
+    // A while back, I had hard coded almost all of the position values for the
+    // track display.  Then, the design and widget placement was completely 
+    // changed, and I would have had to go through and recalculate all of the
+    // positions.  Instead, I decided to spend a bit more effort in creating a 
+    // positioning system that would be more flexible.
+    // 
+    // I decided that certain things should be "fixed", and some should be "fluid":
+    // -> Paddings and the nudge button sizes should be fixed
+    // -> Track labels should be "fluid"
     //
     // If you wish to change the box sizes, please update the padding and
     // allow the box sizes to adjust based on the available space.
-
+    //
+    // Here are the variables that I suggest modifying if the LCDTrackDisplay 
+    // ever changes dimensions:
     float nudge_button_padding = 1.0;
     float nudge_button_width = 20.0;
     float horizontal_padding_between_columns = display_padding;
@@ -528,5 +527,5 @@ struct LCDTrackDisplay : LCDDisplay
   void onButton(const event::Button &e) override
   {
     Widget::onButton(e);
-  }
+  } 
 };

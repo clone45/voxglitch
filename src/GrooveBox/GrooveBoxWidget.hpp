@@ -16,7 +16,6 @@
 #include "widgets/LCDSampleDisplay.hpp"
 #include "widgets/LCDRatchetDisplay.hpp"
 #include "widgets/LCDTrackDisplay.hpp"
-#include "widgets/TrackSampleNudge.hpp"
 
 float memory_slot_button_left_col_X = 126.05; // 125.5;
 float memory_slot_button_col_Xstep = 31.25; // 31.4;
@@ -48,7 +47,7 @@ float function_button_left_col_X = 18.2;
 float function_button_col_Xstep =  81.26; // 81.16;
 float function_button_top_row_Y = 333.5; // 332.6;
 float function_button_row_Ystep = 26.15; // 28.0;
-float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
+float function_button_positions[NUMBER_OF_PARAMETER_LOCKS][2] = {
     {function_button_left_col_X, function_button_top_row_Y}, // FUNCTION_VOLUME
     {function_button_left_col_X + function_button_col_Xstep, function_button_top_row_Y},
     {function_button_left_col_X + function_button_col_Xstep*2, function_button_top_row_Y},
@@ -231,14 +230,14 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       addParam(knob);
     }
 
-    for(unsigned int parameter_slot = 0; parameter_slot<NUMBER_OF_FUNCTIONS; parameter_slot++)
+    for(unsigned int parameter_slot = 0; parameter_slot<NUMBER_OF_PARAMETER_LOCKS; parameter_slot++)
     {
       unsigned int parameter_index = parameter_slots[parameter_slot];
 
       float x = function_button_positions[parameter_slot][0];
       float y = function_button_positions[parameter_slot][1];
 
-      GrooveboxParameterButton *groovebox_parameter_button = createParamCentered<GrooveboxParameterButton>(Vec(x, y), module, GrooveBox::FUNCTION_BUTTONS + parameter_index);
+      GrooveboxParameterButton *groovebox_parameter_button = createParamCentered<GrooveboxParameterButton>(Vec(x, y), module, GrooveBox::PARAMETER_LOCK_BUTTONS + parameter_index);
       groovebox_parameter_button->parameter_index = parameter_index;
       groovebox_parameter_button->parameter_slot = parameter_slot;
       groovebox_parameter_button->module = module;
@@ -307,7 +306,6 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     assert(module);
 
     module->shift_key = ((e.mods & RACK_MOD_MASK) & GLFW_MOD_SHIFT);
-    module->control_key = ((e.mods & RACK_MOD_MASK) & RACK_MOD_CTRL);
 
     ModuleWidget::onHoverKey(e);
   }

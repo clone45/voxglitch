@@ -9,7 +9,7 @@ struct GrooveboxParameterButton : GrooveboxSoftButton
         // Parameter buttons aren't meant to be toggled.  They're used more like
         // a radio button in HTML.
 
-        if (!(module->selected_parameter_slot == this->parameter_slot))
+        if (!(module->selected_parameter_slot_id == this->parameter_slot))
         {
             SvgSwitch::onButton(e);
         }

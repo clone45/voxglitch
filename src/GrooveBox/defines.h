@@ -3,7 +3,7 @@ namespace groove_box
     const int NUMBER_OF_STEPS = 16;
     const int NUMBER_OF_TRACKS = 8;
     const int NUMBER_OF_MEMORY_SLOTS = 16;
-    const int NUMBER_OF_FUNCTIONS = 16;
+    const int NUMBER_OF_PARAMETER_LOCKS = 16;
     const int NUMBER_OF_SAMPLE_POSITION_SNAP_OPTIONS = 8;
     const int NUMBER_OF_RATCHET_PATTERNS = 16;
 
@@ -41,7 +41,7 @@ namespace groove_box
     };
 
     // These must be in the same order as the Parameters enum above
-    const float default_parameter_values[NUMBER_OF_FUNCTIONS] = {
+    const std::array<float, NUMBER_OF_PARAMETER_LOCKS> default_parameter_values = {
         0.5, // volume
         0.5, // pan
         0.5, // pitch
@@ -60,7 +60,7 @@ namespace groove_box
         0.0  // filter resonance
     };    
 
-    const std::string FUNCTION_NAMES[NUMBER_OF_FUNCTIONS] = {
+    const std::string PARAMETER_LOCK_NAMES[NUMBER_OF_PARAMETER_LOCKS] = {
         "Volume",
         "Pan",
         "Pitch",
@@ -86,7 +86,7 @@ namespace groove_box
     // These probably won't be in the same order as the Parameter enums, and
     // that's perfectly OK.
 
-    int parameter_slots[NUMBER_OF_FUNCTIONS] = {
+    int parameter_slots[NUMBER_OF_PARAMETER_LOCKS] = {
         VOLUME,
         PAN,
         PITCH,

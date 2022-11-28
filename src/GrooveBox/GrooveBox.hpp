@@ -6,25 +6,33 @@
 // - Thank you to all the friendly people on the VCV Rack Community for answering
 //   my questions and providing feedback on early builds.
 //
-// - Thank you to Jim Allman for his incredible front panel design.
+// - Thank you to Jim Allman (https://ibang.com/) for his incredible front panel design.
 //
-// TODO:
-//   * Groovebox allows manual MEM selection when CV is attached (https://github.com/clone45/voxglitch/issues/198)
+// TODO: 
+// 
+//  - Use a real delay library that de-clicks.  My hack solution is prone to clicks and pops.
+//  - instead of each track having 4 slew limiters for vol, pan, etc., 
+//    they could all share slew limiters.  Then, switching memory shouldn't
+//    cause any pops due to the slew limiters readjusting.
+//
+// Quick overview of the architecture:
+//
+// - The groovebox contains memory slots.  
+// - The memory slots contain 8 Track objects each
+// - Some resources, such as the sample players, slew limiters, and delay 
+//   buffers are shared amongst tracks and are passed in as pointers to the tracks.
 
 struct GrooveBox : VoxglitchSamplerModule
 {
   MemorySlot memory_slots[NUMBER_OF_MEMORY_SLOTS];
 
   // Schmitt Triggers
-  dsp::SchmittTrigger drum_pad_triggers[NUMBER_OF_STEPS];
-  dsp::SchmittTrigger step_select_triggers[NUMBER_OF_STEPS];
-  dsp::SchmittTrigger track_button_triggers[NUMBER_OF_TRACKS];
   dsp::SchmittTrigger memory_slot_button_triggers[NUMBER_OF_MEMORY_SLOTS];
-  dsp::SchmittTrigger function_button_triggers[NUMBER_OF_FUNCTIONS];
+  dsp::SchmittTrigger parameter_lock_button_triggers[NUMBER_OF_PARAMETER_LOCKS];
   dsp::SchmittTrigger copy_button_trigger;
   dsp::SchmittTrigger paste_button_trigger;
-  dsp::SchmittTrigger stepTrigger;
-  dsp::SchmittTrigger resetTrigger;
+  dsp::SchmittTrigger step_trigger;
+  dsp::SchmittTrigger reset_trigger;
 
   // Pointers to select track and memory
   Track *selected_track = NULL;
@@ -35,42 +43,39 @@ struct GrooveBox : VoxglitchSamplerModule
   unsigned int copied_memory_index = 0;
   unsigned int track_index = 0;
   unsigned int playback_step = 0;
-  unsigned int selected_function = 0;
-  unsigned int selected_parameter_slot = 0;
+  unsigned int selected_parameter_lock_id = 0;
+  unsigned int selected_parameter_slot_id = 0;
   unsigned int clock_division = 8;
   unsigned int clock_counter = clock_division;
   bool first_step = true;
   bool shift_key = false;
-  bool control_key = false;
-  bool mutes[NUMBER_OF_TRACKS];
-  bool solos[NUMBER_OF_TRACKS];
+
+  std::array<bool, NUMBER_OF_TRACKS> mutes{};
+  std::array<bool, NUMBER_OF_TRACKS> solos{};
+  
   bool any_track_soloed = false;
   bool expander_connected = false;
 
-  bool step_copy_paste_mode = false;
   unsigned int copied_step_index = 0;
-  unsigned int lcd_screen_mode = 0;
-  // LCDColorScheme lcd_color_scheme;
+  unsigned int lcd_screen_mode = TRACK;
 
   // These booleans tell the sequence position lights whether to be ON or OFF
-  bool light_booleans[NUMBER_OF_STEPS];
-  bool inner_light_booleans[NUMBER_OF_STEPS];
+  std::array<bool, NUMBER_OF_STEPS> light_booleans{};
+  std::array<bool, NUMBER_OF_STEPS> inner_light_booleans{};
 
   unsigned int visualizer_step = 0;
   unsigned int sample_position_snap_track_values[NUMBER_OF_TRACKS];
-  bool track_declicking_enabled[NUMBER_OF_TRACKS];
 
   // A pair of GrooveBoxExpanderMessage structures for sending information
   // from the expander to the groovebox.  Note that they both essentially
   // serve the same purpose, but are rotated during read/write cycles
   ExpanderToGrooveboxMessage expander_to_groovebox_message_a;
   ExpanderToGrooveboxMessage expander_to_groovebox_message_b;
-  float track_volumes[NUMBER_OF_TRACKS];
-
+  std::array<float, NUMBER_OF_TRACKS> track_volumes{};
+  
   // The track_triggers array is used to send trigger information to the
-  // expansion module.  Once a trigger is sent, it's immediately set back to
-  // zero.
-  bool track_triggers[NUMBER_OF_TRACKS];
+  // expansion module.  Once a trigger is sent, it's immediately set back to zero.
+  std::array<bool, NUMBER_OF_TRACKS> track_triggers{};
 
   //
   // Sample related variables
@@ -82,6 +87,7 @@ struct GrooveBox : VoxglitchSamplerModule
   // loaded_filenames: Filenames are displayed next to the tracks.  This variable
   // keeps track of the filenames to display.
   //
+  // TODO: remove the loaded_filenames array, which is not necessary
   std::string loaded_filenames[NUMBER_OF_TRACKS]; // for display on the front panel
   std::string path;
 
@@ -92,8 +98,16 @@ struct GrooveBox : VoxglitchSamplerModule
 
   SamplePlayer sample_players[NUMBER_OF_TRACKS];
 
+  // Each of the 8 tracks has dedicated slew limiters:
+  rack::dsp::SlewLimiter volume_slew_limiters[NUMBER_OF_TRACKS];
+  rack::dsp::SlewLimiter pan_slew_limiters[NUMBER_OF_TRACKS];
+  rack::dsp::SlewLimiter filter_cutoff_slew_limiters[NUMBER_OF_TRACKS];
+  rack::dsp::SlewLimiter filter_resonance_slew_limiters[NUMBER_OF_TRACKS];
+
+  SimpleDelay delay_dsps[NUMBER_OF_TRACKS];
+
   // sample position snap settings
-  unsigned int sample_position_snap_indexes[NUMBER_OF_TRACKS];
+  std::array<unsigned int, NUMBER_OF_TRACKS> sample_position_snap_indexes{};
 
   //
   // Basic VCV Parameter, Input, Output, and Light definitions
@@ -104,7 +118,7 @@ struct GrooveBox : VoxglitchSamplerModule
     ENUMS(DRUM_PADS, NUMBER_OF_STEPS),
     ENUMS(STEP_SELECT_BUTTONS, NUMBER_OF_STEPS),
     ENUMS(STEP_KNOBS, NUMBER_OF_STEPS),
-    ENUMS(FUNCTION_BUTTONS, NUMBER_OF_FUNCTIONS),
+    ENUMS(PARAMETER_LOCK_BUTTONS, NUMBER_OF_PARAMETER_LOCKS),
     ENUMS(DUMMY_UNUSED_PARAMS, NUMBER_OF_TRACKS),
     ENUMS(MEMORY_SLOT_BUTTONS, NUMBER_OF_MEMORY_SLOTS),
     COPY_BUTTON,
@@ -140,6 +154,15 @@ struct GrooveBox : VoxglitchSamplerModule
     INTRO
   };
 
+  /*
+ 
+
+    █▀▀ █▀█ █▄░█ █▀ ▀█▀ █▀█ █░█ █▀▀ ▀█▀ █▀█ █▀█
+    █▄▄ █▄█ █░▀█ ▄█ ░█░ █▀▄ █▄█ █▄▄ ░█░ █▄█ █▀▄
+    Text created using https://fsymbols.com/generators/carty/
+
+  */
+
   GrooveBox()
   {
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -150,20 +173,37 @@ struct GrooveBox : VoxglitchSamplerModule
       configParam(DRUM_PADS + i, 0.0, 1.0, 0.0, "Step Button");
       configOnOff(DRUM_PADS + i, 0.0, "Step Button");
       configParam(STEP_KNOBS + i, 0.0, 1.0, 0.0, "Parameter Lock Value " + std::to_string(i));
-      configParam(FUNCTION_BUTTONS + i, 0.0, 1.0, 0.0);
-      configOnOff(FUNCTION_BUTTONS + i, 0.0, FUNCTION_NAMES[parameter_slots[i]]);
-
-      light_booleans[i] = false;
+      configParam(PARAMETER_LOCK_BUTTONS + i, 0.0, 1.0, 0.0);
+      configOnOff(PARAMETER_LOCK_BUTTONS + i, 0.0, PARAMETER_LOCK_NAMES[i]);
     }
 
-    // Make sure arrays are initialized with sane values
+
+    // Configure slew limiters
+    // 
+    //  Be careful when setting the slew limiter values.  You'd think that 
+    //  larger numbers would increase the slew time, but it's actually the opposite.
+    //
+    //  See: https://community.vcvrack.com/t/difficulty-understanding-how-to-use-the-dsp-library-in-the-sdk/16225/3?u=clone45
+    //  
+    //  const float MS_1{1000.0f}; // 1000 Hz = 1 millisecond
+    //  const float MS_5{200.0f};  // 200 Hz  = 5 milliseconds
+    //  const float MS_10{100.0f}; // 100 Hz  = 10 milliseconds
+    //  const float MS_25{40.0f};  // 40 Hz   = 25 milliseconds
+    //  const float MS_50{20.0f};  // 20 Hz   = 50 milliseconds
+    //  const float MS_100{10.0f}; // 10 Hz   = 100 milliseconds
+        
     for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
-      this->mutes[i] = false;
-      this->solos[i] = false;
-      this->track_volumes[i] = 1.0;
-      this->sample_position_snap_indexes[i] = 0;
-      this->track_declicking_enabled[i] = false;
+      volume_slew_limiters[i].setRiseFall(10.0f, 10.0f);
+      pan_slew_limiters[i].setRiseFall(10.0f, 10.0f);
+      filter_cutoff_slew_limiters[i].setRiseFall(10.0f, 10.0f);
+      filter_resonance_slew_limiters[i].setRiseFall(10.0f, 10.0f);
+    }
+
+    // Configure delay dsps
+    for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
+    {
+      delay_dsps[i].setBufferSize(APP->engine->getSampleRate() / 30.0);
     }
 
     // Configure the individual track outputs
@@ -192,17 +232,31 @@ struct GrooveBox : VoxglitchSamplerModule
     configParam(MASTER_VOLUME, 0.0, 1.0, 0.5, "Master Volume");
     paramQuantities[MASTER_VOLUME]->randomizeEnabled = false;
 
-    // There are 8 sample players, one for each track.  These sample players
-    // are shared across the tracks contained in the memory slots.
-    for (unsigned int p = 0; p < NUMBER_OF_MEMORY_SLOTS; p++)
+    //
+    // Some objects, such as sample players, slew limiters, and delays apply
+    // to tracks.  However, having an instance of each for each track is undesireable.
+    // It's much better to share these resources amongst tracks.  Here's the code
+    // which sends the tracks pointers to the resources.
+    //
+    for (unsigned int m = 0; m < NUMBER_OF_MEMORY_SLOTS; m++)
     {
       for (unsigned int t = 0; t < NUMBER_OF_TRACKS; t++)
       {
-        memory_slots[p].setSamplePlayer(t, &sample_players[t]);
+        // There are 8 sample players, one for each track.  These sample players
+        // are shared across the tracks contained in the memory slots.
+        memory_slots[m].setSamplePlayer(t, &sample_players[t]);
+
+        // Similarly, set the shared slew limiters
+        memory_slots[m].setVolumeSlewLimiter(t, &volume_slew_limiters[t]);
+        memory_slots[m].setPanSlewLimiter(t, &pan_slew_limiters[t]);
+        memory_slots[m].setFilterCutoffSlewLimiter(t, &filter_cutoff_slew_limiters[t]);
+        memory_slots[m].setFilterResonanceSlewLimiter(t, &filter_resonance_slew_limiters[t]);
+
+        // Same idea with the dsp::delay objects
+        SimpleDelay *simple_delay = &delay_dsps[t];
+        memory_slots[m].setDelayDsp(t, simple_delay);
       }
     }
-
-    lcd_screen_mode = TRACK;
 
     // Store a pointer to the active memory slot
     selected_memory_slot = &memory_slots[0];
@@ -218,10 +272,16 @@ struct GrooveBox : VoxglitchSamplerModule
     leftExpander.consumerMessage = &expander_to_groovebox_message_b;
   }
 
+  /*
+ 
+    █░█ █▀▀ █░░ █▀█ █▀▀ █▀█   █▀▀ █░█ █▄░█ █▀▀ ▀█▀ █ █▀█ █▄░█ █▀
+    █▀█ ██▄ █▄▄ █▀▀ ██▄ █▀▄   █▀░ █▄█ █░▀█ █▄▄ ░█░ █ █▄█ █░▀█ ▄█
+    Text created using https://fsymbols.com/generators/carty/
+
+  */
+
   // copyMemory(src_index, dst_index)
-  //
   // Helper function to copy one memory slot to another memory slot
-  //
   void copyMemory(unsigned int src_index, unsigned int dst_index)
   {
     memory_slots[dst_index].copy(&memory_slots[src_index]);
@@ -229,9 +289,7 @@ struct GrooveBox : VoxglitchSamplerModule
   }
 
   // pasteStep(src_index, dst_index)
-  //
   // Helper function to copy one step to another, including all parameter locks
-  //
   void pasteStep(unsigned int dst_index)
   {
     selected_track->copyStep(this->copied_step_index, dst_index);
@@ -253,7 +311,6 @@ struct GrooveBox : VoxglitchSamplerModule
 
     for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
-      // this->sample_players[i].initialize();
       this->loaded_filenames[i] = "";
       this->sample_position_snap_indexes[i] = 0;
     }
@@ -267,23 +324,40 @@ struct GrooveBox : VoxglitchSamplerModule
     {
       float value = 0;
 
-      value = selected_track->getParameter(selected_function, step_number);
+      value = selected_track->getParameter(selected_parameter_lock_id, step_number);
 
       params[STEP_KNOBS + step_number].setValue(value);
       params[DRUM_PADS + step_number].setValue(selected_track->getValue(step_number));
     }
 
     // Update selected function button
-
-    for (unsigned int slot_id = 0; slot_id < NUMBER_OF_FUNCTIONS; slot_id++)
+    for (unsigned int slot_id = 0; slot_id < NUMBER_OF_PARAMETER_LOCKS; slot_id++)
     {
       unsigned int parameter_id = parameter_slots[slot_id];
-      params[FUNCTION_BUTTONS + parameter_id].setValue(selected_parameter_slot == slot_id);
-
-      // parameter_slots
+      params[PARAMETER_LOCK_BUTTONS + parameter_id].setValue(selected_parameter_slot_id == slot_id);
     }
   }
 
+
+  // void switchMemory(unsigned int new_memory_slot)
+  // 
+  // What happens when the user switches memory?
+  //
+  // #1. There's a pointer to a memory structure called "selected_memory_slot".
+  //     This pointer points to the new memory slot.
+  // 
+  // #2. Each memory holds 8 tracks.  None of these tracks are stepped unless
+  //     they belong to the active memory slot.  So, after switching memory
+  //     slots, all 8 tracks need to have their "position" set to the current
+  //     step.
+  //
+  // #3. The selected memory slot needs to be highlighted on the front panel.
+  //     This is achieved by setting the param[MEMORY_SLOT_BUTTONS + i] = true
+  //     for the selected memory slot.
+  //
+  // #4. The panel controls (knobs) need to be positioned to match the track's
+  //     new values.
+  // 
   void switchMemory(unsigned int new_memory_slot)
   {
     memory_slot_index = new_memory_slot;
@@ -305,6 +379,10 @@ struct GrooveBox : VoxglitchSamplerModule
 
     updatePanelControls();
   }
+
+  //
+  // Track helper functions
+  // 
 
   void selectTrack(unsigned int new_active_track)
   {
@@ -328,6 +406,21 @@ struct GrooveBox : VoxglitchSamplerModule
     selected_memory_slot->tracks[this->track_index].shift(amount);
     updatePanelControls();
   }
+
+  bool trigger(unsigned int track_id)
+  {
+    unsigned int sample_position_snap_value = sample_position_snap_track_values[track_id];
+    if (notMuted(track_id))
+      return (selected_memory_slot->tracks[track_id].trigger(sample_position_snap_value));
+    return (false);
+  }
+
+  bool notMuted(unsigned int track_id)
+  {
+    if (any_track_soloed)
+      return (solos[track_id]);
+    return (!mutes[track_id]);
+  }  
 
   void randomizeSteps()
   {
@@ -362,12 +455,9 @@ struct GrooveBox : VoxglitchSamplerModule
       updatePanelControls();
   }
 
-  /*
-  void randomizeParameter(unsigned int parameter_number)
-  {
-    this->selected_track->randomizeParameter(parameter_number)
-  }
-  */
+  //
+  // Knobs and parameter helper functions
+  //
 
   void shiftKnobValuesLeft()
   {
@@ -405,7 +495,7 @@ struct GrooveBox : VoxglitchSamplerModule
   {
     for (unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
-      params[STEP_KNOBS + step_number].setValue(default_parameter_values[selected_function]);
+      params[STEP_KNOBS + step_number].setValue(default_parameter_values[selected_parameter_lock_id]);
     }
   }
 
@@ -427,11 +517,39 @@ struct GrooveBox : VoxglitchSamplerModule
     }
   }
 
+  void matchSelectedParameter(unsigned int src_index)
+  {
+    for (unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
+    {
+      if(src_index != step_number)
+      {
+        params[STEP_KNOBS + step_number].setValue(params[STEP_KNOBS + src_index].getValue());
+      }
+    }
+  }
+
   void setSamplePositionSnapIndex(unsigned int sample_position_snap_index, unsigned int track_index)
   {
     this->sample_position_snap_indexes[track_index] = sample_position_snap_index;
     this->sample_position_snap_track_values[track_index] = sample_position_snap_values[sample_position_snap_index];
   }
+
+  // This function is called from GrooveboxMemoryButton and is used to ignore
+  // user input when a cable is connected to the memory CV input.
+  bool memCableIsConnected()
+  {
+    return(inputs[MEM_INPUT].isConnected());
+  }
+
+
+  /*
+ 
+
+    █▀ ▄▀█ █░█ █▀▀   ▄▀█ █▄░█ █▀▄   █░░ █▀█ ▄▀█ █▀▄
+    ▄█ █▀█ ▀▄▀ ██▄   █▀█ █░▀█ █▄▀   █▄▄ █▄█ █▀█ █▄▀
+    Text created using https://fsymbols.com/generators/carty/
+
+  */
 
   //
   // SAVE module data
@@ -478,9 +596,9 @@ struct GrooveBox : VoxglitchSamplerModule
           json_t *step_data = json_object();
           json_object_set(step_data, "trigger", json_integer(this->memory_slots[memory_slot_number].tracks[track_number].getValue(step_index)));
 
-          for(unsigned int parameter_index = 0; parameter_index < NUMBER_OF_FUNCTIONS; parameter_index++)
+          for(unsigned int parameter_index = 0; parameter_index < NUMBER_OF_PARAMETER_LOCKS; parameter_index++)
           {
-            std::string key = FUNCTION_NAMES[parameter_index];
+            std::string key = PARAMETER_LOCK_NAMES[parameter_index];
             std::transform(key.begin(), key.end(), key.begin(), ::tolower);
             std::replace( key.begin(), key.end(), ' ', '_'); // replace all ' ' to '_'
 
@@ -604,13 +722,12 @@ struct GrooveBox : VoxglitchSamplerModule
                 json_t *trigger_json = json_object_get(json_step_object, "trigger");
                 if (trigger_json)
                   this->memory_slots[memory_slot_index].tracks[track_index].setValue(step_index, json_integer_value(trigger_json));
-
                 
                 // Load all parameter information for all steps
-                for(unsigned int parameter_index=0; parameter_index < NUMBER_OF_FUNCTIONS; parameter_index++)
+                for(unsigned int parameter_index=0; parameter_index < NUMBER_OF_PARAMETER_LOCKS; parameter_index++)
                 {
 
-                  std::string key = FUNCTION_NAMES[parameter_index];
+                  std::string key = PARAMETER_LOCK_NAMES[parameter_index];
                   std::transform(key.begin(), key.end(), key.begin(), ::tolower);
                   std::replace( key.begin(), key.end(), ' ', '_'); // replace all ' ' to '_'
 
@@ -640,44 +757,17 @@ struct GrooveBox : VoxglitchSamplerModule
     updatePanelControls();
 	}
 
-  bool trigger(unsigned int track_id)
-  {
-    unsigned int sample_position_snap_value = sample_position_snap_track_values[track_id];
-    if (notMuted(track_id))
-      return (selected_memory_slot->tracks[track_id].trigger(sample_position_snap_value));
-    return (false);
-  }
 
-  bool notMuted(unsigned int track_id)
-  {
-    if (any_track_soloed)
-      return (solos[track_id]);
-    return (!mutes[track_id]);
-  }
+  /*
+ 
+    █▀█ █▀█ █▀█ █▀▀ █▀▀ █▀ █▀
+    █▀▀ █▀▄ █▄█ █▄▄ ██▄ ▄█ ▄█
+    Text created using https://fsymbols.com/generators/carty/
 
-  bool memCableIsConnected()
-  {
-    return(inputs[MEM_INPUT].isConnected());
-  }
+  */
 
   void process(const ProcessArgs &args) override
   {
-    // TODO: Is there a way to move this code into an isConnected type of event?
-
-    if (!this->shift_key)
-      step_copy_paste_mode = false;
-
-    if (leftExpander.module && leftExpander.module->model == modelGrooveBoxExpander)
-    {
-      expander_connected = true;
-    }
-    else
-    {
-      if (expander_connected)
-        detachExpander();
-      expander_connected = false;
-    }
-
     if (expander_connected)
       readFromExpander();
 
@@ -685,16 +775,18 @@ struct GrooveBox : VoxglitchSamplerModule
     // If the user has pressed a memory slot button, switch memory slots and update the
     // knob positions for the selected function.
 
-    for (unsigned int i = 0; i < NUMBER_OF_MEMORY_SLOTS; i++)
+    if (inputs[MEM_INPUT].isConnected())
     {
-      if (inputs[MEM_INPUT].isConnected())
-      {
-        unsigned int memory_selection = (inputs[MEM_INPUT].getVoltage() / 10.0) * NUMBER_OF_MEMORY_SLOTS;
-        memory_selection = clamp(memory_selection, 0, NUMBER_OF_MEMORY_SLOTS - 1);
-        if (memory_selection != memory_slot_index)
-          switchMemory(memory_selection);
-      }
-      else
+      unsigned int memory_selection = (inputs[MEM_INPUT].getVoltage() / 10.0) * NUMBER_OF_MEMORY_SLOTS;
+      memory_selection = clamp(memory_selection, 0, NUMBER_OF_MEMORY_SLOTS - 1);
+      if (memory_selection != memory_slot_index)
+        switchMemory(memory_selection);
+    }
+    else
+    {
+      // Would it be more efficient to move this code into the memory button's
+      // onClick method, or something like that?
+      for (unsigned int i = 0; i < NUMBER_OF_MEMORY_SLOTS; i++)
       {
         if (memory_slot_button_triggers[i].process(params[MEMORY_SLOT_BUTTONS + i].getValue()))
         {
@@ -723,7 +815,7 @@ struct GrooveBox : VoxglitchSamplerModule
     }
 
     // On incoming RESET, reset the sequencers
-    if (resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+    if (reset_trigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
     {
       // Set up a (reverse) counter so that the clock input will ignore
       // incoming clock pulses for 1 millisecond after a reset input. This
@@ -740,8 +832,7 @@ struct GrooveBox : VoxglitchSamplerModule
     }
 
     //
-    // Pad editing features:
-    // Handle drum pads, drum location, and drum selection interactions and lights.
+    // step button processing
     //
 
     for (unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
@@ -758,43 +849,32 @@ struct GrooveBox : VoxglitchSamplerModule
 
     //
     //  Parameter selection
-    //  TODO: try and move this into GrooveboxParameterButton.hpp
 
-    for (unsigned int slot_id = 0; slot_id < NUMBER_OF_FUNCTIONS; slot_id++)
+    for (unsigned int slot_id = 0; slot_id < NUMBER_OF_PARAMETER_LOCKS; slot_id++)
     {
       // parameter_slots keep track of this parameter is associated with which parameter slot
       // parameter_slots is defined in defines.h
       unsigned int parameter_id = parameter_slots[slot_id];
 
-      if (function_button_triggers[slot_id].process(params[FUNCTION_BUTTONS + parameter_id].getValue()))
+      if (parameter_lock_button_triggers[slot_id].process(params[PARAMETER_LOCK_BUTTONS + parameter_id].getValue()))
       {
-        DEBUG("selected slot ");
-        DEBUG(std::to_string(slot_id).c_str());
-
-        selected_function = parameter_id;
-        selected_parameter_slot = slot_id;
-
-        DEBUG("selected function ");
-        DEBUG(std::to_string(selected_function).c_str());
-
+        selected_parameter_lock_id = parameter_id;
+        selected_parameter_slot_id = slot_id;
         updatePanelControls();
       }
     }
 
-    // Process the knobs below the steps.  These change behavior depending on the selected function.
-    // This loop add 2% CPU and should be contemplated.
-    // What about turning this inside out?  Switch first, then iterate?  That didn't make any noticeable difference.
-
+    // Process the knobs below the steps.
     for (unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
       float value = params[STEP_KNOBS + step_number].getValue();
-      selected_track->setParameter(selected_function, step_number, value);
+      selected_track->setParameter(selected_parameter_lock_id, step_number, value);
     }
 
     //
     // Clock and step features
     //
-    if (stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+    if (step_trigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
     {
       if (clock_counter == clock_division)
       {
@@ -854,7 +934,7 @@ struct GrooveBox : VoxglitchSamplerModule
     //
     for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
-      std::tie(track_left_output, track_right_output) = selected_memory_slot->tracks[i].getStereoOutput(this->interpolation);
+      selected_memory_slot->tracks[i].getStereoOutput(&track_left_output, &track_right_output, this->interpolation);
 
       //
       // Apply track volumes from expander
@@ -898,6 +978,30 @@ struct GrooveBox : VoxglitchSamplerModule
 
     if (expander_connected)
       writeToExpander();
+  }
+
+  /*
+ 
+    █▀▀ ▀▄▀ █▀█ ▄▀█ █▄░█ █▀▄ █▀▀ █▀█   █▀█ █▀█ █▀█ █▀▀ █▀▀ █▀ █▀ █ █▄░█ █▀▀
+    ██▄ █░█ █▀▀ █▀█ █░▀█ █▄▀ ██▄ █▀▄   █▀▀ █▀▄ █▄█ █▄▄ ██▄ ▄█ ▄█ █ █░▀█ █▄█
+    Text created using https://fsymbols.com/generators/carty/
+
+  */
+
+  void onExpanderChange(const ExpanderChangeEvent &e) override
+  {
+    if(e.side == false) // false == left, true == right
+    {
+      if (leftExpander.module && leftExpander.module->model == modelGrooveBoxExpander)
+      {
+        expander_connected = true;
+      }
+      else
+      {
+        if (expander_connected) detachExpander();
+        expander_connected = false;
+      }
+    }
   }
 
   void readFromExpander()
@@ -946,7 +1050,6 @@ struct GrooveBox : VoxglitchSamplerModule
           bool fade_out = false;
 
           // Is any track is soloed and this one is not, then fade out
-          // TODO: commented out for testing.  Restore this!
           if (any_track_soloed && (expander_solo_value == false))
              fade_out = true;
 
