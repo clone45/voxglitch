@@ -268,7 +268,6 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
         load_queue.sample_queued_for_loading = false;
 
         // Load the sample!
-        // DEBUG(("GrainEngineMK2 loading file " + load_queue.path_to_file + " into slot " + std::to_string(load_queue.sample_number)).c_str());
         sample_players[load_queue.sample_number].loadSample(load_queue.path_to_file);
         std::string path = sample_players[load_queue.sample_number].getPath();
 

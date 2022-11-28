@@ -14,9 +14,6 @@ struct VoxglitchSwitch : SvgSwitch {
 
 
 #ifdef DEV_MODE
-
-
-
   void onHoverKey(const event::HoverKey &e) override
   {
     bool shift_key = ((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT);
