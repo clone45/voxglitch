@@ -29,7 +29,7 @@ Auotbreak Studio turns ordinary drum loops into a break beats.  Load up to 8 dru
 
 ### Adjusting the Breakbeat
 
-There are three tabs in the main viewport: Position, Sample, Volume, Pan, Reverse, and Ratchet.  All of the sequencers have some commonalities worth noting:
+There are several tabs in the main viewport: Position, Sample, Volume, Pan, Reverse, and Ratchet.  All of the sequencers have some commonalities worth noting:
 
 * You can set the pattern length of any sequencer by holding down the **control key**
 while dragging left or right on the sequence.
