@@ -88,11 +88,6 @@ struct Theme
     {
       value_string = json_string_value(value_json);
     }
-    else
-    {
-      // DEBUG("could not find key");
-      // DEBUG(key.c_str());
-    }
 
     return(value_string);
   }

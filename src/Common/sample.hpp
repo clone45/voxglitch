@@ -188,10 +188,7 @@ struct Sample
 
   void save_recorded_audio(std::string path)
   {
-    if(audioFile.save(path) != true)
-    {
-      // DEBUG(("Voxglitch sample.hpp::save_recorded_audio() - issue saving file to: " + path).c_str());
-    }
+    audioFile.save(path);
   }
 
   // Read stereo audio from the buffer at position _index_

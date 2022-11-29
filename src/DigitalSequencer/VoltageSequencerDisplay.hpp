@@ -69,9 +69,6 @@ struct VoltageSequencerDisplay : SequencerDisplay
             bar_color = default_step_highlight_color;
           }
 
-          // for debugging
-
-
           // Draw bars for the sequence values
           if(value > 0)
           {

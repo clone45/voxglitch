@@ -1,5 +1,14 @@
 ## Change Log
 
+## 2.24.1
+* Fixed issue with expander panning controls
+* Various back-end improvements that won't be noticeable to most users
+* Fixed the "pop" that could occur when changing memory locations
+* Added feature to align all knobs to one position
+
+## 2.24.0
+* Brand new design for the Groovebox, and tons of updates
+
 ## 2.23.2
 * Added defensive code in case theme layer files don't exist
 * Fixed potential array index out-of-bounds errors detected by cppcheck

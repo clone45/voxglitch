@@ -97,9 +97,7 @@ struct WavBank : VoxglitchSamplerModule
 		// loaded out of order.  I think it's a mac thing.
 		sort(dirList.begin(), dirList.end());
 
-		// TODO: Decide on a maximum memory consuption allowed and abort if
-		// that amount of member would be exhausted by loading all of the files
-		// in the folder.  Also consider supporting MP3.
+		// TODO: Consider supporting MP3.
 		for (auto path : dirList)
 		{
 			if (

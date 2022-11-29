@@ -183,6 +183,15 @@ struct GrooveBoxExpander : VoxglitchModule
     }
   }
 
+  void unsoloAll()
+  {
+    for(unsigned int i=0; i < NUMBER_OF_TRACKS; i++)
+    {
+      solos[i] = false;
+      params[SOLO_BUTTONS + i].setValue(false);
+    }
+  }
+
   void writeToGroovebox()
   {
     // Prepare message for sending to Grain Engine MK2

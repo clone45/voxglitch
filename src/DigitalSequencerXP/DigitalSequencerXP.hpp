@@ -90,7 +90,6 @@ struct DigitalSequencerXP : VoxglitchModule
 
     // On boot, I seem to be getting some weird gate signals.  This keeps those
     // from triggering an output pulse when the module first loads.
-    // Commented out while debugging.  It's safe to use this.
     clock_ignore_on_reset = (long) (44100 / 100);
 
   }

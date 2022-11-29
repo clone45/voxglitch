@@ -10,7 +10,6 @@ struct LoadQueue
 
   void queue_sample_for_loading(std::string path_to_file, unsigned int sample_number)
   {
-    // DEBUG("queue_sample_for_loading called");
     this->sample_queued_for_loading = true;
     this->path_to_file = path_to_file;
     this->sample_number = sample_number;

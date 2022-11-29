@@ -11,32 +11,6 @@ struct VoxglitchSwitch : SvgSwitch {
   {
 
   }
-
-
-#ifdef DEV_MODE
-  void onHoverKey(const event::HoverKey &e) override
-  {
-    bool shift_key = ((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT);
-    float shift_amount = .05;
-
-    if(shift_key) shift_amount = shift_amount * 100;
-
-    if(e.action == GLFW_PRESS)
-    {
-      if(e.key == GLFW_KEY_A) this->box.pos.x -= shift_amount;
-      if(e.key == GLFW_KEY_D) this->box.pos.x += shift_amount;
-      if(e.key == GLFW_KEY_W) this->box.pos.y -= shift_amount;
-      if(e.key == GLFW_KEY_S) this->box.pos.y += shift_amount;
-
-      // get center point of location
-      float panel_x = this->box.pos.x + (this->box.size.x / 2);
-      float panel_y = this->box.pos.y + (this->box.size.y / 2);
-
-      std::string debug_string = "New box.pos: " + std::to_string(panel_x) + "," + std::to_string(panel_y);
-      DEBUG(debug_string.c_str());
-    }
-  }
-#endif
 };
 
 struct VoxglitchRoundLampSwitch : VoxglitchSwitch {

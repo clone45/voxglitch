@@ -1,13 +1,3 @@
-/*
-#include "menus/AllSequencersItem.hpp"
-#include "menus/InputSnapItem.hpp"
-#include "menus/OutputRangeItem.hpp"
-#include "menus/QuickKeyMenu.hpp"
-#include "menus/ResetMenu.hpp"
-#include "menus/SampleAndHoldItem.hpp"
-#include "menus/SequencerItem.hpp"
-*/
-
 struct DigitalSequencerWidget : VoxglitchModuleWidget
 {
   DigitalSequencer *module;
@@ -477,12 +467,6 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     }
 
     // Reset behavior
-    /*
-    LegacyResetOption *legacy_reset_option = createMenuItem<LegacyResetOption>("Legacy Reset", CHECKMARK(module->legacy_reset));
-    legacy_reset_option->module = module;
-    menu->addChild(legacy_reset_option);
-    */
-
     ResetModeItem *reset_mode_item = createMenuItem<ResetModeItem>("Reset Mode", RIGHT_ARROW);
     reset_mode_item->module = module;
     menu->addChild(reset_mode_item);
@@ -509,7 +493,6 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
       {
         unsigned int sequencer_number = e.key - 49;
 
-        // DEBUG(std::to_string(sequencer_number).c_str());
         sequencer_number = clamp(sequencer_number, 0, NUMBER_OF_SEQUENCERS - 1);
         module->selected_sequencer_index = sequencer_number;
         e.consume(this);
@@ -525,43 +508,6 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
       }
     }
 
-    /* TODO: Rethink copy/paste
-    if ((e.key == GLFW_KEY_C) && ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL)) // Control-C
-    {
-      if (e.action == GLFW_PRESS)
-      {
-        copy_sequencer_index = module->selected_sequencer_index;
-        e.consume(this);
-      }
-    }
-
-    if ((e.key == GLFW_KEY_V) && ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL)) // Control-V
-    {
-      if (e.action == GLFW_PRESS)
-      {
-        if (copy_sequencer_index > -1)
-        {
-          // Be careful.  The compiler is suggesting that one of these indexes
-          // could go out of bounds.
-          module->copy(copy_sequencer_index, module->selected_sequencer_index);
-          e.consume(this);
-        }
-      }
-    }
-    */
-
-#ifdef DEV_MODE
-    if (e.action == GLFW_PRESS && e.key == GLFW_KEY_P)
-    {
-      std::string debug_string = "mouse at: " + std::to_string(e.pos.x) + "," + std::to_string(e.pos.y);
-      DEBUG(debug_string.c_str());
-    }
     ModuleWidget::onHoverKey(e);
-#endif
-
-    ModuleWidget::onHoverKey(e);
-
-    // module->selected_voltage_sequencer->shiftRight();
-    // if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftRight();
   }
 };
