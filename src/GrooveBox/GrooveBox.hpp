@@ -932,6 +932,7 @@ struct GrooveBox : VoxglitchSamplerModule
     //
     // Output individual stereo pairs for each track
     //
+
     for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
       selected_memory_slot->tracks[i].getStereoOutput(&track_left_output, &track_right_output, this->interpolation);
@@ -949,10 +950,8 @@ struct GrooveBox : VoxglitchSamplerModule
 
       if (expander_connected)
       {
-        // This is a very expensive operation and I should consider making a lookup table for it:
-        float track_volume_multiplier = 0.4368 * std::exp(1.16566 * track_volumes[i]);
-        track_left_output = track_left_output * track_volume_multiplier;
-        track_right_output = track_right_output * track_volume_multiplier;
+        track_left_output = track_left_output * track_volumes[i];
+        track_right_output = track_right_output * track_volumes[i];
       }
 
       // Individual outputs
