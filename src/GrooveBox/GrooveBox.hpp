@@ -155,6 +155,37 @@ struct GrooveBox : VoxglitchSamplerModule
   };
 
   /*
+      unsigned int left_index = i * 2;
+      unsigned int right_index = left_index + 1;
+
+      outputs[TRACK_OUTPUTS + left_index].setVoltage(track_left_output);
+      outputs[TRACK_OUTPUTS + right_index].setVoltage(track_right_output);
+  */
+
+  unsigned int left_output_enum_lookup_table[NUMBER_OF_TRACKS] = { 
+    TRACK_OUTPUTS + 0, 
+    TRACK_OUTPUTS + 2, 
+    TRACK_OUTPUTS + 4, 
+    TRACK_OUTPUTS + 6, 
+    TRACK_OUTPUTS + 8, 
+    TRACK_OUTPUTS + 10,
+    TRACK_OUTPUTS + 12,
+    TRACK_OUTPUTS + 14
+  };
+
+  unsigned int right_output_enum_lookup_table[NUMBER_OF_TRACKS] = {
+    TRACK_OUTPUTS + 1, 
+    TRACK_OUTPUTS + 3, 
+    TRACK_OUTPUTS + 5, 
+    TRACK_OUTPUTS + 7, 
+    TRACK_OUTPUTS + 9, 
+    TRACK_OUTPUTS + 11,
+    TRACK_OUTPUTS + 13,
+    TRACK_OUTPUTS + 15
+  };
+
+
+  /*
  
 
     █▀▀ █▀█ █▄░█ █▀ ▀█▀ █▀█ █░█ █▀▀ ▀█▀ █▀█ █▀█
@@ -192,12 +223,13 @@ struct GrooveBox : VoxglitchSamplerModule
     //  const float MS_50{20.0f};  // 20 Hz   = 50 milliseconds
     //  const float MS_100{10.0f}; // 10 Hz   = 100 milliseconds
         
+    float slew_speed = 100.0f;
     for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
-      volume_slew_limiters[i].setRiseFall(10.0f, 10.0f);
-      pan_slew_limiters[i].setRiseFall(10.0f, 10.0f);
-      filter_cutoff_slew_limiters[i].setRiseFall(10.0f, 10.0f);
-      filter_resonance_slew_limiters[i].setRiseFall(10.0f, 10.0f);
+      volume_slew_limiters[i].setRiseFall(slew_speed, slew_speed);
+      pan_slew_limiters[i].setRiseFall(slew_speed, slew_speed);
+      filter_cutoff_slew_limiters[i].setRiseFall(slew_speed, slew_speed);
+      filter_resonance_slew_limiters[i].setRiseFall(slew_speed, slew_speed);
     }
 
     // Configure delay dsps
@@ -935,31 +967,19 @@ struct GrooveBox : VoxglitchSamplerModule
 
     for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
+      // This one line of code takes up most of the CPU
       selected_memory_slot->tracks[i].getStereoOutput(&track_left_output, &track_right_output, this->interpolation);
 
       //
       // Apply track volumes from expander
-      //
-      // https://mathcracker.com/exponential-function-calculator
-      // Using first t (t1) = .5,
-      // First y (f(t1)) = 1
-      // Second t (t2) = 2
-      // Second y (f(t2)) = 12
-      //
-      // f(t) = 0.5503 * e^(1.1945 * t)
-
       if (expander_connected)
       {
         track_left_output = track_left_output * track_volumes[i];
         track_right_output = track_right_output * track_volumes[i];
       }
 
-      // Individual outputs
-      unsigned int left_index = i * 2;
-      unsigned int right_index = left_index + 1;
-
-      outputs[TRACK_OUTPUTS + left_index].setVoltage(track_left_output);
-      outputs[TRACK_OUTPUTS + right_index].setVoltage(track_right_output);
+      outputs[left_output_enum_lookup_table[i]].setVoltage(track_left_output);
+      outputs[right_output_enum_lookup_table[i]].setVoltage(track_right_output);
 
       // Calculate summed output
       mix_left_output += track_left_output;
@@ -967,6 +987,7 @@ struct GrooveBox : VoxglitchSamplerModule
 
       selected_memory_slot->tracks[i].incrementSamplePosition();
     }
+
 
     // Read master volume knob
     float master_volume = params[MASTER_VOLUME].getValue() * 8.0;

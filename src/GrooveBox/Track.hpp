@@ -295,8 +295,8 @@ namespace groove_box
 
     void getStereoOutput(float *final_left_output, float *final_right_output, unsigned int interpolation)
     {
-      float left_output;
-      float right_output;
+      float left_output = 0.0;
+      float right_output = 0.0;
 
       // -===== Slew Limiter Processing =====-
       float volume = volume_slew_limiter->process(APP->engine->getSampleTime(), m.local_parameter_lock_settings.getParameter(VOLUME));
@@ -327,24 +327,26 @@ namespace groove_box
       // Read sample output
       this->sample_player->getStereoOutput(&left_output, &right_output, interpolation);
 
+  
 
       // Apply pan parameters
       //
       // m.local_parameter_lock_settings.pan ranges from 0 to 1
       // track_pan ranges from -1 to 0
+
       float computed_pan = (pan * 2.0) - 1.0; // convert m.local_parameter_lock_settings.pan to range from -1 to 1
-      computed_pan = clamp(computed_pan + m.track_pan, -1.0, 1.0);
+      computed_pan = clamp(computed_pan + m.track_pan, -1.0, 1.0); // 6.5 to 7
       computed_pan = pan_slew_limiter->process(APP->engine->getSampleTime(), computed_pan);
-      
+
       if(computed_pan != 0)
       {
-        computed_pan = pan_slew_limiter->process(APP->engine->getSampleTime(), computed_pan);
         stereo_pan.process(&left_output, &right_output, computed_pan);
       }
 
       // Apply volume parameters
       left_output *= (volume * 2);  // Range from 0 to 2 times normal volume
       right_output *= (volume * 2); // Range from 0 to 2 times normal volume
+
 
       // Process fade out at 1/10th of a second.
       //
@@ -363,7 +365,7 @@ namespace groove_box
       }
 
       // -===== ADSR Processing =====-
-      //
+
       if(attack > 0.0 || release < 1.0) // skip computations if not used
       {
         adsr.setAttackRate(attack * APP->engine->getSampleRate());

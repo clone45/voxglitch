@@ -6,11 +6,12 @@ struct StereoPan
   {
     if(pan > 0)
     {
-      *left_voltage = *left_voltage * (1-pan);
+      *left_voltage = *left_voltage * (1.0 - pan);
     }
     else if(pan < 0)
     {
-      *right_voltage = *right_voltage * (1 - abs(pan));
+      // *right_voltage = *right_voltage * (1.0 - abs(pan));
+      *right_voltage = *right_voltage * (1.0 + pan);
     }
   }
 };
