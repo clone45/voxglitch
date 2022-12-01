@@ -45,7 +45,17 @@
         "xmemory0": "cpp",
         "xstddef": "cpp",
         "xstring": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "future": "cpp",
+        "atomic": "cpp",
+        "chrono": "cpp",
+        "condition_variable": "cpp",
+        "resumable": "cpp",
+        "functional": "cpp",
+        "mutex": "cpp",
+        "ratio": "cpp",
+        "xthread": "cpp",
+        "thread": "cpp"
     }
 
 }

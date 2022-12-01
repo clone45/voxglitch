@@ -20,6 +20,7 @@ namespace groove_box
     rack::dsp::SlewLimiter *filter_resonance_slew_limiter;
 
     StereoPan stereo_pan;
+    float previous_pan = 0.0;
 
     // Notes on the next line of code: 
     SamplePlayer *sample_player;
@@ -299,6 +300,7 @@ namespace groove_box
       float right_output = 0.0;
 
       // -===== Slew Limiter Processing =====-
+      // TODO: figure out if slew limiting is really necessary for filter cutoff and resonance
       float volume = volume_slew_limiter->process(APP->engine->getSampleTime(), m.local_parameter_lock_settings.getParameter(VOLUME));
       float filter_cutoff = filter_cutoff_slew_limiter->process(APP->engine->getSampleTime(), m.local_parameter_lock_settings.getParameter(FILTER_CUTOFF));
       float filter_resonance = filter_resonance_slew_limiter->process(APP->engine->getSampleTime(), m.local_parameter_lock_settings.getParameter(FILTER_RESONANCE));
@@ -319,7 +321,7 @@ namespace groove_box
       // state.  Only do this when the release is less than max release, otherwise
       // sustain until the next time the track is triggered.
       //
-      // * Reminder: m.local_parameter_lock_settings.getParameter(RELEASE) ranges from 0.0 to 1.0
+      // Reminder: m.local_parameter_lock_settings.getParameter(RELEASE) ranges from 0.0 to 1.0
       //
       if (adsr.getState() == ADSR::env_sustain && release < 1.0)
         adsr.gate(false);
@@ -327,21 +329,15 @@ namespace groove_box
       // Read sample output
       this->sample_player->getStereoOutput(&left_output, &right_output, interpolation);
 
-  
-
       // Apply pan parameters
       //
       // m.local_parameter_lock_settings.pan ranges from 0 to 1
       // track_pan ranges from -1 to 0
 
-      float computed_pan = (pan * 2.0) - 1.0; // convert m.local_parameter_lock_settings.pan to range from -1 to 1
-      computed_pan = clamp(computed_pan + m.track_pan, -1.0, 1.0); // 6.5 to 7
+      float computed_pan = rescale(pan, 0.0, 1.0, -1.0, 1.0);
+      computed_pan = clamp(computed_pan + m.track_pan, -1.0, 1.0);
       computed_pan = pan_slew_limiter->process(APP->engine->getSampleTime(), computed_pan);
-
-      if(computed_pan != 0)
-      {
-        stereo_pan.process(&left_output, &right_output, computed_pan);
-      }
+      stereo_pan.process(&left_output, &right_output, computed_pan);
 
       // Apply volume parameters
       left_output *= (volume * 2);  // Range from 0 to 2 times normal volume
@@ -363,6 +359,7 @@ namespace groove_box
         // If so, stop the sample player
         this->sample_player->stop();
       }
+
 
       // -===== ADSR Processing =====-
 

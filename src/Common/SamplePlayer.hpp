@@ -62,7 +62,7 @@ struct SamplePlayer
   {
     unsigned int sample_index = playback_position; // convert float to int
 
-    if((playing == false) || ((unsigned int) sample_index >= this->sample.size()) || (sample.loaded == false))
+    if((playing == false) || (sample_index >= this->sample.size()) || (sample.loaded == false))
     {
       *left_output = 0;
       *right_output = 0;

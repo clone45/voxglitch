@@ -11,9 +11,8 @@
 // TODO: 
 // 
 //  - Use a real delay library that de-clicks.  My hack solution is prone to clicks and pops.
-//  - instead of each track having 4 slew limiters for vol, pan, etc., 
-//    they could all share slew limiters.  Then, switching memory shouldn't
-//    cause any pops due to the slew limiters readjusting.
+//  - Fix missing buttons in library browser
+//  - Get expander buttons to glow
 //
 // Quick overview of the architecture:
 //
@@ -22,17 +21,20 @@
 // - Some resources, such as the sample players, slew limiters, and delay 
 //   buffers are shared amongst tracks and are passed in as pointers to the tracks.
 
+#include <thread>
+#include <future>
+
 struct GrooveBox : VoxglitchSamplerModule
 {
   MemorySlot memory_slots[NUMBER_OF_MEMORY_SLOTS];
 
   // Schmitt Triggers
-  dsp::SchmittTrigger memory_slot_button_triggers[NUMBER_OF_MEMORY_SLOTS];
-  dsp::SchmittTrigger parameter_lock_button_triggers[NUMBER_OF_PARAMETER_LOCKS];
-  dsp::SchmittTrigger copy_button_trigger;
-  dsp::SchmittTrigger paste_button_trigger;
-  dsp::SchmittTrigger step_trigger;
-  dsp::SchmittTrigger reset_trigger;
+  dsp::BooleanTrigger memory_slot_button_triggers[NUMBER_OF_MEMORY_SLOTS];
+  dsp::BooleanTrigger parameter_lock_button_triggers[NUMBER_OF_PARAMETER_LOCKS];
+  dsp::BooleanTrigger copy_button_trigger;
+  dsp::BooleanTrigger paste_button_trigger;
+  dsp::BooleanTrigger step_trigger;
+  dsp::BooleanTrigger reset_trigger;
 
   // Pointers to select track and memory
   Track *selected_track = NULL;
@@ -153,14 +155,6 @@ struct GrooveBox : VoxglitchSamplerModule
     UPDATE,
     INTRO
   };
-
-  /*
-      unsigned int left_index = i * 2;
-      unsigned int right_index = left_index + 1;
-
-      outputs[TRACK_OUTPUTS + left_index].setVoltage(track_left_output);
-      outputs[TRACK_OUTPUTS + right_index].setVoltage(track_right_output);
-  */
 
   unsigned int left_output_enum_lookup_table[NUMBER_OF_TRACKS] = { 
     TRACK_OUTPUTS + 0, 
@@ -951,53 +945,53 @@ struct GrooveBox : VoxglitchSamplerModule
       clock_counter++;
     }
 
-    //
-    // For each track...
-    //  a. Get the output of the tracks and sum them for the stereo output
-    //  b. Once the output has been read, increment the sample position
-
     float mix_left_output = 0;
     float mix_right_output = 0;
-    float track_left_output = 0;
-    float track_right_output = 0;
 
-    //
-    // Output individual stereo pairs for each track
-    //
-
-    for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
+    for (unsigned int track_index = 0; track_index < NUMBER_OF_TRACKS; track_index++)
     {
-      // This one line of code takes up most of the CPU
-      selected_memory_slot->tracks[i].getStereoOutput(&track_left_output, &track_right_output, this->interpolation);
-
-      //
-      // Apply track volumes from expander
-      if (expander_connected)
-      {
-        track_left_output = track_left_output * track_volumes[i];
-        track_right_output = track_right_output * track_volumes[i];
-      }
-
-      outputs[left_output_enum_lookup_table[i]].setVoltage(track_left_output);
-      outputs[right_output_enum_lookup_table[i]].setVoltage(track_right_output);
-
-      // Calculate summed output
-      mix_left_output += track_left_output;
-      mix_right_output += track_right_output;
-
-      selected_memory_slot->tracks[i].incrementSamplePosition();
+      processTrack(track_index, &mix_left_output, &mix_right_output);
     }
-
 
     // Read master volume knob
     float master_volume = params[MASTER_VOLUME].getValue() * 8.0;
 
     // Summed output voltages at stereo outputs
-    outputs[AUDIO_OUTPUT_LEFT].setVoltage(mix_left_output * master_volume);
-    outputs[AUDIO_OUTPUT_RIGHT].setVoltage(mix_right_output * master_volume);
+    outputs[AUDIO_OUTPUT_LEFT].setVoltage(mix_left_output *master_volume);
+    outputs[AUDIO_OUTPUT_RIGHT].setVoltage(mix_right_output *master_volume);
 
     if (expander_connected)
       writeToExpander();
+  }
+
+  bool processTrack(unsigned int track_index, float *mix_left_output, float *mix_right_output)
+  {
+    //  1. Get the output of the tracks and sum them for the stereo output
+    //  2. Once the output has been read, increment the sample position
+
+    float track_left_output = 0;
+    float track_right_output = 0;
+
+    // This one line of code takes up most of the CPU
+    selected_memory_slot->tracks[track_index].getStereoOutput(&track_left_output, &track_right_output, this->interpolation);
+
+    // Apply track volumes from expander
+    if (expander_connected)
+    {
+      track_left_output = track_left_output * track_volumes[track_index];
+      track_right_output = track_right_output * track_volumes[track_index];
+    }
+
+    outputs[left_output_enum_lookup_table[track_index]].setVoltage(track_left_output);
+    outputs[right_output_enum_lookup_table[track_index]].setVoltage(track_right_output);
+
+    // Calculate summed output
+    *mix_left_output += track_left_output;
+    *mix_right_output += track_right_output;
+
+    selected_memory_slot->tracks[track_index].incrementSamplePosition();
+
+    return(true);
   }
 
   /*
