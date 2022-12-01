@@ -21,6 +21,7 @@ namespace groove_box
 
     StereoPan stereo_pan;
     float previous_pan = 0.0;
+    float sample_time = APP->engine->getSampleTime();
 
     // Notes on the next line of code: 
     SamplePlayer *sample_player;
@@ -301,9 +302,9 @@ namespace groove_box
 
       // -===== Slew Limiter Processing =====-
       // TODO: figure out if slew limiting is really necessary for filter cutoff and resonance
-      float volume = volume_slew_limiter->process(APP->engine->getSampleTime(), m.local_parameter_lock_settings.getParameter(VOLUME));
-      float filter_cutoff = filter_cutoff_slew_limiter->process(APP->engine->getSampleTime(), m.local_parameter_lock_settings.getParameter(FILTER_CUTOFF));
-      float filter_resonance = filter_resonance_slew_limiter->process(APP->engine->getSampleTime(), m.local_parameter_lock_settings.getParameter(FILTER_RESONANCE));
+      float volume = volume_slew_limiter->process(this->sample_time, m.local_parameter_lock_settings.getParameter(VOLUME));
+      float filter_cutoff = filter_cutoff_slew_limiter->process(this->sample_time, m.local_parameter_lock_settings.getParameter(FILTER_CUTOFF));
+      float filter_resonance = filter_resonance_slew_limiter->process(this->sample_time, m.local_parameter_lock_settings.getParameter(FILTER_RESONANCE));
       // Pan is processed below, after the track pan is applied
 
       // Mostly cosmetic: Load up the settings into easily readable variables
@@ -336,7 +337,7 @@ namespace groove_box
 
       float computed_pan = rescale(pan, 0.0, 1.0, -1.0, 1.0);
       computed_pan = clamp(computed_pan + m.track_pan, -1.0, 1.0);
-      computed_pan = pan_slew_limiter->process(APP->engine->getSampleTime(), computed_pan);
+      computed_pan = pan_slew_limiter->process(this->sample_time, computed_pan);
       stereo_pan.process(&left_output, &right_output, computed_pan);
 
       // Apply volume parameters
@@ -431,6 +432,7 @@ namespace groove_box
 
     void updateRackSampleRate()
     {
+      this->sample_time = APP->engine->getSampleTime();
       this->sample_player->updateSampleRate();
     }
 

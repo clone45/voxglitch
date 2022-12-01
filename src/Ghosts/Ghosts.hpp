@@ -9,6 +9,7 @@ struct Ghosts : VoxglitchSamplerModule
 	double smooth_rate = 128.0f / APP->engine->getSampleRate();
 	double sample_rate_division = 0.0;
 	float sr_div_8 = APP->engine->getSampleRate() / 8.0;
+	float sample_rate = APP->engine->getSampleRate();
 
 	int step = 0;
 	std::string root_dir;
@@ -19,7 +20,11 @@ struct Ghosts : VoxglitchSamplerModule
 	dsp::SchmittTrigger purge_trigger;
 	dsp::SchmittTrigger purge_button_trigger;
 
+	float maximum_playback_length = 0; // 1/2 of a second
+	float minimum_playback_length = 0; // very fast
+
 	unsigned int counter = 0;
+	unsigned int mode = 0;
 
 	// The filename of the loaded sample.  This is used to display the currently
 	// loaded sample in the right-click context menu.
@@ -88,6 +93,9 @@ struct Ghosts : VoxglitchSamplerModule
 		configParam(MODES_KNOB, 0.f, 3.f, 0.f, "MODES");
 		paramQuantities[MODES_KNOB]->snapEnabled = true;
 		// jitter_divisor = static_cast <double> (RAND_MAX / 1024.0);
+
+		maximum_playback_length = sample_rate / modes[mode][0]; // 1/2 of a second
+		minimum_playback_length = sample_rate / modes[mode][1]; // very fast		
 	}
 
 	json_t *dataToJson() override
@@ -120,12 +128,12 @@ struct Ghosts : VoxglitchSamplerModule
 
 	void process(const ProcessArgs &args) override
 	{
-		unsigned int mode = params[MODES_KNOB].getValue();
+		mode = params[MODES_KNOB].getValue();
 
 		float maximum_ghosts_per_second = modes[mode][2];
 		float minimum_ghosts_per_second = modes[mode][3];
-		float maximum_playback_length = APP->engine->getSampleRate() / modes[mode][0]; // 1/2 of a second
-		float minimum_playback_length = APP->engine->getSampleRate() / modes[mode][1]; // very fast
+		// float maximum_playback_length = sample_rate / modes[mode][0]; // 1/2 of a second
+		// float minimum_playback_length = sample_rate / modes[mode][1]; // very fast
 		float jitter_spread = modes[mode][4];
 		float removal_mode = modes[mode][5];
 
@@ -227,15 +235,19 @@ struct Ghosts : VoxglitchSamplerModule
 			}
 
 			// TODO: spawn_rate_counter should probably take into consideration the selected sample rate.
-			spawn_rate_counter = spawn_rate_counter + (spawn_rate / APP->engine->getSampleRate());
+			spawn_rate_counter = spawn_rate_counter + (spawn_rate / sample_rate);
 		}
 	}
 
 	void onSampleRateChange(const SampleRateChangeEvent &e) override
 	{
-		smooth_rate = 128.0f / APP->engine->getSampleRate();
-		sr_div_8 = APP->engine->getSampleRate() / 8.0;
+		this->sample_rate = APP->engine->getSampleRate();
+		this->smooth_rate = 128.0f / sample_rate;
+		this->sr_div_8 = sample_rate / 8.0;
 		if (sample.loaded)
-			sample_rate_division = sample.sample_rate / APP->engine->getSampleRate();
+			sample_rate_division = sample.sample_rate / sample_rate;
+
+		this->maximum_playback_length = sample_rate / modes[mode][0]; // 1/2 of a second
+		this->minimum_playback_length = sample_rate / modes[mode][1]; // very fast			
 	}
 };
