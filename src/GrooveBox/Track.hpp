@@ -18,9 +18,9 @@ namespace groove_box
     FastSlewLimiter *pan_slew_limiter;
     FastSlewLimiter *filter_cutoff_slew_limiter;
     FastSlewLimiter *filter_resonance_slew_limiter;
+    FastRandom fast_random;
 
     StereoPan stereo_pan;
-    float previous_pan = 0.0;
     float sample_time = APP->engine->getSampleTime();
 
     // Notes on the next line of code: 
@@ -92,7 +92,7 @@ namespace groove_box
 
       float probability = getParameter(PROBABILITY, m.playback_position);
 
-      if ((probability < 0.98) && (((float)rand() / (float)RAND_MAX) > probability))
+      if ((probability < 0.98) && (fast_random.gen() > probability))
       {
         // Don't trigger
         m.skipped = true;

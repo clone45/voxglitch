@@ -55,7 +55,8 @@
         "mutex": "cpp",
         "ratio": "cpp",
         "xthread": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "random": "cpp"
     }
 
 }
