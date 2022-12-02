@@ -5,7 +5,6 @@ struct TFastSlewLimiter
     T out = 0.f;
     T rise = 0.f;
     T fall = 0.f;
-    T deltaTime = 0.f;
     T fallDelta = 0.f;
     T riseDelta = 0.f;
 
@@ -22,15 +21,13 @@ struct TFastSlewLimiter
 
     void setDeltaTime(T deltaTime)
     {
-        this->deltaTime = deltaTime;
         this->fallDelta = fall * deltaTime;
         this->riseDelta = rise * deltaTime;
     }
 
     T process(T in)
     {
-        if (in == out)
-            return out;
+        if (in == out) return out;
         out = simd::clamp(in, out - fallDelta, out + riseDelta);
         return out;
     }
