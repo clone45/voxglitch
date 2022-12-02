@@ -30,6 +30,7 @@ using namespace groove_box;
 #include "Common/dsp/StereoFadeOut.hpp"
 #include "Common/dsp/StereoPan.hpp"
 #include "Common/dsp/Filter.hpp"
+#include "Common/dsp/FastSlewLimiter.hpp"
 #include "Common/SamplePlayer.hpp"
 
 // Core components

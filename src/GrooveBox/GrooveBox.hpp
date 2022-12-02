@@ -101,10 +101,10 @@ struct GrooveBox : VoxglitchSamplerModule
   SamplePlayer sample_players[NUMBER_OF_TRACKS];
 
   // Each of the 8 tracks has dedicated slew limiters:
-  rack::dsp::SlewLimiter volume_slew_limiters[NUMBER_OF_TRACKS];
-  rack::dsp::SlewLimiter pan_slew_limiters[NUMBER_OF_TRACKS];
-  rack::dsp::SlewLimiter filter_cutoff_slew_limiters[NUMBER_OF_TRACKS];
-  rack::dsp::SlewLimiter filter_resonance_slew_limiters[NUMBER_OF_TRACKS];
+  FastSlewLimiter volume_slew_limiters[NUMBER_OF_TRACKS];
+  FastSlewLimiter pan_slew_limiters[NUMBER_OF_TRACKS];
+  FastSlewLimiter filter_cutoff_slew_limiters[NUMBER_OF_TRACKS];
+  FastSlewLimiter filter_resonance_slew_limiters[NUMBER_OF_TRACKS];
 
   SimpleDelay delay_dsps[NUMBER_OF_TRACKS];
 
@@ -218,12 +218,19 @@ struct GrooveBox : VoxglitchSamplerModule
     //  const float MS_100{10.0f}; // 10 Hz   = 100 milliseconds
         
     float slew_speed = 100.0f;
+    float slew_sample_time = APP->engine->getSampleTime();
+
     for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
     {
       volume_slew_limiters[i].setRiseFall(slew_speed, slew_speed);
       pan_slew_limiters[i].setRiseFall(slew_speed, slew_speed);
       filter_cutoff_slew_limiters[i].setRiseFall(slew_speed, slew_speed);
       filter_resonance_slew_limiters[i].setRiseFall(slew_speed, slew_speed);
+
+      volume_slew_limiters[i].setDeltaTime(slew_sample_time);
+      pan_slew_limiters[i].setDeltaTime(slew_sample_time);
+      filter_cutoff_slew_limiters[i].setDeltaTime(slew_sample_time);
+      filter_resonance_slew_limiters[i].setDeltaTime(slew_sample_time);
     }
 
     // Configure delay dsps
@@ -1140,5 +1147,13 @@ struct GrooveBox : VoxglitchSamplerModule
         this->memory_slots[m].tracks[i].updateRackSampleRate();
       }
     }
+
+    for (unsigned int t = 0; t < NUMBER_OF_TRACKS; t++)
+    {
+      volume_slew_limiters[t].updateRackSampleRate();
+      pan_slew_limiters[t].updateRackSampleRate();
+      filter_cutoff_slew_limiters[t].updateRackSampleRate();
+      filter_resonance_slew_limiters[t].updateRackSampleRate();
+    }    
   }
 };

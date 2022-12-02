@@ -20,22 +20,22 @@ struct MemorySlot
 
   // TODO:  I may eventually use an array of slew limiters to avoid having all
   // of these similar functions.
-  void setVolumeSlewLimiter(unsigned int track_index, rack::dsp::SlewLimiter *slew_limiter)
+  void setVolumeSlewLimiter(unsigned int track_index, FastSlewLimiter *slew_limiter)
   {
     tracks.at(track_index).setVolumeSlewLimiter(slew_limiter);
   }
 
-  void setPanSlewLimiter(unsigned int track_index, rack::dsp::SlewLimiter *slew_limiter)
+  void setPanSlewLimiter(unsigned int track_index, FastSlewLimiter *slew_limiter)
   {
     tracks.at(track_index).setPanSlewLimiter(slew_limiter);
   }
 
-  void setFilterCutoffSlewLimiter(unsigned int track_index, rack::dsp::SlewLimiter *slew_limiter)
+  void setFilterCutoffSlewLimiter(unsigned int track_index, FastSlewLimiter *slew_limiter)
   {
     tracks.at(track_index).setFilterCutoffSlewLimiter(slew_limiter);
   }
 
-  void setFilterResonanceSlewLimiter(unsigned int track_index, rack::dsp::SlewLimiter *slew_limiter)
+  void setFilterResonanceSlewLimiter(unsigned int track_index, FastSlewLimiter *slew_limiter)
   {
     tracks.at(track_index).setFilterResonanceSlewLimiter(slew_limiter);
   }

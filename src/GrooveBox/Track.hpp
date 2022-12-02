@@ -14,10 +14,10 @@ namespace groove_box
     SimpleDelay *delay;
     StereoFadeOut fade_out;
     Filter filter;
-    rack::dsp::SlewLimiter *volume_slew_limiter;
-    rack::dsp::SlewLimiter *pan_slew_limiter;
-    rack::dsp::SlewLimiter *filter_cutoff_slew_limiter;
-    rack::dsp::SlewLimiter *filter_resonance_slew_limiter;
+    FastSlewLimiter *volume_slew_limiter;
+    FastSlewLimiter *pan_slew_limiter;
+    FastSlewLimiter *filter_cutoff_slew_limiter;
+    FastSlewLimiter *filter_resonance_slew_limiter;
 
     StereoPan stereo_pan;
     float previous_pan = 0.0;
@@ -53,22 +53,22 @@ namespace groove_box
       this->sample_player = sample_player;
     }
 
-    void setVolumeSlewLimiter(rack::dsp::SlewLimiter *slew_limiter)
+    void setVolumeSlewLimiter(FastSlewLimiter *slew_limiter)
     {
       volume_slew_limiter = slew_limiter;
     }
 
-    void setPanSlewLimiter(rack::dsp::SlewLimiter *slew_limiter)
+    void setPanSlewLimiter(FastSlewLimiter *slew_limiter)
     {
       pan_slew_limiter = slew_limiter;
     }
 
-    void setFilterCutoffSlewLimiter(rack::dsp::SlewLimiter *slew_limiter)
+    void setFilterCutoffSlewLimiter(FastSlewLimiter *slew_limiter)
     {
       filter_cutoff_slew_limiter = slew_limiter;
     }
 
-    void setFilterResonanceSlewLimiter(rack::dsp::SlewLimiter *slew_limiter)
+    void setFilterResonanceSlewLimiter(FastSlewLimiter *slew_limiter)
     {
       filter_resonance_slew_limiter = slew_limiter;
     }
@@ -302,9 +302,9 @@ namespace groove_box
 
       // -===== Slew Limiter Processing =====-
       // TODO: figure out if slew limiting is really necessary for filter cutoff and resonance
-      float volume = volume_slew_limiter->process(this->sample_time, m.local_parameter_lock_settings.getParameter(VOLUME));
-      float filter_cutoff = filter_cutoff_slew_limiter->process(this->sample_time, m.local_parameter_lock_settings.getParameter(FILTER_CUTOFF));
-      float filter_resonance = filter_resonance_slew_limiter->process(this->sample_time, m.local_parameter_lock_settings.getParameter(FILTER_RESONANCE));
+      float volume = volume_slew_limiter->process(m.local_parameter_lock_settings.getParameter(VOLUME));
+      float filter_cutoff = filter_cutoff_slew_limiter->process(m.local_parameter_lock_settings.getParameter(FILTER_CUTOFF));
+      float filter_resonance = filter_resonance_slew_limiter->process(m.local_parameter_lock_settings.getParameter(FILTER_RESONANCE));
       // Pan is processed below, after the track pan is applied
 
       // Mostly cosmetic: Load up the settings into easily readable variables
@@ -337,7 +337,7 @@ namespace groove_box
 
       float computed_pan = rescale(pan, 0.0, 1.0, -1.0, 1.0);
       computed_pan = clamp(computed_pan + m.track_pan, -1.0, 1.0);
-      computed_pan = pan_slew_limiter->process(this->sample_time, computed_pan);
+      computed_pan = pan_slew_limiter->process(computed_pan);
       stereo_pan.process(&left_output, &right_output, computed_pan);
 
       // Apply volume parameters
