@@ -316,7 +316,12 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
     }
     // If jitter_spread is 124, then the jitter will be between -124 and 124.
 
+    // In this case, I experimented with using FastRandom, but at sample speed,
+    // it generated a repeating pattern that could be heard clearly.  So, instead
+    // of saving the CPU cycles, in this case I decided to stick with rand(), 
+    // which didn't produce any audible repitition.
     if(jitter_spread > 0) start_position += this->randomFloat(-1 * jitter_spread, jitter_spread);
+  
 
     // In Grain.hpp, it is ensured that start_position stays within the sample array length
     // This is ensured again in sample.h
