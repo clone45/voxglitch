@@ -25,4 +25,5 @@ void init(Plugin* p) {
   p->addModel(modelWavBank);
   p->addModel(modelWavBankMC);
   p->addModel(modelXY);
+  p->addModel(modelVulcan);  
 }

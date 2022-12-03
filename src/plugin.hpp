@@ -29,3 +29,4 @@ extern Model *modelSatanonaut;
 extern Model *modelWavBank;
 extern Model *modelWavBankMC;
 extern Model *modelXY;
+extern Model *modelVulcan;
