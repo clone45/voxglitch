@@ -10,6 +10,10 @@ struct Ghosts : VoxglitchSamplerModule
 	double sample_rate_division = 0.0;
 	float sr_div_8 = APP->engine->getSampleRate() / 8.0;
 	float sample_rate = APP->engine->getSampleRate();
+	float jitter_spread = 0.0;
+	float minimum_ghosts_per_second = 0.0;
+	float maximum_ghosts_per_second = 0.0;
+	unsigned int removal_mode = 0;
 
 	int step = 0;
 	std::string root_dir;
@@ -19,6 +23,7 @@ struct Ghosts : VoxglitchSamplerModule
 	Sample sample;
 	dsp::SchmittTrigger purge_trigger;
 	dsp::SchmittTrigger purge_button_trigger;
+	FastRandom fast_random;
 
 	float maximum_playback_length = 0; // 1/2 of a second
 	float minimum_playback_length = 0; // very fast
@@ -95,7 +100,11 @@ struct Ghosts : VoxglitchSamplerModule
 		// jitter_divisor = static_cast <double> (RAND_MAX / 1024.0);
 
 		maximum_playback_length = sample_rate / modes[mode][0]; // 1/2 of a second
-		minimum_playback_length = sample_rate / modes[mode][1]; // very fast		
+		minimum_playback_length = sample_rate / modes[mode][1]; // very fast
+		maximum_ghosts_per_second = modes[mode][2];		
+		minimum_ghosts_per_second = modes[mode][3];
+		jitter_spread = modes[mode][4];
+		removal_mode = modes[mode][5];
 	}
 
 	json_t *dataToJson() override
@@ -130,12 +139,11 @@ struct Ghosts : VoxglitchSamplerModule
 	{
 		mode = params[MODES_KNOB].getValue();
 
-		float maximum_ghosts_per_second = modes[mode][2];
-		float minimum_ghosts_per_second = modes[mode][3];
+		// float maximum_ghosts_per_second = modes[mode][2];
+		// float minimum_ghosts_per_second = modes[mode][3];
 		// float maximum_playback_length = sample_rate / modes[mode][0]; // 1/2 of a second
 		// float minimum_playback_length = sample_rate / modes[mode][1]; // very fast
-		float jitter_spread = modes[mode][4];
-		float removal_mode = modes[mode][5];
+		// float removal_mode = modes[mode][5];
 
 		// Compute spawn rate.  The spawn rate input should be 0.0 to 10.0 volts.
 		float spawn_rate = ((inputs[GHOST_SPAWN_RATE_INPUT].getVoltage() * params[GHOST_SPAWN_RATE_ATTN_KNOB].getValue())) + params[GHOST_SPAWN_RATE_KNOB].getValue();
@@ -167,7 +175,8 @@ struct Ghosts : VoxglitchSamplerModule
 
 		if (inputs[JITTER_CV_INPUT].isConnected() ? (inputs[JITTER_CV_INPUT].getVoltage() > 0) : params[JITTER_SWITCH].getValue())
 		{
-			double r = (static_cast<double>(rand()) / (RAND_MAX / jitter_spread)) - (jitter_spread / 2.0);
+			// double r = (static_cast<double>(rand()) / (RAND_MAX / jitter_spread)) - (jitter_spread / 2.0);
+			double r = rescale(fast_random.gen(), 0.0, 1.0, 0.0, jitter_spread) - (jitter_spread / 2.0);
 			start_position = start_position + r;
 		}
 

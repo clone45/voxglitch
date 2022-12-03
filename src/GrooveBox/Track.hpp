@@ -300,12 +300,16 @@ namespace groove_box
       float left_output = 0.0;
       float right_output = 0.0;
 
+      // Question: Is slewing on the filter cutoff really necesary?
+      // Answer: Yes.  I used a flute sound to test and heavily modulated the cutoff,
+      //    and the slewed filter cutoff was far smoother sounding.  Without it,
+      //    there was an audible click.
+
       // -===== Slew Limiter Processing =====-
-      // TODO: figure out if slew limiting is really necessary for filter cutoff and resonance
       float volume = volume_slew_limiter->process(m.local_parameter_lock_settings.getParameter(VOLUME));
       float filter_cutoff = filter_cutoff_slew_limiter->process(m.local_parameter_lock_settings.getParameter(FILTER_CUTOFF));
       float filter_resonance = filter_resonance_slew_limiter->process(m.local_parameter_lock_settings.getParameter(FILTER_RESONANCE));
-      // Pan is processed below, after the track pan is applied
+      
 
       // Mostly cosmetic: Load up the settings into easily readable variables
       // The "m.local_parameter_lock_settings" structure is populated when the track is stepped.  It

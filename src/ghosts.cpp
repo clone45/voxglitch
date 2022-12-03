@@ -8,6 +8,7 @@
 #include "Common/sample.hpp"
 #include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
+#include "Common/dsp/FastRandom.hpp"
 #include "Common/dsp/StereoSmooth.hpp"
 
 #include "Ghosts/defines.h"
