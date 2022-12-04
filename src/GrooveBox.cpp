@@ -18,7 +18,7 @@ using namespace groove_box;
 
 #include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
-#include "GrooveBox/SamplePlaybackSettings.hpp"
+#include "GrooveBox/ParameterLockSettings.hpp"
 #include "GrooveBoxExpander/ExpanderToGrooveboxMessage.hpp"
 #include "GrooveBox/GrooveboxToExpanderMessage.hpp"
 
@@ -29,9 +29,14 @@ using namespace groove_box;
 #include "Common/dsp/SimpleDelay.hpp"
 #include "Common/dsp/StereoFadeOut.hpp"
 #include "Common/dsp/StereoPan.hpp"
+#include "Common/dsp/Filter.hpp"
+#include "Common/dsp/FastSlewLimiter.hpp"
+#include "Common/dsp/FastRandom.hpp"
 #include "Common/SamplePlayer.hpp"
 
 // Core components
+#include "GrooveBox/widgets/LCDColorScheme.hpp"
+#include "GrooveBox/TrackModel.hpp"
 #include "GrooveBox/Track.hpp"
 #include "GrooveBox/MemorySlot.hpp"
 #include "GrooveBox/GrooveBox.hpp"

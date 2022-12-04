@@ -3,64 +3,81 @@
 
 #include <componentlibrary.hpp>
 #include "widgets/RangeGrabbers.hpp"
-#include "widgets/GrooveboxBlueLight.hpp"
+#include "widgets/ParameterKnob.hpp"
+#include "widgets/GrooveboxSmallLight.hpp"
+
+#include "widgets/GrooveboxStepButton.hpp"
+#include "widgets/GrooveboxSoftButton.hpp"
+#include "widgets/GrooveboxParameterButton.hpp"
+#include "widgets/GrooveboxMemoryButton.hpp"
 #include "widgets/SequenceLengthWidget.hpp"
-#include "widgets/SampleVisualizer.hpp"
-#include "widgets/RatchetVisualizer.hpp"
-#include "widgets/TrackLabelDisplay.hpp"
-#include "widgets/TrackSampleNudge.hpp"
 
+#include "widgets/LCDDisplay.hpp"
+#include "widgets/LCDSampleDisplay.hpp"
+#include "widgets/LCDRatchetDisplay.hpp"
+#include "widgets/LCDTrackDisplay.hpp"
+
+float memory_slot_button_left_col_X = 126.05; // 125.5;
+float memory_slot_button_col_Xstep = 31.25; // 31.4;
+float memory_slot_button_top_row_Y = 106.35; // 106.0;
+float memory_slot_button_row_Ystep = 31.25; // 31.4;
 float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
-    {125, 93},
-    {155, 93},
-    {185, 93},
-    {215, 93},
+    {memory_slot_button_left_col_X, memory_slot_button_top_row_Y},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep, memory_slot_button_top_row_Y},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*2, memory_slot_button_top_row_Y},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*3, memory_slot_button_top_row_Y},
 
-    {125, 124.33},
-    {155, 124.33},
-    {185, 124.33},
-    {215, 124.33},
+    {memory_slot_button_left_col_X, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*2, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*3, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep},
 
-    {125, 155.664},
-    {155, 155.664},
-    {185, 155.664},
-    {215, 155.664},
+    {memory_slot_button_left_col_X, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*2},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*2},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*2, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*2},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*3, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*2},
 
-    {125, 187},
-    {155, 187},
-    {185, 187},
-    {215, 187}
+    {memory_slot_button_left_col_X, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*3},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*3},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*2, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*3},
+    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep*3, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep*3}
 };
 
-float function_button_positions[NUMBER_OF_FUNCTIONS][2] = {
-    {18.8, 332.7667}, // FUNCTION_VOLUME
-    {98, 332.7667},   // FUNCTION_PAN
-    {177, 332.7667},  // FUNCTION_PITCH
-    {256, 332.7667},  // FUNCTION_RATCHET
-    {335, 360.936},   // FUNCTION_SAMPLE_START
-    {335, 332.7667},  // FUNCTION_PROBABILITY
-    {177, 360.936},   // FUNCTION_LOOP
-    {256, 360.936},   // FUNCTION_REVERSE
+float function_button_left_col_X = 18.2;
+float function_button_col_Xstep =  81.26; // 81.16;
+float function_button_top_row_Y = 333.5; // 332.6;
+float function_button_row_Ystep = 26.15; // 28.0;
+float function_button_positions[NUMBER_OF_PARAMETER_LOCKS][2] = {
+    {function_button_left_col_X, function_button_top_row_Y}, // FUNCTION_VOLUME
+    {function_button_left_col_X + function_button_col_Xstep, function_button_top_row_Y},
+    {function_button_left_col_X + function_button_col_Xstep*2, function_button_top_row_Y},
+    {function_button_left_col_X + function_button_col_Xstep*3, function_button_top_row_Y},
+    {function_button_left_col_X + function_button_col_Xstep*4, function_button_top_row_Y},
+    {function_button_left_col_X + function_button_col_Xstep*5, function_button_top_row_Y},
+    {function_button_left_col_X + function_button_col_Xstep*6, function_button_top_row_Y},
+    {function_button_left_col_X + function_button_col_Xstep*7, function_button_top_row_Y},
 
-    {18.8, 360.936}, // FUNCTION_ATTACK
-    {98, 360.936},   // FUNCTION_RELEASE
-    {414, 332.7667}, // FUNCTION_DELAY_MIX
-    {493, 332.7667}, // FUNCTION_DELAY_LENGTH
-    {573, 332.7667}, // FUNCTION_DELAY_FEEDBACK
-    {414, 360.936},  // FUNCTION_SAMPLE_END
-    {493, 360.936},  // Position #15
-    {573, 360.936},  // Position #16
+    {function_button_left_col_X, function_button_top_row_Y + function_button_row_Ystep},
+    {function_button_left_col_X + function_button_col_Xstep, function_button_top_row_Y + function_button_row_Ystep},
+    {function_button_left_col_X + function_button_col_Xstep*2, function_button_top_row_Y + function_button_row_Ystep},
+    {function_button_left_col_X + function_button_col_Xstep*3, function_button_top_row_Y + function_button_row_Ystep},
+    {function_button_left_col_X + function_button_col_Xstep*4, function_button_top_row_Y + function_button_row_Ystep},
+    {function_button_left_col_X + function_button_col_Xstep*5, function_button_top_row_Y + function_button_row_Ystep},
+    {function_button_left_col_X + function_button_col_Xstep*6, function_button_top_row_Y + function_button_row_Ystep},
+    {function_button_left_col_X + function_button_col_Xstep*7, function_button_top_row_Y + function_button_row_Ystep}
 };
+
+bool dummy_boolean = false;
 
 float track_button_positions[NUMBER_OF_TRACKS][2] = {
-    {256, 93 - 1.6},
-    {256, 124.33 - 1.6},
-    {256, 155.664 - 1.6},
-    {256, 187 - 1.6},
-    {461.4 - 14, 93 - 1.6},
-    {461.4 - 14, 124.33 - 1.6},
-    {461.4 - 14, 155.664 - 1.6},
-    {461.4 - 14, 187 - 1.6}};
+    {257, 102 - 1.6},
+    {257, 133.33 - 1.6},
+    {257, 164.664 - 1.6},
+    {257, 196 - 1.6},
+    {462.4 - 14, 102 - 1.6},
+    {462.4 - 14, 133.33 - 1.6},
+    {462.4 - 14, 164.664 - 1.6},
+    {462.4 - 14, 196 - 1.6}};
 
 struct ModdedCL1362 : SvgPort
 {
@@ -70,136 +87,6 @@ struct ModdedCL1362 : SvgPort
   }
 };
 
-struct TrimpotMedium : SvgKnob
-{
-  widget::SvgWidget *bg;
-  GrooveBox *module;
-  unsigned int parameter_index = 0;
-  unsigned int step = 0;
-
-  TrimpotMedium()
-  {
-    minAngle = -0.83 * M_PI;
-    maxAngle = 0.83 * M_PI;
-
-    setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/TrimpotMedium.svg")));
-    bg = new widget::SvgWidget;
-    bg->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/TrimpotMedium_bg.svg")));
-    fb->addChildBelow(bg, tw);
-  }
-
-  void onDoubleClick(const DoubleClickEvent &e) override
-  {
-    float value = 0.0;
-
-    switch (module->selected_function)
-    {
-    case FUNCTION_VOLUME:
-      value = default_volume;
-      break;
-    case FUNCTION_PAN:
-      value = default_pan;
-      break;
-    case FUNCTION_PITCH:
-      value = default_pitch;
-      break;
-    case FUNCTION_RATCHET:
-      value = default_ratchet;
-      break;
-    case FUNCTION_SAMPLE_START:
-      value = default_sample_start;
-      break;
-    case FUNCTION_SAMPLE_END:
-      value = default_sample_end;
-      break;
-    case FUNCTION_PROBABILITY:
-      value = default_probability;
-      break;
-    case FUNCTION_REVERSE:
-      value = default_reverse;
-      break;
-    case FUNCTION_LOOP:
-      value = default_loop;
-      break;
-    case FUNCTION_ATTACK:
-      value = default_attack;
-      break;
-    case FUNCTION_RELEASE:
-      value = default_release;
-      break;
-    case FUNCTION_DELAY_MIX:
-      value = default_delay_mix;
-      break;
-    case FUNCTION_DELAY_LENGTH:
-      value = default_delay_length;
-      break;
-    case FUNCTION_DELAY_FEEDBACK:
-      value = default_delay_feedback;
-      break;
-    }
-
-    if (module->shift_key)
-    {
-      // set _all_ knob values to the default
-      for (unsigned int i = 0; i < NUMBER_OF_STEPS; i++)
-      {
-        module->params[module->STEP_KNOBS + i].setValue(value);
-      }
-    }
-    else
-    {
-      // set _this_ knob's values to the default
-      module->params[parameter_index].setValue(value);
-    }
-  }
-
-  void onButton(const event::Button &e) override
-  {
-    if (module->selected_function == FUNCTION_SAMPLE_START || module->selected_function == FUNCTION_SAMPLE_END)
-    {
-      if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
-      {
-        if (module->lcd_screen_mode != module->SAMPLE)
-        {
-          module->lcd_screen_mode = module->SAMPLE;
-          module->visualizer_step = step;
-        }
-      }
-    }
-
-    if (module->selected_function == FUNCTION_RATCHET)
-    {
-      if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
-      {
-        if (module->lcd_screen_mode != module->RATCHET)
-        {
-          module->lcd_screen_mode = module->RATCHET;
-          module->visualizer_step = step;
-        }
-      }
-    }
-
-    SvgKnob::onButton(e);
-  }
-
-  void onDragEnd(const DragEndEvent &e) override
-  {
-
-    if (module->selected_function == FUNCTION_SAMPLE_START || module->selected_function == FUNCTION_SAMPLE_END)
-    {
-      if (e.button == GLFW_MOUSE_BUTTON_LEFT)
-        module->lcd_screen_mode = module->TRACK;
-    }
-
-    if (module->selected_function == FUNCTION_RATCHET)
-    {
-      if (e.button == GLFW_MOUSE_BUTTON_LEFT)
-        module->lcd_screen_mode = module->TRACK;
-    }
-
-    SvgKnob::onDragEnd(e);
-  }
-};
 
 struct LoadSamplesFromFolderMenuItem : MenuItem
 {
@@ -289,10 +176,10 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
   GrooveBoxWidget(GrooveBox *module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groove_box_front_panel.svg")));
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel.svg")));
 
-    addInput(createInputCentered<PJ301MPort>(Vec(39.4, 98), module, GrooveBox::STEP_INPUT));
-    addInput(createInputCentered<PJ301MPort>(Vec(39.4, 159), module, GrooveBox::RESET_INPUT));
+    addInput(createInputCentered<PJ301MPort>(Vec(39.2, 102), module, GrooveBox::STEP_INPUT));
+    addInput(createInputCentered<PJ301MPort>(Vec(39.2, 154), module, GrooveBox::RESET_INPUT));
 
     // sequence length indicator
     SequenceLengthWidget *sequence_length_widget = new SequenceLengthWidget();
@@ -316,68 +203,47 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     for (unsigned int i = 0; i < NUMBER_OF_STEPS; i++)
     {
       //
-      // Drum pad lights
+      // Drum step buttons
       //
-      VCVLightBezel<GrooveboxBlueLight> *groovebox_blue_light_bezel = createLightParamCentered<VCVLightBezel<GrooveboxBlueLight>>(Vec(button_positions[i][0], button_positions[i][1]), module, GrooveBox::DRUM_PADS + i, GrooveBox::DRUM_PAD_LIGHTS + i);
-      GrooveboxBlueLight *groove_box_blue_light = dynamic_cast<GrooveboxBlueLight *>(groovebox_blue_light_bezel->getLight());
-      groove_box_blue_light->module = module;
-      groove_box_blue_light->index = i;
-      addParam(groovebox_blue_light_bezel);
+      GrooveboxStepButton *step_button = createParamCentered<GrooveboxStepButton>(Vec(button_positions[i][0], button_positions[i][1]), module, GrooveBox::DRUM_PADS + i);
+      step_button->module = module;
+      step_button->index = i;
+      GrooveboxSmallLight *inner_button = new GrooveboxSmallLight((module) ? &module->inner_light_booleans[i] : &dummy_boolean);
+      inner_button->box.pos = Vec(10.358, 6.710);
+      step_button->addChild(inner_button);
+      addParam(step_button);
 
       //
       // Step location indicators
       //
-      addChild(createLightCentered<SmallLight<RedLight>>(Vec(button_positions[i][0], button_positions[i][1] - 25), module, GrooveBox::STEP_LOCATION_LIGHTS + i));
-
+      GrooveboxSmallLight *step_light_widget = new GrooveboxSmallLight((module) ? &module->light_booleans[i] : &dummy_boolean);
+      step_light_widget->box.pos = Vec(button_positions[i][0] - (step_light_widget->box.size.x / 2.0), button_positions[i][1] - 25 - (step_light_widget->box.size.y / 2.0));
+      addChild(step_light_widget);
+      
       //
-      // Create attenuator knobs for each step
+      // Create parameter knobs for each step
       //
-      TrimpotMedium *knob = createParamCentered<TrimpotMedium>(Vec(button_positions[i][0], button_positions[i][1] + 30), module, GrooveBox::STEP_KNOBS + i);
+      ParameterKnob *knob = createParamCentered<ParameterKnob>(Vec(button_positions[i][0], button_positions[i][1] + 35.65), module, GrooveBox::STEP_KNOBS + i);
       knob->module = module;
       knob->parameter_index = GrooveBox::STEP_KNOBS + i;
       knob->step = i;
       addParam(knob);
     }
 
-    // Function Buttons
-    for (unsigned int i = 0; i < NUMBER_OF_FUNCTIONS; i++)
+    for(unsigned int parameter_slot = 0; parameter_slot<NUMBER_OF_PARAMETER_LOCKS; parameter_slot++)
     {
+      unsigned int parameter_index = parameter_slots[parameter_slot];
 
-      // The function buttons got shifted around at some point during the evolution
-      // of the module.  The "ordering_of_functions" array maps the function index
-      // to the correct location on the front panel.
-      float x = function_button_positions[i][0];
-      float y = function_button_positions[i][1];
+      float x = function_button_positions[parameter_slot][0];
+      float y = function_button_positions[parameter_slot][1];
 
-      addParam(createParamCentered<LEDButton>(Vec(x, y), module, GrooveBox::FUNCTION_BUTTONS + i));
-      addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x, y), module, GrooveBox::FUNCTION_BUTTON_LIGHTS + i));
+      GrooveboxParameterButton *groovebox_parameter_button = createParamCentered<GrooveboxParameterButton>(Vec(x, y), module, GrooveBox::PARAMETER_LOCK_BUTTONS + parameter_index);
+      groovebox_parameter_button->parameter_index = parameter_index;
+      groovebox_parameter_button->parameter_slot = parameter_slot;
+      groovebox_parameter_button->module = module;
+      addParam(groovebox_parameter_button);
     }
 
-    // Track buttons and labels
-
-    for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
-    {
-
-      float x = track_button_positions[i][0];
-      float y = track_button_positions[i][1];
-
-      TrackLabelDisplay *track_label_display = new TrackLabelDisplay(i);
-      track_label_display->setPosition(Vec(x, y - 14));
-      track_label_display->module = module;
-      addChild(track_label_display);
-
-      TrackSampleNudge *track_sample_nudge_up = new TrackSampleNudge(i);
-      track_sample_nudge_up->setPosition(Vec(x + 163, y - 14)); // 162
-      track_sample_nudge_up->module = module;
-      track_sample_nudge_up->direction = -1;
-      addChild(track_sample_nudge_up);
-
-      TrackSampleNudge *track_sample_nudge_down = new TrackSampleNudge(i);
-      track_sample_nudge_down->setPosition(Vec(x + 163, y + 1));
-      track_sample_nudge_down->module = module;
-      track_sample_nudge_down->direction = 1;
-      addChild(track_sample_nudge_down);
-    }
 
     // Individual track outputs
     for (unsigned int i = 0; i < (NUMBER_OF_TRACKS * 2); i++)
@@ -386,8 +252,8 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     }
 
     // Mix output L/R
-    addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(203, 6)), module, GrooveBox::AUDIO_OUTPUT_LEFT));
-    addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(213, 6)), module, GrooveBox::AUDIO_OUTPUT_RIGHT));
+    addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(202.25, 6)), module, GrooveBox::AUDIO_OUTPUT_LEFT));
+    addOutput(createOutputCentered<ModdedCL1362>(mm2px(Vec(213.25, 6)), module, GrooveBox::AUDIO_OUTPUT_RIGHT));
 
     // Master volume
     addParam(createParamCentered<Trimpot>(mm2px(Vec(188.8465, 6)), module, GrooveBox::MASTER_VOLUME));
@@ -399,30 +265,39 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     {
       float x = memory_slot_button_positions[i][0];
       float y = memory_slot_button_positions[i][1];
-      addParam(createParamCentered<LEDButton>(Vec(x, y), module, GrooveBox::MEMORY_SLOT_BUTTONS + i));
-      addChild(createLightCentered<MediumLight<GreenLight>>(Vec(x, y), module, GrooveBox::MEMORY_SLOT_BUTTON_LIGHTS + i));
+
+      GrooveboxMemoryButton *groovebox_memory_button = createParamCentered<GrooveboxMemoryButton>(Vec(x, y), module, GrooveBox::MEMORY_SLOT_BUTTONS + i);
+      groovebox_memory_button->module = module;
+      groovebox_memory_button->memory_slot = i;
+      addParam(groovebox_memory_button);
     }
 
     // Memory CV input
-    addInput(createInputCentered<PJ301MPort>(Vec(87.622, 98), module, GrooveBox::MEM_INPUT));
+    addInput(createInputCentered<PJ301MPort>(Vec(87.622, 102), module, GrooveBox::MEM_INPUT));
 
-    // Copy/Paste Memory buttons
-    addParam(createParamCentered<VCVButton>(Vec(87.622, 144.00), module, GrooveBox::COPY_BUTTON));
-    addParam(createParamCentered<VCVButton>(Vec(87.622, 187), module, GrooveBox::PASTE_BUTTON));
+    GrooveboxSoftButton *copy_button = createParamCentered<GrooveboxSoftButton>(Vec(86.56, 152.50), module, GrooveBox::COPY_BUTTON);
+    copy_button->momentary = true;
+    addParam(copy_button);
 
-    // Sample Visualizer Widget
+    GrooveboxSoftButton *paste_button = createParamCentered<GrooveboxSoftButton>(Vec(86.56, 193), module, GrooveBox::PASTE_BUTTON);
+    paste_button->momentary = true;
+    addParam(paste_button);
 
-    SampleVisualizerWidget *sampler_visualizer_widget = new SampleVisualizerWidget(389.0, 146.669);
-    sampler_visualizer_widget->module = module;
-    sampler_visualizer_widget->box.pos.x = 249.0; // 246.1063;
-    sampler_visualizer_widget->box.pos.y = 64.358;
-    addChild(sampler_visualizer_widget);
+    //
+    // LCD displays
+    //
 
-    RatchetVisualizerWidget *ratchet_visualizer_widget = new RatchetVisualizerWidget();
-    ratchet_visualizer_widget->module = module;
-    ratchet_visualizer_widget->box.pos.x = 246.1063;
-    ratchet_visualizer_widget->box.pos.y = 64.358;
-    addChild(ratchet_visualizer_widget);
+    LCDTrackDisplay *lcd_track_display = new LCDTrackDisplay(module);
+    addChild(lcd_track_display);
+
+    if(module) // skip these when viewinng the module in the library
+    {
+      LCDSampleDisplay *lcd_sample_display = new LCDSampleDisplay(module);
+      addChild(lcd_sample_display);
+
+      LCDRatchetDisplay *lcd_ratchet_display = new LCDRatchetDisplay(module);
+      addChild(lcd_ratchet_display);
+    }
   }
 
   void onHoverKey(const event::HoverKey &e) override
@@ -431,7 +306,6 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     assert(module);
 
     module->shift_key = ((e.mods & RACK_MOD_MASK) & GLFW_MOD_SHIFT);
-    module->control_key = ((e.mods & RACK_MOD_MASK) & RACK_MOD_CTRL);
 
     ModuleWidget::onHoverKey(e);
   }
@@ -458,6 +332,11 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     AllTracksMenu *all_tracks_menu = createMenuItem<AllTracksMenu>("All Tracks", RIGHT_ARROW);
     all_tracks_menu->module = module;
     menu->addChild(all_tracks_menu);
+
+    // LCD color theme
+    LCDColorThemeMenu *lcd_color_theme_menu = createMenuItem<LCDColorThemeMenu>("LCD Color Theme", RIGHT_ARROW);
+    lcd_color_theme_menu->module = module;
+    menu->addChild(lcd_color_theme_menu);
 
     //
     // Start sample selection menu options
@@ -573,7 +452,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     void onAction(const event::Action &e) override
     {
       module->selected_memory_slot->tracks[track_index].clear();
-      module->updateKnobPositions();
+      module->updatePanelControls();
     }
   };
 
@@ -669,4 +548,49 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       return menu;
     }
   };
+
+  struct LCDColorMenuItem : MenuItem {
+    GrooveBox *module;
+    unsigned int theme_id = 0;
+
+    void onAction(const event::Action &e) override {
+      LCDColorScheme::selected_color_scheme = theme_id;
+    }
+  };
+
+  struct LCDColorThemeMenu : MenuItem
+  {
+    GrooveBox *module;
+
+    Menu *createChildMenu() override {
+      Menu *menu = new Menu;
+
+      LCDColorMenuItem *lcd_color_menu_item_0 = createMenuItem<LCDColorMenuItem>("Legacy Red", CHECKMARK(LCDColorScheme::selected_color_scheme == 0));
+      lcd_color_menu_item_0->module = module;
+      lcd_color_menu_item_0->theme_id = 0;
+      menu->addChild(lcd_color_menu_item_0);
+
+      LCDColorMenuItem *lcd_color_menu_item_1 = createMenuItem<LCDColorMenuItem>("Soft Yellow", CHECKMARK(LCDColorScheme::selected_color_scheme == 1));
+      lcd_color_menu_item_1->module = module;
+      lcd_color_menu_item_1->theme_id = 1;
+      menu->addChild(lcd_color_menu_item_1);
+
+      LCDColorMenuItem *lcd_color_menu_item_2 = createMenuItem<LCDColorMenuItem>("Cool White", CHECKMARK(LCDColorScheme::selected_color_scheme == 2));
+      lcd_color_menu_item_2->module = module;
+      lcd_color_menu_item_2->theme_id = 2;
+      menu->addChild(lcd_color_menu_item_2);
+
+      LCDColorMenuItem *lcd_color_menu_item_3 = createMenuItem<LCDColorMenuItem>("Ice Blue", CHECKMARK(LCDColorScheme::selected_color_scheme == 3));
+      lcd_color_menu_item_3->module = module;
+      lcd_color_menu_item_3->theme_id = 3;
+      menu->addChild(lcd_color_menu_item_3);
+
+      LCDColorMenuItem *lcd_color_menu_item_4 = createMenuItem<LCDColorMenuItem>("Data Green", CHECKMARK(LCDColorScheme::selected_color_scheme == 4));
+      lcd_color_menu_item_4->module = module;
+      lcd_color_menu_item_4->theme_id = 4;
+      menu->addChild(lcd_color_menu_item_4);
+
+      return menu;
+    }
+  };  
 };

@@ -2,49 +2,44 @@ struct RangeGrabberRightWidget : TransparentWidget
 {
   GrooveBox *module;
   bool is_moused_over = false;
+  // legacy values expected by callers
   float diameter = 20.0;
   float radius = diameter / 2.0;
+  float height = 18.0;
+  float width = 34.0;
   Vec drag_position;
 
   RangeGrabberRightWidget()
   {
-    box.size = Vec(diameter, diameter);
+    box.size = Vec(width, height);
   }
+
 
   void draw(const DrawArgs &args) override
   {
     const auto vg = args.vg;
 
-    nvgSave(vg);
-    nvgBeginPath(vg);
+    // Draw grabber
+    if(is_moused_over && module) {
 
-    if(module) {
-      this->box.pos = Vec(button_positions[module->selected_track->range_end][0] - radius, this->box.pos.y);
-    }
-    else {
-      this->box.pos = Vec(button_positions[10][0] - radius, this->box.pos.y);
-    }
+      nvgSave(vg);
+      nvgBeginPath(vg);
 
-    nvgCircle(vg, box.size.x - radius, box.size.y - radius, radius);
+      this->box.pos = Vec(button_positions[module->selected_track->m.range_end][0] - width/2, this->box.pos.y);
 
-    if(is_moused_over) {
-      nvgFillColor(vg, nvgRGB(120,120,120));
-    }
-    else {
-      nvgFillColor(vg, nvgRGB(65,65,65));
-    }
+      nvgRoundedRect(vg, box.size.x - width, box.size.y - height, width, height, 2.0);
+      nvgFillColor(vg, nvgRGB(83,92,91));
 
-    nvgFill(vg);
-    nvgRestore(vg);
+      nvgFill(vg);
+      nvgRestore(vg);
+    }
   }
-
 
   void onButton(const event::Button &e) override
   {
     if(e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
     {
       e.consume(this);
-      // drag_position = e.pos;
       drag_position = this->box.pos;
     }
   }
@@ -79,10 +74,10 @@ struct RangeGrabberRightWidget : TransparentWidget
     float zoom = getAbsoluteZoom();
     drag_position = drag_position.plus(e.mouseDelta.div(zoom));
 
-    int quantized_x = ((drag_position.x - button_positions[0][0]) + diameter) / (button_positions[1][0] - button_positions[0][0]);
+    int quantized_x = ((drag_position.x - button_positions[0][0]) + width) / (button_positions[1][0] - button_positions[0][0]);
     quantized_x = clamp(quantized_x, 0, NUMBER_OF_STEPS - 1);
 
-    if((unsigned int) quantized_x > module->selected_track->range_start) module->selected_track->range_end = quantized_x;
+    if((unsigned int) quantized_x > module->selected_track->m.range_start) module->selected_track->m.range_end = quantized_x;
   }
 };
 
@@ -91,41 +86,36 @@ struct RangeGrabberLeftWidget : TransparentWidget
 {
   GrooveBox *module;
   bool is_moused_over = false;
+  // legacy values expected by callers
   float diameter = 20.0;
   float radius = diameter / 2.0;
+  float height = 18.0;
+  float width = 34.0;
   Vec drag_position;
 
   RangeGrabberLeftWidget()
   {
-    box.size = Vec(diameter, diameter);
+    box.size = Vec(width, height);
   }
 
   void draw(const DrawArgs &args) override
   {
     const auto vg = args.vg;
 
-    // Draw circle
-    nvgSave(vg);
-    nvgBeginPath(vg);
+    // Draw grabber
+    if(is_moused_over && module) {
 
-    if(module) {
-      this->box.pos = Vec(button_positions[module->selected_track->range_start][0] - radius, this->box.pos.y);
-    }
-    else {
-      this->box.pos = Vec(button_positions[10][0] - radius, this->box.pos.y);
-    }
+      nvgSave(vg);
+      nvgBeginPath(vg);
 
-    nvgCircle(vg, box.size.x - radius, box.size.y - radius, radius);
+      this->box.pos = Vec(button_positions[module->selected_track->m.range_start][0] - width/2, this->box.pos.y);
 
-    if(is_moused_over) {
-      nvgFillColor(vg, nvgRGB(120,120,120));
-    }
-    else {
-      nvgFillColor(vg, nvgRGB(65,65,65));
-    }
+      nvgRoundedRect(vg, box.size.x - width, box.size.y - height, width, height, 2.0);
+      nvgFillColor(vg, nvgRGB(83,92,91));
 
-    nvgFill(vg);
-    nvgRestore(vg);
+      nvgFill(vg);
+      nvgRestore(vg);
+    }
   }
 
 
@@ -168,9 +158,9 @@ struct RangeGrabberLeftWidget : TransparentWidget
     float zoom = getAbsoluteZoom();
     drag_position = drag_position.plus(e.mouseDelta.div(zoom));
 
-    int quantized_x = ((drag_position.x - button_positions[0][0]) + diameter) / (button_positions[1][0] - button_positions[0][0]);
+    int quantized_x = ((drag_position.x - button_positions[0][0]) + width) / (button_positions[1][0] - button_positions[0][0]);
     quantized_x = clamp(quantized_x, 0, NUMBER_OF_STEPS - 1);
 
-    if((unsigned int) quantized_x < module->selected_track->range_end) module->selected_track->range_start = quantized_x;
+    if((unsigned int) quantized_x < module->selected_track->m.range_end) module->selected_track->m.range_start = quantized_x;
   }
 };

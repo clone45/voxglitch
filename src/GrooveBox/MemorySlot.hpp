@@ -11,23 +11,50 @@ namespace groove_box
 
 struct MemorySlot
 {
-  Track tracks[NUMBER_OF_TRACKS];
+  std::array<Track, NUMBER_OF_TRACKS> tracks;
 
   void setSamplePlayer(unsigned int track_index, SamplePlayer *sample_player)
   {
-    tracks[track_index].setSamplePlayer(sample_player);
+    tracks.at(track_index).setSamplePlayer(sample_player);
+  }
+
+  // TODO:  I may eventually use an array of slew limiters to avoid having all
+  // of these similar functions.
+  void setVolumeSlewLimiter(unsigned int track_index, FastSlewLimiter *slew_limiter)
+  {
+    tracks.at(track_index).setVolumeSlewLimiter(slew_limiter);
+  }
+
+  void setPanSlewLimiter(unsigned int track_index, FastSlewLimiter *slew_limiter)
+  {
+    tracks.at(track_index).setPanSlewLimiter(slew_limiter);
+  }
+
+  void setFilterCutoffSlewLimiter(unsigned int track_index, FastSlewLimiter *slew_limiter)
+  {
+    tracks.at(track_index).setFilterCutoffSlewLimiter(slew_limiter);
+  }
+
+  void setFilterResonanceSlewLimiter(unsigned int track_index, FastSlewLimiter *slew_limiter)
+  {
+    tracks.at(track_index).setFilterResonanceSlewLimiter(slew_limiter);
+  }
+
+  void setDelayDsp(unsigned int track_index, SimpleDelay *delay_dsp)
+  {
+    tracks.at(track_index).setDelayDsp(delay_dsp);
   }
 
   Track *getTrack(unsigned int track_index)
   {
-    return(&tracks[track_index]);
+    return(&tracks.at(track_index));
   }
 
   void copy(MemorySlot *src_memory)
   {
     for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
     {
-      this->tracks[i].copy(&src_memory->tracks[i]);
+      this->tracks.at(i).copy(&src_memory->tracks[i]);
     }
   }
 
@@ -35,7 +62,7 @@ struct MemorySlot
   {
     for(unsigned int i=0; i<NUMBER_OF_TRACKS; i++)
     {
-      this->tracks[i].initialize();
+      this->tracks.at(i).initialize();
     }
   }
 

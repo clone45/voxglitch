@@ -67,8 +67,6 @@ struct WaveformWidget : TransparentWidget
                     normalizeAverages();
                 }
 
-                // drawContainer(vg); // for debugging
-
                 drawWaveform(vg);
 
                 if(waveform_modal->draw_position_indicator) drawPositionIndicator(vg);

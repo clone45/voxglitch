@@ -48,13 +48,6 @@ struct GrainEngineMK2Expander : Module
     if(! system::isDirectory(path))
     {
       system::createDirectory(path);
-      // DEBUG("creating path for sample storage");
-      // DEBUG(path.c_str());
-    }
-    else
-    {
-      // DEBUG("Using path: ");
-      // DEBUG(path.c_str());
     }
   }
 

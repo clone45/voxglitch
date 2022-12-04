@@ -284,9 +284,6 @@ struct WavBankMC : VoxglitchSamplerModule
 				this->samples.push_back(new_sample);
 			}
 		}
-
-    // DEBUG("done loading files");
-
 	}
 
   // Helper functions used by WavBankMCReadout
