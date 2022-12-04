@@ -32,7 +32,6 @@ struct Vulcan : Module
                 grid_data[col][row] = false;
             }
         }
-
     }
 
     json_t *dataToJson() override
@@ -57,10 +56,6 @@ struct Vulcan : Module
 struct GridWidget : TransparentWidget
 {
   Vulcan *module;
-  Vec drag_position;
-  bool mouse_lock = false;
-  int old_row = -1;
-  int old_column = -1;
 
   GridWidget()
   {
@@ -103,7 +98,6 @@ struct GridWidget : TransparentWidget
           }
 
           nvgFill(vg);
-
         }
       }
     }
