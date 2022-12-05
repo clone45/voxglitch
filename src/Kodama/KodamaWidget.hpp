@@ -7,7 +7,7 @@ struct VoxglitchSliderLong : app::SvgSlider {
 	}
 };
 
-struct KodamaWidget : VoxglitchModuleWidget
+struct KodamaWidget : VoxglitchSamplerModuleWidget
 {
   KodamaWidget(Kodama* module)
   {
@@ -31,14 +31,8 @@ struct KodamaWidget : VoxglitchModuleWidget
     addParam(createParamCentered<VoxglitchSliderLong>(themePos("SLIDERS_12"), module, Kodama::SLIDERS + 11));
 
 
-    // Add rack screws
-    if(theme.showScrews())
-    {
-      addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, 0)));
-  		// addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-  		addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-  		// addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    }
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(64.216 + 0, 114.702)), module, Kodama::AUDIO_OUTPUT_LEFT));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(74.94 + 0, 114.702)), module, Kodama::AUDIO_OUTPUT_RIGHT));
 
     // =================== PLACE COMPONENTS ====================================
   }
@@ -48,7 +42,19 @@ struct KodamaWidget : VoxglitchModuleWidget
     Kodama *module = dynamic_cast<Kodama*>(this->module);
     assert(module);
 
-    // add contect menu items here
+    menu->addChild(new MenuEntry); // For spacing only
+    // menu->addChild(createMenuLabel("Load Sample"));
+
+    KodamaLoadSample *kodama_load_sample = new KodamaLoadSample();
+    kodama_load_sample->module = module;
+    kodama_load_sample->text = "Load sample";
+    menu->addChild(kodama_load_sample);
+
+    // Interpolation menu
+    menu->addChild(new MenuEntry); // For spacing only
+    SampleInterpolationMenuItem *sample_interpolation_menu_item = createMenuItem<SampleInterpolationMenuItem>("Interpolation", RIGHT_ARROW);
+    sample_interpolation_menu_item->module = module;
+    menu->addChild(sample_interpolation_menu_item);
   }
 
 };

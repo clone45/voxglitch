@@ -4,9 +4,12 @@
 
 #include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
+#include "Common/sample.hpp"
+#include "Common/SamplePlayer.hpp"
 
 #include "Kodama/defines.h"
 #include "Kodama/Kodama.hpp"
+#include "Kodama/KodamaLoadSample.hpp"
 #include "Kodama/KodamaWidget.hpp"
 
 Model* modelKodama = createModel<Kodama, KodamaWidget>("kodama");
