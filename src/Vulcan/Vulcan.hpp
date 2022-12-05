@@ -45,6 +45,8 @@ struct Vulcan : Module
         grid_data[col][row] = (bool) gen();
       }
     }
+
+    Module::onRandomize();
   }
 
   json_t *dataToJson() override
