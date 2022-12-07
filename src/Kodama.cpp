@@ -9,7 +9,6 @@
 
 #include "Kodama/defines.h"
 #include "Kodama/Kodama.hpp"
-#include "Kodama/KodamaLoadSample.hpp"
 #include "Kodama/KodamaWidget.hpp"
 
 Model* modelKodama = createModel<Kodama, KodamaWidget>("kodama");

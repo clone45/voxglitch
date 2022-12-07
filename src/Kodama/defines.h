@@ -1,1 +1,1 @@
-#define NUMBER_OF_SLIDERS 12
+
