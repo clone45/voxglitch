@@ -5,6 +5,7 @@ struct Kodama : VoxglitchModule
 {
     bool dirty = false;
     std::string text;
+    bool grid_data[COLS][ROWS];
 
     enum ParamIds
     {
@@ -12,6 +13,8 @@ struct Kodama : VoxglitchModule
     };
     enum InputIds
     {
+        STEP_INPUT,
+        RESET_INPUT,
         NUM_INPUTS
     };
     enum OutputIds
@@ -26,6 +29,14 @@ struct Kodama : VoxglitchModule
     Kodama()
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+
+        for (unsigned int row = 0; row < ROWS; row++)
+        {
+            for (unsigned int col = 0; col < COLS; col++)
+            {
+                grid_data[col][row] = false;
+            }
+        }
     }
 
     //

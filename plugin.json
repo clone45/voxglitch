@@ -103,7 +103,7 @@
         "name": "Kodama",
         "description": "Performance oriented sampler using sliders",
         "tags": ["Sampler"]
-    },    
+    },       
     {
         "slug": "looper",
         "name": "Looper",

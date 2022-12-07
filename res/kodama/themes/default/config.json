@@ -1,17 +1,17 @@
 {
-	"panel_width" : 585.0,
+	"panel_width" : 900.000,
 	"layers": [
 		{
       "type": "image",
       "path": "res/themes/default/background2.jpg",
       "zoom": 0.15,
-      "width": 198.12,
+      "width": 304.800,
       "height": 128.5
     },
     {
       "type": "image",
       "path": "res/kodama/themes/default/details.png",
-      "width": 198.12,
+      "width": 304.800,
       "height": 128.5,
       "zoom": 0.25
     },
@@ -22,8 +22,8 @@
 	],
   "widgets": {
 
-    "CLOCK_INPUT": {"x": 30.12117, "y": 71.68296},
-    "RESET_INPUT": {"x": 73.53734, "y": 71.68296},
+    "CLOCK_INPUT": {"x": 30.12117, "y": 150.68296},
+    "RESET_INPUT": {"x": 73.53734, "y": 150.68296},
     "RATCHET_INPUT": {"x": 117.07335, "y": 71.68296},
 
     "SLIDERS_1": {"x": 73.6109,"y": 69.3359},
