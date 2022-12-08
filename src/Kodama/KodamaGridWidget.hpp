@@ -36,13 +36,21 @@ struct KodamaGridWidget : TransparentWidget
           nvgBeginPath(vg);
           nvgRect(vg, x, y, CELL_WIDTH, CELL_HEIGHT);
 
-          if (module->grid_data[column][row] == true)
+          // if (module->grid_data[column][row] == true)
+          if (module->gate_sequencers[row].getValue(column) == true)
           {
             nvgFillColor(vg, nvgRGB(200, 200, 200));
           }
           else
           {
-            nvgFillColor(vg, nvgRGB(80, 80, 80));
+            if(column == module->gate_sequencers[row].getPlaybackPosition())
+            {
+                nvgFillColor(vg, nvgRGB(100, 100, 100));
+            }
+            else
+            {
+                nvgFillColor(vg, nvgRGB(80, 80, 80));
+            }
           }
 
           nvgFill(vg);
@@ -73,7 +81,7 @@ struct KodamaGridWidget : TransparentWidget
         unsigned int row, column;
         std::tie(row, column) = getRowAndColumnFromVec(e.pos);
 
-        module->grid_data[column][row] = !module->grid_data[column][row];
+        module->gate_sequencers[row].toggleValue(column);
       }
   }
 

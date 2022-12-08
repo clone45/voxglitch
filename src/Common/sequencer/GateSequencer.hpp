@@ -31,6 +31,11 @@ struct GateSequencer : Sequencer
         sequence[index] = value;
     }
 
+    void toggleValue(int index)
+    {
+        sequence[index] = ! sequence[index];
+    }
+
     void shiftLeft()
     {
         double temp = sequence[0];

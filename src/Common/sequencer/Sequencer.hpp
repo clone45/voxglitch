@@ -26,6 +26,11 @@ struct Sequencer
     return(sequence_playback_position);
   }
 
+  unsigned int getPosition()
+  {
+    return(sequence_playback_position);
+  }
+
   unsigned int getLength()
   {
     return(sequence_length);

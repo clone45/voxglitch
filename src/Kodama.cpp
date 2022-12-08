@@ -4,8 +4,8 @@
 
 #include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
-#include "Common/sample.hpp"
-#include "Common/SamplePlayer.hpp"
+#include "Common/sequencer/Sequencer.hpp"
+#include "Common/sequencer/GateSequencer.hpp"
 
 #include "Kodama/defines.h"
 #include "Kodama/Kodama.hpp"

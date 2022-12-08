@@ -5,7 +5,11 @@ struct Kodama : VoxglitchModule
 {
     bool dirty = false;
     std::string text;
-    bool grid_data[COLS][ROWS];
+    dsp::BooleanTrigger step_trigger;
+
+    // bool grid_data[COLS][ROWS];
+
+    GateSequencer gate_sequencers[ROWS];
 
     enum ParamIds
     {
@@ -32,10 +36,8 @@ struct Kodama : VoxglitchModule
 
         for (unsigned int row = 0; row < ROWS; row++)
         {
-            for (unsigned int col = 0; col < COLS; col++)
-            {
-                grid_data[col][row] = false;
-            }
+            gate_sequencers[row].assign(32, 0.0);
+            gate_sequencers[row].setLength(32);
         }
     }
 
@@ -61,5 +63,14 @@ struct Kodama : VoxglitchModule
 
     void process(const ProcessArgs &args) override
     {
+        if(step_trigger.process(inputs[STEP_INPUT].getVoltage()))
+        {
+            // Step all of the gate sequencers
+            for(unsigned int i=0; i < COLS; i++)
+            {
+                gate_sequencers[i].step();
+                // if(trigger_results[i]) gateOutputPulseGenerators[i].trigger(0.01f);
+            }
+        }        
     }
 };
