@@ -1,20 +1,14 @@
-//
-// Kodama - Performance sampler with sliders
 #include <fstream>
 
 struct Kodama : VoxglitchModule
 {
-    // bool dirty = false;
-    // std::string text;
     dsp::BooleanTrigger step_trigger;
+    dsp::BooleanTrigger next_sequence_trigger;
     dsp::PulseGenerator pulse_generator;
 
     std::vector<std::vector<bool>> sequences;
     unsigned int step = 0;
-
-    // bool grid_data[COLS][ROWS];
-    // GateSequencer gate_sequencers[ROWS];
-    // std::array<GateSequencer, ROWS> gate_sequencers;
+    unsigned int selected_sequence = 0;
 
     enum ParamIds
     {
@@ -24,7 +18,7 @@ struct Kodama : VoxglitchModule
     {
         STEP_INPUT,
         RESET_INPUT,
-        NEXT_INPUT,
+        NEXT_SEQUENCE_INPUT,
         NUM_INPUTS
     };
     enum OutputIds
@@ -66,10 +60,15 @@ struct Kodama : VoxglitchModule
     {
         if(! sequences.empty())
         {
+            if (next_sequence_trigger.process(inputs[NEXT_SEQUENCE_INPUT].getVoltage()))
+            {
+                selected_sequence = ((selected_sequence + 1) % sequences.size());
+            }
+
             if (step_trigger.process(inputs[STEP_INPUT].getVoltage()))
             {
-                step = ((step + 1) % 32);
-                if(sequences[0][step]) pulse_generator.trigger(0.01f);
+                step = ((step + 1) % sequences[selected_sequence].size());
+                if(sequences[selected_sequence][step]) pulse_generator.trigger(0.01f);
             }
 
             bool pulse = pulse_generator.process(1.0 / args.sampleRate);
@@ -99,14 +98,6 @@ struct Kodama : VoxglitchModule
                 sequences.push_back(sequence);
             }
         }
-
-        // test by outputting the first sequence
-        /*
-        for(unsigned int i = 0; i < 32; i++)
-        {
-            DEBUG(std::to_string(sequences[0][i]).c_str());
-        }
-        */
     }
 
     std::string selectFileVCV()

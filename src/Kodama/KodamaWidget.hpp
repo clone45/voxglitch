@@ -12,7 +12,7 @@ struct KodamaWidget : VoxglitchModuleWidget
     // addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, Kodama::RESET_INPUT));
 
     addInput(createInputCentered<VoxglitchInputPort>(Vec(150.0, 15.0), module, Kodama::STEP_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(180.0, 15.0), module, Kodama::NEXT_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(180.0, 20.0), module, Kodama::NEXT_SEQUENCE_INPUT));
 
     addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(210.0, 15.0), module, Kodama::GATE_OUTPUT));
 
