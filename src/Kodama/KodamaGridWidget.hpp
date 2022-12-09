@@ -1,3 +1,4 @@
+/*
 struct KodamaGridWidget : TransparentWidget
 {
   Kodama *module;
@@ -16,12 +17,10 @@ struct KodamaGridWidget : TransparentWidget
     nvgSave(vg);
 
     // Debugging code for draw area, which often has to be set experimentally
-    /*
     nvgBeginPath(vg);
     nvgRect(vg, 0, 0, box.size.x, box.size.y);
     nvgFillColor(vg, nvgRGBA(130, 10, 120, 100));
     nvgFill(vg);
-    */
 
     if (module)
     {
@@ -106,3 +105,4 @@ struct KodamaGridWidget : TransparentWidget
   }
 };
 
+*/
