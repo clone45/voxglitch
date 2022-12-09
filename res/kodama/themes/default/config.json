@@ -1,17 +1,17 @@
 {
-	"panel_width" : 900.000,
+	"panel_width" : 90.0,
 	"layers": [
 		{
       "type": "image",
       "path": "res/themes/default/background2.jpg",
       "zoom": 0.15,
-      "width": 304.800,
+      "width": 30.48,
       "height": 128.5
     },
     {
       "type": "image",
       "path": "res/kodama/themes/default/details.png",
-      "width": 304.800,
+      "width": 30.48,
       "height": 128.5,
       "zoom": 0.25
     },

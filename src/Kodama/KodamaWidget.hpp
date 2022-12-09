@@ -8,13 +8,15 @@ struct KodamaWidget : VoxglitchModuleWidget
     theme.load("kodama");
     applyTheme();
 
-    // addInput(createInputCentered<VoxglitchInputPort>(themePos("STEP_INPUT"), module, Kodama::STEP_INPUT));
-    // addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, Kodama::RESET_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(30.0, 30.0), module, Kodama::STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(30.0, 60.0), module, Kodama::RESET_INPUT));
 
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(150.0, 15.0), module, Kodama::STEP_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(180.0, 20.0), module, Kodama::NEXT_SEQUENCE_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(30.0, 120.0), module, Kodama::NEXT_SEQUENCE_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(30.0, 150.0), module, Kodama::PREV_SEQUENCE_INPUT));
 
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(210.0, 15.0), module, Kodama::GATE_OUTPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(30.0, 200.0), module, Kodama::CV_SEQUENCE_SELECT));
+
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(30.0, 300), module, Kodama::GATE_OUTPUT));
 
     /*
     CodeDisplay *code_display = createWidget<CodeDisplay>(mm2px(Vec(0.0, 12.869)));
