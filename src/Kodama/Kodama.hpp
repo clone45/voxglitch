@@ -65,6 +65,20 @@ struct Kodama : VoxglitchModule
     {
     }
 
+    void reset()
+    {
+        first_step = true;
+        step = 0;
+        wait_for_reset_timer = true;
+
+        // Set up a counter so that the clock input will ignore
+        // incoming clock pulses for 1 millisecond after a reset input. This
+        // is to comply with VCV Rack's standards.  See section "Timing" at
+        // https://vcvrack.com/manual/VoltageStandards
+
+        reset_timer.reset();
+    }
+
     void process(const ProcessArgs &args) override
     {
         if(sequences.empty()) return;
@@ -81,16 +95,7 @@ struct Kodama : VoxglitchModule
 
         if (reset_trigger.process(inputs[RESET_INPUT].getVoltage()))
         {
-            first_step = true;
-            step = 0;
-            wait_for_reset_timer = true;
-
-            // Set up a (reverse) counter so that the clock input will ignore
-            // incoming clock pulses for 1 millisecond after a reset input. This
-            // is to comply with VCV Rack's standards.  See section "Timing" at
-            // https://vcvrack.com/manual/VoltageStandards
-
-            reset_timer.reset();
+            reset();
         }
 
         if (!wait_for_reset_timer && step_trigger.process(inputs[STEP_INPUT].getVoltage()))
@@ -126,6 +131,9 @@ struct Kodama : VoxglitchModule
     {
         std::ifstream input_file(path);
 
+        // Clear out existing data
+        sequences.clear();
+
         // test file open
         if (input_file)
         {
@@ -144,6 +152,8 @@ struct Kodama : VoxglitchModule
                 sequences.push_back(sequence);
             }
         }
+
+        reset();
     }
 
     std::string selectFileVCV()

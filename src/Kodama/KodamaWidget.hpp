@@ -8,28 +8,16 @@ struct KodamaWidget : VoxglitchModuleWidget
     theme.load("kodama");
     applyTheme();
 
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(30.0, 30.0), module, Kodama::STEP_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(30.0, 60.0), module, Kodama::RESET_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(45.0, 63.3706), module, Kodama::STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(45.0, 120.9109), module, Kodama::RESET_INPUT));
 
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(30.0, 120.0), module, Kodama::NEXT_SEQUENCE_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(30.0, 150.0), module, Kodama::PREV_SEQUENCE_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(25.6417, 197.3489), module, Kodama::PREV_SEQUENCE_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(65.5748, 197.3489), module, Kodama::NEXT_SEQUENCE_INPUT));
 
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(30.0, 200.0), module, Kodama::CV_SEQUENCE_SELECT));
+    // addInput(createInputCentered<VoxglitchInputPort>(Vec(30.0, 240.0), module, Kodama::CV_SEQUENCE_SELECT));
 
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(30.0, 300), module, Kodama::GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(45.0, 336.6334), module, Kodama::GATE_OUTPUT));
 
-    /*
-    CodeDisplay *code_display = createWidget<CodeDisplay>(mm2px(Vec(0.0, 12.869)));
-    code_display->box.size = mm2px(Vec(40.0, 105.059));
-    code_display->setModule(module);
-    addChild(code_display);
-
-
-    KodamaGridWidget *kodama_grid_widget = new KodamaGridWidget();
-    kodama_grid_widget->box.pos = Vec(200, 20);
-    kodama_grid_widget->module = module;
-    addChild(kodama_grid_widget);
-    */
   }
 
   struct LoadFileMenuItem : MenuItem
@@ -56,39 +44,4 @@ struct KodamaWidget : VoxglitchModuleWidget
     menu->addChild(load_file_menu_item);
   }
 
-  /*
-  struct CodeTextField : LedDisplayTextField
-  {
-    Kodama *module;
-
-    void step() override
-    {
-      LedDisplayTextField::step();
-
-      if (module && module->dirty)
-      {
-        setText(module->text);
-        module->dirty = false;
-      }
-    }
-
-    void onChange(const ChangeEvent &e) override
-    {
-      if (module)
-        module->text = getText();
-    }
-  };
-
-  struct CodeDisplay : LedDisplay
-  {
-    void setModule(Kodama *module)
-    {
-      CodeTextField *code_text_field = createWidget<CodeTextField>(Vec(0, 0));
-      code_text_field->box.size = box.size;
-      code_text_field->multiline = true;
-      code_text_field->module = module;
-      addChild(code_text_field);
-    }
-  };
-  */
 };
