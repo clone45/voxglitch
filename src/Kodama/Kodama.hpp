@@ -82,6 +82,7 @@ struct Kodama : VoxglitchModule
         if (reset_trigger.process(inputs[RESET_INPUT].getVoltage()))
         {
             first_step = true;
+            step = 0;
             wait_for_reset_timer = true;
 
             // Set up a (reverse) counter so that the clock input will ignore
