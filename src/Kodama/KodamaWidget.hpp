@@ -13,6 +13,8 @@ struct KodamaWidget : VoxglitchModuleWidget
 
     addInput(createInputCentered<VoxglitchInputPort>(Vec(25.6417, 217.3509), module, Kodama::PREV_SEQUENCE_INPUT));
     addInput(createInputCentered<VoxglitchInputPort>(Vec(65.5748, 217.3509), module, Kodama::NEXT_SEQUENCE_INPUT));
+    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(Vec(24.0, 245.0), module, Kodama::PREV_BUTTON_PARAM));    
+    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(Vec(64.0, 245.0), module, Kodama::NEXT_BUTTON_PARAM));
 
     // addInput(createInputCentered<VoxglitchInputPort>(Vec(30.0, 240.0), module, Kodama::CV_SEQUENCE_SELECT));
 
@@ -35,6 +37,7 @@ struct KodamaWidget : VoxglitchModuleWidget
     {
       std::string path = module->selectFileVCV();
       module->loadData(path);
+      module->path = path;
     }
   };
 

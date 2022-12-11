@@ -19,7 +19,7 @@ struct KodamaReadoutWidget : TransparentWidget
         /*
         nvgBeginPath(vg);
         nvgRect(vg, 0, 0, box.size.x, box.size.y);
-        nvgFillColor(vg, nvgRGBA(130, 10, 120, 100));
+        nvgFillColor(vg, nvgRGBA(230, 10, 120, 100));
         nvgFill(vg);
         */
 
@@ -27,7 +27,14 @@ struct KodamaReadoutWidget : TransparentWidget
 
         if (module)
         {
-            text_to_display = std::to_string(module->selected_sequence);
+            if(module->sequences.empty())
+            {
+                text_to_display = "NO DATA";
+            }
+            else
+            {
+                text_to_display = std::to_string(module->selected_sequence);
+            }
         }
 
         std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
@@ -39,10 +46,11 @@ struct KodamaReadoutWidget : TransparentWidget
             nvgFillColor(args.vg, nvgRGBA(245, 236, 229, 0xff));
         }
 
-        nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
+        // nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
+        nvgTextAlign(vg, NVG_ALIGN_CENTER);
 
         // void nvgTextBox(NVGcontext* ctx, float x, float y, float breakRowWidth, const char* string, const char* end);
-        nvgTextBox(args.vg, 4, 8, 700, text_to_display.c_str(), NULL);
+        nvgTextBox(args.vg, 0, 11, 56.7845, text_to_display.c_str(), NULL);
 
         nvgRestore(vg);
     }

@@ -1,3 +1,7 @@
+//
+// TODO: 
+// - rename module
+
 #include <fstream>
 
 struct Kodama : VoxglitchModule
@@ -6,20 +10,24 @@ struct Kodama : VoxglitchModule
     dsp::BooleanTrigger reset_trigger;
     dsp::BooleanTrigger next_sequence_trigger;
     dsp::BooleanTrigger prev_sequence_trigger;
+    dsp::BooleanTrigger next_sequence_button_trigger;
+    dsp::BooleanTrigger prev_sequence_button_trigger;
     dsp::PulseGenerator output_pulse_generator;
     dsp::PulseGenerator eol_pulse_generator;
 
     std::vector<std::vector<bool>> sequences;
     unsigned int step = 0;
     unsigned int selected_sequence = 0;
+    std::string path = "";
 
     dsp::TTimer<double> reset_timer;
     bool first_step = true;
     bool wait_for_reset_timer = false;
-    
 
     enum ParamIds
     {
+        PREV_BUTTON_PARAM,
+        NEXT_BUTTON_PARAM,
         NUM_PARAMS
     };
     enum InputIds
@@ -58,13 +66,20 @@ struct Kodama : VoxglitchModule
     json_t *dataToJson() override
     {
         json_t *json_root = json_object();
-
+		json_object_set_new(json_root, "path", json_string(path.c_str()));
         return json_root;
     }
 
     // Load module data
     void dataFromJson(json_t *json_root) override
     {
+		json_t *loaded_path_json = json_object_get(json_root, ("path"));
+
+		if (loaded_path_json)
+		{
+			this->path = json_string_value(loaded_path_json);
+            this->loadData(this->path);
+		}        
     }
 
     void reset()
@@ -83,60 +98,73 @@ struct Kodama : VoxglitchModule
 
     void process(const ProcessArgs &args) override
     {
-        if(sequences.empty()) return;
+        if (sequences.empty())
+            return;
 
-        if (next_sequence_trigger.process(inputs[NEXT_SEQUENCE_INPUT].getVoltage()))
+        // Process NEXT trigger and button
+        if (next_sequence_trigger.process(inputs[NEXT_SEQUENCE_INPUT].getVoltage()) || next_sequence_button_trigger.process(params[NEXT_BUTTON_PARAM].getValue()))
         {
             selected_sequence = ((selected_sequence + 1) % sequences.size());
         }
 
-        if (prev_sequence_trigger.process(inputs[PREV_SEQUENCE_INPUT].getVoltage()))
+        // Process PREV trigger and button
+        if (prev_sequence_trigger.process(inputs[PREV_SEQUENCE_INPUT].getVoltage()) || prev_sequence_button_trigger.process(params[PREV_BUTTON_PARAM].getValue()))
         {
             selected_sequence = (selected_sequence == 0) ? sequences.size() - 1 : selected_sequence - 1;
         }
 
+        // Process RESET input
         if (reset_trigger.process(inputs[RESET_INPUT].getVoltage()))
         {
             reset();
         }
 
-
+        // Process STEP input
         if (!wait_for_reset_timer && step_trigger.process(inputs[STEP_INPUT].getVoltage()))
-        // if (step_trigger.process(inputs[STEP_INPUT].getVoltage()))
         {
-            if(first_step)
+            // If there's a step input, but first_step is true, then don't
+            // increment the step and output the value at step #1
+            if (first_step)
             {
                 first_step = false;
             }
+            // Otherwise, step the sequencer
             else
             {
                 step++;
 
-                if(step == sequences[selected_sequence].size())
+                // If we're at the end of the sequencer, wrap to the beginning
+                if (step == sequences[selected_sequence].size())
                 {
                     step = 0;
-                    eol_pulse_generator.trigger(0.01f);;
+                    eol_pulse_generator.trigger(0.01f);
+                    ;
                 }
             }
-            
-            if(sequences[selected_sequence][step]) output_pulse_generator.trigger(0.01f);
+
+            if (sequences[selected_sequence][step])
+                output_pulse_generator.trigger(0.01f);
         }
 
-        if(wait_for_reset_timer)
+        if (wait_for_reset_timer)
         {
             // Accumulate time in reset_timer
-            if(reset_timer.process(args.sampleTime * 1000.0) > 1.0)
+            if (reset_timer.process(args.sampleTime * 1000.0) > 1.0)
             {
                 wait_for_reset_timer = false;
                 reset_timer.reset();
             }
         }
 
+        //
+        // Outputs
+        //
+
         bool output_pulse = output_pulse_generator.process(1.0 / args.sampleRate);
         outputs[GATE_OUTPUT].setVoltage((output_pulse ? 10.0f : 0.0f));
 
         bool eol_pulse = eol_pulse_generator.process(1.0 / args.sampleRate);
-        outputs[EOL_OUTPUT].setVoltage((eol_pulse ? 10.0f : 0.0f));        
+        outputs[EOL_OUTPUT].setVoltage((eol_pulse ? 10.0f : 0.0f));
     }
 
     void loadData(std::string path)
