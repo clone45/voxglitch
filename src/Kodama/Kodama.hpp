@@ -6,7 +6,8 @@ struct Kodama : VoxglitchModule
     dsp::BooleanTrigger reset_trigger;
     dsp::BooleanTrigger next_sequence_trigger;
     dsp::BooleanTrigger prev_sequence_trigger;
-    dsp::PulseGenerator pulse_generator;
+    dsp::PulseGenerator output_pulse_generator;
+    dsp::PulseGenerator eol_pulse_generator;
 
     std::vector<std::vector<bool>> sequences;
     unsigned int step = 0;
@@ -33,6 +34,7 @@ struct Kodama : VoxglitchModule
     enum OutputIds
     {
         GATE_OUTPUT,
+        EOL_OUTPUT, // end of sequence
         NUM_OUTPUTS
     };
     enum LightIds
@@ -98,6 +100,7 @@ struct Kodama : VoxglitchModule
             reset();
         }
 
+
         if (!wait_for_reset_timer && step_trigger.process(inputs[STEP_INPUT].getVoltage()))
         // if (step_trigger.process(inputs[STEP_INPUT].getVoltage()))
         {
@@ -107,10 +110,16 @@ struct Kodama : VoxglitchModule
             }
             else
             {
-                step = ((step + 1) % sequences[selected_sequence].size());
+                step++;
+
+                if(step == sequences[selected_sequence].size())
+                {
+                    step = 0;
+                    eol_pulse_generator.trigger(0.01f);;
+                }
             }
             
-            if(sequences[selected_sequence][step]) pulse_generator.trigger(0.01f);
+            if(sequences[selected_sequence][step]) output_pulse_generator.trigger(0.01f);
         }
 
         if(wait_for_reset_timer)
@@ -123,13 +132,18 @@ struct Kodama : VoxglitchModule
             }
         }
 
-        bool pulse = pulse_generator.process(1.0 / args.sampleRate);
-        outputs[GATE_OUTPUT].setVoltage((pulse ? 10.0f : 0.0f));
+        bool output_pulse = output_pulse_generator.process(1.0 / args.sampleRate);
+        outputs[GATE_OUTPUT].setVoltage((output_pulse ? 10.0f : 0.0f));
+
+        bool eol_pulse = eol_pulse_generator.process(1.0 / args.sampleRate);
+        outputs[EOL_OUTPUT].setVoltage((eol_pulse ? 10.0f : 0.0f));        
     }
 
     void loadData(std::string path)
     {
         std::ifstream input_file(path);
+
+        selected_sequence = 0;
 
         // Clear out existing data
         sequences.clear();

@@ -9,7 +9,7 @@
 
 #include "Kodama/defines.h"
 #include "Kodama/Kodama.hpp"
-#include "Kodama/KodamaGridWidget.hpp"
+#include "Kodama/KodamaReadoutWidget.hpp"
 #include "Kodama/KodamaWidget.hpp"
 
 Model* modelKodama = createModel<Kodama, KodamaWidget>("kodama");
