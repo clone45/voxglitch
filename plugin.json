@@ -99,6 +99,12 @@
         "tags": ["Sequencer"]
     },   
     {
+        "slug": "onezero",
+        "name": "One Zero",
+        "description": "Gate sequencer that uses external file as sequence data",
+        "tags": ["Sequencer"]
+    },       
+    {
         "slug": "looper",
         "name": "Looper",
         "description": "Bare minimum sample looper",
