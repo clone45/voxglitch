@@ -32,6 +32,7 @@ struct OneZero : VoxglitchModule
         PREV_BUTTON_PARAM,
         NEXT_BUTTON_PARAM,
         ZERO_BUTTON_PARAM,
+        CV_SEQUENCE_ATTN_KNOB,
         NUM_PARAMS
     };
     enum InputIds
@@ -58,6 +59,7 @@ struct OneZero : VoxglitchModule
     OneZero()
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+        configParam(CV_SEQUENCE_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "Attenuator");
     }
 
     //
@@ -144,7 +146,7 @@ struct OneZero : VoxglitchModule
         if (inputs[CV_SEQUENCE_SELECT].isConnected())
         {
             unsigned int sequence_count = sequences.size() - 1;  // 20
-            float sequence_select_cv = inputs[CV_SEQUENCE_SELECT].getVoltage();  // 0.319995
+            float sequence_select_cv = inputs[CV_SEQUENCE_SELECT].getVoltage() * params[CV_SEQUENCE_ATTN_KNOB].getValue();
             int cv_sequence_value = (int) rescale(sequence_select_cv, -5.0, 5.0, -20, 20);
 
             real_selected_sequence = wrap(selected_sequence + cv_sequence_value, 0, sequence_count);

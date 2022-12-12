@@ -19,7 +19,8 @@ struct OneZeroWidget : VoxglitchModuleWidget
     addInput(createInputCentered<VoxglitchInputPort>(Vec(25.6417, 233.47), module, OneZero::ZERO_SEQUENCE_INPUT));
     addInput(createInputCentered<VoxglitchInputPort>(Vec(65.5748, 233.47), module, OneZero::CV_SEQUENCE_SELECT));
     addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(Vec(24.0, 233.47 + 28.4537), module, OneZero::ZERO_BUTTON_PARAM));    
-
+    addParam(createParamCentered<VoxglitchAttenuator>(Vec(65.5748, 233.47 + 28.4537), module, OneZero::CV_SEQUENCE_ATTN_KNOB));    
+ 
 
     // addInput(createInputCentered<VoxglitchInputPort>(Vec(30.0, 240.0), module, OneZero::CV_SEQUENCE_SELECT));
 
