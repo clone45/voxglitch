@@ -1,5 +1,5 @@
 //
-// TODO: 
+// TODO:
 // - move widget positioning into theme files
 
 #include <fstream>
@@ -10,7 +10,7 @@ struct OneZero : VoxglitchModule
     dsp::BooleanTrigger reset_trigger;
     dsp::BooleanTrigger next_sequence_trigger;
     dsp::BooleanTrigger prev_sequence_trigger;
-    dsp::BooleanTrigger zero_sequence_trigger;    
+    dsp::BooleanTrigger zero_sequence_trigger;
     dsp::BooleanTrigger next_sequence_button_trigger;
     dsp::BooleanTrigger prev_sequence_button_trigger;
     dsp::BooleanTrigger zero_sequence_button_trigger;
@@ -31,7 +31,7 @@ struct OneZero : VoxglitchModule
     {
         PREV_BUTTON_PARAM,
         NEXT_BUTTON_PARAM,
-        ZERO_BUTTON_PARAM,        
+        ZERO_BUTTON_PARAM,
         NUM_PARAMS
     };
     enum InputIds
@@ -71,20 +71,20 @@ struct OneZero : VoxglitchModule
     json_t *dataToJson() override
     {
         json_t *json_root = json_object();
-		json_object_set_new(json_root, "path", json_string(path.c_str()));
+        json_object_set_new(json_root, "path", json_string(path.c_str()));
         return json_root;
     }
 
     // Load module data
     void dataFromJson(json_t *json_root) override
     {
-		json_t *loaded_path_json = json_object_get(json_root, ("path"));
+        json_t *loaded_path_json = json_object_get(json_root, ("path"));
 
-		if (loaded_path_json)
-		{
-			this->path = json_string_value(loaded_path_json);
+        if (loaded_path_json)
+        {
+            this->path = json_string_value(loaded_path_json);
             this->loadData(this->path);
-		}        
+        }
     }
 
     void reset()
@@ -99,6 +99,16 @@ struct OneZero : VoxglitchModule
         // https://vcvrack.com/manual/VoltageStandards
 
         reset_timer.reset();
+    }
+
+    int wrap(int kX, int const kLowerBound, int const kUpperBound)
+    {
+        int range_size = kUpperBound - kLowerBound + 1;
+
+        if (kX < kLowerBound)
+            kX += range_size * ((kLowerBound - kX) / range_size + 1);
+
+        return kLowerBound + (kX - kLowerBound) % range_size;
     }
 
     void process(const ProcessArgs &args) override
@@ -129,16 +139,15 @@ struct OneZero : VoxglitchModule
         {
             reset();
         }
-        
+
         // Adjust selected sequence based on CV input (if connected)
-        if(inputs[CV_SEQUENCE_SELECT].isConnected())
+        if (inputs[CV_SEQUENCE_SELECT].isConnected())
         {
-            /*
-            unsigned int sequence_count = sequences.size();
-            float cv_sequence_value = rescale(inputs[CV_SEQUENCE_SELECT].getVoltage(), -5.0, 5.0, -1 * sequence_count, sequence_count);
-            real_selected_sequence = clamp((cv_sequence_value + selected_sequence), 0.0, sequence_count - 1);
-            */
-           real_selected_sequence = selected_sequence;
+            unsigned int sequence_count = sequences.size() - 1;  // 20
+            float sequence_select_cv = inputs[CV_SEQUENCE_SELECT].getVoltage();  // 0.319995
+            int cv_sequence_value = (int) rescale(sequence_select_cv, -5.0, 5.0, -20, 20);
+
+            real_selected_sequence = wrap(selected_sequence + cv_sequence_value, 0, sequence_count);
         }
         else
         {
@@ -191,6 +200,7 @@ struct OneZero : VoxglitchModule
         bool eol_pulse = eol_pulse_generator.process(1.0 / args.sampleRate);
         outputs[EOL_OUTPUT].setVoltage((eol_pulse ? 10.0f : 0.0f));
     }
+
 
 
     void loadData(std::string path)
