@@ -1,6 +1,7 @@
 //
 // TODO:
 // - move widget positioning into theme files
+// - Test themes
 
 #include <fstream>
 
