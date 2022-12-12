@@ -10,14 +10,14 @@
     },
     {
       "type": "image",
-      "path": "res/kodama/themes/default/details.png",
+      "path": "res/onezero/themes/default/details.png",
       "width": 30.48,
       "height": 128.5,
       "zoom": 0.25
     },
     {
       "type": "svg",
-      "path": "res/kodama/themes/default/typography.svg"
+      "path": "res/onezero/themes/default/typography.svg"
     }    
 	],
   "widgets": {

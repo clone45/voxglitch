@@ -1,0 +1,37 @@
+{
+	"panel_width" : 90.0,
+	"layers": [
+		{
+      "type": "image",
+      "path": "res/themes/light/background.jpg",
+      "zoom": 0.15,
+      "width": 30.48,
+      "height": 128.5
+    },
+    {
+      "type": "image",
+      "path": "res/onezero/themes/light/details.png",
+      "width": 30.48,
+      "height": 128.5,
+      "zoom": 0.25
+    },
+    {
+      "type": "svg",
+      "path": "res/onezert/themes/light/typography.svg"
+    }    
+	],
+  "widgets": {
+
+    "CLOCK_INPUT": {"x": 30.12117, "y": 71.68296},
+    "RESET_INPUT": {"x": 73.53734, "y": 71.68296},
+    "RATCHET_INPUT": {"x": 117.07335, "y": 71.68296},
+
+    "AUDIO_OUTPUT_LEFT": {"x": 530.0, "y": 315.53934},
+    "AUDIO_OUTPUT_RIGHT": {"x": 530.0, "y": 354.33637},
+
+    "MEMORY_SELECT_INPUT": {"x": 35.5389, "y": 141.75000},
+    "COPY_BUTTON": {"x": 35.5389, "y": 196.00},
+    "CLEAR_BUTTON": {"x": 35.5389, "y": 240.00}
+
+  }
+}

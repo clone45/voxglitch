@@ -7,9 +7,9 @@
 #include "Common/sequencer/Sequencer.hpp"
 #include "Common/sequencer/GateSequencer.hpp"
 
-#include "Kodama/defines.h"
-#include "Kodama/Kodama.hpp"
-#include "Kodama/KodamaReadoutWidget.hpp"
-#include "Kodama/KodamaWidget.hpp"
+#include "OneZero/defines.h"
+#include "OneZero/OneZero.hpp"
+#include "OneZero/OneZeroReadoutWidget.hpp"
+#include "OneZero/OneZeroWidget.hpp"
 
-Model* modelKodama = createModel<Kodama, KodamaWidget>("kodama");
+Model* modelOneZero = createModel<OneZero, OneZeroWidget>("onezero");

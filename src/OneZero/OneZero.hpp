@@ -1,23 +1,26 @@
 //
 // TODO: 
-// - rename module
+// - move widget positioning into theme files
 
 #include <fstream>
 
-struct Kodama : VoxglitchModule
+struct OneZero : VoxglitchModule
 {
     dsp::BooleanTrigger step_trigger;
     dsp::BooleanTrigger reset_trigger;
     dsp::BooleanTrigger next_sequence_trigger;
     dsp::BooleanTrigger prev_sequence_trigger;
+    dsp::BooleanTrigger zero_sequence_trigger;    
     dsp::BooleanTrigger next_sequence_button_trigger;
     dsp::BooleanTrigger prev_sequence_button_trigger;
+    dsp::BooleanTrigger zero_sequence_button_trigger;
     dsp::PulseGenerator output_pulse_generator;
     dsp::PulseGenerator eol_pulse_generator;
 
     std::vector<std::vector<bool>> sequences;
     unsigned int step = 0;
     unsigned int selected_sequence = 0;
+    unsigned int real_selected_sequence = 0;
     std::string path = "";
 
     dsp::TTimer<double> reset_timer;
@@ -28,6 +31,7 @@ struct Kodama : VoxglitchModule
     {
         PREV_BUTTON_PARAM,
         NEXT_BUTTON_PARAM,
+        ZERO_BUTTON_PARAM,        
         NUM_PARAMS
     };
     enum InputIds
@@ -36,6 +40,7 @@ struct Kodama : VoxglitchModule
         RESET_INPUT,
         NEXT_SEQUENCE_INPUT,
         PREV_SEQUENCE_INPUT,
+        ZERO_SEQUENCE_INPUT,
         CV_SEQUENCE_SELECT,
         NUM_INPUTS
     };
@@ -50,7 +55,7 @@ struct Kodama : VoxglitchModule
         NUM_LIGHTS
     };
 
-    Kodama()
+    OneZero()
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
     }
@@ -113,10 +118,31 @@ struct Kodama : VoxglitchModule
             selected_sequence = (selected_sequence == 0) ? sequences.size() - 1 : selected_sequence - 1;
         }
 
+        // Process ZERO trigger and button
+        if (zero_sequence_trigger.process(inputs[ZERO_SEQUENCE_INPUT].getVoltage()) || zero_sequence_button_trigger.process(params[ZERO_BUTTON_PARAM].getValue()))
+        {
+            selected_sequence = 0;
+        }
+
         // Process RESET input
         if (reset_trigger.process(inputs[RESET_INPUT].getVoltage()))
         {
             reset();
+        }
+        
+        // Adjust selected sequence based on CV input (if connected)
+        if(inputs[CV_SEQUENCE_SELECT].isConnected())
+        {
+            /*
+            unsigned int sequence_count = sequences.size();
+            float cv_sequence_value = rescale(inputs[CV_SEQUENCE_SELECT].getVoltage(), -5.0, 5.0, -1 * sequence_count, sequence_count);
+            real_selected_sequence = clamp((cv_sequence_value + selected_sequence), 0.0, sequence_count - 1);
+            */
+           real_selected_sequence = selected_sequence;
+        }
+        else
+        {
+            real_selected_sequence = selected_sequence;
         }
 
         // Process STEP input
@@ -134,15 +160,14 @@ struct Kodama : VoxglitchModule
                 step++;
 
                 // If we're at the end of the sequencer, wrap to the beginning
-                if (step == sequences[selected_sequence].size())
+                if (step == sequences[real_selected_sequence].size())
                 {
                     step = 0;
                     eol_pulse_generator.trigger(0.01f);
-                    ;
                 }
             }
 
-            if (sequences[selected_sequence][step])
+            if (sequences[real_selected_sequence][step])
                 output_pulse_generator.trigger(0.01f);
         }
 
@@ -166,6 +191,7 @@ struct Kodama : VoxglitchModule
         bool eol_pulse = eol_pulse_generator.process(1.0 / args.sampleRate);
         outputs[EOL_OUTPUT].setVoltage((eol_pulse ? 10.0f : 0.0f));
     }
+
 
     void loadData(std::string path)
     {

@@ -1,8 +1,8 @@
-struct KodamaReadoutWidget : TransparentWidget
+struct OneZeroReadoutWidget : TransparentWidget
 {
-    Kodama *module;
+    OneZero *module;
 
-    KodamaReadoutWidget()
+    OneZeroReadoutWidget()
     {
         // box.size = Vec(DRAW_AREA_WIDTH, DRAW_AREA_HEIGHT);
         box.size = Vec(56.7845, 15.0384);
@@ -33,7 +33,7 @@ struct KodamaReadoutWidget : TransparentWidget
             }
             else
             {
-                text_to_display = std::to_string(module->selected_sequence);
+                text_to_display = std::to_string(module->real_selected_sequence);
             }
         }
 
@@ -53,5 +53,12 @@ struct KodamaReadoutWidget : TransparentWidget
         nvgTextBox(args.vg, 0, 11, 56.7845, text_to_display.c_str(), NULL);
 
         nvgRestore(vg);
+    }
+
+    void onDoubleClick(const event::DoubleClick &e) override
+    {
+      std::string path = module->selectFileVCV();
+      module->loadData(path);
+      module->path = path;
     }
 };

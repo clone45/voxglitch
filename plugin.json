@@ -99,10 +99,10 @@
         "tags": ["Sequencer"]
     },   
     {
-        "slug": "kodama",
-        "name": "Kodama",
-        "description": "Performance oriented sampler using sliders",
-        "tags": ["Sampler"]
+        "slug": "onezero",
+        "name": "One Zero",
+        "description": "Gate sequencer that uses external file as sequence data",
+        "tags": ["Sequencer"]
     },       
     {
         "slug": "looper",
