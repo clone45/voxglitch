@@ -7,8 +7,7 @@
 struct FastRandom
 {
     unsigned int read_head = 0;
-    static const unsigned int ARRAY_SIZE = 10000;
-    std::array<float, ARRAY_SIZE> random_numbers_array{};
+    std::array<float, 10000> random_numbers_array{};
     std::uniform_real_distribution<float> dist;
 
     FastRandom()
@@ -20,12 +19,12 @@ struct FastRandom
         // std::random_device is supposedly fairly slow, but since this is in the
         // contructor, I don't think it should be an issue.
         std::generate(random_numbers_array.begin(), random_numbers_array.end(), [&] () { return dist(gen); });
-        read_head = rand()%(ARRAY_SIZE + 1);
+        read_head = rand()%(10000 + 1);
     }
 
     float gen()
     {
-        if(++read_head >= ARRAY_SIZE) read_head = 0;
+        if(++read_head >= 10000) read_head = 0;
         return(random_numbers_array.at(read_head));
     }
 };
