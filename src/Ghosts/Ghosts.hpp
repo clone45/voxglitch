@@ -23,7 +23,7 @@ struct Ghosts : VoxglitchSamplerModule
 	Sample sample;
 	dsp::SchmittTrigger purge_trigger;
 	dsp::SchmittTrigger purge_button_trigger;
-	FastRandom fast_random;
+	Random random;
 
 	float maximum_playback_length = 0; // 1/2 of a second
 	float minimum_playback_length = 0; // very fast
@@ -176,7 +176,7 @@ struct Ghosts : VoxglitchSamplerModule
 		if (inputs[JITTER_CV_INPUT].isConnected() ? (inputs[JITTER_CV_INPUT].getVoltage() > 0) : params[JITTER_SWITCH].getValue())
 		{
 			// double r = (static_cast<double>(rand()) / (RAND_MAX / jitter_spread)) - (jitter_spread / 2.0);
-			double r = rescale(fast_random.gen(), 0.0, 1.0, 0.0, jitter_spread) - (jitter_spread / 2.0);
+			double r = rescale(random.gen(), 0.0, 1.0, 0.0, jitter_spread) - (jitter_spread / 2.0);
 			start_position = start_position + r;
 		}
 

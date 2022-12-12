@@ -31,7 +31,7 @@ using namespace groove_box;
 #include "Common/dsp/StereoPan.hpp"
 #include "Common/dsp/Filter.hpp"
 #include "Common/dsp/FastSlewLimiter.hpp"
-#include "Common/dsp/FastRandom.hpp"
+#include "Common/dsp/Random.hpp"
 #include "Common/SamplePlayer.hpp"
 
 // Core components
