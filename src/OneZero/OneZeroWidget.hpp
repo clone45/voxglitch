@@ -47,6 +47,16 @@ struct OneZeroWidget : VoxglitchModuleWidget
     }
   };
 
+  /*
+  struct OneShotMode : MenuItem {
+    OneZero *module;
+
+    void onAction(const event::Action &e) override {
+      module->one_shot_mode ^= true; // flip the value
+    }
+  };
+  */
+
   void appendContextMenu(Menu *menu) override
   {
     OneZero *module = dynamic_cast<OneZero *>(this->module);
@@ -58,6 +68,25 @@ struct OneZeroWidget : VoxglitchModuleWidget
     LoadFileMenuItem *load_file_menu_item = createMenuItem<LoadFileMenuItem>("Load File");
     load_file_menu_item->module = module;
     menu->addChild(load_file_menu_item);
+
+    if(module->path != "")
+    {
+      std::string filename = rack::system::getFilename(module->path);
+      menu->addChild(createMenuLabel(filename));
+    }
+    else
+    {
+      menu->addChild(createMenuLabel("No file loaded"));
+    }
+     /*
+    menu->addChild(new MenuSeparator());
+
+    // One Shot Mode
+
+    OneShotMode *one_shot_mode = createMenuItem<OneShotMode>("One-Shot Mode", CHECKMARK(module->one_shot_mode));
+    one_shot_mode->module = module;
+    menu->addChild(one_shot_mode);
+    */
   }
 
 };

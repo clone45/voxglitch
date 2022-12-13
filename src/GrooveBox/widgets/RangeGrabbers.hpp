@@ -5,6 +5,7 @@ struct RangeGrabberRightWidget : TransparentWidget
   // legacy values expected by callers
   float diameter = 20.0;
   float radius = diameter / 2.0;
+  // float height = 18.0;
   float height = 18.0;
   float width = 34.0;
   Vec drag_position;
@@ -14,25 +15,22 @@ struct RangeGrabberRightWidget : TransparentWidget
     box.size = Vec(width, height);
   }
 
-
   void draw(const DrawArgs &args) override
   {
     const auto vg = args.vg;
 
-    // Draw grabber
-    if(is_moused_over && module) {
-
+    if(is_moused_over)
+    {
       nvgSave(vg);
       nvgBeginPath(vg);
-
-      this->box.pos = Vec(button_positions[module->selected_track->m.range_end][0] - width/2, this->box.pos.y);
-
+      
       nvgRoundedRect(vg, box.size.x - width, box.size.y - height, width, height, 2.0);
       nvgFillColor(vg, nvgRGB(83,92,91));
 
       nvgFill(vg);
       nvgRestore(vg);
     }
+    
   }
 
   void onButton(const event::Button &e) override
@@ -65,7 +63,9 @@ struct RangeGrabberRightWidget : TransparentWidget
     this->is_moused_over = true;
   }
 
-  void step() override {
+  void step() override 
+  {
+    if(module) this->box.pos = Vec(button_positions[module->selected_track->m.range_end][0] - width/2, this->box.pos.y);
     TransparentWidget::step();
   }
 
@@ -103,12 +103,10 @@ struct RangeGrabberLeftWidget : TransparentWidget
     const auto vg = args.vg;
 
     // Draw grabber
-    if(is_moused_over && module) {
+    if(is_moused_over) {
 
       nvgSave(vg);
       nvgBeginPath(vg);
-
-      this->box.pos = Vec(button_positions[module->selected_track->m.range_start][0] - width/2, this->box.pos.y);
 
       nvgRoundedRect(vg, box.size.x - width, box.size.y - height, width, height, 2.0);
       nvgFillColor(vg, nvgRGB(83,92,91));
@@ -117,7 +115,6 @@ struct RangeGrabberLeftWidget : TransparentWidget
       nvgRestore(vg);
     }
   }
-
 
   void onButton(const event::Button &e) override
   {
@@ -144,12 +141,15 @@ struct RangeGrabberLeftWidget : TransparentWidget
     TransparentWidget::onLeave(e);
   }
 
-  void onHover(const event::Hover& e) override {
+  void onHover(const event::Hover& e) override 
+  {
     e.consume(this);
     this->is_moused_over = true;
   }
 
-  void step() override {
+  void step() override 
+  {
+    if(module) this->box.pos = Vec(button_positions[module->selected_track->m.range_start][0] - width/2, this->box.pos.y);
     TransparentWidget::step();
   }
 

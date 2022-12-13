@@ -18,7 +18,7 @@ namespace groove_box
     bool steps[NUMBER_OF_STEPS] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     unsigned int playback_position = 0;
-    unsigned int range_end = NUMBER_OF_STEPS - 1; // was length
+    unsigned int range_end = NUMBER_OF_STEPS - 1;
     unsigned int range_start = 0;
     unsigned int ratchet_counter = 0;
 

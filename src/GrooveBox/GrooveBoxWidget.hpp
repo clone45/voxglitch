@@ -188,6 +188,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     addChild(sequence_length_widget);
 
     RangeGrabberLeftWidget *range_grabber_left_widget = new RangeGrabberLeftWidget();
+    // range_grabber_left_widget->setPosition(Vec(button_positions[0][0] - range_grabber_left_widget->radius, button_positions[0][1] - 25 - range_grabber_left_widget->radius));
     range_grabber_left_widget->setPosition(Vec(button_positions[0][0] - range_grabber_left_widget->radius, button_positions[0][1] - 25 - range_grabber_left_widget->radius));
     range_grabber_left_widget->module = module;
     addChild(range_grabber_left_widget);
