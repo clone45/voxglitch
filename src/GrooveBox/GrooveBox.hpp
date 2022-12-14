@@ -880,9 +880,7 @@ struct GrooveBox : VoxglitchSamplerModule
       light_booleans[step_number] = (playback_step == step_number);
     }
 
-    //
-    //  Parameter selection
-
+    //  Process
     for (unsigned int slot_id = 0; slot_id < NUMBER_OF_PARAMETER_LOCKS; slot_id++)
     {
       // parameter_slots keep track of this parameter is associated with which parameter slot
@@ -897,7 +895,7 @@ struct GrooveBox : VoxglitchSamplerModule
       }
     }
 
-    // Process the knobs below the steps.
+    // Process the knobs below the steps
     for (unsigned int step_number = 0; step_number < NUMBER_OF_STEPS; step_number++)
     {
       float value = params[STEP_KNOBS + step_number].getValue();

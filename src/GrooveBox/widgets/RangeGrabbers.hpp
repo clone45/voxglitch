@@ -19,7 +19,7 @@ struct RangeGrabberRightWidget : TransparentWidget
   {
     const auto vg = args.vg;
 
-    if(is_moused_over)
+    if(module && is_moused_over)
     {
       nvgSave(vg);
       nvgBeginPath(vg);
@@ -103,7 +103,8 @@ struct RangeGrabberLeftWidget : TransparentWidget
     const auto vg = args.vg;
 
     // Draw grabber
-    if(is_moused_over) {
+    if(module && is_moused_over)
+    {
 
       nvgSave(vg);
       nvgBeginPath(vg);

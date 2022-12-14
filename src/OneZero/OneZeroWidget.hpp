@@ -22,9 +22,6 @@ struct OneZeroWidget : VoxglitchModuleWidget
     addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("ZERO_BUTTON_PARAM"), module, OneZero::ZERO_BUTTON_PARAM));    
     addParam(createParamCentered<VoxglitchAttenuator>(themePos("CV_SEQUENCE_ATTN_KNOB"), module, OneZero::CV_SEQUENCE_ATTN_KNOB));    
  
-
-    // addInput(createInputCentered<VoxglitchInputPort>(Vec(30.0, 240.0), module, OneZero::CV_SEQUENCE_SELECT));
-
     addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("GATE_OUTPUT"), module, OneZero::GATE_OUTPUT));
     addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("EOL_OUTPUT"), module, OneZero::EOL_OUTPUT)); // end of sequence output
 
