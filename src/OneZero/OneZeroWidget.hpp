@@ -8,24 +8,25 @@ struct OneZeroWidget : VoxglitchModuleWidget
     theme.load("onezero");
     applyTheme();
 
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(25.6417, 63.3706), module, OneZero::STEP_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(65.5748, 63.3706), module, OneZero::RESET_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("STEP_INPUT"), module, OneZero::STEP_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, OneZero::RESET_INPUT));
 
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(25.6417, 157.3509), module, OneZero::PREV_SEQUENCE_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(65.5748, 157.3509), module, OneZero::NEXT_SEQUENCE_INPUT));
-    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(Vec(24.0, 157.3509 + 28.4537), module, OneZero::PREV_BUTTON_PARAM));    
-    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(Vec(64.0, 157.3509 + 28.4537), module, OneZero::NEXT_BUTTON_PARAM));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("PREV_INPUT"), module, OneZero::PREV_SEQUENCE_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("NEXT_INPUT"), module, OneZero::NEXT_SEQUENCE_INPUT));
+    
+    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("PREV_BUTTON"), module, OneZero::PREV_BUTTON_PARAM));    
+    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("NEXT_BUTTON"), module, OneZero::NEXT_BUTTON_PARAM));
 
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(25.6417, 233.47), module, OneZero::ZERO_SEQUENCE_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(65.5748, 233.47), module, OneZero::CV_SEQUENCE_SELECT));
-    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(Vec(24.0, 233.47 + 28.4537), module, OneZero::ZERO_BUTTON_PARAM));    
-    addParam(createParamCentered<VoxglitchAttenuator>(Vec(65.5748, 233.47 + 28.4537), module, OneZero::CV_SEQUENCE_ATTN_KNOB));    
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("ZERO_SEQUENCE_INPUT"), module, OneZero::ZERO_SEQUENCE_INPUT));
+    addInput(createInputCentered<VoxglitchInputPort>(themePos("CV_SEQUENCE_SELECT"), module, OneZero::CV_SEQUENCE_SELECT));
+    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("ZERO_BUTTON_PARAM"), module, OneZero::ZERO_BUTTON_PARAM));    
+    addParam(createParamCentered<VoxglitchAttenuator>(themePos("CV_SEQUENCE_ATTN_KNOB"), module, OneZero::CV_SEQUENCE_ATTN_KNOB));    
  
 
     // addInput(createInputCentered<VoxglitchInputPort>(Vec(30.0, 240.0), module, OneZero::CV_SEQUENCE_SELECT));
 
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(65.5748, 336.6334), module, OneZero::GATE_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(25.6417, 336.6334), module, OneZero::EOL_OUTPUT)); // end of sequence output
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("GATE_OUTPUT"), module, OneZero::GATE_OUTPUT));
+    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("EOL_OUTPUT"), module, OneZero::EOL_OUTPUT)); // end of sequence output
 
     // Add display
     OneZeroReadoutWidget *one_zero_readout_widget = new OneZeroReadoutWidget();
@@ -46,16 +47,6 @@ struct OneZeroWidget : VoxglitchModuleWidget
       module->path = path;
     }
   };
-
-  /*
-  struct OneShotMode : MenuItem {
-    OneZero *module;
-
-    void onAction(const event::Action &e) override {
-      module->one_shot_mode ^= true; // flip the value
-    }
-  };
-  */
 
   void appendContextMenu(Menu *menu) override
   {
@@ -78,15 +69,6 @@ struct OneZeroWidget : VoxglitchModuleWidget
     {
       menu->addChild(createMenuLabel("No file loaded"));
     }
-     /*
-    menu->addChild(new MenuSeparator());
-
-    // One Shot Mode
-
-    OneShotMode *one_shot_mode = createMenuItem<OneShotMode>("One-Shot Mode", CHECKMARK(module->one_shot_mode));
-    one_shot_mode->module = module;
-    menu->addChild(one_shot_mode);
-    */
   }
 
 };

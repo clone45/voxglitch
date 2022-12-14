@@ -22,16 +22,20 @@
 	],
   "widgets": {
 
-    "CLOCK_INPUT": {"x": 30.12117, "y": 71.68296},
-    "RESET_INPUT": {"x": 73.53734, "y": 71.68296},
-    "RATCHET_INPUT": {"x": 117.07335, "y": 71.68296},
+    "STEP_INPUT": {"x": 25.6417, "y": 63.3706},
+    "RESET_INPUT": {"x": 65.5748, "y": 63.3706},
+    "PREV_INPUT": {"x": 25.6417, "y": 157.3509},
+    "NEXT_INPUT": {"x": 65.5748, "y": 157.3509},
+    "PREV_BUTTON": {"x": 24.0, "y": 185.8046},
+    "NEXT_BUTTON": {"x": 64.0, "y": 185.8046},
 
-    "AUDIO_OUTPUT_LEFT": {"x": 530.0, "y": 315.53934},
-    "AUDIO_OUTPUT_RIGHT": {"x": 530.0, "y": 354.33637},
+    "ZERO_SEQUENCE_INPUT": {"x": 25.6417, "y": 233.47},
+    "CV_SEQUENCE_SELECT": {"x": 65.5748, "y": 233.47},
+    "ZERO_BUTTON_PARAM": {"x": 24.0, "y": 261.9237},
+    "CV_SEQUENCE_ATTN_KNOB": {"x": 65.5748, "y": 261.9237},
 
-    "MEMORY_SELECT_INPUT": {"x": 35.5389, "y": 141.75000},
-    "COPY_BUTTON": {"x": 35.5389, "y": 196.00},
-    "CLEAR_BUTTON": {"x": 35.5389, "y": 240.00}
-
+    "GATE_OUTPUT": {"x": 65.5748, "y": 336.6334},
+    "EOL_OUTPUT": {"x": 25.6417, "y": 336.6334}
+    
   }
 }

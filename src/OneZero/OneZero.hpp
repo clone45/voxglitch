@@ -1,7 +1,6 @@
 //
 // TODO:
 // - move widget positioning into theme files
-// - Test themes
 
 #include <fstream>
 
@@ -27,7 +26,6 @@ struct OneZero : VoxglitchModule
     dsp::TTimer<double> reset_timer;
     bool first_step = true;
     bool wait_for_reset_timer = false;
-    bool one_shot_mode = false;
     bool playback = true;
 
     enum ParamIds
@@ -77,7 +75,6 @@ struct OneZero : VoxglitchModule
     {
         json_t *json_root = json_object();
         json_object_set_new(json_root, "path", json_string(path.c_str()));
-        json_object_set_new(json_root, "one_shot_mode", json_integer(one_shot_mode));
         return json_root;
     }
 
@@ -89,13 +86,7 @@ struct OneZero : VoxglitchModule
         {
             this->path = json_string_value(loaded_path_json);
             this->loadData(this->path);
-        }
-
-        json_t *loaded_oneshot_json = json_object_get(json_root, ("one_shot_mode"));
-        if (loaded_oneshot_json)
-        {
-            this->one_shot_mode = json_integer_value(loaded_oneshot_json);
-        }        
+        }       
     }
 
     void reset()
