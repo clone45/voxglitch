@@ -30,7 +30,7 @@ struct OneZeroWidget : VoxglitchModuleWidget
 
     // Add display
     OneZeroReadoutWidget *one_zero_readout_widget = new OneZeroReadoutWidget();
-    one_zero_readout_widget->box.pos = Vec(16.6063, 110.5335);
+    one_zero_readout_widget->box.pos = themePos("READOUT");
     one_zero_readout_widget->module = module;
     addChild(one_zero_readout_widget);
 
