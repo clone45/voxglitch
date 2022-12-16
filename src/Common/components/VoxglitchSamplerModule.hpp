@@ -27,10 +27,10 @@ struct VoxglitchSamplerModule : VoxglitchModule
   }
 
 #ifndef USING_CARDINAL_NOT_RACK
-  std::string selectFileVCV()
+  std::string selectFileVCV(std::string file_filters = "WAV:wav")
   {
     std::string filename_string = "";
-    osdialog_filters* filters = osdialog_filters_parse("WAV:wav");
+    osdialog_filters* filters = osdialog_filters_parse(file_filters.c_str());
     char *filename = osdialog_file(OSDIALOG_OPEN, samples_root_dir.c_str(), NULL, filters);
 
     if(filename != NULL)

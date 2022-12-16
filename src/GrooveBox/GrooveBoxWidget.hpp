@@ -316,7 +316,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     GrooveBox *module = dynamic_cast<GrooveBox *>(this->module);
     assert(module);
 
-    menu->addChild(new MenuEntry); // For spacing only
+    menu->addChild(new MenuSeparator()); // For spacing only
     menu->addChild(createMenuLabel("GrooveBox"));
 
     // Initialize module
@@ -339,10 +339,20 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     lcd_color_theme_menu->module = module;
     menu->addChild(lcd_color_theme_menu);
 
+    // Export Kit
+    ExportKitMenuItem *export_kit_menu_item = createMenuItem<ExportKitMenuItem>("Export Kit");
+    export_kit_menu_item->module = module;
+    menu->addChild(export_kit_menu_item);
+
+    // Import Kit
+    ImportKitMenuItem *import_kit_menu_item = createMenuItem<ImportKitMenuItem>("Import Kit");
+    import_kit_menu_item->module = module;
+    menu->addChild(import_kit_menu_item);
+
     //
     // Start sample selection menu options
     //
-    menu->addChild(new MenuEntry); // For spacing only
+    menu->addChild(new MenuSeparator()); // For spacing only
     menu->addChild(createMenuLabel("Load individual samples"));
 
     //
@@ -358,7 +368,6 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     }
 
     // Add spacer
-    menu->addChild(new MenuEntry); // For spacing only
     menu->addChild(createMenuLabel("Or.."));
 
     // Add menu item for loading samples from a folder
@@ -370,7 +379,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     menu->addChild(createMenuLabel("Or.. Double click on a track window"));
     menu->addChild(createMenuLabel("to select a sample for that track."));
 
-    menu->addChild(new MenuEntry); // For spacing only
+    menu->addChild(new MenuSeparator()); // For spacing only
 
     // Add interpolation menu from /Common/VoxglitchSamplerModuleWidget.hpp
     menu->addChild(createMenuLabel("Audio Quality"));
@@ -594,4 +603,25 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       return menu;
     }
   };  
+
+
+  struct ExportKitMenuItem : MenuItem
+  {
+    GrooveBox *module;
+
+    void onAction(const event::Action &e) override
+    {
+      module->saveKitDialog();
+    }
+  };  
+
+  struct ImportKitMenuItem : MenuItem
+  {
+    GrooveBox *module;
+
+    void onAction(const event::Action &e) override
+    {
+      module->loadKitDialog();
+    }
+  };   
 };

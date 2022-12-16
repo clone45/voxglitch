@@ -1,6 +1,7 @@
 //
 // TODO:
 // - move widget positioning into theme files
+// - support Cardinal
 
 #include <fstream>
 
@@ -202,8 +203,6 @@ struct OneZero : VoxglitchModule
         bool eol_pulse = eol_pulse_generator.process(1.0 / args.sampleRate);
         outputs[EOL_OUTPUT].setVoltage((eol_pulse ? 10.0f : 0.0f));
     }
-
-
 
     void loadData(std::string path)
     {

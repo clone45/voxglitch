@@ -23,6 +23,7 @@
 
 #include <thread>
 #include <future>
+#include <fstream>
 
 struct GrooveBox : VoxglitchSamplerModule
 {
@@ -91,7 +92,8 @@ struct GrooveBox : VoxglitchSamplerModule
   //
   // TODO: remove the loaded_filenames array, which is not necessary
   std::string loaded_filenames[NUMBER_OF_TRACKS]; // for display on the front panel
-  std::string path;
+  std::string path = "";
+  std::string kit_dir = "";
 
   // Each of the 8 tracks has dedicated sample player engines
   // The samples assigned to each track are NOT dependent on which memory bank
@@ -566,6 +568,115 @@ struct GrooveBox : VoxglitchSamplerModule
     this->sample_position_snap_indexes[track_index] = sample_position_snap_index;
     this->sample_position_snap_track_values[track_index] = sample_position_snap_values[sample_position_snap_index];
   }
+
+  void importKit(std::string kit_path)
+  {
+    std::string destination_path = this->selectPathVCV();
+
+    // Unzip kit into destination
+    rack::system::unarchiveToDirectory(kit_path, destination_path);
+
+    // Read .txt file containing list of files in order
+    std::string config_file_path = destination_path + "/kit_samples.txt"; 
+    std::ifstream input_file(config_file_path);
+    
+    if (input_file)
+    {
+        std::string line = "";
+        unsigned int sample_number = 0;
+
+        while (std::getline(input_file, line) && (sample_number < NUMBER_OF_TRACKS))
+        {
+          this->sample_players[sample_number].loadSample(destination_path + "/" + line);
+          sample_number++;
+        }
+    }
+
+    // Foreach file, load the sample
+  }
+
+  void exportKit(std::string kit_path)
+  {
+    std::string temp_build_path =  rack::system::getTempDirectory() + "/groovebox_kit_build";
+
+    // If the temporary folder exists, remove it
+    if(rack::system::isDirectory(temp_build_path))
+    {
+      rack::system::removeRecursively(temp_build_path);
+    } 	
+
+    //
+    // Create temporary folder
+    //
+    if(rack::system::createDirectory(temp_build_path))
+    {
+
+      //
+      // Create a kit.txt file that contains the names of the samples in order
+      //
+
+      std::string config_file_path = temp_build_path + "/kit_samples.txt"; 
+      std::ofstream myfile;
+      myfile.open(config_file_path);
+      for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
+      {
+        myfile << sample_players[i].getFilename() + "\n";
+      }
+      myfile.close();
+
+      //
+      // Copy current samples into temporary folder
+      //
+
+      for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
+      {
+        std::string sample_path = sample_players[i].getPath();
+        std::string sample_filename = sample_players[i].getFilename();
+
+        rack::system::copy(sample_path, temp_build_path + "/" + sample_filename);
+      }
+
+      //
+      // Zip up temporary folder
+      //
+      rack::system::archiveDirectory(kit_path, temp_build_path);
+
+      // TODO: Clean up temporary folder?
+    }
+  }
+
+  void loadKitDialog() 
+  {
+    std::string kit_path = this->selectFileVCV("kit:KIT");
+    importKit(kit_path);
+  }
+
+  void saveKitDialog() 
+  {
+    //
+    // Credit to PathSet for this code
+    //
+    osdialog_filters* filters = osdialog_filters_parse(KIT_FILE_FILTERS);
+    DEFER({osdialog_filters_free(filters);});
+
+    char* path_char_pointer = osdialog_file(OSDIALOG_SAVE, kit_dir.empty() ? NULL : kit_dir.c_str(), NULL, filters);
+    // char* path_char_pointer = osdialog_file(OSDIALOG_SAVE, kit_dir.empty() ? NULL : kit_dir.c_str(), NULL, NULL);
+    if (!path_char_pointer) {
+      // Fail silently
+      return;
+    }
+    std::string path = path_char_pointer;
+    std::free(path_char_pointer);
+
+    if (system::getExtension(path) != ".kit") {
+      path += ".kit";
+    }
+    
+    kit_dir = system::getDirectory(path);
+
+    exportKit(path);
+  }
+
 
   // This function is called from GrooveboxMemoryButton and is used to ignore
   // user input when a cable is connected to the memory CV input.

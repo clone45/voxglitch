@@ -173,6 +173,8 @@ namespace groove_box
         {mm2px(200.09), button_positions_y},
         {mm2px(213.67), button_positions_y}};
 
+    static const char KIT_FILE_FILTERS[] = "Kit (.kit):kit,KIT";
+
 }
 
 /* previous version:
