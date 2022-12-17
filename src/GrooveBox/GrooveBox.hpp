@@ -591,8 +591,6 @@ struct GrooveBox : VoxglitchSamplerModule
           sample_number++;
         }
     }
-
-    // Foreach file, load the sample
   }
 
   void exportKit(std::string kit_path)
@@ -660,7 +658,6 @@ struct GrooveBox : VoxglitchSamplerModule
     DEFER({osdialog_filters_free(filters);});
 
     char* path_char_pointer = osdialog_file(OSDIALOG_SAVE, kit_dir.empty() ? NULL : kit_dir.c_str(), NULL, filters);
-    // char* path_char_pointer = osdialog_file(OSDIALOG_SAVE, kit_dir.empty() ? NULL : kit_dir.c_str(), NULL, NULL);
     if (!path_char_pointer) {
       // Fail silently
       return;
