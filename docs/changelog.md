@@ -1,5 +1,11 @@
 ## Change Log
 
+## 2.24.2
+* Added new module "OneZero", which is a gate sequencer based on external files
+* Fixed issue in Groovebox where sequence start and end drag handles were not appearing correctly
+* Added new feature to Groovebox: The ability to export samples to a "kit" for easy sharing
+* Improved Groovebox performance (lower CPU usage)
+
 ## 2.24.1
 * Fixed issue with expander panning controls
 * Various back-end improvements that won't be noticeable to most users

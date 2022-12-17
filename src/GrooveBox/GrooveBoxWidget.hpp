@@ -339,15 +339,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     lcd_color_theme_menu->module = module;
     menu->addChild(lcd_color_theme_menu);
 
-    // Export Kit
-    ExportKitMenuItem *export_kit_menu_item = createMenuItem<ExportKitMenuItem>("Export Kit");
-    export_kit_menu_item->module = module;
-    menu->addChild(export_kit_menu_item);
 
-    // Import Kit
-    ImportKitMenuItem *import_kit_menu_item = createMenuItem<ImportKitMenuItem>("Import Kit");
-    import_kit_menu_item->module = module;
-    menu->addChild(import_kit_menu_item);
 
     //
     // Start sample selection menu options
@@ -378,6 +370,18 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
 
     menu->addChild(createMenuLabel("Or.. Double click on a track window"));
     menu->addChild(createMenuLabel("to select a sample for that track."));
+
+    menu->addChild(new MenuSeparator());
+    
+    // Export Kit
+    ExportKitMenuItem *export_kit_menu_item = createMenuItem<ExportKitMenuItem>("Export Kit");
+    export_kit_menu_item->module = module;
+    menu->addChild(export_kit_menu_item);
+
+    // Import Kit
+    ImportKitMenuItem *import_kit_menu_item = createMenuItem<ImportKitMenuItem>("Import Kit");
+    import_kit_menu_item->module = module;
+    menu->addChild(import_kit_menu_item);
 
     menu->addChild(new MenuSeparator()); // For spacing only
 
