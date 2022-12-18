@@ -1,7 +1,7 @@
 {
     "slug": "voxglitch",
     "name": "Voxglitch",
-    "version": "2.24.2",
+    "version": "2.25.0",
     "license": "GPL-3.0-or-later",
     "brand": "Voxglitch",
     "author": "Bret Truchan",
@@ -21,7 +21,7 @@
     },
     {
         "slug": "AutobreakStudio",
-        "name": "Autobreak Studio",
+        "name": "Autobreak Studio",git 
         "description": "Advanced automatic breakbeat sample chopper",
         "tags": ["Sampler", "Drum"]
     },    
