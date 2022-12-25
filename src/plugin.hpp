@@ -26,6 +26,7 @@ extern Model *modelOneZero;
 extern Model *modelLooper;
 extern Model *modelRepeater;
 extern Model *modelSamplerX8;
+extern Model *modelSampler16P;
 extern Model *modelSatanonaut;
 extern Model *modelWavBank;
 extern Model *modelWavBankMC;
