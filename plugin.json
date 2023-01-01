@@ -97,7 +97,13 @@
         "name": "Hazumi",
         "description": "Bouncing ball sequencer",
         "tags": ["Sequencer"]
-    },   
+    },
+    {
+        "slug": "onepoint",
+        "name": "One Point",
+        "description": "CV sequencer that uses external file as sequence data",
+        "tags": ["Sequencer"]
+    },        
     {
         "slug": "onezero",
         "name": "One Zero",

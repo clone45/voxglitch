@@ -4,7 +4,7 @@
 
 #include <fstream>
 
-struct OneZero : VoxglitchModule
+struct OnePoint : VoxglitchModule
 {
     dsp::BooleanTrigger step_trigger;
     dsp::BooleanTrigger reset_trigger;
@@ -14,19 +14,13 @@ struct OneZero : VoxglitchModule
     dsp::BooleanTrigger next_sequence_button_trigger;
     dsp::BooleanTrigger prev_sequence_button_trigger;
     dsp::BooleanTrigger zero_sequence_button_trigger;
-    dsp::PulseGenerator output_pulse_generator;
     dsp::PulseGenerator eol_pulse_generator;
 
-    std::vector<std::vector<bool>> sequences;
+    std::vector<std::vector<float>> sequences;
     unsigned int step = 0;
     unsigned int selected_sequence = 0;
     unsigned int real_selected_sequence = 0;
     std::string path = "";
-
-    dsp::TTimer<double> reset_timer;
-    bool first_step = true;
-    bool wait_for_reset_timer = false;
-    bool playback = true;
 
     enum ParamIds
     {
@@ -48,7 +42,7 @@ struct OneZero : VoxglitchModule
     };
     enum OutputIds
     {
-        GATE_OUTPUT,
+        CV_OUTPUT,
         EOL_OUTPUT, // end of sequence
         NUM_OUTPUTS
     };
@@ -57,7 +51,7 @@ struct OneZero : VoxglitchModule
         NUM_LIGHTS
     };
 
-    OneZero()
+    OnePoint()
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
         configParam(CV_SEQUENCE_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "Attenuator");
@@ -86,21 +80,12 @@ struct OneZero : VoxglitchModule
         {
             this->path = json_string_value(loaded_path_json);
             this->loadData(this->path);
-        }       
+        }
     }
 
     void reset()
     {
-        first_step = true;
         step = 0;
-        wait_for_reset_timer = true;
-
-        // Set up a counter so that the clock input will ignore
-        // incoming clock pulses for 1 millisecond after a reset input. This
-        // is to comply with VCV Rack's standards.  See section "Timing" at
-        // https://vcvrack.com/manual/VoltageStandards
-
-        reset_timer.reset();
     }
 
     int wrap(int kX, int const kLowerBound, int const kUpperBound)
@@ -145,9 +130,9 @@ struct OneZero : VoxglitchModule
         // Adjust selected sequence based on CV input (if connected)
         if (inputs[CV_SEQUENCE_SELECT].isConnected())
         {
-            unsigned int sequence_count = sequences.size() - 1;  // 20
+            unsigned int sequence_count = sequences.size() - 1; // 20
             float sequence_select_cv = inputs[CV_SEQUENCE_SELECT].getVoltage() * params[CV_SEQUENCE_ATTN_KNOB].getValue();
-            int cv_sequence_value = (int) rescale(sequence_select_cv, -5.0, 5.0, -20, 20);
+            int cv_sequence_value = (int)rescale(sequence_select_cv, -5.0, 5.0, -20, 20);
 
             real_selected_sequence = wrap(selected_sequence + cv_sequence_value, 0, sequence_count);
         }
@@ -157,38 +142,15 @@ struct OneZero : VoxglitchModule
         }
 
         // Process STEP input
-        if (!wait_for_reset_timer && step_trigger.process(inputs[STEP_INPUT].getVoltage()))
+        if (step_trigger.process(inputs[STEP_INPUT].getVoltage()))
         {
-            // If there's a step input, but first_step is true, then don't
-            // increment the step and output the value at step #1
-            if (first_step)
-            {
-                first_step = false;
-            }
-            // Otherwise, step the sequencer
-            else
-            {
-                step++;
+            step++;
 
-                // If we're at the end of the sequencer, wrap to the beginning
-                if (step == sequences[real_selected_sequence].size())
-                {
-                    step = 0;
-                    eol_pulse_generator.trigger(0.01f);
-                }
-            }
-
-            if (sequences[real_selected_sequence][step])
-                output_pulse_generator.trigger(0.01f);
-        }
-
-        if (wait_for_reset_timer)
-        {
-            // Accumulate time in reset_timer
-            if (reset_timer.process(args.sampleTime * 1000.0) > 1.0)
+            // If we're at the end of the sequencer, wrap to the beginning
+            if (step == sequences[real_selected_sequence].size())
             {
-                wait_for_reset_timer = false;
-                reset_timer.reset();
+                step = 0;
+                eol_pulse_generator.trigger(0.01f);
             }
         }
 
@@ -196,8 +158,8 @@ struct OneZero : VoxglitchModule
         // Outputs
         //
 
-        bool output_pulse = output_pulse_generator.process(1.0 / args.sampleRate);
-        outputs[GATE_OUTPUT].setVoltage((output_pulse ? 10.0f : 0.0f));
+        // bool output_pulse = output_pulse_generator.process(1.0 / args.sampleRate);
+        outputs[CV_OUTPUT].setVoltage(sequences[real_selected_sequence][step]);
 
         bool eol_pulse = eol_pulse_generator.process(1.0 / args.sampleRate);
         outputs[EOL_OUTPUT].setVoltage((eol_pulse ? 10.0f : 0.0f));
@@ -219,16 +181,21 @@ struct OneZero : VoxglitchModule
 
             while (std::getline(input_file, line))
             {
-                std::vector<bool> sequence;
+                std::vector<float> sequence;
 
-                for (auto &character : line)
+                std::stringstream ss(line);
+
+                while( ss.good() )
                 {
-                    // Print current character
-                    sequence.push_back(character == '1');
+                    std::string substr;
+                    getline(ss, substr,',');
+                    sequence.push_back( std::stod(substr) );
                 }
 
                 sequences.push_back(sequence);
             }
+
+            input_file.close();
         }
 
         reset();
