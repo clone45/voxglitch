@@ -22,6 +22,11 @@ struct OnePoint : VoxglitchModule
     unsigned int real_selected_sequence = 0;
     std::string path = "";
 
+    dsp::TTimer<double> reset_timer;
+    bool first_step = true;
+    bool wait_for_reset_timer = false;
+    bool playback = true;
+
     enum ParamIds
     {
         PREV_BUTTON_PARAM,
@@ -85,7 +90,16 @@ struct OnePoint : VoxglitchModule
 
     void reset()
     {
+        first_step = true;
         step = 0;
+        wait_for_reset_timer = true;
+
+        // Set up a counter so that the clock input will ignore
+        // incoming clock pulses for 1 millisecond after a reset input. This
+        // is to comply with VCV Rack's standards.  See section "Timing" at
+        // https://vcvrack.com/manual/VoltageStandards
+
+        reset_timer.reset();
     }
 
     int wrap(int kX, int const kLowerBound, int const kUpperBound)
@@ -142,15 +156,38 @@ struct OnePoint : VoxglitchModule
         }
 
         // Process STEP input
-        if (step_trigger.process(inputs[STEP_INPUT].getVoltage()))
+        if (!wait_for_reset_timer && step_trigger.process(inputs[STEP_INPUT].getVoltage()))
         {
-            step++;
-
-            // If we're at the end of the sequencer, wrap to the beginning
-            if (step == sequences[real_selected_sequence].size())
+            // If there's a step input, but first_step is true, then don't
+            // increment the step and output the value at step #1
+            if (first_step)
             {
-                step = 0;
-                eol_pulse_generator.trigger(0.01f);
+                first_step = false;
+            }
+            // Otherwise, step the sequencer
+            else
+            {
+                step++;
+
+                // If we're at the end of the sequencer, wrap to the beginning
+                if (step == sequences[real_selected_sequence].size())
+                {
+                    step = 0;
+                    eol_pulse_generator.trigger(0.01f);
+                }
+            }
+
+            // if (sequences[real_selected_sequence][step])
+            //     output_pulse_generator.trigger(0.01f);
+        }
+
+        if (wait_for_reset_timer)
+        {
+            // Accumulate time in reset_timer
+            if (reset_timer.process(args.sampleTime * 1000.0) > 1.0)
+            {
+                wait_for_reset_timer = false;
+                reset_timer.reset();
             }
         }
 
