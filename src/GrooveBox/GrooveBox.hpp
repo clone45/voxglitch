@@ -569,6 +569,12 @@ struct GrooveBox : VoxglitchSamplerModule
     this->sample_position_snap_track_values[track_index] = sample_position_snap_values[sample_position_snap_index];
   }
 
+  void unassignSample(unsigned int track_index)
+  {
+    sample_players[track_index].releaseSample();
+    loaded_filenames[track_index] = "";
+  }
+
   void importKit(std::string kit_path)
   {
     std::string destination_path = this->selectPathVCV();

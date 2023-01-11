@@ -160,6 +160,15 @@ struct SamplePlayer
     }
   }
 
+  void releaseSample()
+  {
+    sample.unload();
+    this->playback_position = 0.0f;
+    this->playing = false;
+    this->setFilename("");
+    this->setPath("");
+  }
+
   std::string getFilename()
   {
     return(sample.filename);
