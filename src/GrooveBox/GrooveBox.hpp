@@ -573,15 +573,17 @@ struct GrooveBox : VoxglitchSamplerModule
   {
     std::string destination_path = this->selectPathVCV();
 
-    // Unzip kit into destination
-    rack::system::unarchiveToDirectory(kit_path, destination_path);
-
-    // Read .txt file containing list of files in order
-    std::string config_file_path = destination_path + "/kit_samples.txt"; 
-    std::ifstream input_file(config_file_path);
-    
-    if (input_file)
+    if(destination_path != "")
     {
+      // Unzip kit into destination
+      rack::system::unarchiveToDirectory(kit_path, destination_path);
+
+      // Read .txt file containing list of files in order
+      std::string config_file_path = destination_path + "/kit_samples.txt"; 
+      std::ifstream input_file(config_file_path);
+      
+      if (input_file)
+      {
         std::string line = "";
         unsigned int sample_number = 0;
 
@@ -590,6 +592,7 @@ struct GrooveBox : VoxglitchSamplerModule
           this->sample_players[sample_number].loadSample(destination_path + "/" + line);
           sample_number++;
         }
+      }
     }
   }
 
@@ -646,7 +649,11 @@ struct GrooveBox : VoxglitchSamplerModule
   void loadKitDialog() 
   {
     std::string kit_path = this->selectFileVCV("kit:KIT");
-    importKit(kit_path);
+
+    if(kit_path != "")
+    {
+      importKit(kit_path);
+    }
   }
 
   void saveKitDialog() 
@@ -1135,6 +1142,14 @@ struct GrooveBox : VoxglitchSamplerModule
   {
     // Receive message from expander.  Always read from the consumer.
     // when reading from the expander, we're using the __GrooveBox's__ consumer and producer message pair
+
+    // If the expander is removed from the path, then detach it
+    if(! leftExpander.module)
+    {
+      detachExpander();
+      return;
+    }
+
     ExpanderToGrooveboxMessage *consumer_message = (ExpanderToGrooveboxMessage *)leftExpander.consumerMessage;
 
     // Retrieve the data from the expander
@@ -1207,6 +1222,13 @@ struct GrooveBox : VoxglitchSamplerModule
 
   void writeToExpander()
   {
+    // If the expander is removed from the path, then detach it
+    if(! leftExpander.module)
+    {
+      detachExpander();
+      return;
+    }
+
     // Always write to the producerMessage
     GrooveboxToExpanderMessage *groovebox_to_expander_message = (GrooveboxToExpanderMessage *)leftExpander.module->rightExpander.producerMessage;
 
