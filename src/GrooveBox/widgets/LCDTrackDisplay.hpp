@@ -199,7 +199,7 @@ struct TrackLabelDisplay : TransparentWidget
     }
   };
 
-  // This code is s copy of the same thing in GrooveBoxWidget.hpp.  I should
+  // This code is a copy of the same thing in GrooveBoxWidget.hpp.  I should
   // find some way of removing this code duplication.
 
   struct LoadSampleMenuItem : MenuItem
@@ -235,6 +235,17 @@ struct TrackLabelDisplay : TransparentWidget
     }
   };
 
+  struct UnassignSampleMenuItem : MenuItem
+  {
+    GrooveBox *module;
+    int track_index = 0;
+
+    void onAction(const event::Action &e) override
+    {
+      module->unassignSample(track_index);
+    }
+  };
+
   void createContextMenu()
   {
     GrooveBox *module = dynamic_cast<GrooveBox *>(this->module);
@@ -267,6 +278,11 @@ struct TrackLabelDisplay : TransparentWidget
       clear_track_menu_item->module = module;
       clear_track_menu_item->track_number = track_number;
       menu->addChild(clear_track_menu_item);
+
+      UnassignSampleMenuItem *unassign_sample_menu_item = createMenuItem<UnassignSampleMenuItem>("Unassign Sample");
+      unassign_sample_menu_item->module = module;
+      unassign_sample_menu_item->track_index = track_number;
+      menu->addChild(unassign_sample_menu_item);      
     }
   }
 

@@ -470,6 +470,17 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     }
   };
 
+  struct UnassignSampleMenuItem : MenuItem
+  {
+    GrooveBox *module;
+    int track_index = 0;
+
+    void onAction(const event::Action &e) override
+    {
+      module->unassignSample(track_index);
+    }
+  };
+
   struct TrackMenuItem : MenuItem
   {
     GrooveBox *module;
@@ -488,6 +499,11 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
       clear_menu_item->track_index = this->track_index;
       clear_menu_item->module = module;
       menu->addChild(clear_menu_item);
+
+      UnassignSampleMenuItem *unassign_sample_menu_item = createMenuItem<UnassignSampleMenuItem>("Unassign Sample");
+      unassign_sample_menu_item->track_index = this->track_index;
+      unassign_sample_menu_item->module = module;
+      menu->addChild(unassign_sample_menu_item);
 
       return menu;
     }
