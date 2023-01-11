@@ -224,15 +224,41 @@ struct OneZero : VoxglitchModule
                 for (auto &character : line)
                 {
                     // Print current character
-                    sequence.push_back(character == '1');
+                    if(character == '1') sequence.push_back(true);
+                    if(character == '0') sequence.push_back(false);                    
                 }
 
                 sequences.push_back(sequence);
             }
+
+            /* 
+
+            // I want to add this to the module, but I'm not sure how to include the library
+            
+            std::string dir = system::getDirectory(path);
+            efsw = efsw_create(false);
+            efsw_addwatch(efsw, dir.c_str(), watchCallback, false, this);
+            efsw_watch(efsw);
+            
+            */
+
         }
 
         reset();
     }
+
+    /*
+	static void watchCallback(efsw_watcher watcher, efsw_watchid watchid, const char* dir, const char* filename, enum efsw_action action, const char* old_filename, void* param) {
+		OneZero* that = (OneZero*) param;
+		if (action == EFSW_ADD || action == EFSW_DELETE || action == EFSW_MODIFIED || action == EFSW_MOVED) {
+			// Check filename
+			std::string pathFilename = system::getFilename(that->path);
+			if (pathFilename == filename) {
+				that->loadData();
+			}
+		}
+	}
+    */
 
     std::string selectFileVCV()
     {
