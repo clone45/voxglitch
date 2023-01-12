@@ -7,6 +7,9 @@
 #include "Common/sequencer/Sequencer.hpp"
 #include "Common/sequencer/GateSequencer.hpp"
 
+#include "Common/wren.c"
+#include "Common/wren.h"
+
 #include "OneZero/defines.h"
 #include "OneZero/OneZero.hpp"
 #include "OneZero/OneZeroReadoutWidget.hpp"

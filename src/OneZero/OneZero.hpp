@@ -27,6 +27,8 @@ struct OneZero : VoxglitchModule
     bool first_step = true;
     bool wait_for_reset_timer = false;
     bool playback = true;
+    
+    WrenConfiguration wren_config;
 
     enum ParamIds
     {
@@ -58,7 +60,9 @@ struct OneZero : VoxglitchModule
     };
 
     OneZero()
-    {
+    {        
+        wrenInitConfiguration(&wren_config);        
+
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
         configParam(CV_SEQUENCE_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "Attenuator");
     }
