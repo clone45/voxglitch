@@ -1,5 +1,14 @@
 ## Change Log
 
+## 2.25.1
+* Updated OneZero so that, when parsing files, only "1" and "0" strings are considered
+* Fixed bug in Groovebox where it would crash if importing a "kit" was aborted
+* Fixed bug in Groovebox where it would crash if an attached expander was removed
+* Added the ability to remove samples from Groovebox tracks
+
+## 2.25.0
+* Added new module "OnePoint", which is similar to OneZero, but using CV instead of gates
+
 ## 2.24.2
 * Added new module "OneZero", which is a gate sequencer based on external files
 * Fixed issue in Groovebox where sequence start and end drag handles were not appearing correctly
