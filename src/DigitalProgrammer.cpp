@@ -8,6 +8,8 @@
 #include <array>
 
 #include "DigitalProgrammer/defines.h"
+#include "Common/constants.h"
+
 using namespace digital_programmer;
 
 #include "Common/Theme.hpp"

@@ -18,10 +18,11 @@ struct WavBankMC : VoxglitchSamplerModule
 	std::string path;
 
   dsp::SchmittTrigger next_wav_cv_trigger;
-	dsp::SchmittTrigger next_wav_button_trigger;
   dsp::SchmittTrigger prev_wav_cv_trigger;
-	dsp::SchmittTrigger prev_wav_button_trigger;
   dsp::SchmittTrigger trg_cv_trigger;
+
+	dsp::SchmittTrigger next_wav_button_trigger;
+	dsp::SchmittTrigger prev_wav_button_trigger;
   dsp::SchmittTrigger trg_button_trigger;
 
   unsigned int number_of_samples = 0;
@@ -218,7 +219,7 @@ struct WavBankMC : VoxglitchSamplerModule
 
   bool process_trg_input()
   {
-    bool trg_is_triggered = trg_cv_trigger.process(inputs[TRIG_INPUT].getVoltage()) || trg_button_trigger.process(params[TRIG_INPUT_BUTTON_PARAM].getValue());
+    bool trg_is_triggered = trg_cv_trigger.process(inputs[TRIG_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger) || trg_button_trigger.process(params[TRIG_INPUT_BUTTON_PARAM].getValue());
     lights[TRIG_LIGHT].setSmoothBrightness(trg_is_triggered, this->sample_time);
     return(trg_is_triggered);
   }
@@ -228,12 +229,12 @@ struct WavBankMC : VoxglitchSamplerModule
     if(this->samples.size() == 0) return;
 
     // If next_wav button is pressed, step to the next sample
-    bool next_wav_is_triggered = next_wav_cv_trigger.process(inputs[NEXT_WAV_TRIGGER_INPUT].getVoltage()) || next_wav_button_trigger.process(params[NEXT_WAV_BUTTON_PARAM].getValue());
+    bool next_wav_is_triggered = next_wav_cv_trigger.process(inputs[NEXT_WAV_TRIGGER_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger) || next_wav_button_trigger.process(params[NEXT_WAV_BUTTON_PARAM].getValue());
     if(next_wav_is_triggered) increment_selected_sample();
     lights[NEXT_WAV_LIGHT].setSmoothBrightness(next_wav_is_triggered, this->sample_time);
 
     // Now do prev_wav_is_triggered
-    bool prev_wav_is_triggered = prev_wav_cv_trigger.process(inputs[PREV_WAV_TRIGGER_INPUT].getVoltage()) || prev_wav_button_trigger.process(params[PREV_WAV_BUTTON_PARAM].getValue());
+    bool prev_wav_is_triggered = prev_wav_cv_trigger.process(inputs[PREV_WAV_TRIGGER_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger) || prev_wav_button_trigger.process(params[PREV_WAV_BUTTON_PARAM].getValue());
     if(prev_wav_is_triggered) decrement_selected_sample();
     lights[PREV_WAV_LIGHT].setSmoothBrightness(prev_wav_is_triggered, this->sample_time);
 

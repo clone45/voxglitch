@@ -34,8 +34,8 @@ struct GrooveBox : VoxglitchSamplerModule
   dsp::BooleanTrigger parameter_lock_button_triggers[NUMBER_OF_PARAMETER_LOCKS];
   dsp::BooleanTrigger copy_button_trigger;
   dsp::BooleanTrigger paste_button_trigger;
-  dsp::BooleanTrigger step_trigger;
-  dsp::BooleanTrigger reset_trigger;
+  dsp::SchmittTrigger step_trigger;
+  dsp::SchmittTrigger reset_trigger;
 
   // Pointers to select track and memory
   Track *selected_track = NULL;
@@ -969,7 +969,7 @@ struct GrooveBox : VoxglitchSamplerModule
     }
 
     // On incoming RESET, reset the sequencers
-    if (reset_trigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+    if (reset_trigger.process(inputs[RESET_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
     {
       // Set up a (reverse) counter so that the clock input will ignore
       // incoming clock pulses for 1 millisecond after a reset input. This
@@ -1026,7 +1026,7 @@ struct GrooveBox : VoxglitchSamplerModule
     //
     // Clock and step features
     //
-    if (step_trigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+    if (step_trigger.process(inputs[STEP_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
     {
       if (clock_counter == clock_division)
       {

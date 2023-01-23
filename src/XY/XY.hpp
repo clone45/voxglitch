@@ -140,14 +140,14 @@ struct XY : VoxglitchModule
 
   void process(const ProcessArgs &args) override
   {
-    if (reset_trigger.process(inputs[RESET_INPUT].getVoltage()))
+    if (reset_trigger.process(inputs[RESET_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
     {
       playback_index = 0;
     }
 
     if (inputs[CLK_INPUT].isConnected())
     {
-      if (clkTrigger.process(inputs[CLK_INPUT].getVoltage()))
+      if (clkTrigger.process(inputs[CLK_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
       {
         if(mode == MODE_PUNCH_RECORDING)
         {

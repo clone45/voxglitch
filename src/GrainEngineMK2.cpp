@@ -9,6 +9,8 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
+
+#include "Common/constants.h"
 #include "Common/sample.hpp"
 #include "Common/SamplePlayer.hpp"
 #include "Common/dsp/StereoPan.hpp"

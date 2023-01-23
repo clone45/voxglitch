@@ -6,6 +6,8 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
+
+#include "Common/constants.h"
 #include "Common/common.hpp"
 #include "Common/audio_buffer.hpp"
 #include "Common/dsp/StereoPan.hpp"

@@ -473,7 +473,7 @@ struct DigitalSequencer : VoxglitchModule
     {
 
       // On incoming RESET, reset the sequencers
-      if(resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+      if(resetTrigger.process(inputs[RESET_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
       {
         // Set up a (reverse) counter so that the clock input will ignore
         // incoming clock pulses for 1 millisecond after a reset input. This
@@ -503,7 +503,7 @@ struct DigitalSequencer : VoxglitchModule
       if(legacy_reset || clock_ignore_on_reset == 0)
       {
         // Check to see if there's a pulse at the global step trigger input.
-        bool global_step_trigger = stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f));
+        bool global_step_trigger = stepTrigger.process(inputs[STEP_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger);
         bool step;
 
         // reset_first_step ensures that the first step of the sequence is not skipped
@@ -521,7 +521,7 @@ struct DigitalSequencer : VoxglitchModule
           {
             if(global_step_trigger) step = true;
           }
-          else if (sequencer_step_triggers[i].process(rescale(inputs[sequencer_step_inputs[i]].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+          else if (sequencer_step_triggers[i].process(inputs[sequencer_step_inputs[i]].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
           {
             step = true;
           }

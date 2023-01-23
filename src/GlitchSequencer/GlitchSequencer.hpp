@@ -146,7 +146,7 @@ struct GlitchSequencer : VoxglitchModule
     sequencer.setLength(params[LENGTH_KNOB].getValue());
 
     // Process Reset input
-    if(resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+    if(resetTrigger.process(inputs[RESET_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
     {
       // Set up a (reverse) counter so that the clock input will ignore
       // incoming clock pulses for 1 millisecond after a reset input. This
@@ -172,7 +172,7 @@ struct GlitchSequencer : VoxglitchModule
     }
 
     // Process Step Input
-    if((clock_ignore_on_reset == 0) && stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+    if((clock_ignore_on_reset == 0) && stepTrigger.process(inputs[STEP_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
     {
       sequencer.step(trigger_results);
 

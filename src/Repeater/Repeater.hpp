@@ -152,7 +152,7 @@ struct Repeater : VoxglitchSamplerModule
             // playTrigger is a SchmittTrigger object.  Here, the SchmittTrigger
             // determines if a low-to-high transition happened at the TRIG_INPUT
             //
-            if (playTrigger.process(inputs[TRIG_INPUT].getVoltage()))
+            if (playTrigger.process(inputs[TRIG_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
             {
                 float clock_division = calculate_inputs(CLOCK_DIVISION_INPUT, CLOCK_DIVISION_KNOB, CLOCK_DIVISION_ATTN_KNOB, 10);
                 clock_division = clamp(clock_division, 0.0, 10.0);

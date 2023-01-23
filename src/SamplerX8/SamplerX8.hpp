@@ -105,7 +105,7 @@ struct SamplerX8 : VoxglitchSamplerModule
     for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
     {
       // Process trigger inputs to start sample playback
-      if (sample_triggers[i].process(rescale(inputs[TRIGGER_INPUTS + i].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+      if (sample_triggers[i].process(inputs[TRIGGER_INPUTS + i].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
       {
         if(inputs[POSITION_INPUTS + i].isConnected())
         {

@@ -10,6 +10,7 @@
 #include <vector>
 #include "cmath"
 
+#include "Common/constants.h"
 #include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
 

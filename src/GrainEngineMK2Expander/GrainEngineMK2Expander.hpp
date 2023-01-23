@@ -83,8 +83,8 @@ struct GrainEngineMK2Expander : Module
       float left = inputs[AUDIO_IN_LEFT].getVoltage();
       float right = inputs[AUDIO_IN_RIGHT].getVoltage();
 
-      bool start_recording = record_start_button_trigger.process(params[RECORD_START_BUTTON_PARAM].getValue()) || record_start_input_trigger.process(inputs[RECORD_START_INPUT].getVoltage());
-      bool stop_recording = record_stop_button_trigger.process(params[RECORD_STOP_BUTTON_PARAM].getValue()) || record_stop_input_trigger.process(inputs[RECORD_STOP_INPUT].getVoltage());
+      bool start_recording = record_start_button_trigger.process(params[RECORD_START_BUTTON_PARAM].getValue()) || record_start_input_trigger.process(inputs[RECORD_START_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger);
+      bool stop_recording = record_stop_button_trigger.process(params[RECORD_STOP_BUTTON_PARAM].getValue()) || record_stop_input_trigger.process(inputs[RECORD_STOP_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger);
 
       if(recording && start_recording)
       {
