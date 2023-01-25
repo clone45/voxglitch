@@ -2,7 +2,7 @@ struct SequencerDisplayABS : VoxglitchWidget
 {
   AutobreakStudio *module;
   Vec drag_position;
-  double bar_width = (DRAW_AREA_WIDTH / (double) MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
+  double bar_width = (DRAW_AREA_WIDTH / (double)MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
 
   NVGcolor bright_background_color = nvgRGBA(37, 56, 59, 255);
   NVGcolor dark_background_color = nvgRGBA(31, 39, 41, 255);
@@ -22,10 +22,10 @@ struct SequencerDisplayABS : VoxglitchWidget
     TransparentWidget::onDragEnd(e);
   }
 
-
   // Allow for changing between sequences using the number keys
 
-  void step() override {
+  void step() override
+  {
     TransparentWidget::step();
   }
 
@@ -41,35 +41,43 @@ struct SequencerDisplayABS : VoxglitchWidget
 
   bool keypressRight(const event::HoverKey &e)
   {
-    if(e.key == GLFW_KEY_RIGHT) e.consume(this);
-    if(e.key == GLFW_KEY_RIGHT && e.action == GLFW_PRESS) return true;
+    if (e.key == GLFW_KEY_RIGHT)
+      e.consume(this);
+    if (e.key == GLFW_KEY_RIGHT && e.action == GLFW_PRESS)
+      return true;
     return false;
   }
 
   bool keypressLeft(const event::HoverKey &e)
   {
-    if(e.key == GLFW_KEY_LEFT) e.consume(this);
-    if(e.key == GLFW_KEY_LEFT && e.action == GLFW_PRESS) return true;
+    if (e.key == GLFW_KEY_LEFT)
+      e.consume(this);
+    if (e.key == GLFW_KEY_LEFT && e.action == GLFW_PRESS)
+      return true;
     return false;
   }
 
   bool keypressUp(const event::HoverKey &e)
   {
-    if(e.key == GLFW_KEY_UP) e.consume(this);
-    if(e.key == GLFW_KEY_UP && e.action == GLFW_PRESS) return true;
+    if (e.key == GLFW_KEY_UP)
+      e.consume(this);
+    if (e.key == GLFW_KEY_UP && e.action == GLFW_PRESS)
+      return true;
     return false;
   }
 
   bool keypressDown(const event::HoverKey &e)
   {
-    if(e.key == GLFW_KEY_DOWN) e.consume(this);
-    if(e.key == GLFW_KEY_DOWN && e.action == GLFW_PRESS) return true;
+    if (e.key == GLFW_KEY_DOWN)
+      e.consume(this);
+    if (e.key == GLFW_KEY_DOWN && e.action == GLFW_PRESS)
+      return true;
     return false;
   }
 
   void drawVerticalGuildes(NVGcontext *vg, double height, unsigned int number_of_guides = 4)
   {
-    for(unsigned int i=1; i < number_of_guides; i++)
+    for (unsigned int i = 1; i < number_of_guides; i++)
     {
       nvgBeginPath(vg);
       int x = (i * 4 * bar_width) + (i * 4 * BAR_HORIZONTAL_PADDING);
@@ -94,4 +102,5 @@ struct SequencerDisplayABS : VoxglitchWidget
     nvgFillColor(vg, color);
     nvgFill(vg);
   }
+
 };

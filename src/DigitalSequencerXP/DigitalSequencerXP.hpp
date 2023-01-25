@@ -435,7 +435,7 @@ struct DigitalSequencerXP : VoxglitchModule
     {
 
       // On incoming RESET, reset the sequencers
-      if(resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+      if(resetTrigger.process(inputs[RESET_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
       {
         // Set up a (reverse) counter so that the clock input will ignore
         // incoming clock pulses for 1 millisecond after a reset input. This
@@ -570,14 +570,14 @@ struct DigitalSequencerXP : VoxglitchModule
     {
       for(unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
       {
-        step[i] = stepTriggers[i].process(rescale(inputs[POLY_STEP_INPUT].getVoltage(i), 0.0f, 10.0f, 0.f, 1.f));
+        step[i] = stepTriggers[i].process(inputs[POLY_STEP_INPUT].getVoltage(i), constants::gate_low_trigger, constants::gate_high_trigger);
       }
     }
     // If a monophonic (or no) input is being used
     else
     {
       // Poll the first step input channel
-      bool stepped = stepTriggers[0].process(rescale(inputs[POLY_STEP_INPUT].getVoltage(0), 0.0f, 10.0f, 0.f, 1.f));
+      bool stepped = stepTriggers[0].process(inputs[POLY_STEP_INPUT].getVoltage(0), constants::gate_low_trigger, constants::gate_high_trigger);
 
       // Apply the value found in the previous step to channels 2, 3, 4, etc...
       for(unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++) step[i] = stepped;

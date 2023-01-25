@@ -20,6 +20,7 @@
 #include <array>
 
 #include "DigitalSequencer/defines.h"
+#include "Common/constants.h"
 #include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
 #include "Common/sequencer/Sequencer.hpp"

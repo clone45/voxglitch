@@ -157,13 +157,13 @@ struct Hazumi : Module
 	{
 
     // Process reset input
-    if(resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+    if(resetTrigger.process(inputs[RESET_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
     {
       hazumi_sequencer.reset();
     }
 
     // Process Step Input
-    if(stepTrigger.process(rescale(inputs[STEP_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+    if(stepTrigger.process(inputs[STEP_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
     {
       hazumi_sequencer.step(trigger_results);
 

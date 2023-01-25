@@ -339,7 +339,7 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
 
     if(inputs[SPAWN_TRIGGER_INPUT].isConnected())
     {
-      if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage())) {
+      if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger)) {
         grain_manager.addGrain(start_position, window_length, pan, &sample_players[selected_sample_index].sample, max_grains, step_amount);
       }
     }

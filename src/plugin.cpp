@@ -1,4 +1,5 @@
 #include "plugin.hpp"
+#include "Common/constants.cpp"
 
 Plugin* pluginInstance;
 

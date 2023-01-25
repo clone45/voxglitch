@@ -57,7 +57,7 @@ struct Looper : VoxglitchSamplerModule
 
 	void process(const ProcessArgs &args) override
 	{
-    if(resetTrigger.process(rescale(inputs[RESET_INPUT].getVoltage(), 0.0f, 10.0f, 0.f, 1.f)))
+    if(resetTrigger.process(inputs[RESET_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
     {
       sample_player.trigger(); // starting position=0.0, loop=true
     }
