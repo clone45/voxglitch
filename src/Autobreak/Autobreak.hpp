@@ -147,7 +147,7 @@ struct Autobreak : VoxglitchSamplerModule
 
     time_counter += 1.0 / args.sampleRate;
 
-    if (clockTrigger.process(inputs[CLOCK_INPUT].getVoltage()))
+    if (clockTrigger.process(inputs[CLOCK_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
     {
       if(timer_before != 0)
       {
@@ -159,7 +159,7 @@ struct Autobreak : VoxglitchSamplerModule
       clock_triggered = true;
     }
 
-    if (ratchetTrigger.process(inputs[RATCHET_INPUT].getVoltage()))
+    if (ratchetTrigger.process(inputs[RATCHET_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
     {
       ratchet_triggered = true;
     }
@@ -170,7 +170,7 @@ struct Autobreak : VoxglitchSamplerModule
 
     if (inputs[RESET_INPUT].isConnected())
     {
-      if (resetTrigger.process(inputs[RESET_INPUT].getVoltage()))
+      if (resetTrigger.process(inputs[RESET_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
       {
         // Reset counters
         actual_playback_position = 0;

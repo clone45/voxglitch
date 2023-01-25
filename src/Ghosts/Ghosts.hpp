@@ -181,7 +181,7 @@ struct Ghosts : VoxglitchSamplerModule
 		}
 
 		// Handle purge trigger input
-		bool purge_is_triggered = purge_trigger.process(inputs[PURGE_TRIGGER_INPUT].getVoltage()) || purge_button_trigger.process(params[PURGE_BUTTON_PARAM].getValue());
+		bool purge_is_triggered = purge_trigger.process(inputs[PURGE_TRIGGER_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger) || purge_button_trigger.process(params[PURGE_BUTTON_PARAM].getValue());
 		if (purge_is_triggered)
 		{
 			graveyard.markAllForRemoval();

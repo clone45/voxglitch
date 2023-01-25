@@ -8,6 +8,7 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
+#include "Common/constants.h"
 #include "Common/sample.hpp"
 #include "Common/dsp/DeclickFilter.hpp"
 

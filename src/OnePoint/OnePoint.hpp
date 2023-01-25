@@ -6,11 +6,11 @@
 
 struct OnePoint : VoxglitchModule
 {
-    dsp::BooleanTrigger step_trigger;
-    dsp::BooleanTrigger reset_trigger;
-    dsp::BooleanTrigger next_sequence_trigger;
-    dsp::BooleanTrigger prev_sequence_trigger;
-    dsp::BooleanTrigger zero_sequence_trigger;
+    dsp::SchmittTrigger step_trigger;
+    dsp::SchmittTrigger reset_trigger;
+    dsp::SchmittTrigger next_sequence_trigger;
+    dsp::SchmittTrigger prev_sequence_trigger;
+    dsp::SchmittTrigger zero_sequence_trigger;
     dsp::BooleanTrigger next_sequence_button_trigger;
     dsp::BooleanTrigger prev_sequence_button_trigger;
     dsp::BooleanTrigger zero_sequence_button_trigger;
@@ -118,25 +118,25 @@ struct OnePoint : VoxglitchModule
             return;
 
         // Process NEXT trigger and button
-        if (next_sequence_trigger.process(inputs[NEXT_SEQUENCE_INPUT].getVoltage()) || next_sequence_button_trigger.process(params[NEXT_BUTTON_PARAM].getValue()))
+        if (next_sequence_trigger.process(inputs[NEXT_SEQUENCE_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger) || next_sequence_button_trigger.process(params[NEXT_BUTTON_PARAM].getValue()))
         {
             selected_sequence = ((selected_sequence + 1) % sequences.size());
         }
 
         // Process PREV trigger and button
-        if (prev_sequence_trigger.process(inputs[PREV_SEQUENCE_INPUT].getVoltage()) || prev_sequence_button_trigger.process(params[PREV_BUTTON_PARAM].getValue()))
+        if (prev_sequence_trigger.process(inputs[PREV_SEQUENCE_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger) || prev_sequence_button_trigger.process(params[PREV_BUTTON_PARAM].getValue()))
         {
             selected_sequence = (selected_sequence == 0) ? sequences.size() - 1 : selected_sequence - 1;
         }
 
         // Process ZERO trigger and button
-        if (zero_sequence_trigger.process(inputs[ZERO_SEQUENCE_INPUT].getVoltage()) || zero_sequence_button_trigger.process(params[ZERO_BUTTON_PARAM].getValue()))
+        if (zero_sequence_trigger.process(inputs[ZERO_SEQUENCE_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger) || zero_sequence_button_trigger.process(params[ZERO_BUTTON_PARAM].getValue()))
         {
             selected_sequence = 0;
         }
 
         // Process RESET input
-        if (reset_trigger.process(inputs[RESET_INPUT].getVoltage()))
+        if (reset_trigger.process(inputs[RESET_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
         {
             reset();
         }
@@ -156,7 +156,7 @@ struct OnePoint : VoxglitchModule
         }
 
         // Process STEP input
-        if (!wait_for_reset_timer && step_trigger.process(inputs[STEP_INPUT].getVoltage()))
+        if (!wait_for_reset_timer && step_trigger.process(inputs[STEP_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
         {
             // If there's a step input, but first_step is true, then don't
             // increment the step and output the value at step #1

@@ -16,6 +16,7 @@
 #include "GrooveBox/defines.h"
 using namespace groove_box;
 
+#include "Common/constants.h"
 #include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"
 #include "GrooveBox/ParameterLockSettings.hpp"

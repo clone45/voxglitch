@@ -172,7 +172,7 @@ struct WavBank : VoxglitchSamplerModule
 				// playTrigger is a SchmittTrigger object.  Here, the SchmittTrigger
 				// determines if a low-to-high transition happened at the TRIG_INPUT
 
-				if (playTrigger.process(inputs[TRIG_INPUT].getVoltage()))
+				if (playTrigger.process(inputs[TRIG_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
 				{
 					playback = true;
 					declick_filter.trigger();

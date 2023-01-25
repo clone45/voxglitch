@@ -276,7 +276,7 @@ struct GrainFx : VoxglitchModule
     // over the internal spwn rate.
     if(inputs[SPAWN_TRIGGER_INPUT].isConnected())
     {
-      if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage())) grain_fx_core.add(start_position, window_length, pan, &audio_buffer, max_grains, pitch);
+      if(spawn_trigger.process(inputs[SPAWN_TRIGGER_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger)) grain_fx_core.add(start_position, window_length, pan, &audio_buffer, max_grains, pitch);
 
       lights[SPAWN_INDICATOR_LIGHT].setBrightness(0);
       lights[EXT_CLK_INDICATOR_LIGHT].setBrightness(1);

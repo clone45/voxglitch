@@ -38,13 +38,14 @@ struct DigitalProgrammer : VoxglitchModule
   std::string labels[NUMBER_OF_SLIDERS] = {"","","","","","","","","","","","","","","",""};
 
   dsp::SchmittTrigger bank_next_input_schmitt_trigger;
-  dsp::SchmittTrigger bank_next_button_schmitt_trigger;
   dsp::SchmittTrigger bank_prev_input_schmitt_trigger;
-  dsp::SchmittTrigger bank_prev_button_schmitt_trigger;
   dsp::SchmittTrigger bank_reset_schmitt_trigger;
-  dsp::SchmittTrigger copy_mode_button_trigger;
-  dsp::SchmittTrigger clear_mode_button_trigger;
-  dsp::SchmittTrigger randomize_mode_button_trigger;
+
+  dsp::BooleanTrigger bank_next_button_schmitt_trigger;
+  dsp::BooleanTrigger bank_prev_button_schmitt_trigger;
+  dsp::BooleanTrigger copy_mode_button_trigger;
+  dsp::BooleanTrigger clear_mode_button_trigger;  
+  dsp::BooleanTrigger randomize_mode_button_trigger;
 
   std::string voltage_range_names[NUMBER_OF_VOLTAGE_RANGES] = {
     "0.0 to 10.0",
@@ -338,16 +339,17 @@ struct DigitalProgrammer : VoxglitchModule
     }
 
     if(
-      bank_next_input_schmitt_trigger.process(inputs[BANK_NEXT_INPUT].getVoltage()) ||
+      bank_next_input_schmitt_trigger.process(inputs[BANK_NEXT_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger) ||
       bank_next_button_schmitt_trigger.process(params[BANK_NEXT_PARAM].getValue())
     ) incrementBank();
 
     if(
-      bank_prev_input_schmitt_trigger.process(inputs[BANK_PREV_INPUT].getVoltage()) ||
+      bank_prev_input_schmitt_trigger.process(inputs[BANK_PREV_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger) ||
       bank_prev_button_schmitt_trigger.process(params[BANK_PREV_PARAM].getValue())
     ) decrementBank();
 
-    if(bank_reset_schmitt_trigger.process(inputs[BANK_RESET_INPUT].getVoltage())) resetBank();
+    if(bank_reset_schmitt_trigger.process(inputs[BANK_RESET_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger)) 
+      resetBank();
 
     // Set input channels for poly add input
     inputs[POLY_ADD_INPUT].setChannels(NUMBER_OF_SLIDERS);

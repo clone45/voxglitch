@@ -5,6 +5,7 @@
 #include "osdialog.h"
 #include "settings.hpp"
 
+#include "Common/constants.h"
 #include "GlitchSequencer/defines.h"
 #include "Common/Theme.hpp"
 #include "Common/components/VoxglitchComponents.hpp"

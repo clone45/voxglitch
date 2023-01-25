@@ -37,7 +37,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
             // Save the drawing context to restore later
             nvgSave(vg);
 
-            if(module)
+            if (module)
             {
                 // Get a pointer to the Voltage Sequencer
                 VoltageSequencer *sequencer = *sequencer_ptr_ptr;
@@ -75,7 +75,8 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
                     }
 
                     // Draw bars for the sequence values
-                    if (value > 0) drawBar(vg, i, (value * DRAW_AREA_HEIGHT), DRAW_AREA_HEIGHT, bar_color);
+                    if (value > 0)
+                        drawBar(vg, i, (value * DRAW_AREA_HEIGHT), DRAW_AREA_HEIGHT, bar_color);
 
                     // Highlight the sequence playback column
                     if (i == sequencer->getPlaybackPosition())
@@ -86,7 +87,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
             }
             else // Draw a demo sequence so that the sequencer looks nice in the library selector
             {
-                double demo_sequence[16] = {0.0, 0.0, 0.25,0.75,0.50,0.50,0.25,0.75,0.0,0.0,0.25,0.75,0.0,0.0,0.25,.75};
+                double demo_sequence[16] = {0.0, 0.0, 0.25, 0.75, 0.50, 0.50, 0.25, 0.75, 0.0, 0.0, 0.25, 0.75, 0.0, 0.0, 0.25, .75};
 
                 for (unsigned int i = 0; i < MAX_SEQUENCER_STEPS; i++)
                 {
@@ -96,16 +97,19 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
                     drawBar(vg, i, BAR_HEIGHT, DRAW_AREA_HEIGHT, bright_background_color);
 
                     // Draw bar for value at i
-                    if (value > 0) drawBar(vg, i, (value * DRAW_AREA_HEIGHT), DRAW_AREA_HEIGHT, lesser_step_highlight_color);
+                    if (value > 0)
+                        drawBar(vg, i, (value * DRAW_AREA_HEIGHT), DRAW_AREA_HEIGHT, lesser_step_highlight_color);
 
                     // Highlight active step
-                    if (i == 3) drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 150));
+                    if (i == 3)
+                        drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, nvgRGBA(255, 255, 255, 150));
                 }
             }
 
             drawVerticalGuildes(vg, DRAW_AREA_HEIGHT, 4);
             drawOverlay(vg, OVERLAY_WIDTH, DRAW_AREA_HEIGHT);
-            if(draw_horizontal_guide) drawHorizontalGuide(vg);
+            if (draw_horizontal_guide)
+                drawHorizontalGuide(vg);
 
             nvgRestore(vg);
         }
@@ -136,12 +140,12 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
         {
             VoltageSequencer *sequencer = *sequencer_ptr_ptr;
 
-            double bar_width = (DRAW_AREA_WIDTH / (double) MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
+            double bar_width = (DRAW_AREA_WIDTH / (double)MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
             int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
             int clicked_y = DRAW_AREA_HEIGHT - mouse_position.y;
 
             clicked_bar_x_index = clamp(clicked_bar_x_index, 0, MAX_SEQUENCER_STEPS - 1);
-            clicked_y = clamp(clicked_y, 0, (int) DRAW_AREA_HEIGHT);
+            clicked_y = clamp(clicked_y, 0, (int)DRAW_AREA_HEIGHT);
 
             // convert the clicked_y position to a double between 0 and 1
             double value = (double)clicked_y / (double)DRAW_AREA_HEIGHT;
@@ -152,25 +156,25 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
 
     void highlightSection(Vec mouse_position)
     {
-        if(module)
+        if (module)
         {
             int clicked_y = DRAW_AREA_HEIGHT - mouse_position.y;
-            clicked_y = clamp(clicked_y, 0, (int) DRAW_AREA_HEIGHT);
+            clicked_y = clamp(clicked_y, 0, (int)DRAW_AREA_HEIGHT);
 
             // convert the clicked_y position to a double between 0 and 1
-            float value = (float)clicked_y / (float) DRAW_AREA_HEIGHT;
+            float value = (float)clicked_y / (float)DRAW_AREA_HEIGHT;
 
             value = roundf(value * 16.0);
 
-            if(value > 0)
+            if (value > 0)
             {
                 value = value - 1;
-                
+
                 // Now muliply by 16
                 float highlight_x = value * (WAVEFORM_WIDGET_WIDTH / 16.0);
                 float highlight_width = WAVEFORM_WIDGET_WIDTH / 16.0;
 
-                for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
+                for (unsigned int i = 0; i < NUMBER_OF_SAMPLES; i++)
                 {
                     module->waveform_model[i].highlight_section = true;
                     module->waveform_model[i].highlight_section_x = highlight_x;
@@ -179,7 +183,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
             }
             else
             {
-                for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
+                for (unsigned int i = 0; i < NUMBER_OF_SAMPLES; i++)
                 {
                     module->waveform_model[i].highlight_section = false;
                 }
@@ -189,9 +193,9 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
 
     void unhighlightSection()
     {
-        if(module)
+        if (module)
         {
-            for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
+            for (unsigned int i = 0; i < NUMBER_OF_SAMPLES; i++)
             {
                 module->waveform_model[i].highlight_section = false;
             }
@@ -271,6 +275,12 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
                 this->editBar(e.pos);
             }
         }
+
+        if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_RIGHT && (e.mods & RACK_MOD_MASK) == 0)
+        {
+            createContextMenu();
+            e.consume(this);
+        }
     }
 
     void onDragMove(const event::DragMove &e) override
@@ -279,6 +289,8 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
         float zoom = getAbsoluteZoom();
         drag_position = drag_position.plus(e.mouseDelta.div(zoom));
 
+        if(e.button != GLFW_MOUSE_BUTTON_LEFT) return;
+        
         if (this->shift_key == true)
         {
             dragShiftSequences(drag_position);
@@ -297,14 +309,16 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
             //  module->waveform_model[id].x = ??
             //  module->waveform_model[id].width = ??
 
-            if(sequencer_type == 0) highlightSection(drag_position);
+            if (sequencer_type == 0)
+                highlightSection(drag_position);
         }
     }
 
     void onDragEnd(const event::DragEnd &e) override
     {
         TransparentWidget::onDragEnd(e);
-        if(sequencer_type == 0) unhighlightSection();
+        if (sequencer_type == 0)
+            unhighlightSection();
     }
 
     void onHover(const event::Hover &e) override
@@ -336,5 +350,51 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
     {
         shift_key = false;
         ctrl_key = false;
+    }
+
+    struct ShiftLeftMenuItem : MenuItem
+    {
+        AutobreakStudio *module;
+        VoltageSequencer *sequencer;
+
+        void onAction(const event::Action &e) override
+        {
+            sequencer->shiftLeft();
+        }
+    };
+
+    struct ShiftRightMenuItem : MenuItem
+    {
+        AutobreakStudio *module;
+        VoltageSequencer *sequencer;
+
+        void onAction(const event::Action &e) override
+        {
+            sequencer->shiftRight();
+        }
+    };
+
+    void createContextMenu()
+    {
+        AutobreakStudio *module = dynamic_cast<AutobreakStudio *>(this->module);
+        assert(module);
+
+        if (true)
+        {
+            ui::Menu *menu = createMenu();
+
+            menu->addChild(createMenuLabel("Sequencer Actions"));
+
+            ShiftLeftMenuItem *shift_left_menu_item = createMenuItem<ShiftLeftMenuItem>("Shift Left");
+            shift_left_menu_item->module = module;
+            shift_left_menu_item->sequencer = *sequencer_ptr_ptr;
+            menu->addChild(shift_left_menu_item);
+
+            ShiftRightMenuItem *shift_right_menu_item = createMenuItem<ShiftRightMenuItem>("Shift Right");
+            shift_right_menu_item->module = module;
+            shift_right_menu_item->sequencer = *sequencer_ptr_ptr;
+            menu->addChild(shift_right_menu_item);
+
+        }
     }
 };
