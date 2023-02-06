@@ -51,9 +51,15 @@
         "tags": ["Sequencer", "Polyphonic"]
     },
     {
+        "slug": "drumrandomizer",
+        "name": "Drum Randomizer",
+        "description": "Apply per-step percentage playback to gate sequences.",
+        "tags": ["Utility", "Polyphonic"]
+    },    
+    {
         "slug": "glitchsequencer",
         "name": "Glitch Sequencer",
-        "description": "Cellular Automaton Gate Sequencer",
+        "description": "Cellular Automaton Gate Sequencer.",
         "tags": ["Sequencer"]
     },
     {
