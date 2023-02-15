@@ -1,9 +1,10 @@
 struct DrumRandomizer : VoxglitchModule
 {
     dsp::SchmittTrigger step_trigger;
+    dsp::SchmittTrigger reset_trigger;
 
     unsigned int sequence_length = 16;
-    float sequences[16][32]; // 32 steps, 16 channels
+    float sequences[16][16]; // 16 steps, 16 channels
     bool passthrough[16];
 
     unsigned int step = 0;
@@ -14,6 +15,12 @@ struct DrumRandomizer : VoxglitchModule
     dsp::TTimer<double> reset_timer;
     bool first_step = true;
     bool wait_for_reset_timer = false;
+
+    // These are variable that are used by the readout widgets in order to 
+    // "watch" as their data sources.
+    float channel_display_value = 0.0;
+    float step_display_value = 0.0;
+    float percentage_display_value = 0.0;
 
     Random random;
 
@@ -51,7 +58,7 @@ struct DrumRandomizer : VoxglitchModule
 
     void clearSequence(unsigned int channel)
     {
-        for(unsigned int i=0; i<32; i++)
+        for(unsigned int i=0; i<16; i++)
         {
             setSequenceValue(channel, i, 1.0); // 1.0 == 100% playback
         }
@@ -62,16 +69,45 @@ struct DrumRandomizer : VoxglitchModule
         sequences[channel][step] = value;
     }
 
+    // Save module data
     json_t *dataToJson() override
     {
         json_t *json_root = json_object();
+
+        json_t *sequences_json_array = json_array();
+
+        for (unsigned int channel = 0; channel < 16; channel++) 
+        {
+            json_t *channel_json_array = json_array();
+
+            for (unsigned int step = 0; step < 16; step++) 
+            {
+                json_array_append_new(channel_json_array, json_real(this->sequences[channel][step]));
+            }
+            json_array_append_new(sequences_json_array, channel_json_array);
+        }
+
+        json_object_set(json_root, "sequences", sequences_json_array);
+        json_decref(sequences_json_array);
+
         return json_root;
     }
 
     // Load module data
-    void dataFromJson(json_t *json_root) override
+    void dataFromJson(json_t *root) override
     {
-    }
+        json_t *sequences_json_array = json_object_get(root, "sequences");
+
+        for (unsigned int channel = 0; channel < 16; channel++)
+        {
+            json_t *channel_json_array = json_array_get(sequences_json_array, channel);
+
+            for (unsigned int step = 0; step < 16; step++)
+            {
+                this->sequences[channel][step] = json_real_value(json_array_get(channel_json_array, step));
+            }
+        }
+    }        
 
     void reset()
     {
@@ -113,6 +149,16 @@ struct DrumRandomizer : VoxglitchModule
             return(true);
         }
 
+        if (wait_for_reset_timer)
+        {
+            // Accumulate time in reset_timer
+            if (reset_timer.process(APP->engine->getSampleTime() * 1000.0) > 1.0)
+            {
+                wait_for_reset_timer = false;
+                reset_timer.reset();
+            }
+        }
+
         return(false);
     } 
 
@@ -148,6 +194,11 @@ struct DrumRandomizer : VoxglitchModule
 
         unsigned int channel_knob_selection = params[CHANNEL_KNOB].getValue();
         unsigned int step_knob_selection = params[STEP_KNOB].getValue();
+        
+        // Communicate choice to the channel readout widget
+        channel_display_value = channel_knob_selection;
+        step_display_value = step_knob_selection + 1;
+        // step_display_value = (int) step;
 
         // If channel knob changes, then update percentage knob
         if(channel_knob_selection != old_channel_knob_selection)
@@ -166,8 +217,17 @@ struct DrumRandomizer : VoxglitchModule
         // Finally, set the percentage value.  Note, this really only makes
         // a difference when the user turns the percentage knob.  This stores
         // the selected percentage into our sequences array.
+        float percentage_knob_selection = params[PERCENTAGE_KNOB].getValue();
+        sequences[channel_knob_selection][step_knob_selection] = percentage_knob_selection;
+        percentage_display_value = percentage_knob_selection;
 
-        sequences[channel_knob_selection][step_knob_selection] = params[PERCENTAGE_KNOB].getValue();
+        //
+        // Process Reset
+        //
+        if(reset_trigger.process(inputs[RESET_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
+        {
+            reset();
+        }
 
         //
         // Process stepping

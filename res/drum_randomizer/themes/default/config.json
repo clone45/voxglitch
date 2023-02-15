@@ -22,11 +22,17 @@
     ],
     "widgets": {
         "STEP_INPUT": {"x": 25.6417, "y": 63.3706},
-        "RESET_INPUT": {"x": 65.5748, "y": 63.3706},        
-        "CHANNEL_KNOB": {"x": 65.332687,"y": 136.658},
-        "STEP_KNOB": {"x": 65.332687,"y": 166.658},
-        "PERCENTAGE_KNOB": {"x": 65.332687,"y": 196.658},
+        "RESET_INPUT": {"x": 65.5748, "y": 63.3706},  
+
+        "CHANNEL_KNOB": {"x": 69.0,"y": 138.77953},
+        "STEP_KNOB": {"x": 69.0,"y": 203.74016},
+        "PERCENTAGE_KNOB": {"x": 69.0,"y": 268.70079},
+        
         "GATE_INPUT": {"x": 25.6417, "y": 336.6334},
-        "GATE_OUTPUT": {"x": 65.5748, "y": 336.6334}
+        "GATE_OUTPUT": {"x": 65.5748, "y": 336.6334},
+
+        "CHANNEL_READOUT": {"x": 2.0, "y": 131.0},
+        "STEP_READOUT": {"x": 2.0, "y": 196.0},
+        "PERCENTAGE_READOUT": {"x": 2.0, "y": 261.0}
     }
 }
