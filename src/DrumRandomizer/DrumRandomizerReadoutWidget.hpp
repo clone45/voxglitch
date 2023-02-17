@@ -1,14 +1,18 @@
 struct DrumRandomizerReadoutWidget : TransparentWidget
 {
-    DrumRandomizer *module;
-
     float *value_pointer = NULL;
     bool show_decimal_points = false;
+
+    float box_size_x = 45.0;
+    float box_size_y = 30.0;
+
+    float box_pos_x = 0;
+    float box_pos_y = 0;
 
     DrumRandomizerReadoutWidget(bool show_decimal_points = false)
     {
         this->show_decimal_points = show_decimal_points;
-        box.size = Vec(56.7845, 15.0384);
+        box.size = Vec(box_size_x, box_size_y);
     }
 
     void draw(const DrawArgs &args) override
@@ -37,20 +41,34 @@ struct DrumRandomizerReadoutWidget : TransparentWidget
             text_to_display= "0";
         }
 
-        std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+        // Draw black background
+        nvgBeginPath(vg);
+        nvgRect(vg, 0, 0, box.size.x, box.size.y);
+        nvgFillColor(vg, nvgRGB(0, 0, 0));
+        nvgFill(vg);
+
+        std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/Segment14.ttf"));
         if (font)
         {
-            nvgFontSize(args.vg, 10);
+            // Set common font attributes
+            nvgFontSize(args.vg, 14);
             nvgFontFaceId(args.vg, font->handle);
             nvgTextLetterSpacing(args.vg, 0);
-            nvgFillColor(args.vg, nvgRGBA(245, 236, 229, 0xff));
+            nvgTextAlign(vg, NVG_ALIGN_RIGHT | NVG_ALIGN_MIDDLE);
+
+            // Draw a faded version of the 14 segment display
+            nvgFillColor(args.vg, nvgRGBA(30, 30, 30, 0xff));
+            nvgTextBox(args.vg, -16.0, box_size_y / 2.0, 56.7845, "~~~", NULL);
+
+            // Set the color for the 14 segment text
+            nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
+
+            // nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
+
+            // void nvgTextBox(NVGcontext* ctx, float x, float y, float breakRowWidth, const char* string, const char* end);
+            // nvgTextBox(args.vg, -16.0, box_size_y / 2.0, 56.7845, text_to_display.c_str(), NULL);
+            nvgTextBox(args.vg, -16.0, box_size_y / 2.0, 56.7845, text_to_display.c_str(), NULL);
         }
-
-        // nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
-        nvgTextAlign(vg, NVG_ALIGN_CENTER);
-
-        // void nvgTextBox(NVGcontext* ctx, float x, float y, float breakRowWidth, const char* string, const char* end);
-        nvgTextBox(args.vg, 0, 11, 56.7845, text_to_display.c_str(), NULL);
 
         nvgRestore(vg);
     }

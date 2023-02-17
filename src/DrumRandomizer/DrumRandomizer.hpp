@@ -219,7 +219,7 @@ struct DrumRandomizer : VoxglitchModule
         // the selected percentage into our sequences array.
         float percentage_knob_selection = params[PERCENTAGE_KNOB].getValue();
         sequences[channel_knob_selection][step_knob_selection] = percentage_knob_selection;
-        percentage_display_value = percentage_knob_selection;
+        percentage_display_value = (int) (percentage_knob_selection * 100.0);
 
         //
         // Process Reset
