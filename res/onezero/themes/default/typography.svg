@@ -97,8 +97,8 @@
    inkscape:pagecheckerboard="0"
    showgrid="false"
    inkscape:zoom="4.7914086"
-   inkscape:cx="-4.1741379"
-   inkscape:cy="198.48026"
+   inkscape:cx="-58.855344"
+   inkscape:cy="281.96301"
    inkscape:window-width="3840"
    inkscape:window-height="2066"
    inkscape:window-x="2869"
@@ -210,7 +210,7 @@
      d="m 151.00652,100.93086 h 1.575 v -0.977083 h -4.26563 v 0.977083 h 1.55313 v 4.12709 h 1.1375 z"
      id="path3273" /></g><g
    aria-label="OUTPUT"
-   transform="matrix(0.96000004,0,0,0.96000004,-65.819082,205.23029)"
+   transform="matrix(0.96000004,0,0,0.96000004,-65.819082,216.24856)"
    id="text2655-8-2"
    style="font-size:7.29167px;line-height:1.25;font-family:Pilat;-inkscape-font-specification:Pilat;letter-spacing:0.9px;word-spacing:0px;white-space:pre;shape-inside:url(#rect2657-5-4);display:inline;fill:#f4eee9"><g
      id="g1407"><path
@@ -371,7 +371,7 @@
    x="16.079527"
    y="106.24963" /><g
    aria-label="EOL"
-   transform="matrix(0.96000004,0,0,0.96000004,10.656547,-12.168472)"
+   transform="matrix(0.96000004,0,0,0.96000004,10.656547,-1.1502025)"
    id="text1461"
    style="font-size:7.29167px;line-height:1.25;font-family:Pilat;-inkscape-font-specification:Pilat;letter-spacing:0.9px;word-spacing:0px;white-space:pre;shape-inside:url(#rect1463);display:inline;fill:#f4eee9"><path
      d="M 10.666799,330.56706 H 7.9980475 v -1.1375 h 2.6687515 v -0.94063 H 7.9980475 v -1.13021 h 2.6687515 v -0.94791 H 6.8678387 v 5.10417 h 3.7989603 z"
@@ -409,4 +409,10 @@
      d="m 17.17409,147.68555 c 1.4,0 2.019792,-0.55417 2.253126,-1.71354 H 18.26784 c -0.145833,0.525 -0.495833,0.72916 -1.130209,0.72916 h -0.09479 c -1.013542,0 -1.195834,-0.56145 -1.195834,-1.4875 v -0.30625 c 0,-0.92604 0.182292,-1.4875 1.195834,-1.4875 h 0.09479 c 0.634376,0 0.984376,0.20417 1.130209,0.72917 h 1.159376 c -0.233334,-1.15938 -0.853126,-1.71354 -2.253126,-1.71354 h -0.167709 c -1.647917,0 -2.304167,0.71458 -2.304167,2.39896 v 0.45208 c 0,1.68438 0.65625,2.39896 2.304167,2.39896 z"
      id="path3184" /><path
      d="m 25.70117,142.50846 h -1.203125 l -1.370834,3.8573 h -0.04375 l -1.356251,-3.8573 h -1.276042 l 1.866667,5.10417 h 1.516668 z"
-     id="path3186" /></g></svg>
+     id="path3186" /></g><rect
+   style="fill:#ffffff;fill-opacity:0.0909091;fill-rule:evenodd;stroke:none;stroke-width:1.94117;stroke-linejoin:round;stroke-opacity:1"
+   id="rect12825-2"
+   width="86.400002"
+   height="64.389999"
+   x="0"
+   y="299.86197" /></svg>
