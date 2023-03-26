@@ -7,6 +7,8 @@
 #include "Common/components/VoxglitchComponents.hpp"
 
 #include "Inner/defines.h"
+#include "Inner/Sport.hpp"
+#include "Inner/submodules/VCOModule.hpp"
 #include "Inner/ModuleManager.hpp"
 #include "Inner/Inner.hpp"
 #include "Inner/InnerWidget.hpp"

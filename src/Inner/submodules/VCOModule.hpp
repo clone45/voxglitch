@@ -16,7 +16,7 @@ public:
         setParameter("frequency", 440.0f);
     }
 
-    void process(unsigned int) override 
+    void process(unsigned int sample_rate) override 
     {
         // Getting the parameter by name is probably pretty slow, so we should
         // probably store the parameter in a member variable and update it
@@ -38,6 +38,8 @@ public:
         // 2. Store the output port in a member variable called something like "output_port"
         // 3. Call output_port->setValue(out) here
 
-        getOutputPortByName("this.out")->setValue(out * 5.0f);
+        Sport *port = getOutputPortByName("this.out");
+
+        port->setValue(out * 5.0f);
     }
 };

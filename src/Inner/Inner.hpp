@@ -1,7 +1,8 @@
 struct Inner : VoxglitchModule
 {
     float audio_out = 0;
-
+    ModuleManager module_manager;
+    
     enum ParamIds
     {
         NUM_PARAMS

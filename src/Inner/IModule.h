@@ -4,16 +4,16 @@
 
 #include <vector>
 #include <unordered_map>
-#include "Sport.h"
+#include "Sport.hpp"
 
 class Sport;
 
-class IModule : public std::enable_shared_from_this<IModule> {
+class IModule {
 
 protected:
     std::unordered_map<std::string, float> parameters;
-    std::unordered_map<std::string, std::shared_ptr<Sport>> input_ports;
-    std::unordered_map<std::string, std::shared_ptr<Sport>> output_ports;
+    std::unordered_map<std::string, Sport *> input_ports;
+    std::unordered_map<std::string, Sport *> output_ports;
 
 public:
     virtual void process(unsigned int sample_rate) = 0;
@@ -48,25 +48,25 @@ public:
     }   
 
     virtual void addInput(const std::string& name) {
-        std::shared_ptr<Sport> input = std::make_shared<Sport>(shared_from_this());
+        Sport *input = new Sport(this);
         input_ports[name] = input;
     }
 
     virtual void addOutput(const std::string& name) {
-        std::shared_ptr<Sport> output = std::make_shared<Sport>(shared_from_this());
+        Sport *output = new Sport(this);
         output_ports[name] = output;
     }
 
-    std::unordered_map<std::string, std::shared_ptr<Sport>> getOutputPorts() {
+    std::unordered_map<std::string, Sport *> getOutputPorts() {
         return output_ports;
     }
 
-    std::unordered_map<std::string, std::shared_ptr<Sport>> getInputPorts() {
+    std::unordered_map<std::string, Sport *> getInputPorts() {
         return input_ports;
     }
 
 
-    std::shared_ptr<Sport> getInputPortByName(const std::string& name) {
+    Sport * getInputPortByName(const std::string& name) {
         auto it = input_ports.find(name);
         if (it != input_ports.end()) {
             return it->second;
@@ -76,7 +76,7 @@ public:
         }
     }
 
-    std::shared_ptr<Sport> getOutputPortByName(const std::string& name) {
+    Sport * getOutputPortByName(const std::string& name) {
         auto it = output_ports.find(name);
         if (it != output_ports.end()) {
             return it->second;

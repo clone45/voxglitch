@@ -1,7 +1,7 @@
 // ModuleManager.hpp
 #pragma once
 
-#include "Sport.h"
+#include "Sport.hpp"
 #include "IModule.h"
 
 #include "submodules/VCOModule.hpp"
@@ -28,25 +28,25 @@ class ModuleManager
 {
 
 private:
-    std::map<std::string, std::shared_ptr<IModule>> modules;
+    std::map<std::string, IModule *> modules;
 
     // The following code creates a vector of ModuleConfig objects
     // called module_config_datas. The purpose is to store the
     // configuration data for all modules in the system.
 
-    std::vector<ModuleConfig> module_config_datas;
+    // std::vector<ModuleConfig> module_config_datas;
 
     // The input_ports and output_ports variables are used to store the input and output ports for the component.
     // The key for the unordered_map is the port name, and the value is a pointer to the port object.
     // This allows for efficient lookup of a port by name.
-    // The ports are stored as shared_ptr to allow for easy creation of new ports.
+    // The ports are stored as pointers to allow for easy creation of new ports.
     // This is necessary because the port constructor has a reference to the component, which is not yet created
     // when the component constructor is called.
-    std::unordered_map<std::string, std::shared_ptr<Sport>> input_ports;
-    std::unordered_map<std::string, std::shared_ptr<Sport>> output_ports;
+    std::unordered_map<std::string, Sport *> input_ports;
+    std::unordered_map<std::string, Sport *> output_ports;
 
     // module_config_map is a map of module names to module configs
-    std::unordered_map<std::string, std::shared_ptr<ModuleConfig>> module_config_map;
+    std::unordered_map<std::string, ModuleConfig *> module_config_map;
 
 public:
     // Constructor
@@ -57,13 +57,46 @@ public:
         loadConfig();
 
         // instantiate all modules
-        // instantiateModules();
+        instantiateModules();
 
         // index all ports
-        // indexPorts();
+        indexPorts();
 
         // connect all modules
         // connectModules();
+    }
+
+    void loadConfig()
+    {
+
+       ModuleConfig *vco_config = createModuleConfig(
+            "vco1",                               // name
+            "VCO",                                // type
+            {{"frequency", 440.0}},               // params
+            std::map<std::string, std::string>(), // inputs
+            {{"this.out", "out.in"}}              // outputs
+        );
+
+        ModuleConfig *outConfig = createModuleConfig(
+            "out",
+            "OUTPUT",
+            {},                           // params
+            {{"vco1.out", "this.in"}},    // inputs
+            {{"this.out", "module.out1"}} // outputs
+        );
+
+        module_config_map.insert({vco_config->name, vco_config});
+        module_config_map.insert({outConfig->name, outConfig});
+    }
+
+    ModuleConfig *createModuleConfig(
+        const std::string &name,
+        const std::string &type,
+        const std::map<std::string, float> &params,
+        const std::map<std::string, std::string> &inputs,
+        const std::map<std::string, std::string> &outputs)
+    {
+        return new ModuleConfig(name, type, params, inputs, outputs);
     }
 
     //
@@ -76,28 +109,44 @@ public:
     void instantiateModules()
     {
         // iterate over module_configs and create instances of the module classes
-        for (const auto &module_config_data : module_config_datas)
+        for (const auto &module_config_data : module_config_map)
         {
-            std::string type = module_config_data.type;
-            std::string name = module_config_data.name;
+            ModuleConfig *config = module_config_data.second;
 
-            // create instance of module class based on "type"
-            std::shared_ptr<IModule> module = nullptr;
+            std::string type = config->type;
+            std::string name = config->name;
 
-            if (type == "OUTPUT")
-                module = std::make_shared<OutputModule>();
-            if (type == "VCO")
-                module = std::make_shared<VCOModule>();
+            DEBUG(("Creating module " + name + " of type " + type).c_str());
+
+            IModule *module = nullptr;
+
+            try
+            {
+                if (type == "OUTPUT")
+                {
+                    module = new OutputModule();
+                }
+                else if (type == "VCO")
+                {
+                    module = new VCOModule();
+                }
+            }
+            catch (const std::exception &e)
+            {
+                std::string error = e.what();
+                DEBUG(error.c_str());
+                // handle the exception
+            }
 
             // add input ports to the module
-            for (const auto &input_port_data : module_config_data.inputs)
+            for (const auto &input_port_data : config->inputs)
             {
                 std::string input_port_name = input_port_data.first;
                 module->addInput(input_port_name);
             }
 
             // add output ports to the module
-            for (const auto &output_port_data : module_config_data.outputs)
+            for (const auto &output_port_data : config->outputs)
             {
                 std::string output_port_name = output_port_data.first;
                 module->addOutput(output_port_name);
@@ -107,6 +156,15 @@ public:
             {
                 modules[name] = module;
             }
+        }
+
+        // This function writes debugging information to the log file.  It takes a char *.
+        DEBUG("Modules Instantiated");
+
+        // Show modules
+        for (const auto& module : modules)
+        {
+            DEBUG((module.first + ": " + typeid(*module.second).name()).c_str());
         }
     }
 
@@ -123,20 +181,19 @@ public:
         // 5. Do the same for output ports
 
         // 1. iterate over modules map
-        for (std::pair<const std::string, std::shared_ptr<IModule>> module : modules)
+        for (std::pair<const std::string, IModule *> module : modules)
         {
             std::string module_name = module.first;
-            std::shared_ptr<IModule> module_object = module.second;
+            IModule *module_object = module.second;
 
             // 2. Next: Iterate over the module_object's input ports map
-            //    IModule::input_ports looks like... std::unordered_map<std::string, std::shared_ptr<Sport>>
 
             for (const auto &input_port : module_object->getInputPorts())
             {
                 // 3. input_port is a pair in the form {{ string : pointer_to_port_structure }}
                 // Here, we pull the parts out of the pair for clarity:
                 std::string input_port_name = input_port.first;
-                std::shared_ptr<Sport> input_port_object = input_port.second;
+                Sport *input_port_object = input_port.second;
 
                 std::string full_path_string = module_name + "." + input_port_name;
 
@@ -151,7 +208,7 @@ public:
                 // Output_port is a pair in the form {{ string : pointer_to_port_structure }}
                 // Here, we pull the parts out of the pair for clarity:
                 std::string output_port_name = output_port.first;
-                std::shared_ptr<Sport> output_port_object = output_port.second;
+                Sport *output_port_object = output_port.second;
 
                 std::string full_path_string = module_name + "." + output_port_name;
 
@@ -161,36 +218,64 @@ public:
         }
 
         // Let's debug really quickly
-        /*
-        for (std::pair<const std::string, std::shared_ptr<IModule>> port_info : input_ports)
+        // Output the input ports to the log file
+        DEBUG("input ports: ");
+        for (const auto& port : input_ports)
         {
-            DEBUG(port_info.first.c_str());
+            std::string port_name = port.first;
+            Sport* port_object = port.second;
+
+            std::string message = " " + port_name;
+            DEBUG(message.c_str());
         }
+
+        // Output the output ports to the log file
+        DEBUG("outputs ports: ");
+        for (const auto& port : output_ports)
+        {
+            std::string port_name = port.first;
+            Sport* port_object = port.second;
+
+            std::string message = " " + port_name;
+            DEBUG(message.c_str());
+        }
+
+        /*
+[1.199 debug src/Inner/ModuleManager.hpp:228 indexPorts] Input port out.this.in of type 5Sport indexed
+[1.199 debug src/Inner/ModuleManager.hpp:228 indexPorts] Input port out.vco1.out of type 5Sport indexed
+[1.199 debug src/Inner/ModuleManager.hpp:238 indexPorts] Output port vco1.this.out of type 5Sport indexed
+[1.199 debug src/Inner/ModuleManager.hpp:238 indexPorts] Output port out.this.out of type 5Sport indexed        
+        
         */
+
     }
 
     void connectModules()
     {
         // iterate over module_configs and create instances of the module classes
-        for (const auto &module_config_data : module_config_datas)
+
+        for (const auto &module_config_data : module_config_map)
         {
-            std::string module_name_from_config = module_config_data.name;
+            ModuleConfig *config = module_config_data.second;
+
+            std::string type = config->type;
+            std::string name = config->name;
 
             // get the module from the modules map
-            std::shared_ptr<IModule> module = modules[module_name_from_config];
+            IModule *module = modules[name];
 
             // Test if the module is valid
             if (module != nullptr)
             {
                 // iterate over the module's input ports
-                for (const auto &port_pair : module_config_data.inputs)
+                for (const auto &port_pair : config->inputs)
                 {
                     const auto &src_port_name = port_pair.first;
                     const auto &dst_port_name = port_pair.second;
 
                     // get the input port from the input_ports map
-                    std::shared_ptr<Sport> input_port = input_ports[dst_port_name];   // on of the input ports of this module
-                    std::shared_ptr<Sport> output_port = output_ports[src_port_name]; // output port of remote module (not this)
+                    Sport *input_port = input_ports[dst_port_name];   // on of the input ports of this module
+                    Sport *output_port = output_ports[src_port_name]; // output port of remote module (not this)
 
                     // connect the input port to the output port
                     input_port->connectToOutputPort(output_port);
@@ -204,7 +289,7 @@ public:
         }
     }
 
-    void processPatch(std::shared_ptr<IModule> module, float sample_rate)
+    void processPatch(IModule *module, float sample_rate)
     {
         // If the module has already been processed, return
         if (module->processing)
@@ -218,13 +303,13 @@ public:
         // 4. Once all of the inputs have been processed, call the module's process function, which will use the inputs to compute the output
 
         // 1. Get all of the inputs of the module
-        std::unordered_map<std::string, std::shared_ptr<Sport>> inputs = module->getInputPorts();
+        std::unordered_map<std::string, Sport *> inputs = module->getInputPorts();
 
         // 2. Iterate over each of the inputs.
         for (auto &input : inputs)
         {
             std::string input_name = input.first;
-            std::shared_ptr<Sport> input_port = input.second;
+            Sport *input_port = input.second;
 
             // 3. If there's a connection, make a recursive call to processModule with the connected module
             if (input_port->isConnected())
@@ -232,8 +317,8 @@ public:
 
                 // I need to reconsider this code, which assumes that there's only one connected
                 // output per input.  HOwever, this may not necessarily be the case anymore.
-                std::vector<std::shared_ptr<Sport>> connected_outputs = input_port->getConnectedOutputs();
-                std::shared_ptr<IModule> connected_module = connected_outputs[0]->getParentModule();
+                std::vector<Sport *> connected_outputs = input_port->getConnectedOutputs();
+                IModule *connected_module = connected_outputs[0]->getParentModule();
 
                 // Heads up: this is a recursive call
                 if (!connected_module->processing)
@@ -260,14 +345,14 @@ public:
 
         // Find the last module in the chain
         // TODO: There might be multiple output modules, so this will need to be changed
-        std::shared_ptr<IModule> out_module = findOutModule();
+        IModule *out_module = findOutModule();
 
         // Compute the outputs of the system by starting with the last module,
         // then working backwards through the chain.
         processPatch(out_module, sample_rate);
 
         // Get the values of the last module
-        std::shared_ptr<Sport> output_port = out_module->getOutputPortByName("this.out");
+        Sport *output_port = out_module->getOutputPortByName("this.out");
 
         return (output_port->getValue());
     }
@@ -281,9 +366,9 @@ public:
         }
     }
 
-    std::shared_ptr<IModule> findOutModule()
+    IModule * findOutModule()
     {
-        std::shared_ptr<IModule> out_module = nullptr;
+        IModule *out_module = nullptr;
 
         // Find the last module in the chain
         // Why module.second? Because module is a pair: module.first is the id
@@ -298,38 +383,5 @@ public:
         }
 
         return out_module;
-    }
-
-    void loadConfig()
-    {
-
-        std::shared_ptr<ModuleConfig> vco_config = createModuleConfig(
-            "vco1",                               // name
-            "VCO",                                // type
-            {{"frequency", 440.0}},               // params
-            std::map<std::string, std::string>(), // inputs
-            {{"this.out", "out.in"}}              // outputs
-        );
-
-        std::shared_ptr<ModuleConfig> outConfig = createModuleConfig(
-            "out",
-            "OUTPUT",
-            {},                           // params
-            {{"vco1.out", "this.in"}},    // inputs
-            {{"this.out", "module.out1"}} // outputs
-        );
-
-        module_config_map.insert({vco_config->name, vco_config});
-        module_config_map.insert({outConfig->name, outConfig});
-    }
-
-    std::shared_ptr<ModuleConfig> createModuleConfig(
-        const std::string &name,
-        const std::string &type,
-        const std::map<std::string, float> &params,
-        const std::map<std::string, std::string> &inputs,
-        const std::map<std::string, std::string> &outputs)
-    {
-        return std::make_shared<ModuleConfig>(name, type, params, inputs, outputs);
     }
 };
