@@ -25,7 +25,7 @@ struct Inner : VoxglitchModule
     void process(const ProcessArgs &args) override
     {
         // Calculate your audio output here
-        float audio_out = 0.0f;
+        float audio_out = module_manager.process();
 
         // Set the output value
         outputs[AUDIO_OUTPUT].setVoltage(audio_out);
