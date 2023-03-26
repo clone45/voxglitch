@@ -56,7 +56,10 @@
         "ratio": "cpp",
         "xthread": "cpp",
         "thread": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "map": "cpp",
+        "xtree": "cpp",
+        "any": "cpp"
     }
 
 }

@@ -109,7 +109,13 @@
         "name": "One Point",
         "description": "CV sequencer that uses external file as sequence data",
         "tags": ["Sequencer"]
-    },        
+    },
+    {
+        "slug": "inner",
+        "name": "Inner",
+        "description": "Modular synth inside of a modular synth",
+        "tags": ["Synthesizer"]
+    },    
     {
         "slug": "onezero",
         "name": "One Zero",

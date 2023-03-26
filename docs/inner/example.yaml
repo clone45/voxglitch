@@ -1,0 +1,31 @@
+modules:
+  - name: oscillator
+    type: VCO
+    params:
+      frequency: 440
+    connections:
+      out: envelope.gate
+
+  - name: envelope
+    type: ADSR
+    params:
+      attack: 0.1
+      decay: 0.2
+      sustain: 0.5
+      release: 0.3
+    connections:
+      out:
+        - filter1.cutoff
+        - filter2.cutoff
+
+  - name: filter1
+    type: MoogFilter
+    params:
+      cutoff: 5000
+      resonance: 0.5
+
+  - name: filter2
+    type: MoogFilter
+    params:
+      cutoff: 5000
+      resonance: 0.5

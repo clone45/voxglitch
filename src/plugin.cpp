@@ -20,6 +20,7 @@ void init(Plugin* p) {
   p->addModel(modelGrooveBox);
   p->addModel(modelGrooveBoxExpander);
   p->addModel(modelHazumi);
+  p->addModel(modelInner);
   p->addModel(modelOnePoint);
   p->addModel(modelOneZero);
   p->addModel(modelLooper);

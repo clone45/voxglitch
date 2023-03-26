@@ -1,0 +1,157 @@
+{
+    "modules": [
+      {
+        "type": "input",
+        "name": "My Input",
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "Output 1",
+            "type": "audio",
+            "value": null
+          },
+          {
+            "name": "Output 2",
+            "type": "cv",
+            "value": null
+          }
+        ]
+      },
+      {
+        "type": "adsr",
+        "name": "My ADSR",
+        "inputs": [
+          {
+            "name": "Gate",
+            "type": "cv",
+            "value": null
+          },
+          {
+            "name": "Attack",
+            "type": "cv",
+            "value": null
+          },
+          {
+            "name": "Decay",
+            "type": "cv",
+            "value": null
+          },
+          {
+            "name": "Sustain",
+            "type": "cv",
+            "value": null
+          },
+          {
+            "name": "Release",
+            "type": "cv",
+            "value": null
+          }
+        ],
+        "outputs": [
+          {
+            "name": "Envelope",
+            "type": "cv",
+            "value": null
+          }
+        ]
+      },
+      {
+        "type": "oscillator",
+        "name": "My Oscillator",
+        "inputs": [
+          {
+            "name": "Frequency",
+            "type": "cv",
+            "value": null
+          }
+        ],
+        "outputs": [
+          {
+            "name": "Output",
+            "type": "audio",
+            "value": null
+          }
+        ]
+      },
+      {
+        "type": "lfo",
+        "name": "My LFO",
+        "inputs": [
+          {
+            "name": "Frequency",
+            "type": "cv",
+            "value": null
+          }
+        ],
+        "outputs": [
+          {
+            "name": "Output",
+            "type": "cv",
+            "value": null
+          }
+        ]
+      },
+      {
+        "type": "output",
+        "name": "My Output",
+        "inputs": [
+          {
+            "name": "Input 1",
+            "type": "audio",
+            "value": null
+          },
+          {
+            "name": "Input 2",
+            "type": "cv",
+            "value": null
+          }
+        ],
+        "outputs": []
+      }
+    ],
+    "connections": [
+      {
+        "from": {
+          "module": "My Input",
+          "output": "Output 1"
+        },
+        "to": {
+          "module": "My ADSR",
+          "input": "Gate"
+        }
+      },
+      {
+        "from": {
+          "module": "My ADSR",
+          "output": "Envelope"
+        },
+        "to": {
+          "module": "My Oscillator",
+          "input": "Frequency"
+        }
+      },
+      {
+        "from": {
+          "module": "My Oscillator",
+          "output": "Output"
+        },
+        "to": {
+          "module": "My Output",
+          "input": "Input 1"
+        }
+      },
+      {
+        "from": {
+          "module": "My ADSR",
+          "output": "Envelope"
+        },
+        "to": {
+          "module": "My Output",
+          "input": "Input 2"
+        }
+      },
+      {
+        "from": {
+          "module": "My LFO",
+          "output":
+  

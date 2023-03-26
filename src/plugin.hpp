@@ -23,6 +23,7 @@ extern Model *modelGrainFx;
 extern Model *modelGrooveBox;
 extern Model *modelGrooveBoxExpander;
 extern Model *modelHazumi;
+extern Model *modelInner;
 extern Model *modelOnePoint;
 extern Model *modelOneZero;
 extern Model *modelLooper;
