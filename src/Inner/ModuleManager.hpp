@@ -16,12 +16,13 @@ struct ModuleConfig
     std::string name;
     std::string type;
     std::map<std::string, float> params;
-    std::map<std::string, std::string> inputs;
-    std::map<std::string, std::string> outputs;
 
     // Add this constructor to accept the 5 arguments
-    ModuleConfig(const std::string &name, const std::string &type, const std::map<std::string, float> &params, const std::map<std::string, std::string> &inputs, const std::map<std::string, std::string> &outputs)
-        : name(name), type(type), params(params), inputs(inputs), outputs(outputs) {}
+    ModuleConfig(
+        const std::string &name, 
+        const std::string &type, 
+        const std::map<std::string, float> &params)
+        : name(name), type(type), params(params) {}
 };
 
 class ModuleManager
@@ -42,11 +43,14 @@ private:
     // The ports are stored as pointers to allow for easy creation of new ports.
     // This is necessary because the port constructor has a reference to the component, which is not yet created
     // when the component constructor is called.
-    std::unordered_map<std::string, Sport *> input_ports;
-    std::unordered_map<std::string, Sport *> output_ports;
+    std::unordered_map<std::string, Sport *> input_port_mappings;
+    std::unordered_map<std::string, Sport *> output_port_mappings;
 
     // module_config_map is a map of module names to module configs
     std::unordered_map<std::string, ModuleConfig *> module_config_map;
+
+    // Connections is a map where connections[output_port_name] = input_port_name
+    std::vector<std::pair<std::string, std::string>> connections_config_forward;    
 
 public:
     // Constructor
@@ -60,43 +64,46 @@ public:
         instantiateModules();
 
         // index all ports
-        indexPorts();
+        // indexPorts();
 
         // connect all modules
-        // connectModules();
+        connectModules();
+
+        // Run once, for testing.  THis should be moved outside of the constructor
+        // float audio_output = compute_output();
     }
 
     void loadConfig()
     {
-
-       ModuleConfig *vco_config = createModuleConfig(
-            "vco1",                               // name
-            "VCO",                                // type
-            {{"frequency", 440.0}},               // params
-            std::map<std::string, std::string>(), // inputs
-            {{"this.out", "out.in"}}              // outputs
+        ModuleConfig *vco_config = createModuleConfig(
+            "vco1",                              // name
+            "VCO",                               // type
+            {{"frequency", 440.0}}               // params
         );
 
         ModuleConfig *outConfig = createModuleConfig(
-            "out",
+            "output1",
             "OUTPUT",
-            {},                           // params
-            {{"vco1.out", "this.in"}},    // inputs
-            {{"this.out", "module.out1"}} // outputs
+            {}
         );
 
-        module_config_map.insert({vco_config->name, vco_config});
-        module_config_map.insert({outConfig->name, outConfig});
+        // Remember, this is input => output
+        connections_config_forward = {
+            {"vco1.OUTPUT_PORT", "output1.INPUT_PORT"}
+        };
+
+        // std::vector<std::string> names;
+
+        module_config_map[vco_config->name] = vco_config;
+        module_config_map[outConfig->name] = outConfig;
     }
 
     ModuleConfig *createModuleConfig(
         const std::string &name,
         const std::string &type,
-        const std::map<std::string, float> &params,
-        const std::map<std::string, std::string> &inputs,
-        const std::map<std::string, std::string> &outputs)
+        const std::map<std::string, float> &params)
     {
-        return new ModuleConfig(name, type, params, inputs, outputs);
+        return new ModuleConfig(name, type, params);
     }
 
     //
@@ -138,20 +145,6 @@ public:
                 // handle the exception
             }
 
-            // add input ports to the module
-            for (const auto &input_port_data : config->inputs)
-            {
-                std::string input_port_name = input_port_data.first;
-                module->addInput(input_port_name);
-            }
-
-            // add output ports to the module
-            for (const auto &output_port_data : config->outputs)
-            {
-                std::string output_port_name = output_port_data.first;
-                module->addOutput(output_port_name);
-            }
-
             if (module != nullptr)
             {
                 modules[name] = module;
@@ -160,140 +153,54 @@ public:
 
         // This function writes debugging information to the log file.  It takes a char *.
         DEBUG("Modules Instantiated");
-
-        // Show modules
-        for (const auto& module : modules)
-        {
-            DEBUG((module.first + ": " + typeid(*module.second).name()).c_str());
-        }
-    }
-
-    void indexPorts()
-    {
-        // When created, modules add their ports and maintain a map of them
-        // with the format: input_ports[name] = port
-
-        // This function should:
-        // 1. Iterate over the "modules" map
-        // 2. For each module, iterate over the module's input ports
-        // 3. Computer the full port path string, like vco1.frequency_input
-        // 4. Add the input port to the ModuleManager's input_ports map
-        // 5. Do the same for output ports
-
-        // 1. iterate over modules map
-        for (std::pair<const std::string, IModule *> module : modules)
-        {
-            std::string module_name = module.first;
-            IModule *module_object = module.second;
-
-            // 2. Next: Iterate over the module_object's input ports map
-
-            for (const auto &input_port : module_object->getInputPorts())
-            {
-                // 3. input_port is a pair in the form {{ string : pointer_to_port_structure }}
-                // Here, we pull the parts out of the pair for clarity:
-                std::string input_port_name = input_port.first;
-                Sport *input_port_object = input_port.second;
-
-                std::string full_path_string = module_name + "." + input_port_name;
-
-                // 4. Add the input port to the ModuleManager's input_ports map
-                this->input_ports[full_path_string] = input_port_object;
-            }
-
-            // 5. Now do the same for output ports
-
-            for (const auto &output_port : module_object->getOutputPorts())
-            {
-                // Output_port is a pair in the form {{ string : pointer_to_port_structure }}
-                // Here, we pull the parts out of the pair for clarity:
-                std::string output_port_name = output_port.first;
-                Sport *output_port_object = output_port.second;
-
-                std::string full_path_string = module_name + "." + output_port_name;
-
-                // Add the output port to the ModuleManager's output_ports map
-                this->output_ports[full_path_string] = output_port_object;
-            }
-        }
-
-        // Let's debug really quickly
-        // Output the input ports to the log file
-        DEBUG("input ports: ");
-        for (const auto& port : input_ports)
-        {
-            std::string port_name = port.first;
-            Sport* port_object = port.second;
-
-            std::string message = " " + port_name;
-            DEBUG(message.c_str());
-        }
-
-        // Output the output ports to the log file
-        DEBUG("outputs ports: ");
-        for (const auto& port : output_ports)
-        {
-            std::string port_name = port.first;
-            Sport* port_object = port.second;
-
-            std::string message = " " + port_name;
-            DEBUG(message.c_str());
-        }
-
-        /*
-[1.199 debug src/Inner/ModuleManager.hpp:228 indexPorts] Input port out.this.in of type 5Sport indexed
-[1.199 debug src/Inner/ModuleManager.hpp:228 indexPorts] Input port out.vco1.out of type 5Sport indexed
-[1.199 debug src/Inner/ModuleManager.hpp:238 indexPorts] Output port vco1.this.out of type 5Sport indexed
-[1.199 debug src/Inner/ModuleManager.hpp:238 indexPorts] Output port out.this.out of type 5Sport indexed        
-        
-        */
-
     }
 
     void connectModules()
     {
         // iterate over module_configs and create instances of the module classes
 
-        for (const auto &module_config_data : module_config_map)
+        for (const auto &connection : connections_config_forward)
         {
-            ModuleConfig *config = module_config_data.second;
+            // Here, "connection" is a pair of strings.  
+            // The first string is the fully qualified name of the output port
+            // The second string is the fully qualifed name of the connected input port 
+            // Each string is in the format {module_name}.{port_name}  
+            // For example vco1.OUTPUT_PORT
 
-            std::string type = config->type;
-            std::string name = config->name;
+            std::string output_connection_string = connection.first;
+            std::string input_connection_string = connection.second;
 
-            // get the module from the modules map
-            IModule *module = modules[name];
+            // output_connection_string may look like vco1.OUTPUT_PORT
+            // input_connection_string may looks like adsr1.TRIGGER_INPUT_PORT
 
-            // Test if the module is valid
-            if (module != nullptr)
-            {
-                // iterate over the module's input ports
-                for (const auto &port_pair : config->inputs)
-                {
-                    const auto &src_port_name = port_pair.first;
-                    const auto &dst_port_name = port_pair.second;
+            std::pair<std::string, std::string> output_parts = split_string(output_connection_string);
+            std::pair<std::string, std::string> input_parts = split_string(input_connection_string);
 
-                    // get the input port from the input_ports map
-                    Sport *input_port = input_ports[dst_port_name];   // on of the input ports of this module
-                    Sport *output_port = output_ports[src_port_name]; // output port of remote module (not this)
+            std::string output_module_name = output_parts.first;
+            std::string output_port_name = output_parts.second;
+            std::string input_module_name = input_parts.first;
+            std::string input_port_name = input_parts.second;
 
-                    // connect the input port to the output port
-                    input_port->connectToOutputPort(output_port);
-                    output_port->connectToInputPort(input_port);
-                }
-            }
-            else
-            {
-                // handle error case: module not found
-            }
+            IModule *output_module = modules[output_module_name];
+            IModule *input_module = modules[input_module_name];
+
+            Sport *input_port = input_module->getPortByName(input_port_name);
+            Sport *output_port = output_module->getPortByName(output_port_name);
+
+            DEBUG(("Connecting ports " + output_connection_string + " to " + input_connection_string).c_str());
+
+            input_port->connectToOutputPort(output_port);
+            output_port->connectToInputPort(input_port);
         }
+
     }
 
-    void processPatch(IModule *module, float sample_rate)
+
+    void processPatch(IModule *module, unsigned int sample_rate)
     {
+
         // If the module has already been processed, return
-        if (module->processing)
-            return;
+        if (module->processing) return;
         module->processing = true;
 
         // Here's the process:
@@ -303,13 +210,12 @@ public:
         // 4. Once all of the inputs have been processed, call the module's process function, which will use the inputs to compute the output
 
         // 1. Get all of the inputs of the module
-        std::unordered_map<std::string, Sport *> inputs = module->getInputPorts();
+        std::vector<Sport *> input_ports = module->getInputPorts();
+
 
         // 2. Iterate over each of the inputs.
-        for (auto &input : inputs)
+        for (auto &input_port : input_ports)
         {
-            std::string input_name = input.first;
-            Sport *input_port = input.second;
 
             // 3. If there's a connection, make a recursive call to processModule with the connected module
             if (input_port->isConnected())
@@ -318,14 +224,19 @@ public:
                 // I need to reconsider this code, which assumes that there's only one connected
                 // output per input.  HOwever, this may not necessarily be the case anymore.
                 std::vector<Sport *> connected_outputs = input_port->getConnectedOutputs();
-                IModule *connected_module = connected_outputs[0]->getParentModule();
 
-                // Heads up: this is a recursive call
-                if (!connected_module->processing)
+                if(connected_outputs.size() > 0)
                 {
-                    processPatch(connected_module, sample_rate);
+                    IModule *connected_module = connected_outputs[0]->getParentModule();
+
+                    // Heads up: this is a recursive call
+                    if (!connected_module->processing)
+                    {
+                        processPatch(connected_module, sample_rate);
+                    }
                 }
             }
+
         }
 
         // 4. Once all of the inputs have been processed, call the module's process function,
@@ -334,7 +245,17 @@ public:
         module->processing = false;
     }
 
-    float run(float sample_rate)
+    //
+    // Call this every frame
+    //
+    // TODO: Handle sample rate
+    //
+    float process()
+    {
+        return compute_output();
+    }
+
+    float compute_output()
     {
         // Reset all module processed flags to false
         resetProcessingFlags();
@@ -344,17 +265,23 @@ public:
         // to compute each module's output
 
         // Find the last module in the chain
-        // TODO: There might be multiple output modules, so this will need to be changed
+        // TODO: There might be multiple output modules, so this will need to be changed??
         IModule *out_module = findOutModule();
+
+        if(! out_module)
+        {
+            return(4.04);
+        }
 
         // Compute the outputs of the system by starting with the last module,
         // then working backwards through the chain.
-        processPatch(out_module, sample_rate);
+        processPatch(out_module, 44100);
 
-        // Get the values of the last module
-        Sport *output_port = out_module->getOutputPortByName("this.out");
+        // Get the value at the input port of the terminal output module.
+        // This is computed audio value of the entire patch.
+        Sport *input_port = out_module->getPortByName("INPUT_PORT");
 
-        return (output_port->getValue());
+        return (input_port->getValue());
     }
 
     // Reset all module processed flags to false
@@ -384,4 +311,20 @@ public:
 
         return out_module;
     }
+
+    std::pair<std::string, std::string> split_string(std::string input_str) {
+        std::string delimiter = ".";
+        size_t pos = input_str.find(delimiter);
+
+        // Check if delimiter is found
+        if (pos == std::string::npos) {
+            return std::make_pair("", "");
+        }
+
+        // Split string and return pair of strings
+        std::string before = input_str.substr(0, pos);
+        std::string after = input_str.substr(pos + 1);
+        return std::make_pair(before, after);
+    }
+
 };
