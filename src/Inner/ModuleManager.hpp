@@ -14,6 +14,8 @@
 #include "Sport.hpp"
 #include "IModule.h"
 
+#include "submodules/PitchInputModule.hpp"
+#include "submodules/GateInputModule.hpp"
 #include "submodules/ParamModule.hpp"
 #include "submodules/VCOModule.hpp"
 #include "submodules/OutputModule.hpp"
@@ -74,14 +76,14 @@ public:
     // in ModuleManager's constructor so that the parameter modules have access to them.
     // I'll have to pass those into instantiateModule and reference them
     // if TYPE == "PARAM1", "PARAM2", etc.
-    ModuleManager(float *p1, float *p2, float *p3)
+    ModuleManager(float *pitch_ptr, float *gate_ptr, float *p1, float *p2, float *p3)
     {
         // For now, I'm going to hard-code the configuration information, but
         // eventually I'll load it from a file
         loadConfig();
 
         // instantiate all modules
-        instantiateModules(p1, p2, p3);
+        instantiateModules(pitch_ptr, gate_ptr, p1, p2, p3);
 
         // connect all modules
         if(connectModules()) // << here's where it's crashing!!
@@ -173,7 +175,7 @@ public:
     // "modules" map, where the map is in the format of: modules[name] = module
     //
 
-    void instantiateModules(float *p1, float *p2, float *p3)
+    void instantiateModules(float *pitch_ptr, float *gate_ptr, float *p1, float *p2, float *p3)
     {
         // iterate over module_configs and create instances of the module classes
         for (const auto &module_config_data : module_config_map)
@@ -190,7 +192,15 @@ public:
 
             try
             {
-                if (type == "OUTPUT")
+                if (type == "PITCH_INPUT_MODULE")
+                {
+                    module = new PitchInputModule(pitch_ptr);
+                }
+                if (type == "GATE_INPUT_MODULE")
+                {
+                    module = new GateInputModule(gate_ptr);
+                } 
+                else if (type == "OUTPUT")
                 {
                     module = new OutputModule();
                 }
