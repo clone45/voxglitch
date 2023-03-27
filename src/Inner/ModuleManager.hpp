@@ -6,6 +6,7 @@
 
 #include "submodules/VCOModule.hpp"
 #include "submodules/OutputModule.hpp"
+#include "submodules/LFOModule.hpp"
 
 #include <map>
 #include <unordered_map>
@@ -53,6 +54,9 @@ private:
     std::vector<std::pair<std::string, std::string>> connections_config_forward;    
 
 public:
+
+    bool ready = false;
+
     // Constructor
     ModuleManager()
     {
@@ -63,18 +67,27 @@ public:
         // instantiate all modules
         instantiateModules();
 
-        // index all ports
-        // indexPorts();
-
         // connect all modules
-        connectModules();
+        if(connectModules()) // << here's where it's crashing!!
+        {
+            ready = true;
+        }
+    }
 
-        // Run once, for testing.  THis should be moved outside of the constructor
-        // float audio_output = compute_output();
+    bool isReady()
+    {
+        return ready;
     }
 
     void loadConfig()
     {
+
+        ModuleConfig *lfo_config = createModuleConfig(
+            "lfo1",                              // name
+            "LFO",                               // type
+            {{"frequency", 20.0}}               // params
+        );
+
         ModuleConfig *vco_config = createModuleConfig(
             "vco1",                              // name
             "VCO",                               // type
@@ -89,11 +102,13 @@ public:
 
         // Remember, this is input => output
         connections_config_forward = {
+            {"lfo1.OUTPUT_PORT", "vco1.FREQUENCY_INPUT_PORT"},
             {"vco1.OUTPUT_PORT", "output1.INPUT_PORT"}
         };
 
         // std::vector<std::string> names;
 
+        module_config_map[lfo_config->name] = lfo_config;
         module_config_map[vco_config->name] = vco_config;
         module_config_map[outConfig->name] = outConfig;
     }
@@ -137,6 +152,13 @@ public:
                 {
                     module = new VCOModule();
                 }
+                else if (type == "LFO")
+                {
+                    module = new LFOModule();
+                }
+                else {
+                    DEBUG(("Unknown module type: " + type).c_str());
+                }
             }
             catch (const std::exception &e)
             {
@@ -150,12 +172,9 @@ public:
                 modules[name] = module;
             }
         }
-
-        // This function writes debugging information to the log file.  It takes a char *.
-        DEBUG("Modules Instantiated");
     }
 
-    void connectModules()
+    bool connectModules()
     {
         // iterate over module_configs and create instances of the module classes
 
@@ -170,6 +189,8 @@ public:
             std::string output_connection_string = connection.first;
             std::string input_connection_string = connection.second;
 
+            DEBUG(("Connecting ports " + output_connection_string + " to " + input_connection_string).c_str());
+
             // output_connection_string may look like vco1.OUTPUT_PORT
             // input_connection_string may looks like adsr1.TRIGGER_INPUT_PORT
 
@@ -181,18 +202,44 @@ public:
             std::string input_module_name = input_parts.first;
             std::string input_port_name = input_parts.second;
 
-            IModule *output_module = modules[output_module_name];
-            IModule *input_module = modules[input_module_name];
+            IModule *output_module;
+            IModule *input_module;
 
+            // Get the output module
+            try {
+                output_module = modules.at(output_module_name);
+            } catch (std::out_of_range &e) {
+                DEBUG(("output module not found: [" + output_module_name + "]").c_str());
+                return false;
+            }
+
+            // Get the input module
+            try {
+                input_module = modules.at(input_module_name);
+            } catch (std::out_of_range &e) {
+                DEBUG(("input module not found: [" + input_module_name + "]").c_str());
+                return false;
+            }
+
+            // Get the input port
             Sport *input_port = input_module->getPortByName(input_port_name);
-            Sport *output_port = output_module->getPortByName(output_port_name);
+            if (!input_port) {
+                DEBUG(("Failed to find input port " + input_port_name).c_str());
+                return false;
+            }
 
-            DEBUG(("Connecting ports " + output_connection_string + " to " + input_connection_string).c_str());
+            // Get the output port
+            Sport *output_port = output_module->getPortByName(output_port_name);
+            if (! output_port) {
+                DEBUG(("Failed to find output port " + output_port_name).c_str());
+                return false;
+            }
 
             input_port->connectToOutputPort(output_port);
             output_port->connectToInputPort(input_port);
         }
 
+        return(true);
     }
 
 
