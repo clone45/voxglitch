@@ -25,11 +25,20 @@ public:
     bool processing = false;
 
     // Methods for setting and getting parameters
-    virtual void setParameter(const std::string& name, float value) {
+    virtual void setParameter(const std::string& name, float value) 
+    {
         parameters[name] = value;
     }
 
-    virtual float getParameter(const std::string& name) const {
-        return parameters.at(name);
+    virtual float getParameter(const std::string& name) const 
+    {
+        if (parameters.find(name) != parameters.end())
+        {
+                return parameters.at(name);
+        }
+        else
+        {
+                return 0;
+        }
     }   
 };

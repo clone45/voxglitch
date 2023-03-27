@@ -125,7 +125,9 @@ public:
         ModuleConfig *lowpass_filter_config = createModuleConfig(
             "lowpass_filter1",  // name
             "LOWPASS_FILTER",   // type
-            {{"cutoff", 500.0}} // params
+            {    // params
+                {"cutoff", 1.0} // range: 0 to 10
+            }
         );
 
         ModuleConfig *out_config = createModuleConfig(
@@ -137,7 +139,7 @@ public:
         // Remember, this is input => output
         connections_config_forward = {
             {"param1.OUTPUT_PORT", "lfo1.FREQUENCY_INPUT_PORT"},
-            {"param2.OUTPUT_PORT", "lowpass_filter1.CUTOFF_INPUT_PORT"},
+            // {"param2.OUTPUT_PORT", "lowpass_filter1.CUTOFF_INPUT_PORT"},
             {"lfo1.OUTPUT_PORT", "vco1.FREQUENCY_INPUT_PORT"},
             {"vco1.OUTPUT_PORT", "lowpass_filter1.INPUT_PORT"},
             {"lowpass_filter1.OUTPUT_PORT", "output1.INPUT_PORT"}
@@ -180,6 +182,7 @@ public:
 
             std::string type = config->type;
             std::string name = config->name;
+            std::map<std::string, float> params = config->params;
 
             DEBUG(("Creating module " + name + " of type " + type).c_str());
 
@@ -233,6 +236,17 @@ public:
             if (module != nullptr)
             {
                 modules[name] = module;
+
+                // Iterate over the params and set them on the module
+                for (const auto &param : params)
+                {
+                    std::string param_name = param.first;
+                    float param_value = param.second;
+
+                    DEBUG(("Setting param " + param_name + " to " + std::to_string(param_value)).c_str());
+
+                    module->setParameter(param_name, param_value);
+                }
             }
         }
     }
