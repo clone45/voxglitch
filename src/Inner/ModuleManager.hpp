@@ -1,12 +1,25 @@
+//
 // ModuleManager.hpp
+//
+// TODO: 
+//
+// - Does config map have to be a map?  It looks like it can just be a vector.
+// - If params exist in the config, use them to set the default params in the modules
+// - Send through sample rate
+// - Figure out how to represent PI
+//
+
 #pragma once
 
 #include "Sport.hpp"
 #include "IModule.h"
 
+#include "submodules/ParamModule.hpp"
 #include "submodules/VCOModule.hpp"
 #include "submodules/OutputModule.hpp"
 #include "submodules/LFOModule.hpp"
+#include "submodules/MoogFilterModule.hpp"
+#include "submodules/LowpassFilterModule.hpp"
 
 #include <map>
 #include <unordered_map>
@@ -57,15 +70,18 @@ public:
 
     bool ready = false;
 
-    // Constructor
-    ModuleManager()
+    // TODO: I may have to pass in pointers to the parameter inputs
+    // in ModuleManager's constructor so that the parameter modules have access to them.
+    // I'll have to pass those into instantiateModule and reference them
+    // if TYPE == "PARAM1", "PARAM2", etc.
+    ModuleManager(float *p1, float *p2, float *p3)
     {
         // For now, I'm going to hard-code the configuration information, but
         // eventually I'll load it from a file
         loadConfig();
 
         // instantiate all modules
-        instantiateModules();
+        instantiateModules(p1, p2, p3);
 
         // connect all modules
         if(connectModules()) // << here's where it's crashing!!
@@ -82,6 +98,18 @@ public:
     void loadConfig()
     {
 
+        ModuleConfig *param1_config = createModuleConfig(
+            "param1", // name
+            "PARAM1", // type
+            {}  // params
+        );
+
+        ModuleConfig *param2_config = createModuleConfig(
+            "param2", // name
+            "PARAM2", // type
+            {}  // params
+        );
+
         ModuleConfig *lfo_config = createModuleConfig(
             "lfo1",                              // name
             "LFO",                               // type
@@ -94,7 +122,13 @@ public:
             {{"frequency", 440.0}}               // params
         );
 
-        ModuleConfig *outConfig = createModuleConfig(
+        ModuleConfig *lowpass_filter_config = createModuleConfig(
+            "lowpass_filter1",  // name
+            "LOWPASS_FILTER",   // type
+            {{"cutoff", 500.0}} // params
+        );
+
+        ModuleConfig *out_config = createModuleConfig(
             "output1",
             "OUTPUT",
             {}
@@ -102,15 +136,24 @@ public:
 
         // Remember, this is input => output
         connections_config_forward = {
+            {"param1.OUTPUT_PORT", "lfo1.FREQUENCY_INPUT_PORT"},
+            {"param2.OUTPUT_PORT", "lowpass_filter1.CUTOFF_INPUT_PORT"},
             {"lfo1.OUTPUT_PORT", "vco1.FREQUENCY_INPUT_PORT"},
-            {"vco1.OUTPUT_PORT", "output1.INPUT_PORT"}
+            {"vco1.OUTPUT_PORT", "lowpass_filter1.INPUT_PORT"},
+            {"lowpass_filter1.OUTPUT_PORT", "output1.INPUT_PORT"}
         };
 
-        // std::vector<std::string> names;
 
+        // Is there any way to rewrite this so that it automatically
+        // creates the correct mappings and I don't have to remember to add
+        // them manually when adding a new module to the patch?
+
+        module_config_map[param1_config->name] = param1_config;
+        module_config_map[param2_config->name] = param2_config;
         module_config_map[lfo_config->name] = lfo_config;
         module_config_map[vco_config->name] = vco_config;
-        module_config_map[outConfig->name] = outConfig;
+        module_config_map[lowpass_filter_config->name] = lowpass_filter_config;
+        module_config_map[out_config->name] = out_config;
     }
 
     ModuleConfig *createModuleConfig(
@@ -128,7 +171,7 @@ public:
     // "modules" map, where the map is in the format of: modules[name] = module
     //
 
-    void instantiateModules()
+    void instantiateModules(float *p1, float *p2, float *p3)
     {
         // iterate over module_configs and create instances of the module classes
         for (const auto &module_config_data : module_config_map)
@@ -155,6 +198,26 @@ public:
                 else if (type == "LFO")
                 {
                     module = new LFOModule();
+                }
+                else if (type == "PARAM1")
+                {
+                    module = new ParamModule(p1);
+                }
+                else if (type == "PARAM2")
+                {
+                    module = new ParamModule(p2);
+                }
+                else if (type == "PARAM3")
+                {
+                    module = new ParamModule(p3);
+                }
+                else if (type == "MOOG_FILTER")
+                {
+                    module = new MoogFilterModule();
+                }
+                else if (type == "LOWPASS_FILTER")
+                {
+                    module = new LowpassFilterModule();
                 }
                 else {
                     DEBUG(("Unknown module type: " + type).c_str());
@@ -359,7 +422,8 @@ public:
         return out_module;
     }
 
-    std::pair<std::string, std::string> split_string(std::string input_str) {
+    std::pair<std::string, std::string> split_string(std::string input_str) 
+    {
         std::string delimiter = ".";
         size_t pos = input_str.find(delimiter);
 

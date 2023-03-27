@@ -1,31 +1,40 @@
 #pragma once
-#include <string> 
+#include <string>
 #include <cmath>
 #include "../BaseModule.hpp"
 
-class LFOModule : public BaseModule {
+class LFOModule : public BaseModule
+{
 
 private:
     float phase = 0.0f;
 
 public:
-
     Sport *output_port = nullptr;
+    Sport *frequency_input_port = nullptr;
 
-    LFOModule() 
+    LFOModule()
     {
-        setParameter("frequency", 2.0f);
+        setParameter("frequency", 5.0f);
         output_port = new Sport(this);
+        frequency_input_port = new Sport(this);
     }
 
-    void process(unsigned int sample_rate) override 
+    void process(unsigned int sample_rate) override
     {
         float frequency = getParameter("frequency");
+
+        if (frequency_input_port->isConnected())
+        {
+            frequency = frequency_input_port->getValue();
+        }
+
         float phase_increment = frequency / sample_rate;
 
         // Update phase
         phase += phase_increment;
-        if (phase >= 1.0f) {
+        if (phase >= 1.0f)
+        {
             phase -= 1.0f;
         }
 
@@ -41,24 +50,29 @@ public:
 
     Sport *getPortByName(std::string port_name) override
     {
-        if (port_name == "OUTPUT_PORT"){
-            return(output_port);
+        if (port_name == "OUTPUT_PORT")
+        {
+            return (output_port);
         }
-        else {
-           return(nullptr);
+        else if (port_name == "FREQUENCY_INPUT_PORT")
+        {
+            return (frequency_input_port);
+        }
+        else
+        {
+            return (nullptr);
         }
     }
 
     std::vector<Sport *> getOutputPorts() override
     {
         return {
-            output_port
-        };
+            output_port};
     }
 
     std::vector<Sport *> getInputPorts() override
     {
-        return {         
-        };
-    }    
+        return {
+            frequency_input_port};
+    }
 };
