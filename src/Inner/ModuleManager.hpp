@@ -3,8 +3,6 @@
 //
 // TODO: 
 //
-// - Does config map have to be a map?  It looks like it can just be a vector.
-// - If params exist in the config, use them to set the default params in the modules
 // - Send through sample rate
 // - Figure out how to represent PI
 //
@@ -21,25 +19,11 @@
 #include "submodules/OutputModule.hpp"
 #include "submodules/LFOModule.hpp"
 #include "submodules/MoogFilterModule.hpp"
-#include "submodules/LowpassFilterModule.hpp"
+#include "submodules/LPFModule.hpp"
 
 #include <map>
 #include <unordered_map>
 #include <memory>
-
-struct ModuleConfig
-{
-    std::string name;
-    std::string type;
-    std::map<std::string, float> params;
-
-    // Add this constructor to accept the 5 arguments
-    ModuleConfig(
-        const std::string &name, 
-        const std::string &type, 
-        const std::map<std::string, float> &params)
-        : name(name), type(type), params(params) {}
-};
 
 class ModuleManager
 {
@@ -47,49 +31,55 @@ class ModuleManager
 private:
     std::map<std::string, IModule *> modules;
 
-    // The following code creates a vector of ModuleConfig objects
-    // called module_config_datas. The purpose is to store the
-    // configuration data for all modules in the system.
-
-    // std::vector<ModuleConfig> module_config_datas;
-
-    // The input_ports and output_ports variables are used to store the input and output ports for the component.
-    // The key for the unordered_map is the port name, and the value is a pointer to the port object.
-    // This allows for efficient lookup of a port by name.
-    // The ports are stored as pointers to allow for easy creation of new ports.
-    // This is necessary because the port constructor has a reference to the component, which is not yet created
-    // when the component constructor is called.
-    std::unordered_map<std::string, Sport *> input_port_mappings;
-    std::unordered_map<std::string, Sport *> output_port_mappings;
-
     // module_config_map is a map of module names to module configs
     std::unordered_map<std::string, ModuleConfig *> module_config_map;
 
     // Connections is a map where connections[output_port_name] = input_port_name
     std::vector<std::pair<std::string, std::string>> connections_config_forward;    
 
+    // Pointers
+    float *pitch_ptr;
+    float *gate_ptr;
+    float *p1;
+    float *p2;
+    float *p3;
+
+
 public:
 
     bool ready = false;
 
-    // TODO: I may have to pass in pointers to the parameter inputs
-    // in ModuleManager's constructor so that the parameter modules have access to them.
-    // I'll have to pass those into instantiateModule and reference them
-    // if TYPE == "PARAM1", "PARAM2", etc.
     ModuleManager(float *pitch_ptr, float *gate_ptr, float *p1, float *p2, float *p3)
     {
+        this->pitch_ptr = pitch_ptr;
+        this->gate_ptr = gate_ptr;
+        this->p1 = p1;
+        this->p2 = p2;
+        this->p3 = p3;
+
+
         // For now, I'm going to hard-code the configuration information, but
         // eventually I'll load it from a file
-        loadConfig();
+        // loadConfig();
+
+        // instantiate all modules
+        // instantiateModules(pitch_ptr, gate_ptr, p1, p2, p3);
+
+        // connect all modules
+        // if(connectModules()) ready = true;
+    }
+
+    bool createPatch()
+    {
+        // It's assumed that the module_config_map and connections_config_forward have been set
 
         // instantiate all modules
         instantiateModules(pitch_ptr, gate_ptr, p1, p2, p3);
 
         // connect all modules
-        if(connectModules()) // << here's where it's crashing!!
-        {
-            ready = true;
-        }
+        if(connectModules()) ready = true;
+
+        return ready;
     }
 
     bool isReady()
@@ -97,69 +87,80 @@ public:
         return ready;
     }
 
+    /*
+    void setModuleConfigMap(std::vector<ModuleConfig*> moduleConfigs)
+    {
+        for (ModuleConfig* config : moduleConfigs) {
+            module_config_map[config->name] = config;
+        }        
+    }
+    */
+
+    void setModuleConfigMap(std::vector<ModuleConfig*>& moduleConfigs) 
+    {
+        for (ModuleConfig* config : moduleConfigs) 
+        {
+            module_config_map[config->name] = config;
+        }
+    }
+
+    void setConnectionConfig(std::vector<std::pair<std::string, std::string>> connections)
+    {
+        connections_config_forward = connections;
+    }
+
+    /*
     void loadConfig()
     {
-
-        ModuleConfig *param1_config = createModuleConfig(
-            "param1", // name
-            "PARAM1", // type
-            {}  // params
-        );
-
-        ModuleConfig *param2_config = createModuleConfig(
-            "param2", // name
-            "PARAM2", // type
-            {}  // params
-        );
-
-        ModuleConfig *lfo_config = createModuleConfig(
-            "lfo1",                              // name
-            "LFO",                               // type
-            {{"frequency", 20.0}}               // params
-        );
-
-        ModuleConfig *vco_config = createModuleConfig(
-            "vco1",                              // name
-            "VCO",                               // type
-            {{"frequency", 440.0}}               // params
-        );
-
-        ModuleConfig *lowpass_filter_config = createModuleConfig(
-            "lowpass_filter1",  // name
-            "LOWPASS_FILTER",   // type
-            {    // params
-                {"cutoff", 1.0} // range: 0 to 10
-            }
-        );
-
-        ModuleConfig *out_config = createModuleConfig(
-            "output1",
-            "OUTPUT",
-            {}
-        );
+        std::vector<ModuleConfig*> moduleConfigs = {
+            createModuleConfig(
+                "param1", // name
+                "PARAM1", // type
+                {}        // params
+            ),
+            createModuleConfig(
+                "param2", // name
+                "PARAM2", // type
+                {}        // params
+            ),
+            createModuleConfig(
+                "lfo1",
+                "LFO",
+                {{"frequency", 20.0}}
+            ),
+            createModuleConfig(
+                "vco1",
+                "VCO",
+                {{"frequency", 440.0}}
+            ),
+            createModuleConfig(
+                "lowpass_filter1",
+                "LOWPASS_FILTER",
+                {{"cutoff", 1.0}}
+            ),
+            createModuleConfig(
+                "output1",
+                "OUTPUT",
+                {}
+            )
+        };
 
         // Remember, this is input => output
         connections_config_forward = {
             {"param1.OUTPUT_PORT", "lfo1.FREQUENCY_INPUT_PORT"},
-            // {"param2.OUTPUT_PORT", "lowpass_filter1.CUTOFF_INPUT_PORT"},
+            {"param2.OUTPUT_PORT", "lowpass_filter1.CUTOFF_INPUT_PORT"},
             {"lfo1.OUTPUT_PORT", "vco1.FREQUENCY_INPUT_PORT"},
             {"vco1.OUTPUT_PORT", "lowpass_filter1.INPUT_PORT"},
             {"lowpass_filter1.OUTPUT_PORT", "output1.INPUT_PORT"}
         };
 
-
-        // Is there any way to rewrite this so that it automatically
-        // creates the correct mappings and I don't have to remember to add
-        // them manually when adding a new module to the patch?
-
-        module_config_map[param1_config->name] = param1_config;
-        module_config_map[param2_config->name] = param2_config;
-        module_config_map[lfo_config->name] = lfo_config;
-        module_config_map[vco_config->name] = vco_config;
-        module_config_map[lowpass_filter_config->name] = lowpass_filter_config;
-        module_config_map[out_config->name] = out_config;
+        for (ModuleConfig* config : moduleConfigs) {
+            module_config_map[config->name] = config;
+        }
     }
+    */
 
+    /*
     ModuleConfig *createModuleConfig(
         const std::string &name,
         const std::string &type,
@@ -167,6 +168,7 @@ public:
     {
         return new ModuleConfig(name, type, params);
     }
+    */
 
     //
     // instantiateAllModules()
@@ -230,7 +232,7 @@ public:
                 }
                 else if (type == "LOWPASS_FILTER")
                 {
-                    module = new LowpassFilterModule();
+                    module = new LPFModule();
                 }
                 else {
                     DEBUG(("Unknown module type: " + type).c_str());

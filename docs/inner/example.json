@@ -1,47 +1,58 @@
 {
-    "modules": [
+  "modules": [
       {
-        "name": "oscillator",
-        "type": "VCO",
-        "params": {
-          "frequency": 440
-        },
-        "connections": {
-          "out": "envelope.gate"
-        }
+          "name": "param1",
+          "type": "PARAM1",
+          "params": {}
       },
       {
-        "name": "envelope",
-        "type": "ADSR",
-        "params": {
-          "attack": 0.1,
-          "decay": 0.2,
-          "sustain": 0.5,
-          "release": 0.3
-        },
-        "connections": {
-          "out": [
-            "filter1.cutoff",
-            "filter2.cutoff"
-          ]
-        }
+          "name": "param2",
+          "type": "PARAM2",
+          "params": {}
       },
       {
-        "name": "filter1",
-        "type": "MoogFilter",
-        "params": {
-          "cutoff": 5000,
-          "resonance": 0.5
-        }
+          "name": "lfo1",
+          "type": "LFO",
+          "params": {
+              "frequency": 20.0
+          }
       },
       {
-        "name": "filter2",
-        "type": "MoogFilter",
-        "params": {
-          "cutoff": 5000,
-          "resonance": 0.5
-        }
+          "name": "vco1",
+          "type": "VCO",
+          "params": {
+              "frequency": 440.0
+          }
+      },
+      {
+          "name": "lowpass_filter1",
+          "type": "LOWPASS_FILTER",
+          "params": {
+              "cutoff": 6.0
+          }
+      },
+      {
+          "name": "output1",
+          "type": "OUTPUT",
+          "params": {}
       }
-    ]
-  }
-  
+  ],
+  "connections": [
+      {
+          "output": "param1.OUTPUT_PORT",
+          "input": "lfo1.FREQUENCY_INPUT_PORT"
+      },
+      {
+          "output": "lfo1.OUTPUT_PORT",
+          "input": "vco1.FREQUENCY_INPUT_PORT"
+      },
+      {
+          "output": "vco1.OUTPUT_PORT",
+          "input": "lowpass_filter1.INPUT_PORT"
+      },
+      {
+          "output": "lowpass_filter1.OUTPUT_PORT",
+          "input": "output1.INPUT_PORT"
+      }
+  ]
+}

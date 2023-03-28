@@ -32,16 +32,11 @@ public:
 
     void process(unsigned int sample_rate) override 
     {
-        updateFrequencyParameterIfConnected();
-        updateWaveformParameterIfConnected();
-
-        float frequency_voltage = getParameter("frequency");
-        float waveform_voltage = getParameter("waveform");
+        float frequency_voltage = frequence_input_port->isConnected() ? frequence_input_port->getValue() : getParameter("frequency");
+        float waveform_voltage = waveform_input_port->isConnected() ? waveform_input_port->getValue() : getParameter("waveform");
 
         // Get the selected waveform based on the waveform voltage
-        // Waveform selected_waveform = getSelectedWaveform(waveform_voltage);
-
-        Waveform selected_waveform = Waveform::TRIANGLE;
+        Waveform selected_waveform = getSelectedWaveform(waveform_voltage);
 
         // Calculate the phase increment and update the phase
         float phase_increment = getPhaseIncrement(frequency_voltage, sample_rate);
@@ -73,18 +68,6 @@ public:
 
         // Set output value, which will also alert any connected ports
         output_port->setValue(out * 5.0f);
-    }
-
-    void updateFrequencyParameterIfConnected() {
-        if (frequence_input_port->isConnected()) {
-            setParameter("frequency", frequence_input_port->getValue());
-        }
-    }
-
-    void updateWaveformParameterIfConnected() {
-        if (waveform_input_port->isConnected()) {
-            setParameter("waveform", waveform_input_port->getValue());
-        }
     }
 
     Waveform getSelectedWaveform(float waveform_voltage)

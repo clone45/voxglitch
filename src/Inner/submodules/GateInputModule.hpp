@@ -9,13 +9,12 @@ private:
 
 public:
 
-    Sport *output_port = nullptr;
+    Sport *output_port = new Sport(this);
     float *gate_value_ptr = nullptr;
 
     GateInputModule(float *gate_ptr) 
     {
         this->gate_value_ptr = gate_ptr;
-        output_port = new Sport(this);
     }
 
     void process(unsigned int sample_rate) override 

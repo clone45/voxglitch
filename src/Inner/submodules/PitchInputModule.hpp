@@ -9,13 +9,12 @@ private:
 
 public:
 
-    Sport *output_port = nullptr;
+    Sport *output_port = new Sport(this);
     float *pitch_value_ptr = nullptr;
 
     PitchInputModule(float *pitch_ptr) 
     {
         this->pitch_value_ptr = pitch_ptr;
-        output_port = new Sport(this);
     }
 
     void process(unsigned int sample_rate) override 

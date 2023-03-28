@@ -3,25 +3,22 @@
 #include <string>
 #include "../BaseModule.hpp"
 
-class LowpassFilterModule : public BaseModule
+class LPFModule : public BaseModule
 {
+    
 private:
     float y = 0.0f;  // output of the filter
     float alpha = 0.1f;  // filter coefficient
-public:
-    Sport *input_port = nullptr;
-    Sport *cutoff_input_port = nullptr;
-    Sport *output_port = nullptr;
 
-    LowpassFilterModule()
+public:
+    Sport *input_port = new Sport(this);
+    Sport *cutoff_input_port = new Sport(this);
+    Sport *output_port = new Sport(this);
+
+    LPFModule()
     {
         // Set all parameters to their default values
         setParameter("cutoff", 10.0f); // 0v to 10v
-
-        // Create the ports
-        input_port = new Sport(this);
-        cutoff_input_port = new Sport(this);
-        output_port = new Sport(this);
     }
 
     void process(unsigned int sample_rate) override
