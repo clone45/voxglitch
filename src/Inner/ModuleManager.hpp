@@ -20,6 +20,8 @@
 #include "submodules/LFOModule.hpp"
 #include "submodules/LPFModule.hpp"
 #include "submodules/LinearVCAModule.hpp"
+#include "submodules/ExponentialVCAModule.hpp"
+#include "submodules/TB303OscillatorModule.hpp"
 
 #include <map>
 #include <unordered_map>
@@ -36,6 +38,8 @@ private:
 
     // Connections is a map where connections[output_port_name] = input_port_name
     std::vector<std::pair<std::string, std::string>> connections_config_forward;    
+
+    IModule *terminal_output_module = nullptr;
 
     // Pointers
     float *pitch_ptr;
@@ -57,6 +61,13 @@ public:
         this->p3 = p3;
     }
 
+    /*
+
+        █▀▀ █▀█ █▄░█ █▀ ▀█▀ █▀█ █░█ █▀▀ ▀█▀   █▀█ ▄▀█ ▀█▀ █▀▀ █░█
+        █▄▄ █▄█ █░▀█ ▄█ ░█░ █▀▄ █▄█ █▄▄ ░█░   █▀▀ █▀█ ░█░ █▄▄ █▀█
+        Text created using https://fsymbols.com/generators/carty/
+
+    */
     bool createPatch()
     {
         // It's assumed that the module_config_map and connections_config_forward have been set
@@ -66,6 +77,13 @@ public:
 
         // connect all modules
         if(connectModules()) ready = true;
+
+        // The "last module" will be the output module, and the last one in the chain
+        // It will be processed first, then the network will be traversed in reverse
+        // to compute each module's output
+
+        // Find the last module in the chain and sets the member variable "terminal_output_module"
+        terminal_output_module = findOutModule();
 
         return ready;
     }
@@ -112,49 +130,20 @@ public:
 
             try
             {
-                if (type == "PITCH_INPUT_MODULE")
-                {
-                    module = new PitchInputModule(pitch_ptr);
-                }
-                if (type == "GATE_INPUT_MODULE")
-                {
-                    module = new GateInputModule(gate_ptr);
-                } 
-                else if (type == "OUTPUT")
-                {
-                    module = new OutputModule();
-                }
-                else if (type == "VCO")
-                {
-                    module = new VCOModule();
-                }
-                else if (type == "LFO")
-                {
-                    module = new LFOModule();
-                }
-                else if (type == "PARAM1")
-                {
-                    module = new ParamModule(p1);
-                }
-                else if (type == "PARAM2")
-                {
-                    module = new ParamModule(p2);
-                }
-                else if (type == "PARAM3")
-                {
-                    module = new ParamModule(p3);
-                }
-                else if (type == "LOWPASS_FILTER")
-                {
-                    module = new LPFModule();
-                }
-                else if (type == "LINEAR_VCA")
-                {
-                    module = new LinearVCAModule();
-                }
-                else {
-                    DEBUG(("Unknown module type: " + type).c_str());
-                }
+                if (type == "PITCH_INPUT_MODULE") module = new PitchInputModule(pitch_ptr);
+                if (type == "GATE_INPUT_MODULE") module = new GateInputModule(gate_ptr);
+                if (type == "OUTPUT") module = new OutputModule();
+                if (type == "VCO") module = new VCOModule();
+                if (type == "LFO") module = new LFOModule();
+                if (type == "PARAM1") module = new ParamModule(p1);
+                if (type == "PARAM2") module = new ParamModule(p2);
+                if (type == "PARAM3") module = new ParamModule(p3);
+                if (type == "LOWPASS_FILTER") module = new LPFModule();
+                if (type == "LINEAR_VCA") module = new LinearVCAModule();
+                if (type == "EXPONENTIAL_VCA") module = new ExponentialVCAModule();
+                if (type == "TB303_OSCILLATOR") new TB303OscillatorModule();
+
+                if(module == nullptr) DEBUG(("Unknown module type: " + type).c_str());
             }
             catch (const std::exception &e)
             {
@@ -223,8 +212,17 @@ public:
         return(true);
     }
 
+    /*
 
-    void processPatch(IModule *module, unsigned int sample_rate)
+
+        █▀█ █░█ █▄░█   █▀█ ▄▀█ ▀█▀ █▀▀ █░█
+        █▀▄ █▄█ █░▀█   █▀▀ █▀█ ░█░ █▄▄ █▀█
+        Text created using https://fsymbols.com/generators/carty/
+
+    */
+
+    // This runs at sample rate
+    void processModule(IModule *module, unsigned int sample_rate)
     {
 
         // If the module has already been processed, return
@@ -259,7 +257,7 @@ public:
                     // Heads up: this is a recursive call
                     if (!connected_module->processing)
                     {
-                        processPatch(connected_module, sample_rate);
+                        processModule(connected_module, sample_rate);
                     }
                 }
             }
@@ -273,39 +271,34 @@ public:
     }
 
     //
-    // Call this every frame
+    // process()
     //
-    // TODO: Handle sample rate
+    // Starts processing a patch to get the output.  The output of the entire
+    // patch is returned as a float.
     //
-    float process()
-    {
-        return compute_output();
-    }
+    // This is called at sample rate.
+    //
+    // TODO: Handle passing in sample rate
+    //
 
-    float compute_output()
+
+    float process()
     {
         // Reset all module processed flags to false
         resetProcessingFlags();
 
-        // The "last module" will be the output module, and the last one in the chain
-        // It will be processed first, then the network will be traversed in reverse
-        // to compute each module's output
-
-        // Find the last module in the chain
-        IModule *out_module = findOutModule();
-
-        if(! out_module)
+        if(! terminal_output_module)
         {
             return(4.04);
         }
 
         // Compute the outputs of the system by starting with the last module,
         // then working backwards through the chain.
-        processPatch(out_module, 44100);
+        processModule(terminal_output_module, 44100);
 
         // Get the value at the input port of the terminal output module.
         // This is computed audio value of the entire patch.
-        Sport *input_port = out_module->getPortByName("INPUT_PORT");
+        Sport *input_port = terminal_output_module->getPortByName("INPUT_PORT");
 
         return (input_port->getValue());
     }
@@ -323,7 +316,7 @@ public:
     // Note: If I update this function to find the output module by type,
     // I may be able to remove the getOutputPorts function from all modules
     // and from the IModule interface
-    IModule * findOutModule()
+    IModule *findOutModule()
     {
         IModule *out_module = nullptr;
 
@@ -339,7 +332,7 @@ public:
             }
         }
 
-        return out_module;
+        return(out_module);
     }
 
     std::pair<std::string, std::string> split_string(std::string input_str) 
