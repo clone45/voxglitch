@@ -1,0 +1,30 @@
+{
+    "modules": [
+        {
+            "name": "gate_input1",
+            "type": "GATE_INPUT_MODULE",
+            "params": {}
+        },        
+        {
+            "name": "adsr1",
+            "type": "ADSR_MODULE",
+            "params": {}
+        },
+        {
+            "name": "output1",
+            "type": "OUTPUT",
+            "params": {}
+        }
+    ],
+    "connections": [
+        {
+            "output": "gate_input1.OUTPUT_PORT",
+            "input": "adsr1.GATE_INPUT_PORT"
+        },
+        {
+            "output": "adsr1.OUTPUT_PORT",
+            "input": "output1.INPUT_PORT"
+        }
+    ]
+  }
+  

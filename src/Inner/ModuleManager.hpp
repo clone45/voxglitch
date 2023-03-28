@@ -3,6 +3,7 @@
 //
 // TODO: 
 //
+// - Figure out how gates will work
 // - Send through sample rate
 // - Figure out how to represent PI
 // - Update findOutModule to use the Type instead of the number of outputs
@@ -12,16 +13,20 @@
 #include "Sport.hpp"
 #include "IModule.h"
 
+// Utility modules
 #include "submodules/PitchInputModule.hpp"
 #include "submodules/GateInputModule.hpp"
-#include "submodules/ParamModule.hpp"
-#include "submodules/VCOModule.hpp"
 #include "submodules/OutputModule.hpp"
+#include "submodules/ParamModule.hpp"
+
+// Synth modules
+#include "submodules/ADSRModule.hpp"
+#include "submodules/ExponentialVCAModule.hpp"
+#include "submodules/LinearVCAModule.hpp"
 #include "submodules/LFOModule.hpp"
 #include "submodules/LPFModule.hpp"
-#include "submodules/LinearVCAModule.hpp"
-#include "submodules/ExponentialVCAModule.hpp"
 #include "submodules/TB303OscillatorModule.hpp"
+#include "submodules/VCOModule.hpp"
 
 #include <map>
 #include <unordered_map>
@@ -130,6 +135,7 @@ public:
 
             try
             {
+                if (type == "ADSR_MODULE") module = new ADSRModule();
                 if (type == "PITCH_INPUT_MODULE") module = new PitchInputModule(pitch_ptr);
                 if (type == "GATE_INPUT_MODULE") module = new GateInputModule(gate_ptr);
                 if (type == "OUTPUT") module = new OutputModule();
