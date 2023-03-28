@@ -5,7 +5,7 @@
 //
 // - Send through sample rate
 // - Figure out how to represent PI
-//
+// - Update findOutModule to use the Type instead of the number of outputs
 
 #pragma once
 
@@ -18,8 +18,8 @@
 #include "submodules/VCOModule.hpp"
 #include "submodules/OutputModule.hpp"
 #include "submodules/LFOModule.hpp"
-#include "submodules/MoogFilterModule.hpp"
 #include "submodules/LPFModule.hpp"
+#include "submodules/LinearVCAModule.hpp"
 
 #include <map>
 #include <unordered_map>
@@ -44,7 +44,6 @@ private:
     float *p2;
     float *p3;
 
-
 public:
 
     bool ready = false;
@@ -56,17 +55,6 @@ public:
         this->p1 = p1;
         this->p2 = p2;
         this->p3 = p3;
-
-
-        // For now, I'm going to hard-code the configuration information, but
-        // eventually I'll load it from a file
-        // loadConfig();
-
-        // instantiate all modules
-        // instantiateModules(pitch_ptr, gate_ptr, p1, p2, p3);
-
-        // connect all modules
-        // if(connectModules()) ready = true;
     }
 
     bool createPatch()
@@ -87,15 +75,6 @@ public:
         return ready;
     }
 
-    /*
-    void setModuleConfigMap(std::vector<ModuleConfig*> moduleConfigs)
-    {
-        for (ModuleConfig* config : moduleConfigs) {
-            module_config_map[config->name] = config;
-        }        
-    }
-    */
-
     void setModuleConfigMap(std::vector<ModuleConfig*>& moduleConfigs) 
     {
         for (ModuleConfig* config : moduleConfigs) 
@@ -108,67 +87,6 @@ public:
     {
         connections_config_forward = connections;
     }
-
-    /*
-    void loadConfig()
-    {
-        std::vector<ModuleConfig*> moduleConfigs = {
-            createModuleConfig(
-                "param1", // name
-                "PARAM1", // type
-                {}        // params
-            ),
-            createModuleConfig(
-                "param2", // name
-                "PARAM2", // type
-                {}        // params
-            ),
-            createModuleConfig(
-                "lfo1",
-                "LFO",
-                {{"frequency", 20.0}}
-            ),
-            createModuleConfig(
-                "vco1",
-                "VCO",
-                {{"frequency", 440.0}}
-            ),
-            createModuleConfig(
-                "lowpass_filter1",
-                "LOWPASS_FILTER",
-                {{"cutoff", 1.0}}
-            ),
-            createModuleConfig(
-                "output1",
-                "OUTPUT",
-                {}
-            )
-        };
-
-        // Remember, this is input => output
-        connections_config_forward = {
-            {"param1.OUTPUT_PORT", "lfo1.FREQUENCY_INPUT_PORT"},
-            {"param2.OUTPUT_PORT", "lowpass_filter1.CUTOFF_INPUT_PORT"},
-            {"lfo1.OUTPUT_PORT", "vco1.FREQUENCY_INPUT_PORT"},
-            {"vco1.OUTPUT_PORT", "lowpass_filter1.INPUT_PORT"},
-            {"lowpass_filter1.OUTPUT_PORT", "output1.INPUT_PORT"}
-        };
-
-        for (ModuleConfig* config : moduleConfigs) {
-            module_config_map[config->name] = config;
-        }
-    }
-    */
-
-    /*
-    ModuleConfig *createModuleConfig(
-        const std::string &name,
-        const std::string &type,
-        const std::map<std::string, float> &params)
-    {
-        return new ModuleConfig(name, type, params);
-    }
-    */
 
     //
     // instantiateAllModules()
@@ -226,13 +144,13 @@ public:
                 {
                     module = new ParamModule(p3);
                 }
-                else if (type == "MOOG_FILTER")
-                {
-                    module = new MoogFilterModule();
-                }
                 else if (type == "LOWPASS_FILTER")
                 {
                     module = new LPFModule();
+                }
+                else if (type == "LINEAR_VCA")
+                {
+                    module = new LinearVCAModule();
                 }
                 else {
                     DEBUG(("Unknown module type: " + type).c_str());
@@ -242,7 +160,6 @@ public:
             {
                 std::string error = e.what();
                 DEBUG(error.c_str());
-                // handle the exception
             }
 
             if (module != nullptr)
@@ -286,46 +203,21 @@ public:
             std::pair<std::string, std::string> output_parts = split_string(output_connection_string);
             std::pair<std::string, std::string> input_parts = split_string(input_connection_string);
 
-            std::string output_module_name = output_parts.first;
-            std::string output_port_name = output_parts.second;
-            std::string input_module_name = input_parts.first;
-            std::string input_port_name = input_parts.second;
+            try 
+            {
+                IModule *output_module = modules.at(output_parts.first);
+                IModule *input_module = modules.at(input_parts.first);
+                Sport *input_port = input_module->getPortByName(input_parts.second);
+                Sport *output_port = output_module->getPortByName(output_parts.second);
 
-            IModule *output_module;
-            IModule *input_module;
-
-            // Get the output module
-            try {
-                output_module = modules.at(output_module_name);
-            } catch (std::out_of_range &e) {
-                DEBUG(("output module not found: [" + output_module_name + "]").c_str());
+                input_port->connectToOutputPort(output_port);
+                output_port->connectToInputPort(input_port);
+            } 
+            catch (std::out_of_range& e) 
+            {
+                DEBUG(e.what());
                 return false;
-            }
-
-            // Get the input module
-            try {
-                input_module = modules.at(input_module_name);
-            } catch (std::out_of_range &e) {
-                DEBUG(("input module not found: [" + input_module_name + "]").c_str());
-                return false;
-            }
-
-            // Get the input port
-            Sport *input_port = input_module->getPortByName(input_port_name);
-            if (!input_port) {
-                DEBUG(("Failed to find input port " + input_port_name).c_str());
-                return false;
-            }
-
-            // Get the output port
-            Sport *output_port = output_module->getPortByName(output_port_name);
-            if (! output_port) {
-                DEBUG(("Failed to find output port " + output_port_name).c_str());
-                return false;
-            }
-
-            input_port->connectToOutputPort(output_port);
-            output_port->connectToInputPort(input_port);
+            }           
         }
 
         return(true);
@@ -352,7 +244,6 @@ public:
         // 2. Iterate over each of the inputs.
         for (auto &input_port : input_ports)
         {
-
             // 3. If there's a connection, make a recursive call to processModule with the connected module
             if (input_port->isConnected())
             {
@@ -401,7 +292,6 @@ public:
         // to compute each module's output
 
         // Find the last module in the chain
-        // TODO: There might be multiple output modules, so this will need to be changed??
         IModule *out_module = findOutModule();
 
         if(! out_module)
@@ -429,6 +319,10 @@ public:
         }
     }
 
+    //
+    // Note: If I update this function to find the output module by type,
+    // I may be able to remove the getOutputPorts function from all modules
+    // and from the IModule interface
     IModule * findOutModule()
     {
         IModule *out_module = nullptr;
