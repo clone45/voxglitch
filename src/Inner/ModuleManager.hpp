@@ -2,8 +2,6 @@
 // ModuleManager.hpp
 //
 // TODO: 
-//
-// - Figure out how gates will work
 // - Send through sample rate
 // - Figure out how to represent PI
 // - Update findOutModule to use the Type instead of the number of outputs
@@ -28,6 +26,7 @@
 #include "submodules/TB303OscillatorModule.hpp"
 #include "submodules/TB303FilterModule.hpp"
 #include "submodules/VCOModule.hpp"
+#include "submodules/WavetableOscillatorModule.hpp"
 
 #include <map>
 #include <unordered_map>
@@ -150,6 +149,7 @@ public:
                 if (type == "EXPONENTIAL_VCA") module = new ExponentialVCAModule();
                 if (type == "TB303_OSCILLATOR") module = new TB303OscillatorModule();
                 if (type == "TB303_FILTER") module = new TB303FilterModule();
+                if (type == "WAVETABLE_OSCILLATOR") module = new WavetableOscillatorModule();
 
                 if(module == nullptr) DEBUG(("Unknown module type: " + type).c_str());
             }
@@ -218,6 +218,45 @@ public:
         }
 
         return(true);
+    }
+
+    //
+    // Note: If I update this function to find the output module by type,
+    // I may be able to remove the getOutputPorts function from all modules
+    // and from the IModule interface
+    IModule *findOutModule()
+    {
+        IModule *out_module = nullptr;
+
+        // Find the last module in the chain
+        // Why module.second? Because module is a pair: module.first is the id
+        //  and module.second is the module object
+
+        for (auto &module : modules)
+        {
+            if (module.second->getOutputPorts().size() == 0)
+            {
+                out_module = module.second;
+            }
+        }
+
+        return(out_module);
+    }
+
+    std::pair<std::string, std::string> split_string(std::string input_str) 
+    {
+        std::string delimiter = ".";
+        size_t pos = input_str.find(delimiter);
+
+        // Check if delimiter is found
+        if (pos == std::string::npos) {
+            return std::make_pair("", "");
+        }
+
+        // Split string and return pair of strings
+        std::string before = input_str.substr(0, pos);
+        std::string after = input_str.substr(pos + 1);
+        return std::make_pair(before, after);
     }
 
     /*
@@ -304,8 +343,14 @@ public:
         // then working backwards through the chain.
         processModule(terminal_output_module, 44100);
 
-        // Get the value at the input port of the terminal output module.
-        // This is computed audio value of the entire patch.
+        // This might be a litte confusing, so let me explain it a bit.
+        // The terminal output module is the last module in the patch. It has
+        // an input port called INPUT_PORT.  The value at INPUT_PORT is basically
+        // the value that the entire patch outputs.  So here, we're getting the
+        // value at INPUT_PORT and returning it.  The function processModule()
+        // will have computed the value at INPUT_PORT by processing the entire
+        // patch, so we're just returning that value.
+
         Sport *input_port = terminal_output_module->getPortByName("INPUT_PORT");
 
         return (input_port->getValue());
@@ -319,44 +364,4 @@ public:
             module.second->processing = false;
         }
     }
-
-    //
-    // Note: If I update this function to find the output module by type,
-    // I may be able to remove the getOutputPorts function from all modules
-    // and from the IModule interface
-    IModule *findOutModule()
-    {
-        IModule *out_module = nullptr;
-
-        // Find the last module in the chain
-        // Why module.second? Because module is a pair: module.first is the id
-        //  and module.second is the module object
-
-        for (auto &module : modules)
-        {
-            if (module.second->getOutputPorts().size() == 0)
-            {
-                out_module = module.second;
-            }
-        }
-
-        return(out_module);
-    }
-
-    std::pair<std::string, std::string> split_string(std::string input_str) 
-    {
-        std::string delimiter = ".";
-        size_t pos = input_str.find(delimiter);
-
-        // Check if delimiter is found
-        if (pos == std::string::npos) {
-            return std::make_pair("", "");
-        }
-
-        // Split string and return pair of strings
-        std::string before = input_str.substr(0, pos);
-        std::string after = input_str.substr(pos + 1);
-        return std::make_pair(before, after);
-    }
-
 };

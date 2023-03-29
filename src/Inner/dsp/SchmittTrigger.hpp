@@ -1,4 +1,7 @@
-struct SchmittTrigger {
+#pragma once
+
+struct SchmittTrigger 
+{
   float low_threshold = 0.25f;
   float high_threshold = 0.75f;
   bool state = false;
