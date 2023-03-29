@@ -51,10 +51,6 @@ public:
         float frac = phase * waveform_size - index1;
         output = lerp(wavetables[waveform_index][index1], wavetables[waveform_index][index2], frac);
 
-        // Calculate the output value by reading the appropriate sample from the current waveform.
-        // The phase is incremented by the phase increment for each sample.
-        // output = wavetables[waveform_index][static_cast<int>(std::round(phase * waveform_size))];
-
         // Output will range from 0 to 256, which is way too loud.  we need to
         // get it in the range of -5 to 5 volts:
         output = (output / 256.0f) * 10.0f - 5.0f;

@@ -23,6 +23,7 @@
 #include "submodules/LinearVCAModule.hpp"
 #include "submodules/LFOModule.hpp"
 #include "submodules/LPFModule.hpp"
+#include "submodules/SchroederReverbModule.hpp"
 #include "submodules/TB303OscillatorModule.hpp"
 #include "submodules/TB303FilterModule.hpp"
 #include "submodules/VCOModule.hpp"
@@ -147,6 +148,7 @@ public:
                 if (type == "LOWPASS_FILTER") module = new LPFModule();
                 if (type == "LINEAR_VCA") module = new LinearVCAModule();
                 if (type == "EXPONENTIAL_VCA") module = new ExponentialVCAModule();
+                if (type == "SCHROEDER_REVERB") module = new SchroederReverbModule();
                 if (type == "TB303_OSCILLATOR") module = new TB303OscillatorModule();
                 if (type == "TB303_FILTER") module = new TB303FilterModule();
                 if (type == "WAVETABLE_OSCILLATOR") module = new WavetableOscillatorModule();
