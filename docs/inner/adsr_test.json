@@ -2,7 +2,7 @@
     "modules": [
         {
             "name": "gate_input1",
-            "type": "GATE_INPUT_MODULE",
+            "type": "GATE_INPUT",
             "params": {}
         },        
         {

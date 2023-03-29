@@ -1,0 +1,38 @@
+{
+    "modules": [
+        {
+            "name": "param1",
+            "type": "PARAM1",
+            "params": {}
+        },
+        {
+            "name": "param2",
+            "type": "PARAM2",
+            "params": {}
+        },
+        {
+            "name": "tb303_oscillator1",
+            "type": "TB303_OSCILLATOR",
+            "params": {}
+        },
+        {
+            "name": "output1",
+            "type": "OUTPUT",
+            "params": {}
+        }
+    ],
+    "connections": [
+        {
+            "output": "param1.OUTPUT_PORT",
+            "input": "tb303_oscillator1.FREQUENCY_INPUT_PORT"
+        },
+        {
+            "output": "param2.OUTPUT_PORT",
+            "input": "tb303_oscillator1.RESONANCE_INPUT_PORT"
+        },
+        {
+            "output": "tb303_oscillator1.OUTPUT_PORT",
+            "input": "output1.INPUT_PORT"
+        }
+    ]
+}

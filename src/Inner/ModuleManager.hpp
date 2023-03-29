@@ -26,6 +26,7 @@
 #include "submodules/LFOModule.hpp"
 #include "submodules/LPFModule.hpp"
 #include "submodules/TB303OscillatorModule.hpp"
+#include "submodules/TB303FilterModule.hpp"
 #include "submodules/VCOModule.hpp"
 
 #include <map>
@@ -136,8 +137,8 @@ public:
             try
             {
                 if (type == "ADSR_MODULE") module = new ADSRModule();
-                if (type == "PITCH_INPUT_MODULE") module = new PitchInputModule(pitch_ptr);
-                if (type == "GATE_INPUT_MODULE") module = new GateInputModule(gate_ptr);
+                if (type == "PITCH_INPUT") module = new PitchInputModule(pitch_ptr);
+                if (type == "GATE_INPUT") module = new GateInputModule(gate_ptr);
                 if (type == "OUTPUT") module = new OutputModule();
                 if (type == "VCO") module = new VCOModule();
                 if (type == "LFO") module = new LFOModule();
@@ -147,7 +148,8 @@ public:
                 if (type == "LOWPASS_FILTER") module = new LPFModule();
                 if (type == "LINEAR_VCA") module = new LinearVCAModule();
                 if (type == "EXPONENTIAL_VCA") module = new ExponentialVCAModule();
-                if (type == "TB303_OSCILLATOR") new TB303OscillatorModule();
+                if (type == "TB303_OSCILLATOR") module = new TB303OscillatorModule();
+                if (type == "TB303_FILTER") module = new TB303FilterModule();
 
                 if(module == nullptr) DEBUG(("Unknown module type: " + type).c_str());
             }
