@@ -16,7 +16,7 @@ private:
     float phase = 0.0f;
     float output = 0.0f;
     int waveform_index = 0;
-    int waveform_size = 256;
+    int waveform_size = 512;
 
 public:
 
@@ -26,12 +26,14 @@ public:
 
     WavetableOscillatorModule() 
     {
+        setParameter("waveform", 0.0f);
         setParameter("frequency", 440.0f);
     }
 
     void process(unsigned int sample_rate) override 
     {
         float frequency_voltage = frequency_input_port->isConnected() ? frequency_input_port->getValue() : getParameter("frequency");
+        float waveform_voltage = waveform_input_port->getValue() ? waveform_input_port->getValue() : getParameter("waveform");
 
         // Convert the voltage value to frequency in Hz using the 1V/octave standard
         frequency = 261.625565 * powf(2.0f, frequency_voltage - 4.0f);
@@ -39,17 +41,23 @@ public:
         // Calculate the phase increment based on the frequency
         float phase_increment = frequency / static_cast<float>(sample_rate);
 
-        // If the waveform input port is connected, read the waveform index from the input.
-        // Otherwise, use the waveform index stored in the module.
-        if (waveform_input_port->isConnected()) 
-        {
-            waveform_index = static_cast<int>(std::round(waveform_input_port->getValue() * 7.0f));
-            waveform_index = clamp(waveform_index, 0, 7);
-        }
+        // Calculate the waveform index based on the waveform voltage
+        waveform_index = (waveform_voltage / 10.0f) * 8.0f; // 0 to 7
+        waveform_index = clamp(waveform_index, 0, 7);
+
+        // Calculate the output value using linear interpolation
+        int index1 = static_cast<int>(std::floor(phase * waveform_size));
+        int index2 = static_cast<int>(std::ceil(phase * waveform_size)) % waveform_size;
+        float frac = phase * waveform_size - index1;
+        output = lerp(wavetables[waveform_index][index1], wavetables[waveform_index][index2], frac);
 
         // Calculate the output value by reading the appropriate sample from the current waveform.
         // The phase is incremented by the phase increment for each sample.
-        output = wavetables[waveform_index][static_cast<int>(std::round(phase * waveform_size))];
+        // output = wavetables[waveform_index][static_cast<int>(std::round(phase * waveform_size))];
+
+        // Output will range from 0 to 256, which is way too loud.  we need to
+        // get it in the range of -5 to 5 volts:
+        output = (output / 256.0f) * 10.0f - 5.0f;
 
         // Increment the phase
         phase += phase_increment;
@@ -59,6 +67,11 @@ public:
 
         // Set output value, which will also alert any connected ports
         output_port->setValue(output);
+    }
+
+    float lerp(float x1, float x2, float frac)
+    {
+        return x1 * (1.0f - frac) + x2 * frac;
     }
 
     Sport *getPortByName(std::string port_name) override
