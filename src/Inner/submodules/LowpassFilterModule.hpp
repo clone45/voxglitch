@@ -3,7 +3,7 @@
 #include <string>
 #include "../BaseModule.hpp"
 
-class LPFModule : public BaseModule
+class LowpassFilterModule : public BaseModule
 {
     
 private:
@@ -15,7 +15,7 @@ public:
     Sport *cutoff_input_port = new Sport(this);
     Sport *output_port = new Sport(this);
 
-    LPFModule()
+    LowpassFilterModule()
     {
         // Set all parameters to their default values
         setParameter("cutoff", 10.0f); // 0v to 10v

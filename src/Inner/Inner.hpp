@@ -7,6 +7,12 @@ struct Inner : VoxglitchModule
     float p1 = 0.0;
     float p2 = 0.0;
     float p3 = 0.0;
+    float p4 = 0.0;
+    float p5 = 0.0;
+    float p6 = 0.0;
+    float p7 = 0.0;
+    float p8 = 0.0;
+
     float pitch = 0.0;
     float gate = 0.0;
 
@@ -25,6 +31,11 @@ struct Inner : VoxglitchModule
         PARAM1_CV_INPUT,
         PARAM2_CV_INPUT,
         PARAM3_CV_INPUT,
+        PARAM4_CV_INPUT,
+        PARAM5_CV_INPUT,
+        PARAM6_CV_INPUT,
+        PARAM7_CV_INPUT,
+        PARAM8_CV_INPUT,
         NUM_INPUTS
     };
     enum OutputIds
@@ -35,7 +46,7 @@ struct Inner : VoxglitchModule
 
     Inner()
     {
-        module_manager = new ModuleManager(&pitch, &gate, &p1, &p2, &p3);
+        module_manager = new ModuleManager(&pitch, &gate, &p1, &p2, &p3, &p4, &p5, &p6, &p7, &p8);
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
     }
 
@@ -46,12 +57,20 @@ struct Inner : VoxglitchModule
         p1 = inputs[PARAM1_CV_INPUT].getVoltage();
         p2 = inputs[PARAM2_CV_INPUT].getVoltage();
         p3 = inputs[PARAM3_CV_INPUT].getVoltage();
+        p4 = inputs[PARAM4_CV_INPUT].getVoltage();
+        p5 = inputs[PARAM5_CV_INPUT].getVoltage();
+        p6 = inputs[PARAM6_CV_INPUT].getVoltage();
+        p7 = inputs[PARAM7_CV_INPUT].getVoltage();
+        p8 = inputs[PARAM8_CV_INPUT].getVoltage();
+
         pitch = inputs[PITCH_INPUT].getVoltage();
         gate = inputs[GATE_INPUT].getVoltage();
 
+        // TODO: Only update module_manager's sample rate when the rate changes
+
         // Calculate your audio output here
         if (module_manager->isReady())
-            audio_out = module_manager->process();
+            audio_out = module_manager->process(args.sampleRate);
 
         // Set the output value
         outputs[AUDIO_OUTPUT].setVoltage(audio_out);

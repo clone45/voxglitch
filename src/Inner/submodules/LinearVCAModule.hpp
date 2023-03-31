@@ -43,7 +43,7 @@ public:
         {
             return (input_port);
         }
-        else if (port_name == "GAIN_PORT")
+        else if (port_name == "GAIN_INPUT_PORT")
         {
             return (gain_port);
         }

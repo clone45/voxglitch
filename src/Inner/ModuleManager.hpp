@@ -22,7 +22,8 @@
 #include "submodules/ExponentialVCAModule.hpp"
 #include "submodules/LinearVCAModule.hpp"
 #include "submodules/LFOModule.hpp"
-#include "submodules/LPFModule.hpp"
+#include "submodules/LowpassFilterModule.hpp"
+#include "submodules/MorphingFilterModule.hpp"
 #include "submodules/SchroederReverbModule.hpp"
 #include "submodules/TB303OscillatorModule.hpp"
 #include "submodules/TB303FilterModule.hpp"
@@ -50,21 +51,24 @@ private:
     // Pointers
     float *pitch_ptr;
     float *gate_ptr;
-    float *p1;
-    float *p2;
-    float *p3;
+    float *p1, *p2, *p3, *p4, *p5, *p6, *p7, *p8;
 
 public:
 
     bool ready = false;
 
-    ModuleManager(float *pitch_ptr, float *gate_ptr, float *p1, float *p2, float *p3)
+    ModuleManager(float *pitch_ptr, float *gate_ptr, float *p1, float *p2, float *p3, float *p4, float *p5, float *p6, float *p7, float *p8)
     {
         this->pitch_ptr = pitch_ptr;
         this->gate_ptr = gate_ptr;
         this->p1 = p1;
         this->p2 = p2;
         this->p3 = p3;
+        this->p4 = p4;
+        this->p5 = p5;
+        this->p6 = p6;
+        this->p7 = p7;
+        this->p8 = p8;
     }
 
     /*
@@ -79,7 +83,7 @@ public:
         // It's assumed that the module_config_map and connections_config_forward have been set
 
         // instantiate all modules
-        instantiateModules(pitch_ptr, gate_ptr, p1, p2, p3);
+        instantiateModules(pitch_ptr, gate_ptr, p1, p2, p3, p4, p5, p6, p7, p8);
 
         // connect all modules
         if(connectModules()) ready = true;
@@ -119,7 +123,7 @@ public:
     // "modules" map, where the map is in the format of: modules[name] = module
     //
 
-    void instantiateModules(float *pitch_ptr, float *gate_ptr, float *p1, float *p2, float *p3)
+    void instantiateModules(float *pitch_ptr, float *gate_ptr, float *p1, float *p2, float *p3, float *p4, float *p5, float *p6, float *p7, float *p8)
     {
         // iterate over module_configs and create instances of the module classes
         for (const auto &module_config_data : module_config_map)
@@ -136,24 +140,34 @@ public:
 
             try
             {
-                if (type == "ADSR_MODULE") module = new ADSRModule();
-                if (type == "PITCH_INPUT") module = new PitchInputModule(pitch_ptr);
+                if (type == "ADSR") module = new ADSRModule();
+                if (type == "EXPONENTIAL_VCA") module = new ExponentialVCAModule();
                 if (type == "GATE_INPUT") module = new GateInputModule(gate_ptr);
-                if (type == "OUTPUT") module = new OutputModule();
-                if (type == "VCO") module = new VCOModule();
                 if (type == "LFO") module = new LFOModule();
+                if (type == "LINEAR_VCA") module = new LinearVCAModule();
+                if (type == "LOWPASS_FILTER") module = new LowpassFilterModule();
+                if (type == "MORPHING_FILTER") module = new MorphingFilterModule();
                 if (type == "PARAM1") module = new ParamModule(p1);
                 if (type == "PARAM2") module = new ParamModule(p2);
                 if (type == "PARAM3") module = new ParamModule(p3);
-                if (type == "LOWPASS_FILTER") module = new LPFModule();
-                if (type == "LINEAR_VCA") module = new LinearVCAModule();
-                if (type == "EXPONENTIAL_VCA") module = new ExponentialVCAModule();
+                if (type == "PARAM4") module = new ParamModule(p4);
+                if (type == "PARAM5") module = new ParamModule(p5);
+                if (type == "PARAM6") module = new ParamModule(p6);
+                if (type == "PARAM7") module = new ParamModule(p7);
+                if (type == "PARAM8") module = new ParamModule(p8);
+                if (type == "OUTPUT") module = new OutputModule();
+                if (type == "PITCH_INPUT") module = new PitchInputModule(pitch_ptr);
                 if (type == "SCHROEDER_REVERB") module = new SchroederReverbModule();
                 if (type == "TB303_OSCILLATOR") module = new TB303OscillatorModule();
                 if (type == "TB303_FILTER") module = new TB303FilterModule();
+                if (type == "VCO") module = new VCOModule();
                 if (type == "WAVETABLE_OSCILLATOR") module = new WavetableOscillatorModule();
 
-                if(module == nullptr) DEBUG(("Unknown module type: " + type).c_str());
+                if(module == nullptr) 
+                {
+                    DEBUG("Unknown module type: ");
+                    DEBUG(type.c_str());
+                }
             }
             catch (const std::exception &e)
             {
@@ -331,7 +345,7 @@ public:
     //
 
 
-    float process()
+    float process(unsigned int sample_rate)
     {
         // Reset all module processed flags to false
         resetProcessingFlags();
@@ -343,7 +357,7 @@ public:
 
         // Compute the outputs of the system by starting with the last module,
         // then working backwards through the chain.
-        processModule(terminal_output_module, 44100);
+        processModule(terminal_output_module, sample_rate);
 
         // This might be a litte confusing, so let me explain it a bit.
         // The terminal output module is the last module in the patch. It has

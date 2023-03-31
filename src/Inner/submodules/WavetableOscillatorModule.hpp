@@ -15,8 +15,9 @@ private:
     float frequency = 0.0f;
     float phase = 0.0f;
     float output = 0.0f;
-    int waveform_index = 0;
-    int waveform_size = 512;
+    int wavetable_index = 0;
+    int wavetable_size = 512;
+    bool wavetables_loaded = false;
 
 public:
 
@@ -24,14 +25,40 @@ public:
     Sport *waveform_input_port = new Sport(this);
     Sport *output_port = new Sport(this);
 
+    float* wavetables[NUM_WAVETABLES];
+
+    // Allocate a single array to hold all the wavetable data
+    float* data = new float[NUM_WAVETABLES * WAVETABLE_SIZE];
+
     WavetableOscillatorModule() 
     {
         setParameter("waveform", 0.0f);
         setParameter("frequency", 440.0f);
+
+        // Read the wavetables from a file
+        std::string wavetable_filename = asset::plugin(pluginInstance, "res/inner/wavetables.txt");
+        
+        if(readWavetables(wavetable_filename, data))
+        {
+            // Create an rray of pointers to the beginning of each wavetable
+            for (int i = 0; i < NUM_WAVETABLES; ++i) {
+                wavetables[i] = &data[i * WAVETABLE_SIZE];
+            }
+
+            wavetables_loaded = true;
+        }
+        
+    }
+
+    ~WavetableOscillatorModule() 
+    {
+        delete[] data;
     }
 
     void process(unsigned int sample_rate) override 
     {
+        if (!wavetables_loaded) return;
+
         float frequency_voltage = frequency_input_port->isConnected() ? frequency_input_port->getValue() : getParameter("frequency");
         float waveform_voltage = waveform_input_port->getValue() ? waveform_input_port->getValue() : getParameter("waveform");
 
@@ -42,18 +69,20 @@ public:
         float phase_increment = frequency / static_cast<float>(sample_rate);
 
         // Calculate the waveform index based on the waveform voltage
-        waveform_index = (waveform_voltage / 10.0f) * 8.0f; // 0 to 7
-        waveform_index = clamp(waveform_index, 0, 7);
+        wavetable_index = (waveform_voltage / 10.0f) * float(NUM_WAVETABLES + 1.0); // 0 to 8
+        wavetable_index = clamp(wavetable_index, 0, NUM_WAVETABLES);
 
         // Calculate the output value using linear interpolation
-        int index1 = static_cast<int>(std::floor(phase * waveform_size));
-        int index2 = static_cast<int>(std::ceil(phase * waveform_size)) % waveform_size;
-        float frac = phase * waveform_size - index1;
-        output = lerp(wavetables[waveform_index][index1], wavetables[waveform_index][index2], frac);
+        int index1 = static_cast<int>(std::floor(phase * wavetable_size));
+        int index2 = static_cast<int>(std::ceil(phase * wavetable_size)) % wavetable_size;
+        float frac = phase * wavetable_size - index1;
+
+        output = lerp(wavetables[wavetable_index][index1], wavetables[wavetable_index][index2], frac);
+
 
         // Output will range from 0 to 256, which is way too loud.  we need to
         // get it in the range of -5 to 5 volts:
-        output = (output / 256.0f) * 10.0f - 5.0f;
+        output = (output / 25.6f) - 5.0f;
 
         // Increment the phase
         phase += phase_increment;

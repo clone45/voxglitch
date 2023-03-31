@@ -97,6 +97,9 @@ public:
         else if (port_name == "FREQUENCY_INPUT_PORT"){
             return(frequence_input_port);
         }
+        else if (port_name == "WAVEFORM_INPUT_PORT"){
+            return(waveform_input_port);
+        }
         else {
            return(nullptr);
         }
@@ -112,7 +115,7 @@ public:
     std::vector<Sport *> getInputPorts() override
     {
         return {    
-            frequence_input_port     
+            frequence_input_port, waveform_input_port   
         };
     }    
 };

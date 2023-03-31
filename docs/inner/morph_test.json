@@ -1,0 +1,79 @@
+{
+    "modules": [
+        {
+            "name": "param1",
+            "type": "PARAM1",
+            "params": {}
+        },
+        {
+            "name": "param2",
+            "type": "PARAM2",
+            "params": {}
+        },
+        {
+            "name": "param5",
+            "type": "PARAM5",
+            "params": {}
+        },
+        {
+            "name": "param6",
+            "type": "PARAM6",
+            "params": {}
+        },
+        {
+            "name": "param7",
+            "type": "PARAM7",
+            "params": {}
+        },                 
+        {
+            "name": "wavetable_oscillator",
+            "type": "WAVETABLE_OSCILLATOR",
+            "params": {}
+        },
+        {
+            "name": "morph_filter1",
+            "type": "MORPHING_FILTER",
+            "params": {
+                "cutoff": 0.5,
+                "resonance": 0.5,
+                "morph": 0.5
+            }
+        },
+        {
+            "name": "output1",
+            "type": "OUTPUT",
+            "params": {}
+        }
+    ],
+    "connections": [
+        {
+            "output": "param1.OUTPUT_PORT",
+            "input": "wavetable_oscillator.FREQUENCY_INPUT_PORT"
+        },
+        {
+            "output": "param2.OUTPUT_PORT",
+            "input": "wavetable_oscillator.WAVEFORM_INPUT_PORT"
+        },
+        {
+            "output": "param5.OUTPUT_PORT",
+            "input": "morph_filter1.MODE_INPUT_PORT"
+        },
+        {
+            "output": "param6.OUTPUT_PORT",
+            "input": "morph_filter1.CUTOFF_INPUT_PORT"
+        },   
+        {
+            "output": "param7.OUTPUT_PORT",
+            "input": "morph_filter1.RESONANCE_INPUT_PORT"
+        },                 
+        {
+            "output": "wavetable_oscillator.OUTPUT_PORT",
+            "input": "morph_filter1.INPUT_PORT"
+        },
+        {
+            "output": "morph_filter1.OUTPUT_PORT",
+            "input": "output1.INPUT_PORT"
+        }
+    ]
+  }
+  

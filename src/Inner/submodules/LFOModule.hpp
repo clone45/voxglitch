@@ -1,3 +1,5 @@
+// TODO: Add additional waveforms
+
 #pragma once
 #include <string>
 #include <cmath>
