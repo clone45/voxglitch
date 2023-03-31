@@ -216,19 +216,24 @@ public:
             std::pair<std::string, std::string> output_parts = split_string(output_connection_string);
             std::pair<std::string, std::string> input_parts = split_string(input_connection_string);
 
+            IModule *output_module;
+            IModule *input_module;
+            Sport *input_port;
+            Sport *output_port;
+
             try 
             {
-                IModule *output_module = modules.at(output_parts.first);
-                IModule *input_module = modules.at(input_parts.first);
-                Sport *input_port = input_module->getPortByName(input_parts.second);
-                Sport *output_port = output_module->getPortByName(output_parts.second);
+                output_module = modules.at(output_parts.first);
+                input_module = modules.at(input_parts.first);
+                input_port = input_module->getPortByName(input_parts.second);
+                output_port = output_module->getPortByName(output_parts.second);
 
                 input_port->connectToOutputPort(output_port);
                 output_port->connectToInputPort(input_port);
             } 
             catch (std::out_of_range& e) 
             {
-                DEBUG(e.what());
+                DEBUG("Trouble connecting ports! Please check port and module names.");
                 return false;
             }           
         }

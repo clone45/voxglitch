@@ -60,15 +60,6 @@ public:
         hp_state = audio_input_voltage - lp_state - q * bp_state;
         hp_state = clamp(hp_state, -1.0f, 1.0f); // Clamp hp_state to avoid instability
 
-
-        // Raised cosine window for smoother morphing
-        /*
-        float mix = morph_input_voltage;
-        float x = 0.5f * (1.0f - std::cos(3.14159265358979323846 * mix));
-        float mixed_output = (1.0f - x) * lp_state + x * hp_state;
-        float band_pass = 0.5f * (lp_state + hp_state);
-        */
-
         // Calculate the crossfade factors
         float mix = morph_input_voltage / 10.0f;
         float lp_factor = std::max(0.0f, 1.0f - 4.0f * std::abs(mix - 0.25f));
