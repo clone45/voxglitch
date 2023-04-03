@@ -24,6 +24,8 @@
 #include "submodules/LFOModule.hpp"
 #include "submodules/LowpassFilterModule.hpp"
 #include "submodules/MorphingFilterModule.hpp"
+#include "submodules/NoiseModule.hpp"
+#include "submodules/NylonMuteGuitarModule.hpp"
 #include "submodules/SchroederReverbModule.hpp"
 #include "submodules/TB303OscillatorModule.hpp"
 #include "submodules/TB303FilterModule.hpp"
@@ -147,6 +149,8 @@ public:
                 if (type == "LINEAR_VCA") module = new LinearVCAModule();
                 if (type == "LOWPASS_FILTER") module = new LowpassFilterModule();
                 if (type == "MORPHING_FILTER") module = new MorphingFilterModule();
+                if (type == "NOISE_MODULE") module = new NoiseModule();
+                if (type == "NYLON_MUTE_GUITAR") module = new NylonMuteGuitarModule();
                 if (type == "PARAM1") module = new ParamModule(p1);
                 if (type == "PARAM2") module = new ParamModule(p2);
                 if (type == "PARAM3") module = new ParamModule(p3);
