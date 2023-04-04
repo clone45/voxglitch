@@ -42,6 +42,8 @@ public:
         feedback = clamp(feedback, 0.0f, 1.0f);
         mix = clamp(mix, 0.0f, 1.0f);
 
+        delay.setDelay(delay_time);
+
         float output = delay.process(input);
 
         // Set output value, which will also alert any connected ports
