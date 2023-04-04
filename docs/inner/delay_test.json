@@ -1,0 +1,56 @@
+{
+    "modules": [
+        {
+            "name": "param1",
+            "type": "PARAM1",
+            "params": {}
+        },
+        {
+            "name": "param2",
+            "type": "PARAM2",
+            "params": {}
+        },
+        {
+            "name": "param3",
+            "type": "PARAM3",
+            "params": {}
+        },        
+        {
+            "name": "wavetable_oscillator",
+            "type": "WAVETABLE_OSCILLATOR",
+            "params": {}
+        },
+        {
+            "name": "delay",
+            "type": "DELAY"
+        },
+        {
+            "name": "output1",
+            "type": "OUTPUT",
+            "params": {}
+        }
+    ],
+    "connections": [
+        {
+            "output": "param1.OUTPUT_PORT",
+            "input": "wavetable_oscillator.FREQUENCY_INPUT_PORT"
+        },
+        {
+            "output": "param2.OUTPUT_PORT",
+            "input": "wavetable_oscillator.WAVEFORM_INPUT_PORT"
+        },
+        {
+            "output": "param3.OUTPUT_PORT",
+            "input": "delay.DELAY_TIME_INPUT_PORT"
+        },        
+        {
+            "output": "wavetable_oscillator.OUTPUT_PORT",
+            "input": "delay.INPUT_PORT"
+        },
+        {
+            "output": "delay.OUTPUT_PORT",
+            "input": "output1.INPUT_PORT"
+        }
+    ]
+  }
+  

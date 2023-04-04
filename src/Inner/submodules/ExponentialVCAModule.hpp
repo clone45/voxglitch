@@ -6,7 +6,7 @@
 class ExponentialVCAModule : public BaseModule
 {
 private:
-    float gain = 1.0f;
+    
 
 public:
     Sport *input_port = new Sport(this);
@@ -15,11 +15,12 @@ public:
 
     ExponentialVCAModule()
     {
-        setParameter("gain", 1.0f);
+        setParameter("gain", 10.0f);
     }
 
     void process(unsigned int sample_rate) override
     {
+        float gain = 1.0f;
         float input = input_port->getValue();
 
         if (gain_port->isConnected())
@@ -30,7 +31,9 @@ public:
         }
         else
         {
-            gain = getParameter("gain");
+            float gain_voltage = getParameter("gain");
+            gain_voltage = clamp(gain_voltage, -10.0f, 10.0f);
+            gain = gain_voltage / 10.0;
         }
 
         float output = input * gain;

@@ -14,23 +14,19 @@ public:
 
     LinearVCAModule()
     {
-        setParameter("gain", 1.0f);
+        setParameter("gain", 10.0f);
     }
 
     void process(unsigned int sample_rate) override
     {
+        // Get input values
         float input = input_port->getValue();
+        float gain_voltage = gain_port->isConnected() ? gain_port->getValue() : getParameter("gain");
+        
+        // Clamp gain voltage to [0,1] range
+        float gain = clamp(gain_voltage / 10.0, 0.0f, 1.0f);
 
-        if (gain_port->isConnected())
-        {
-            float gain = gain_port->getValue();
-            gain = clamp(gain, 0.0f, 1.0f);
-        }
-        else
-        {
-            gain = getParameter("gain");
-        }
-
+        // Calculate output value
         float output = input * gain;
 
         // Set output value, which will also alert any connected ports

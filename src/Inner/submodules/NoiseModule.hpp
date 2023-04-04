@@ -49,7 +49,6 @@ public:
                 noise_signal = pinkNoise();
                 break;
             case BROWN:
-                // TODO: Implement brown noise generation
                 noise_signal = brownNoise();
                 break;
             default:
