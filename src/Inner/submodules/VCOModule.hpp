@@ -4,6 +4,13 @@
 #include <algorithm>
 #include "../BaseModule.hpp"
 
+// TODO:
+//  - add ability to set pulse width
+//  - add ability to set phase shift
+//  - add ability to set sync division
+//  - consider inheriting from a "oscillator" base class
+//  (add mixer module)
+
 class VCOModule : public BaseModule {
 
 private:
