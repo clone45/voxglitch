@@ -34,7 +34,8 @@ public:
 
         float output = input;
 
-        for (size_t i = 0; i < delays.size(); i++) {
+        for (size_t i = 0; i < delays.size(); i++) 
+        {
             float gain = gains[i] * decay;
 
             int buffer_index = static_cast<int>(i) % static_cast<int>(buffers.size());

@@ -1,0 +1,38 @@
+{
+    "modules": [
+        {
+            "name": "vco",
+            "type": "VCO",
+            "params": {}
+        },
+        {
+            "name": "output",
+            "type": "OUTPUT",
+            "params": {}
+        },
+        {
+            "name": "param1",
+            "type": "PARAM1",
+            "params": {}
+        },
+        {
+            "name": "param2",
+            "type": "PARAM2",
+            "params": {}
+        }
+    ],
+    "connections": [
+        {
+            "output": "param1.OUTPUT_PORT",
+            "input": "vco.FREQUENCY_INPUT_PORT"
+        },
+        {
+            "output": "param2.OUTPUT_PORT",
+            "input": "vco.WAVEFORM_INPUT_PORT"
+        },
+        {
+            "output": "vco.OUTPUT_PORT",
+            "input": "output.INPUT_PORT"
+        }
+    ]
+}
