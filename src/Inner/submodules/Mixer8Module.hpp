@@ -4,9 +4,6 @@
 
 class Mixer8Module : public BaseModule {
 private:
-    std::vector<Sport*> input_ports;
-    std::vector<Sport*> output_ports;
-
     enum INPUTS {
         INPUT_1,
         INPUT_2,
@@ -29,49 +26,21 @@ private:
     };
 
 public:
-    Mixer8Module() 
+    Mixer8Module()
     {
-        for (int i = 0; i < NUMBER_OF_INPUTS; i++) 
-        {
-            input_ports.push_back(new Sport(this));
-        }
-
-        for (int i = 0; i < NUMBER_OF_OUTPUTS; i++) 
-        {
-            output_ports.push_back(new Sport(this));
-        }        
+        config(NUMBER_OF_PARAMS, NUMBER_OF_INPUTS, NUMBER_OF_OUTPUTS);
     }
 
     void process(unsigned int sample_rate) override 
     {
         float mix_value = 0.0f;
-        for (auto input_port : input_ports) 
+        for (auto input : inputs) 
         {
-            if (input_port->isConnected()) 
+            if (input->isConnected()) 
             {
-                mix_value += input_port->getValue();
+                mix_value += input->getVoltage();
             }
         }
-        output_port->setValue(mix_value / 8.0f);
-    }
-
-    Sport* getPortByName(std::string port_name) override 
-    {
-        if (port_name == "OUTPUT_PORT") return output_port;
-        for (auto input_port : input_ports) 
-        {
-            if (port_name == input_port->getName()) return input_port;
-        }
-        return nullptr;
-    }
-
-    std::vector<Sport*> getOutputPorts() override 
-    {
-        return output_ports;
-    }
-
-    std::vector<Sport*> getInputPorts() override 
-    {
-        return input_ports;
+        outputs[OUTPUT]->setVoltage(mix_value / 8.0f);
     }
 };

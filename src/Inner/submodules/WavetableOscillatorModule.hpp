@@ -1,5 +1,4 @@
 #pragma once
-#include <string>
 #include <cmath>
 #include <algorithm>
 #include "../BaseModule.hpp"
@@ -9,9 +8,8 @@
 // You would need to replace this with your own array of actual wavetables.
 #include "../res/wavetables.hpp"
 
-class WavetableOscillatorModule : public BaseModule {
-
-private:
+class WavetableOscillatorModule : public BaseModule 
+{
     float frequency = 0.0f;
     float phase = 0.0f;
     float output = 0.0f;
@@ -19,11 +17,20 @@ private:
     int wavetable_size = 512;
     bool wavetables_loaded = false;
 
-public:
+    enum INPUTS {
+        FREQUENCY,
+        WAVEFORM,
+        NUM_INPUTS
+    };
 
-    Sport *frequency_input_port = new Sport(this);
-    Sport *waveform_input_port = new Sport(this);
-    Sport *output_port = new Sport(this);
+    enum OUTPUTS {
+        OUTPUT,
+        NUM_OUTPUTS
+    };
+
+    enum PARAMS {
+        NUM_PARAMS
+    };
 
     float* wavetables[NUM_WAVETABLES];
 
@@ -32,8 +39,11 @@ public:
 
     WavetableOscillatorModule() 
     {
-        setParameter("waveform", 0.0f);
-        setParameter("frequency", 440.0f);
+        config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
+
+        // Set default values for the parameters
+        params[FREQUENCY].setValue(440.0f);
+        params[WAVEFORM].setValue(0.0f);
 
         // Read the wavetables from a file
         std::string wavetable_filename = asset::plugin(pluginInstance, "res/inner/wavetables.txt");
@@ -59,8 +69,8 @@ public:
     {
         if (!wavetables_loaded) return;
 
-        float frequency_voltage = frequency_input_port->isConnected() ? frequency_input_port->getValue() : getParameter("frequency");
-        float waveform_voltage = waveform_input_port->getValue() ? waveform_input_port->getValue() : getParameter("waveform");
+        float frequency_voltage = inputs[FREQUENCY]->isConnected() ? inputs[FREQUENCY]->getVoltage() : params[FREQUENCY].getValue();
+        float waveform_voltage = inputs[WAVEFORM]->isConnected() ? inputs[WAVEFORM]->getVoltage() : params[WAVEFORM].getValue();
 
         // Convert the voltage value to frequency in Hz using the 1V/octave standard
         frequency = 261.625565 * powf(2.0f, frequency_voltage - 4.0f);
@@ -79,7 +89,6 @@ public:
 
         output = lerp(wavetables[wavetable_index][index1], wavetables[wavetable_index][index2], frac);
 
-
         // Output will range from 0 to 256, which is way too loud.  we need to
         // get it in the range of -5 to 5 volts:
         output = (output / 25.6f) - 5.0f;
@@ -91,41 +100,11 @@ public:
         if (phase >= 1.0f) phase -= 1.0f;
 
         // Set output value, which will also alert any connected ports
-        output_port->setValue(output);
+        outputs[OUTPUT]->setVoltage(output);
     }
 
     float lerp(float x1, float x2, float frac)
     {
         return x1 * (1.0f - frac) + x2 * frac;
-    }
-
-    Sport *getPortByName(std::string port_name) override
-    {
-        if (port_name == "FREQUENCY_INPUT_PORT")
-        {
-            return frequency_input_port;
-        }
-        else if (port_name == "WAVEFORM_INPUT_PORT")
-        {
-            return waveform_input_port;
-        }
-        else if (port_name == "OUTPUT_PORT")
-        {
-            return output_port;
-        }
-        else
-        {
-            return nullptr;
-        }
-    }
-
-    std::vector<Sport *> getOutputPorts() override
-    {
-        return {output_port};
-    }
-
-    std::vector<Sport *> getInputPorts() override
-    {
-        return {frequency_input_port, waveform_input_port};
     }
 };

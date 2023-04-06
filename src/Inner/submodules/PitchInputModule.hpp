@@ -1,5 +1,4 @@
 #pragma once
-#include <string> 
 #include <cmath>
 #include "../BaseModule.hpp"
 
@@ -9,39 +8,32 @@ private:
 
 public:
 
-    Sport *output_port = new Sport(this);
     float *pitch_value_ptr = nullptr;
+
+    enum INPUTS 
+    {
+        NUM_INPUTS
+    };
+
+    enum OUTPUTS 
+    {
+        OUTPUT,
+        NUM_OUTPUTS
+    };
+
+    enum PARAMS 
+    {
+        NUM_PARAMS
+    };
 
     PitchInputModule(float *pitch_ptr) 
     {
+        config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
         this->pitch_value_ptr = pitch_ptr;
     }
 
     void process(unsigned int sample_rate) override 
     {
-        output_port->setValue(*pitch_value_ptr);
+        outputs[OUTPUT]->setVoltage(*pitch_value_ptr);
     }
-
-    Sport *getPortByName(std::string port_name) override
-    {
-        if (port_name == "OUTPUT_PORT"){
-            return(output_port);
-        }
-        else {
-           return(nullptr);
-        }
-    }
-
-    std::vector<Sport *> getOutputPorts() override
-    {
-        return {
-            output_port
-        };
-    }
-
-    std::vector<Sport *> getInputPorts() override
-    {
-        return {
-        };
-    }    
 };

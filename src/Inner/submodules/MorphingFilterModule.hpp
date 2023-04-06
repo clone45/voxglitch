@@ -7,7 +7,7 @@
 #include <algorithm>
 #include "../BaseModule.hpp"
 
-class MorphingFilterModule : public IModule
+class MorphingFilterModule : public BaseModule
 {
 private:
 
@@ -19,25 +19,41 @@ private:
 
 public:
 
-    Sport *audio_input_port = new Sport(this);
-    Sport *cutoff_input_port = new Sport(this);
-    Sport *resonance_input_port = new Sport(this);
-    Sport *morph_input_port = new Sport(this);
-    Sport *audio_output_port = new Sport(this);
+    enum INPUTS {
+        AUDIO,
+        CUTOFF,
+        RESONANCE,
+        MORPH,
+        NUM_INPUTS
+    };
+
+    enum OUTPUTS {
+        OUTPUT,
+        NUM_OUTPUTS
+    };
+
+    enum PARAMS {
+        CUTOFF,
+        MORPH,
+        RESONANCE,
+        NUM_PARAMS
+    };
 
     MorphingFilterModule()
     {
-        setParameter("cutoff", 0.0f);
-        setParameter("morph", 0.0f);
-        setParameter("resonance", 0.0f);        
+        config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS); 
+
+        config[CUTOFF].setValue(0.0f);
+        config[RESONANCE].setValue(0.0f);
+        config[MORPH].setValue(0.0f);
     }
 
     void process(unsigned int sample_rate) override
     {
-        float audio_input_voltage = audio_input_port->isConnected() ? audio_input_port->getValue() : 0.0;
-        float cutoff_input_voltage = cutoff_input_port->isConnected() ? cutoff_input_port->getValue() : getParameter("cutoff");
-        float resonance_input_voltage = resonance_input_port->isConnected() ? resonance_input_port->getValue() : getParameter("resonance");
-        float morph_input_voltage = morph_input_port->isConnected() ? morph_input_port->getValue() : getParameter("morph");
+        float audio_input_voltage = inputs[AUDIO]->isConnected() ? inputs[AUDIO]->getVoltage() : 0.0;
+        float cutoff_input_voltage = inputs[CUTOFF]->isConnected() ? inputs[CUTOFF]->getVoltage() : params[CUTOFF].getValue();
+        float resonance_input_voltage = inputs[RESONANCE]->->isConnected() ? inputs[RESONANCE]->getVoltage() : params[RESONANCE].getValue();
+        float morph_input_voltage = inputs[MORPH]->isConnected() ? inputs[MORPH]->getVoltage() : params[MORPH].getValue();
 
         float cutoff_input_value = std::min(cutoff_input_voltage * 2200.0f, 0.49f * sample_rate);
 
@@ -68,44 +84,6 @@ public:
 
         // Crossfade between the three filter outputs
         float output = lp_state * lp_factor + bp_state * bp_factor + hp_state * hp_factor;
-        audio_output_port->setValue(output);
-    }
-
-    Sport *getPortByName(std::string port_name) override
-    {
-        if (port_name == "INPUT_PORT")
-        {
-            return audio_input_port;
-        }
-        else if (port_name == "CUTOFF_INPUT_PORT")
-        {
-            return cutoff_input_port;
-        }
-        else if (port_name == "RESONANCE_INPUT_PORT")
-        {
-            return resonance_input_port;
-        }
-        else if (port_name == "MORPH_INPUT_PORT")
-        {
-            return morph_input_port;
-        }
-        else if (port_name == "OUTPUT_PORT")
-        {
-            return audio_output_port;
-        }   
-        else
-        {
-            return nullptr;
-        }
-    }
-
-    std::vector<Sport *> getOutputPorts() override
-    {
-        return {audio_output_port};
-    }
-
-    std::vector<Sport *> getInputPorts() override
-    {
-        return {audio_input_port, cutoff_input_port, resonance_input_port, morph_input_port};
-    }    
+        outputs[OUTPUT]->setVoltage(output);
+    }   
 };

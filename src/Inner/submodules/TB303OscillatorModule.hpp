@@ -1,43 +1,53 @@
 #pragma once
 
-#include <string>
 #include <cmath>
 #include <algorithm>
 #include "../BaseModule.hpp"
 
-class TB303OscillatorModule : public BaseModule {
-
-private:
+class TB303OscillatorModule : public BaseModule 
+{
     float phase = 0.0f;
     float last_value = 0.0f;
     float accent = 1.0f;
 
-public:
-    Sport *output_port = new Sport(this);
-    Sport *frequency_input_port = new Sport(this);
-    Sport *resonance_input_port = new Sport(this);
+    enum INPUTS {
+        FREQUENCY,
+        RESONANCE,
+        NUM_INPUTS
+    };
+
+    enum OUTPUTS {
+        OUTPUT,
+        NUM_OUTPUTS
+    };
+
+    enum PARAMS {
+        FREQUENCY,
+        RESONANCE,
+        NUM_PARAMS
+    };
 
     TB303OscillatorModule()
     {
-        setParameter("frequency", 440.0f);
+        config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
+
+        params[FREQUENCY].setValue(440.0f);
+        params[RESONANCE].setValue(0.0f);
     }
 
     void process(unsigned int sample_rate) override 
     {
-        float frequency = getParameter("frequency");
+        float frequency = params[FREQUENCY].getValue();
 
         if (frequency_input_port->isConnected()) 
         {
-            float voltage = frequency_input_port->getValue();
+            float voltage = frequency_input_port->getVoltage();
             frequency = 8.18f * powf(2.0f, voltage);
         }
 
-        float resonance = 0.0f;
-
-        if (resonance_input_port->isConnected()) 
-        {
-            resonance = resonance_input_port->getValue();
-        }
+        // Get the resonance value.  If the resonance input port is connected, use
+        // that value.  Otherwise, use the resonance parameter value.
+        float resonance = inputs[RESONANCE]->isConnected() ? inputs[RESONANCE]->getVoltage() : params[RESONANCE].getValue();
 
         // TB-303-style exponential frequency scaling
         frequency = 0.1f * powf(2.0f, 3.0f * frequency) * sample_rate;
@@ -64,37 +74,6 @@ public:
         float output = (1.0f - accent) * saw + accent * input;
 
         // Set output value, which will also alert any connected ports
-        output_port->setValue(output * 5.0f);
+        outputs[OUTPUT]->setVoltage(output * 5.0f);
     }
-
-    Sport *getPortByName(std::string port_name) override
-    {
-        if (port_name == "OUTPUT_PORT"){
-            return(output_port);
-        }
-        else if (port_name == "FREQUENCY_INPUT_PORT"){
-            return(frequency_input_port);
-        }
-        else if (port_name == "RESONANCE_INPUT_PORT"){
-            return(resonance_input_port);
-        }
-        else {
-           return(nullptr);
-        }
-    }
-
-    std::vector<Sport *> getOutputPorts() override
-    {
-        return {
-            output_port
-        };
-    }
-
-    std::vector<Sport *> getInputPorts() override
-    {
-        return {    
-            frequency_input_port,
-            resonance_input_port
-        };
-    }    
 };

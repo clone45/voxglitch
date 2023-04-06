@@ -5,6 +5,7 @@
 #include <vector>
 #include <unordered_map>
 #include "Sport.hpp"
+#include "Sparameter.hpp"
 #include "dsp/Map.hpp"
 
 class Sport;
@@ -12,9 +13,10 @@ class Sport;
 class IModule {
 
 protected:
-    std::unordered_map<std::string, float> parameters;
-    std::vector<Sport *> input_ports;
-    std::vector<Sport *> output_ports;
+    
+    std::vector<Sport*> inputs;
+    std::vector<Sport*> outputs;
+    std::vector<float> params;
 
 public:
     virtual void process(unsigned int sample_rate) = 0;
@@ -23,23 +25,5 @@ public:
     virtual std::vector<Sport *> getInputPorts() = 0;
 
     unsigned int id = 0;
-    bool processing = false;
-
-    // Methods for setting and getting parameters
-    virtual void setParameter(const std::string& name, float value) 
-    {
-        parameters[name] = value;
-    }
-
-    virtual float getParameter(const std::string& name) const 
-    {
-        if (parameters.find(name) != parameters.end())
-        {
-                return parameters.at(name);
-        }
-        else
-        {
-                return 0;
-        }
-    }   
+    bool processing = false;  
 };

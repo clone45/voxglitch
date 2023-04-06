@@ -1,5 +1,4 @@
 #pragma once
-#include <string> 
 #include <cmath>
 #include <algorithm>
 #include "../BaseModule.hpp"
@@ -26,32 +25,51 @@ private:
         NUM_WAVEFORMS
     };
 
-public:
+    enum INPUTS {
+        FREQUENCY,  
+        WAVEFORM,
+        SYNC_THRESHOLD,
+        SYNC,
+        NUM_INPUTS
+    };
 
-    // Inputs
-    Sport *frequency_input_port = new Sport(this); //  Ranges 0.0V to 10.0V
-    Sport *waveform_input_port = new Sport(this); //  Ranges 0.0V to 10.0V
-    Sport *sync_threshold_input_port = new Sport(this); //  Ranges -5V to +5V
-    Sport *sync_input_port = new Sport(this); // Ranges from -5V to +5V
+    enum OUTPUTS {
+        OUTPUT,
+        NUM_OUTPUTS
+    };
 
-    // Outputs
-    Sport *output_port = new Sport(this);
-
+    enum PARAMS {
+        FREQUENCY,
+        WAVEFORM,
+        SYNC_THRESHOLD,
+        PULSE_WIDTH,
+        NUM_PARAMS
+    };
 
     VCOModule() 
     {
-        setParameter("frequency", 1.0f);
-        setParameter("waveform", 4.0f);
-        setParameter("sync_threshold", 5.0f);
-        setParameter("pulse_width", 0.5f);
+        config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
+
+        // Set default values for parameters
+        params[FREQUENCY].setValue(1.0f);
+        params[WAVEFORM].setValue(4.0f);
+        params[SYNC_THRESHOLD].setValue(5.0f);
+        params[PULSE_WIDTH].setValue(0.5f);
     }
 
     void process(unsigned int sample_rate) override 
     {
-        float frequency_voltage = frequency_input_port->isConnected() ? frequency_input_port->getValue() : getParameter("frequency");
-        float waveform_voltage = waveform_input_port->isConnected() ? waveform_input_port->getValue() : getParameter("waveform");
-        float sync_threshold = sync_threshold_input_port->isConnected() ? sync_threshold_input_port->getValue() : getParameter("sync_threshold");
-        float sync_input = sync_input_port->isConnected() ? sync_input_port->getValue() : 0.0f;
+        // the old way of doing it
+        // float frequency_voltage = frequency_input_port->isConnected() ? frequency_input_port->getValue() : getParameter("frequency");
+        // float waveform_voltage = waveform_input_port->isConnected() ? waveform_input_port->getValue() : getParameter("waveform");
+        // float sync_threshold = sync_threshold_input_port->isConnected() ? sync_threshold_input_port->getValue() : getParameter("sync_threshold");
+        // float sync_input = sync_input_port->isConnected() ? sync_input_port->getValue() : 0.0f;
+
+        // Get the input voltages
+        float frequency_voltage = inputs[FREQUENCY]->isConnected() ? inputs[FREQUENCY]->getVoltage() : params[FREQUENCY].getValue();
+        float waveform_voltage = inputs[WAVEFORM]->isConnected() ? inputs[WAVEFORM]->getVoltage() : params[WAVEFORM].getValue();
+        float sync_threshold = inputs[SYNC_THRESHOLD]->isConnected() ? inputs[SYNC_THRESHOLD]->getVoltage() : params[SYNC_THRESHOLD].getValue();
+        float sync_input = inputs[SYNC]->isConnected() ? inputs[SYNC]->getVoltage() : 0.0f;
 
         // Get the selected waveform based on the waveform voltage
         Waveform selected_waveform = getSelectedWaveform(waveform_voltage);
@@ -71,7 +89,7 @@ public:
         float out = computeWaveform(selected_waveform, phase);
 
         // Set output value, which will also alert any connected ports
-        output_port->setValue(out * 5.0f);
+        outputs[OUTPUT]->setVoltage(out * 5.0f);
     }
 
     void processSyncInput(float sync_input, float sync_threshold)
@@ -139,32 +157,4 @@ public:
         // Calculate phase increment based on the frequency        
         return frequency / static_cast<float>(sample_rate);
     }
-
-    Sport *getPortByName(std::string port_name) override
-    {
-        if (port_name == "FREQUENCY_INPUT_PORT") return(frequency_input_port); 
-        if (port_name == "WAVEFORM_INPUT_PORT") return(waveform_input_port);
-        if (port_name == "SYNC_INPUT_PORT") return(sync_input_port);
-        if (port_name == "SYNC_THRESHOLD_INPUT_PORT") return(sync_threshold_input_port);
-        if (port_name == "OUTPUT_PORT") return(output_port);
-        
-        DEBUG("Invalid port name: ");
-        DEBUG(port_name.c_str());
-
-        return(nullptr);
-    }
-
-    std::vector<Sport *> getOutputPorts() override
-    {
-        return {
-            output_port
-        };
-    }
-
-    std::vector<Sport *> getInputPorts() override
-    {
-        return {    
-            frequency_input_port, waveform_input_port, sync_input_port, sync_threshold_input_port
-        };
-    }    
 };

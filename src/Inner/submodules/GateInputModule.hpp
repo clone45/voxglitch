@@ -1,47 +1,32 @@
-#pragma once
-#include <string> 
+#pragma once 
 #include <cmath>
 #include "../BaseModule.hpp"
 
-class GateInputModule : public BaseModule {
+class GateInputModule : public BaseModule 
+{
+    enum INPUTS {
+        NUM_INPUTS
+    };
 
-private:
+    enum OUTPUTS {
+        OUTPUT,
+        NUM_OUTPUTS
+    };
 
-public:
+    enum PARAMS {
+        NUM_PARAMS
+    };
 
-    Sport *output_port = new Sport(this);
     float *gate_value_ptr = nullptr;
 
     GateInputModule(float *gate_ptr) 
     {
+        config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
         this->gate_value_ptr = gate_ptr;
     }
 
     void process(unsigned int sample_rate) override 
     {
-        output_port->setValue(*gate_value_ptr);
-    }
-
-    Sport *getPortByName(std::string port_name) override
-    {
-        if (port_name == "OUTPUT_PORT"){
-            return(output_port);
-        }
-        else {
-           return(nullptr);
-        }
-    }
-
-    std::vector<Sport *> getOutputPorts() override
-    {
-        return {
-            output_port
-        };
-    }
-
-    std::vector<Sport *> getInputPorts() override
-    {
-        return {
-        };
+        outputs[OUTPUT]->setValue(*gate_value_ptr);
     }    
 };

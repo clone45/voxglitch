@@ -1,36 +1,44 @@
 #pragma once
 #include <cmath>
-#include <string>
 #include "../BaseModule.hpp"
 
 class LowpassFilterModule : public BaseModule
 {
-
-private:
     float y = 0.0f;  // output of the filter
     float alpha = 0.1f;  // filter coefficient
     float resonance = 0.0f; // resonance amount
 
-public:
-    Sport *input_port = new Sport(this);
-    Sport *cutoff_input_port = new Sport(this);
-    Sport *resonance_input_port = new Sport(this);
-    Sport *output_port = new Sport(this);
+    enum INPUTS {
+        AUDIO,
+        CUTOFF,
+        RESONANCE,
+        NUMBER_OF_INPUTS
+    };
+
+    enum OUTPUTS {
+        OUTPUT,
+        NUMBER_OF_OUTPUTS
+    };
+
+    enum PARAMS {
+        NUMBER_OF_PARAMS
+    };
 
     LowpassFilterModule()
     {
-        // Set all parameters to their default values
-        setParameter("cutoff", 10.0f); // 0v to 10v
-        setParameter("resonance", 0.0f); // 0v to 10v
+        config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
+
+        params[CUTOFF].setValue(10.0f);
+        params[RESONANCE].setValue(0.0f);
     }
 
     void process(unsigned int sample_rate) override
     {
         // Get the audio input
-        float x = input_port->getValue();
+        float x = inputs[AUDIO]->getVoltage();
 
-        float cutoff_voltage = cutoff_input_port->isConnected() ? cutoff_input_port->getValue() : getParameter("cutoff");
-        float resonance_voltage = resonance_input_port->isConnected() ? resonance_input_port->getValue() : getParameter("resonance");
+        float cutoff_voltage = inputs[CUTOFF]->isConnected() ? cutoff_input_port->getVoltage() : params[CUTOFF].getValue();
+        float resonance_voltage = inputs[RESONANCE]->isConnected() ? resonance_input_port->getVoltage() : params[RESONANCE].getValue();
 
         // Adjust the exponent to control the degree to which the response is
         // accentuated in the lower range of cutoff voltages. Higher exponents
@@ -63,40 +71,6 @@ public:
         y = alpha * x + (1.0f - alpha) * y + feedback * (y - alpha * x);
 
         // Set the output
-        output_port->setValue(y);
-    }
-
-    Sport *getPortByName(std::string port_name) override
-    {
-        if (port_name == "INPUT_PORT")
-        {
-            return input_port;
-        }
-        else if (port_name == "CUTOFF_INPUT_PORT")
-        {
-            return cutoff_input_port;
-        }
-        else if (port_name == "RESONANCE_INPUT_PORT")
-        {
-            return resonance_input_port;
-        }
-        else if (port_name == "OUTPUT_PORT")
-        {
-            return output_port;
-        }
-        else
-        {
-            return nullptr;
-        }
-    }
-
-    std::vector<Sport *> getOutputPorts() override
-    {
-        return {output_port};
-    }
-
-    std::vector<Sport *> getInputPorts() override
-    {
-        return {input_port, cutoff_input_port, resonance_input_port};
+        outputs[OUTPUT]->setVoltage(y);
     }
 };

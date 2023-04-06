@@ -4,41 +4,30 @@
 
 #include "../BaseModule.hpp"
 
-class OutputModule : public BaseModule {
-public:
-
-    Sport *input_port = nullptr;
+class OutputModule : public BaseModule 
+{
     float value = 0.0;
 
-    OutputModule() {
-        input_port = new Sport(this);
-    }
+    enum INPUTS {
+        AUDIO_INPUT,
+        NUM_INPUTS
+    };
 
-    void process(unsigned int sample_rate) override {
-        value = input_port->getValue();
-        // DEBUG(std::to_string(value).c_str());
-    }
+    enum OUTPUTS {
+        NUM_OUTPUTS
+    };
 
-    Sport *getPortByName(std::string port_name) override
+    enum PARAMS {
+        NUM_PARAMS
+    };
+
+    OutputModule() 
     {
-        if (port_name == "INPUT_PORT"){
-            return(input_port);
-        }
-        else {
-           return(nullptr);
-        }
+        config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
     }
 
-    std::vector<Sport *> getOutputPorts() override
+    void process(unsigned int sample_rate) override 
     {
-        return {
-        };
-    }
-
-    std::vector<Sport *> getInputPorts() override
-    {
-        return {
-            input_port
-        };
-    }      
+        value = inputs[AUDIO_INPUT]->getVoltage();
+    }     
 };

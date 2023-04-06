@@ -8,6 +8,7 @@
 class ADSRModule : public BaseModule {
 
 private:
+
     enum class State {
         IDLE,
         ATTACK,
@@ -30,26 +31,43 @@ private:
 
 public:
 
-    Sport *trigger_input_port = new Sport(this);
-    Sport *gate_input_port = new Sport(this);
-    Sport *attack_input_port = new Sport(this);
-    Sport *decay_input_port = new Sport(this);
-    Sport *sustain_input_port = new Sport(this);
-    Sport *release_input_port = new Sport(this);
-    Sport *output_port = new Sport(this);
+    enum INPUTS {
+        TRIGGER,
+        GATE,
+        ATTACK,
+        DECAY,
+        SUSTAIN,
+        RELEASE,
+        NUM_INPUTS
+    };
+
+    enum OUTPUTS {
+        OUTPUT,
+        NUM_OUTPUTS
+    };
+
+    enum PARAMS {
+        ATTACK_TIME,
+        DECAY_TIME,
+        SUSTAIN_LEVEL,
+        RELEASE_TIME,
+        NUM_PARAMS
+    };
 
     ADSRModule() 
     {
-        setParameter("attack_time", 0.1f);
-        setParameter("decay_time", 0.2f);
-        setParameter("sustain_level", 1.0f);
-        setParameter("release_time", 0.3f);
+        config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
+
+        params[ATTACK_TIME].setValue(0.1f);
+        params[DECAY_TIME].setValue(0.2f);
+        params[SUSTAIN_LEVEL].setValue(1.0f);
+        params[RELEASE_TIME].setValue(0.3f);
     }
 
     void process(unsigned int sample_rate) override 
     {
         // float trigger = trigger_input_port->getValue();
-        float gate = gate_input_port->getValue();
+        float gate = inputs[GATE]->getVoltage();
 
         // bool trigger_edge = trigger_input_schmitt_trigger.process(trigger);
         bool gate_edge = gate_input_schmitt_trigger.process(gate);
@@ -68,10 +86,10 @@ public:
             phase = 0.0f;
         }
 
-        float attack_time_voltage = attack_input_port->isConnected() ? attack_input_port->getValue() : getParameter("attack_time");
-        float decay_time_voltage = decay_input_port->isConnected() ? decay_input_port->getValue() : getParameter("decay_time");
-        float sustain_level_voltage = sustain_input_port->isConnected() ? sustain_input_port->getValue() : getParameter("sustain_level");
-        float release_time_voltage = release_input_port->isConnected() ? release_input_port->getValue() : getParameter("release_time");
+        float attack_time_voltage = inputs[ATTACK]->isConnected() ? inputs[ATTACK]->getVoltage() : params[ATTACK].getValue();
+        float decay_time_voltage = inputs[DECAY]->isConnected() ? inputs[DECAY]->getVoltage() : params[DECAY].getValue();
+        float sustain_level_voltage = inputs[SUSTAIN]->isConnected() ? inputs[SUSTAIN]->getVoltage() : params[SUSTAIN].getValue();
+        float release_time_voltage = inputs[RELEASE]->isConnected() ? inputs[RELEASE]->getVoltage() : params[RELEASE].getValue();
 
         attack_time = map(attack_time_voltage, 0.0f, 10.0f, 0.01f, 2.0f);
         decay_time = map(decay_time_voltage, 0.0f, 10.0f, 0.01f, 2.0f);
@@ -110,7 +128,7 @@ public:
         if (phase >= 1.0f) phase = 1.0f;
 
         // Set output value, which will also alert any connected ports
-        output_port->setValue(output * 10.0f);
+        outputs[OUTPUT]->setVoltage(output * 10.0f);
     }
 
 
@@ -126,58 +144,4 @@ public:
         // Return the current value of the envelope
         return current_value;
     }
-
-    Sport *getPortByName(std::string port_name) override
-    {
-        if (port_name == "TRIGGER_INPUT_PORT")
-        {
-            return trigger_input_port;
-        }
-        else if (port_name == "GATE_INPUT_PORT")
-        {
-            return gate_input_port;
-        }
-        else if (port_name == "ATTACK_INPUT_PORT")
-        {
-            return attack_input_port;
-        }
-        else if (port_name == "DECAY_INPUT_PORT")
-        {
-            return decay_input_port;
-        }
-        else if (port_name == "SUSTAIN_INPUT_PORT")
-        {
-            return sustain_input_port;
-        }
-        else if (port_name == "RELEASE_INPUT_PORT")
-        {
-            return release_input_port;
-        }
-        else if (port_name == "OUTPUT_PORT")
-        {
-            return output_port;
-        }
-        else
-        {
-            return nullptr;
-        }
-    }
-
-    std::vector<Sport *> getOutputPorts() override
-    {
-        return {output_port};
-    }
-
-    std::vector<Sport *> getInputPorts() override
-    {
-        return {
-            trigger_input_port,
-            gate_input_port,
-            attack_input_port,
-            decay_input_port,
-            sustain_input_port,
-            release_input_port
-        };
-    }
-
 };

@@ -1,14 +1,12 @@
 #pragma once
-#include <string>
 #include "../BaseModule.hpp"
 
 class NoiseModule : public BaseModule {
 
 private:
+    
     float sample_rate;
-
-public:
-
+    
     enum NoiseType {
         WHITE,
         PINK,
@@ -16,12 +14,30 @@ public:
         NUMBER_OF_NOISE_TYPES
     };
 
-    Sport *output_port = new Sport(this);
-    Sport *noise_type_input_port = new Sport(this);
+public:
 
-    NoiseModule() {
-        setParameter("amplitude", 1.0f);
-        setParameter("noise_voltage", 0.0);
+    enum INPUTS {
+        TYPE,
+        NUM_INPUTS
+    };
+
+    enum OUTPUTS {
+        OUTPUT,
+        NUM_OUTPUTS
+    };
+
+    enum PARAMS {
+        AMPLITUDE,
+        TYPE,
+        NUM_PARAMS
+    };
+
+    NoiseModule() 
+    {
+        config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
+
+        config[AMPLITUDE].setValue(1.0f);
+        config[TYPE].setValue(0.0f);
     }
 
     void process(unsigned int sample_rate) override 
@@ -29,8 +45,8 @@ public:
         this->sample_rate = sample_rate;
 
         // Get input values
-        float amplitude = getParameter("amplitude");
-        float noise_type_voltage = noise_type_input_port->isConnected() ? noise_type_input_port->getValue() : getParameter("noise_voltage");
+        float amplitude = params[AMPLITUDE].getValue();
+        float noise_type_voltage = inputs[TYPE]->isConnected() ? inputs[TYPE]->getValue() : params[TYPE].getValue();
 
         // Clamp noise voltage to [0,1] range
         noise_type_voltage = clamp(noise_type_voltage, 0.0f, 1.0f);
@@ -57,7 +73,7 @@ public:
         }
 
         // Set output value
-        output_port->setValue(noise_signal * 5.0f * amplitude);
+        outputs[OUTPUT]->setVoltage(noise_signal * 5.0f * amplitude);
     }
 
     float whiteNoise()
@@ -90,27 +106,5 @@ public:
         float brown = (last_value + (0.02f * white)) / 1.02f;
         last_value = brown;
         return brown;
-    }
-
-    Sport* getPortByName(std::string portName) override {
-        if (portName == "OUTPUT_PORT") {
-            return output_port;
-        } else if (portName == "NOISE_TYPE_INPUT_PORT") {
-            return noise_type_input_port;
-        } else {
-            return nullptr;
-        }
-    }
-
-    std::vector<Sport*> getOutputPorts() override {
-        std::vector<Sport*> ports;
-        ports.push_back(output_port);
-        return ports;
-    }
-
-    std::vector<Sport*> getInputPorts() override {
-        std::vector<Sport*> ports;
-        ports.push_back(noise_type_input_port);
-        return ports;
-    }    
+    }   
 };

@@ -12,7 +12,7 @@ private:
     std::vector<Sport *> connected_inputs;
     std::vector<Sport *> connected_outputs;
     IModule *parent_module;
-    float value = 0.0;
+    float voltage = 0.0;
 
 public:
     // Constructor
@@ -32,24 +32,24 @@ public:
         connected_outputs.push_back(port);
     }
 
-    // Set value
+    // Set voltage
     // This should really only be called the the Sport type is outout
-    void setValue(float value)
+    void setVoltage(float voltage)
     {
-        this->value = value;
+        this->voltage = voltage;
 
         // Iterate over connected_inputs and set the value of the inputs
         // I might want to rethink this and register observers
         for (auto &input_port : connected_inputs)
         {
-            input_port->setValue(value);
+            input_port->setVoltage(voltage);
         }
     }
 
     // Get value
-    float getValue() const
+    float getVoltage() const
     {
-        return value;
+        return voltage;
     }
 
     // Get connected inputs

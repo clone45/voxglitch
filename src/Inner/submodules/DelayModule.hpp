@@ -1,3 +1,5 @@
+// TODO: handle feedback and mix
+
 #pragma once
 #include "../BaseModule.hpp"
 #include "../dsp/AudioDelay.hpp"
@@ -9,28 +11,44 @@ private:
 
 public:
 
-    Sport *input_port = new Sport(this);
-    Sport *output_port = new Sport(this);
-    Sport *delay_time_input_port = new Sport(this);
-    Sport *feedback_input_port = new Sport(this);
-    Sport *mix_input_port = new Sport(this);
+    enum INPUTS {
+        AUDIO,
+        DELAY,
+        FEEDBACK,
+        MIX,
+        NUM_INPUTS
+    };
+
+    enum OUTPUTS {
+        OUTPUT,
+        NUM_OUTPUTS
+    };
+
+    enum PARAMS {
+        DELAY_TIME,
+        FEEDBACK,
+        MIX,
+        NUM_PARAMS
+    };
 
     DelayModule() 
     {
-        setParameter("delay_time", 5.0f);
-        setParameter("feedback", 9.0f);
-        setParameter("mix", 9.0f);
+        config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
+
+        params[DELAY_TIME].setValue(5.0f);
+        params[FEEDBACK].setValue(9.0f);
+        params[MIX].setValue(9.0f);
     }
 
     void process(unsigned int sample_rate) override 
     {
         // Get input value
-        float input = input_port->getValue();
+        float input = inputs[AUDIO]->getVoltage();
 
         // Get parameters
-        float delay_time_voltage = delay_time_input_port->isConnected() ? delay_time_input_port->getValue() : getParameter("delay_time");
-        float feedback_voltage = feedback_input_port->isConnected() ? feedback_input_port->getValue() : getParameter("feedback");
-        float mix_voltage = mix_input_port->isConnected() ? mix_input_port->getValue() : getParameter("mix");
+        float delay_time_voltage = inputs[DELAY]->isConnected() ? inputs[DELAY]->getVoltage() : params[DELAY_TIME].getValue();]
+        float feedback_voltage = inputs[FEEDBACK]->isConnected() ? inputs[FEEDBACK]->getVoltage() : params[FEEDBACK].getValue();
+        float mix_voltage = inputs[MIX]->isConnected() ? inputs[MIX]->getVoltage() : params[MIX].getValue();
 
         // Normalize voltages to values 0.0 to 1.0
         float delay_time = delay_time_voltage / 10.0f;
@@ -47,49 +65,6 @@ public:
         float output = delay.process(input);
 
         // Set output value, which will also alert any connected ports
-        output_port->setValue(output);
-    }
-
-    Sport *getPortByName(std::string port_name) override
-    {
-        if (port_name == "INPUT_PORT")
-        {
-            return (input_port);
-        }
-        else if (port_name == "OUTPUT_PORT")
-        {
-            return (output_port);
-        }
-        else if (port_name == "DELAY_TIME_INPUT_PORT")
-        {
-            return (delay_time_input_port);
-        }
-        else if (port_name == "FEEDBACK_INPUT_PORT")
-        {
-            return (feedback_input_port);
-        }
-        else if (port_name == "MIX_INPUT_PORT")
-        {
-            return (mix_input_port);
-        }
-        else
-        {
-            return (nullptr);
-        }
-    }
-
-    std::vector<Sport *> getOutputPorts() override
-    {
-        return (std::vector<Sport *> {output_port});
-    }
-
-    std::vector<Sport *> getInputPorts() override
-    {
-        return (std::vector<Sport *> {
-            input_port, 
-            delay_time_input_port, 
-            feedback_input_port, 
-            mix_input_port
-        });
+        outputs[OUTPUT]->setValue(output);
     }
 };
