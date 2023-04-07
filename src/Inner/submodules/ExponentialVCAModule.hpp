@@ -47,7 +47,6 @@ class ExponentialVCAModule : public BaseModule
 
         float output = input * gain;
 
-        // Set output value, which will also alert any connected ports
         outputs[OUTPUT]->setValue(output);
     }
 };

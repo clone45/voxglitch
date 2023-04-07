@@ -35,6 +35,8 @@
 #include <map>
 #include <unordered_map>
 #include <memory>
+#include <string>
+#include <utility>
 
 class ModuleManager
 {
@@ -45,7 +47,7 @@ private:
     // module_config_map is a map of module names to module configs
     std::unordered_map<std::string, ModuleConfig *> module_config_map;
 
-    // Connections is a map where connections[output_port_name] = input_port_name
+    // Connections is a map of string like module_name.outputs.0 : module_name.inputs.3
     std::vector<std::pair<std::string, std::string>> connections_config_forward;    
 
     IModule *terminal_output_module = nullptr;
@@ -113,6 +115,26 @@ public:
         }
     }
 
+    // At this point, the connection map holds two strings
+    // Here's an example of what the map looks like:
+    // { "module_name.port_name" : "module_name.port_name" },
+    //
+    // { "param1.OUTPUT_PORT" : "wavetable_oscillator.FREQUENCY_INPUT_PORT },
+    // { "param2.OUTPUT_PORT" : "wavetable_oscillator.WAVEFORM_INPUT_PORT" },
+    // etc..
+
+    // However, this will be changing to use the port index instead of the name.
+    // So, the map will look like this:
+    //
+    // { "module_name.outputs.port_index" : "module_name.inputs.port_index" },
+    //
+    // { "param1.outputs.0" : "wavetable_oscillator.inputs.0 },
+    // { "param2.outputs.0" : "wavetable_oscillator.inputs.1 },
+    //
+    // It can be assumed that the ports on the left are outputs and the ports
+    // on the right are inputs, but adding the word "outputs" and "inputs" will
+    // make it more clear to people.
+
     void setConnectionConfig(std::vector<std::pair<std::string, std::string>> connections)
     {
         connections_config_forward = connections;
@@ -134,6 +156,10 @@ public:
 
             std::string type = config->type;
             std::string name = config->name;
+
+            // TODO: Similar to ports, params will no longer have names unless
+            // I create some type of configuration file that maps the names to the indexes.
+            // So this might turn out being std::map<int, float> params = config->params;
             std::map<std::string, float> params = config->params;
 
             DEBUG(("Creating module " + name + " of type " + type).c_str());
@@ -184,14 +210,10 @@ public:
                 modules[name] = module;
 
                 // Iterate over the params and set them on the module
-                for (const auto &param : params)
+                for (std::size_t i = 0; i < parameters_array.size(); i++) 
                 {
-                    std::string param_name = param.first;
-                    float param_value = param.second;
-
-                    DEBUG(("Setting param " + param_name + " to " + std::to_string(param_value)).c_str());
-
-                    module->setParameter(param_name, param_value);
+                    float param_value = parameters_array[i];
+                    module->params[i].setValue(param_value);
                 }
             }
         }
@@ -203,22 +225,20 @@ public:
 
         for (const auto &connection : connections_config_forward)
         {
-            // Here, "connection" is a pair of strings.  
-            // The first string is the fully qualified name of the output port
-            // The second string is the fully qualifed name of the connected input port 
-            // Each string is in the format {module_name}.{port_name}  
-            // For example vco1.OUTPUT_PORT
+            // Here, "connection" is a pair of strings. 
+            // Each string is in the format {module_name}.[outputs|inputs].{port_index}  
+            // For example vco1.outputs.0
 
             std::string output_connection_string = connection.first;
             std::string input_connection_string = connection.second;
 
             DEBUG(("Connecting ports " + output_connection_string + " to " + input_connection_string).c_str());
 
-            // output_connection_string may look like vco1.OUTPUT_PORT
-            // input_connection_string may looks like adsr1.TRIGGER_INPUT_PORT
+            // output_connection_string may look like vco1.outputs.0
+            // input_connection_string may looks like adsr1.inputs.0
 
-            std::pair<std::string, std::string> output_parts = split_string(output_connection_string);
-            std::pair<std::string, std::string> input_parts = split_string(input_connection_string);
+            std::pair<std::string, unsigned int> output_parts = split_connection_string(output_connection_string);
+            std::pair<std::string, unsigned int> input_parts = split_connection_string(input_connection_string);
 
             IModule *output_module;
             IModule *input_module;
@@ -229,8 +249,12 @@ public:
             {
                 output_module = modules.at(output_parts.first);
                 input_module = modules.at(input_parts.first);
-                input_port = input_module->getPortByName(input_parts.second);
-                output_port = output_module->getPortByName(output_parts.second);
+
+                unsigned int input_port_index = input_parts.second;
+                unsigned int output_port_index = output_parts.second;
+
+                input_port = input_module->inputs[input_port_index];
+                output_port = output_module->outputs[output_port_index];
 
                 input_port->connectToOutputPort(output_port);
                 output_port->connectToInputPort(input_port);
@@ -268,21 +292,29 @@ public:
         return(out_module);
     }
 
-    std::pair<std::string, std::string> split_string(std::string input_str) 
+    
+    // Written by chatgpt
+    std::pair<std::string, unsigned int> split_connection_string(std::string input_str) 
     {
         std::string delimiter = ".";
-        size_t pos = input_str.find(delimiter);
+        size_t pos = 0;
+        std::string module_name;
+        unsigned int num = 0;
 
-        // Check if delimiter is found
-        if (pos == std::string::npos) {
-            return std::make_pair("", "");
+        // Extract the module name
+        if ((pos = input_str.find(delimiter)) != std::string::npos) {
+            module_name = input_str.substr(0, pos);
+            input_str.erase(0, pos + delimiter.length());
         }
 
-        // Split string and return pair of strings
-        std::string before = input_str.substr(0, pos);
-        std::string after = input_str.substr(pos + 1);
-        return std::make_pair(before, after);
-    }
+        // Extract the number at the end
+        if ((pos = input_str.find(delimiter)) != std::string::npos) {
+            input_str.erase(0, pos + delimiter.length());
+        }
+        num = std::stoi(input_str);
+
+        return std::make_pair(module_name, num);
+    } 
 
     /*
 
@@ -376,9 +408,11 @@ public:
         // will have computed the value at INPUT_PORT by processing the entire
         // patch, so we're just returning that value.
 
+        // TODO: This will probably change to 
+        // Sport *input_port = terminal_output_module->inputs[0];
         Sport *input_port = terminal_output_module->getPortByName("INPUT_PORT");
 
-        return (input_port->getValue());
+        return (input_port->getVoltage());
     }
 
     // Reset all module processed flags to false

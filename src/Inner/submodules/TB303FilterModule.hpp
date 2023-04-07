@@ -58,6 +58,6 @@ public:
         buf2 += g * (tanhf(buf1) - tanhf(buf2));
         buf3 += g * (tanhf(buf2) - tanhf(buf3));
 
-        output_port->setVoltage(buf3 * 5.0f);
+        outputs[OUTPUT]->setVoltage(buf3 * 5.0f);
     }   
 };

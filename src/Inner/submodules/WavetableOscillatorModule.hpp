@@ -51,7 +51,8 @@ class WavetableOscillatorModule : public BaseModule
         if(readWavetables(wavetable_filename, data))
         {
             // Create an rray of pointers to the beginning of each wavetable
-            for (int i = 0; i < NUM_WAVETABLES; ++i) {
+            for (int i = 0; i < NUM_WAVETABLES; ++i) 
+            {
                 wavetables[i] = &data[i * WAVETABLE_SIZE];
             }
 

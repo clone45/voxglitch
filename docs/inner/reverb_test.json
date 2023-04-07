@@ -3,34 +3,34 @@
         {
             "name": "param1",
             "type": "PARAM1",
-            "params": {}
+            "params": []
         },
         {
             "name": "param2",
             "type": "PARAM2",
-            "params": {}
+            "params": []
         },
         {
             "name": "param3",
             "type": "PARAM3",
-            "params": {}
+            "params": []
         },        
         {
             "name": "wavetable_oscillator",
             "type": "WAVETABLE_OSCILLATOR",
-            "params": {}
+            "params": []
         },
         {
             "name": "reverb1",
             "type": "SCHROEDER_REVERB",
-            "params": {
-                "mix": 0.8
-            }
+            "params": [
+                0.8
+            ]
         },
         {
             "name": "output1",
             "type": "OUTPUT",
-            "params": {}
+            "params": []
         }
     ],
     "connections": [

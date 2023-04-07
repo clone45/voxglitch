@@ -1,5 +1,4 @@
 #pragma once
-#include <string> 
 #include <cmath>
 #include <algorithm>
 #include "../BaseModule.hpp"
@@ -66,7 +65,6 @@ public:
 
     void process(unsigned int sample_rate) override 
     {
-        // float trigger = trigger_input_port->getValue();
         float gate = inputs[GATE]->getVoltage();
 
         // bool trigger_edge = trigger_input_schmitt_trigger.process(trigger);
