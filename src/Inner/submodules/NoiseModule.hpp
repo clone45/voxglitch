@@ -1,9 +1,9 @@
 #pragma once
 #include "../BaseModule.hpp"
 
-class NoiseModule : public BaseModule {
-
-private:
+class NoiseModule : public BaseModule 
+{
+    public:
     
     float sample_rate;
     
@@ -13,8 +13,6 @@ private:
         BROWN,
         NUMBER_OF_NOISE_TYPES
     };
-
-public:
 
     enum INPUTS {
         TYPE,
@@ -27,8 +25,8 @@ public:
     };
 
     enum PARAMS {
-        AMPLITUDE,
-        TYPE,
+        AMPLITUDE_PARAM,
+        TYPE_PARAM,
         NUM_PARAMS
     };
 
@@ -36,8 +34,8 @@ public:
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
 
-        config[AMPLITUDE].setValue(1.0f);
-        config[TYPE].setValue(0.0f);
+        params[AMPLITUDE_PARAM]->setValue(1.0f);
+        params[TYPE_PARAM]->setValue(0.0f);
     }
 
     void process(unsigned int sample_rate) override 
@@ -45,8 +43,8 @@ public:
         this->sample_rate = sample_rate;
 
         // Get input values
-        float amplitude = params[AMPLITUDE].getValue();
-        float noise_type_voltage = inputs[TYPE]->isConnected() ? inputs[TYPE]->getValue() : params[TYPE].getValue();
+        float amplitude = params[AMPLITUDE_PARAM]->getValue();
+        float noise_type_voltage = inputs[TYPE]->isConnected() ? inputs[TYPE]->getVoltage() : params[TYPE_PARAM]->getValue();
 
         // Clamp noise voltage to [0,1] range
         noise_type_voltage = clamp(noise_type_voltage, 0.0f, 1.0f);

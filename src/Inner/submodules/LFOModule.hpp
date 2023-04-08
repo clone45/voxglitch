@@ -6,6 +6,8 @@
 
 class LFOModule : public BaseModule
 {
+    public:
+    
     float phase = 0.0f;
 
     enum INPUTS {
@@ -19,19 +21,19 @@ class LFOModule : public BaseModule
     };
 
     enum PARAMS {
-        FREQUENCY,
+        FREQUENCY_PARAM,
         NUM_PARAMS
     };
 
     LFOModule()
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
-        params[FREQUENCY].setValue(5.0f);
+        params[FREQUENCY]->setValue(5.0f);
     }
 
     void process(unsigned int sample_rate) override
     {
-        float frequency = inputs[FREQUENCY]->isConnected() ? inputs[FREQUENCY]->getVoltage() : params[FREQUENCY].getValue();]
+        float frequency = inputs[FREQUENCY]->isConnected() ? inputs[FREQUENCY]->getVoltage() : params[FREQUENCY_PARAM]->getValue();
         float phase_increment = frequency / sample_rate;
 
         // Update phase

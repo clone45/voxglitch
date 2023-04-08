@@ -23,16 +23,16 @@
     ],
     "connections": [
         {
-            "output": "param1.OUTPUT_PORT",
-            "input": "wavetable_oscillator.FREQUENCY_INPUT_PORT"
+            "output": "param1.outputs.0",
+            "input": "wavetable_oscillator.inputs.0"
         },
         {
-            "output": "param2.OUTPUT_PORT",
-            "input": "wavetable_oscillator.WAVEFORM_INPUT_PORT"
+            "output": "param2.outputs.0",
+            "input": "wavetable_oscillator.inputs.1"
         },
         {
-            "output": "wavetable_oscillator.OUTPUT_PORT",
-            "input": "output1.INPUT_PORT"
+            "output": "wavetable_oscillator.outputs.0",
+            "input": "output1.inputs.0"
         }
     ]
   }

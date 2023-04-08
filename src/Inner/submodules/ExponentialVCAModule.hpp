@@ -4,6 +4,8 @@
 
 class ExponentialVCAModule : public BaseModule
 {
+    public:
+    
     enum INPUTS {
         AUDIO,
         GAIN,
@@ -16,7 +18,7 @@ class ExponentialVCAModule : public BaseModule
     };
 
     enum PARAMS {
-        GAIN,
+        GAIN_PARAM,
         NUM_PARAMS
     };
 
@@ -24,7 +26,7 @@ class ExponentialVCAModule : public BaseModule
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
 
-        params[GAIN].setValue(10.0f);
+        params[GAIN_PARAM]->setValue(10.0f);
     }
 
     void process(unsigned int sample_rate) override
@@ -32,7 +34,7 @@ class ExponentialVCAModule : public BaseModule
         float gain = 1.0f;
         float input = inputs[AUDIO]->getVoltage();
 
-        if (gain_port->isConnected())
+        if (inputs[GAIN]->isConnected())
         {
             float gain_voltage = inputs[GAIN]->getVoltage();
             gain_voltage = clamp(gain_voltage, -10.0f, 10.0f);
@@ -40,13 +42,13 @@ class ExponentialVCAModule : public BaseModule
         }
         else
         {
-            float gain_voltage = params[GAIN].getValue();
+            float gain_voltage = params[GAIN_PARAM]->getValue();
             gain_voltage = clamp(gain_voltage, -10.0f, 10.0f);
             gain = gain_voltage / 10.0;
         }
 
         float output = input * gain;
 
-        outputs[OUTPUT]->setValue(output);
+        outputs[OUTPUT]->setVoltage(output);
     }
 };

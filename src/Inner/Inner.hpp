@@ -92,18 +92,16 @@ struct Inner : VoxglitchModule
             std::string name = json_string_value(json_object_get(module_obj, "name"));
             std::string type = json_string_value(json_object_get(module_obj, "type"));
 
-            json_t *params_array = json_array_get(module_obj, "params");
+            json_t *params_obj = json_object_get(module_obj, "params");
+            std::map<unsigned int, float> params;
 
-            std::vector<float> params;
-
-            if (params_array)
+            if (params_obj)
             {
-                size_t i;
-                json_t *value_json;
-
-                json_array_foreach(params_array, i, value_json)
+                const char *key;
+                json_t *value;
+                json_object_foreach(params_obj, key, value)
                 {
-                    params.push_back((float)json_real_value(value_json));
+                    params.emplace(std::stoi(key), (float)json_real_value(value));
                 }
             }
 

@@ -25,9 +25,9 @@ public:
     };
 
     enum PARAMS {
-        DELAY_TIME,
-        FEEDBACK,
-        MIX,
+        DELAY_TIME_PARAM,
+        FEEDBACK_PARAM,
+        MIX_PARAM,
         NUM_PARAMS
     };
 
@@ -35,9 +35,9 @@ public:
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
 
-        params[DELAY_TIME].setValue(5.0f);
-        params[FEEDBACK].setValue(9.0f);
-        params[MIX].setValue(9.0f);
+        params[DELAY_TIME_PARAM]->setValue(5.0f);
+        params[FEEDBACK_PARAM]->setValue(9.0f);
+        params[MIX_PARAM]->setValue(9.0f);
     }
 
     void process(unsigned int sample_rate) override 
@@ -46,9 +46,9 @@ public:
         float input = inputs[AUDIO]->getVoltage();
 
         // Get parameters
-        float delay_time_voltage = inputs[DELAY]->isConnected() ? inputs[DELAY]->getVoltage() : params[DELAY_TIME].getValue();]
-        float feedback_voltage = inputs[FEEDBACK]->isConnected() ? inputs[FEEDBACK]->getVoltage() : params[FEEDBACK].getValue();
-        float mix_voltage = inputs[MIX]->isConnected() ? inputs[MIX]->getVoltage() : params[MIX].getValue();
+        float delay_time_voltage = inputs[DELAY]->isConnected() ? inputs[DELAY]->getVoltage() : params[DELAY_TIME_PARAM]->getValue();
+        float feedback_voltage = inputs[FEEDBACK]->isConnected() ? inputs[FEEDBACK]->getVoltage() : params[FEEDBACK_PARAM]->getValue();
+        float mix_voltage = inputs[MIX]->isConnected() ? inputs[MIX]->getVoltage() : params[MIX_PARAM]->getValue();
 
         // Normalize voltages to values 0.0 to 1.0
         float delay_time = delay_time_voltage / 10.0f;
@@ -65,6 +65,6 @@ public:
         float output = delay.process(input);
 
         // Set output value, which will also alert any connected ports
-        outputs[OUTPUT]->setValue(output);
+        outputs[OUTPUT]->setVoltage(output);
     }
 };

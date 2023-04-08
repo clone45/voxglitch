@@ -31,8 +31,8 @@ public:
     };
 
     enum PARAMS {
-        MIX,
-        DECAY,
+        MIX_PARAM,
+        DECAY_PARAM,
         NUM_PARAMS
     };
 
@@ -44,8 +44,8 @@ public:
     void process(unsigned int sample_rate) override
     {
         float input = inputs[AUDIO]->isConnected() ? inputs[AUDIO]->getVoltage() : 0.0f;
-        float mix = inputs[MIX]->isConnected() ? (inputs[MIX]->getVoltage() / 10.0)  : params[MIX].getValue();
-        float decay = inputs[DECAY]->isConnected() ? (inputs[DECAY]->getVoltage() / 10.0) : params[DECAY].getValue();
+        float mix = inputs[MIX]->isConnected() ? (inputs[MIX]->getVoltage() / 10.0)  : params[MIX_PARAM]->getValue();
+        float decay = inputs[DECAY]->isConnected() ? (inputs[DECAY]->getVoltage() / 10.0) : params[DECAY_PARAM]->getValue();
 
         float output = input;
 
@@ -67,6 +67,6 @@ public:
         }
 
         output = mix * output + (1.0f - mix) * input;
-        outputs[OUTPUT]->setValue(output);
+        outputs[OUTPUT]->setVoltage(output);
     }
 };

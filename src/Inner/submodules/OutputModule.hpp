@@ -6,6 +6,8 @@
 
 class OutputModule : public BaseModule 
 {
+    public:
+    
     float value = 0.0;
 
     enum INPUTS {

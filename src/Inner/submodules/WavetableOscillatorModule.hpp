@@ -10,6 +10,8 @@
 
 class WavetableOscillatorModule : public BaseModule 
 {
+    public:
+    
     float frequency = 0.0f;
     float phase = 0.0f;
     float output = 0.0f;
@@ -29,6 +31,8 @@ class WavetableOscillatorModule : public BaseModule
     };
 
     enum PARAMS {
+        FREQUENCY_PARAM,
+        WAVEFORM_PARAM,
         NUM_PARAMS
     };
 
@@ -42,8 +46,8 @@ class WavetableOscillatorModule : public BaseModule
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
 
         // Set default values for the parameters
-        params[FREQUENCY].setValue(440.0f);
-        params[WAVEFORM].setValue(0.0f);
+        params[FREQUENCY_PARAM]->setValue(440.0f);
+        params[WAVEFORM_PARAM]->setValue(0.0f);
 
         // Read the wavetables from a file
         std::string wavetable_filename = asset::plugin(pluginInstance, "res/inner/wavetables.txt");
@@ -70,8 +74,8 @@ class WavetableOscillatorModule : public BaseModule
     {
         if (!wavetables_loaded) return;
 
-        float frequency_voltage = inputs[FREQUENCY]->isConnected() ? inputs[FREQUENCY]->getVoltage() : params[FREQUENCY].getValue();
-        float waveform_voltage = inputs[WAVEFORM]->isConnected() ? inputs[WAVEFORM]->getVoltage() : params[WAVEFORM].getValue();
+        float frequency_voltage = inputs[FREQUENCY]->isConnected() ? inputs[FREQUENCY]->getVoltage() : params[FREQUENCY_PARAM]->getValue();
+        float waveform_voltage = inputs[WAVEFORM]->isConnected() ? inputs[WAVEFORM]->getVoltage() : params[WAVEFORM_PARAM]->getValue();
 
         // Convert the voltage value to frequency in Hz using the 1V/octave standard
         frequency = 261.625565 * powf(2.0f, frequency_voltage - 4.0f);

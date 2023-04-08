@@ -13,16 +13,16 @@ private:
         INPUT_6,
         INPUT_7,
         INPUT_8,
-        NUMBER_OF_INPUTS
+        NUM_INPUTS
     };
 
     enum OUTPUTS {
         OUTPUT,
-        NUMBER_OF_OUTPUTS
+        NUM_OUTPUTS
     };
 
     enum PARAMS {
-        NUMBER_OF_PARAMS
+        NUM_PARAMS
     };
 
 public:

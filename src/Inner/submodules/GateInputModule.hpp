@@ -4,6 +4,8 @@
 
 class GateInputModule : public BaseModule 
 {
+    public:
+    
     enum INPUTS {
         NUM_INPUTS
     };
@@ -27,6 +29,6 @@ class GateInputModule : public BaseModule
 
     void process(unsigned int sample_rate) override 
     {
-        outputs[OUTPUT]->setValue(*gate_value_ptr);
+        outputs[OUTPUT]->setVoltage(*gate_value_ptr);
     }    
 };

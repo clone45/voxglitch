@@ -46,10 +46,10 @@ public:
     };
 
     enum PARAMS {
-        ATTACK_TIME,
-        DECAY_TIME,
-        SUSTAIN_LEVEL,
-        RELEASE_TIME,
+        ATTACK_TIME_PARAM,
+        DECAY_TIME_PARAM,
+        SUSTAIN_LEVEL_PARAM,
+        RELEASE_TIME_PARAM,
         NUM_PARAMS
     };
 
@@ -57,10 +57,10 @@ public:
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
 
-        params[ATTACK_TIME].setValue(0.1f);
-        params[DECAY_TIME].setValue(0.2f);
-        params[SUSTAIN_LEVEL].setValue(1.0f);
-        params[RELEASE_TIME].setValue(0.3f);
+        params[ATTACK_TIME_PARAM]->setValue(0.1f);
+        params[DECAY_TIME_PARAM]->setValue(0.2f);
+        params[SUSTAIN_LEVEL_PARAM]->setValue(1.0f);
+        params[RELEASE_TIME_PARAM]->setValue(0.3f);
     }
 
     void process(unsigned int sample_rate) override 
@@ -84,10 +84,10 @@ public:
             phase = 0.0f;
         }
 
-        float attack_time_voltage = inputs[ATTACK]->isConnected() ? inputs[ATTACK]->getVoltage() : params[ATTACK].getValue();
-        float decay_time_voltage = inputs[DECAY]->isConnected() ? inputs[DECAY]->getVoltage() : params[DECAY].getValue();
-        float sustain_level_voltage = inputs[SUSTAIN]->isConnected() ? inputs[SUSTAIN]->getVoltage() : params[SUSTAIN].getValue();
-        float release_time_voltage = inputs[RELEASE]->isConnected() ? inputs[RELEASE]->getVoltage() : params[RELEASE].getValue();
+        float attack_time_voltage = inputs[ATTACK]->isConnected() ? inputs[ATTACK]->getVoltage() : params[ATTACK_TIME_PARAM]->getValue();
+        float decay_time_voltage = inputs[DECAY]->isConnected() ? inputs[DECAY]->getVoltage() : params[DECAY_TIME_PARAM]->getValue();
+        float sustain_level_voltage = inputs[SUSTAIN]->isConnected() ? inputs[SUSTAIN]->getVoltage() : params[SUSTAIN_LEVEL_PARAM]->getValue();
+        float release_time_voltage = inputs[RELEASE]->isConnected() ? inputs[RELEASE]->getVoltage() : params[RELEASE_TIME_PARAM]->getValue();
 
         attack_time = map(attack_time_voltage, 0.0f, 10.0f, 0.01f, 2.0f);
         decay_time = map(decay_time_voltage, 0.0f, 10.0f, 0.01f, 2.0f);

@@ -27,8 +27,8 @@ public:
     };
 
     enum PARAMS {
-        CUTOFF,
-        RESONANCE,
+        CUTOFF_PARAM,
+        RESONANCE_PARAM,
         NUM_PARAMS
     };
 
@@ -36,15 +36,15 @@ public:
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
 
-        params[CUTOFF].setValue(0.5f);
-        params[RESONANCE].setValue(0.5f);
+        params[CUTOFF]->setValue(0.5f);
+        params[RESONANCE]->setValue(0.5f);
     }
 
     void process(unsigned int sample_rate) override 
     {
         float input = inputs[AUDIO]->isConnected() ? inputs[AUDIO]->getVoltage() : 0.0f;
-        float cutoff = inputs[CUTOFF]->isConnected() ? (inputs[CUTOFF]->getVoltage() / 5.0) : params[CUTOFF].getValue();
-        float resonance = inputs[RESONANCE]->isConnected() ? (inputs[RESONANCE]->getVoltage() / 1.0) : params[RESONANCE].getValue();
+        float cutoff = inputs[CUTOFF]->isConnected() ? (inputs[CUTOFF]->getVoltage() / 5.0) : params[CUTOFF_PARAM]->getValue();
+        float resonance = inputs[RESONANCE]->isConnected() ? (inputs[RESONANCE]->getVoltage() / 1.0) : params[RESONANCE_PARAM]->getValue();
 
         float fc = 110.0f * powf(2.0f, 3.0f * cutoff);
         float g = tanf(M_PI * fc / sample_rate);

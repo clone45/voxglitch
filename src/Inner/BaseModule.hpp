@@ -28,19 +28,34 @@ public:
 
     void config(unsigned int NUM_PARAMS, unsigned int NUM_INPUTS, unsigned int NUM_OUTPUTS)
     {
-        for (int i = 0; i < NUM_INPUTS; i++) 
+        for (unsigned int i = 0; i < NUM_INPUTS; i++) 
         {
             inputs.push_back(new Sport(this));
         }
 
-        for (int i = 0; i < NUM_OUTPUTS; i++) 
+        for (unsigned int i = 0; i < NUM_OUTPUTS; i++) 
         {
             outputs.push_back(new Sport(this));
         }
 
-        for (int i = 0; i < NUM_PARAMS; i++) 
+        for (unsigned int i = 0; i < NUM_PARAMS; i++) 
         {
-            params.push_back(new Sparameter(this));
+            params.push_back(new Sparameter());
         }
+    }
+
+    void setParameter(unsigned int param_id, float value) override
+    {
+        params[param_id]->setValue(value);
+    }
+
+    Sport* getOutputPort(unsigned int port_id) override
+    {
+        return outputs[port_id];
+    }
+
+    Sport* getInputPort(unsigned int port_id) override
+    {
+        return inputs[port_id];
     }
 };

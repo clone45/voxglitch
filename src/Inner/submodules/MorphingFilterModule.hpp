@@ -33,9 +33,9 @@ public:
     };
 
     enum PARAMS {
-        CUTOFF,
-        MORPH,
-        RESONANCE,
+        CUTOFF_PARAM,
+        MORPH_PARAM,
+        RESONANCE_PARAM,
         NUM_PARAMS
     };
 
@@ -43,17 +43,17 @@ public:
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS); 
 
-        config[CUTOFF].setValue(0.0f);
-        config[RESONANCE].setValue(0.0f);
-        config[MORPH].setValue(0.0f);
+        params[CUTOFF_PARAM]->setValue(0.0f);
+        params[RESONANCE_PARAM]->setValue(0.0f);
+        params[MORPH_PARAM]->setValue(0.0f);
     }
 
     void process(unsigned int sample_rate) override
     {
         float audio_input_voltage = inputs[AUDIO]->isConnected() ? inputs[AUDIO]->getVoltage() : 0.0;
-        float cutoff_input_voltage = inputs[CUTOFF]->isConnected() ? inputs[CUTOFF]->getVoltage() : params[CUTOFF].getValue();
-        float resonance_input_voltage = inputs[RESONANCE]->->isConnected() ? inputs[RESONANCE]->getVoltage() : params[RESONANCE].getValue();
-        float morph_input_voltage = inputs[MORPH]->isConnected() ? inputs[MORPH]->getVoltage() : params[MORPH].getValue();
+        float cutoff_input_voltage = inputs[CUTOFF]->isConnected() ? inputs[CUTOFF]->getVoltage() : params[CUTOFF_PARAM]->getValue();
+        float resonance_input_voltage = inputs[RESONANCE]->isConnected() ? inputs[RESONANCE]->getVoltage() : params[RESONANCE_PARAM]->getValue();
+        float morph_input_voltage = inputs[MORPH]->isConnected() ? inputs[MORPH]->getVoltage() : params[MORPH_PARAM]->getValue();
 
         float cutoff_input_value = std::min(cutoff_input_voltage * 2200.0f, 0.49f * sample_rate);
 

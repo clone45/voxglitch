@@ -160,7 +160,7 @@ public:
             // TODO: Similar to ports, params will no longer have names unless
             // I create some type of configuration file that maps the names to the indexes.
             // So this might turn out being std::map<int, float> params = config->params;
-            std::map<std::string, float> params = config->params;
+            std::map<unsigned int, float> params = config->params;
 
             DEBUG(("Creating module " + name + " of type " + type).c_str());
 
@@ -210,10 +210,15 @@ public:
                 modules[name] = module;
 
                 // Iterate over the params and set them on the module
-                for (std::size_t i = 0; i < parameters_array.size(); i++) 
+                for (const auto &param : params)
                 {
-                    float param_value = parameters_array[i];
-                    module->params[i].setValue(param_value);
+                    unsigned int param_index = param.first;
+                    float param_value = param.second;
+
+                    // DEBUG(("Setting param " + param_name + " to " + std::to_string(param_value)).c_str());
+
+                    // module->params[param_index].setValue(param_value);
+                    module->setParameter(param_index, param_value);
                 }
             }
         }
@@ -253,8 +258,12 @@ public:
                 unsigned int input_port_index = input_parts.second;
                 unsigned int output_port_index = output_parts.second;
 
-                input_port = input_module->inputs[input_port_index];
-                output_port = output_module->outputs[output_port_index];
+                // input_port = input_module->inputs[input_port_index];
+                // output_port = output_module->outputs[output_port_index];
+
+                input_port = input_module->getInputPort(input_port_index);
+                output_port = output_module->getOutputPort(output_port_index);
+
 
                 input_port->connectToOutputPort(output_port);
                 output_port->connectToInputPort(input_port);
@@ -408,9 +417,7 @@ public:
         // will have computed the value at INPUT_PORT by processing the entire
         // patch, so we're just returning that value.
 
-        // TODO: This will probably change to 
-        // Sport *input_port = terminal_output_module->inputs[0];
-        Sport *input_port = terminal_output_module->getPortByName("INPUT_PORT");
+        Sport *input_port = terminal_output_module->getInputPort(0);
 
         return (input_port->getVoltage());
     }

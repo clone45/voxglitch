@@ -4,6 +4,8 @@
 
 class LowpassFilterModule : public BaseModule
 {
+    public:
+    
     float y = 0.0f;  // output of the filter
     float alpha = 0.1f;  // filter coefficient
     float resonance = 0.0f; // resonance amount
@@ -12,24 +14,26 @@ class LowpassFilterModule : public BaseModule
         AUDIO,
         CUTOFF,
         RESONANCE,
-        NUMBER_OF_INPUTS
+        NUM_INPUTS
     };
 
     enum OUTPUTS {
         OUTPUT,
-        NUMBER_OF_OUTPUTS
+        NUM_OUTPUTS
     };
 
     enum PARAMS {
-        NUMBER_OF_PARAMS
+        CUTOFF_PARAM,
+        RESONANCE_PARAM,
+        NUM_PARAMS
     };
 
     LowpassFilterModule()
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
 
-        params[CUTOFF].setValue(10.0f);
-        params[RESONANCE].setValue(0.0f);
+        params[CUTOFF_PARAM]->setValue(10.0f);
+        params[RESONANCE_PARAM]->setValue(0.0f);
     }
 
     void process(unsigned int sample_rate) override
@@ -37,8 +41,8 @@ class LowpassFilterModule : public BaseModule
         // Get the audio input
         float x = inputs[AUDIO]->getVoltage();
 
-        float cutoff_voltage = inputs[CUTOFF]->isConnected() ? cutoff_input_port->getVoltage() : params[CUTOFF].getValue();
-        float resonance_voltage = inputs[RESONANCE]->isConnected() ? resonance_input_port->getVoltage() : params[RESONANCE].getValue();
+        float cutoff_voltage = inputs[CUTOFF]->isConnected() ? inputs[CUTOFF]->getVoltage() : params[CUTOFF_PARAM]->getValue();
+        float resonance_voltage = inputs[RESONANCE]->isConnected() ? inputs[RESONANCE]->getVoltage() : params[RESONANCE_PARAM]->getValue();
 
         // Adjust the exponent to control the degree to which the response is
         // accentuated in the lower range of cutoff voltages. Higher exponents

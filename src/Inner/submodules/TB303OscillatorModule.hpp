@@ -6,6 +6,8 @@
 
 class TB303OscillatorModule : public BaseModule 
 {
+    public:
+
     float phase = 0.0f;
     float last_value = 0.0f;
     float accent = 1.0f;
@@ -22,8 +24,8 @@ class TB303OscillatorModule : public BaseModule
     };
 
     enum PARAMS {
-        FREQUENCY,
-        RESONANCE,
+        FREQUENCY_PARAM,
+        RESONANCE_PARAM,
         NUM_PARAMS
     };
 
@@ -31,23 +33,23 @@ class TB303OscillatorModule : public BaseModule
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
 
-        params[FREQUENCY].setValue(440.0f);
-        params[RESONANCE].setValue(0.0f);
+        params[FREQUENCY]->setValue(440.0f);
+        params[RESONANCE]->setValue(0.0f);
     }
 
     void process(unsigned int sample_rate) override 
     {
-        float frequency = params[FREQUENCY].getValue();
+        float frequency = params[FREQUENCY_PARAM]->getValue();
 
-        if (frequency_input_port->isConnected()) 
+        if (inputs[FREQUENCY]->isConnected()) 
         {
-            float voltage = frequency_input_port->getVoltage();
+            float voltage = inputs[FREQUENCY]->getVoltage();
             frequency = 8.18f * powf(2.0f, voltage);
         }
 
         // Get the resonance value.  If the resonance input port is connected, use
         // that value.  Otherwise, use the resonance parameter value.
-        float resonance = inputs[RESONANCE]->isConnected() ? inputs[RESONANCE]->getVoltage() : params[RESONANCE].getValue();
+        float resonance = inputs[RESONANCE]->isConnected() ? inputs[RESONANCE]->getVoltage() : params[RESONANCE_PARAM]->getValue();
 
         // TB-303-style exponential frequency scaling
         frequency = 0.1f * powf(2.0f, 3.0f * frequency) * sample_rate;

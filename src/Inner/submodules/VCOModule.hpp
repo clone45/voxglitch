@@ -12,7 +12,8 @@
 
 class VCOModule : public BaseModule {
 
-private:
+public:
+
     float phase = 0.0f;
     const float C4_FREQUENCY = 261.6256f;
     float previous_sync_input = 0.0f;
@@ -39,10 +40,10 @@ private:
     };
 
     enum PARAMS {
-        FREQUENCY,
-        WAVEFORM,
-        SYNC_THRESHOLD,
-        PULSE_WIDTH,
+        FREQUENCY_PARAM,
+        WAVEFORM_PARAM,
+        SYNC_THRESHOLD_PARAM,
+        PULSE_WIDTH_PARAM,
         NUM_PARAMS
     };
 
@@ -51,10 +52,10 @@ private:
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
 
         // Set default values for parameters
-        params[FREQUENCY].setValue(1.0f);
-        params[WAVEFORM].setValue(4.0f);
-        params[SYNC_THRESHOLD].setValue(5.0f);
-        params[PULSE_WIDTH].setValue(0.5f);
+        params[FREQUENCY_PARAM]->setValue(1.0f);
+        params[WAVEFORM_PARAM]->setValue(4.0f);
+        params[SYNC_THRESHOLD_PARAM]->setValue(5.0f);
+        params[PULSE_WIDTH_PARAM]->setValue(0.5f);
     }
 
     void process(unsigned int sample_rate) override 
@@ -66,9 +67,9 @@ private:
         // float sync_input = sync_input_port->isConnected() ? sync_input_port->getValue() : 0.0f;
 
         // Get the input voltages
-        float frequency_voltage = inputs[FREQUENCY]->isConnected() ? inputs[FREQUENCY]->getVoltage() : params[FREQUENCY].getValue();
-        float waveform_voltage = inputs[WAVEFORM]->isConnected() ? inputs[WAVEFORM]->getVoltage() : params[WAVEFORM].getValue();
-        float sync_threshold = inputs[SYNC_THRESHOLD]->isConnected() ? inputs[SYNC_THRESHOLD]->getVoltage() : params[SYNC_THRESHOLD].getValue();
+        float frequency_voltage = inputs[FREQUENCY]->isConnected() ? inputs[FREQUENCY]->getVoltage() : params[FREQUENCY_PARAM]->getValue();
+        float waveform_voltage = inputs[WAVEFORM]->isConnected() ? inputs[WAVEFORM]->getVoltage() : params[WAVEFORM_PARAM]->getValue();
+        float sync_threshold = inputs[SYNC_THRESHOLD]->isConnected() ? inputs[SYNC_THRESHOLD]->getVoltage() : params[SYNC_THRESHOLD_PARAM]->getValue();
         float sync_input = inputs[SYNC]->isConnected() ? inputs[SYNC]->getVoltage() : 0.0f;
 
         // Get the selected waveform based on the waveform voltage
@@ -94,7 +95,7 @@ private:
 
     void processSyncInput(float sync_input, float sync_threshold)
     {
-        if (sync_input_port->isConnected())
+        if (inputs[SYNC]->isConnected())
         {
             // The sync_threshold input port is a voltage that ranges from 0V to 10V.
             // However, we want to be able to compare the sync input to the sync threshold.
@@ -128,7 +129,7 @@ private:
                 out = (phase < 0.5f) ? (-1.0f + 4.0f * phase) : (3.0f - 4.0f * phase);
                 break;
             case Waveform::PULSE:
-                out = (phase < getParameter("pulse_width")) ? 1.0f : -1.0f;
+                out = (phase < this->params[PULSE_WIDTH_PARAM]->getValue()) ? 1.0f : -1.0f;
                 break;
             case Waveform::SAWTOOTH:
                 out = -1.0f + 2.0f * phase;
