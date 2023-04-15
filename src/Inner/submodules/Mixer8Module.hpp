@@ -28,7 +28,7 @@ private:
 public:
     Mixer8Module()
     {
-        config(NUMBER_OF_PARAMS, NUMBER_OF_INPUTS, NUMBER_OF_OUTPUTS);
+        config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
     }
 
     void process(unsigned int sample_rate) override 

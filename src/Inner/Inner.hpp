@@ -76,65 +76,72 @@ struct Inner : VoxglitchModule
         outputs[AUDIO_OUTPUT].setVoltage(audio_out);
     }
 
-    void load_config_file(const std::string &filename)
+    void load_config_file(const std::string& filename)
     {
         std::vector<ModuleConfig*> modules;
         std::ifstream file(filename);
 
-        json_t *root = json_load_file(filename.c_str(), 0, nullptr);
-        json_t *modules_array = json_object_get(root, "modules");
+        json_t* root = json_load_file(filename.c_str(), 0, nullptr);
+        json_t* modules_array = json_object_get(root, "modules");
         size_t modules_size = json_array_size(modules_array);
 
         for (size_t i = 0; i < modules_size; ++i)
         {
-            json_t *module_obj = json_array_get(modules_array, i);
+            json_t* module_obj = json_array_get(modules_array, i);
 
-            std::string name = json_string_value(json_object_get(module_obj, "name"));
+            unsigned int id = json_integer_value(json_object_get(module_obj, "id"));
             std::string type = json_string_value(json_object_get(module_obj, "type"));
 
-            json_t *params_obj = json_object_get(module_obj, "params");
+            json_t* params_obj = json_object_get(module_obj, "params");
             std::map<unsigned int, float> params;
 
             if (params_obj)
             {
-                const char *key;
-                json_t *value;
+                const char* key;
+                json_t* value;
                 json_object_foreach(params_obj, key, value)
                 {
                     params.emplace(std::stoi(key), (float)json_real_value(value));
                 }
             }
 
-            modules.push_back(new ModuleConfig(name, type, params));
+            modules.push_back(new ModuleConfig(id, type, params));
         }
 
         module_manager->setModuleConfigMap(modules);
 
         //
-        //  Load and set the connections
+        // Load and set the connections
         //
 
-        std::vector<std::pair<std::string, std::string>> connections;
+        std::vector<Connection> connections;
         json_t* connections_array = json_object_get(root, "connections");
         size_t connections_size = json_array_size(connections_array);
-        
-        for (size_t i = 0; i < connections_size; ++i) 
+
+        for (size_t i = 0; i < connections_size; ++i)
         {
             json_t* connection_obj = json_array_get(connections_array, i);
 
-            std::string output = json_string_value(json_object_get(connection_obj, "output"));
-            std::string input = json_string_value(json_object_get(connection_obj, "input"));
+            json_t* src_obj = json_object_get(connection_obj, "src");
+            unsigned int src_module_id = json_integer_value(json_object_get(src_obj, "module_id"));
+            unsigned int src_port_id = json_integer_value(json_object_get(src_obj, "port_id"));
 
-            connections.emplace_back(output, input);
+            json_t* dst_obj = json_object_get(connection_obj, "dst");
+            unsigned int dst_module_id = json_integer_value(json_object_get(dst_obj, "module_id"));
+            unsigned int dst_port_id = json_integer_value(json_object_get(dst_obj, "port_id"));
+
+            // connections.emplace_back(src_module_id, src_port_id, dst_module_id, dst_port_id);
+            connections.push_back(Connection(src_module_id, src_port_id, dst_module_id, dst_port_id));
         }
 
-        module_manager->setConnectionConfig(connections);
+        module_manager->setConnections(connections);
 
         json_decref(root);
 
         // Tie the modules together and create the patch
         module_manager->createPatch();
     }
+
 
     std::string selectFileVCV()
     {

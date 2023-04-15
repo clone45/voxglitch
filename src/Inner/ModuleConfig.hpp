@@ -6,13 +6,13 @@
 
 struct ModuleConfig
 {
-    std::string name;
     std::string type;
     std::map<unsigned int, float> params;
+    unsigned int id;
 
-    ModuleConfig(std::string name, std::string type, std::map<unsigned int, float> params)
+    ModuleConfig(unsigned int id, std::string type, std::map<unsigned int, float> params)
     {
-        this->name = name;
+        this->id = id;
         this->type = type;
         this->params = params;
     }

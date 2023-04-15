@@ -24,6 +24,7 @@
 #include "submodules/LinearVCAModule.hpp"
 #include "submodules/LFOModule.hpp"
 #include "submodules/LowpassFilterModule.hpp"
+#include "submodules/Mixer8Module.hpp"
 #include "submodules/MorphingFilterModule.hpp"
 #include "submodules/NoiseModule.hpp"
 #include "submodules/SchroederReverbModule.hpp"
@@ -38,17 +39,37 @@
 #include <string>
 #include <utility>
 
+class Connection
+{
+public:
+    unsigned int source_module_id;
+    unsigned int source_port_index;
+    unsigned int destination_module_id;
+    unsigned int destination_port_index;
+
+    Connection(
+        unsigned int src_mod_id, 
+        unsigned int src_port_idx, 
+        unsigned int dest_mod_id, 
+        unsigned int dest_port_idx
+    ) : 
+    source_module_id(src_mod_id), 
+    source_port_index(src_port_idx), 
+    destination_module_id(dest_mod_id), 
+    destination_port_index(dest_port_idx) 
+    {}
+};
+
 class ModuleManager
 {
 
 private:
-    std::map<std::string, IModule *> modules;
+    std::map<int, IModule *> modules;
 
     // module_config_map is a map of module names to module configs
-    std::unordered_map<std::string, ModuleConfig *> module_config_map;
+    std::unordered_map<unsigned int, ModuleConfig *> module_config_map;
 
-    // Connections is a map of string like module_name.outputs.0 : module_name.inputs.3
-    std::vector<std::pair<std::string, std::string>> connections_config_forward;    
+    std::vector<Connection> connections_config_forward;    
 
     IModule *terminal_output_module = nullptr;
 
@@ -92,6 +113,9 @@ public:
         // connect all modules
         if(connectModules()) ready = true;
 
+        debugPrintPatch();
+
+
         // The "last module" will be the output module, and the last one in the chain
         // It will be processed first, then the network will be traversed in reverse
         // to compute each module's output
@@ -99,6 +123,14 @@ public:
         // Find the last module in the chain and sets the member variable "terminal_output_module"
         terminal_output_module = findOutModule();
 
+        // If there's no terminal output module, then the patch is invalid and debug
+        // information will be printed
+        if (terminal_output_module == nullptr) 
+        {
+            DEBUG("No terminal output module found");
+            return false;
+        }
+        
         return ready;
     }
 
@@ -111,31 +143,16 @@ public:
     {
         for (ModuleConfig* config : moduleConfigs) 
         {
-            module_config_map[config->name] = config;
+            module_config_map[config->id] = config;
         }
     }
 
-    // At this point, the connection map holds two strings
-    // Here's an example of what the map looks like:
-    // { "module_name.port_name" : "module_name.port_name" },
-    //
-    // { "param1.OUTPUT_PORT" : "wavetable_oscillator.FREQUENCY_INPUT_PORT },
-    // { "param2.OUTPUT_PORT" : "wavetable_oscillator.WAVEFORM_INPUT_PORT" },
-    // etc..
 
-    // However, this will be changing to use the port index instead of the name.
-    // So, the map will look like this:
-    //
-    // { "module_name.outputs.port_index" : "module_name.inputs.port_index" },
-    //
-    // { "param1.outputs.0" : "wavetable_oscillator.inputs.0 },
-    // { "param2.outputs.0" : "wavetable_oscillator.inputs.1 },
-    //
     // It can be assumed that the ports on the left are outputs and the ports
     // on the right are inputs, but adding the word "outputs" and "inputs" will
     // make it more clear to people.
 
-    void setConnectionConfig(std::vector<std::pair<std::string, std::string>> connections)
+    void setConnections(std::vector<Connection> connections)
     {
         connections_config_forward = connections;
     }
@@ -154,15 +171,12 @@ public:
         {
             ModuleConfig *config = module_config_data.second;
 
+            int module_id = config->id;
             std::string type = config->type;
-            std::string name = config->name;
 
-            // TODO: Similar to ports, params will no longer have names unless
-            // I create some type of configuration file that maps the names to the indexes.
-            // So this might turn out being std::map<int, float> params = config->params;
             std::map<unsigned int, float> params = config->params;
 
-            DEBUG(("Creating module " + name + " of type " + type).c_str());
+            DEBUG(("Creating module of type " + type).c_str());
 
             IModule *module = nullptr;
 
@@ -175,8 +189,9 @@ public:
                 if (type == "LFO") module = new LFOModule();
                 if (type == "LINEAR_VCA") module = new LinearVCAModule();
                 if (type == "LOWPASS_FILTER") module = new LowpassFilterModule();
+                if (type == "MIXER8") module = new Mixer8Module();
                 if (type == "MORPHING_FILTER") module = new MorphingFilterModule();
-                if (type == "NOISE_MODULE") module = new NoiseModule();
+                if (type == "NOISE") module = new NoiseModule();
                 if (type == "PARAM1") module = new ParamModule(p1);
                 if (type == "PARAM2") module = new ParamModule(p2);
                 if (type == "PARAM3") module = new ParamModule(p3);
@@ -207,17 +222,13 @@ public:
 
             if (module != nullptr)
             {
-                modules[name] = module;
+                modules[module_id] = module;
 
                 // Iterate over the params and set them on the module
                 for (const auto &param : params)
                 {
                     unsigned int param_index = param.first;
                     float param_value = param.second;
-
-                    // DEBUG(("Setting param " + param_name + " to " + std::to_string(param_value)).c_str());
-
-                    // module->params[param_index].setValue(param_value);
                     module->setParameter(param_index, param_value);
                 }
             }
@@ -226,57 +237,55 @@ public:
 
     bool connectModules()
     {
-        // iterate over module_configs and create instances of the module classes
-
-        for (const auto &connection : connections_config_forward)
+        for (const auto& connection : connections_config_forward)
         {
-            // Here, "connection" is a pair of strings. 
-            // Each string is in the format {module_name}.[outputs|inputs].{port_index}  
-            // For example vco1.outputs.0
+            // Connections go from "source" to "destination"
 
-            std::string output_connection_string = connection.first;
-            std::string input_connection_string = connection.second;
-
-            DEBUG(("Connecting ports " + output_connection_string + " to " + input_connection_string).c_str());
-
-            // output_connection_string may look like vco1.outputs.0
-            // input_connection_string may looks like adsr1.inputs.0
-
-            std::pair<std::string, unsigned int> output_parts = split_connection_string(output_connection_string);
-            std::pair<std::string, unsigned int> input_parts = split_connection_string(input_connection_string);
-
-            IModule *output_module;
-            IModule *input_module;
-            Sport *input_port;
-            Sport *output_port;
+            DEBUG(("Connecting ports from module " + std::to_string(connection.source_module_id) + ", port " + std::to_string(connection.source_port_index) 
+                    + " to module " + std::to_string(connection.destination_module_id) + ", port " + std::to_string(connection.destination_port_index)).c_str());
 
             try 
             {
-                output_module = modules.at(output_parts.first);
-                input_module = modules.at(input_parts.first);
+                IModule* source_module = modules.at(connection.source_module_id);
+                IModule* dest_module = modules.at(connection.destination_module_id);
+                Sport* source_port = source_module->getOutputPort(connection.source_port_index);
+                Sport* dest_port = dest_module->getInputPort(connection.destination_port_index);
 
-                unsigned int input_port_index = input_parts.second;
-                unsigned int output_port_index = output_parts.second;
-
-                // input_port = input_module->inputs[input_port_index];
-                // output_port = output_module->outputs[output_port_index];
-
-                input_port = input_module->getInputPort(input_port_index);
-                output_port = output_module->getOutputPort(output_port_index);
-
-
-                input_port->connectToOutputPort(output_port);
-                output_port->connectToInputPort(input_port);
+                source_port->connectToInputPort(dest_port);
+                dest_port->connectToOutputPort(source_port);
             } 
-            catch (std::out_of_range& e) 
+            catch (const std::out_of_range& e) 
             {
-                DEBUG("Trouble connecting ports! Please check port and module names.");
+                DEBUG("Trouble connecting ports! Please check module and port names.");
                 return false;
             }           
         }
 
-        return(true);
+        return true;
     }
+
+    void debugPrintPatch()
+    {
+        // Print out all modules and connections
+        for (auto &module : modules)
+        {
+            // find the object type of the module
+            std::string module_type = typeid(*module.second).name();
+            DEBUG(module_type.c_str());
+
+            DEBUG(("Module: " + std::to_string(module.first) + " " + module_type).c_str());
+        }
+
+        DEBUG("Connections:");
+
+        for (auto &connection : connections_config_forward)
+        {
+            DEBUG(("  " + std::to_string(connection.source_module_id) + "." + std::to_string(connection.source_port_index) + " -> " + std::to_string(connection.destination_module_id) + "." + std::to_string(connection.destination_port_index)).c_str());
+        }
+
+        DEBUG("End of patch");
+    }
+
 
     //
     // Note: If I update this function to find the output module by type,
@@ -288,42 +297,22 @@ public:
 
         // Find the last module in the chain
         // Why module.second? Because module is a pair: module.first is the id
-        //  and module.second is the module object
+        //   and module.second is the module object
 
         for (auto &module : modules)
         {
             if (module.second->getOutputPorts().size() == 0)
             {
                 out_module = module.second;
+
+                // std::string module_type = typeid(*out_module).name();
+                // DEBUG( ("Found output module of type " + module_type).c_str() );
             }
         }
 
         return(out_module);
     }
 
-    
-    // Written by chatgpt
-    std::pair<std::string, unsigned int> split_connection_string(std::string input_str) 
-    {
-        std::string delimiter = ".";
-        size_t pos = 0;
-        std::string module_name;
-        unsigned int num = 0;
-
-        // Extract the module name
-        if ((pos = input_str.find(delimiter)) != std::string::npos) {
-            module_name = input_str.substr(0, pos);
-            input_str.erase(0, pos + delimiter.length());
-        }
-
-        // Extract the number at the end
-        if ((pos = input_str.find(delimiter)) != std::string::npos) {
-            input_str.erase(0, pos + delimiter.length());
-        }
-        num = std::stoi(input_str);
-
-        return std::make_pair(module_name, num);
-    } 
 
     /*
 
@@ -337,10 +326,11 @@ public:
     // This runs at sample rate
     void processModule(IModule *module, unsigned int sample_rate)
     {
-
         // If the module has already been processed, return
         if (module->processing) return;
         module->processing = true;
+
+        std::string module_type = typeid(*module).name();
 
         // Here's the process:
         // 1. Get all of the inputs of the module
@@ -358,7 +348,6 @@ public:
             // 3. If there's a connection, make a recursive call to processModule with the connected module
             if (input_port->isConnected())
             {
-
                 // I need to reconsider this code, which assumes that there's only one connected
                 // output per input.  HOwever, this may not necessarily be the case anymore.
                 std::vector<Sport *> connected_outputs = input_port->getConnectedOutputs();
