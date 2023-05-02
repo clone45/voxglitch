@@ -26,6 +26,6 @@ public:
     virtual Sport* getOutputPort(unsigned int port_id) = 0;
     virtual Sport* getInputPort(unsigned int port_id) = 0;
 
-    unsigned int id = 0;
+    std::string uuid = "";
     bool processing = false;  
 };

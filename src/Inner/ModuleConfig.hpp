@@ -8,11 +8,11 @@ struct ModuleConfig
 {
     std::string type;
     std::map<unsigned int, float> params;
-    unsigned int id;
+    std::string uuid;
 
-    ModuleConfig(unsigned int id, std::string type, std::map<unsigned int, float> params)
+    ModuleConfig(std::string uuid, std::string type, std::map<unsigned int, float> params)
     {
-        this->id = id;
+        this->uuid = uuid;
         this->type = type;
         this->params = params;
     }

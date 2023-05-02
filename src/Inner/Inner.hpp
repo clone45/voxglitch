@@ -89,7 +89,7 @@ struct Inner : VoxglitchModule
         {
             json_t* module_obj = json_array_get(modules_array, i);
 
-            unsigned int id = json_integer_value(json_object_get(module_obj, "id"));
+            std::string uuid = json_string_value(json_object_get(module_obj, "uuid"));
             std::string type = json_string_value(json_object_get(module_obj, "type"));
 
             json_t* params_obj = json_object_get(module_obj, "params");
@@ -105,7 +105,7 @@ struct Inner : VoxglitchModule
                 }
             }
 
-            modules.push_back(new ModuleConfig(id, type, params));
+            modules.push_back(new ModuleConfig(uuid, type, params));
         }
 
         module_manager->setModuleConfigMap(modules);
@@ -123,15 +123,15 @@ struct Inner : VoxglitchModule
             json_t* connection_obj = json_array_get(connections_array, i);
 
             json_t* src_obj = json_object_get(connection_obj, "src");
-            unsigned int src_module_id = json_integer_value(json_object_get(src_obj, "module_id"));
+            std::string src_module_uuid = json_string_value(json_object_get(src_obj, "module_uuid"));
             unsigned int src_port_id = json_integer_value(json_object_get(src_obj, "port_id"));
 
             json_t* dst_obj = json_object_get(connection_obj, "dst");
-            unsigned int dst_module_id = json_integer_value(json_object_get(dst_obj, "module_id"));
+            std::string dst_module_uuid = json_string_value(json_object_get(dst_obj, "module_uuid"));
             unsigned int dst_port_id = json_integer_value(json_object_get(dst_obj, "port_id"));
 
             // connections.emplace_back(src_module_id, src_port_id, dst_module_id, dst_port_id);
-            connections.push_back(Connection(src_module_id, src_port_id, dst_module_id, dst_port_id));
+            connections.push_back(Connection(src_module_uuid, src_port_id, dst_module_uuid, dst_port_id));
         }
 
         module_manager->setConnections(connections);

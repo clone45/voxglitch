@@ -42,20 +42,20 @@
 class Connection
 {
 public:
-    unsigned int source_module_id;
+    std::string source_module_uuid;
     unsigned int source_port_index;
-    unsigned int destination_module_id;
+    std::string destination_module_uuid;
     unsigned int destination_port_index;
 
     Connection(
-        unsigned int src_mod_id, 
+        std::string src_mod_uuid, 
         unsigned int src_port_idx, 
-        unsigned int dest_mod_id, 
+        std::string dest_mod_uuid, 
         unsigned int dest_port_idx
     ) : 
-    source_module_id(src_mod_id), 
+    source_module_uuid(src_mod_uuid), 
     source_port_index(src_port_idx), 
-    destination_module_id(dest_mod_id), 
+    destination_module_uuid(dest_mod_uuid), 
     destination_port_index(dest_port_idx) 
     {}
 };
@@ -64,10 +64,10 @@ class ModuleManager
 {
 
 private:
-    std::map<int, IModule *> modules;
+    std::map<std::string, IModule *> modules;
 
     // module_config_map is a map of module names to module configs
-    std::unordered_map<unsigned int, ModuleConfig *> module_config_map;
+    std::unordered_map<std::string, ModuleConfig *> module_config_map;
 
     std::vector<Connection> connections_config_forward;    
 
@@ -143,7 +143,7 @@ public:
     {
         for (ModuleConfig* config : moduleConfigs) 
         {
-            module_config_map[config->id] = config;
+            module_config_map[config->uuid] = config;
         }
     }
 
@@ -171,7 +171,7 @@ public:
         {
             ModuleConfig *config = module_config_data.second;
 
-            int module_id = config->id;
+            std::string module_uuid = config->uuid;
             std::string type = config->type;
 
             std::map<unsigned int, float> params = config->params;
@@ -222,7 +222,7 @@ public:
 
             if (module != nullptr)
             {
-                modules[module_id] = module;
+                modules[module_uuid] = module;
 
                 // Iterate over the params and set them on the module
                 for (const auto &param : params)
@@ -241,13 +241,13 @@ public:
         {
             // Connections go from "source" to "destination"
 
-            DEBUG(("Connecting ports from module " + std::to_string(connection.source_module_id) + ", port " + std::to_string(connection.source_port_index) 
-                    + " to module " + std::to_string(connection.destination_module_id) + ", port " + std::to_string(connection.destination_port_index)).c_str());
+            DEBUG(("Connecting ports from module " + connection.source_module_uuid + ", port " + std::to_string(connection.source_port_index) 
+                    + " to module " + connection.destination_module_uuid + ", port " + std::to_string(connection.destination_port_index)).c_str());
 
             try 
             {
-                IModule* source_module = modules.at(connection.source_module_id);
-                IModule* dest_module = modules.at(connection.destination_module_id);
+                IModule* source_module = modules.at(connection.source_module_uuid);
+                IModule* dest_module = modules.at(connection.destination_module_uuid);
                 Sport* source_port = source_module->getOutputPort(connection.source_port_index);
                 Sport* dest_port = dest_module->getInputPort(connection.destination_port_index);
 
@@ -272,15 +272,15 @@ public:
             // find the object type of the module
             std::string module_type = typeid(*module.second).name();
             DEBUG(module_type.c_str());
-
-            DEBUG(("Module: " + std::to_string(module.first) + " " + module_type).c_str());
+ 
+            DEBUG(("Module: " + module.first + " " + module_type).c_str());
         }
 
         DEBUG("Connections:");
 
         for (auto &connection : connections_config_forward)
         {
-            DEBUG(("  " + std::to_string(connection.source_module_id) + "." + std::to_string(connection.source_port_index) + " -> " + std::to_string(connection.destination_module_id) + "." + std::to_string(connection.destination_port_index)).c_str());
+            DEBUG(("  " + connection.source_module_uuid + "." + std::to_string(connection.source_port_index) + " -> " + connection.destination_module_uuid + "." + std::to_string(connection.destination_port_index)).c_str());
         }
 
         DEBUG("End of patch");
