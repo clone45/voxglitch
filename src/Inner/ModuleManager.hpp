@@ -17,20 +17,60 @@
 #include "submodules/OutputModule.hpp"
 #include "submodules/ParamModule.hpp"
 
+// arpeggiator
+// AD
+// quantizer
+// sequencer
+// slew limiter
+// Advanced distortion
+/*
+Adding more inputs can make the DistortionModule more versatile and fun. Here are a few ideas:
+
+    Tone control: Similar to the OverdriveModule, adding a tone control input allows users to adjust the balance between low and high frequencies in the output signal. This can be done by implementing a low-pass filter (LPF) and high-pass filter (HPF).
+
+    Wet/Dry mix: Add a wet/dry mix input to control the balance between the original audio signal (dry) and the distorted audio signal (wet). This allows users to blend the distortion effect with the original signal, creating a more subtle effect or more aggressive distortion.
+
+    Asymmetry: Introduce an asymmetry input to control the balance between positive and negative distortion. Asymmetrical distortion can create more complex harmonics and a different character in the sound.
+
+    Envelope follower: Add an envelope follower input that controls the drive parameter based on the amplitude of the input audio signal. This can create a dynamic distortion effect that responds to the input signal's volume, making it more expressive.
+
+    Multi-stage distortion: Implement a multi-stage distortion by adding a "Stages" input that selects the number of times the distortion is applied to the input signal. This can create a more aggressive and complex distortion effect.
+
+Remember that adding more inputs can increase the complexity of the module, so it's essential to maintain a balance between versatility and ease of use.
+*/
+
 // Synth modules
 #include "submodules/ADSRModule.hpp"
+#include "submodules/ADModule.hpp"
+#include "submodules/ClockDividerModule.hpp"
+#include "submodules/ClockModule.hpp"
 #include "submodules/DelayModule.hpp"
+#include "submodules/DistortionModule.hpp"
 #include "submodules/ExponentialVCAModule.hpp"
+#include "submodules/FuzzModule.hpp"
 #include "submodules/LinearVCAModule.hpp"
 #include "submodules/LFOModule.hpp"
 #include "submodules/LowpassFilterModule.hpp"
+#include "submodules/Mixer2Module.hpp"
+#include "submodules/Mixer3Module.hpp"
+#include "submodules/Mixer4Module.hpp"
 #include "submodules/Mixer8Module.hpp"
 #include "submodules/MorphingFilterModule.hpp"
 #include "submodules/NoiseModule.hpp"
+#include "submodules/OverdriveModule.hpp"
+#include "submodules/SampleAndHoldModule.hpp"
+#include "submodules/ScaleQuantizerModule.hpp"
 #include "submodules/SchroederReverbModule.hpp"
+#include "submodules/Selector2Module.hpp"
+#include "submodules/Selector3Module.hpp"
+#include "submodules/Selector4Module.hpp"
+#include "submodules/Selector6Module.hpp"
+#include "submodules/Selector8Module.hpp"
 #include "submodules/TB303OscillatorModule.hpp"
 #include "submodules/TB303FilterModule.hpp"
 #include "submodules/VCOModule.hpp"
+#include "submodules/WaveFolderModule.hpp"
+#include "submodules/WaveShaperModule.hpp"
 #include "submodules/WavetableOscillatorModule.hpp"
 
 #include <map>
@@ -182,16 +222,26 @@ public:
 
             try
             {
+                if (type == "AD") module = new ADModule();
                 if (type == "ADSR") module = new ADSRModule();
+                if (type == "CLOCK") module = new ClockModule();
+                if (type == "CLOCK_DIVIDER") module = new ClockDividerModule();
+                if (type == "DISTORTION") module = new DistortionModule();
                 if (type == "DELAY") module = new DelayModule();
                 if (type == "EXPONENTIAL_VCA") module = new ExponentialVCAModule();
+                if (type == "FUZZ") module = new FuzzModule();
                 if (type == "GATE_INPUT") module = new GateInputModule(gate_ptr);
                 if (type == "LFO") module = new LFOModule();
                 if (type == "LINEAR_VCA") module = new LinearVCAModule();
                 if (type == "LOWPASS_FILTER") module = new LowpassFilterModule();
+                if (type == "MIXER2") module = new Mixer2Module();
+                if (type == "MIXER3") module = new Mixer3Module();
+                if (type == "MIXER4") module = new Mixer4Module();
                 if (type == "MIXER8") module = new Mixer8Module();
                 if (type == "MORPHING_FILTER") module = new MorphingFilterModule();
                 if (type == "NOISE") module = new NoiseModule();
+                if (type == "OUTPUT") module = new OutputModule();
+                if (type == "OVERDRIVE") module = new OverdriveModule();
                 if (type == "PARAM1") module = new ParamModule(p1);
                 if (type == "PARAM2") module = new ParamModule(p2);
                 if (type == "PARAM3") module = new ParamModule(p3);
@@ -200,12 +250,20 @@ public:
                 if (type == "PARAM6") module = new ParamModule(p6);
                 if (type == "PARAM7") module = new ParamModule(p7);
                 if (type == "PARAM8") module = new ParamModule(p8);
-                if (type == "OUTPUT") module = new OutputModule();
                 if (type == "PITCH_INPUT") module = new PitchInputModule(pitch_ptr);
+                if (type == "SAMPLE_AND_HOLD") module = new SampleAndHoldModule();
+                if (type == "SCALE_QUANTIZER") module = new ScaleQuantizerModule();
                 if (type == "SCHROEDER_REVERB") module = new SchroederReverbModule();
+                if (type == "SELECTOR2") module = new Selector2Module();
+                if (type == "SELECTOR3") module = new Selector3Module();
+                if (type == "SELECTOR4") module = new Selector4Module();
+                if (type == "SELECTOR6") module = new Selector6Module();
+                if (type == "SELECTOR8") module = new Selector8Module();
                 if (type == "TB303_OSCILLATOR") module = new TB303OscillatorModule();
                 if (type == "TB303_FILTER") module = new TB303FilterModule();
                 if (type == "VCO") module = new VCOModule();
+                if (type == "WAVE_FOLDER") module = new WaveFolderModule();
+                if (type == "WAVE_SHAPER") module = new WaveShaperModule();
                 if (type == "WAVETABLE_OSCILLATOR") module = new WavetableOscillatorModule();
 
                 if(module == nullptr) 

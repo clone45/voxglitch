@@ -19,9 +19,14 @@ class WavetableOscillatorModule : public BaseModule
     int wavetable_size = 512;
     bool wavetables_loaded = false;
 
+    // Create the lookup table for converting from voltage to frequency
+    const int TABLE_SIZE = 2048;
+    float frequency_table[2048];
+
     enum INPUTS {
         FREQUENCY,
         WAVEFORM,
+        OFFSET,
         NUM_INPUTS
     };
 
@@ -33,6 +38,7 @@ class WavetableOscillatorModule : public BaseModule
     enum PARAMS {
         FREQUENCY_PARAM,
         WAVEFORM_PARAM,
+        OFFSET_PARAM,
         NUM_PARAMS
     };
 
@@ -48,6 +54,7 @@ class WavetableOscillatorModule : public BaseModule
         // Set default values for the parameters
         params[FREQUENCY_PARAM]->setValue(440.0f);
         params[WAVEFORM_PARAM]->setValue(0.0f);
+        params[OFFSET_PARAM]->setValue(0.0f);
 
         // Read the wavetables from a file
         std::string wavetable_filename = asset::plugin(pluginInstance, "res/inner/wavetables.txt");
@@ -62,7 +69,13 @@ class WavetableOscillatorModule : public BaseModule
 
             wavetables_loaded = true;
         }
-        
+
+        // Fill the table with values
+        for (int i = 0; i < TABLE_SIZE; ++i) 
+        {
+            float frequency_voltage = static_cast<float>(i) / static_cast<float>(TABLE_SIZE) * 10.0f;
+            frequency_table[i] = 261.625565 * powf(2.0f, frequency_voltage - 4.0f);
+        }
     }
 
     ~WavetableOscillatorModule() 
@@ -76,27 +89,26 @@ class WavetableOscillatorModule : public BaseModule
 
         float frequency_voltage = inputs[FREQUENCY]->isConnected() ? inputs[FREQUENCY]->getVoltage() : params[FREQUENCY_PARAM]->getValue();
         float waveform_voltage = inputs[WAVEFORM]->isConnected() ? inputs[WAVEFORM]->getVoltage() : params[WAVEFORM_PARAM]->getValue();
+        float offset_voltage = inputs[OFFSET]->isConnected() ? inputs[OFFSET]->getVoltage() : params[OFFSET_PARAM]->getValue();
 
         // Convert the voltage value to frequency in Hz using the 1V/octave standard
-        frequency = 261.625565 * powf(2.0f, frequency_voltage - 4.0f);
+        float frequency = frequency_table[static_cast<int>(frequency_voltage / 10.0f * TABLE_SIZE)];
 
         // Calculate the phase increment based on the frequency
         float phase_increment = frequency / static_cast<float>(sample_rate);
 
-        // Calculate the waveform index based on the waveform voltage
         wavetable_index = (waveform_voltage / 10.0f) * float(NUM_WAVETABLES + 1.0); // 0 to 8
         wavetable_index = clamp(wavetable_index, 0, NUM_WAVETABLES);
 
         // Calculate the output value using linear interpolation
-        int index1 = static_cast<int>(std::floor(phase * wavetable_size));
-        int index2 = static_cast<int>(std::ceil(phase * wavetable_size)) % wavetable_size;
-        float frac = phase * wavetable_size - index1;
+        int index1 = static_cast<int>(std::floor((phase + offset_voltage) * wavetable_size));
+        int index2 = static_cast<int>(std::ceil((phase + offset_voltage) * wavetable_size)) % wavetable_size;
+        float frac = (phase + offset_voltage) * wavetable_size - index1;
 
         output = lerp(wavetables[wavetable_index][index1], wavetables[wavetable_index][index2], frac);
 
-        // Output will range from 0 to 256, which is way too loud.  we need to
-        // get it in the range of -5 to 5 volts:
-        output = (output / 25.6f) - 5.0f;
+        // Output will range from -5 to 5 volts
+        output = clamp(output, -5.0f, 5.0f);
 
         // Increment the phase
         phase += phase_increment;
