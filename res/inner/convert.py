@@ -12,7 +12,7 @@ for line in lines:
     values = line.strip().split(',')
 
     # Convert each value and add it to the modified list
-    modified_values = [(float(v) / 25.6) - 5.0 for v in values]
+    modified_values = [(float(v) / 25.6) - 10.0 for v in values]
     modified_lines.append(','.join(str(v) for v in modified_values))
 
 # Open the output file
