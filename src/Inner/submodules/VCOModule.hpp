@@ -60,12 +60,6 @@ public:
 
     void process(unsigned int sample_rate) override 
     {
-        // the old way of doing it
-        // float frequency_voltage = frequency_input_port->isConnected() ? frequency_input_port->getValue() : getParameter("frequency");
-        // float waveform_voltage = waveform_input_port->isConnected() ? waveform_input_port->getValue() : getParameter("waveform");
-        // float sync_threshold = sync_threshold_input_port->isConnected() ? sync_threshold_input_port->getValue() : getParameter("sync_threshold");
-        // float sync_input = sync_input_port->isConnected() ? sync_input_port->getValue() : 0.0f;
-
         // Get the input voltages
         float frequency_voltage = inputs[FREQUENCY]->isConnected() ? inputs[FREQUENCY]->getVoltage() : params[FREQUENCY_PARAM]->getValue();
         float waveform_voltage = inputs[WAVEFORM]->isConnected() ? inputs[WAVEFORM]->getVoltage() : params[WAVEFORM_PARAM]->getValue();

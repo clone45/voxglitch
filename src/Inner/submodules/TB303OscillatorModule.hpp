@@ -1,20 +1,29 @@
 #pragma once
-
 #include <cmath>
 #include <algorithm>
 #include "../BaseModule.hpp"
 
-class TB303OscillatorModule : public BaseModule 
-{
-    public:
+class TB303OscillatorModule : public BaseModule {
+
+public:
 
     float phase = 0.0f;
-    float last_value = 0.0f;
-    float accent = 1.0f;
+    const float C4_FREQUENCY = 261.6256f;
+    float previous_sync_input = 0.0f;
+
+    enum class Waveform {
+        SINE,
+        TRIANGLE,
+        PULSE,
+        SAWTOOTH,
+        NUM_WAVEFORMS
+    };
 
     enum INPUTS {
-        FREQUENCY,
-        RESONANCE,
+        FREQUENCY,  
+        WAVEFORM,
+        SYNC_THRESHOLD,
+        SYNC,
         NUM_INPUTS
     };
 
@@ -25,7 +34,9 @@ class TB303OscillatorModule : public BaseModule
 
     enum PARAMS {
         FREQUENCY_PARAM,
-        RESONANCE_PARAM,
+        WAVEFORM_PARAM,
+        SYNC_THRESHOLD_PARAM,
+        PULSE_WIDTH_PARAM,
         NUM_PARAMS
     };
 
@@ -33,49 +44,112 @@ class TB303OscillatorModule : public BaseModule
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
 
-        params[FREQUENCY]->setValue(440.0f);
-        params[RESONANCE]->setValue(0.0f);
+        // Set default values for parameters
+        params[FREQUENCY_PARAM]->setValue(1.0f);
+        params[WAVEFORM_PARAM]->setValue(4.0f);
+        params[SYNC_THRESHOLD_PARAM]->setValue(5.0f);
+        params[PULSE_WIDTH_PARAM]->setValue(0.5f);
     }
 
-    void process(unsigned int sample_rate) override 
+    void process(unsigned int sample_rate) override
     {
-        float frequency = params[FREQUENCY_PARAM]->getValue();
+        // Get the input voltages
+        float frequency_voltage = inputs[FREQUENCY]->isConnected() ? inputs[FREQUENCY]->getVoltage() : params[FREQUENCY_PARAM]->getValue();
+        float waveform_voltage = inputs[WAVEFORM]->isConnected() ? inputs[WAVEFORM]->getVoltage() : params[WAVEFORM_PARAM]->getValue();
+        float sync_threshold = inputs[SYNC_THRESHOLD]->isConnected() ? inputs[SYNC_THRESHOLD]->getVoltage() : params[SYNC_THRESHOLD_PARAM]->getValue();
+        float sync_input = inputs[SYNC]->isConnected() ? inputs[SYNC]->getVoltage() : 0.0f;
 
-        if (inputs[FREQUENCY]->isConnected()) 
-        {
-            float voltage = inputs[FREQUENCY]->getVoltage();
-            frequency = 8.18f * powf(2.0f, voltage);
-        }
+        // Get the selected waveform based on the waveform voltage
+        Waveform selected_waveform = getSelectedWaveform(waveform_voltage);
 
-        // Get the resonance value.  If the resonance input port is connected, use
-        // that value.  Otherwise, use the resonance parameter value.
-        float resonance = inputs[RESONANCE]->isConnected() ? inputs[RESONANCE]->getVoltage() : params[RESONANCE_PARAM]->getValue();
-
-        // TB-303-style exponential frequency scaling
-        frequency = 0.1f * powf(2.0f, 3.0f * frequency) * sample_rate;
+        // If the sync input is connected, process it.  This will reset the phase
+        // when the sync_input crosses the sync_threshold.
+        processSyncInput(sync_input, sync_threshold);
 
         // Calculate the phase increment and update the phase
-        float phase_increment = frequency / sample_rate;
+        float phase_increment = getPhaseIncrement(frequency_voltage, sample_rate);
         phase += phase_increment;
 
         // Ensure that the phase stays between 0 and 1
         if (phase >= 1.0f) phase -= 1.0f;
 
-        // Calculate the sawtooth waveform
-        float saw = phase * 2.0f - 1.0f;
-
-        // Calculate the square waveform
-        float square = (saw >= 0.0f) ? 1.0f : -1.0f;
-
-        // TB-303-style resonance
-        float feedback = resonance + (resonance / (1.0f - last_value * last_value));
-        float input = square + feedback * last_value;
-        last_value = input;
-
-        // Calculate the output
-        float output = (1.0f - accent) * saw + accent * input;
+        // Calculate the output based on the selected waveform
+        float out = computeWaveform(selected_waveform, phase);
 
         // Set output value, which will also alert any connected ports
-        outputs[OUTPUT]->setVoltage(output * 5.0f);
+        outputs[OUTPUT]->setVoltage(out * 5.0f);
     }
+
+    void processSyncInput(float sync_input, float sync_threshold)
+    {
+        if (inputs[SYNC]->isConnected())
+        {
+            // The sync_threshold input port is a voltage that ranges from 0V to 10V.
+            // However, we want to be able to compare the sync input to the sync threshold.
+            // Since the sync input ranges from -5V to +5V, we need to convert the sync threshold
+            // to a value between -5V and +5V. We do this by subtracting 5V from the sync threshold.
+            sync_threshold -= 5.0f;
+
+            // If the sync input port has a rising edge (i.e. changes from a value less than 
+            // the sync threshold to a value greater than or equal to the sync threshold),
+            // reset the phase to 0.
+            if ((sync_input >= sync_threshold) && (previous_sync_input < sync_threshold)) 
+            {
+                phase = 0.0f;
+            }
+
+            // Update previous sync input value
+            previous_sync_input = sync_input;
+        }
+    }
+
+    float computeWaveform(Waveform waveform, float phase)
+    {
+        float out = 0.0f;
+
+        switch (waveform)
+        {
+            case Waveform::SINE:
+                out = sinf(phase * 2.0f * 3.14159265358979323846264338327950288);
+                break;
+            case Waveform::TRIANGLE:
+                out = (phase < 0.5f) ? (-1.0f + 4.0f * phase) : (3.0f - 4.0f * phase);
+                break;
+            case Waveform::PULSE: // TB-303 style square wave
+                {
+                    float pulse_width = this->params[PULSE_WIDTH_PARAM]->getValue();
+                    float tb303_square = (phase < pulse_width) ? 1.0f : -1.0f;
+                    out = tb303_square - (pulse_width / 2.0f);
+                }
+                break;
+            case Waveform::SAWTOOTH: // TB-303 style sawtooth wave
+                {
+                    float tb303_saw = -1.0f + 2.0f * phase;
+                    out = tb303_saw - (1.0f / 3.14159265358979323846264338327950288);
+                }
+                break;
+            default:
+                break;
+        }
+
+        return out;
+    }
+
+    Waveform getSelectedWaveform(float waveform_voltage)
+    {
+        // The voltage range for selecting a waveform will range from 0v to 10v.
+        int waveform_selection = (waveform_voltage / 10.0f) * (int)Waveform::NUM_WAVEFORMS;
+        waveform_selection = clamp(waveform_selection, 0, (int)Waveform::NUM_WAVEFORMS - 1);
+
+        return static_cast<Waveform>(waveform_selection);
+    }
+
+    float getPhaseIncrement(float frequency_voltage, unsigned int sample_rate)
+    {
+        // Convert the voltage to a frequency in Hertz using the 1 V/oct standard
+        float frequency = C4_FREQUENCY * powf(2.0f, frequency_voltage);
+
+        // Calculate phase increment based on the frequency        
+        return frequency / static_cast<float>(sample_rate);
+    }    
 };
