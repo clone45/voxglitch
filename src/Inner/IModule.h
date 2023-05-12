@@ -17,6 +17,7 @@ protected:
     std::vector<Sport*> inputs;
     std::vector<Sport*> outputs;
     std::vector<Sparameter *> params;
+    json_t* data = nullptr;
 
 public:
     virtual void process(unsigned int sample_rate) = 0;
@@ -25,6 +26,7 @@ public:
     virtual void setParameter(unsigned int param_id, float value) = 0;
     virtual Sport* getOutputPort(unsigned int port_id) = 0;
     virtual Sport* getInputPort(unsigned int port_id) = 0;
+    virtual void setData(json_t* data) = 0;
 
     std::string uuid = "";
     bool processing = false;  

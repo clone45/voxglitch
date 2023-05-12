@@ -92,6 +92,10 @@ struct Inner : VoxglitchModule
             std::string uuid = json_string_value(json_object_get(module_obj, "uuid"));
             std::string type = json_string_value(json_object_get(module_obj, "type"));
 
+            //
+            // Load parameters into map
+            //
+
             json_t* params_obj = json_object_get(module_obj, "params");
             std::map<unsigned int, float> params;
 
@@ -105,7 +109,17 @@ struct Inner : VoxglitchModule
                 }
             }
 
-            modules.push_back(new ModuleConfig(uuid, type, params));
+            //
+            //  Load "data"
+            // 
+
+            json_t* data = nullptr;
+            if(json_object_get(module_obj, "data"))
+            {
+                data = json_object_get(module_obj, "data");
+            }
+
+            modules.push_back(new ModuleConfig(uuid, type, params, data));
         }
 
         module_manager->setModuleConfigMap(modules);

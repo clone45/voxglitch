@@ -49,6 +49,11 @@ public:
         params[param_id]->setValue(value);
     }
 
+    void setData(json_t* data) override
+    {
+        this->data = data;
+    }
+
     Sport* getOutputPort(unsigned int port_id) override
     {
         return outputs[port_id];

@@ -213,8 +213,8 @@ public:
 
             std::string module_uuid = config->uuid;
             std::string type = config->type;
-
             std::map<unsigned int, float> params = config->params;
+            json_t* data = config->data;
 
             DEBUG(("Creating module of type " + type).c_str());
 
@@ -289,6 +289,9 @@ public:
                     float param_value = param.second;
                     module->setParameter(param_index, param_value);
                 }
+
+                // Set the data json
+                module->setData(data);
             }
         }
     }
