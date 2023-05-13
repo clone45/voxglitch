@@ -93,9 +93,9 @@ struct Inner : VoxglitchModule
             std::string type = json_string_value(json_object_get(module_obj, "type"));
 
             //
-            // Load parameters into map
+            // Load default parameters into map
             //
-
+            /*
             json_t* defaults_obj = json_object_get(module_obj, "defaults");
             std::map<unsigned int, float> defaults;
 
@@ -108,11 +108,21 @@ struct Inner : VoxglitchModule
                     defaults.emplace(std::stoi(key), (float)json_real_value(value));
                 }
             }
+            */
+
+            //
+            //  Load "defaults"
+            // 
+            json_t* defaults = nullptr;
+            if(json_object_get(module_obj, "defaults"))
+            {
+                defaults = json_object_get(module_obj, "defaults");
+            }
+
 
             //
             //  Load "data"
             // 
-
             json_t* data = nullptr;
             if(json_object_get(module_obj, "data"))
             {

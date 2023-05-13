@@ -214,8 +214,10 @@ public:
 
             std::string module_uuid = config->uuid;
             std::string type = config->type;
-            std::map<unsigned int, float> params = config->params;
+            // std::map<unsigned int, float> params = config->params;
+
             json_t* data = config->data;
+            json_t* defaults = config->defaults;
 
             DEBUG(("Creating module of type " + type).c_str());
 
@@ -285,15 +287,45 @@ public:
                 modules[module_uuid] = module;
 
                 // Iterate over the params and set them on the module
+                /*
                 for (const auto &param : params)
                 {
                     unsigned int param_index = param.first;
                     float param_value = param.second;
                     module->setParameter(param_index, param_value);
                 }
+                */
 
-                // Set the data json
-                // module->setData(data);
+                // Example defaults look like:
+                //
+                // "defaults": {
+                //    "BPM": 120
+                // },
+
+                // Iterate over the defaults and set them on the module
+                if(defaults != nullptr)
+                {
+                    const char *key;
+                    json_t *value;
+                    void *iter = json_object_iter(defaults);
+                    unsigned int key_index = 0;
+
+                    while(iter)
+                    {
+                        key = json_object_iter_key(iter);
+                        value = json_object_iter_value(iter);
+
+                        if(json_is_number(value)) // Checks for real or integer values
+                        {
+                            float real_value = static_cast<float>(json_number_value(value)); // Gets the value as a double and casts to float
+                            module->setParameter(key_index, real_value);
+                        }
+
+                        iter = json_object_iter_next(defaults, iter);
+                        key_index++;
+                    }
+                }
+
             }
         }
     }

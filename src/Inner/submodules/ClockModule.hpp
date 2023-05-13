@@ -28,8 +28,7 @@ public:
 
     void process(unsigned int sample_rate) override 
     {
-        // float bpm = params[BPM_PARAM]->getValue();
-        float bpm = 120;
+        float bpm = params[BPM_PARAM]->getValue();
 
         // Clamp BPM to a minimum of 1
         bpm = clamp(bpm, 1.0f, 999.0f);
