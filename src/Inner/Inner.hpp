@@ -96,16 +96,16 @@ struct Inner : VoxglitchModule
             // Load parameters into map
             //
 
-            json_t* params_obj = json_object_get(module_obj, "params");
-            std::map<unsigned int, float> params;
+            json_t* defaults_obj = json_object_get(module_obj, "defaults");
+            std::map<unsigned int, float> defaults;
 
-            if (params_obj)
+            if (defaults_obj)
             {
                 const char* key;
                 json_t* value;
-                json_object_foreach(params_obj, key, value)
+                json_object_foreach(defaults_obj, key, value)
                 {
-                    params.emplace(std::stoi(key), (float)json_real_value(value));
+                    defaults.emplace(std::stoi(key), (float)json_real_value(value));
                 }
             }
 
@@ -119,7 +119,7 @@ struct Inner : VoxglitchModule
                 data = json_object_get(module_obj, "data");
             }
 
-            modules.push_back(new ModuleConfig(uuid, type, params, data));
+            modules.push_back(new ModuleConfig(uuid, type, defaults, data));
         }
 
         module_manager->setModuleConfigMap(modules);

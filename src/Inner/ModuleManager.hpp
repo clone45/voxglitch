@@ -69,6 +69,7 @@ Remember that adding more inputs can increase the complexity of the module, so i
 #include "submodules/TB303OscillatorModule.hpp"
 #include "submodules/TB303FilterModule.hpp"
 #include "submodules/VCOModule.hpp"
+#include "submodules/VoltageSequencerModule.hpp"
 #include "submodules/WaveFolderModule.hpp"
 #include "submodules/WaveShaperModule.hpp"
 #include "submodules/WavetableOscillatorModule.hpp"
@@ -262,6 +263,7 @@ public:
                 if (type == "TB303_OSCILLATOR") module = new TB303OscillatorModule();
                 if (type == "TB303_FILTER") module = new TB303FilterModule();
                 if (type == "VCO") module = new VCOModule();
+                if (type == "VOLTAGE_SEQUENCER") module = new VoltageSequencerModule(data);
                 if (type == "WAVE_FOLDER") module = new WaveFolderModule();
                 if (type == "WAVE_SHAPER") module = new WaveShaperModule();
                 if (type == "WAVETABLE_OSCILLATOR") module = new WavetableOscillatorModule();
@@ -291,7 +293,7 @@ public:
                 }
 
                 // Set the data json
-                module->setData(data);
+                // module->setData(data);
             }
         }
     }

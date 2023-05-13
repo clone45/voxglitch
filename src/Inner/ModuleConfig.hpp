@@ -7,7 +7,7 @@
 struct ModuleConfig
 {
     std::string type;
-    std::map<unsigned int, float> params;
+    std::map<unsigned int, float> params; // TODO: change this to "defaults"
     std::string uuid;
     json_t* data = nullptr;
 
