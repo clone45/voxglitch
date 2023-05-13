@@ -146,15 +146,16 @@ public:
     */
     bool createPatch()
     {
+
         // It's assumed that the module_config_map and connections_config_forward have been set
 
         // instantiate all modules
         instantiateModules(pitch_ptr, gate_ptr, p1, p2, p3, p4, p5, p6, p7, p8);
 
         // connect all modules
-        if(connectModules()) ready = true;
+        if(! connectModules()) return false;
 
-        debugPrintPatch();
+        // debugPrintPatch();
 
 
         // The "last module" will be the output module, and the last one in the chain
@@ -171,13 +172,24 @@ public:
             DEBUG("No terminal output module found");
             return false;
         }
+
+        // Set the ready flag to true
+        ready = true;
         
+        DEBUG("Patch is ready");
+
         return ready;
+
     }
 
     bool isReady()
     {
         return ready;
+    }
+
+    void setReady(bool ready)
+    {
+        this->ready = ready;
     }
 
     void setModuleConfigMap(std::vector<ModuleConfig*>& moduleConfigs) 
@@ -214,7 +226,6 @@ public:
 
             std::string module_uuid = config->uuid;
             std::string type = config->type;
-            // std::map<unsigned int, float> params = config->params;
 
             json_t* data = config->data;
             json_t* defaults = config->defaults;
@@ -286,16 +297,6 @@ public:
             {
                 modules[module_uuid] = module;
 
-                // Iterate over the params and set them on the module
-                /*
-                for (const auto &param : params)
-                {
-                    unsigned int param_index = param.first;
-                    float param_value = param.second;
-                    module->setParameter(param_index, param_value);
-                }
-                */
-
                 // Example defaults look like:
                 //
                 // "defaults": {
@@ -305,19 +306,19 @@ public:
                 // Iterate over the defaults and set them on the module
                 if(defaults != nullptr)
                 {
-                    const char *key;
+                    // const char *key;
                     json_t *value;
                     void *iter = json_object_iter(defaults);
                     unsigned int key_index = 0;
 
                     while(iter)
                     {
-                        key = json_object_iter_key(iter);
+                        // key = json_object_iter_key(iter);
                         value = json_object_iter_value(iter);
 
                         if(json_is_number(value)) // Checks for real or integer values
                         {
-                            float real_value = static_cast<float>(json_number_value(value)); // Gets the value as a double and casts to float
+                            float real_value = static_cast<float>(json_number_value(value));
                             module->setParameter(key_index, real_value);
                         }
 
@@ -359,29 +360,6 @@ public:
         return true;
     }
 
-    void debugPrintPatch()
-    {
-        // Print out all modules and connections
-        for (auto &module : modules)
-        {
-            // find the object type of the module
-            std::string module_type = typeid(*module.second).name();
-            DEBUG(module_type.c_str());
- 
-            DEBUG(("Module: " + module.first + " " + module_type).c_str());
-        }
-
-        DEBUG("Connections:");
-
-        for (auto &connection : connections_config_forward)
-        {
-            DEBUG(("  " + connection.source_module_uuid + "." + std::to_string(connection.source_port_index) + " -> " + connection.destination_module_uuid + "." + std::to_string(connection.destination_port_index)).c_str());
-        }
-
-        DEBUG("End of patch");
-    }
-
-
     //
     // Note: If I update this function to find the output module by type,
     // I may be able to remove the getOutputPorts function from all modules
@@ -399,15 +377,21 @@ public:
             if (module.second->getOutputPorts().size() == 0)
             {
                 out_module = module.second;
-
-                // std::string module_type = typeid(*out_module).name();
-                // DEBUG( ("Found output module of type " + module_type).c_str() );
             }
         }
 
         return(out_module);
     }
 
+
+    void clear()
+    {
+        modules.clear();
+        module_config_map.clear();
+        connections_config_forward.clear();
+
+        terminal_output_module = nullptr;
+    }
 
     /*
 
@@ -425,7 +409,7 @@ public:
         if (module->processing) return;
         module->processing = true;
 
-        std::string module_type = typeid(*module).name();
+        // std::string module_type = typeid(*module).name();
 
         // Here's the process:
         // 1. Get all of the inputs of the module

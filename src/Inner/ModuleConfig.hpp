@@ -7,7 +7,6 @@
 struct ModuleConfig
 {
     std::string type;
-    // std::map<unsigned int, float> params; // TODO: change this to "defaults"
     std::string uuid;
     json_t* defaults = nullptr;
     json_t* data = nullptr;
@@ -24,19 +23,13 @@ struct ModuleConfig
         if(data != nullptr) this->data = data;
     }
 
-    // get the default value for a parameter
-    float getDefaultValue(unsigned int param_id)
-    {
-        if(defaults != nullptr)
-        {
-            json_t* param = json_object_get(defaults, std::to_string(param_id).c_str());
-            if(param != nullptr)
-            {
-                return json_real_value(param);
-            }
+    ~ModuleConfig() {
+        if (defaults != nullptr) {
+            json_decref(defaults);
         }
-
-        return 0.0;
+        if (data != nullptr) {
+            json_decref(data);
+        }
     }
-
 };
+

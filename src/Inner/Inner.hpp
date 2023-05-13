@@ -78,6 +78,13 @@ struct Inner : VoxglitchModule
 
     void load_config_file(const std::string& filename)
     {
+        // set module_manager ready to false
+        module_manager->setReady(false);
+
+        // Clean out any old data if the module_manager has been used before
+        module_manager->clear();
+
+        // clear the module config map
         std::vector<ModuleConfig*> modules;
         std::ifstream file(filename);
 
@@ -92,41 +99,25 @@ struct Inner : VoxglitchModule
             std::string uuid = json_string_value(json_object_get(module_obj, "uuid"));
             std::string type = json_string_value(json_object_get(module_obj, "type"));
 
-            //
-            // Load default parameters into map
-            //
-            /*
-            json_t* defaults_obj = json_object_get(module_obj, "defaults");
-            std::map<unsigned int, float> defaults;
-
-            if (defaults_obj)
-            {
-                const char* key;
-                json_t* value;
-                json_object_foreach(defaults_obj, key, value)
-                {
-                    defaults.emplace(std::stoi(key), (float)json_real_value(value));
-                }
-            }
-            */
+            // If I didn't use json_deep_copy below, problems would occur when
+            // root is freed, which could cause intermittent crashes.
 
             //
             //  Load "defaults"
             // 
             json_t* defaults = nullptr;
-            if(json_object_get(module_obj, "defaults"))
+            if(json_t* defaults_obj = json_object_get(module_obj, "defaults")) 
             {
-                defaults = json_object_get(module_obj, "defaults");
+                defaults = json_deep_copy(defaults_obj);
             }
-
 
             //
             //  Load "data"
             // 
             json_t* data = nullptr;
-            if(json_object_get(module_obj, "data"))
+            if(json_t* data_obj = json_object_get(module_obj, "data")) 
             {
-                data = json_object_get(module_obj, "data");
+                data = json_deep_copy(data_obj);
             }
 
             modules.push_back(new ModuleConfig(uuid, type, defaults, data));
@@ -163,7 +154,10 @@ struct Inner : VoxglitchModule
         json_decref(root);
 
         // Tie the modules together and create the patch
-        module_manager->createPatch();
+        if (! module_manager->createPatch())
+        {
+            DEBUG("Failed to create patch");
+        }
     }
 
 
