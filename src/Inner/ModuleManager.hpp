@@ -66,6 +66,7 @@ Remember that adding more inputs can increase the complexity of the module, so i
 #include "submodules/Selector4Module.hpp"
 #include "submodules/Selector6Module.hpp"
 #include "submodules/Selector8Module.hpp"
+#include "submodules/TableLookupModule.hpp"
 #include "submodules/TB303OscillatorModule.hpp"
 #include "submodules/TB303FilterModule.hpp"
 #include "submodules/VCOModule.hpp"
@@ -273,6 +274,7 @@ public:
                 if (type == "SELECTOR4") module = new Selector4Module();
                 if (type == "SELECTOR6") module = new Selector6Module();
                 if (type == "SELECTOR8") module = new Selector8Module();
+                if (type == "TABLE_LOOKUP") module = new TableLookupModule();
                 if (type == "TB303_OSCILLATOR") module = new TB303OscillatorModule();
                 if (type == "TB303_FILTER") module = new TB303FilterModule();
                 if (type == "VCO") module = new VCOModule();
