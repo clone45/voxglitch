@@ -58,6 +58,7 @@ Remember that adding more inputs can increase the complexity of the module, so i
 #include "submodules/MorphingFilterModule.hpp"
 #include "submodules/NoiseModule.hpp"
 #include "submodules/OverdriveModule.hpp"
+#include "submodules/RampOscillatorModule.hpp"
 #include "submodules/SampleAndHoldModule.hpp"
 #include "submodules/ScaleQuantizerModule.hpp"
 #include "submodules/SchroederReverbModule.hpp"
@@ -266,6 +267,7 @@ public:
                 if (type == "PARAM7") module = new ParamModule(p7);
                 if (type == "PARAM8") module = new ParamModule(p8);
                 if (type == "PITCH_INPUT") module = new PitchInputModule(pitch_ptr);
+                if (type == "RAMP_OSCILLATOR") module = new RampOscillatorModule();
                 if (type == "SAMPLE_AND_HOLD") module = new SampleAndHoldModule();
                 if (type == "SCALE_QUANTIZER") module = new ScaleQuantizerModule();
                 if (type == "SCHROEDER_REVERB") module = new SchroederReverbModule();
@@ -274,7 +276,7 @@ public:
                 if (type == "SELECTOR4") module = new Selector4Module();
                 if (type == "SELECTOR6") module = new Selector6Module();
                 if (type == "SELECTOR8") module = new Selector8Module();
-                if (type == "TABLE_LOOKUP") module = new TableLookupModule();
+                if (type == "TABLE_LOOKUP") module = new TableLookupModule(data);
                 if (type == "TB303_OSCILLATOR") module = new TB303OscillatorModule();
                 if (type == "TB303_FILTER") module = new TB303FilterModule();
                 if (type == "VCO") module = new VCOModule();
@@ -315,7 +317,6 @@ public:
 
                     while(iter)
                     {
-                        // key = json_object_iter_key(iter);
                         value = json_object_iter_value(iter);
 
                         if(json_is_number(value)) // Checks for real or integer values

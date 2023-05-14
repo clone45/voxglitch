@@ -46,6 +46,12 @@ public:
 
     void setParameter(unsigned int param_id, float value) override
     {
+        // Check if param_id is valid
+        if (param_id >= params.size()) 
+        {
+            return;
+        }
+
         params[param_id]->setValue(value);
     }
 
