@@ -1,5 +1,6 @@
 // Rename to voxbuilder
 #include <fstream>
+#include "VoxbuilderLogger.hpp"
 
 struct Inner : VoxglitchModule
 {
@@ -17,9 +18,8 @@ struct Inner : VoxglitchModule
     float gate = 0.0;
 
     ModuleManager *module_manager;
-    
     std::string path = "";
-
+    
     enum ParamIds
     {
         NUM_PARAMS

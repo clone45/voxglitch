@@ -10,6 +10,7 @@
 
 #include "Sport.hpp"
 #include "IModule.h"
+#include "VoxbuilderLogger.hpp"
 
 // Utility modules
 #include "submodules/PitchInputModule.hpp"
@@ -148,6 +149,7 @@ public:
     */
     bool createPatch()
     {
+        VoxbuilderLogger::getInstance().log("CreatePatch Initiated");
 
         // It's assumed that the module_config_map and connections_config_forward have been set
 
@@ -157,9 +159,6 @@ public:
         // connect all modules
         if(! connectModules()) return false;
 
-        // debugPrintPatch();
-
-
         // The "last module" will be the output module, and the last one in the chain
         // It will be processed first, then the network will be traversed in reverse
         // to compute each module's output
@@ -167,18 +166,17 @@ public:
         // Find the last module in the chain and sets the member variable "terminal_output_module"
         terminal_output_module = findOutModule();
 
-        // If there's no terminal output module, then the patch is invalid and debug
-        // information will be printed
+        // If there's no terminal output module, then the patch is invalid
         if (terminal_output_module == nullptr) 
         {
-            DEBUG("No terminal output module found");
+            VoxbuilderLogger::getInstance().log("No output module found.  The patch must have an output module.");
             return false;
         }
 
         // Set the ready flag to true
         ready = true;
         
-        DEBUG("Patch is ready");
+        VoxbuilderLogger::getInstance().log("CreatePatch was successful.  Setting 'ready' to TRUE.");
 
         return ready;
 
@@ -231,8 +229,6 @@ public:
 
             json_t* data = config->data;
             json_t* defaults = config->defaults;
-
-            DEBUG(("Creating module of type " + type).c_str());
 
             IModule *module = nullptr;
 
@@ -287,14 +283,17 @@ public:
 
                 if(module == nullptr) 
                 {
-                    DEBUG("Unknown module type: ");
-                    DEBUG(type.c_str());
+                    VoxbuilderLogger::getInstance().log("ModuleManager.hpp::instantiateModules() - Unknown module type: " + type);
+                }
+                else
+                {
+                    VoxbuilderLogger::getInstance().log("Created module of type " + type + " having uuid " + module_uuid);
                 }
             }
             catch (const std::exception &e)
             {
                 std::string error = e.what();
-                DEBUG(error.c_str());
+                VoxbuilderLogger::getInstance().log("ModuleManager.hpp::instantiateModules()" + error);
             }
 
             if (module != nullptr)
@@ -339,9 +338,14 @@ public:
         for (const auto& connection : connections_config_forward)
         {
             // Connections go from "source" to "destination"
-
-            DEBUG(("Connecting ports from module " + connection.source_module_uuid + ", port " + std::to_string(connection.source_port_index) 
-                    + " to module " + connection.destination_module_uuid + ", port " + std::to_string(connection.destination_port_index)).c_str());
+            VoxbuilderLogger::getInstance().log(
+                "Connecting ports from module " 
+                + connection.source_module_uuid + ", port " 
+                + std::to_string(connection.source_port_index) 
+                + " to module " 
+                + connection.destination_module_uuid + ", port " 
+                + std::to_string(connection.destination_port_index)
+            );
 
             try 
             {
@@ -355,7 +359,7 @@ public:
             } 
             catch (const std::out_of_range& e) 
             {
-                DEBUG("Trouble connecting ports! Please check module and port names.");
+                VoxbuilderLogger::getInstance().log("Trouble connecting ports! Please check module and port names.");
                 return false;
             }           
         }
