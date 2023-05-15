@@ -13,6 +13,7 @@ private:
     std::vector<Sport *> connected_outputs;
     IModule *parent_module;
     float voltage = 0.0;
+    float lastVoltage = 0.0;
 
 public:
     // Constructor
@@ -32,10 +33,16 @@ public:
         connected_outputs.push_back(port);
     }
 
+    float getLastVoltage()
+    {
+        return lastVoltage;
+    }
+
     // Set voltage
     // This should really only be called the the Sport type is outout
     void setVoltage(float voltage)
     {
+        this->lastVoltage = voltage;
         this->voltage = voltage;
 
         // Iterate over connected_inputs and set the value of the inputs
@@ -49,7 +56,7 @@ public:
     // Get value
     float getVoltage() const
     {
-        return voltage;
+        return clamp(voltage, -50.0f, 50.0f);
     }
 
     // Get connected inputs

@@ -43,10 +43,13 @@ Remember that adding more inputs can increase the complexity of the module, so i
 // Synth modules
 #include "submodules/ADSRModule.hpp"
 #include "submodules/ADModule.hpp"
+#include "submodules/AdditionModule.hpp"
+#include "submodules/AmplifierModule.hpp"
 #include "submodules/ClockDividerModule.hpp"
 #include "submodules/ClockModule.hpp"
 #include "submodules/DelayModule.hpp"
 #include "submodules/DistortionModule.hpp"
+#include "submodules/DivisionModule.hpp"
 #include "submodules/ExponentialVCAModule.hpp"
 #include "submodules/FuzzModule.hpp"
 #include "submodules/LinearVCAModule.hpp"
@@ -56,7 +59,9 @@ Remember that adding more inputs can increase the complexity of the module, so i
 #include "submodules/Mixer3Module.hpp"
 #include "submodules/Mixer4Module.hpp"
 #include "submodules/Mixer8Module.hpp"
+#include "submodules/MoogLowpassFilterModule.hpp"
 #include "submodules/MorphingFilterModule.hpp"
+#include "submodules/MultiplicationModule.hpp"
 #include "submodules/NoiseModule.hpp"
 #include "submodules/OverdriveModule.hpp"
 #include "submodules/RampOscillatorModule.hpp"
@@ -68,6 +73,7 @@ Remember that adding more inputs can increase the complexity of the module, so i
 #include "submodules/Selector4Module.hpp"
 #include "submodules/Selector6Module.hpp"
 #include "submodules/Selector8Module.hpp"
+#include "submodules/SubtractionModule.hpp"
 #include "submodules/TableLookupModule.hpp"
 #include "submodules/TB303OscillatorModule.hpp"
 #include "submodules/TB303FilterModule.hpp"
@@ -235,11 +241,14 @@ public:
             try
             {
                 if (type == "AD") module = new ADModule();
+                if (type == "ADDITION") module = new AdditionModule();
                 if (type == "ADSR") module = new ADSRModule();
+                if (type == "AMPLIFIER") module = new AmplifierModule();
                 if (type == "CLOCK") module = new ClockModule();
                 if (type == "CLOCK_DIVIDER") module = new ClockDividerModule();
                 if (type == "DISTORTION") module = new DistortionModule();
                 if (type == "DELAY") module = new DelayModule();
+                if (type == "DIVISION") module = new DivisionModule();
                 if (type == "EXPONENTIAL_VCA") module = new ExponentialVCAModule();
                 if (type == "FUZZ") module = new FuzzModule();
                 if (type == "GATE_INPUT") module = new GateInputModule(gate_ptr);
@@ -250,7 +259,9 @@ public:
                 if (type == "MIXER3") module = new Mixer3Module();
                 if (type == "MIXER4") module = new Mixer4Module();
                 if (type == "MIXER8") module = new Mixer8Module();
+                if (type == "MOOG_LOWPASS_FILTER") module = new MoogLowpassFilterModule();
                 if (type == "MORPHING_FILTER") module = new MorphingFilterModule();
+                if (type == "MULTIPLICATION") module = new MultiplicationModule();
                 if (type == "NOISE") module = new NoiseModule();
                 if (type == "OUTPUT") module = new OutputModule();
                 if (type == "OVERDRIVE") module = new OverdriveModule();
@@ -267,6 +278,7 @@ public:
                 if (type == "SAMPLE_AND_HOLD") module = new SampleAndHoldModule();
                 if (type == "SCALE_QUANTIZER") module = new ScaleQuantizerModule();
                 if (type == "SCHROEDER_REVERB") module = new SchroederReverbModule();
+                if (type == "SUBTRACTION") module = new SubtractionModule();
                 if (type == "SELECTOR2") module = new Selector2Module();
                 if (type == "SELECTOR3") module = new Selector3Module();
                 if (type == "SELECTOR4") module = new Selector4Module();
@@ -410,13 +422,12 @@ public:
     */
 
     // This runs at sample rate
+    /*
     void processModule(IModule *module, unsigned int sample_rate)
     {
         // If the module has already been processed, return
         if (module->processing) return;
         module->processing = true;
-
-        // std::string module_type = typeid(*module).name();
 
         // Here's the process:
         // 1. Get all of the inputs of the module
@@ -457,6 +468,43 @@ public:
         module->process(sample_rate);
         module->processing = false;
     }
+    */
+
+    void processModule(IModule *module, unsigned int sample_rate)
+    {
+        if (module->processing) return;
+        module->processing = true;
+
+        std::vector<Sport *> input_ports = module->getInputPorts();
+
+        for (auto &input_port : input_ports)
+        {
+            if (input_port->isConnected())
+            {
+                std::vector<Sport *> connected_outputs = input_port->getConnectedOutputs();
+
+                if(connected_outputs.size() > 0)
+                {
+                    IModule *connected_module = connected_outputs[0]->getParentModule();
+
+                    if (!connected_module->processing)
+                    {
+                        processModule(connected_module, sample_rate);
+                    }
+                    else
+                    {
+                        // If the connected module is currently being processed,
+                        // use the output from the last timestep instead.
+                        input_port->setVoltage(connected_outputs[0]->getLastVoltage());
+                    }
+                }
+            }
+        }
+
+        module->process(sample_rate);
+        module->processing = false;
+    }
+
 
     //
     // process()
