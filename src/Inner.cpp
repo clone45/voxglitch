@@ -11,6 +11,7 @@
 #include "Inner/submodules/VCOModule.hpp"
 #include "Inner/ModuleConfig.hpp"
 #include "Inner/ModuleManager.hpp"
+#include "Inner/PatchRunner.hpp"
 #include "Inner/Inner.hpp"
 #include "Inner/InnerWidget.hpp"
 

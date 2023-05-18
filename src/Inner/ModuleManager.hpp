@@ -48,6 +48,7 @@ Remember that adding more inputs can increase the complexity of the module, so i
 #include "submodules/ClockDividerModule.hpp"
 #include "submodules/ClockModule.hpp"
 #include "submodules/DelayModule.hpp"
+#include "submodules/DelayLineModule.hpp"
 #include "submodules/DistortionModule.hpp"
 #include "submodules/DivisionModule.hpp"
 #include "submodules/ExponentialVCAModule.hpp"
@@ -185,7 +186,6 @@ public:
         VoxbuilderLogger::getInstance().log("CreatePatch was successful.  Setting 'ready' to TRUE.");
 
         return ready;
-
     }
 
     bool isReady()
@@ -206,6 +206,10 @@ public:
         }
     }
 
+    IModule *getTerminalOutputModule()
+    {
+        return terminal_output_module;
+    }
 
     // It can be assumed that the ports on the left are outputs and the ports
     // on the right are inputs, but adding the word "outputs" and "inputs" will
@@ -248,6 +252,7 @@ public:
                 if (type == "CLOCK_DIVIDER") module = new ClockDividerModule();
                 if (type == "DISTORTION") module = new DistortionModule();
                 if (type == "DELAY") module = new DelayModule();
+                if (type == "DELAY_LINE") module = new DelayLineModule();
                 if (type == "DIVISION") module = new DivisionModule();
                 if (type == "EXPONENTIAL_VCA") module = new ExponentialVCAModule();
                 if (type == "FUZZ") module = new FuzzModule();
@@ -420,56 +425,8 @@ public:
         Text created using https://fsymbols.com/generators/carty/
 
     */
-
+   /*
     // This runs at sample rate
-    /*
-    void processModule(IModule *module, unsigned int sample_rate)
-    {
-        // If the module has already been processed, return
-        if (module->processing) return;
-        module->processing = true;
-
-        // Here's the process:
-        // 1. Get all of the inputs of the module
-        // 2. Iterate over each of the inputs.
-        // 3. If there's a connection, make a recursive call to processModule with the connected module
-        // 4. Once all of the inputs have been processed, call the module's process function, which will use the inputs to compute the output
-
-        // 1. Get all of the inputs of the module
-        std::vector<Sport *> input_ports = module->getInputPorts();
-
-
-        // 2. Iterate over each of the inputs.
-        for (auto &input_port : input_ports)
-        {
-            // 3. If there's a connection, make a recursive call to processModule with the connected module
-            if (input_port->isConnected())
-            {
-                // I need to reconsider this code, which assumes that there's only one connected
-                // output per input.  HOwever, this may not necessarily be the case anymore.
-                std::vector<Sport *> connected_outputs = input_port->getConnectedOutputs();
-
-                if(connected_outputs.size() > 0)
-                {
-                    IModule *connected_module = connected_outputs[0]->getParentModule();
-
-                    // Heads up: this is a recursive call
-                    if (!connected_module->processing)
-                    {
-                        processModule(connected_module, sample_rate);
-                    }
-                }
-            }
-
-        }
-
-        // 4. Once all of the inputs have been processed, call the module's process function,
-        // which will read the inputs, do stuff, and set the outputs
-        module->process(sample_rate);
-        module->processing = false;
-    }
-    */
-
     void processModule(IModule *module, unsigned int sample_rate)
     {
         if (module->processing) return;
@@ -553,4 +510,5 @@ public:
             module.second->processing = false;
         }
     }
+    */
 };

@@ -18,6 +18,8 @@ struct Inner : VoxglitchModule
     float gate = 0.0;
 
     ModuleManager *module_manager;
+    PatchRunner *patch_runner;
+    IModule *terminal_output_module = nullptr;
     std::string path = "";
     
     enum ParamIds
@@ -47,6 +49,7 @@ struct Inner : VoxglitchModule
     Inner()
     {
         module_manager = new ModuleManager(&pitch, &gate, &p1, &p2, &p3, &p4, &p5, &p6, &p7, &p8);
+        patch_runner = new PatchRunner();
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
     }
 
@@ -70,7 +73,10 @@ struct Inner : VoxglitchModule
 
         // Calculate your audio output here
         if (module_manager->isReady())
-            audio_out = module_manager->process(args.sampleRate);
+        {
+            // audio_out = module_manager->process(args.sampleRate);
+            audio_out = patch_runner->process(args.sampleRate, terminal_output_module);
+        }
 
         // Set the output value
         outputs[AUDIO_OUTPUT].setVoltage(audio_out);
@@ -157,6 +163,10 @@ struct Inner : VoxglitchModule
         if (! module_manager->createPatch())
         {
             DEBUG("Failed to create patch");
+        }
+        else
+        {
+            terminal_output_module = module_manager->getTerminalOutputModule();
         }
     }
 
