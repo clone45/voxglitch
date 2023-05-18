@@ -1,5 +1,12 @@
-//
-// PatchConstructor.hpp
+/*
+
+    PatchConstructor.hpp
+    █▀█ ▄▀█ ▀█▀ █▀▀ █░█   █▀▀ █▀█ █▄░█ █▀ ▀█▀ █▀█ █░█ █▀▀ ▀█▀ █▀█ █▀█
+    █▀▀ █▀█ ░█░ █▄▄ █▀█   █▄▄ █▄█ █░▀█ ▄█ ░█░ █▀▄ █▄█ █▄▄ ░█░ █▄█ █▀▄
+    Text created using https://fsymbols.com/generators/carty/
+    
+*/
+
 //
 // This class takes JSON as input and creates a Patch object.
 // Patches need to be "runnable".  Eventually, I may store more than one
@@ -103,13 +110,25 @@ public:
         this->p8 = p8;
     }
 
-    /*
+    /**
+     * Creates a Patch object based on the provided JSON configuration.
+     *
+     * @param root The root JSON object representing the patch configuration.
+     * @return A pointer to the created Patch object, or nullptr if the patch creation failed.
+     *
+     * The function extracts the module configurations and connection configurations from the JSON.
+     * It calls the `parseModulesConfiguration` function to parse the module configurations and retrieve a map of module UUIDs to ModuleConfig pointers.
+     * It calls the `parseConnectionsConfiguration` function to parse the connection configurations and retrieve a vector of Connection objects.
+     * Then, it calls the `instantiateModules` function to create instances of the module classes based on the module configurations.
+     * The instantiated modules are stored in a map, where the key is the module UUID and the value is a pointer to the module.
+     * The function then calls the `connectModules` function to establish the connections between the modules using the connection configurations.
+     * If the connection process fails, the function returns nullptr.
+     * Next, the function finds the terminal output module in the module map and sets it as the terminal output module for the patch.
+     * If no terminal output module is found, the function returns nullptr.
+     * Finally, it creates a new Patch object, sets the terminal output module and the modules map, and returns a pointer to the created Patch object.
+     * The function logs messages to the VoxbuilderLogger instance to indicate the progress and any errors encountered.
+     */
 
-        █▀▀ █▀█ █▄░█ █▀ ▀█▀ █▀█ █░█ █▀▀ ▀█▀   █▀█ ▄▀█ ▀█▀ █▀▀ █░█
-        █▄▄ █▄█ █░▀█ ▄█ ░█░ █▀▄ █▄█ █▄▄ ░█░   █▀▀ █▀█ ░█░ █▄▄ █▀█
-        Text created using https://fsymbols.com/generators/carty/
-
-    */
     Patch *createPatch(json_t* root)
     {
         VoxbuilderLogger::getInstance().log("createPatch Initiated");
@@ -184,13 +203,31 @@ public:
     }
 
 
-    //
-    // instantiateModules()
-    //
-    // This function creates instances of the module classes and returns
-    // a map of the modules, where the key is the module's uuid, and the
-    // value is a pointer to the module.
-    //
+    /**
+     * Instantiates module classes based on the provided module configurations and returns a map of the modules,
+     * where the key is the module's uuid, and the value is a pointer to the module
+     *
+     * @param module_configurations An unordered map of module UUIDs to corresponding ModuleConfig pointers.
+     * @param pitch_ptr A pointer to the pitch value.
+     * @param gate_ptr A pointer to the gate value.
+     * @param p1 A pointer to the parameter value for PARAM1.
+     * @param p2 A pointer to the parameter value for PARAM2.
+     * @param p3 A pointer to the parameter value for PARAM3.
+     * @param p4 A pointer to the parameter value for PARAM4.
+     * @param p5 A pointer to the parameter value for PARAM5.
+     * @param p6 A pointer to the parameter value for PARAM6.
+     * @param p7 A pointer to the parameter value for PARAM7.
+     * @param p8 A pointer to the parameter value for PARAM8.
+     * @return A map of the modules, where the key is the module's UUID and the value is a pointer to the module.
+     *
+     * The function iterates over the module configurations and creates instances of the corresponding module classes.
+     * It retrieves the UUID, type, data, and defaults for each module from the ModuleConfig object.
+     * Based on the module type, it instantiates the appropriate module class and assigns it to the module pointer.
+     * If an unknown module type is encountered, an error message is logged.
+     * The function also sets the parameter values from the defaults on the module, if provided.
+     * Finally, it sets the UUID on the module, adds it to the modules map, and returns the map of modules.
+     * The function logs messages to the VoxbuilderLogger instance to indicate the creation of each module and any errors encountered.
+     */
 
     std::map<std::string, IModule *> instantiateModules(std::unordered_map<std::string, ModuleConfig*> module_configurations, float *pitch_ptr, float *gate_ptr, float *p1, float *p2, float *p3, float *p4, float *p5, float *p6, float *p7, float *p8)
     {
@@ -320,6 +357,21 @@ public:
         return modules;
     }
 
+    /**
+     * Connects the modules based on the provided connections configuration.
+     *
+     * @param modules_map A map of module UUIDs to corresponding IModule pointers.
+     * @param connections_config A vector of Connection objects representing the connections between modules.
+     * @return A boolean indicating whether the module connections were successfully established.
+     *
+     * The function iterates over the connections in the connections configuration and establishes the connections between
+     * the corresponding modules. It retrieves the source and destination modules and their respective ports based on the
+     * UUIDs and port indices provided in the Connection objects. It then establishes the connections between the ports.
+     * If any module or port is not found in the modules_map, the function logs an error message and returns false.
+     * The logged error message includes the contents of the modules_map and connections_config for debugging purposes.
+     * If all connections are successfully established, the function returns true.
+     */
+
     bool connectModules(std::map<std::string, IModule*> modules_map, std::vector<Connection> connections_config)
     {
         for (const auto& connection : connections_config)
@@ -406,6 +458,19 @@ public:
         return(module_config_map);
     }
 
+    /**
+     * Parses the modules configuration from the given JSON object and returns a map of module configurations.
+     *
+     * @param root A pointer to the JSON object containing the modules configuration.
+     * @return An unordered map of module configurations, where the keys are module UUIDs and the values are pointers to ModuleConfig objects.
+     *
+     * The function iterates over the modules in the JSON object and extracts the UUID, type, defaults, and data for each module.
+     * It creates a new ModuleConfig object for each module and adds it to a vector.
+     * Finally, it converts the vector of module configurations into an unordered map, using the UUIDs as keys, and returns the map.
+     * If the JSON object is empty or does not contain any modules, an empty map is returned.
+     * The function logs messages to the VoxbuilderLogger instance for important events and errors during the parsing process.
+     * The logged messages include information about the number of modules found, any missing UUIDs or types, and the contents of the resulting module configuration map.
+     */
     std::unordered_map<std::string, ModuleConfig*> parseModulesConfiguration(json_t* root)
     {
         std::vector<ModuleConfig*> module_config_vector;
@@ -477,9 +542,22 @@ public:
             VoxbuilderLogger::getInstance().log("parseModulesConfiguration: Found " + std::to_string(module_config_map.size()) + " modules in configuration json.");
         }
 
-
         return(module_config_map);
     }
+
+
+
+    /**
+     * Parses the connections configuration from the given JSON object and returns a vector of Connection objects.
+     *
+     * @param root A pointer to the JSON object containing the connections configuration.
+     * @return A vector of Connection objects representing the connections between modules.
+     *
+     * The function iterates over the connections in the JSON object and extracts the source and destination module UUIDs
+     * and port IDs for each connection. It creates a new Connection object for each connection and adds it to a vector.
+     * Finally, it returns the vector of Connection objects representing the connections between modules.
+     * If the JSON object is empty or does not contain any connections, an empty vector is returned.
+     */
 
     std::vector<Connection> parseConnectionsConfiguration(json_t* root)
     {

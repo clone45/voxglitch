@@ -37,8 +37,6 @@ public:
     void clear()
     {
         modules.clear();
-        // module_config_map.clear();
-        // connections_config_forward.clear();
         terminal_output_module = nullptr;
     }
 
