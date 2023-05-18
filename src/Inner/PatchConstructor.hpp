@@ -1,6 +1,10 @@
 //
 // PatchConstructor.hpp
 //
+// This class takes JSON as input and creates a Patch object.
+// Patches need to be "runnable".  Eventually, I may store more than one
+// patch in memory, and they'll need to be loaded in advance.
+//
 // TODO: 
 // - Send through sample rate
 // - Figure out how to represent PI
@@ -75,18 +79,18 @@ class PatchConstructor
 
 private:
     // Pointers
-    Patch *patch = nullptr;
+    // Patch *patch = nullptr;
     float *pitch_ptr;
     float *gate_ptr;
-    float *p1, *p2, *p3, *p4, *p5, *p6, *p7, *p8;
+    float *p1, *p2, *p3, *p4, *p5, *p6, *p7, *p8;    
+    std::vector<Connection> connections_config;
 
 public:
 
     bool ready = false;
 
-    PatchConstructor(Patch *patch, float *pitch_ptr, float *gate_ptr, float *p1, float *p2, float *p3, float *p4, float *p5, float *p6, float *p7, float *p8)
+    PatchConstructor(float *pitch_ptr, float *gate_ptr, float *p1, float *p2, float *p3, float *p4, float *p5, float *p6, float *p7, float *p8)
     {
-        this->patch = patch;
         this->pitch_ptr = pitch_ptr;
         this->gate_ptr = gate_ptr;
         this->p1 = p1;
@@ -106,38 +110,67 @@ public:
         Text created using https://fsymbols.com/generators/carty/
 
     */
-    bool createPatch()
+    Patch *createPatch(json_t* root)
     {
-        VoxbuilderLogger::getInstance().log("CreatePatch Initiated");
+        VoxbuilderLogger::getInstance().log("createPatch Initiated");
 
-        // It's assumed that the module_config_map and connections_config_forward have been set
+        // Get the module configurations and connection configurations from the JSON
+        std::unordered_map<std::string, ModuleConfig*> module_config_map = parseModulesConfiguration(root);;
+        std::vector<Connection> connections_config_vector = parseConnectionsConfiguration(root);
+
+        // Debugging notes
+        // I've test module_config_map and verified that it's good going into this function
+        // It has keys as uuids and values as pointers to ModuleConfig objects.
+        // The uuids are populated correctly.
 
         // instantiate all modules
-        instantiateModules(pitch_ptr, gate_ptr, p1, p2, p3, p4, p5, p6, p7, p8);
+        std::map<std::string, IModule*> modules_map = instantiateModules(module_config_map, pitch_ptr, gate_ptr, p1, p2, p3, p4, p5, p6, p7, p8);
 
-        // connect all modules
-        if(! connectModules()) return false;
+        // Debugging notes
+        // The modules_map does not have the uuid keys set properly.  
+        // This is because the uuid is set in the constructor of the module, and
+        // the module is created in the instantiateModules function.
+
+        VoxbuilderLogger::getInstance().log("FOR TESTING");
+        
+        for (const auto& uuid_module_ptr_map : modules_map)
+        {
+            // log it
+            VoxbuilderLogger::getInstance().log("Module uuid: " + uuid_module_ptr_map.first + ", type: " + uuid_module_ptr_map.second->uuid);
+        }
+
+        // connect all modules.  Note that module_map is being sent in by reference
+        // and will be updated with the connections.
+        if(! connectModules(modules_map, connections_config_vector)) return nullptr;
 
         // The "last module" will be the output module, and the last one in the chain
         // It will be processed first, then the network will be traversed in reverse
         // to compute each module's output
 
         // Find the last module in the chain and sets the member variable "terminal_output_module"
-        patch->terminal_output_module = findOutModule();
+        IModule *terminal_output_module = findOutModule(modules_map);
 
         // If there's no terminal output module, then the patch is invalid
-        if (patch->terminal_output_module == nullptr) 
+        if (terminal_output_module == nullptr) 
         {
             VoxbuilderLogger::getInstance().log("No output module found.  The patch must have an output module.");
-            return false;
+            return nullptr;
+        }
+        else
+        {
+            VoxbuilderLogger::getInstance().log("Found terminal output module with uuid " + terminal_output_module->uuid);
         }
 
-        // Set the ready flag to true
-        ready = true;
-        
+        // Set ready flag to true
+        // (Do I need the ready flag anymore?)
         VoxbuilderLogger::getInstance().log("CreatePatch was successful.  Setting 'ready' to TRUE.");
 
-        return ready;
+        // Populate the patch object
+        Patch *patch = new Patch();
+        patch->setTerminalOutputModule(terminal_output_module);
+        patch->setModules(modules_map);
+
+        return patch;
     }
 
     bool isReady()
@@ -150,39 +183,22 @@ public:
         this->ready = ready;
     }
 
-    void setModuleConfigMap(std::vector<ModuleConfig*>& moduleConfigs) 
-    {
-        for (ModuleConfig* config : moduleConfigs) 
-        {
-            patch->module_config_map[config->uuid] = config;
-        }
-    }
-
-    IModule *getTerminalOutputModule()
-    {
-        return patch->terminal_output_module;
-    }
-
-    // It can be assumed that the ports on the left are outputs and the ports
-    // on the right are inputs, but adding the word "outputs" and "inputs" will
-    // make it more clear to people.
-
-    void setConnections(std::vector<Connection> connections)
-    {
-        patch->connections_config_forward = connections;
-    }
 
     //
-    // instantiateAllModules()
+    // instantiateModules()
     //
-    // This function creates instances of the module classes and adds them to the
-    // "modules" map, where the map is in the format of: modules[name] = module
+    // This function creates instances of the module classes and returns
+    // a map of the modules, where the key is the module's uuid, and the
+    // value is a pointer to the module.
     //
 
-    void instantiateModules(float *pitch_ptr, float *gate_ptr, float *p1, float *p2, float *p3, float *p4, float *p5, float *p6, float *p7, float *p8)
+    std::map<std::string, IModule *> instantiateModules(std::unordered_map<std::string, ModuleConfig*> module_configurations, float *pitch_ptr, float *gate_ptr, float *p1, float *p2, float *p3, float *p4, float *p5, float *p6, float *p7, float *p8)
     {
+        // This is what we want to populate and return
+        std::map<std::string, IModule*> modules;
+
         // iterate over module_configs and create instances of the module classes
-        for (const auto &module_config_data : patch->module_config_map)
+        for (const auto &module_config_data : module_configurations)
         {
             ModuleConfig *config = module_config_data.second;
 
@@ -267,8 +283,6 @@ public:
 
             if (module != nullptr)
             {
-                patch->modules[module_uuid] = module;
-
                 // Example defaults look like:
                 //
                 // "defaults": {
@@ -298,13 +312,17 @@ public:
                     }
                 }
 
+                module->setUuid(module_uuid);
+                modules[module_uuid] = module;
             }
         }
+
+        return modules;
     }
 
-    bool connectModules()
+    bool connectModules(std::map<std::string, IModule*> modules_map, std::vector<Connection> connections_config)
     {
-        for (const auto& connection : patch->connections_config_forward)
+        for (const auto& connection : connections_config)
         {
             // Connections go from "source" to "destination"
             VoxbuilderLogger::getInstance().log(
@@ -318,8 +336,8 @@ public:
 
             try 
             {
-                IModule* source_module = patch->modules.at(connection.source_module_uuid);
-                IModule* dest_module = patch->modules.at(connection.destination_module_uuid);
+                IModule* source_module = modules_map.at(connection.source_module_uuid);
+                IModule* dest_module = modules_map.at(connection.destination_module_uuid);
                 Sport* source_port = source_module->getOutputPort(connection.source_port_index);
                 Sport* dest_port = dest_module->getInputPort(connection.destination_port_index);
 
@@ -329,6 +347,23 @@ public:
             catch (const std::out_of_range& e) 
             {
                 VoxbuilderLogger::getInstance().log("Trouble connecting ports! Please check module and port names.");
+
+                // Log each module's uuid and type
+                VoxbuilderLogger::getInstance().log("Contents of modules_map: ");
+
+                for (const auto& module : modules_map)
+                {
+                    VoxbuilderLogger::getInstance().log("Module uuid: " + module.first + ", type: " + module.second->uuid);
+                }
+
+                // Log each connection
+                VoxbuilderLogger::getInstance().log("Contents of connections_config: ");
+
+                for (const auto& connection : connections_config)
+                {
+                    VoxbuilderLogger::getInstance().log("Connection source module uuid: " + connection.source_module_uuid + ", source port index: " + std::to_string(connection.source_port_index) + ", destination module uuid: " + connection.destination_module_uuid + ", destination port index: " + std::to_string(connection.destination_port_index));
+                }
+
                 return false;
             }           
         }
@@ -340,7 +375,7 @@ public:
     // Note: If I update this function to find the output module by type,
     // I may be able to remove the getOutputPorts function from all modules
     // and from the IModule interface
-    IModule *findOutModule()
+    IModule *findOutModule(std::map<std::string, IModule*> modules_map)
     {
         IModule *out_module = nullptr;
 
@@ -348,7 +383,7 @@ public:
         // Why module.second? Because module is a pair: module.first is the id
         //   and module.second is the module object
 
-        for (auto &module : patch->modules)
+        for (auto &module : modules_map)
         {
             if (module.second->getOutputPorts().size() == 0)
             {
@@ -358,4 +393,117 @@ public:
 
         return(out_module);
     }
+
+    std::unordered_map<std::string, ModuleConfig*> convertToMap(std::vector<ModuleConfig*> moduleConfigs) 
+    {
+        std::unordered_map<std::string, ModuleConfig*> module_config_map;
+
+        for (ModuleConfig* config : moduleConfigs) 
+        {
+            module_config_map[config->uuid] = config;
+        }
+
+        return(module_config_map);
+    }
+
+    std::unordered_map<std::string, ModuleConfig*> parseModulesConfiguration(json_t* root)
+    {
+        std::vector<ModuleConfig*> module_config_vector;
+
+        json_t* modules_array = json_object_get(root, "modules");
+        size_t modules_size = json_array_size(modules_array);
+
+        for (size_t i = 0; i < modules_size; ++i)
+        {
+            json_t* module_obj = json_array_get(modules_array, i);
+
+            std::string uuid = json_string_value(json_object_get(module_obj, "uuid"));
+            std::string type = json_string_value(json_object_get(module_obj, "type"));
+
+            // log if the uuid is empty
+            if(uuid.empty() || uuid == "none") 
+            {
+                VoxbuilderLogger::getInstance().log("parseModulesConfiguration: Module uuid not present. UUID: " + uuid);
+            }
+
+            // log if the type is empty
+            if(type.empty()) 
+            {
+                VoxbuilderLogger::getInstance().log("parseModulesConfiguration: Module type is empty.");
+            }
+
+            // If I didn't use json_deep_copy below, problems would occur when
+            // root is freed, which could cause intermittent crashes.
+
+            //
+            //  Load "defaults"
+            // 
+            json_t* defaults = nullptr;
+            if(json_t* defaults_obj = json_object_get(module_obj, "defaults")) 
+            {
+                defaults = json_deep_copy(defaults_obj);
+            }
+
+            //
+            //  Load "data"
+            // 
+            json_t* data = nullptr;
+            if(json_t* data_obj = json_object_get(module_obj, "data")) 
+            {
+                data = json_deep_copy(data_obj);
+            }
+
+            module_config_vector.push_back(new ModuleConfig(uuid, type, defaults, data));
+        }
+
+        std::unordered_map<std::string, ModuleConfig*> module_config_map = convertToMap(module_config_vector);
+
+        // Test to see if the map is empty and if so, log a message
+        if(module_config_map.empty()) 
+        {
+            VoxbuilderLogger::getInstance().log("parseModulesConfiguration: No modules found in configuration json.");
+
+            // Also log the contents of the json for module_config_map
+            VoxbuilderLogger::getInstance().log("parseModulesConfiguration: Contents of module_config_map: ");
+
+            for (const auto& module_config : module_config_map)
+            {
+                VoxbuilderLogger::getInstance().log("Module uuid: " + module_config.first + ", type: " + module_config.second->type);
+            }
+        }
+        else
+        {
+            // Log how many modules were found
+            VoxbuilderLogger::getInstance().log("parseModulesConfiguration: Found " + std::to_string(module_config_map.size()) + " modules in configuration json.");
+        }
+
+
+        return(module_config_map);
+    }
+
+    std::vector<Connection> parseConnectionsConfiguration(json_t* root)
+    {
+        std::vector<Connection> connections_config;
+
+        json_t* connections_array = json_object_get(root, "connections");
+        size_t connections_size = json_array_size(connections_array);
+
+        for (size_t i = 0; i < connections_size; ++i)
+        {
+            json_t* connection_obj = json_array_get(connections_array, i);
+
+            json_t* src_obj = json_object_get(connection_obj, "src");
+            std::string src_module_uuid = json_string_value(json_object_get(src_obj, "module_uuid"));
+            unsigned int src_port_id = json_integer_value(json_object_get(src_obj, "port_id"));
+
+            json_t* dst_obj = json_object_get(connection_obj, "dst");
+            std::string dst_module_uuid = json_string_value(json_object_get(dst_obj, "module_uuid"));
+            unsigned int dst_port_id = json_integer_value(json_object_get(dst_obj, "port_id"));
+
+            connections_config.push_back(Connection(src_module_uuid, src_port_id, dst_module_uuid, dst_port_id));
+        }
+
+        return connections_config;
+    }
+
 };

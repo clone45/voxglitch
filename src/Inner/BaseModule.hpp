@@ -60,6 +60,11 @@ public:
         this->data = data;
     }
 
+    void setUuid(std::string uuid) override
+    {
+        this->uuid = uuid;
+    }
+
     Sport* getOutputPort(unsigned int port_id) override
     {
         return outputs[port_id];

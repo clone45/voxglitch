@@ -19,7 +19,9 @@ struct Inner : VoxglitchModule
 
     PatchConstructor *patch_constructor = nullptr;
     PatchRunner *patch_runner = nullptr;
+    PatchLoader *patch_loader = nullptr;
     Patch *patch = nullptr;
+
     IModule *terminal_output_module = nullptr;
     std::string path = "";
     
@@ -49,9 +51,9 @@ struct Inner : VoxglitchModule
 
     Inner()
     {
-        patch = new Patch();
         patch_runner = new PatchRunner();
-        patch_constructor = new PatchConstructor(patch, &pitch, &gate, &p1, &p2, &p3, &p4, &p5, &p6, &p7, &p8);
+        patch_loader = new PatchLoader();
+        patch_constructor = new PatchConstructor(&pitch, &gate, &p1, &p2, &p3, &p4, &p5, &p6, &p7, &p8);
         
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
     }
@@ -90,87 +92,33 @@ struct Inner : VoxglitchModule
         // set module_manager ready to false
         patch_constructor->setReady(false);
 
-        // Clean out any old data if the patch_constructor has been used before
-        patch->clear();
+        json_t* root = patch_loader->load(filename);
 
-        // clear the module config map
-        std::vector<ModuleConfig*> modules;
-        std::ifstream file(filename);
-
-        json_t* root = json_load_file(filename.c_str(), 0, nullptr);
-        json_t* modules_array = json_object_get(root, "modules");
-        size_t modules_size = json_array_size(modules_array);
-
-        for (size_t i = 0; i < modules_size; ++i)
+        if (root == nullptr)
         {
-            json_t* module_obj = json_array_get(modules_array, i);
-
-            std::string uuid = json_string_value(json_object_get(module_obj, "uuid"));
-            std::string type = json_string_value(json_object_get(module_obj, "type"));
-
-            // If I didn't use json_deep_copy below, problems would occur when
-            // root is freed, which could cause intermittent crashes.
-
-            //
-            //  Load "defaults"
-            // 
-            json_t* defaults = nullptr;
-            if(json_t* defaults_obj = json_object_get(module_obj, "defaults")) 
-            {
-                defaults = json_deep_copy(defaults_obj);
-            }
-
-            //
-            //  Load "data"
-            // 
-            json_t* data = nullptr;
-            if(json_t* data_obj = json_object_get(module_obj, "data")) 
-            {
-                data = json_deep_copy(data_obj);
-            }
-
-            modules.push_back(new ModuleConfig(uuid, type, defaults, data));
+            VoxbuilderLogger::getInstance().log("Failed to load patch.");
+            return;
         }
 
-        patch_constructor->setModuleConfigMap(modules);
-
         //
-        // Load and set the connections
+        /////////////////////////////////////////////
+
+        this->patch = patch_constructor->createPatch(root);
+
+        /////////////////////////////////////////////
         //
 
-        std::vector<Connection> connections;
-        json_t* connections_array = json_object_get(root, "connections");
-        size_t connections_size = json_array_size(connections_array);
-
-        for (size_t i = 0; i < connections_size; ++i)
+        if (this->patch == nullptr)
         {
-            json_t* connection_obj = json_array_get(connections_array, i);
-
-            json_t* src_obj = json_object_get(connection_obj, "src");
-            std::string src_module_uuid = json_string_value(json_object_get(src_obj, "module_uuid"));
-            unsigned int src_port_id = json_integer_value(json_object_get(src_obj, "port_id"));
-
-            json_t* dst_obj = json_object_get(connection_obj, "dst");
-            std::string dst_module_uuid = json_string_value(json_object_get(dst_obj, "module_uuid"));
-            unsigned int dst_port_id = json_integer_value(json_object_get(dst_obj, "port_id"));
-
-            // connections.emplace_back(src_module_id, src_port_id, dst_module_id, dst_port_id);
-            connections.push_back(Connection(src_module_uuid, src_port_id, dst_module_uuid, dst_port_id));
+            VoxbuilderLogger::getInstance().log("Failed to create patch.");
+            return;
         }
-
-        patch_constructor->setConnections(connections);
 
         json_decref(root);
 
-        // Tie the modules together and create the patch
-        if (! patch_constructor->createPatch())
-        {
-            DEBUG("Failed to create patch");
-        }
-        else
-        {
-            terminal_output_module = patch_constructor->getTerminalOutputModule();
-        }
+        this->terminal_output_module = patch->getTerminalOutputModule();
+
+        patch_constructor->setReady(true);
     }
 
 

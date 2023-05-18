@@ -3,6 +3,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include "VoxbuilderLogger.hpp"
 
 struct ModuleConfig
 {
@@ -17,7 +18,9 @@ struct ModuleConfig
         this->uuid = uuid;
         this->type = type;
 
-        // this->params = params;
+        // Log the uuid and type
+        std::string log_msg = "ModuleConfig instantiated with: uuid: " + uuid + ", type: " + type;
+        VoxbuilderLogger::getInstance().log(log_msg);
 
         if(defaults != nullptr) this->defaults = defaults;
         if(data != nullptr) this->data = data;
