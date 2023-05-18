@@ -1,5 +1,5 @@
 //
-// ModuleManager.hpp
+// PatchConstructor.hpp
 //
 // TODO: 
 // - Send through sample rate
@@ -10,6 +10,8 @@
 
 #include "Sport.hpp"
 #include "IModule.h"
+#include "Patch.hpp"
+#include "Connection.hpp"
 #include "VoxbuilderLogger.hpp"
 
 // Utility modules
@@ -17,28 +19,6 @@
 #include "submodules/GateInputModule.hpp"
 #include "submodules/OutputModule.hpp"
 #include "submodules/ParamModule.hpp"
-
-// arpeggiator
-// AD
-// quantizer
-// sequencer
-// slew limiter
-// Advanced distortion
-/*
-Adding more inputs can make the DistortionModule more versatile and fun. Here are a few ideas:
-
-    Tone control: Similar to the OverdriveModule, adding a tone control input allows users to adjust the balance between low and high frequencies in the output signal. This can be done by implementing a low-pass filter (LPF) and high-pass filter (HPF).
-
-    Wet/Dry mix: Add a wet/dry mix input to control the balance between the original audio signal (dry) and the distorted audio signal (wet). This allows users to blend the distortion effect with the original signal, creating a more subtle effect or more aggressive distortion.
-
-    Asymmetry: Introduce an asymmetry input to control the balance between positive and negative distortion. Asymmetrical distortion can create more complex harmonics and a different character in the sound.
-
-    Envelope follower: Add an envelope follower input that controls the drive parameter based on the amplitude of the input audio signal. This can create a dynamic distortion effect that responds to the input signal's volume, making it more expressive.
-
-    Multi-stage distortion: Implement a multi-stage distortion by adding a "Stages" input that selects the number of times the distortion is applied to the input signal. This can create a more aggressive and complex distortion effect.
-
-Remember that adding more inputs can increase the complexity of the module, so it's essential to maintain a balance between versatility and ease of use.
-*/
 
 // Synth modules
 #include "submodules/ADSRModule.hpp"
@@ -90,41 +70,12 @@ Remember that adding more inputs can increase the complexity of the module, so i
 #include <string>
 #include <utility>
 
-class Connection
-{
-public:
-    std::string source_module_uuid;
-    unsigned int source_port_index;
-    std::string destination_module_uuid;
-    unsigned int destination_port_index;
-
-    Connection(
-        std::string src_mod_uuid, 
-        unsigned int src_port_idx, 
-        std::string dest_mod_uuid, 
-        unsigned int dest_port_idx
-    ) : 
-    source_module_uuid(src_mod_uuid), 
-    source_port_index(src_port_idx), 
-    destination_module_uuid(dest_mod_uuid), 
-    destination_port_index(dest_port_idx) 
-    {}
-};
-
-class ModuleManager
+class PatchConstructor
 {
 
 private:
-    std::map<std::string, IModule *> modules;
-
-    // module_config_map is a map of module names to module configs
-    std::unordered_map<std::string, ModuleConfig *> module_config_map;
-
-    std::vector<Connection> connections_config_forward;    
-
-    IModule *terminal_output_module = nullptr;
-
     // Pointers
+    Patch *patch = nullptr;
     float *pitch_ptr;
     float *gate_ptr;
     float *p1, *p2, *p3, *p4, *p5, *p6, *p7, *p8;
@@ -133,8 +84,9 @@ public:
 
     bool ready = false;
 
-    ModuleManager(float *pitch_ptr, float *gate_ptr, float *p1, float *p2, float *p3, float *p4, float *p5, float *p6, float *p7, float *p8)
+    PatchConstructor(Patch *patch, float *pitch_ptr, float *gate_ptr, float *p1, float *p2, float *p3, float *p4, float *p5, float *p6, float *p7, float *p8)
     {
+        this->patch = patch;
         this->pitch_ptr = pitch_ptr;
         this->gate_ptr = gate_ptr;
         this->p1 = p1;
@@ -171,10 +123,10 @@ public:
         // to compute each module's output
 
         // Find the last module in the chain and sets the member variable "terminal_output_module"
-        terminal_output_module = findOutModule();
+        patch->terminal_output_module = findOutModule();
 
         // If there's no terminal output module, then the patch is invalid
-        if (terminal_output_module == nullptr) 
+        if (patch->terminal_output_module == nullptr) 
         {
             VoxbuilderLogger::getInstance().log("No output module found.  The patch must have an output module.");
             return false;
@@ -202,13 +154,13 @@ public:
     {
         for (ModuleConfig* config : moduleConfigs) 
         {
-            module_config_map[config->uuid] = config;
+            patch->module_config_map[config->uuid] = config;
         }
     }
 
     IModule *getTerminalOutputModule()
     {
-        return terminal_output_module;
+        return patch->terminal_output_module;
     }
 
     // It can be assumed that the ports on the left are outputs and the ports
@@ -217,7 +169,7 @@ public:
 
     void setConnections(std::vector<Connection> connections)
     {
-        connections_config_forward = connections;
+        patch->connections_config_forward = connections;
     }
 
     //
@@ -230,7 +182,7 @@ public:
     void instantiateModules(float *pitch_ptr, float *gate_ptr, float *p1, float *p2, float *p3, float *p4, float *p5, float *p6, float *p7, float *p8)
     {
         // iterate over module_configs and create instances of the module classes
-        for (const auto &module_config_data : module_config_map)
+        for (const auto &module_config_data : patch->module_config_map)
         {
             ModuleConfig *config = module_config_data.second;
 
@@ -300,7 +252,7 @@ public:
 
                 if(module == nullptr) 
                 {
-                    VoxbuilderLogger::getInstance().log("ModuleManager.hpp::instantiateModules() - Unknown module type: " + type);
+                    VoxbuilderLogger::getInstance().log("PatchConstructor.hpp::instantiateModules() - Unknown module type: " + type);
                 }
                 else
                 {
@@ -310,12 +262,12 @@ public:
             catch (const std::exception &e)
             {
                 std::string error = e.what();
-                VoxbuilderLogger::getInstance().log("ModuleManager.hpp::instantiateModules()" + error);
+                VoxbuilderLogger::getInstance().log("PatchConstructor.hpp::instantiateModules()" + error);
             }
 
             if (module != nullptr)
             {
-                modules[module_uuid] = module;
+                patch->modules[module_uuid] = module;
 
                 // Example defaults look like:
                 //
@@ -352,7 +304,7 @@ public:
 
     bool connectModules()
     {
-        for (const auto& connection : connections_config_forward)
+        for (const auto& connection : patch->connections_config_forward)
         {
             // Connections go from "source" to "destination"
             VoxbuilderLogger::getInstance().log(
@@ -366,8 +318,8 @@ public:
 
             try 
             {
-                IModule* source_module = modules.at(connection.source_module_uuid);
-                IModule* dest_module = modules.at(connection.destination_module_uuid);
+                IModule* source_module = patch->modules.at(connection.source_module_uuid);
+                IModule* dest_module = patch->modules.at(connection.destination_module_uuid);
                 Sport* source_port = source_module->getOutputPort(connection.source_port_index);
                 Sport* dest_port = dest_module->getInputPort(connection.destination_port_index);
 
@@ -396,7 +348,7 @@ public:
         // Why module.second? Because module is a pair: module.first is the id
         //   and module.second is the module object
 
-        for (auto &module : modules)
+        for (auto &module : patch->modules)
         {
             if (module.second->getOutputPorts().size() == 0)
             {
@@ -406,109 +358,4 @@ public:
 
         return(out_module);
     }
-
-
-    void clear()
-    {
-        modules.clear();
-        module_config_map.clear();
-        connections_config_forward.clear();
-
-        terminal_output_module = nullptr;
-    }
-
-    /*
-
-
-        █▀█ █░█ █▄░█   █▀█ ▄▀█ ▀█▀ █▀▀ █░█
-        █▀▄ █▄█ █░▀█   █▀▀ █▀█ ░█░ █▄▄ █▀█
-        Text created using https://fsymbols.com/generators/carty/
-
-    */
-   /*
-    // This runs at sample rate
-    void processModule(IModule *module, unsigned int sample_rate)
-    {
-        if (module->processing) return;
-        module->processing = true;
-
-        std::vector<Sport *> input_ports = module->getInputPorts();
-
-        for (auto &input_port : input_ports)
-        {
-            if (input_port->isConnected())
-            {
-                std::vector<Sport *> connected_outputs = input_port->getConnectedOutputs();
-
-                if(connected_outputs.size() > 0)
-                {
-                    IModule *connected_module = connected_outputs[0]->getParentModule();
-
-                    if (!connected_module->processing)
-                    {
-                        processModule(connected_module, sample_rate);
-                    }
-                    else
-                    {
-                        // If the connected module is currently being processed,
-                        // use the output from the last timestep instead.
-                        input_port->setVoltage(connected_outputs[0]->getLastVoltage());
-                    }
-                }
-            }
-        }
-
-        module->process(sample_rate);
-        module->processing = false;
-    }
-
-
-    //
-    // process()
-    //
-    // Starts processing a patch to get the output.  The output of the entire
-    // patch is returned as a float.
-    //
-    // This is called at sample rate.
-    //
-    // TODO: Handle passing in sample rate
-    //
-
-
-    float process(unsigned int sample_rate)
-    {
-        // Reset all module processed flags to false
-        resetProcessingFlags();
-
-        if(! terminal_output_module)
-        {
-            return(4.04);
-        }
-
-        // Compute the outputs of the system by starting with the last module,
-        // then working backwards through the chain.
-        processModule(terminal_output_module, sample_rate);
-
-        // This might be a litte confusing, so let me explain it a bit.
-        // The terminal output module is the last module in the patch. It has
-        // an input port called INPUT_PORT.  The value at INPUT_PORT is basically
-        // the value that the entire patch outputs.  So here, we're getting the
-        // value at INPUT_PORT and returning it.  The function processModule()
-        // will have computed the value at INPUT_PORT by processing the entire
-        // patch, so we're just returning that value.
-
-        Sport *input_port = terminal_output_module->getInputPort(0);
-
-        return (input_port->getVoltage());
-    }
-
-    // Reset all module processed flags to false
-    void resetProcessingFlags()
-    {
-        for (auto &module : modules)
-        {
-            module.second->processing = false;
-        }
-    }
-    */
 };

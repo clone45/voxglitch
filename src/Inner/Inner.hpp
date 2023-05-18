@@ -17,8 +17,9 @@ struct Inner : VoxglitchModule
     float pitch = 0.0;
     float gate = 0.0;
 
-    ModuleManager *module_manager;
-    PatchRunner *patch_runner;
+    PatchConstructor *patch_constructor = nullptr;
+    PatchRunner *patch_runner = nullptr;
+    Patch *patch = nullptr;
     IModule *terminal_output_module = nullptr;
     std::string path = "";
     
@@ -48,8 +49,10 @@ struct Inner : VoxglitchModule
 
     Inner()
     {
-        module_manager = new ModuleManager(&pitch, &gate, &p1, &p2, &p3, &p4, &p5, &p6, &p7, &p8);
+        patch = new Patch();
         patch_runner = new PatchRunner();
+        patch_constructor = new PatchConstructor(patch, &pitch, &gate, &p1, &p2, &p3, &p4, &p5, &p6, &p7, &p8);
+        
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
     }
 
@@ -69,10 +72,10 @@ struct Inner : VoxglitchModule
         pitch = inputs[PITCH_INPUT].getVoltage();
         gate = inputs[GATE_INPUT].getVoltage();
 
-        // TODO: Only update module_manager's sample rate when the rate changes
+        // TODO: Only update patch_constructor's sample rate when the rate changes
 
         // Calculate your audio output here
-        if (module_manager->isReady())
+        if (patch_constructor->isReady())
         {
             // audio_out = module_manager->process(args.sampleRate);
             audio_out = patch_runner->process(args.sampleRate, terminal_output_module);
@@ -85,10 +88,10 @@ struct Inner : VoxglitchModule
     void load_config_file(const std::string& filename)
     {
         // set module_manager ready to false
-        module_manager->setReady(false);
+        patch_constructor->setReady(false);
 
-        // Clean out any old data if the module_manager has been used before
-        module_manager->clear();
+        // Clean out any old data if the patch_constructor has been used before
+        patch->clear();
 
         // clear the module config map
         std::vector<ModuleConfig*> modules;
@@ -129,7 +132,7 @@ struct Inner : VoxglitchModule
             modules.push_back(new ModuleConfig(uuid, type, defaults, data));
         }
 
-        module_manager->setModuleConfigMap(modules);
+        patch_constructor->setModuleConfigMap(modules);
 
         //
         // Load and set the connections
@@ -155,18 +158,18 @@ struct Inner : VoxglitchModule
             connections.push_back(Connection(src_module_uuid, src_port_id, dst_module_uuid, dst_port_id));
         }
 
-        module_manager->setConnections(connections);
+        patch_constructor->setConnections(connections);
 
         json_decref(root);
 
         // Tie the modules together and create the patch
-        if (! module_manager->createPatch())
+        if (! patch_constructor->createPatch())
         {
             DEBUG("Failed to create patch");
         }
         else
         {
-            terminal_output_module = module_manager->getTerminalOutputModule();
+            terminal_output_module = patch_constructor->getTerminalOutputModule();
         }
     }
 
