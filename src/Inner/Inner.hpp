@@ -22,7 +22,6 @@ struct Inner : VoxglitchModule
     PatchLoader *patch_loader = nullptr;
     Patch *patch = nullptr;
 
-    IModule *terminal_output_module = nullptr;
     std::string path = "";
     
     enum ParamIds
@@ -80,7 +79,7 @@ struct Inner : VoxglitchModule
         if (patch_constructor->isReady())
         {
             // audio_out = module_manager->process(args.sampleRate);
-            audio_out = patch_runner->process(args.sampleRate, terminal_output_module);
+            audio_out = patch_runner->process(args.sampleRate, patch);
         }
 
         // Set the output value
@@ -115,8 +114,6 @@ struct Inner : VoxglitchModule
         }
 
         json_decref(root);
-
-        this->terminal_output_module = patch->getTerminalOutputModule();
 
         patch_constructor->setReady(true);
     }

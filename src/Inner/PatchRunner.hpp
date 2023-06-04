@@ -74,10 +74,12 @@ public:
     // This is called at sample rate.
     // TODO: Handle passing in sample rate
     //
-    float process(unsigned int sample_rate, IModule *terminal_output_module)
+    float process(unsigned int sample_rate, Patch *patch)
     {
         // Reset all module processed flags to false
         resetProcessingFlags();
+
+        IModule *terminal_output_module = patch->getTerminalOutputModule();
 
         if(! terminal_output_module)
         {
