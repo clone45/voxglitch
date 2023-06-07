@@ -16,6 +16,30 @@
 // - Send through sample rate
 // - Figure out how to represent PI
 // - Update findOutModule to use the Type instead of the number of outputs
+/*
+ Notes:  
+
+Thinking ahead to patching together connections to modules within macros...
+- A module may have a connection to a port on a macro (inbound)
+  - My goal is to adjust that connection to go to the module attached to the correct module within the macro.
+    This means:
+    1. I take note of the module and output port that's connecting to the macro's input port _store that connection as "FOO"
+    2. Maybe from the port index on the macro's port, I can look up the correct MACRO_INPUT_PORT module
+    2. From there, I can find the module and input port that's the destination of the MACRO_INPUT_PORT's output (BAR)
+    3. The, I can adjust the original connection (FOO) to connect directly to BAR
+    4. Once I've done this will all of the input and output connections associated with the macro, I can delete the macro,
+       thus "flattening" the network, and making it easier to traverse.  The patch traversal code will NOT need to be updated.
+
+However, this may lead to issues when recursively entering macro's patches to continue to build the network.  Well, remember
+that we're no longer dealing with a tree structure.  It's already been flattened.
+
+SInce it's flat, there will be a disconnect between the modules within a macro and those outside of it.  With the current
+structure, you wouldn't know from looking at modules from within a macro what their parent is.  Maybe I store the uuid
+ of the parent module within all module inside of it?  I think this might work, and be better than my old plan.
+
+- A macro may have a connection to a port on a module (outbound)
+
+*/
 
 #pragma once
 
@@ -134,13 +158,13 @@ public:
         VoxbuilderLogger::getInstance().log("createPatch Initiated");
 
         // Get the module configurations and connection configurations from the JSON
-        std::unordered_map<std::string, ModuleConfig*> module_config_map = parseModulesConfiguration(root);;
-        std::vector<Connection> connections_config_vector = parseConnectionsConfiguration(root);
+        // std::unordered_map<std::string, ModuleConfig*> module_config_map = parseModulesConfiguration(root);;
+        // std::vector<Connection> connections_config_vector = parseConnectionsConfiguration(root);
 
-        // Debugging notes
-        // I've test module_config_map and verified that it's good going into this function
-        // It has keys as uuids and values as pointers to ModuleConfig objects.
-        // The uuids are populated correctly.
+        std::unordered_map<std::string, ModuleConfig*> module_config_map;
+        std::vector<Connection> connections_config_vector;
+
+        std::tie(module_config_map, connections_config_vector) = parsePatchConfiguration(root, "");
 
         // instantiate all modules
         std::map<std::string, IModule*> modules_map = instantiateModules(module_config_map, pitch_ptr, gate_ptr, p1, p2, p3, p4, p5, p6, p7, p8);
@@ -424,6 +448,196 @@ public:
     }
 
     //
+    // When parsePatchConfiguration returned both modules and connections, if there were any
+    // macros in the patch, there won't be any connections that link the inside of the macro
+    // to the modules outside of the macro.  
+    //
+    // Here's where we are:
+    // 
+    //   some         Macro Module (parent)
+    //   module      ┌───────────────────────────────────────┐
+    //   ┌─────┐     │  MACRO_INPUT_MODULE     Other Module  │
+    //   │     ├────►i1      ┌─────┐            ┌─────┐      │
+    //   └─────┘     │       │ i1  ├────────────►     │      │
+    //               │       └─────┘            └─────┘      │
+    //               └───────────────────────────────────────┘
+    //               (i1 means port index "1")
+    //
+    //
+    // And here's where we want to be:
+    //
+    //   some         
+    //   module      
+    //   ┌─────┐                               Other Module       
+    //   │     ├────────────────────┐           ┌─────┐          
+    //   └─────┘                    └───────────►     │          
+    //                                          └─────┘          
+    //
+    //
+    //
+    // (Diagrams created using: https://asciiflow.com/#/)
+    //
+    // The modules inside the macro will have their "parent_uuid" set to the macro module's uuid.
+    //
+
+
+    bool bridgeMacroConnections(std::map<std::string, IModule*> modules_map, std::vector<Connection> connections_config)
+    {
+
+        std::vector<Module *> removed_modules;
+
+        // Iterate through all of the modules
+        for (auto &module_map : modules_map)
+        {
+            Module* module = dynamic_cast<Module*>(module_map.second);
+
+            // Find the modules that are MACRO_INPUT_PORT or MACRO_OUTPUT_PORT
+            if (module->getType() == "MACRO_INPUT_PORT")
+            {
+                // Here's the tricky part.  We need to extract the "macro_module_input_port_index" from the data json stored
+                // in the module's config.  The data json is stored in the module's config as a jsont
+                int macro_module_input_port_index = module->data["macro_input_port_index"];
+                std::string parent_macro_module_uuid = module->parent_uuid;
+
+                //
+                // I'm going to be referring to this diagram both in the comments and in the code:
+                //
+                //   some         Macro Module (uuid)
+                //   module      ┌───────────────────────────────────────┐
+                //   ┌─────┐     │  MACRO_INPUT_MODULE     Other Module  │
+                //   │     ├───►(i)      ┌─────┐            ┌─────┐      │
+                //   └─────┘     │       │     ├────────────►     │      │
+                //               │       └─────┘            └─────┘      │
+                //               └───────────────────────────────────────┘
+                //
+                // We now have:
+                // 1. The parent_macro_module_uuid (uuid)
+                // 2. The macro_module_input_port_index (i)
+
+                // Now we need to find the connection that has the same destination_module_uuid and destination_port_index
+                // as the MACRO_INPUT_PORT we're looking at.  From there, we can find "some module"
+
+                Connection *connection_to_macro_module = this->findConnection(connections_config, parent_macro_module_uuid, macro_module_input_port_index);
+
+                if (connection_to_macro_module != nullptr)
+                {
+                    // We found the connection that we need to bridge
+                    // Now we need to find "some module" (see diagram above)
+                    IModule* some_module = modules_map.at(connection_to_macro_module.source_module_uuid);
+
+                    // Look up the source port
+                    Sport* some_module_src_port = some_module->getOutputPort(connection_to_macro_module.source_port_index);
+
+                    // The goal at this point it to link the some_module_src_port to the input port of "Other Module"
+                    // In order to find "other module", we need to find the connection that starts with the MACRO_INPUT_MODULE, 
+                    // which we can do by calling findConnection with the MACRO_INPUT_MODULE's uuid and "0" as the port index
+                    // (The output port index of the MACRO_INPUT_MODULE is always 0)
+                    Connection *connection_to_other_module = this->findConnection(connections_config, module->uuid, 0);
+
+                    if(connection_to_other_module != nullptr)
+                    {
+                        // We found the connection that we need to bridge
+                        // Now we need to find "other module" (see diagram above)
+                        IModule* other_module = modules_map.at(connection_to_other_module.destination_module_uuid);
+
+                        // We have the connection from the MACRO_INPUT_MODULE to "other module".  Using that 
+                        // connection, we can look up the port on "other module" that we need to bridge to.
+                        Sport* other_module_dst_port = other_module->getInputPort(connection_to_other_module.destination_port_index);
+
+                        // Now connect the source port of "some module" to the destination port of "other module"
+                        some_module_src_port->connect(other_module_dst_port);
+
+                        // At this point, it's safe to remove the MACRO_INPUT_MODULE from the modules_map
+                        // However, due to my memory management paranoia, let's push it onto a vector and delete it later
+                        removed_modules.push_back(module);
+                    }
+                }
+            }
+
+            // OK, it's time to bridge the other side:
+            //
+            //   We have this...
+            //
+            //    Macro Module (uuid)
+            //   ┌───────────────────────────────────────────┐         blah
+            //   │     Other_Module     MACRO_OUTPUT_MODULE  │         module
+            //   │       ┌─────┐            ┌─────┐          │         ┌─────┐
+            //   │       │     ├────────────►     │         (i)────────►     │
+            //   │       └─────┘            └─────┘          │         └─────┘
+            //   │                                           │
+            //   └───────────────────────────────────────────┘
+            //
+            //    And we want this...
+            //
+            //    Macro Module
+            //   ┌───────────────────────────────────────────┐         blah
+            //   │     Other_Module                          │         module
+            //   │       ┌─────┐                             │         ┌─────┐
+            //   │       │     ├─────────────────────────────┼─────────►     │
+            //   │       └─────┘                             │         └─────┘
+            //   │                                           │
+            //   └───────────────────────────────────────────┘
+
+
+            if (module->getType() == "MACRO_OUTPUT_PORT")
+            {
+                int macro_module_output_port_index = module->data["macro_output_port_index"]; // This is (i) in the diagram above
+                std::string parent_macro_module_uuid = module->parent_uuid; // This is (uuid) in the diagram above
+
+                // We need to find the connection that links "other_module" to the MACRO_OUTPUT_MODULE
+                // For this, we can use findConnection, sending in port_index "0" since that's always
+                // the input port index of the MACRO_OUTPUT_MODULE.
+                Connection *connection_to_macro_output_module = this->findConnection(connections_config, module, 0);
+
+                // From the connection, we can find the source module
+                IModule* other_module = modules_map.at(connection_to_macro_output_module.source_module_uuid);
+                Sport *other_module_src_port = other_module->getOutputPort(connection_to_macro_output_module.source_port_index);
+
+                // Find the connection from the Macro Module to "blah module" by using the
+                // Macro Module's UUID and the macro_module_output_port_index.
+                // This is the connection that goes between (i) and "blah module" in the diagram above.
+                Connection *connection_to_blah_module = this->findConnection(connections_config, parent_macro_module_uuid, macro_module_output_port_index);
+
+                Module *blah_module = modules_map.at(connection_to_blah_module.destination_module_uuid);
+                Sport* blah_module_dst_port = blah_module->getInputPort(connection_to_blah_module.destination_port_index);
+
+                // Now connect the source port of "other module" directly to the destination port of "blah module"
+                other_module_src_port->connect(blah_module_dst_port);
+
+                // At this point, it's safe to remove the MACRO_OUTPUT_MODULE from the modules_map
+                // However, due to my memory management paranoia, let's push it onto a vector and delete it later
+                removed_modules.push_back(module);
+            }
+        }
+
+        // Remove the modules that we pushed onto the removed_modules vector
+        for (auto &module : removed_modules)
+        {
+            modules_map.erase(module->uuid);
+            delete module;
+        }
+    }
+
+    // Pass in the destination module's uuid and the destination port index
+    Connection *findConnection(std::vector<Connection> connections_config, std::string module_uuid, int port_index)
+    {
+        Connection *connection = nullptr;
+
+        for (const auto& connection : connections_config)
+        {
+            if (connection.destination_module_uuid == module_uuid &&
+                connection.destination_port_index == port_index)
+            {
+                connection = &connection;
+                break;
+            }
+        }
+
+        return(connection);
+    }
+
+
+    //
     // Note: If I update this function to find the output module by type,
     // I may be able to remove the getOutputPorts function from all modules
     // and from the IModule interface
@@ -458,22 +672,14 @@ public:
         return(module_config_map);
     }
 
-    /**
-     * Parses the modules configuration from the given JSON object and returns a map of module configurations.
-     *
-     * @param root A pointer to the JSON object containing the modules configuration.
-     * @return An unordered map of module configurations, where the keys are module UUIDs and the values are pointers to ModuleConfig objects.
-     *
-     * The function iterates over the modules in the JSON object and extracts the UUID, type, defaults, and data for each module.
-     * It creates a new ModuleConfig object for each module and adds it to a vector.
-     * Finally, it converts the vector of module configurations into an unordered map, using the UUIDs as keys, and returns the map.
-     * If the JSON object is empty or does not contain any modules, an empty map is returned.
-     * The function logs messages to the VoxbuilderLogger instance for important events and errors during the parsing process.
-     * The logged messages include information about the number of modules found, any missing UUIDs or types, and the contents of the resulting module configuration map.
-     */
-    std::unordered_map<std::string, ModuleConfig*> parseModulesConfiguration(json_t* root)
+  
+    std::pair<std::unordered_map<std::string, ModuleConfig*>, std::vector<Connection>> parsePatchConfiguration(json_t* root, std::string parent_uuid = "")
     {
         std::vector<ModuleConfig*> module_config_vector;
+        std::vector<Connection> connections_config;
+        std::unordered_map<std::string, ModuleConfig*> module_config_map;
+
+        connections_config = parseConnectionsConfiguration(root);
 
         json_t* modules_array = json_object_get(root, "modules");
         size_t modules_size = json_array_size(modules_array);
@@ -500,6 +706,7 @@ public:
             // If I didn't use json_deep_copy below, problems would occur when
             // root is freed, which could cause intermittent crashes.
 
+            /*
             //
             //  Load "defaults"
             // 
@@ -517,11 +724,91 @@ public:
             {
                 data = json_deep_copy(data_obj);
             }
+            */
 
-            module_config_vector.push_back(new ModuleConfig(uuid, type, defaults, data));
+            // Same code as above, but with error checking
+            //
+            //  Load "defaults"
+            // 
+            json_t* defaults = nullptr;
+            json_t* defaults_obj = json_object_get(module_obj, "defaults");
+            if (defaults_obj)
+            {
+                if (!json_is_object(defaults_obj)) 
+                {
+                    VoxbuilderLogger::getInstance().log("parseModulesConfiguration: defaults is not a JSON object.");
+                }
+                else 
+                {
+                    defaults = json_deep_copy(defaults_obj);
+                    if (defaults == nullptr)
+                    {
+                        VoxbuilderLogger::getInstance().log("parseModulesConfiguration: Failed to copy defaults.");
+                    }
+                }
+            }
+            else
+            {
+                VoxbuilderLogger::getInstance().log("parseModulesConfiguration: defaults field not present.");
+            }
+
+            //
+            //  Load "data"
+            // 
+            json_t* data = nullptr;
+            json_t* data_obj = json_object_get(module_obj, "data");
+            if (data_obj)
+            {
+                if (!json_is_object(data_obj)) 
+                {
+                    VoxbuilderLogger::getInstance().log("parseModulesConfiguration: data is not a JSON object.");
+                }
+                else 
+                {
+                    data = json_deep_copy(data_obj);
+                    if (data == nullptr)
+                    {
+                        VoxbuilderLogger::getInstance().log("parseModulesConfiguration: Failed to copy data.");
+                    }
+                }
+            }
+            else
+            {
+                VoxbuilderLogger::getInstance().log("parseModulesConfiguration: data field not present.");
+            }
+
+            module_config_vector.push_back(new ModuleConfig(uuid, type, defaults, data, parent_uuid));
+
+            // If the module type is "MACRO", then we need to parse the patch inside of the macro.
+            // We do this by calling parsePatchConfiguration recursively.
+            if(type == "MACRO") 
+            {
+                json_t* macro_patch = json_object_get(module_obj, "patch");
+
+                std::pair<std::unordered_map<std::string, ModuleConfig*>, std::vector<Connection>> macro_patch_result = parsePatchConfiguration(macro_patch, uuid);
+
+                // Add the modules in the macro patch to the module_config_map
+                for (const auto& module_config : macro_patch_result.first)
+                {
+                    module_config_map.insert(module_config);
+                }
+
+                // Add the connections in the macro patch to the connections_config
+                for (const Connection& connection : macro_patch_result.second)
+                {
+                    connections_config.push_back(connection);
+                }
+            }
         }
 
-        std::unordered_map<std::string, ModuleConfig*> module_config_map = convertToMap(module_config_vector);
+        // Get the results from convertToMap(module_config_vector) and append them to module_config_map
+        std::unordered_map<std::string, ModuleConfig*> new_module_config_map = convertToMap(module_config_vector);
+
+        // Append the new_module_config_map to the module_config_map
+        for (const auto& module_config : new_module_config_map)
+        {
+            module_config_map.insert(module_config);
+        }
 
         // Test to see if the map is empty and if so, log a message
         if(module_config_map.empty()) 
@@ -542,9 +829,40 @@ public:
             VoxbuilderLogger::getInstance().log("parseModulesConfiguration: Found " + std::to_string(module_config_map.size()) + " modules in configuration json.");
         }
 
-        return(module_config_map);
-    }
+        // Here's sample output, in jSON for easy reading
+        // {
+        //   "7042ca37-819f-4f11-8b4c-cdfd71873824": {
+        //     "type": "OUTPUT",
+        //     "data": {},
+        //     "defaults": {}
+        //   },
+        //   "c6ad45a3-0013-462e-a09d-bdb42327f5b2": {
+        //     "type": "PARAM2",
+        //     "data": {},
+        //     "defaults": {}
+        //   },
+        //   "66f2169c-815a-486f-881c-395b778f8eb5": {
+        //     "type": "PARAM1",
+        //     "data": {},
+        //     "defaults": {}
+        //   },
+        //   "29584a27-c30c-4bf3-b065-9658e6054d79": {
+        //     "type": "WAVETABLE_OSCILLATOR",
+        //     "data": {},
+        //     "defaults": {}
+        //   }
+        // }
 
+        // log the entire module_config_map
+        VoxbuilderLogger::getInstance().log("parseModulesConfiguration: Contents of module_config_map: ");
+
+        for (const auto& module_config : module_config_map)
+        {
+            VoxbuilderLogger::getInstance().log("Module uuid: " + module_config.first + ", type: " + module_config.second->type);
+        }
+
+        return std::make_pair(module_config_map, connections_config);
+    }
 
 
     /**
@@ -580,6 +898,43 @@ public:
 
             connections_config.push_back(Connection(src_module_uuid, src_port_id, dst_module_uuid, dst_port_id));
         }
+
+        //
+        // Example json output for this function
+        //
+        //[
+        //  {
+        //    "dst": {
+        //      "module_uuid": "7042ca37-819f-4f11-8b4c-cdfd71873824",
+        //      "port_id": 0
+        //    },
+        //    "src": {
+        //      "module_uuid": "29584a27-c30c-4bf3-b065-9658e6054d79",
+        //      "port_id": 0
+        //    }
+        //  },
+        //  {
+        //    "dst": {
+        //      "module_uuid": "29584a27-c30c-4bf3-b065-9658e6054d79",
+        //      "port_id": 1
+        //    },
+        //    "src": {
+        //      "module_uuid": "c6ad45a3-0013-462e-a09d-bdb42327f5b2",
+        //      "port_id": 0
+        //    }
+        //  },
+        //  {
+        //    "dst": {
+        //      "module_uuid": "29584a27-c30c-4bf3-b065-9658e6054d79",
+        //      "port_id": 0
+        //    },
+        //    "src": {
+        //      "module_uuid": "66f2169c-815a-486f-881c-395b778f8eb5",
+        //      "port_id": 0
+        //    }
+        //  }
+        //]
+
 
         return connections_config;
     }
