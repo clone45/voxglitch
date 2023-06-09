@@ -177,12 +177,12 @@ public:
         // This is because the uuid is set in the constructor of the module, and
         // the module is created in the instantiateModules function.
 
-        VoxbuilderLogger::getInstance().log("Instantiated modules:");
+        VoxbuilderLogger::getInstance().log("FOR TESTING");
         
         for (const auto& uuid_module_ptr_map : modules_map)
         {
             // log it
-            VoxbuilderLogger::getInstance().log("Module uuid: " + uuid_module_ptr_map.first);
+            VoxbuilderLogger::getInstance().log("Module uuid: " + uuid_module_ptr_map.first + ", type: " + uuid_module_ptr_map.second->uuid);
         }
 
         // connect all modules.  Note that module_map is being sent in by reference
@@ -483,20 +483,14 @@ public:
     // The modules inside the macro will have their "parent_uuid" set to the macro module's uuid.
     //
 
-    // Here is the path forward:
-    // Give each connection a uuid
-    // when a connection becomes orphaned, add the uuid to a list
-    // then delete all of the connections in the orphaned list
 
     bool bridgeMacroConnections(std::unordered_map<std::string, ModuleConfig*> &modules_config_map, std::vector<Connection> &connections_config)
     {
-        VoxbuilderLogger::getInstance().log("=== Bridging Macro Connections ===");
-
         // TOOD: WHAT IF a macro module is connected to another macro module?
         // maybe we bridge one, then restart the process until none need to be bridged?
 
         std::vector<ModuleConfig *> removed_modules;
-        std::vector<std::string> removed_connection_uuids;
+        std::vector<Connection *> removed_connections;
 
         // Iterate through all of the modules
         for (auto &module_map : modules_config_map)
@@ -506,13 +500,13 @@ public:
             // Find the modules that are MACRO_INPUT_PORT or MACRO_OUTPUT_PORT
             if (module_config->getType() == "MACRO_INPUT_PORT")
             {
+                
                 ModuleConfig* MACRO_INPUT_MODULE = module_config;
 
                 // Here's the tricky part.  We need to extract the "macro_module_input_port_index" from the data json stored
                 // in the module's config.  The data json is stored in the module's config as a jsont
-                int macro_module_input_port_index = getIntegerFromJson(MACRO_INPUT_MODULE->data, "macro_input_port_index");
+                int macro_module_input_port_index = MACRO_INPUT_MODULE->data["macro_input_port_index"];
                 std::string parent_macro_module_uuid = MACRO_INPUT_MODULE->getParentUuid();
-                
 
                 //
                 // I'm going to be referring to this diagram both in the comments and in the code:
@@ -535,21 +529,12 @@ public:
                     connection_i->destination_module_uuid = connection_j->destination_module_uuid;
                     connection_i->destination_port_index = connection_j->destination_port_index;
 
-                    VoxbuilderLogger::getInstance().log("Bridged connection (MACRO_INPUT_PORT): " + connection_i->source_module_uuid + " -> " + connection_i->destination_module_uuid);
-
                     // At this point, it's safe to remove the MACRO_INPUT_MODULE from the modules_config_map
                     // However, due to my memory management paranoia, let's push it onto a vector and delete it later
                     removed_modules.push_back(MACRO_INPUT_MODULE);
-                    removed_modules.push_back(modules_config_map[parent_macro_module_uuid]);
 
                     // We can also remove the connection from MACRO_INPUT_MODULE to "other module"
-                    VoxbuilderLogger::getInstance().log("Queuing bridged connection for removal: " + connection_j->uuid);
-                    removed_connection_uuids.push_back(connection_j->uuid);
-                }
-                else
-                {
-                    // log an error
-                    VoxbuilderLogger::getInstance().log("PatchConstructor::bridgeMacroConnections: Could not bridge ports for module: " + MACRO_INPUT_MODULE->uuid);
+                    removed_connections.push_back(connection_j);
                 }
             }
 
@@ -585,11 +570,11 @@ public:
             {
                 ModuleConfig* MACRO_OUTPUT_MODULE = module_config;
 
-                int macro_module_output_port_index = getIntegerFromJson(MACRO_OUTPUT_MODULE->data, "macro_output_port_index");
+                int macro_module_output_port_index = module_config->data["macro_output_port_index"];
                 std::string parent_macro_module_uuid = module_config->parent_uuid; // This is (uuid) in the diagram above
 
                 // Find connection going to (i)
-                Connection *connection_i = this->findDstConnection(connections_config, MACRO_OUTPUT_MODULE->uuid, 0);
+                Connection *connection_i = this->findDstConnection(connections_config, MACRO_OUTPUT_MODULE, 0);
                 Connection *connection_j = this->findSrcConnection(connections_config, parent_macro_module_uuid, macro_module_output_port_index);
 
                 if (connection_i != nullptr && connection_j != nullptr)
@@ -598,124 +583,61 @@ public:
                     connection_i->destination_module_uuid = connection_j->destination_module_uuid;
                     connection_i->destination_port_index = connection_j->destination_port_index;
 
-                    VoxbuilderLogger::getInstance().log("Bridged connection (MACRO_OUTPUT_PORT): " + connection_i->source_module_uuid + " -> " + connection_i->destination_module_uuid);
-
                     // At this point, it's safe to remove the MACRO_OUTPUT_MODULE from the modules_config_map
                     // However, due to my memory management paranoia, let's push it onto a vector and delete it later
                     removed_modules.push_back(MACRO_OUTPUT_MODULE);
-                    removed_modules.push_back(modules_config_map[parent_macro_module_uuid]);
 
                     // We can also remove the connection from MACRO_OUTPUT_MODULE to "other module"
-                    VoxbuilderLogger::getInstance().log("Queuing bridged connection for removal: " + connection_j->uuid);
-                    removed_connection_uuids.push_back(connection_j->uuid);
-                }
-                else
-                {
-                    // Add a warning to the log
-                    VoxbuilderLogger::getInstance().log("PatchConstructor::bridgeMacroConnections: Could not bridge ports for module: " + MACRO_OUTPUT_MODULE->uuid);
+                    removed_connections.push_back(connection_j);
                 }
             }
         }
 
-        // Remove the "removed_modules" from modules_config_map
-        for (const auto& module : removed_modules)
+        // Remove the modules that we pushed onto the removed_modules vector
+        for (auto &module_config : removed_modules)
         {
-            // Check to see if the module is in the map before trying to erase it
-            if (modules_config_map.find(module->uuid) != modules_config_map.end())
-            {
-                VoxbuilderLogger::getInstance().log("Removing bridged module: " + module->uuid);
-                modules_config_map.erase(module->uuid);
-            }
+            modules_map.erase(module_config->uuid);
+            delete module;
         }
-
-
-        //
-        //
-        //  TODO: Remove the "removed_connections" from connections_config
-        //
-
-        connections_config.erase(
-            std::remove_if(
-                connections_config.begin(), 
-                connections_config.end(),
-                [&](const Connection& conn) 
-                {
-                    bool isRemoved = std::find(
-                        removed_connection_uuids.begin(), 
-                        removed_connection_uuids.end(), 
-                        conn.uuid) != removed_connection_uuids.end();
-
-                    // Add logging here if a connection is being removed
-                    if (isRemoved) 
-                    {
-                        std::string logMessage = "Bridged connection " + conn.uuid + " removed";
-                        VoxbuilderLogger::getInstance().log(logMessage);
-                    }
-
-                    return isRemoved;
-                }
-            ), 
-            connections_config.end()
-        );
-
-
-        // Log all of the module configs
-        VoxbuilderLogger::getInstance().log("Module list:");
-        for (auto& module : modules_config_map)
-        {
-            VoxbuilderLogger::getInstance().log("    " + module.second->uuid + " " + module.second->type);
-        }
-
-        // Log all of the connection configs
-        VoxbuilderLogger::getInstance().log("Connection list:");
-        for (auto& conn : connections_config)
-        {
-            VoxbuilderLogger::getInstance().log("  Connection UUID: " + conn.uuid);
-            VoxbuilderLogger::getInstance().log("    connects modules: " + conn.source_module_uuid + " -> " + conn.destination_module_uuid);
-        }
-
-        VoxbuilderLogger::getInstance().log("PatchConstructor::bridgeMacroConnections: Finished bridging macro connections");
-        VoxbuilderLogger::getInstance().log("");
 
         return(true);
     }
 
     // Pass in the source module's uuid and the source port index
-    Connection *findSrcConnection(std::vector<Connection>& connections_config, std::string module_uuid, unsigned int port_index)
+    Connection *findSrcConnection(std::vector<Connection> connections_config, std::string module_uuid, int port_index)
     {
-        Connection *result = nullptr;
+        Connection *connection = nullptr;
 
-        for (const auto& conn : connections_config)
+        for (const auto& connection : connections_config)
         {
-            if (conn.source_module_uuid == module_uuid &&
-                conn.source_port_index == port_index)
+            if (connection.source_module_uuid == module_uuid &&
+                connection.source_port_index == port_index)
             {
-                result = const_cast<Connection*>(&conn);
+                connection = &connection;
                 break;
             }
         }
 
-        return(result);
+        return(connection);
     }
 
     // Pass in the destination module's uuid and the destination port index
-    Connection *findDstConnection(std::vector<Connection>& connections_config, std::string module_uuid, unsigned int port_index)
+    Connection *findDstConnection(std::vector<Connection> connections_config, std::string module_uuid, int port_index)
     {
-        Connection *result = nullptr;
+        Connection *connection = nullptr;
 
-        for (const auto& conn : connections_config)
+        for (const auto& connection : connections_config)
         {
-            if (conn.destination_module_uuid == module_uuid &&
-                conn.destination_port_index == port_index)
+            if (connection.destination_module_uuid == module_uuid &&
+                connection.destination_port_index == port_index)
             {
-                result = const_cast<Connection*>(&conn);
+                connection = &connection;
                 break;
             }
         }
 
-        return result;
+        return(connection);
     }
-
 
 
     //
@@ -786,6 +708,26 @@ public:
 
             // If I didn't use json_deep_copy below, problems would occur when
             // root is freed, which could cause intermittent crashes.
+
+            /*
+            //
+            //  Load "defaults"
+            // 
+            json_t* defaults = nullptr;
+            if(json_t* defaults_obj = json_object_get(module_obj, "defaults")) 
+            {
+                defaults = json_deep_copy(defaults_obj);
+            }
+
+            //
+            //  Load "data"
+            // 
+            json_t* data = nullptr;
+            if(json_t* data_obj = json_object_get(module_obj, "data")) 
+            {
+                data = json_deep_copy(data_obj);
+            }
+            */
 
             // Same code as above, but with error checking
             //
@@ -948,7 +890,6 @@ public:
         for (size_t i = 0; i < connections_size; ++i)
         {
             json_t* connection_obj = json_array_get(connections_array, i);
-            std::string port_uuid = "";
 
             json_t* src_obj = json_object_get(connection_obj, "src");
             std::string src_module_uuid = json_string_value(json_object_get(src_obj, "module_uuid"));
@@ -958,21 +899,7 @@ public:
             std::string dst_module_uuid = json_string_value(json_object_get(dst_obj, "module_uuid"));
             unsigned int dst_port_id = json_integer_value(json_object_get(dst_obj, "port_id"));
 
-            json_t *connection_uuid_json = json_object_get(connection_obj, "uuid");
-            std::string connection_uuid = "";
-
-            if (!connection_uuid_json) {
-                VoxbuilderLogger::getInstance().log("parseConnectionsConfiguration: No port_uuid found in connection.");
-            }
-            if (!json_is_string(connection_uuid_json)) {
-                VoxbuilderLogger::getInstance().log("parseConnectionsConfiguration: port_uuid is not a string.");
-            }
-            else
-            {
-                connection_uuid = json_string_value(connection_uuid_json);
-            }
-
-            connections_config.push_back(Connection(src_module_uuid, src_port_id, dst_module_uuid, dst_port_id, connection_uuid));
+            connections_config.push_back(Connection(src_module_uuid, src_port_id, dst_module_uuid, dst_port_id));
         }
 
         //
@@ -1013,23 +940,6 @@ public:
 
 
         return connections_config;
-    }
-
-    int getIntegerFromJson(json_t* data, std::string key) 
-    {
-        json_t* value = json_object_get(data, key.c_str());
-
-        if (value == NULL) {
-            VoxbuilderLogger::getInstance().log("get_integer_from_json: Key not found: " + std::string(key));
-            return(0);
-        }
-
-        if (!json_is_integer(value)) {
-            VoxbuilderLogger::getInstance().log("get_integer_from_json: Value is not an integer: " + std::string(key));
-            return(0);
-        }
-
-        return json_integer_value(value);
     }
 
 };
