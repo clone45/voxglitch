@@ -65,6 +65,11 @@ public:
         this->uuid = uuid;
     }
 
+    std::string getUuid() override
+    {
+        return this->uuid;
+    }
+
     Sport* getOutputPort(unsigned int port_id) override
     {
         return outputs[port_id];
@@ -73,5 +78,15 @@ public:
     Sport* getInputPort(unsigned int port_id) override
     {
         return inputs[port_id];
+    }
+
+    int getNumInputs() override
+    {
+        return inputs.size();
+    }
+
+    int getNumOutputs() override
+    {
+        return outputs.size();
     }
 };

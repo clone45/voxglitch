@@ -28,6 +28,9 @@ public:
     virtual Sport* getInputPort(unsigned int port_id) = 0;
     virtual void setData(json_t* data) = 0;
     virtual void setUuid(std::string uuid) = 0;
+    virtual std::string getUuid() = 0;
+    virtual int getNumInputs() = 0;
+    virtual int getNumOutputs() = 0;
 
     std::string uuid = "none";
     bool processing = false;  

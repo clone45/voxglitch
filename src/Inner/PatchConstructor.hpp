@@ -12,42 +12,22 @@
 // Patches need to be "runnable".  Eventually, I may store more than one
 // patch in memory, and they'll need to be loaded in advance.
 //
-// TODO: 
-// - Send through sample rate
-// - Figure out how to represent PI
-// - Update findOutModule to use the Type instead of the number of outputs
-/*
- Notes:  
 
-Thinking ahead to patching together connections to modules within macros...
-- A module may have a connection to a port on a macro (inbound)
-  - My goal is to adjust that connection to go to the module attached to the correct module within the macro.
-    This means:
-    1. I take note of the module and output port that's connecting to the macro's input port _store that connection as "FOO"
-    2. Maybe from the port index on the macro's port, I can look up the correct MACRO_INPUT_PORT module
-    2. From there, I can find the module and input port that's the destination of the MACRO_INPUT_PORT's output (BAR)
-    3. The, I can adjust the original connection (FOO) to connect directly to BAR
-    4. Once I've done this will all of the input and output connections associated with the macro, I can delete the macro,
-       thus "flattening" the network, and making it easier to traverse.  The patch traversal code will NOT need to be updated.
-
-However, this may lead to issues when recursively entering macro's patches to continue to build the network.  Well, remember
-that we're no longer dealing with a tree structure.  It's already been flattened.
-
-SInce it's flat, there will be a disconnect between the modules within a macro and those outside of it.  With the current
-structure, you wouldn't know from looking at modules from within a macro what their parent is.  Maybe I store the uuid
- of the parent module within all module inside of it?  I think this might work, and be better than my old plan.
-
-- A macro may have a connection to a port on a module (outbound)
-
-*/
 
 #pragma once
+
+#include <windows.h> // Add this line for Windows API functions
+// windows.h defines IN and OUT, which are used in my code.  For now,
+// I'm undefining them here, but I should probably find a better solution.
+#undef IN
+#undef OUT
 
 #include "Sport.hpp"
 #include "IModule.h"
 #include "Patch.hpp"
 #include "Connection.hpp"
 #include "VoxbuilderLogger.hpp"
+#include "C:/Code/bonsaiyo/VPlugin.hpp"
 
 // Utility modules
 #include "submodules/PitchInputModule.hpp"
@@ -99,6 +79,8 @@ structure, you wouldn't know from looking at modules from within a macro what th
 #include "submodules/WaveShaperModule.hpp"
 #include "submodules/WavetableOscillatorModule.hpp"
 
+#include "submodules/ProxyModule.hpp"
+
 #include <map>
 #include <unordered_map>
 #include <memory>
@@ -115,6 +97,9 @@ private:
     float *gate_ptr;
     float *p1, *p2, *p3, *p4, *p5, *p6, *p7, *p8;    
     std::vector<Connection> connections_config;
+
+    // DLL instances that will need to be freed
+    std::vector<HINSTANCE> dll_instances;
 
 public:
 
@@ -140,22 +125,12 @@ public:
      * @param root The root JSON object representing the patch configuration.
      * @return A pointer to the created Patch object, or nullptr if the patch creation failed.
      *
-     * The function extracts the module configurations and connection configurations from the JSON.
-     * It calls the `parseModulesConfiguration` function to parse the module configurations and retrieve a map of module UUIDs to ModuleConfig pointers.
-     * It calls the `parseConnectionsConfiguration` function to parse the connection configurations and retrieve a vector of Connection objects.
-     * Then, it calls the `instantiateModules` function to create instances of the module classes based on the module configurations.
-     * The instantiated modules are stored in a map, where the key is the module UUID and the value is a pointer to the module.
-     * The function then calls the `connectModules` function to establish the connections between the modules using the connection configurations.
-     * If the connection process fails, the function returns nullptr.
-     * Next, the function finds the terminal output module in the module map and sets it as the terminal output module for the patch.
-     * If no terminal output module is found, the function returns nullptr.
-     * Finally, it creates a new Patch object, sets the terminal output module and the modules map, and returns a pointer to the created Patch object.
-     * The function logs messages to the VoxbuilderLogger instance to indicate the progress and any errors encountered.
      */
 
     Patch *createPatch(json_t* root)
     {
         VoxbuilderLogger::getInstance().log("createPatch Initiated");
+
 
         // Get the module configurations and connection configurations from the JSON
         // std::unordered_map<std::string, ModuleConfig*> module_config_map = parseModulesConfiguration(root);;
@@ -171,11 +146,6 @@ public:
 
         // instantiate all modules
         std::map<std::string, IModule*> modules_map = instantiateModules(module_config_map, pitch_ptr, gate_ptr, p1, p2, p3, p4, p5, p6, p7, p8);
-
-        // Debugging notes
-        // The modules_map does not have the uuid keys set properly.  
-        // This is because the uuid is set in the constructor of the module, and
-        // the module is created in the instantiateModules function.
 
         VoxbuilderLogger::getInstance().log("Instantiated modules:");
         
@@ -269,11 +239,38 @@ public:
             std::string module_uuid = config->uuid;
             std::string type = config->type;
 
+            VoxbuilderLogger::getInstance().log("PatchConstructor.hpp::instantiateModules() - Processing module of type: " + type + " with uuid: " + module_uuid);
+
             json_t* data = config->data;
             json_t* defaults = config->defaults;
 
-            IModule *module = nullptr;
+            // IModule *module = nullptr;
 
+            VPlugin* plugin = this->loadDll(type);
+
+            if(plugin == nullptr) 
+            {
+                VoxbuilderLogger::getInstance().log("Failed to load DLL or create instance.");
+            }
+            else
+            {
+                VoxbuilderLogger::getInstance().log("Successfully loaded DLL and created instance.");
+            }
+
+            VoxbuilderLogger::getInstance().log("Fetching inputs and outputs from plugin");
+
+            // Call the plugin's getNumInputs function
+            int num_inputs = plugin->getNumInputs(); 
+            int num_outputs = plugin->getNumOutputs();
+           
+
+            VoxbuilderLogger::getInstance().log("Creating new proxy module with num_inputs: " + std::to_string(num_inputs) + " and num_outputs: " + std::to_string(num_outputs));
+
+            ProxyModule *proxy_module = new ProxyModule(num_inputs, num_outputs, data, plugin);
+
+
+
+            /*
             try
             {
                 if (type == "AD") module = new ADModule();
@@ -344,8 +341,10 @@ public:
                 std::string error = e.what();
                 VoxbuilderLogger::getInstance().log("PatchConstructor.hpp::instantiateModules()" + error);
             }
+            */
 
-            if (module != nullptr)
+            /*
+            if (proxy_module != nullptr)
             {
                 // Example defaults look like:
                 //
@@ -379,6 +378,9 @@ public:
                 module->setUuid(module_uuid);
                 modules[module_uuid] = module;
             }
+            */
+            proxy_module->setUuid(module_uuid);
+            modules[module_uuid] = proxy_module;
         }
 
         return modules;
@@ -730,10 +732,17 @@ public:
         // Why module.second? Because module is a pair: module.first is the id
         //   and module.second is the module object
 
+        VoxbuilderLogger::getInstance().log("Searching for terminal output module");
+
         for (auto &module : modules_map)
         {
-            if (module.second->getOutputPorts().size() == 0)
+            int num_output_ports = module.second->getOutputPorts().size();
+
+            VoxbuilderLogger::getInstance().log("  Testing: " + module.second->getUuid() + " having " + std::to_string(num_output_ports) + " output ports");
+
+            if (num_output_ports == 0)
             {
+                VoxbuilderLogger::getInstance().log("  Found terminal output module: " + module.second->getUuid());
                 out_module = module.second;
             }
         }
@@ -1030,6 +1039,58 @@ public:
         }
 
         return json_integer_value(value);
+    }
+
+    VPlugin* loadDll(const std::string& module_type)
+    {
+        VoxbuilderLogger::getInstance().log("Starting to load dll for module type: " + module_type);
+
+        std::string dllPath = asset::plugin(pluginInstance, "res/inner/plugins/" + module_type + ".dll");
+
+        VoxbuilderLogger::getInstance().log(" | Loading dll from path: " + dllPath);
+
+        HMODULE hDll = LoadLibraryA(dllPath.c_str());
+
+        // Store the handle to the DLL module to be able to unload it later.
+        dll_instances.push_back(hDll);
+
+        if (hDll == nullptr)
+        {
+            // Loading DLL failed, handle the error.
+            DWORD errorCode = GetLastError();
+            VoxbuilderLogger::getInstance().log(" | Loading DLL failed with error code: " + errorCode);
+            return nullptr;
+        }
+        else
+        {
+            using CreatePluginFunc = VPlugin* (*)();
+
+            VoxbuilderLogger::getInstance().log(" | Finding the create function");
+
+            // Get a pointer to the create function
+            CreatePluginFunc createFunc = reinterpret_cast<CreatePluginFunc>(reinterpret_cast<void*>(GetProcAddress(hDll, "create")));
+            if (createFunc == nullptr)
+            {
+                // Getting create function failed, handle the error.
+                DWORD errorCode = GetLastError();
+                VoxbuilderLogger::getInstance().log(" | Getting create function failed with error code: " + errorCode);
+                FreeLibrary(hDll);
+                return nullptr;
+            }
+            else
+            {
+                VoxbuilderLogger::getInstance().log(" | Calling the create function");
+
+                // Call the create function to create an instance of the module
+                VPlugin* vplugin(createFunc());
+
+                VoxbuilderLogger::getInstance().log(" | Returning the loaded dll");
+
+                return vplugin;
+                // Note: The unique_ptr will automatically delete the created module when it goes out of scope.
+                // You don't need to explicitly call delete.
+            }
+        }
     }
 
 };
