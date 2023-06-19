@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../BaseModule.hpp"
-#include "C:/Code/bonsaiyo/VPlugin.hpp"
+#include "C:/Code/bonsaiyo/plugins/VPlugin.hpp"
 
 class ProxyModule : public BaseModule
 {

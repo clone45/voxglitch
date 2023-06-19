@@ -27,7 +27,7 @@
 #include "Patch.hpp"
 #include "Connection.hpp"
 #include "VoxbuilderLogger.hpp"
-#include "C:/Code/bonsaiyo/VPlugin.hpp"
+#include "C:/Code/bonsaiyo/plugins/VPlugin.hpp"
 
 // Utility modules
 #include "submodules/PitchInputModule.hpp"
@@ -86,6 +86,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+
 
 class PatchConstructor
 {
@@ -244,9 +245,12 @@ public:
             json_t* data = config->data;
             json_t* defaults = config->defaults;
 
+
+            std::string json_data_string = json_dumps(data, JSON_INDENT(2));
+
             // IModule *module = nullptr;
 
-            VPlugin* plugin = this->loadDll(type);
+            VPlugin* plugin = this->loadDll(type, json_data_string);
 
             if(plugin == nullptr) 
             {
@@ -262,6 +266,9 @@ public:
             // Call the plugin's getNumInputs function
             int num_inputs = plugin->getNumInputs(); 
             int num_outputs = plugin->getNumOutputs();
+
+            // Set the data on the DLL
+            // plugin->setData(data);
            
 
             VoxbuilderLogger::getInstance().log("Creating new proxy module with num_inputs: " + std::to_string(num_inputs) + " and num_outputs: " + std::to_string(num_outputs));
@@ -1041,13 +1048,21 @@ public:
         return json_integer_value(value);
     }
 
-    VPlugin* loadDll(const std::string& module_type)
+    VPlugin* loadDll(const std::string& module_type, std::string json_data_string)
     {
         VoxbuilderLogger::getInstance().log("Starting to load dll for module type: " + module_type);
 
         std::string dllPath = asset::plugin(pluginInstance, "res/inner/plugins/" + module_type + ".dll");
 
-        VoxbuilderLogger::getInstance().log(" | Loading dll from path: " + dllPath);
+        // Check to see if the DLL exists on disk using rack::system::exists(asset::plugin(...
+        if (!rack::system::exists(dllPath))
+        {
+            // DLL does not exist, handle the error.
+            VoxbuilderLogger::getInstance().log(" | DLL does not exist on disk: \"" + dllPath + "\"");
+            return nullptr;
+        }
+
+        VoxbuilderLogger::getInstance().log(" | Loading dll from path: \"" + dllPath + "\"");
 
         HMODULE hDll = LoadLibraryA(dllPath.c_str());
 
@@ -1063,7 +1078,7 @@ public:
         }
         else
         {
-            using CreatePluginFunc = VPlugin* (*)();
+            using CreatePluginFunc = VPlugin* (*)(const std::string&);
 
             VoxbuilderLogger::getInstance().log(" | Finding the create function");
 
@@ -1082,7 +1097,7 @@ public:
                 VoxbuilderLogger::getInstance().log(" | Calling the create function");
 
                 // Call the create function to create an instance of the module
-                VPlugin* vplugin(createFunc());
+                VPlugin* vplugin(createFunc(json_data_string));
 
                 VoxbuilderLogger::getInstance().log(" | Returning the loaded dll");
 
