@@ -27,7 +27,7 @@
 #include "Patch.hpp"
 #include "Connection.hpp"
 #include "VoxbuilderLogger.hpp"
-#include "C:/Code/bonsaiyo/plugins/VPlugin.hpp"
+#include "C:/Code/bonsaiyo/includes/VPlugin.hpp"
 
 // Utility modules
 #include "submodules/PitchInputModule.hpp"
@@ -245,12 +245,13 @@ public:
             json_t* data = config->data;
             json_t* defaults = config->defaults;
 
-
+            // Create a string representation of the data json
             std::string json_data_string = json_dumps(data, JSON_INDENT(2));
 
-            // IModule *module = nullptr;
+            // Create a vector of the p1 through p8 pointers
+            std::vector<float *> adapter_pointers = {p1, p2, p3, p4, p5, p6, p7, p8};
 
-            VPlugin* plugin = this->loadDll(type, json_data_string);
+            VPlugin* plugin = this->loadDll(type, json_data_string, adapter_pointers);
 
             if(plugin == nullptr) 
             {
@@ -266,126 +267,12 @@ public:
             // Call the plugin's getNumInputs function
             int num_inputs = plugin->getNumInputs(); 
             int num_outputs = plugin->getNumOutputs();
-
-            // Set the data on the DLL
-            // plugin->setData(data);
            
 
             VoxbuilderLogger::getInstance().log("Creating new proxy module with num_inputs: " + std::to_string(num_inputs) + " and num_outputs: " + std::to_string(num_outputs));
 
             ProxyModule *proxy_module = new ProxyModule(num_inputs, num_outputs, data, plugin);
 
-
-
-            /*
-            try
-            {
-                if (type == "AD") module = new ADModule();
-                if (type == "ADDITION") module = new AdditionModule();
-                if (type == "ADSR") module = new ADSRModule();
-                if (type == "AMPLIFIER") module = new AmplifierModule();
-                if (type == "CLOCK") module = new ClockModule();
-                if (type == "CLOCK_DIVIDER") module = new ClockDividerModule();
-                if (type == "DISTORTION") module = new DistortionModule();
-                if (type == "DELAY") module = new DelayModule();
-                if (type == "DELAY_LINE") module = new DelayLineModule();
-                if (type == "DIVISION") module = new DivisionModule();
-                if (type == "EXPONENTIAL_VCA") module = new ExponentialVCAModule();
-                if (type == "FUZZ") module = new FuzzModule();
-                if (type == "GATE_INPUT") module = new GateInputModule(gate_ptr);
-                if (type == "LFO") module = new LFOModule();
-                if (type == "LINEAR_VCA") module = new LinearVCAModule();
-                if (type == "LOWPASS_FILTER") module = new LowpassFilterModule();
-                if (type == "MIXER2") module = new Mixer2Module();
-                if (type == "MIXER3") module = new Mixer3Module();
-                if (type == "MIXER4") module = new Mixer4Module();
-                if (type == "MIXER8") module = new Mixer8Module();
-                if (type == "MOOG_LOWPASS_FILTER") module = new MoogLowpassFilterModule();
-                if (type == "MORPHING_FILTER") module = new MorphingFilterModule();
-                if (type == "MULTIPLICATION") module = new MultiplicationModule();
-                if (type == "NOISE") module = new NoiseModule();
-                if (type == "OUTPUT") module = new OutputModule();
-                if (type == "OVERDRIVE") module = new OverdriveModule();
-                if (type == "PARAM1") module = new ParamModule(p1);
-                if (type == "PARAM2") module = new ParamModule(p2);
-                if (type == "PARAM3") module = new ParamModule(p3);
-                if (type == "PARAM4") module = new ParamModule(p4);
-                if (type == "PARAM5") module = new ParamModule(p5);
-                if (type == "PARAM6") module = new ParamModule(p6);
-                if (type == "PARAM7") module = new ParamModule(p7);
-                if (type == "PARAM8") module = new ParamModule(p8);
-                if (type == "PITCH_INPUT") module = new PitchInputModule(pitch_ptr);
-                if (type == "RAMP_OSCILLATOR") module = new RampOscillatorModule();
-                if (type == "SAMPLE_AND_HOLD") module = new SampleAndHoldModule();
-                if (type == "SCALE_QUANTIZER") module = new ScaleQuantizerModule();
-                if (type == "SCHROEDER_REVERB") module = new SchroederReverbModule();
-                if (type == "SUBTRACTION") module = new SubtractionModule();
-                if (type == "SELECTOR2") module = new Selector2Module();
-                if (type == "SELECTOR3") module = new Selector3Module();
-                if (type == "SELECTOR4") module = new Selector4Module();
-                if (type == "SELECTOR6") module = new Selector6Module();
-                if (type == "SELECTOR8") module = new Selector8Module();
-                if (type == "TABLE_LOOKUP") module = new TableLookupModule(data);
-                if (type == "TB303_OSCILLATOR") module = new TB303OscillatorModule();
-                if (type == "TB303_FILTER") module = new TB303FilterModule();
-                if (type == "VCO") module = new VCOModule();
-                if (type == "VOLTAGE_SEQUENCER") module = new VoltageSequencerModule(data);
-                if (type == "WAVE_FOLDER") module = new WaveFolderModule();
-                if (type == "WAVE_SHAPER") module = new WaveShaperModule();
-                if (type == "WAVETABLE_OSCILLATOR") module = new WavetableOscillatorModule();
-
-                if(module == nullptr) 
-                {
-                    VoxbuilderLogger::getInstance().log("PatchConstructor.hpp::instantiateModules() - Unknown module type: " + type);
-                }
-                else
-                {
-                    VoxbuilderLogger::getInstance().log("Created module of type " + type + " having uuid " + module_uuid);
-                }
-            }
-            catch (const std::exception &e)
-            {
-                std::string error = e.what();
-                VoxbuilderLogger::getInstance().log("PatchConstructor.hpp::instantiateModules()" + error);
-            }
-            */
-
-            /*
-            if (proxy_module != nullptr)
-            {
-                // Example defaults look like:
-                //
-                // "defaults": {
-                //    "BPM": 120
-                // },
-
-                // Iterate over the defaults and set them on the module
-                if(defaults != nullptr)
-                {
-                    // const char *key;
-                    json_t *value;
-                    void *iter = json_object_iter(defaults);
-                    unsigned int key_index = 0;
-
-                    while(iter)
-                    {
-                        value = json_object_iter_value(iter);
-
-                        if(json_is_number(value)) // Checks for real or integer values
-                        {
-                            float real_value = static_cast<float>(json_number_value(value));
-                            module->setParameter(key_index, real_value);
-                        }
-
-                        iter = json_object_iter_next(defaults, iter);
-                        key_index++;
-                    }
-                }
-
-                module->setUuid(module_uuid);
-                modules[module_uuid] = module;
-            }
-            */
             proxy_module->setUuid(module_uuid);
             modules[module_uuid] = proxy_module;
         }
@@ -1048,8 +935,13 @@ public:
         return json_integer_value(value);
     }
 
-    VPlugin* loadDll(const std::string& module_type, std::string json_data_string)
+    VPlugin* loadDll(std::string module_type, std::string json_data_string, std::vector<float *> adapter_pointers)
     {
+        // Convert module_type to lowercase
+        std::transform(module_type.begin(), module_type.end(), module_type.begin(),
+            [](unsigned char c){ return std::tolower(c); }
+        );
+
         VoxbuilderLogger::getInstance().log("Starting to load dll for module type: " + module_type);
 
         std::string dllPath = asset::plugin(pluginInstance, "res/inner/plugins/" + module_type + ".dll");
@@ -1098,6 +990,10 @@ public:
 
                 // Call the create function to create an instance of the module
                 VPlugin* vplugin(createFunc(json_data_string));
+
+                // Inject the adapter pointers and json data string into the module
+                vplugin->setAdapterPointers(adapter_pointers);
+                vplugin->setData(json_data_string);
 
                 VoxbuilderLogger::getInstance().log(" | Returning the loaded dll");
 
