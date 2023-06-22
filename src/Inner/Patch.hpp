@@ -45,5 +45,4 @@ private:
     // Modules are stored in a map with their uuid as the key and a pointer to the module as the value
     std::map<std::string, IModule *> modules = {};
     IModule *terminal_output_module = nullptr;
-
 };

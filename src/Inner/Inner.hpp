@@ -5,17 +5,24 @@
 struct Inner : VoxglitchModule
 {
     float audio_out = 0;
-    float p1 = 0.0;
-    float p2 = 0.0;
-    float p3 = 0.0;
-    float p4 = 0.0;
-    float p5 = 0.0;
-    float p6 = 0.0;
-    float p7 = 0.0;
-    float p8 = 0.0;
+    
+    float in1 = 0.0;
+    float in2 = 0.0;
+    float in3 = 0.0;
+    float in4 = 0.0;
+    float in5 = 0.0;
+    float in6 = 0.0;
+    float in7 = 0.0;
+    float in8 = 0.0;
 
-    float pitch = 0.0;
-    float gate = 0.0;
+    float out1 = 0.0;
+    float out2 = 0.0;
+    float out3 = 0.0;
+    float out4 = 0.0;
+    float out5 = 0.0;
+    float out6 = 0.0;
+    float out7 = 0.0;
+    float out8 = 0.0;
 
     PatchConstructor *patch_constructor = nullptr;
     PatchRunner *patch_runner = nullptr;
@@ -30,21 +37,26 @@ struct Inner : VoxglitchModule
     };
     enum InputIds
     {
-        PITCH_INPUT,
-        GATE_INPUT,
-        PARAM1_CV_INPUT,
-        PARAM2_CV_INPUT,
-        PARAM3_CV_INPUT,
-        PARAM4_CV_INPUT,
-        PARAM5_CV_INPUT,
-        PARAM6_CV_INPUT,
-        PARAM7_CV_INPUT,
-        PARAM8_CV_INPUT,
+        INPUT_1,
+        INPUT_2,
+        INPUT_3,
+        INPUT_4,
+        INPUT_5,
+        INPUT_6,
+        INPUT_7,
+        INPUT_8,
         NUM_INPUTS
     };
     enum OutputIds
     {
-        AUDIO_OUTPUT,
+        OUTPUT_1,
+        OUTPUT_2,
+        OUTPUT_3,
+        OUTPUT_4,
+        OUTPUT_5,
+        OUTPUT_6,
+        OUTPUT_7,
+        OUTPUT_8,
         NUM_OUTPUTS
     };
 
@@ -52,38 +64,48 @@ struct Inner : VoxglitchModule
     {
         patch_runner = new PatchRunner();
         patch_loader = new PatchLoader();
-        patch_constructor = new PatchConstructor(&pitch, &gate, &p1, &p2, &p3, &p4, &p5, &p6, &p7, &p8);
+
+        // Create a vector to hold pointers p1 through p8
+        std::vector<float*> input_adapters = {&in1, &in2, &in3, &in4, &in5, &in6, &in7, &in8};
+        std::vector<float*> output_adapters = {&out1, &out2, &out3, &out4, &out5, &out6, &out7, &out8};
+
+        patch_constructor = new PatchConstructor(input_adapters, output_adapters);
         
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
     }
 
     void process(const ProcessArgs &args) override
     {
-        float audio_out = 1.0;
+        this->audio_out = 0.0;
 
-        p1 = inputs[PARAM1_CV_INPUT].getVoltage();
-        p2 = inputs[PARAM2_CV_INPUT].getVoltage();
-        p3 = inputs[PARAM3_CV_INPUT].getVoltage();
-        p4 = inputs[PARAM4_CV_INPUT].getVoltage();
-        p5 = inputs[PARAM5_CV_INPUT].getVoltage();
-        p6 = inputs[PARAM6_CV_INPUT].getVoltage();
-        p7 = inputs[PARAM7_CV_INPUT].getVoltage();
-        p8 = inputs[PARAM8_CV_INPUT].getVoltage();
-
-        pitch = inputs[PITCH_INPUT].getVoltage();
-        gate = inputs[GATE_INPUT].getVoltage();
+        // Read and set the input adapter values
+        in1 = inputs[INPUT_1].getVoltage();
+        in2 = inputs[INPUT_2].getVoltage();
+        in3 = inputs[INPUT_3].getVoltage();
+        in4 = inputs[INPUT_4].getVoltage();
+        in5 = inputs[INPUT_5].getVoltage();
+        in6 = inputs[INPUT_6].getVoltage();
+        in7 = inputs[INPUT_7].getVoltage();
+        in8 = inputs[INPUT_8].getVoltage();
 
         // TODO: Only update patch_constructor's sample rate when the rate changes
 
         // Calculate your audio output here
         if (patch_constructor->isReady())
         {
-            // audio_out = module_manager->process(args.sampleRate);
-            audio_out = patch_runner->process(args.sampleRate, patch);
+            // audio_out = patch_runner->process(args.sampleRate, patch);
+            patch_runner->process(args.sampleRate, patch);
         }
 
-        // Set the output value
-        outputs[AUDIO_OUTPUT].setVoltage(audio_out);
+        // Set the outputs to the values of the output adapters
+        outputs[OUTPUT_1].setVoltage(out1);
+        outputs[OUTPUT_2].setVoltage(out2);
+        outputs[OUTPUT_3].setVoltage(out3);
+        outputs[OUTPUT_4].setVoltage(out4);
+        outputs[OUTPUT_5].setVoltage(out5);
+        outputs[OUTPUT_6].setVoltage(out6);
+        outputs[OUTPUT_7].setVoltage(out7);
+        outputs[OUTPUT_8].setVoltage(out8);
     }
 
     void load_config_file(const std::string& filename)

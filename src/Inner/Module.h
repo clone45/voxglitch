@@ -1,4 +1,5 @@
-#pragma once
+/*#pragma once
+
 
 #include <string>
 #include <vector>
@@ -10,3 +11,4 @@ public:
     virtual std::vector<std::string> getInputNames() const = 0;
     virtual std::vector<std::string> getOutputNames() const = 0;
 };
+*/

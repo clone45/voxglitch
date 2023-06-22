@@ -36,6 +36,7 @@
 #include "submodules/ParamModule.hpp"
 
 // Synth modules
+/*
 #include "submodules/ADSRModule.hpp"
 #include "submodules/ADModule.hpp"
 #include "submodules/AdditionModule.hpp"
@@ -78,6 +79,7 @@
 #include "submodules/WaveFolderModule.hpp"
 #include "submodules/WaveShaperModule.hpp"
 #include "submodules/WavetableOscillatorModule.hpp"
+*/
 
 #include "submodules/ProxyModule.hpp"
 
@@ -96,7 +98,14 @@ private:
     // Patch *patch = nullptr;
     float *pitch_ptr;
     float *gate_ptr;
-    float *p1, *p2, *p3, *p4, *p5, *p6, *p7, *p8;    
+    // float *p1, *p2, *p3, *p4, *p5, *p6, *p7, *p8;
+
+    // "Adapters" are vectors of floats that will be used to pass values from the host to the plugin.
+    // In other words, the host will write values to the adapter, and the plugin will read values from the adapter.
+    // This is how things such as pitch and gate will be passed from the host to the plugins.
+    std::vector<float *> input_adapters;
+    std::vector<float *> output_adapters;
+
     std::vector<Connection> connections_config;
 
     // DLL instances that will need to be freed
@@ -106,18 +115,10 @@ public:
 
     bool ready = false;
 
-    PatchConstructor(float *pitch_ptr, float *gate_ptr, float *p1, float *p2, float *p3, float *p4, float *p5, float *p6, float *p7, float *p8)
+    PatchConstructor(std::vector<float *> input_adapters, std::vector<float *> output_adapters)
     {
-        this->pitch_ptr = pitch_ptr;
-        this->gate_ptr = gate_ptr;
-        this->p1 = p1;
-        this->p2 = p2;
-        this->p3 = p3;
-        this->p4 = p4;
-        this->p5 = p5;
-        this->p6 = p6;
-        this->p7 = p7;
-        this->p8 = p8;
+        this->input_adapters = input_adapters;
+        this->output_adapters = output_adapters;
     }
 
     /**
@@ -132,11 +133,7 @@ public:
     {
         VoxbuilderLogger::getInstance().log("createPatch Initiated");
 
-
         // Get the module configurations and connection configurations from the JSON
-        // std::unordered_map<std::string, ModuleConfig*> module_config_map = parseModulesConfiguration(root);;
-        // std::vector<Connection> connections_config_vector = parseConnectionsConfiguration(root);
-
         std::unordered_map<std::string, ModuleConfig*> module_config_map;
         std::vector<Connection> connections_config_vector;
 
@@ -146,7 +143,7 @@ public:
         bridgeMacroConnections(module_config_map, connections_config_vector);
 
         // instantiate all modules
-        std::map<std::string, IModule*> modules_map = instantiateModules(module_config_map, pitch_ptr, gate_ptr, p1, p2, p3, p4, p5, p6, p7, p8);
+        std::map<std::string, IModule*> modules_map = instantiateModules(module_config_map, this->input_adapters, this->output_adapters);
 
         VoxbuilderLogger::getInstance().log("Instantiated modules:");
         
@@ -206,16 +203,7 @@ public:
      * where the key is the module's uuid, and the value is a pointer to the module
      *
      * @param module_configurations An unordered map of module UUIDs to corresponding ModuleConfig pointers.
-     * @param pitch_ptr A pointer to the pitch value.
-     * @param gate_ptr A pointer to the gate value.
-     * @param p1 A pointer to the parameter value for PARAM1.
-     * @param p2 A pointer to the parameter value for PARAM2.
-     * @param p3 A pointer to the parameter value for PARAM3.
-     * @param p4 A pointer to the parameter value for PARAM4.
-     * @param p5 A pointer to the parameter value for PARAM5.
-     * @param p6 A pointer to the parameter value for PARAM6.
-     * @param p7 A pointer to the parameter value for PARAM7.
-     * @param p8 A pointer to the parameter value for PARAM8.
+     * @param input_adapters A vector of pointers to floats that will be used to pass values from the host to the plugin.
      * @return A map of the modules, where the key is the module's UUID and the value is a pointer to the module.
      *
      * The function iterates over the module configurations and creates instances of the corresponding module classes.
@@ -227,7 +215,12 @@ public:
      * The function logs messages to the VoxbuilderLogger instance to indicate the creation of each module and any errors encountered.
      */
 
-    std::map<std::string, IModule *> instantiateModules(std::unordered_map<std::string, ModuleConfig*> module_configurations, float *pitch_ptr, float *gate_ptr, float *p1, float *p2, float *p3, float *p4, float *p5, float *p6, float *p7, float *p8)
+    std::map<std::string, IModule *> instantiateModules
+    (
+        std::unordered_map<std::string, ModuleConfig*> module_configurations, 
+        std::vector<float *> input_adapters,
+        std::vector<float *> output_adapters
+    )
     {
         // This is what we want to populate and return
         std::map<std::string, IModule*> modules;
@@ -248,10 +241,7 @@ public:
             // Create a string representation of the data json
             std::string json_data_string = json_dumps(data, JSON_INDENT(2));
 
-            // Create a vector of the p1 through p8 pointers
-            std::vector<float *> adapter_pointers = {p1, p2, p3, p4, p5, p6, p7, p8};
-
-            VPlugin* plugin = this->loadDll(type, json_data_string, adapter_pointers);
+            VPlugin* plugin = this->loadDll(type, json_data_string, input_adapters, output_adapters);
 
             if(plugin == nullptr) 
             {
@@ -273,6 +263,7 @@ public:
 
             ProxyModule *proxy_module = new ProxyModule(num_inputs, num_outputs, data, plugin);
 
+            proxy_module->setType(type);
             proxy_module->setUuid(module_uuid);
             modules[module_uuid] = proxy_module;
         }
@@ -624,17 +615,27 @@ public:
 
         // Find the last module in the chain
         // Why module.second? Because module is a pair: module.first is the id
-        //   and module.second is the module object
+        //   and module.second is the IModule object
 
         VoxbuilderLogger::getInstance().log("Searching for terminal output module");
-
+        
         for (auto &module : modules_map)
         {
+            /*
             int num_output_ports = module.second->getOutputPorts().size();
 
             VoxbuilderLogger::getInstance().log("  Testing: " + module.second->getUuid() + " having " + std::to_string(num_output_ports) + " output ports");
 
             if (num_output_ports == 0)
+            {
+                VoxbuilderLogger::getInstance().log("  Found terminal output module: " + module.second->getUuid());
+                out_module = module.second;
+            }
+            */
+
+            // If the module is of type "RACK_OUTPUT_ADAPTER"
+
+            if (module.second->getType() == "RACK_OUTPUT_ADAPTER")
             {
                 VoxbuilderLogger::getInstance().log("  Found terminal output module: " + module.second->getUuid());
                 out_module = module.second;
@@ -935,7 +936,7 @@ public:
         return json_integer_value(value);
     }
 
-    VPlugin* loadDll(std::string module_type, std::string json_data_string, std::vector<float *> adapter_pointers)
+    VPlugin* loadDll(std::string module_type, std::string json_data_string, std::vector<float *> input_adapters, std::vector<float *> output_adapters)
     {
         // Convert module_type to lowercase
         std::transform(module_type.begin(), module_type.end(), module_type.begin(),
@@ -992,7 +993,8 @@ public:
                 VPlugin* vplugin(createFunc(json_data_string));
 
                 // Inject the adapter pointers and json data string into the module
-                vplugin->setAdapterPointers(adapter_pointers);
+                vplugin->setInputAdapters(input_adapters);
+                vplugin->setOutputAdapters(output_adapters);
                 vplugin->setData(json_data_string);
 
                 VoxbuilderLogger::getInstance().log(" | Returning the loaded dll");

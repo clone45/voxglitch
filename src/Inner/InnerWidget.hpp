@@ -5,20 +5,34 @@ struct InnerWidget : VoxglitchModuleWidget
     setModule(module);
     setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/inner_front_panel.svg")));
 
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.94, 20.702)), module, Inner::PARAM1_CV_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.94, 40.702)), module, Inner::PARAM2_CV_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.94, 60.702)), module, Inner::PARAM3_CV_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.94, 80.702)), module, Inner::PARAM4_CV_INPUT));
+    // Inputs
 
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(54.94, 20.702)), module, Inner::PARAM5_CV_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(54.94, 40.702)), module, Inner::PARAM6_CV_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(54.94, 60.702)), module, Inner::PARAM7_CV_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(54.94, 80.702)), module, Inner::PARAM8_CV_INPUT));
+    // Column #1
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(14.94, 20.702)), module, Inner::INPUT_1));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(14.94, 40.702)), module, Inner::INPUT_2));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(14.94, 60.702)), module, Inner::INPUT_3));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(14.94, 80.702)), module, Inner::INPUT_4));
 
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(14.94, 20.702)), module, Inner::PITCH_INPUT));
-    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(14.94, 40.702)), module, Inner::GATE_INPUT));
+    // Column #2
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.94, 20.702)), module, Inner::INPUT_5));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.94, 40.702)), module, Inner::INPUT_6));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.94, 60.702)), module, Inner::INPUT_7));
+    addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.94, 80.702)), module, Inner::INPUT_8));
 
-    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(54.94, 114.702)), module, Inner::AUDIO_OUTPUT));
+    // Outputs
+
+    // Column #1
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(54.94, 20.702)), module, Inner::OUTPUT_1));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(54.94, 40.702)), module, Inner::OUTPUT_2));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(54.94, 60.702)), module, Inner::OUTPUT_3));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(54.94, 80.702)), module, Inner::OUTPUT_4));
+
+    // Column #2
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(74.94, 20.702)), module, Inner::OUTPUT_5));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(74.94, 40.702)), module, Inner::OUTPUT_6));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(74.94, 60.702)), module, Inner::OUTPUT_7));
+    addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(74.94, 80.702)), module, Inner::OUTPUT_8));
+
   }
 
   struct LoadFileMenuItem : MenuItem

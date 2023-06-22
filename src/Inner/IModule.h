@@ -3,10 +3,12 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include <unordered_map>
 #include "Sport.hpp"
 #include "Sparameter.hpp"
 #include "dsp/Map.hpp"
+
 
 class Sport;
 
@@ -18,6 +20,7 @@ protected:
     std::vector<Sport*> outputs;
     std::vector<Sparameter *> params;
     json_t* data = nullptr;
+    std::string type = "";
 
 public:
     virtual void process(unsigned int sample_rate) = 0;
@@ -31,6 +34,9 @@ public:
     virtual std::string getUuid() = 0;
     virtual int getNumInputs() = 0;
     virtual int getNumOutputs() = 0;
+
+    void setType(std::string type) { this->type = type; }
+    std::string getType() { return this->type; }
 
     std::string uuid = "none";
     bool processing = false;  

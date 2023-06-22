@@ -7,7 +7,6 @@ public:
     enum INPUTS {
         RESET,
         BPM,
-        // DIVISION,
         NUM_INPUTS
     };
 
@@ -23,7 +22,6 @@ public:
 
     ClockModule() {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
-        // params[BPM]->setValue(120.0f); // Default BPM is 120
     }
 
     void process(unsigned int sample_rate) override 
@@ -34,7 +32,6 @@ public:
         bpm = clamp(bpm, 1.0f, 999.0f);
 
         float beat_duration = 60.0f / bpm; // Duration of one beat in seconds
-        // int division = static_cast<int>(inputs[DIVISION]->getVoltage() + 1); // Clock division factor, minimum of 1
         int division = 1;
         int samples_per_beat = static_cast<int>(sample_rate * beat_duration / division); // Number of samples per beat, divided by division factor
 

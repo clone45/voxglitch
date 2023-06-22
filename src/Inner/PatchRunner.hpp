@@ -68,13 +68,11 @@ public:
     //
     // process()
     //
-    // Starts processing a patch to get the output.  The output of the entire
-    // patch is returned as a float.
     //
     // This is called at sample rate.
     // TODO: Handle passing in sample rate
     //
-    float process(unsigned int sample_rate, Patch *patch)
+    void process(unsigned int sample_rate, Patch *patch)
     {
         // Reset all module processed flags to false
         resetProcessingFlags();
@@ -83,12 +81,19 @@ public:
 
         if(! terminal_output_module)
         {
-            return(4.04);
+            return;
         }
 
         // Compute the outputs of the system by starting with the last module,
         // then working backwards through the chain.
         processModule(terminal_output_module, sample_rate);
+
+
+        // UPDATE:
+        // When the process function is run for the terminal output module, it
+        // will set the adapter outputs.
+
+
 
         // This might be a litte confusing, so let me explain it a bit.
         // The terminal output module is the last module in the patch. It has
@@ -98,9 +103,9 @@ public:
         // will have computed the value at INPUT_PORT by processing the entire
         // patch, so we're just returning that value.
 
-        Sport *input_port = terminal_output_module->getInputPort(0);
+        // Sport *input_port = terminal_output_module->getInputPort(0);
 
-        return (input_port->getVoltage());
+        // return (input_port->getVoltage());
     }
 
     // Reset all module processed flags to false
