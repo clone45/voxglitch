@@ -26,12 +26,12 @@ public:
     // This runs at sample rate
     void processModule(IModule *module, unsigned int sample_rate)
     {
-        if (module->processing) return;
-        module->processing = true;
+        if (module->processed) return;
+        module->processed = true;
 
         // Push the module onto the stack of processed modules.  When the 
         // processing of the patch is complete, we'll pop all the modules
-        // off the stack and reset their processing flags to false.
+        // off the stack and reset their processed flags to false.
 
         processed_modules.push(module);
 
@@ -49,7 +49,7 @@ public:
 
                     // If the connected module is not currently being processed,
                     // process it.  Otherwise, use the output from the last timestep.
-                    if (!connected_module->processing)
+                    if (!connected_module->processed)
                     {
                         processModule(connected_module, sample_rate);
                     }
@@ -62,7 +62,9 @@ public:
         }
 
         module->process(sample_rate);
-        module->processing = false;
+        
+        // This is unnecessary
+        // module->processed = false;
     } 
 
     //
@@ -75,7 +77,7 @@ public:
     void process(unsigned int sample_rate, Patch *patch)
     {
         // Reset all module processed flags to false
-        resetProcessingFlags();
+        resetProcessedFlags();
 
         IModule *terminal_output_module = patch->getTerminalOutputModule();
 
@@ -87,35 +89,16 @@ public:
         // Compute the outputs of the system by starting with the last module,
         // then working backwards through the chain.
         processModule(terminal_output_module, sample_rate);
-
-
-        // UPDATE:
-        // When the process function is run for the terminal output module, it
-        // will set the adapter outputs.
-
-
-
-        // This might be a litte confusing, so let me explain it a bit.
-        // The terminal output module is the last module in the patch. It has
-        // an input port called INPUT_PORT.  The value at INPUT_PORT is basically
-        // the value that the entire patch outputs.  So here, we're getting the
-        // value at INPUT_PORT and returning it.  The function processModule()
-        // will have computed the value at INPUT_PORT by processing the entire
-        // patch, so we're just returning that value.
-
-        // Sport *input_port = terminal_output_module->getInputPort(0);
-
-        // return (input_port->getVoltage());
     }
 
     // Reset all module processed flags to false
     // rewrite to be recursive?  Or push traversed modules onto a stack?
-    void resetProcessingFlags()
+    void resetProcessedFlags()
     {
         while(! processed_modules.empty())
         {
             IModule *module = processed_modules.top();
-            module->processing = false;
+            module->processed = false;
             processed_modules.pop();
         }
     }

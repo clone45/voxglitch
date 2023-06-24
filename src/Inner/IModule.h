@@ -32,12 +32,12 @@ public:
     virtual void setData(json_t* data) = 0;
     virtual void setUuid(std::string uuid) = 0;
     virtual std::string getUuid() = 0;
-    virtual int getNumInputs() = 0;
-    virtual int getNumOutputs() = 0;
+    virtual unsigned int getNumInputs() = 0;
+    virtual unsigned int getNumOutputs() = 0;
 
     void setType(std::string type) { this->type = type; }
     std::string getType() { return this->type; }
 
     std::string uuid = "none";
-    bool processing = false;  
+    bool processed = false;  
 };

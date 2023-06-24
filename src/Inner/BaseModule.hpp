@@ -11,6 +11,8 @@ class BaseModule : public IModule {
 public:
     
     virtual void process(unsigned int sample_rate) override = 0;
+    unsigned int number_of_inputs = 0;
+    unsigned int number_of_outputs = 0;
 
     BaseModule()
     { 
@@ -42,6 +44,9 @@ public:
         {
             params.push_back(new Sparameter());
         }
+
+        number_of_inputs = NUM_INPUTS;
+        number_of_outputs = NUM_OUTPUTS;
     }
 
     void setParameter(unsigned int param_id, float value) override
@@ -80,13 +85,13 @@ public:
         return inputs[port_id];
     }
 
-    int getNumInputs() override
+    unsigned int getNumInputs() override
     {
-        return inputs.size();
+        return number_of_inputs;
     }
 
-    int getNumOutputs() override
+    unsigned int getNumOutputs() override
     {
-        return outputs.size();
+        return number_of_outputs;
     }
 };

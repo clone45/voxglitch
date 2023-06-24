@@ -17,6 +17,12 @@
 class Patch
 {
 
+private:
+
+    // Modules are stored in a map with their uuid as the key and a pointer to the module as the value
+    std::map<std::string, IModule *> modules = {};
+    IModule *terminal_output_module = nullptr;    
+
 public:
 
     void setModules(std::map<std::string, IModule *> modules)
@@ -39,10 +45,4 @@ public:
         modules.clear();
         terminal_output_module = nullptr;
     }
-
-private:
-
-    // Modules are stored in a map with their uuid as the key and a pointer to the module as the value
-    std::map<std::string, IModule *> modules = {};
-    IModule *terminal_output_module = nullptr;
 };
