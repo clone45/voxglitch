@@ -14,6 +14,10 @@ private:
     IModule *parent_module;
     float lastVoltage = 0.0;
 
+    // This is only applicable to input ports.  It's a pointer to the connected 
+    // output port's voltage.
+    float *entangled_output_value = nullptr;
+
 public:
 
     // I'm making this public so that ProxyModule doesn't have to call
@@ -39,7 +43,8 @@ public:
     // This is called on input ports
     void connectToOutputPort(Sport *port)
     {
-        connected_outputs.push_back(port);
+        entangled_output_value = &port->voltage;
+        // connected_outputs.push_back(port);
     }
 
     float getLastVoltage()
@@ -55,10 +60,16 @@ public:
         this->lastVoltage = voltage;
         this->voltage = voltage;
 
+        // TODO:
+        // 
+        // What if, instead of setVoltage, the input port was given a pointer
+        // to the floating point value of the output port?
+
         // Iterate over connected_inputs and set the value of the inputs
         for (auto &input_port : connected_inputs)
         {
             input_port->setVoltage(voltage);
+
         }
     }
 
@@ -66,7 +77,9 @@ public:
     // Get value
     float getVoltage() const
     {
-        return clamp(voltage, -50.0f, 50.0f);
+        // return clamp(voltage, -50.0f, 50.0f);
+        return voltage;
+        // return *entangled_output_value;
     }
 
     // Get connected inputs

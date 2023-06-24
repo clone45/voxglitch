@@ -56,8 +56,9 @@ public:
         // For each output, set the voltage of this module's outputs
         for (unsigned int i = 0; i < num_outputs; i++) 
         {
-            // outputs[i]->setVoltage(output_voltages[i]);
-            outputs[i]->voltage = output_voltages[i];
+            // setVoltage does more than just set the voltage.  It also sets propagates
+            // the voltage to connected inputs.
+            outputs[i]->setVoltage(output_voltages[i]);
         }
     }
 };

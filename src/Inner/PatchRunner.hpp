@@ -62,9 +62,7 @@ public:
         }
 
         module->process(sample_rate);
-        
-        // This is unnecessary
-        // module->processed = false;
+        module->processed = false;
     } 
 
     //
