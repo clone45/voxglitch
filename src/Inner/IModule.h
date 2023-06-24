@@ -5,7 +5,8 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
-#include "Sport.hpp"
+#include "InputPort.hpp"
+#include "OutputPort.hpp"
 #include "Sparameter.hpp"
 #include "dsp/Map.hpp"
 
@@ -16,19 +17,18 @@ class IModule {
 
 protected:
     
-    std::vector<Sport*> inputs;
-    std::vector<Sport*> outputs;
+    std::vector<InputPort*> inputs;
+    std::vector<OutputPort*> outputs;
     std::vector<Sparameter *> params;
     json_t* data = nullptr;
     std::string type = "";
 
 public:
     virtual void process(unsigned int sample_rate) = 0;
-    virtual std::vector<Sport *> getOutputPorts() = 0;
-    virtual std::vector<Sport *> getInputPorts() = 0;
-    virtual void setParameter(unsigned int param_id, float value) = 0;
-    virtual Sport* getOutputPort(unsigned int port_id) = 0;
-    virtual Sport* getInputPort(unsigned int port_id) = 0;
+    virtual std::vector<OutputPort *> getOutputPorts() = 0;
+    virtual std::vector<InputPort *> getInputPorts() = 0;
+    virtual OutputPort* getOutputPort(unsigned int port_id) = 0;
+    virtual InputPort* getInputPort(unsigned int port_id) = 0;
     virtual void setData(json_t* data) = 0;
     virtual void setUuid(std::string uuid) = 0;
     virtual std::string getUuid() = 0;

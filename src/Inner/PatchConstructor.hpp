@@ -22,7 +22,9 @@
 #undef IN
 #undef OUT
 
-#include "Sport.hpp"
+// #include "Sport.hpp"
+#include "InputPort.hpp"
+#include "OutputPort.hpp"
 #include "IModule.h"
 #include "Patch.hpp"
 #include "Connection.hpp"
@@ -304,8 +306,8 @@ public:
             {
                 IModule* source_module = modules_map.at(connection.source_module_uuid);
                 IModule* dest_module = modules_map.at(connection.destination_module_uuid);
-                Sport* source_port = source_module->getOutputPort(connection.source_port_index);
-                Sport* dest_port = dest_module->getInputPort(connection.destination_port_index);
+                OutputPort* source_port = source_module->getOutputPort(connection.source_port_index);
+                InputPort* dest_port = dest_module->getInputPort(connection.destination_port_index);
 
                 source_port->connectToInputPort(dest_port);
                 dest_port->connectToOutputPort(source_port);

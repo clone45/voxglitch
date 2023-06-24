@@ -18,12 +18,12 @@ public:
     { 
     }
 
-    std::vector<Sport*> getOutputPorts() override 
+    std::vector<OutputPort*> getOutputPorts() override 
     {
         return outputs;
     }
 
-    std::vector<Sport*> getInputPorts() override 
+    std::vector<InputPort*> getInputPorts() override 
     {
         return inputs;
     }
@@ -32,23 +32,26 @@ public:
     {
         for (unsigned int i = 0; i < NUM_INPUTS; i++) 
         {
-            inputs.push_back(new Sport(this));
+            inputs.push_back(new InputPort(this));
         }
 
         for (unsigned int i = 0; i < NUM_OUTPUTS; i++) 
         {
-            outputs.push_back(new Sport(this));
+            outputs.push_back(new OutputPort(this));
         }
 
+        /*
         for (unsigned int i = 0; i < NUM_PARAMS; i++) 
         {
             params.push_back(new Sparameter());
         }
+        */
 
         number_of_inputs = NUM_INPUTS;
         number_of_outputs = NUM_OUTPUTS;
     }
 
+    /*
     void setParameter(unsigned int param_id, float value) override
     {
         // Check if param_id is valid
@@ -59,6 +62,7 @@ public:
 
         params[param_id]->setValue(value);
     }
+    */
 
     void setData(json_t* data) override
     {
@@ -75,12 +79,12 @@ public:
         return this->uuid;
     }
 
-    Sport* getOutputPort(unsigned int port_id) override
+    OutputPort* getOutputPort(unsigned int port_id) override
     {
         return outputs[port_id];
     }
 
-    Sport* getInputPort(unsigned int port_id) override
+    InputPort* getInputPort(unsigned int port_id) override
     {
         return inputs[port_id];
     }

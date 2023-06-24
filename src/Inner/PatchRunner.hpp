@@ -8,7 +8,9 @@
 // Text created using https://fsymbols.com/generators/carty/
 //
 
-#include "Sport.hpp"
+// #include "Sport.hpp"
+#include "InputPort.hpp"
+#include "OutputPort.hpp"
 #include "IModule.h"
 #include "VoxbuilderLogger.hpp"
 #include <stack>
@@ -35,17 +37,17 @@ public:
 
         processed_modules.push(module);
 
-        std::vector<Sport *> input_ports = module->getInputPorts();
+        std::vector<InputPort *> input_ports = module->getInputPorts();
 
         for (auto &input_port : input_ports)
         {
             if (input_port->isConnected())
             {
-                std::vector<Sport *> connected_outputs = input_port->getConnectedOutputs();
+                std::vector<OutputPort *> connected_output_ports = input_port->getConnectedOutputs();
 
-                if(connected_outputs.size() > 0)
+                if(connected_output_ports.size() > 0)
                 {
-                    IModule *connected_module = connected_outputs[0]->getParentModule();
+                    IModule *connected_module = connected_output_ports[0]->getParentModule();
 
                     // If the connected module is not currently being processed,
                     // process it.  Otherwise, use the output from the last timestep.
@@ -55,7 +57,7 @@ public:
                     }
                     else
                     {
-                        input_port->setVoltage(connected_outputs[0]->getLastVoltage());
+                        input_port->setVoltage(connected_output_ports[0]->getLastVoltage());
                     }
                 }
             }
