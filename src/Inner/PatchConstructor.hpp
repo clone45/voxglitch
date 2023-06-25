@@ -22,7 +22,6 @@
 #undef IN
 #undef OUT
 
-// #include "Sport.hpp"
 #include "InputPort.hpp"
 #include "OutputPort.hpp"
 #include "IModule.h"
@@ -31,7 +30,7 @@
 #include "VoxbuilderLogger.hpp"
 #include "C:/Code/bonsaiyo/includes/VPlugin.hpp"
 
-// Synth modules
+// Wrapper around the DLLs
 #include "ProxyModule.hpp"
 
 #include <map>
@@ -45,11 +44,6 @@ class PatchConstructor
 {
 
 private:
-    // Pointers
-    // Patch *patch = nullptr;
-    float *pitch_ptr;
-    float *gate_ptr;
-    // float *p1, *p2, *p3, *p4, *p5, *p6, *p7, *p8;
 
     // "Adapters" are vectors of floats that will be used to pass values from the host to the plugin.
     // In other words, the host will write values to the adapter, and the plugin will read values from the adapter.
