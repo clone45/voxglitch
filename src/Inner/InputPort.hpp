@@ -11,7 +11,8 @@ class InputPort : public Sport
 {
 
 private:
-    std::vector<OutputPort *> connected_outputs;
+    OutputPort * connected_output;
+    bool is_connected = false;
 
 public:
 
@@ -23,7 +24,8 @@ public:
 
     void connectToOutputPort(OutputPort *port)
     {
-        connected_outputs.push_back(port);
+        connected_output = port;
+        is_connected = true;
     }
 
     void setVoltage(float voltage)
@@ -32,13 +34,13 @@ public:
         this->voltage = voltage;
     }
 
-    std::vector<OutputPort *> getConnectedOutputs() const
+    OutputPort *getConnectedOutput() const
     {
-        return connected_outputs;
+        return connected_output;
     }
 
     bool isConnected()
     {
-        return connected_outputs.size() > 0;
+        return is_connected;
     }
 };

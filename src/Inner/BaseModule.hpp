@@ -40,29 +40,9 @@ public:
             outputs.push_back(new OutputPort(this));
         }
 
-        /*
-        for (unsigned int i = 0; i < NUM_PARAMS; i++) 
-        {
-            params.push_back(new Sparameter());
-        }
-        */
-
         number_of_inputs = NUM_INPUTS;
         number_of_outputs = NUM_OUTPUTS;
     }
-
-    /*
-    void setParameter(unsigned int param_id, float value) override
-    {
-        // Check if param_id is valid
-        if (param_id >= params.size()) 
-        {
-            return;
-        }
-
-        params[param_id]->setValue(value);
-    }
-    */
 
     void setData(json_t* data) override
     {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../BaseModule.hpp"
+#include "BaseModule.hpp"
 #include "C:/Code/bonsaiyo/includes/VPlugin.hpp"
 
 class ProxyModule : public BaseModule

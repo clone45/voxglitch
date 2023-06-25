@@ -43,28 +43,24 @@ public:
         {
             if (input_port->isConnected())
             {
-                std::vector<OutputPort *> connected_output_ports = input_port->getConnectedOutputs();
+                OutputPort *connected_output_port = input_port->getConnectedOutput();
 
-                if(connected_output_ports.size() > 0)
+                IModule *connected_module = connected_output_port->getParentModule();
+
+                // If the connected module is not currently being processed,
+                // process it.  Otherwise, use the output from the last timestep.
+                if (!connected_module->processed)
                 {
-                    IModule *connected_module = connected_output_ports[0]->getParentModule();
-
-                    // If the connected module is not currently being processed,
-                    // process it.  Otherwise, use the output from the last timestep.
-                    if (!connected_module->processed)
-                    {
-                        processModule(connected_module, sample_rate);
-                    }
-                    else
-                    {
-                        input_port->setVoltage(connected_output_ports[0]->getLastVoltage());
-                    }
+                    processModule(connected_module, sample_rate);
+                }
+                else
+                {
+                    input_port->setVoltage(connected_output_port->getLastVoltage());
                 }
             }
         }
 
         module->process(sample_rate);
-        module->processed = false;
     } 
 
     //

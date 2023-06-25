@@ -8,7 +8,6 @@
 
 #include "Inner/defines.h"
 #include "Inner/Sport.hpp"
-#include "Inner/submodules/VCOModule.hpp"
 #include "Inner/Patch.hpp"
 #include "Inner/PatchLoader.hpp"
 #include "Inner/ModuleConfig.hpp"

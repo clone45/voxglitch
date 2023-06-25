@@ -31,59 +31,8 @@
 #include "VoxbuilderLogger.hpp"
 #include "C:/Code/bonsaiyo/includes/VPlugin.hpp"
 
-// Utility modules
-#include "submodules/PitchInputModule.hpp"
-#include "submodules/GateInputModule.hpp"
-#include "submodules/OutputModule.hpp"
-#include "submodules/ParamModule.hpp"
-
 // Synth modules
-/*
-#include "submodules/ADSRModule.hpp"
-#include "submodules/ADModule.hpp"
-#include "submodules/AdditionModule.hpp"
-#include "submodules/AmplifierModule.hpp"
-#include "submodules/ClockDividerModule.hpp"
-#include "submodules/ClockModule.hpp"
-#include "submodules/DelayModule.hpp"
-#include "submodules/DelayLineModule.hpp"
-#include "submodules/DistortionModule.hpp"
-#include "submodules/DivisionModule.hpp"
-#include "submodules/ExponentialVCAModule.hpp"
-#include "submodules/FuzzModule.hpp"
-#include "submodules/LinearVCAModule.hpp"
-#include "submodules/LFOModule.hpp"
-#include "submodules/LowpassFilterModule.hpp"
-#include "submodules/Mixer2Module.hpp"
-#include "submodules/Mixer3Module.hpp"
-#include "submodules/Mixer4Module.hpp"
-#include "submodules/Mixer8Module.hpp"
-#include "submodules/MoogLowpassFilterModule.hpp"
-#include "submodules/MorphingFilterModule.hpp"
-#include "submodules/MultiplicationModule.hpp"
-#include "submodules/NoiseModule.hpp"
-#include "submodules/OverdriveModule.hpp"
-#include "submodules/RampOscillatorModule.hpp"
-#include "submodules/SampleAndHoldModule.hpp"
-#include "submodules/ScaleQuantizerModule.hpp"
-#include "submodules/SchroederReverbModule.hpp"
-#include "submodules/Selector2Module.hpp"
-#include "submodules/Selector3Module.hpp"
-#include "submodules/Selector4Module.hpp"
-#include "submodules/Selector6Module.hpp"
-#include "submodules/Selector8Module.hpp"
-#include "submodules/SubtractionModule.hpp"
-#include "submodules/TableLookupModule.hpp"
-#include "submodules/TB303OscillatorModule.hpp"
-#include "submodules/TB303FilterModule.hpp"
-#include "submodules/VCOModule.hpp"
-#include "submodules/VoltageSequencerModule.hpp"
-#include "submodules/WaveFolderModule.hpp"
-#include "submodules/WaveShaperModule.hpp"
-#include "submodules/WavetableOscillatorModule.hpp"
-*/
-
-#include "submodules/ProxyModule.hpp"
+#include "ProxyModule.hpp"
 
 #include <map>
 #include <unordered_map>
@@ -238,7 +187,6 @@ public:
             VoxbuilderLogger::getInstance().log("PatchConstructor.hpp::instantiateModules() - Processing module of type: " + type + " with uuid: " + module_uuid);
 
             json_t* data = config->data;
-            json_t* defaults = config->defaults;
 
             // Create a string representation of the data json
             std::string json_data_string = json_dumps(data, JSON_INDENT(2));

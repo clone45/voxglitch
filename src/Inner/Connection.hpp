@@ -1,5 +1,12 @@
 #pragma once
 
+//
+//
+// It worth noting that Connection is only used in PatchConstructor.hpp
+// and doesn't have to be fast since it's only used during patch construction.
+//
+//
+
 class Connection
 {
 public:
