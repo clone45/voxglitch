@@ -18,11 +18,6 @@
 class PatchRunner
 {
 
-private:
-
-    // A stack of pointers to modules that have been processed
-    std::stack<IModule *> processed_modules;
-
 public:
 
     void process(unsigned int sample_rate, Patch *patch)
@@ -45,7 +40,7 @@ public:
                 }
             }
 
-            // Process the current module
+            // Process the current module.  module->process can be found in ProxyModule.hpp
             module->process(sample_rate);
         }
     }
@@ -59,6 +54,8 @@ public:
     // a "unflattened" graph, this code will be useful.
     // ====================================================================================================
     
+    std::stack<IModule *> processed_modules;
+
     void process(unsigned int sample_rate, Patch *patch)
     {
         // Reset all module processed flags to false

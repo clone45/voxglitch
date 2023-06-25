@@ -45,13 +45,8 @@ public:
             input_voltages[i] = inputs[i]->voltage;
         }
 
-        //
-        // Possible speed improvement might be to pass in the outputs vector
-        // by reference, and have the plugin write directly to it.  Could I do that
-        // for the inputs vector as well?
-
         // Call process on the Plugin DLL, passing in the voltages
-        output_voltages = plugin->process(sample_rate, input_voltages);
+        plugin->process(sample_rate, input_voltages, output_voltages);
 
         // For each output, set the voltage of this module's outputs
         for (unsigned int i = 0; i < num_outputs; i++) 
