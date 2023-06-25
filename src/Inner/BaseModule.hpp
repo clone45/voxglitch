@@ -18,12 +18,8 @@ public:
     { 
     }
 
-    std::vector<OutputPort*> getOutputPorts() override 
-    {
-        return outputs;
-    }
-
-    std::vector<InputPort*> getInputPorts() override 
+    // Currently there's no need for a getOutputPorts function
+    std::vector<InputPort*>& getInputPorts() override 
     {
         return inputs;
     }

@@ -25,6 +25,57 @@ private:
 
 public:
 
+    void process(unsigned int sample_rate, Patch *patch)
+    {
+        // Retrieve the flattened list of modules from the patch
+        std::vector<IModule*>& modules = patch->getModules();
+
+        // Process each module in order
+        for (const auto& module : modules)
+        {
+            const std::vector<InputPort*>& input_ports = module->getInputPorts();
+
+            // Retrieve data from connected output ports
+            for (auto& input_port : input_ports)
+            {
+                if (input_port->isConnected())
+                {
+                    OutputPort* connected_output_port = input_port->getConnectedOutput();
+                    input_port->setVoltage(connected_output_port->getLastVoltage());
+                }
+            }
+
+            // Process the current module
+            module->process(sample_rate);
+        }
+    }
+
+
+    /*
+    //
+    // UNUSED
+    // ====================================================================================================
+    // The following code is no longer used, but is kept here for reference.  If I ever need to process
+    // a "unflattened" graph, this code will be useful.
+    // ====================================================================================================
+    
+    void process(unsigned int sample_rate, Patch *patch)
+    {
+        // Reset all module processed flags to false
+        resetProcessedFlags();
+
+        IModule *terminal_output_module = patch->getTerminalOutputModule();
+
+        if(! terminal_output_module)
+        {
+            return;
+        }
+
+        // Compute the outputs of the system by starting with the last module,
+        // then working backwards through the chain.
+        processModule(terminal_output_module, sample_rate);
+    }    
+
     // This runs at sample rate
     void processModule(IModule *module, unsigned int sample_rate)
     {
@@ -63,30 +114,6 @@ public:
         module->process(sample_rate);
     } 
 
-    //
-    // process()
-    //
-    //
-    // This is called at sample rate.
-    // TODO: Handle passing in sample rate
-    //
-    void process(unsigned int sample_rate, Patch *patch)
-    {
-        // Reset all module processed flags to false
-        resetProcessedFlags();
-
-        IModule *terminal_output_module = patch->getTerminalOutputModule();
-
-        if(! terminal_output_module)
-        {
-            return;
-        }
-
-        // Compute the outputs of the system by starting with the last module,
-        // then working backwards through the chain.
-        processModule(terminal_output_module, sample_rate);
-    }
-
     // Reset all module processed flags to false
     // rewrite to be recursive?  Or push traversed modules onto a stack?
     void resetProcessedFlags()
@@ -98,4 +125,7 @@ public:
             processed_modules.pop();
         }
     }
+    */
+    
+
 };

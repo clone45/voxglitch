@@ -17,16 +17,17 @@ private:
 
 public:
 
-    // setModules(modules_map) is called by PatchContructor.  PatchContructor has the modules 
-    // stored in a map with their uuid as the key and a pointer to the module as the value.  
-    // But we don't need the uuids anymore, so we just store the pointers in a vector.
+    // Modules are assumed to be sorted in the order
+    // that they need to be processed
 
-    void setModules(std::map<std::string, IModule *> modules_map)
+    void setModules(std::vector<IModule *> modules)
     {
-        for (auto &module : modules_map)
-        {
-            this->modules.push_back(module.second);
-        }
+        this->modules = modules;
+    }
+
+    std::vector<IModule *>& getModules()
+    {
+        return this->modules;
     }
 
     void setTerminalOutputModule(IModule *terminal_output_module)
@@ -44,4 +45,5 @@ public:
         modules.clear();
         terminal_output_module = nullptr;
     }
+
 };

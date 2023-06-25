@@ -127,7 +127,7 @@ public:
         // Populate the patch object
         Patch *patch = new Patch();
         patch->setTerminalOutputModule(terminal_output_module);
-        patch->setModules(modules_map);
+        patch->setModules(this->flatten(terminal_output_module, modules_map));
 
         return patch;
     }
@@ -314,11 +314,6 @@ public:
     // The modules inside the macro will have their "parent_uuid" set to the macro module's uuid.
     //
 
-    // Here is the path forward:
-    // Give each connection a uuid
-    // when a connection becomes orphaned, add the uuid to a list
-    // then delete all of the connections in the orphaned list
-
     bool bridgeMacroConnections(std::unordered_map<std::string, ModuleConfig*> &modules_config_map, std::vector<Connection> &connections_config)
     {
         VoxbuilderLogger::getInstance().log("=== Bridging Macro Connections ===");
@@ -408,9 +403,10 @@ public:
 
             // 
             // The general strategy is similar to the MACRO_INPUT_PORT case above.
-            // 1. Find the connection linking (i) to MACRO_OUTPUT_MODULE
-            // 2. Find the connection linking (j) to "blah module"
-            // 3. Update i to link from other_module to "blah module"
+            // 1. Find the connection (i) to MACRO_OUTPUT_MODULE
+            // 2. Find the connection (j) to "blah module"
+            // 3. Update (i) to connect from other_module to "blah module"
+            // 4. Remove connection (j)
 
             if (module_config->type == "MACRO_OUTPUT_PORT")
             {
@@ -459,12 +455,7 @@ public:
             }
         }
 
-
-        //
-        //
-        //  TODO: Remove the "removed_connections" from connections_config
-        //
-
+        //  Remove the "removed_connections" from connections_config
         connections_config.erase(
             std::remove_if(
                 connections_config.begin(), 
@@ -547,12 +538,6 @@ public:
         return result;
     }
 
-
-
-    //
-    // Note: If I update this function to find the output module by type,
-    // I may be able to remove the getOutputPorts function from all modules
-    // and from the IModule interface
     IModule *findOutModule(std::map<std::string, IModule*> modules_map)
     {
         IModule *out_module = nullptr;
@@ -565,20 +550,7 @@ public:
         
         for (auto &module : modules_map)
         {
-            /*
-            int num_output_ports = module.second->getOutputPorts().size();
-
-            VoxbuilderLogger::getInstance().log("  Testing: " + module.second->getUuid() + " having " + std::to_string(num_output_ports) + " output ports");
-
-            if (num_output_ports == 0)
-            {
-                VoxbuilderLogger::getInstance().log("  Found terminal output module: " + module.second->getUuid());
-                out_module = module.second;
-            }
-            */
-
             // If the module is of type "RACK_OUTPUT_ADAPTER"
-
             if (module.second->getType() == "RACK_OUTPUT_ADAPTER")
             {
                 VoxbuilderLogger::getInstance().log("  Found terminal output module: " + module.second->getUuid());
@@ -588,6 +560,57 @@ public:
 
         return(out_module);
     }
+
+    // Method to recursively flatten the modules
+    void flattenRecursive(IModule* module, std::vector<IModule*>& flattened_modules) 
+    {
+        if (!module || module->processed) {
+            return;
+        }
+
+        module->processed = true;
+
+        std::vector<InputPort*> input_ports = module->getInputPorts();
+
+        for (auto& input_port : input_ports) 
+        {
+            if (input_port->isConnected()) 
+            {
+                OutputPort* connected_output_port = input_port->getConnectedOutput();
+                IModule* connected_module = connected_output_port->getParentModule();
+                flattenRecursive(connected_module, flattened_modules);
+            }
+        }
+
+        flattened_modules.push_back(module);
+    }
+
+    // Method to flatten the modules map into a vector
+    std::vector<IModule*> flatten(IModule* terminal_output_module, std::map<std::string, IModule*>& modules_map) 
+    {
+        std::vector<IModule*> flattened_modules;
+        std::vector<IModule*> modules;
+
+        // Convert the map to a vector
+        for (auto& module : modules_map) {
+            modules.push_back(module.second);
+            module.second->processed = false; // Reset processed flag for each module
+        }
+
+        // Flatten modules starting from terminal output module
+        flattenRecursive(terminal_output_module, flattened_modules);
+
+        for (auto &module : flattened_modules)
+        {
+            module->processed = false;
+        }
+
+        return flattened_modules;
+    }
+
+
+
+
 
     std::unordered_map<std::string, ModuleConfig*> convertToMap(std::vector<ModuleConfig*> moduleConfigs) 
     {

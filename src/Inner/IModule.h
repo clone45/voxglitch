@@ -25,8 +25,7 @@ protected:
 
 public:
     virtual void process(unsigned int sample_rate) = 0;
-    virtual std::vector<OutputPort *> getOutputPorts() = 0;
-    virtual std::vector<InputPort *> getInputPorts() = 0;
+    virtual std::vector<InputPort *>& getInputPorts() = 0;
     virtual OutputPort* getOutputPort(unsigned int port_id) = 0;
     virtual InputPort* getInputPort(unsigned int port_id) = 0;
     virtual void setData(json_t* data) = 0;
