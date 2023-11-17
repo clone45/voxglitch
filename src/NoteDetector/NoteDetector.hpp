@@ -51,18 +51,6 @@ struct NoteDetector : VoxglitchModule
 
     void process(const ProcessArgs &args) override
     {
-
-        if(! inputs[CV_INPUT].isConnected())
-        {
-            // Set output to 0V if no CV input is connected
-            outputs[DETECTION_OUTPUT].setVoltage(0.0f);
-
-            // Reset the pulse generator
-            output_pulse_generator.reset();
-
-            return;
-        }
-
         // Read the NOTE_SELECTION_KNOB and OCTAVE_SELECTION_KNOB parameters
         int note_selection = (int)roundf(params[NOTE_SELECTION_KNOB].getValue());
         int octave_selection = (int)roundf(params[OCTAVE_SELECTION_KNOB].getValue());
@@ -81,6 +69,17 @@ struct NoteDetector : VoxglitchModule
         {
             // Trigger the pulse generator
             output_pulse_generator.trigger(1e-3); // Trigger duration of 1 millisecond
+        }
+
+        if(! inputs[CV_INPUT].isConnected())
+        {
+            // Set output to 0V if no CV input is connected
+            outputs[DETECTION_OUTPUT].setVoltage(0.0f);
+
+            // Reset the pulse generator
+            output_pulse_generator.reset();
+
+            return;
         }
 
         // Check if the pulse generator is currently generating a pulse

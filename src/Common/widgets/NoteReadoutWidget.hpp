@@ -56,7 +56,7 @@ struct NoteReadoutWidget : TransparentWidget
             float y = (box.size.y / 2.0) + 1.5;
 
             // Draw the note
-            nvgFillColor(args.vg, nvgRGBA(255, 215, 20, 0xff));
+            nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
             nvgText(vg, x, y, note.c_str(), NULL);
 
             // Draw the sharp symbol higher up

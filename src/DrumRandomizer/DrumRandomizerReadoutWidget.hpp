@@ -64,10 +64,6 @@ struct DrumRandomizerReadoutWidget : TransparentWidget
             // Set the color for the 14 segment text
             nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
 
-            // nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
-
-            // void nvgTextBox(NVGcontext* ctx, float x, float y, float breakRowWidth, const char* string, const char* end);
-            // nvgTextBox(args.vg, -16.0, box_size_y / 2.0, 56.7845, text_to_display.c_str(), NULL);
             nvgTextBox(args.vg, -16.0, box_size_y / 2.0, 56.7845, text_to_display.c_str(), NULL);
         }
 
