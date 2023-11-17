@@ -1,5 +1,5 @@
 {
-    "panel_width": 120.0,
+    "panel_width": 60.0,
     "layers": [
         {
             "type": "image",
@@ -25,6 +25,6 @@
         "NOTE_READOUT": {"x": 10.0, "y": 95.0},
         "NOTE_SELECTION_KNOB": {"x": 33.43751,"y": 176.77668},
         "OCTAVE_SELECTION_KNOB": {"x": 33.43751,"y": 256.32620},
-        "DETECTION_OUTPUT": {"x": 33.63673, "y": 354.0}
+        "DETECTION_OUTPUT": {"x": 33.63673, "y": 349.837158}
     }
 }
