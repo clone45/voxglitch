@@ -123,6 +123,12 @@
         "tags": ["Sampler"]
     },
     {
+        "slug": "noteDetector",
+        "name": "Note Detector",
+        "description": "Produced a gate output when a specified note is detected at the CV input",
+        "tags": ["Utility"]
+    }, 
+    {
         "slug": "repeater",
         "name": "Repeater",
         "description": "Looping sample player with playback offset control.",

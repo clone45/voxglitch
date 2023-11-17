@@ -26,6 +26,7 @@ extern Model *modelHazumi;
 extern Model *modelOnePoint;
 extern Model *modelOneZero;
 extern Model *modelLooper;
+extern Model *modelNoteDetector;
 extern Model *modelRepeater;
 extern Model *modelSamplerX8;
 extern Model *modelSampler16P;

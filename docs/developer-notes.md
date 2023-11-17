@@ -1,24 +1,73 @@
 # Developer notes
 
+## Calculations
+
+See the following for a spreadsheet of the panel width and detail layer width for each HP panel width:
+https://docs.google.com/spreadsheets/d/1u0FdkN7lIzPHwmSiGGZiQxeL11pMq-TThkF9c5UeU-o/edit?usp=sharing
+
+Constants:
+
+* HP_TO_MM = 5.08 mm
+* MM_TO_PX = 2.952756
+
+### Converting panel width from HP to Pixels
+
+#### General equation:
+
+panel_width_in_mm = HP_TO_MM * panel_width_in_hp
+panel_width_in_px = MM_TO_PX * panel_width_in_mm
+
+#### Example:
+
+Given a panel width of 28 HP, what is the panel's width in pixels?
+
+panel_width_in_hp = 26 HP
+HP_TO_MM = 5.08 mm // constant
+
+Calculate the panel_width_in_px:
+
+  panel_width_in_mm = HP_TO_MM * panel_width_in_hp
+  panel_width_in_mm = 5.08 * module_width_in_hp
+  panel_width_in_mm = 5.08 * 26
+  panel_width_in_mm = 132.08 mm
+
+Convert panel_width_in_mm to pixels
+
+  panel_width_in_px = MM_TO_PX * panel_width_in_mm
+  panel_width_in_px = 2.952756 * 132.08 = 390.00 pixels
+
+
 ## Creating detail layers
 
-Detail layers should be 4x the size of the panel.  You can compute the necessary size like so:
+Detail layer images should be 4x the size of the panel.  You can compute the necessary size like so:
 
-panel_width_mm * 2.952756 * 4
+detail_layer_width_px = panel_width_in_px * 4
 
-Here's examples of the XY detail layer calculations
-* 101.6 * 2.952756 = 300;  300 * 4 = 1200
-* 128.5 * 2.952756 = 379.429;  379.429 * 4 = 1518
+For example, given a panel of 132.08 px
 
-Then, to implement the detail layer, add it to the layers section in the theme config file like so:
+* detail_layer_width_px = panel_width_in_px * 4
+* detail_layer_width_mm = 390.00 pixels * 4
+* detail_layer_width_mm = 1560
 
-````
-{
-  "type": "image",
-  "path": "res/xy/themes/default/details.png",
-  "width": 101.6,
-  "height": 128.5,
-  "zoom": 0.25
-},
-````
+The HP in the examples is the same HP as Glitch Sequencer. The numbers match those of Glitch Sequencer. 
 
+
+## Typography
+
+### Input and output labels
+
+Font: Pilat
+Weight: Normal
+Dark Mode Color (r,g,b): 12, 18, 24
+Light Mode Color (r,g,b): 244, 238, 233
+Letter spacing: .88
+Size: 7pt
+
+### Module name (in rectangle)
+
+Font: Pilat Condensed
+Weight: Normal
+Dark Mode Color (r,g,b): 12, 18, 24
+Light Mode Color (r,g,b): 244, 238, 233
+Letter spacing: .60
+Size: 6pt
