@@ -110,6 +110,31 @@ struct NoteDetector : VoxglitchModule
         float cv_input = inputs[CV_INPUT].getVoltage();
         float target_voltage = noteToVoltage(note_selection, octave_selection);
 
+        if(! inputs[CV_INPUT].isConnected())
+        {
+            // Set output to 0V if no CV input is connected
+            outputs[DETECTION_OUTPUT].setVoltage(0.0f);
+
+            // Reset the pulse generator
+            output_pulse_generator.reset();
+
+            return;
+        }
+
+        switch (output_mode)
+        {
+            case TRIGGER:
+                processTriggerMode(target_voltage, cv_input, args);
+                break;
+
+            case GATE:
+                processGateMode(target_voltage, cv_input, args);
+                break;
+        }
+    }
+
+    void processTriggerMode(float target_voltage, float cv_input, const ProcessArgs &args)
+    {
         bool has_target_voltage_changed = target_voltage != previous_target_voltage;
         bool is_within_tolerance = std::abs(cv_input - target_voltage) <= tolerance;
 
@@ -128,23 +153,26 @@ struct NoteDetector : VoxglitchModule
         // Update the previous target voltage for the next cycle
         previous_target_voltage = target_voltage;
 
-        if(! inputs[CV_INPUT].isConnected())
-        {
-            // Set output to 0V if no CV input is connected
-            outputs[DETECTION_OUTPUT].setVoltage(0.0f);
-
-            // Reset the pulse generator
-            output_pulse_generator.reset();
-
-            return;
-        }
-
         // Check if the pulse generator is currently generating a pulse
         if (output_pulse_generator.process(args.sampleTime)) 
         {
             outputs[DETECTION_OUTPUT].setVoltage(10.0f); // High voltage for trigger
         } 
         else 
+        {
+            outputs[DETECTION_OUTPUT].setVoltage(0.0f); // No voltage
+        }
+    }
+
+    void processGateMode(float target_voltage, float cv_input, const ProcessArgs &args)
+    {
+        bool is_within_tolerance = std::abs(cv_input - target_voltage) <= tolerance;
+
+        if (is_within_tolerance)
+        {
+            outputs[DETECTION_OUTPUT].setVoltage(10.0f); // High voltage for gate
+        }
+        else
         {
             outputs[DETECTION_OUTPUT].setVoltage(0.0f); // No voltage
         }
