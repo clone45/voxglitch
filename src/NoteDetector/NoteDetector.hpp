@@ -22,6 +22,9 @@ struct NoteDetector : VoxglitchModule
     unsigned int output_mode = TRIGGER;
     float tolerance = 0.00f;
     int trigger_length_index = 3;
+    float previous_target_voltage = -1234567.89f;
+    bool trigger_lock = false;
+    bool was_outside_tolerance = false;
 
     std::vector<float> trigger_lengths = {0.001, 0.002, 0.005, 0.010, 0.020, 0.050, 0.100, 0.200};
 
@@ -99,21 +102,31 @@ struct NoteDetector : VoxglitchModule
         // Read the NOTE_SELECTION_KNOB and OCTAVE_SELECTION_KNOB parameters
         int note_selection = (int)roundf(params[NOTE_SELECTION_KNOB].getValue());
         int octave_selection = (int)roundf(params[OCTAVE_SELECTION_KNOB].getValue());
-
-        // Read the CV_INPUT
-        float cv_input = inputs[CV_INPUT].getVoltage();
-
+        
         // Update the note readout
         note_readout = getNoteName(note_selection, octave_selection);
 
-        float targetVoltage = noteToVoltage(note_selection, octave_selection);
+        // Read the CV_INPUT and get target voltage
+        float cv_input = inputs[CV_INPUT].getVoltage();
+        float target_voltage = noteToVoltage(note_selection, octave_selection);
 
-        // Compare the target voltage with the input voltage
-        if (std::abs(cv_input - targetVoltage) <= tolerance) 
+        bool has_target_voltage_changed = target_voltage != previous_target_voltage;
+        bool is_within_tolerance = std::abs(cv_input - target_voltage) <= tolerance;
+
+        // Trigger if within tolerance and either the voltage was previously outside tolerance 
+        // or the target voltage has changed
+        if (is_within_tolerance && (was_outside_tolerance || has_target_voltage_changed))
         {
-            // Trigger the pulse generator
             output_pulse_generator.trigger(trigger_lengths[trigger_length_index]);
+            was_outside_tolerance = false;
         }
+        else if (!is_within_tolerance)
+        {
+            was_outside_tolerance = true;
+        }
+
+        // Update the previous target voltage for the next cycle
+        previous_target_voltage = target_voltage;
 
         if(! inputs[CV_INPUT].isConnected())
         {
