@@ -10,6 +10,8 @@
 #include "Common/components/VoxglitchComponents.hpp"
 #include "Common/widgets/NoteReadoutWidget.hpp"
 
+#include "Common/helpers/JSON.hpp"
+
 #include "NoteDetector/NoteDetector.hpp"
 #include "NoteDetector/NoteDetectorWidget.hpp"
 

@@ -71,3 +71,7 @@ Dark Mode Color (r,g,b): 12, 18, 24
 Light Mode Color (r,g,b): 244, 238, 233
 Letter spacing: .60
 Size: 6pt
+
+### Centering medium knobs
+When trying to find out the correct y-position of a knob within a scale decal:
+knob_position_px = scale_decal_positon_px + 22.78879 px

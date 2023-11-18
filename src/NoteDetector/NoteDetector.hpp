@@ -1,7 +1,29 @@
+//
+// TODO:
+//
+// * Add tolerance setting in context menu
+// * Save/load tolerance setting
+// * Add GATE vs TRIGGER output to context menu [done]
+// * Implement GATE vs TRIGGER output
+// * Save/load output mode [done]
+// * Add trigger duration setting in context menu  [done]
+// * Implement trigger duration setting
+// * Save/load trigger duration setting  [done]
+// * Add "all" octave option
+// * Implement light theme
+
+
 struct NoteDetector : VoxglitchModule
 {
-    std::string note_readout = " A4";
+    std::string version = "2.0.0";
+
+    std::string note_readout = "";
     dsp::PulseGenerator output_pulse_generator;
+    unsigned int output_mode = TRIGGER;
+    float tolerance = 0.00f;
+    int trigger_length_index = 3;
+
+    std::vector<float> trigger_lengths = {0.001, 0.002, 0.005, 0.010, 0.020, 0.050, 0.100, 0.200};
 
     enum ParamIds
     {
@@ -24,17 +46,37 @@ struct NoteDetector : VoxglitchModule
         NUM_LIGHTS
     };
 
+    enum OutputModes
+    {
+        TRIGGER,
+        GATE,
+        NUM_OUTPUT_MODES
+    };
+
+    // █▀ ▄▀█ █░█ █▀▀   ▄▀█ █▄░█ █▀▄   █░░ █▀█ ▄▀█ █▀▄
+    // ▄█ █▀█ ▀▄▀ ██▄   █▀█ █░▀█ █▄▀   █▄▄ █▄█ █▀█ █▄▀
+
     // Save module data
     json_t *dataToJson() override
     {
         json_t *json_root = json_object();
+
+        // Save the version
+        json_object_set_new(json_root, "version", json_string(version.c_str()));
+
+        json_object_set_new(json_root, "output_mode", json_integer(output_mode));
+        json_object_set_new(json_root, "tolerance", json_real(tolerance));
+        json_object_set_new(json_root, "trigger_length_index", json_integer(trigger_length_index));
+
         return json_root;
     }
 
     // Load module data
     void dataFromJson(json_t *root) override
     {
-
+        this->setOutputMode(JSON::getInteger(root, "output_mode"));
+        this->setTolerance(JSON::getNumber(root, "tolerance"));
+        this->setTriggerLengthIndex(JSON::getInteger(root, "trigger_length_index"));
     }        
 
     NoteDetector()
@@ -48,6 +90,9 @@ struct NoteDetector : VoxglitchModule
         configParam(OCTAVE_SELECTION_KNOB, 0.0f, 8.0, 4.0f, "Octave");
         paramQuantities[OCTAVE_SELECTION_KNOB]->snapEnabled = true;
     }
+
+    // █▀█ █▀█ █▀█ █▀▀ █▀▀ █▀ █▀
+    // █▀▀ █▀▄ █▄█ █▄▄ ██▄ ▄█ ▄█
 
     void process(const ProcessArgs &args) override
     {
@@ -64,11 +109,10 @@ struct NoteDetector : VoxglitchModule
         float targetVoltage = noteToVoltage(note_selection, octave_selection);
 
         // Compare the target voltage with the input voltage
-        float tolerance = 0.00f; // Adjust this value as needed
         if (std::abs(cv_input - targetVoltage) <= tolerance) 
         {
             // Trigger the pulse generator
-            output_pulse_generator.trigger(1e-3); // Trigger duration of 1 millisecond
+            output_pulse_generator.trigger(trigger_lengths[trigger_length_index]);
         }
 
         if(! inputs[CV_INPUT].isConnected())
@@ -145,6 +189,26 @@ struct NoteDetector : VoxglitchModule
         return note_name;
     }
 
+    std::vector<std::string> getTriggerLengthNames() 
+    {
+        std::vector<std::string> names;
+
+        // iterate over trigger_lengths
+        for (unsigned int i = 0; i < trigger_lengths.size(); i++)
+        {
+            // convert the trigger length to a string
+            std::string label = std::to_string(trigger_lengths[i]);
+            label.erase(label.find_last_not_of('0') + 1, std::string::npos);
+            label.erase(label.find_last_not_of('.') + 1, std::string::npos);
+            label += "s";
+
+            // add the string to the vector
+            names.push_back(label);
+        }
+
+        return names;           
+    }
+
     float noteToVoltage(int note, int octave) 
     {
         // C4 = 261.6256 Hz is considered 0V in 1V/Oct standard
@@ -157,5 +221,20 @@ struct NoteDetector : VoxglitchModule
         // Convert semitones to voltage (1 semitone = 1/12 V)
         float voltage = semitonesFromC4 / 12.0f;
         return voltage;
+    }
+
+    void setOutputMode(int output_mode_index)
+    {
+        output_mode = output_mode_index;
+    }
+
+    void setTolerance(float tolerance)
+    {
+        this->tolerance = tolerance;
+    }
+
+    void setTriggerLengthIndex(int trigger_length_index)
+    {
+        this->trigger_length_index = trigger_length_index;
     }
 };
