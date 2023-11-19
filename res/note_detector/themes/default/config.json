@@ -5,13 +5,13 @@
             "type": "image",
             "path": "res/themes/default/background2.jpg",
             "zoom": 0.15,
-            "width": 40.64,
+            "width": 20.320,
             "height": 128.5
         },
         {
             "type": "image",
             "path": "res/note_detector/themes/default/details.png",
-            "width": 40.64,
+            "width": 20.320,
             "height": 128.5,
             "zoom": 0.25
         },

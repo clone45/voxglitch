@@ -67,7 +67,7 @@ Size: 7pt
 
 Font: Pilat Condensed
 Weight: Normal
-Dark Mode Color (r,g,b): 12, 18, 24
+Dark Mode Color (r,g,b): 11, 17, 22
 Light Mode Color (r,g,b): 244, 238, 233
 Letter spacing: .60
 Size: 6pt
@@ -75,3 +75,9 @@ Size: 6pt
 ### Centering medium knobs
 When trying to find out the correct y-position of a knob within a scale decal:
 knob_position_px = scale_decal_positon_px + 22.78879 px
+
+### Input ring decal
+Light mode: 11, 17, 22
+
+### Medium knob decal
+Light mode: 11, 17, 22

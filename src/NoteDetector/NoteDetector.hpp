@@ -1,8 +1,13 @@
 //
 // TODO:
 //
-// * Add tolerance setting in context menu
-// * Save/load tolerance setting
+
+// * Implement light theme
+// * Subclass param stuff to get custom tooltips for octave selection knob
+
+// == DONE ==
+// * Add tolerance setting in context menu  [done]
+// * Save/load tolerance setting  [done]
 // * Add GATE vs TRIGGER output to context menu [done]
 // * Implement GATE vs TRIGGER output [done]
 // * Save/load output mode [done]
@@ -10,8 +15,15 @@
 // * Implement trigger duration setting  [done]
 // * Save/load trigger duration setting  [done]
 // * Add "all" octave option
-// * Implement light theme
 
+struct CustomOctaveParamQuantity : ParamQuantity {
+    std::string getDisplayValueString() override {
+        if (getValue() == -1.0f) {
+            return "All";
+        }
+        return ParamQuantity::getDisplayValueString();
+    }
+};
 
 struct NoteDetector : VoxglitchModule
 {
@@ -20,7 +32,6 @@ struct NoteDetector : VoxglitchModule
     std::string note_readout = "";
     dsp::PulseGenerator output_pulse_generator;
     unsigned int output_mode = TRIGGER;
-    // float tolerance = 0.00f;
     int trigger_length_index = 3;
     int tolerance_level_index = 0;
     float previous_target_voltage = -1234567.89f;
@@ -93,7 +104,7 @@ struct NoteDetector : VoxglitchModule
         configParam(NOTE_SELECTION_KNOB, 0.0f, 11.0, 10.0f, "Note");
         paramQuantities[NOTE_SELECTION_KNOB]->snapEnabled = true;
 
-        configParam(OCTAVE_SELECTION_KNOB, 0.0f, 8.0, 4.0f, "Octave");
+        configParam(OCTAVE_SELECTION_KNOB, -1.0f, 8.0, 4.0f, "Octave");
         paramQuantities[OCTAVE_SELECTION_KNOB]->snapEnabled = true;
     }
 
@@ -109,9 +120,14 @@ struct NoteDetector : VoxglitchModule
         // Update the note readout
         note_readout = getNoteName(note_selection, octave_selection);
 
+        // Update the param display string
+        // This doesn't seem to work
+        // if (octave_selection == -1) paramQuantities[OCTAVE_SELECTION_KNOB]->setDisplayValueString("All");
+
         // Read the CV_INPUT and get target voltage
         float cv_input = inputs[CV_INPUT].getVoltage();
         float target_voltage = noteToVoltage(note_selection, octave_selection);
+        bool is_within_tolerance = isWithinTolerance(cv_input, note_selection, octave_selection);
 
         if(! inputs[CV_INPUT].isConnected())
         {
@@ -127,19 +143,20 @@ struct NoteDetector : VoxglitchModule
         switch (output_mode)
         {
             case TRIGGER:
-                processTriggerMode(target_voltage, cv_input, args);
+                processTriggerMode(target_voltage, cv_input, is_within_tolerance, args);
                 break;
 
             case GATE:
-                processGateMode(target_voltage, cv_input, args);
+                processGateMode(target_voltage, cv_input, is_within_tolerance, args);
                 break;
         }
     }
 
-    void processTriggerMode(float target_voltage, float cv_input, const ProcessArgs &args)
+    void processTriggerMode(float target_voltage, float cv_input, bool is_within_tolerance, const ProcessArgs &args)
     {
         bool has_target_voltage_changed = target_voltage != previous_target_voltage;
-        bool is_within_tolerance = std::abs(cv_input - target_voltage) <= tolerance_presets[tolerance_level_index];
+        // bool is_within_tolerance = std::abs(cv_input - target_voltage) <= tolerance_presets[tolerance_level_index];
+        // bool is_within_tolerance = isWithinTolerance(cv_input, note_selection, octave_selection);
 
         // Trigger if within tolerance and either the voltage was previously outside tolerance 
         // or the target voltage has changed
@@ -167,9 +184,11 @@ struct NoteDetector : VoxglitchModule
         }
     }
 
-    void processGateMode(float target_voltage, float cv_input, const ProcessArgs &args)
+    void processGateMode(float target_voltage, float cv_input,  bool is_within_tolerance, const ProcessArgs &args)
     {
-        bool is_within_tolerance = std::abs(cv_input - target_voltage) <= tolerance_presets[tolerance_level_index];
+        // bool is_within_tolerance = std::abs(cv_input - target_voltage) <= tolerance_presets[tolerance_level_index];
+
+        // bool is_within_tolerance = isWithinTolerance(cv_input, note_selection, octave_selection);
 
         if (is_within_tolerance)
         {
@@ -180,6 +199,29 @@ struct NoteDetector : VoxglitchModule
             outputs[DETECTION_OUTPUT].setVoltage(0.0f); // No voltage
         }
     }
+
+    bool isWithinTolerance(float cv_input, int note_selection, int octave_selection)
+    {
+        if (octave_selection == -1) // All Octaves
+        {
+            for (int octave = 0; octave <= 8; ++octave) // Adjust the range as per your module's specification
+            {
+                float octave_target_voltage = noteToVoltage(note_selection, octave);
+                if (std::abs(cv_input - octave_target_voltage) <= tolerance_presets[tolerance_level_index])
+                {
+                    return true; // Input voltage is within tolerance for this octave
+                }
+            }
+            return false; // No octave matched
+        }
+        else
+        {
+            // Standard single octave check
+            float target_voltage = noteToVoltage(note_selection, octave_selection);
+            return std::abs(cv_input - target_voltage) <= tolerance_presets[tolerance_level_index];
+        }
+    }
+
 
     std::string getNoteName(int note_selection, int octave_selection)
     {
@@ -228,7 +270,10 @@ struct NoteDetector : VoxglitchModule
                 break;
         }
 
-        note_name += std::to_string(octave_selection);
+        if(octave_selection >= 0) 
+        {
+            note_name += std::to_string(octave_selection);
+        }
 
         return note_name;
     }

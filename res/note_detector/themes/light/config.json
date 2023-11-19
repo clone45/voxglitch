@@ -1,38 +1,30 @@
 {
-    "panel_width": 120.0,
+    "panel_width": 60.0,
     "layers": [
         {
             "type": "image",
             "path": "res/themes/light/background.jpg",
             "zoom": 0.15,
-            "width": 40.64,
+            "width": 20.320,
             "height": 128.5
         },
         {
             "type": "image",
-            "path": "res/drum_randomizer/themes/light/details.png",
-            "width": 40.64,
+            "path": "res/note_detector/themes/light/details.png",
+            "width": 20.320,
             "height": 128.5,
             "zoom": 0.25
         },
         {
             "type": "svg",
-            "path": "res/drum_randomizer/themes/light/typography.svg"
+            "path": "res/note_detector/themes/light/typography.svg"
         }
     ],
     "widgets": {
-        "STEP_INPUT": {"x": 33.63673, "y": 63.3706},
-        "RESET_INPUT": {"x": 86.40626, "y": 63.3706},  
-
-        "CHANNEL_KNOB": {"x": 88.0,"y": 132.77953},
-        "STEP_KNOB": {"x": 88.0,"y": 197.74016},
-        "PERCENTAGE_KNOB": {"x": 88.0,"y": 262.70079},
-        
-        "GATE_INPUT": {"x": 33.63673, "y": 349.837158},
-        "GATE_OUTPUT": {"x": 86.40626, "y": 349.837158},
-
-        "CHANNEL_READOUT": {"x": 10.0, "y": 117.0},
-        "STEP_READOUT": {"x": 10.0, "y": 182.0},
-        "PERCENTAGE_READOUT": {"x": 10.0, "y": 247.0}
+        "CV_INPUT": {"x": 30.00000, "y": 63.3706},
+        "NOTE_READOUT": {"x": 7.5, "y": 95.0},
+        "NOTE_SELECTION_KNOB": {"x": 30.00000,"y": 178.56479},
+        "OCTAVE_SELECTION_KNOB": {"x": 30.00000,"y": 258.33779},
+        "DETECTION_OUTPUT": {"x": 30.00000, "y": 349.837158}
     }
 }
