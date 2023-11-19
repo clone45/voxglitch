@@ -53,8 +53,20 @@ struct NoteDetectorWidget : VoxglitchModuleWidget
                 return (module->trigger_length_index);
             },
             [=](int index) {
-                module->trigger_length_index = index;
+                module->setTriggerLengthIndex(index);
             }
         ));
+
+        // Add submenu for Tolerance Level
+        menu->addChild(createIndexSubmenuItem("Tolerance Level",
+            module->tolerance_preset_labels,
+            [=]() {
+                return (module->tolerance_level_index);
+            },
+            [=](int index) {
+                module->setToleranceIndex(index);
+            }
+        ));
+
     }
 };

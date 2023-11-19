@@ -4,10 +4,10 @@
 // * Add tolerance setting in context menu
 // * Save/load tolerance setting
 // * Add GATE vs TRIGGER output to context menu [done]
-// * Implement GATE vs TRIGGER output
+// * Implement GATE vs TRIGGER output [done]
 // * Save/load output mode [done]
 // * Add trigger duration setting in context menu  [done]
-// * Implement trigger duration setting
+// * Implement trigger duration setting  [done]
 // * Save/load trigger duration setting  [done]
 // * Add "all" octave option
 // * Implement light theme
@@ -20,13 +20,16 @@ struct NoteDetector : VoxglitchModule
     std::string note_readout = "";
     dsp::PulseGenerator output_pulse_generator;
     unsigned int output_mode = TRIGGER;
-    float tolerance = 0.00f;
+    // float tolerance = 0.00f;
     int trigger_length_index = 3;
+    int tolerance_level_index = 0;
     float previous_target_voltage = -1234567.89f;
     bool trigger_lock = false;
     bool was_outside_tolerance = false;
 
     std::vector<float> trigger_lengths = {0.001, 0.002, 0.005, 0.010, 0.020, 0.050, 0.100, 0.200};
+    std::vector<float> tolerance_presets = {0.0f, 0.01f, 0.025f, 0.05f, 0.075f, 0.1f, 0.15f, 0.2f, 0.35f, 0.5f};
+    std::vector<std::string> tolerance_preset_labels = {"Exact (0)", "Ultra Fine (0.01)", "Extra Fine (0.025)", "Fine (0.05)", "Semi Fine (0.075)", "Medium (0.1)", "Semi Coarse (0.15)", "Coarse (0.2)", "Extra Coarse (0.35)", "Very Coarse (0.5)"};
 
     enum ParamIds
     {
@@ -68,7 +71,7 @@ struct NoteDetector : VoxglitchModule
         json_object_set_new(json_root, "version", json_string(version.c_str()));
 
         json_object_set_new(json_root, "output_mode", json_integer(output_mode));
-        json_object_set_new(json_root, "tolerance", json_real(tolerance));
+        json_object_set_new(json_root, "tolerance", json_integer(tolerance_level_index));
         json_object_set_new(json_root, "trigger_length_index", json_integer(trigger_length_index));
 
         return json_root;
@@ -78,7 +81,7 @@ struct NoteDetector : VoxglitchModule
     void dataFromJson(json_t *root) override
     {
         this->setOutputMode(JSON::getInteger(root, "output_mode"));
-        this->setTolerance(JSON::getNumber(root, "tolerance"));
+        this->setToleranceIndex(JSON::getInteger(root, "tolerance"));
         this->setTriggerLengthIndex(JSON::getInteger(root, "trigger_length_index"));
     }        
 
@@ -136,7 +139,7 @@ struct NoteDetector : VoxglitchModule
     void processTriggerMode(float target_voltage, float cv_input, const ProcessArgs &args)
     {
         bool has_target_voltage_changed = target_voltage != previous_target_voltage;
-        bool is_within_tolerance = std::abs(cv_input - target_voltage) <= tolerance;
+        bool is_within_tolerance = std::abs(cv_input - target_voltage) <= tolerance_presets[tolerance_level_index];
 
         // Trigger if within tolerance and either the voltage was previously outside tolerance 
         // or the target voltage has changed
@@ -166,7 +169,7 @@ struct NoteDetector : VoxglitchModule
 
     void processGateMode(float target_voltage, float cv_input, const ProcessArgs &args)
     {
-        bool is_within_tolerance = std::abs(cv_input - target_voltage) <= tolerance;
+        bool is_within_tolerance = std::abs(cv_input - target_voltage) <= tolerance_presets[tolerance_level_index];
 
         if (is_within_tolerance)
         {
@@ -269,9 +272,9 @@ struct NoteDetector : VoxglitchModule
         output_mode = output_mode_index;
     }
 
-    void setTolerance(float tolerance)
+    void setToleranceIndex(int tolerance_index)
     {
-        this->tolerance = tolerance;
+        this->tolerance_level_index = tolerance_index;
     }
 
     void setTriggerLengthIndex(int trigger_length_index)
