@@ -10,6 +10,7 @@ struct NoteDetectorWidget : VoxglitchModuleWidget
 
         // Inputs
         addInput(createInputCentered<VoxglitchInputPort>(themePos("CV_INPUT"), module, NoteDetector::CV_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(themePos("CLOCK_INPUT"), module, NoteDetector::CLOCK_INPUT));
 
         // Parameters
         addParam(createParamCentered<VoxglitchAttenuator>(themePos("NOTE_SELECTION_KNOB"), module, NoteDetector::NOTE_SELECTION_KNOB));

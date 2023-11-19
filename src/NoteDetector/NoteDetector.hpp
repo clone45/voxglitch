@@ -4,6 +4,8 @@
 
 // * Subclass param stuff to get custom tooltips for octave selection knob
 // * Write documentation
+// * update light theme
+// * get clock input working
 
 struct CustomOctaveParamQuantity : ParamQuantity {
     std::string getDisplayValueString() override {
@@ -24,8 +26,9 @@ struct NoteDetector : VoxglitchModule
     int trigger_length_index = 3;
     int tolerance_level_index = 0;
     float previous_target_voltage = -1234567.89f;
-    bool trigger_lock = false;
     bool was_outside_tolerance = false;
+
+    dsp::SchmittTrigger clock_trigger;
 
     std::vector<float> trigger_lengths = {0.001, 0.002, 0.005, 0.010, 0.020, 0.050, 0.100, 0.200};
     std::vector<float> tolerance_presets = {0.0f, 0.01f, 0.025f, 0.05f, 0.075f, 0.1f, 0.15f, 0.2f, 0.35f, 0.5f};
@@ -40,6 +43,7 @@ struct NoteDetector : VoxglitchModule
     enum InputIds
     {
         CV_INPUT,
+        CLOCK_INPUT,
         NUM_INPUTS
     };
     enum OutputIds
@@ -105,7 +109,15 @@ struct NoteDetector : VoxglitchModule
         // Read the NOTE_SELECTION_KNOB and OCTAVE_SELECTION_KNOB parameters
         int note_selection = (int)roundf(params[NOTE_SELECTION_KNOB].getValue());
         int octave_selection = (int)roundf(params[OCTAVE_SELECTION_KNOB].getValue());
-        
+        float target_voltage = noteToVoltage(note_selection, octave_selection);
+
+        /*
+        if (clock_trigger.process(inputs[CLOCK_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
+        {
+            // do something
+        }
+        */
+
         // Update the note readout
         note_readout = getNoteName(note_selection, octave_selection);
 
@@ -113,9 +125,8 @@ struct NoteDetector : VoxglitchModule
         // This doesn't seem to work
         // if (octave_selection == -1) paramQuantities[OCTAVE_SELECTION_KNOB]->setDisplayValueString("All");
 
-        // Read the CV_INPUT and get target voltage
+        // Read the CV_INPUT
         float cv_input = inputs[CV_INPUT].getVoltage();
-        float target_voltage = noteToVoltage(note_selection, octave_selection);
         bool is_within_tolerance = isWithinTolerance(cv_input, note_selection, octave_selection);
 
         if(! inputs[CV_INPUT].isConnected())
@@ -129,19 +140,70 @@ struct NoteDetector : VoxglitchModule
             return;
         }
 
-        switch (output_mode)
+        // Clocked operation
+        if(inputs[CLOCK_INPUT].isConnected())
         {
-            case TRIGGER:
-                processTriggerMode(target_voltage, cv_input, is_within_tolerance, args);
-                break;
+            bool clocked = clock_trigger.process(inputs[CLOCK_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger);
 
-            case GATE:
-                processGateMode(target_voltage, cv_input, is_within_tolerance, args);
-                break;
+            switch (output_mode)
+            {
+                case TRIGGER:
+                    processTriggerModeClocked(is_within_tolerance, clocked, args);
+                    break;
+
+                case GATE:
+                    processGateModeClocked(is_within_tolerance, clocked, args);
+                    break;
+            }
+        }
+        // Freeform without a clock attached
+        else
+        {
+            switch (output_mode)
+            {
+                case TRIGGER:
+                    processTriggerModeFreeform(target_voltage, cv_input, is_within_tolerance, args);
+                    break;
+
+                case GATE:
+                    processGateModeFreeform(target_voltage, cv_input, is_within_tolerance, args);
+                    break;
+            }
         }
     }
 
-    void processTriggerMode(float target_voltage, float cv_input, bool is_within_tolerance, const ProcessArgs &args)
+    void processTriggerModeClocked(bool is_within_tolerance, bool clocked, const ProcessArgs &args)
+    {
+        // Trigger if within tolerance and 
+        if (is_within_tolerance && clocked)
+        {
+            output_pulse_generator.trigger(trigger_lengths[trigger_length_index]);
+        }
+
+        // Check if the pulse generator is currently generating a pulse
+        if (output_pulse_generator.process(args.sampleTime)) 
+        {
+            outputs[DETECTION_OUTPUT].setVoltage(10.0f); // High voltage for trigger
+        } 
+        else 
+        {
+            outputs[DETECTION_OUTPUT].setVoltage(0.0f); // No voltage
+        }
+    }
+
+    void processGateModeClocked(bool is_within_tolerance, bool clocked, const ProcessArgs &args)
+    {
+        if (is_within_tolerance && clocked)
+        {
+            outputs[DETECTION_OUTPUT].setVoltage(10.0f); // High voltage for gate
+        }
+        else
+        {
+            outputs[DETECTION_OUTPUT].setVoltage(0.0f); // No voltage
+        }
+    }
+
+    void processTriggerModeFreeform(float target_voltage, float cv_input, bool is_within_tolerance, const ProcessArgs &args)
     {
         bool has_target_voltage_changed = target_voltage != previous_target_voltage;
 
@@ -171,7 +233,7 @@ struct NoteDetector : VoxglitchModule
         }
     }
 
-    void processGateMode(float target_voltage, float cv_input,  bool is_within_tolerance, const ProcessArgs &args)
+    void processGateModeFreeform(float target_voltage, float cv_input,  bool is_within_tolerance, const ProcessArgs &args)
     {
         if (is_within_tolerance)
         {

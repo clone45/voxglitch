@@ -72,6 +72,8 @@ Light Mode Color (r,g,b): 244, 238, 233
 Letter spacing: .60
 Size: 6pt
 
+## Positioning
+
 ### Medium knobs
 When trying to find out the correct y-position of a knob within a scale decal:
 knob_position_px = scale_decal_positon_px + 22.78879 px
@@ -88,3 +90,7 @@ When trying to find out the correct y-position of an attenuator knob within a sc
 knob_position_px = scale_decal_positon_px + 14.73 px
 
 The distance between the scale decal and scale label is 15.0 px
+
+### Inputs
+
+The positional difference betwee an input port and the input ( ) indicator is 11.0596 px
