@@ -12,15 +12,17 @@ struct NoteDetectorWidget : VoxglitchModuleWidget
         addInput(createInputCentered<VoxglitchInputPort>(themePos("CV_INPUT"), module, NoteDetector::CV_INPUT));
 
         // Parameters
-        addParam(createParamCentered<VoxglitchMediumBlackKnob>(themePos("NOTE_SELECTION_KNOB"), module, NoteDetector::NOTE_SELECTION_KNOB));
-        addParam(createParamCentered<VoxglitchMediumBlackKnob>(themePos("OCTAVE_SELECTION_KNOB"), module, NoteDetector::OCTAVE_SELECTION_KNOB));
+        addParam(createParamCentered<VoxglitchAttenuator>(themePos("NOTE_SELECTION_KNOB"), module, NoteDetector::NOTE_SELECTION_KNOB));
+        addParam(createParamCentered<VoxglitchAttenuator>(themePos("OCTAVE_SELECTION_KNOB"), module, NoteDetector::OCTAVE_SELECTION_KNOB));
 
         // Outputs
         addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("DETECTION_OUTPUT"), module, NoteDetector::DETECTION_OUTPUT));
 
         // Add display
-        NoteReadoutWidget *note_readout_widget = new NoteReadoutWidget(" A4");
+        NoteReadoutWidget *note_readout_widget = new NoteReadoutWidget("");
         note_readout_widget->box.pos = themePos("NOTE_READOUT");
+        note_readout_widget->box.size = Vec(45.0, 20.0);
+        note_readout_widget->font_size = 12;
         if (module)
             note_readout_widget->display_string_ptr = &module->note_readout;
         addChild(note_readout_widget);

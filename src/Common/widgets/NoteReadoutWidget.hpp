@@ -5,6 +5,7 @@ struct NoteReadoutWidget : TransparentWidget
 
     float box_size_x = 45.0;
     float box_size_y = 30.0;
+    int font_size = 18;
 
     float box_pos_x = 0;
     float box_pos_y = 0;
@@ -36,7 +37,7 @@ struct NoteReadoutWidget : TransparentWidget
         if (font)
         {
             // Set common font attributes
-            nvgFontSize(args.vg, 18);
+            nvgFontSize(args.vg, font_size);
             nvgFontFaceId(args.vg, font->handle);
             nvgTextLetterSpacing(args.vg, 0);
             nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
@@ -62,9 +63,9 @@ struct NoteReadoutWidget : TransparentWidget
             // Draw the sharp symbol higher up
             if (!sharp.empty())
             {
-                nvgFontSize(args.vg, 14); // smaller font size for sharp
+                nvgFontSize(args.vg, font_size - 4); // smaller font size for sharp
                 nvgText(vg, x + noteWidth, y - 5, sharp.c_str(), NULL);
-                nvgFontSize(args.vg, 18); // reset font size for octave
+                nvgFontSize(args.vg, font_size); // reset font size for octave
             }
 
             // Draw the octave

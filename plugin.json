@@ -125,7 +125,7 @@
     {
         "slug": "noteDetector",
         "name": "Note Detector",
-        "description": "Produced a gate output when a specified note is detected at the CV input",
+        "description": "Produces a gate or trigger output when a specified note is detected at the CV input",
         "tags": ["Utility"]
     }, 
     {

@@ -2,19 +2,8 @@
 // TODO:
 //
 
-// * Implement light theme
 // * Subclass param stuff to get custom tooltips for octave selection knob
-
-// == DONE ==
-// * Add tolerance setting in context menu  [done]
-// * Save/load tolerance setting  [done]
-// * Add GATE vs TRIGGER output to context menu [done]
-// * Implement GATE vs TRIGGER output [done]
-// * Save/load output mode [done]
-// * Add trigger duration setting in context menu  [done]
-// * Implement trigger duration setting  [done]
-// * Save/load trigger duration setting  [done]
-// * Add "all" octave option
+// * Write documentation
 
 struct CustomOctaveParamQuantity : ParamQuantity {
     std::string getDisplayValueString() override {
@@ -155,8 +144,6 @@ struct NoteDetector : VoxglitchModule
     void processTriggerMode(float target_voltage, float cv_input, bool is_within_tolerance, const ProcessArgs &args)
     {
         bool has_target_voltage_changed = target_voltage != previous_target_voltage;
-        // bool is_within_tolerance = std::abs(cv_input - target_voltage) <= tolerance_presets[tolerance_level_index];
-        // bool is_within_tolerance = isWithinTolerance(cv_input, note_selection, octave_selection);
 
         // Trigger if within tolerance and either the voltage was previously outside tolerance 
         // or the target voltage has changed
@@ -186,10 +173,6 @@ struct NoteDetector : VoxglitchModule
 
     void processGateMode(float target_voltage, float cv_input,  bool is_within_tolerance, const ProcessArgs &args)
     {
-        // bool is_within_tolerance = std::abs(cv_input - target_voltage) <= tolerance_presets[tolerance_level_index];
-
-        // bool is_within_tolerance = isWithinTolerance(cv_input, note_selection, octave_selection);
-
         if (is_within_tolerance)
         {
             outputs[DETECTION_OUTPUT].setVoltage(10.0f); // High voltage for gate
