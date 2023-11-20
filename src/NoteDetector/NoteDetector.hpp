@@ -2,30 +2,8 @@
 // TODO:
 //
 
-// * Subclass param stuff to get custom tooltips for octave selection knob
 // * Write documentation
 // * update light theme
-// * get clock input working
-
-struct OctaveParamQuantity : ParamQuantity {
-    std::string getDisplayValueString() override {
-        if (getValue() == -1.0f) {
-            return "All";
-        }
-        return ParamQuantity::getDisplayValueString();
-    }
-};
-
-struct NoteParamQuantity : ParamQuantity {
-    std::string getDisplayValueString() override {
-        float value = getValue();
-        int note_selection = (int)roundf(value);
-        int octave_selection = -1;
-        std::string note_name = NOTES::getNoteName(note_selection, octave_selection);
-
-        return note_name;
-    }
-};
 
 struct NoteDetector : VoxglitchModule
 {
@@ -130,8 +108,6 @@ struct NoteDetector : VoxglitchModule
         octave_param_quantity->snapEnabled = true;
         octave_param_quantity->name = "Octave";
         paramQuantities[OCTAVE_SELECTION_KNOB] = octave_param_quantity;
-
-
     }
 
     // █▀█ █▀█ █▀█ █▀▀ █▀▀ █▀ █▀
@@ -144,19 +120,8 @@ struct NoteDetector : VoxglitchModule
         int octave_selection = (int)roundf(params[OCTAVE_SELECTION_KNOB].getValue());
         float target_voltage = noteToVoltage(note_selection, octave_selection);
 
-        /*
-        if (clock_trigger.process(inputs[CLOCK_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
-        {
-            // do something
-        }
-        */
-
         // Update the note readout
         note_readout = NOTES::getNoteName(note_selection, octave_selection);
-
-        // Update the param display string
-        // This doesn't seem to work
-        // if (octave_selection == -1) paramQuantities[OCTAVE_SELECTION_KNOB]->setDisplayValueString("All");
 
         // Read the CV_INPUT
         float cv_input = inputs[CV_INPUT].getVoltage();
@@ -299,64 +264,6 @@ struct NoteDetector : VoxglitchModule
             return std::abs(cv_input - target_voltage) <= tolerance_presets[tolerance_level_index];
         }
     }
-
-
-    /*
-    std::string getNoteName(int note_selection, int octave_selection)
-    {
-        std::string note_name = "A4";
-
-        switch (note_selection)
-        {
-            case 0:
-                note_name = "C";
-                break;
-            case 1:
-                note_name = "C#";
-                break;
-            case 2:
-                note_name = "D";
-                break;
-            case 3:
-                note_name = "D#";
-                break;
-            case 4:
-                note_name = "E";
-                break;
-            case 5:
-                note_name = "F";
-                break;
-            case 6:
-                note_name = "F#";
-                break;
-            case 7:
-                note_name = "G";
-                break;
-            case 8:
-                note_name = "G#";
-                break;
-            case 9:
-                note_name = "A";
-                break;
-            case 10:
-                note_name = "A#";
-                break;
-            case 11:
-                note_name = "B";
-                break;
-            default:
-                note_name = "A4";
-                break;
-        }
-
-        if(octave_selection >= 0) 
-        {
-            note_name += std::to_string(octave_selection);
-        }
-
-        return note_name;
-    }
-    */
 
     std::vector<std::string> getTriggerLengthNames() 
     {

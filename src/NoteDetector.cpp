@@ -12,6 +12,7 @@
 
 #include "Common/helpers/JSON.hpp"
 #include "Common/helpers/NOTES.hpp"
+#include "Common/customParamQuantities.hpp"
 
 #include "NoteDetector/NoteDetector.hpp"
 #include "NoteDetector/NoteDetectorWidget.hpp"
