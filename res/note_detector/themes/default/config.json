@@ -23,8 +23,8 @@
     "widgets": {
         "CV_INPUT": {"x": 30.00000, "y": 63.3706},
         "CLOCK_INPUT": {"x": 30.00000, "y": 111.4076},
-        "NOTE_READOUT": {"x": 7.5, "y": 140.0},
-        "NOTE_SELECTION_KNOB": {"x": 30.00000,"y": 203.74016},
+        "NOTE_READOUT": {"x": 7.5, "y": 143.0},
+        "NOTE_SELECTION_KNOB": {"x": 30.00000,"y": 208.74016},
         "OCTAVE_SELECTION_KNOB": {"x": 30.00000,"y": 263.87501},
         "DETECTION_OUTPUT": {"x": 30.00000, "y": 349.837158}
     }

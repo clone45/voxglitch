@@ -7,12 +7,23 @@
 // * update light theme
 // * get clock input working
 
-struct CustomOctaveParamQuantity : ParamQuantity {
+struct OctaveParamQuantity : ParamQuantity {
     std::string getDisplayValueString() override {
         if (getValue() == -1.0f) {
             return "All";
         }
         return ParamQuantity::getDisplayValueString();
+    }
+};
+
+struct NoteParamQuantity : ParamQuantity {
+    std::string getDisplayValueString() override {
+        float value = getValue();
+        int note_selection = (int)roundf(value);
+        int octave_selection = -1;
+        std::string note_name = NOTES::getNoteName(note_selection, octave_selection);
+
+        return note_name;
     }
 };
 
@@ -94,11 +105,33 @@ struct NoteDetector : VoxglitchModule
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 
         // Configure the shape knob to snap from 0 to NUMBER_OF_PLAYBACK_MODES
-        configParam(NOTE_SELECTION_KNOB, 0.0f, 11.0, 10.0f, "Note");
-        paramQuantities[NOTE_SELECTION_KNOB]->snapEnabled = true;
+        // configParam(NOTE_SELECTION_KNOB, 0.0f, 11.0, 10.0f, "Note");
+        // paramQuantities[NOTE_SELECTION_KNOB]->snapEnabled = true;
 
-        configParam(OCTAVE_SELECTION_KNOB, -1.0f, 8.0, 4.0f, "Octave");
-        paramQuantities[OCTAVE_SELECTION_KNOB]->snapEnabled = true;
+        NoteParamQuantity *note_param_quantity = new NoteParamQuantity();
+        note_param_quantity->module = this;
+        note_param_quantity->paramId = NOTE_SELECTION_KNOB;
+        note_param_quantity->minValue = 0.0f;
+        note_param_quantity->maxValue = 11.0f;
+        note_param_quantity->defaultValue = 10.0f;
+        note_param_quantity->displayMultiplier = 1.0f;
+        note_param_quantity->snapEnabled = true;
+        note_param_quantity->name = "Note";
+        paramQuantities[NOTE_SELECTION_KNOB] = note_param_quantity;
+
+
+        OctaveParamQuantity *octave_param_quantity = new OctaveParamQuantity();
+        octave_param_quantity->module = this;
+        octave_param_quantity->paramId = OCTAVE_SELECTION_KNOB;
+        octave_param_quantity->minValue = -1.0f;
+        octave_param_quantity->maxValue = 8.0f;
+        octave_param_quantity->defaultValue = 4.0f;
+        octave_param_quantity->displayMultiplier = 1.0f;
+        octave_param_quantity->snapEnabled = true;
+        octave_param_quantity->name = "Octave";
+        paramQuantities[OCTAVE_SELECTION_KNOB] = octave_param_quantity;
+
+
     }
 
     // █▀█ █▀█ █▀█ █▀▀ █▀▀ █▀ █▀
@@ -119,7 +152,7 @@ struct NoteDetector : VoxglitchModule
         */
 
         // Update the note readout
-        note_readout = getNoteName(note_selection, octave_selection);
+        note_readout = NOTES::getNoteName(note_selection, octave_selection);
 
         // Update the param display string
         // This doesn't seem to work
@@ -268,6 +301,7 @@ struct NoteDetector : VoxglitchModule
     }
 
 
+    /*
     std::string getNoteName(int note_selection, int octave_selection)
     {
         std::string note_name = "A4";
@@ -322,6 +356,7 @@ struct NoteDetector : VoxglitchModule
 
         return note_name;
     }
+    */
 
     std::vector<std::string> getTriggerLengthNames() 
     {

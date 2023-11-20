@@ -11,6 +11,7 @@
 #include "Common/widgets/NoteReadoutWidget.hpp"
 
 #include "Common/helpers/JSON.hpp"
+#include "Common/helpers/NOTES.hpp"
 
 #include "NoteDetector/NoteDetector.hpp"
 #include "NoteDetector/NoteDetectorWidget.hpp"
