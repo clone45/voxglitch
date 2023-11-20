@@ -22,9 +22,10 @@
     ],
     "widgets": {
         "CV_INPUT": {"x": 30.00000, "y": 63.3706},
-        "NOTE_READOUT": {"x": 7.5, "y": 95.0},
-        "NOTE_SELECTION_KNOB": {"x": 30.00000,"y": 178.56479},
-        "OCTAVE_SELECTION_KNOB": {"x": 30.00000,"y": 258.33779},
+        "CLOCK_INPUT": {"x": 30.00000, "y": 111.4076},
+        "NOTE_READOUT": {"x": 7.5, "y": 143.0},
+        "NOTE_SELECTION_KNOB": {"x": 30.00000,"y": 208.74016},
+        "OCTAVE_SELECTION_KNOB": {"x": 30.00000,"y": 263.87501},
         "DETECTION_OUTPUT": {"x": 30.00000, "y": 349.837158}
     }
 }

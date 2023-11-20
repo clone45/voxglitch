@@ -58,7 +58,7 @@ The HP in the examples is the same HP as Glitch Sequencer. The numbers match tho
 
 Font: Pilat
 Weight: Normal
-Dark Mode Color (r,g,b): 12, 18, 24
+Dark Mode Color (r,g,b): 11, 17, 22
 Light Mode Color (r,g,b): 244, 238, 233
 Letter spacing: .88
 Size: 7pt
@@ -79,10 +79,12 @@ When trying to find out the correct y-position of a knob within a scale decal:
 knob_position_px = scale_decal_positon_px + 22.78879 px
 
 ### Input ring decal
-Light mode: 11, 17, 22
+Light mode: 11, 17, 22  65 opacity?
 
 ### Medium knob decal
-Light mode: 11, 17, 22
+Light mode: 11, 17, 22    65 opacity?
+
+
 
 ### Attenuator knobs
 
@@ -90,6 +92,9 @@ When trying to find out the correct y-position of an attenuator knob within a sc
 knob_position_px = scale_decal_positon_px + 14.73 px
 
 The distance between the scale decal and scale label is 15.0 px
+
+## Attenuator decals
+Light mode: 11, 17, 22   65 opacity
 
 ### Inputs
 

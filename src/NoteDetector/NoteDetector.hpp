@@ -82,10 +82,6 @@ struct NoteDetector : VoxglitchModule
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 
-        // Configure the shape knob to snap from 0 to NUMBER_OF_PLAYBACK_MODES
-        // configParam(NOTE_SELECTION_KNOB, 0.0f, 11.0, 10.0f, "Note");
-        // paramQuantities[NOTE_SELECTION_KNOB]->snapEnabled = true;
-
         NoteParamQuantity *note_param_quantity = new NoteParamQuantity();
         note_param_quantity->module = this;
         note_param_quantity->paramId = NOTE_SELECTION_KNOB;
