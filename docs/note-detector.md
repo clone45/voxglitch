@@ -1,4 +1,4 @@
-![Image of Note Detector](/docs/images/note-detector/note-detector.jpg "Title")
+![Image of Note Detector](/docs/images/note-detector/note-detector_v2.jpg "Title")
 
 # Table of Contents
 
