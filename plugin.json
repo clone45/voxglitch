@@ -126,6 +126,7 @@
         "slug": "noteDetector",
         "name": "Note Detector",
         "description": "Produces a gate or trigger output when a specified note is detected at the CV input",
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/note-detector.md",
         "tags": ["Utility"]
     }, 
     {
