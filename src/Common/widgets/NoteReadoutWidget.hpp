@@ -42,17 +42,17 @@ struct NoteReadoutWidget : TransparentWidget
             nvgTextLetterSpacing(args.vg, 0);
             nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
 
-            // Check if there's a sharp symbol and split the string
-            size_t sharpPos = text_to_display.find('#');
-            std::string note = sharpPos != std::string::npos ? text_to_display.substr(0, sharpPos) : text_to_display;
-            std::string sharp = sharpPos != std::string::npos ? "#" : "";
-            std::string octave = sharpPos != std::string::npos ? text_to_display.substr(sharpPos + 1) : "";
+            // Check for sharp or flat symbol
+            size_t symbolPos = text_to_display.find_first_of("#b");
+            std::string note = symbolPos != std::string::npos ? text_to_display.substr(0, symbolPos) : text_to_display;
+            std::string symbol = symbolPos != std::string::npos ? text_to_display.substr(symbolPos, 1) : "";
+            std::string octave = symbolPos != std::string::npos ? text_to_display.substr(symbolPos + 1) : "";
 
             // Calculate total width and starting x position for centered text
             float noteWidth = nvgTextBounds(vg, 0, 0, note.c_str(), NULL, NULL);
-            float sharpWidth = nvgTextBounds(vg, 0, 0, sharp.c_str(), NULL, NULL);
+            float symbolWidth = nvgTextBounds(vg, 0, 0, symbol.c_str(), NULL, NULL);
             float octaveWidth = nvgTextBounds(vg, 0, 0, octave.c_str(), NULL, NULL);
-            float totalWidth = noteWidth + sharpWidth + octaveWidth;
+            float totalWidth = noteWidth + symbolWidth + octaveWidth;
             float x = ((box.size.x - totalWidth) / 2.0);
             float y = (box.size.y / 2.0) + 1.5;
 
@@ -60,18 +60,19 @@ struct NoteReadoutWidget : TransparentWidget
             nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
             nvgText(vg, x, y, note.c_str(), NULL);
 
-            // Draw the sharp symbol higher up
-            if (!sharp.empty())
+            // Draw the sharp or flat symbol
+            if (!symbol.empty())
             {
-                nvgFontSize(args.vg, font_size - 4); // smaller font size for sharp
-                nvgText(vg, x + noteWidth, y - 5, sharp.c_str(), NULL);
+                nvgFontSize(args.vg, font_size - (symbol == "#" ? 4 : 2)); // adjust font size based on symbol
+                nvgText(vg, x + noteWidth, y - (symbol == "#" ? 5 : 2), symbol.c_str(), NULL);
                 nvgFontSize(args.vg, font_size); // reset font size for octave
             }
 
             // Draw the octave
-            nvgText(vg, x + noteWidth + sharpWidth, y, octave.c_str(), NULL);
+            nvgText(vg, x + noteWidth + symbolWidth, y, octave.c_str(), NULL);
         }
 
         nvgRestore(vg);
     }
+
 };

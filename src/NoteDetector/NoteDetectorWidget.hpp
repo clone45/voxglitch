@@ -71,5 +71,18 @@ struct NoteDetectorWidget : VoxglitchModuleWidget
             }
         ));
 
+        menu->addChild(createIndexSubmenuItem("Notation",
+            {
+                "Sharp",
+                "Flat"
+            },
+            [=]() {
+                return(module->use_flat_notation);
+            },
+            [=](int use_flat_notation_index) {
+                module->setUseFlatNotation(use_flat_notation_index);
+            }
+        ));
+
     }
 };

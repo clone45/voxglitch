@@ -14,7 +14,7 @@ struct NoteParamQuantity : ParamQuantity {
         float value = getValue();
         int note_selection = (int)roundf(value);
         int octave_selection = -1;
-        std::string note_name = NOTES::getNoteName(note_selection, octave_selection);
+        std::string note_name = NOTES::getNoteName(note_selection, octave_selection, false);
 
         return note_name;
     }
