@@ -123,6 +123,12 @@
         "tags": ["Sampler"]
     },
     {
+        "slug": "mellowRabbit",
+        "name": "Mellow Rabbit",
+        "description": "Mellow Rabbit Jukebox",
+        "tags": ["Sampler"]
+    },
+    {
         "slug": "noteDetector",
         "name": "Note Detector",
         "description": "Produces a gate or trigger output when a specified note is detected at the CV input",

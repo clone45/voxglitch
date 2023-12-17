@@ -66,8 +66,9 @@ struct VoxglitchModuleWidget : ModuleWidget
           if(layer_type == "image" || layer_type == "png")
           {
             std::string path = json_string_value(json_object_get(value, "path"));
-            float module_width = json_real_value(json_object_get(value, "width"));
-            float module_height = json_real_value(json_object_get(value, "height"));
+
+            float module_width = json_real_value(json_object_get(value, "width_mm"));
+            float module_height = json_real_value(json_object_get(value, "height_mm"));
             float zoom = json_real_value(json_object_get(value, "zoom"));
 
             float src_panel_offset_x = 0.0;
@@ -80,7 +81,7 @@ struct VoxglitchModuleWidget : ModuleWidget
       }
     }
 
-    panel->box.size.x = theme.getFloat("panel_width");
+    panel->box.size.x = theme.getFloat("panel_width_px");
     setPanel(panel);
 
     // Precompile widgets_json and store it in this structure

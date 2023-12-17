@@ -7,7 +7,6 @@ using namespace rack;
 extern Plugin* pluginInstance;
 
 // Declare each Model, defined in each module source file
-// extern Model* modelMyModule;
 extern Model *modelAutobreak;
 extern Model *modelAutobreakStudio;
 extern Model *modelByteBeat;
@@ -26,6 +25,7 @@ extern Model *modelHazumi;
 extern Model *modelOnePoint;
 extern Model *modelOneZero;
 extern Model *modelLooper;
+extern Model *modelMellowRabbit;
 extern Model *modelNoteDetector;
 extern Model *modelRepeater;
 extern Model *modelSamplerX8;

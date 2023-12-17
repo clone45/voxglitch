@@ -1,18 +1,18 @@
 {
-	"panel_width" : 90.0,
+	"panel_width_px" : 90.0,
 	"layers": [
 		{
       "type": "image",
       "path": "res/themes/default/background2.jpg",
       "zoom": 0.15,
-      "width": 30.48,
-      "height": 128.5
+      "width_mm": 30.48,
+      "height_mm": 128.5
     },
     {
       "type": "image",
       "path": "res/onezero/themes/default/details.png",
-      "width": 30.48,
-      "height": 128.5,
+      "width_mm": 30.48,
+      "height_mm": 128.5,
       "zoom": 0.25
     },
     {

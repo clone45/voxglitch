@@ -39,17 +39,32 @@ Convert panel_width_in_mm to pixels
 
 ## Creating detail layers
 
-Detail layer images should be 4x the size of the panel.  You can compute the necessary size like so:
+The pixel width of detail images should be 4x the size of the panel.  
 
-detail_layer_width_px = panel_width_in_px * 4
+First, compute the width of the panel by looking here:
 
-For example, given a panel of 132.08 px
+````
+{
+    "type": "image",
+    "path": "res/themes/default/background2.jpg",
+    "zoom": 0.15,
+    "width_mm": 121.92,  <== HERE
+    "height_mm": 128.5
+},
+````
 
-* detail_layer_width_px = panel_width_in_px * 4
-* detail_layer_width_mm = 390.00 pixels * 4
-* detail_layer_width_mm = 1560
+Next, convert that to pixels using
 
-The HP in the examples is the same HP as Glitch Sequencer. The numbers match those of Glitch Sequencer. 
+panel_width_in_px = MM_TO_PX * panel_width_in_mm
+panel_width_in_px = 2.952756 * 121.92
+panel_width_in_px = 360.00
+
+Now multiply that by 4 to get the .png file width in PX:
+
+360.00 * 4 = 1440
+
+height should always be 1520
+ 
 
 
 ## Typography

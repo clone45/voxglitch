@@ -1,18 +1,18 @@
 {
-  "panel_width" : 300.0,
+  "panel_width_px" : 300.0,
 	"layers": [
 		{
       "type": "image",
       "path": "res/themes/light/background.jpg",
       "zoom": 0.15,
-      "width": 101.6,
-      "height": 128.5
+      "width_mm": 101.6,
+      "height_mm": 128.5
     },
     {
       "type": "image",
       "path": "res/grain_engine_mk2/themes/light/details.png",
-      "width": 101.6,
-      "height": 128.5,
+      "width_mm": 101.6,
+      "height_mm": 128.5,
       "zoom": 0.25
     },
     {

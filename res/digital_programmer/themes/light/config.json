@@ -1,18 +1,18 @@
 {
-  "panel_width": 765.0,
+  "panel_width_px": 765.0,
 	"layers": [
 		{
       "type": "image",
       "path": "res/themes/light/background.jpg",
       "zoom": 0.15,
-      "width": 259.08,
-      "height": 128.5
+      "width_mm": 259.08,
+      "height_mm": 128.5
     },
     {
       "type": "image",
       "path": "res/digital_programmer/themes/light/details.png",
-      "width": 259.08,
-      "height": 128.5,
+      "width_mm": 259.08,
+      "height_mm": 128.5,
       "zoom": 0.25
     },
     {
