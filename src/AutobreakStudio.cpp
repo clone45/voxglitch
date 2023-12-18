@@ -16,6 +16,7 @@
 #include "Common/sequencer/Sequencer.hpp"
 #include "Common/sequencer/VoltageSequencer.hpp"
 #include "Common/sequencer/GateSequencer.hpp"
+#include "Common/helpers/JSON.hpp"
 
 #include "Common/widgets/WaveformModel.hpp"
 #include "Common/widgets/WaveformWidget.hpp"

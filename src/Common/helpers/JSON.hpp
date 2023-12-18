@@ -27,7 +27,6 @@ public:
         return false;  // or another default value if required
     }
 
-    /*
     static void loadSequencer(json_t *json, const std::string &sequencer_name, VoltageSequencer &sequencer)
     {
         json_t *sequencer_data_json = json_object_get(json, sequencer_name.c_str());
@@ -44,7 +43,7 @@ public:
             json_t *value_json;
             json_array_foreach(sequencer_json, index, value_json)
             {
-                if (index < NUMBER_OF_STEPS)
+                if (index < sequencer.getSequenceLength() && json_is_number(value_json))
                 {
                     sequencer.setValue(index, json_real_value(value_json));
                 }
@@ -69,7 +68,7 @@ public:
     static json_t *saveSequencer(VoltageSequencer &sequencer)
     {
         json_t *sequencer_json = json_array();
-        for (unsigned int column = 0; column < NUMBER_OF_STEPS; column++)
+        for (unsigned int column = 0; column < sequencer.getSequenceLength(); column++)
         {
             json_array_append_new(sequencer_json, json_real(sequencer.getValue(column)));
         }
@@ -82,6 +81,5 @@ public:
 
         return sequencer_data_json;
     }
-    */
 
 };

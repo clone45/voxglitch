@@ -17,25 +17,30 @@ struct AutobreakMemory
 
         // Position sequencer
         position_sequencer.assign(NUMBER_OF_STEPS, 0.0);
-        position_sequencer.setSnapDivisionIndex(4);
+        // position_sequencer.setSnapDivisionIndex(4);
 
         // Volume sequencer
         volume_sequencer.assign(NUMBER_OF_STEPS, 1.0);
+        volume_sequencer.setDefault(1.0);
 
         // Sample selection sequencer
         sample_sequencer.assign(NUMBER_OF_STEPS, 0.0);
-        sample_sequencer.snap_divisions[1] = NUMBER_OF_SAMPLES - 1;
-        sample_sequencer.setSnapDivisionIndex(1);
+        // sample_sequencer.snap_divisions[1] = NUMBER_OF_SAMPLES - 1;
+        // sample_sequencer.setSnapDivisionIndex(1);
+        // sample_sequencer.setSnapDivision(NUMBER_OF_SAMPLES - 1);
+        sample_sequencer.setDefault(0.0);
 
         // Pan sequencer
         pan_sequencer.assign(NUMBER_OF_STEPS, 0.5);
+        pan_sequencer.setDefault(0.5);
 
         // Reverse sequencer
         reverse_sequencer.assign(NUMBER_OF_STEPS, 0.0);
 
         ratchet_sequencer.assign(NUMBER_OF_STEPS, 0.0);
-        ratchet_sequencer.snap_divisions[1] = 5;
-        ratchet_sequencer.setSnapDivisionIndex(1);
+        //ratchet_sequencer.snap_divisions[1] = 5;
+        // ratchet_sequencer.setSnapDivisionIndex(1);
+        ratchet_sequencer.setSnapDivision(5);
     }
 
     void copy(AutobreakMemory *src_memory)
@@ -50,18 +55,27 @@ struct AutobreakMemory
 
     void clear()
     {
-        this->position_sequencer.clear();
-        this->sample_sequencer.clear();
-        this->volume_sequencer.fill(1.0);
-        this->pan_sequencer.fill(0.5);
-        this->reverse_sequencer.clear();
-        this->ratchet_sequencer.clear();
+        this->position_sequencer.initialize();
+        this->sample_sequencer.initialize();
+        this->volume_sequencer.initialize();
+        this->pan_sequencer.initialize();
+        this->reverse_sequencer.initialize();
+        this->ratchet_sequencer.initialize();
 
+
+        /*
+        
+            this->volume_sequencer.fill(1.0);
+            this->pan_sequencer.fill(0.5);
+        */
+
+        /*
         this->position_sequencer.setLength(MAX_SEQUENCER_STEPS);
         this->sample_sequencer.setLength(MAX_SEQUENCER_STEPS);
         this->volume_sequencer.setLength(MAX_SEQUENCER_STEPS);
         this->pan_sequencer.setLength(MAX_SEQUENCER_STEPS);
         this->reverse_sequencer.setLength(MAX_SEQUENCER_STEPS);
         this->ratchet_sequencer.setLength(MAX_SEQUENCER_STEPS);
+        */
     }
 };

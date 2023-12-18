@@ -19,5 +19,12 @@
 #include "VoxglitchSwitches.hpp"
 #include "VoxglitchWidget.hpp"
 
+#include "DigitalToggle.hpp"
+#include "DigitalSwitch.hpp"
+#include "DigitalRangeSelector.hpp"
+#include "DigitalSelect.hpp"
+#include "DigitalHorizontalSlider.hpp"
+#include "DigitalControl.hpp"
+
 // =========================================
 #endif

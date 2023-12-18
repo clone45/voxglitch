@@ -1,18 +1,18 @@
 {
-	"panel_width": 540.0,
+	"panel_width_px":: 540.0,
 	"layers": [
 		{
       "type": "image",
       "path": "res/themes/default/background2.jpg",
       "zoom": 0.15,
-      "width": 182.88,
-      "height": 128.5
+      "width_mm": 182.88,
+      "height_mm": 128.5
     },
     {
       "type": "image",
       "path": "res/digital_sequencer_xp/themes/default/details.png",
-      "width": 182.88,
-      "height": 128.5,
+      "width_mm": 182.88,
+      "height_mm": 128.5,
       "zoom": 0.25
     },
     {

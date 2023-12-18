@@ -36,6 +36,7 @@ struct GateSequencer : Sequencer
         sequence[index] = ! sequence[index];
     }
 
+    /*
     void shiftLeft()
     {
         double temp = sequence[0];
@@ -63,6 +64,38 @@ struct GateSequencer : Sequencer
         for (unsigned int i = 0; i < this->sequence_length; i++)
         {
             this->setValue(i, fmod(std::rand(), 2));
+        }
+    }
+
+    */
+
+    void shiftLeftInWindow()
+    {
+        double temp = sequence[this->window_start];
+        for (int i = this->window_start; i < this->window_end; i++)
+        {
+            this->setValue(i, this->getValue(i + 1));
+        }
+        sequence[this->window_end] = temp;
+    }
+
+    void shiftRightInWindow()
+    {
+        double temp = sequence[this->window_end];
+
+        for (int i = this->window_end; i > window_start; i--)
+        {
+            this->setValue(i, this->getValue(i - 1));
+        }
+
+        sequence[window_start] = temp;
+    }
+
+    void randomizeInWindow()
+    {
+        for (int i = window_start; i <= this->window_end; i++)
+        {
+            this->setValue(i, rand() / double(RAND_MAX));
         }
     }
 

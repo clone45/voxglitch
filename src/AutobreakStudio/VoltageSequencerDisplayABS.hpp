@@ -61,11 +61,11 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
 
                     drawBar(vg, i, BAR_HEIGHT, DRAW_AREA_HEIGHT, bar_color); // background
 
-                    if (i == sequencer->getPlaybackPosition())
+                    if (i == (unsigned int) sequencer->getPlaybackPosition())
                     {
                         bar_color = current_step_highlight_color;
                     }
-                    else if (i < sequencer->getLength())
+                    else if (i < (unsigned int) sequencer->getLength())
                     {
                         bar_color = lesser_step_highlight_color;
                     }
@@ -79,7 +79,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
                         drawBar(vg, i, (value * DRAW_AREA_HEIGHT), DRAW_AREA_HEIGHT, bar_color);
 
                     // Highlight the sequence playback column
-                    if (i == sequencer->getPlaybackPosition())
+                    if (i == (unsigned int) sequencer->getPlaybackPosition())
                     {
                         drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, sequence_position_highlight_color);
                     }
@@ -215,7 +215,8 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
 
         int clicked_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
         clicked_column = clamp(clicked_column, 0, MAX_SEQUENCER_STEPS);
-        sequencer->setLength(clicked_column);
+        // sequencer->setLength(clicked_column);
+        sequencer->setWindowEnd(clicked_column);
     }
 
     void dragShiftSequences(Vec mouse_position)
@@ -229,13 +230,13 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
 
             while (shift_offset < 0)
             {
-                sequencer->shiftLeft();
+                sequencer->shiftLeftInWindow();
                 shift_offset++;
             }
 
             while (shift_offset > 0)
             {
-                sequencer->shiftRight();
+                sequencer->shiftRightInWindow();
                 shift_offset--;
             }
 
@@ -251,7 +252,8 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
 
             int drag_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
             drag_column = clamp(drag_column, 0, MAX_SEQUENCER_STEPS);
-            sequencer->setLength(drag_column);
+            // sequencer->setLength(drag_column);
+            sequencer->setWindowEnd(drag_column);
         }
     }
 
@@ -341,7 +343,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
             // Do not randomize if CTRL-r is pressed.  That's for randomizing everything
             if ((e.mods & RACK_MOD_MASK) != GLFW_MOD_CONTROL)
             {
-                sequencer->randomize();
+                sequencer->randomizeInWindow();
             }
         }
     }
@@ -359,7 +361,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
 
         void onAction(const event::Action &e) override
         {
-            sequencer->shiftLeft();
+            sequencer->shiftLeftInWindow();
         }
     };
 
@@ -370,7 +372,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
 
         void onAction(const event::Action &e) override
         {
-            sequencer->shiftRight();
+            sequencer->shiftRightInWindow();
         }
     };
 

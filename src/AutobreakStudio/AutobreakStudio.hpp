@@ -180,12 +180,21 @@ struct AutobreakStudio : VoxglitchSamplerModule
       json_t *sequencers_json = json_object();
 
       // Save position sequencer values
+      /*
       saveSequencer(sequencers_json, &autobreak_memory[memory_index].position_sequencer, "position_sequencer");
       saveSequencer(sequencers_json, &autobreak_memory[memory_index].sample_sequencer, "sample_sequencer");
       saveSequencer(sequencers_json, &autobreak_memory[memory_index].volume_sequencer, "volume_sequencer");
       saveSequencer(sequencers_json, &autobreak_memory[memory_index].pan_sequencer, "pan_sequencer");
       saveSequencer(sequencers_json, &autobreak_memory[memory_index].reverse_sequencer, "reverse_sequencer");
       saveSequencer(sequencers_json, &autobreak_memory[memory_index].ratchet_sequencer, "ratchet_sequencer");
+      */
+
+      json_object_set_new(sequencers_json, "position_sequencer", JSON::saveSequencer(autobreak_memory[memory_index].position_sequencer));
+      json_object_set_new(sequencers_json, "sample_sequencer", JSON::saveSequencer(autobreak_memory[memory_index].sample_sequencer));
+      json_object_set_new(sequencers_json, "volume_sequencer", JSON::saveSequencer(autobreak_memory[memory_index].volume_sequencer));
+      json_object_set_new(sequencers_json, "pan_sequencer", JSON::saveSequencer(autobreak_memory[memory_index].pan_sequencer));
+      json_object_set_new(sequencers_json, "reverse_sequencer", JSON::saveSequencer(autobreak_memory[memory_index].reverse_sequencer));
+      json_object_set_new(sequencers_json, "ratchet_sequencer", JSON::saveSequencer(autobreak_memory[memory_index].ratchet_sequencer));
 
       json_object_set(memory_json, std::string("memory_slot_" + std::to_string(memory_index)).c_str(), sequencers_json);
     }
@@ -198,6 +207,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     return json_root;
   }
 
+  /*
   void saveSequencer(json_t *memory_json, VoltageSequencer* sequencer, std::string sequencer_name)
   {
       json_t *sequencer_values_json_array = json_array();
@@ -208,10 +218,12 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
       json_t *data_json = json_object();
       json_object_set(data_json, "values", sequencer_values_json_array);
-      json_object_set(data_json, "length", json_integer(sequencer->getLength()));
+      // json_object_set(data_json, "length", json_integer(sequencer->getLength()));
+
 
       json_object_set_new(memory_json, sequencer_name.c_str(), data_json);
   }
+  */
 
   // Autoload settings
   void dataFromJson(json_t *json_root) override
@@ -243,12 +255,21 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
         if(memory_slot)
         {
+          /*
           loadSequencer(memory_slot, &autobreak_memory[memory_slot_index].position_sequencer, "position_sequencer");
           loadSequencer(memory_slot, &autobreak_memory[memory_slot_index].sample_sequencer, "sample_sequencer");
           loadSequencer(memory_slot, &autobreak_memory[memory_slot_index].volume_sequencer, "volume_sequencer");
           loadSequencer(memory_slot, &autobreak_memory[memory_slot_index].pan_sequencer, "pan_sequencer");
           loadSequencer(memory_slot, &autobreak_memory[memory_slot_index].reverse_sequencer, "reverse_sequencer");
           loadSequencer(memory_slot, &autobreak_memory[memory_slot_index].ratchet_sequencer, "ratchet_sequencer");
+          */
+
+          JSON::loadSequencer(memory_slot, "position_sequencer", autobreak_memory[memory_slot_index].position_sequencer);
+          JSON::loadSequencer(memory_slot, "sample_sequencer", autobreak_memory[memory_slot_index].sample_sequencer);
+          JSON::loadSequencer(memory_slot, "volume_sequencer", autobreak_memory[memory_slot_index].volume_sequencer);
+          JSON::loadSequencer(memory_slot, "pan_sequencer", autobreak_memory[memory_slot_index].pan_sequencer);
+          JSON::loadSequencer(memory_slot, "reverse_sequencer", autobreak_memory[memory_slot_index].reverse_sequencer);
+          JSON::loadSequencer(memory_slot, "ratchet_sequencer", autobreak_memory[memory_slot_index].ratchet_sequencer);
         }
       }
     }
@@ -258,6 +279,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     if(selected_memory_index_json) selectMemory(json_integer_value(selected_memory_index_json));
   }
 
+  /*
   void loadSequencer(json_t *memory_slot_json, VoltageSequencer* sequencer, std::string sequencer_name)
   {
     // Get the sequencer data by looking u pthe sequencer name
@@ -285,6 +307,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
     sequencer->setLength(json_integer_value(sequencer_length_json));
   }
+  */
 
   void selectMemory(unsigned int i)
   {
