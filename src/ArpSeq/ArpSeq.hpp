@@ -670,36 +670,20 @@ struct ArpSeq : Module
         {
             unsigned int step_position = pages[page].voltage_sequencer.getPosition();
             int count_down = pages[page].cycle_counters->getCountDown(step_position);
-
             unsigned int max_cycle = params[getCycleParameterIndex(page, step_position)].getValue() - 1;
 
             if(max_cycle == 0)
             {
-                apply_sequencer[page] = true;
-                continue;
+                bool dice_roll_outcome = pages[page].rollDice();
+                onCycle(page, dice_roll_outcome);
             }
-
-            if(count_down <= 0)
+            else if(count_down <= 0)
             {
                 // Reset the counter
                 pages[page].cycle_counters->setCountDown(step_position, max_cycle);
 
                 bool dice_roll_outcome = pages[page].rollDice();
-                apply_sequencer[page] = true;
-                
-                if (page == probability_output_sequencer_attachment)
-                {
-                    float chance = pages[page].chance_sequencer.getValue();
-
-                    // Only fire the probability output if there's chance involved
-                    // In other words, if the chance sequencer is set to 0 or 1, then
-                    // don't fire the probability output.
-
-                    if (chance > 0.0f && chance < 1.0f)
-                    {
-                        probability_pulse_generator.trigger(dice_roll_outcome ? trigger_lengths[probability_trigger_length_index] : 0.0f);
-                    }
-                }
+                onCycle(page, dice_roll_outcome);
 
                 // Set trigger_cycle_output to true if the cycle for the gate sequencer is set and the cycle fires
                 // probability should be applied based on the probability of the gate sequencer
@@ -713,6 +697,29 @@ struct ArpSeq : Module
             {
                 pages[page].cycle_counters->decrement(step_position);
                 apply_sequencer[page] = false;
+            }
+        }
+    }
+
+    void onCycle(unsigned int page, bool dice_roll_outcome)
+    {
+        pulseProbabilityOutput(page, dice_roll_outcome);
+        apply_sequencer[page] = true; 
+    }
+
+    void pulseProbabilityOutput(unsigned int page, bool dice_roll_outcome)
+    {
+        if (page == probability_output_sequencer_attachment)
+        {
+            float chance = pages[page].chance_sequencer.getValue();
+
+            // Only fire the probability output if there's chance involved
+            // In other words, if the chance sequencer is set to 0 or 1, then
+            // don't fire the probability output.
+
+            if (chance > 0.0f && chance < 1.0f)
+            {
+                probability_pulse_generator.trigger(dice_roll_outcome ? trigger_lengths[probability_trigger_length_index] : 0.0f);
             }
         }
     }
