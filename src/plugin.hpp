@@ -8,6 +8,8 @@ extern Plugin* pluginInstance;
 
 // Declare each Model, defined in each module source file
 // extern Model* modelMyModule;
+
+extern Model *modelArpSeq;
 extern Model *modelAutobreak;
 extern Model *modelAutobreakStudio;
 extern Model *modelByteBeat;

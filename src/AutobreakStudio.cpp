@@ -6,19 +6,20 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
-#include "Common/constants.h"
-#include "Common/sample.hpp"
-#include "Common/dsp/DeclickFilter.hpp"
-#include "Common/dsp/StereoPan.hpp"
 
-#include "Common/Theme.hpp"
-#include "Common/components/VoxglitchComponents.hpp"
-#include "Common/sequencer/Sequencer.hpp"
-#include "Common/sequencer/VoltageSequencer.hpp"
-#include "Common/sequencer/GateSequencer.hpp"
+#include "vgLib-1.0/constants.h"
+#include "vgLib-1.0/sample.hpp"
+#include "vgLib-1.0/dsp/DeclickFilter.hpp"
+#include "vgLib-1.0/dsp/StereoPan.hpp"
+#include "vgLib-1.0/Theme.hpp"
+#include "vgLib-1.0/components/VoxglitchComponents.hpp"
+#include "vgLib-1.0/sequencer/Sequencer.hpp"
+#include "vgLib-1.0/sequencer/VoltageSequencer.hpp"
+#include "vgLib-1.0/sequencer/GateSequencer.hpp"
+#include "vgLib-1.0/widgets/WaveformModel.hpp"
+#include "vgLib-1.0/widgets/WaveformWidget.hpp"
 
-#include "Common/widgets/WaveformModel.hpp"
-#include "Common/widgets/WaveformWidget.hpp"
+using namespace vgLib_v1;
 
 #include "AutobreakStudio/defines.h"
 #include "AutobreakStudio/AutobreakMemory.hpp"

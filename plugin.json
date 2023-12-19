@@ -14,6 +14,13 @@
     "changelogUrl": "https://github.com/clone45/voxglitch/blob/master/docs/changelog.md",
     "modules": [
     {
+        "slug": "arpseq",
+        "name": "ArpSeq",
+        "description": "Arpeggiator and Sequencer Hybrid",
+        "tags": ["Utility", "Sequencer"],
+        "manualUrl": "https://docs.google.com/document/d/1eZ3NOTOMBoTuiFCpqTsKA6RBkN2Fk8rBIJbEp-pRykA/edit?usp=sharing"
+    },
+    {
         "slug": "autobreak",
         "name": "Autobreak",
         "description": "Automatic breakbeat sample chopper",
