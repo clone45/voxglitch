@@ -4,11 +4,13 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
-#include "Common/constants.h"
+#include "vgLib-1.0/constants.h"
 
-#include "Common/Theme.hpp"
-#include "Common/components/VoxglitchComponents.hpp"
-#include "Common/dsp/Random.hpp"
+#include "vgLib-1.0/Theme.hpp"
+#include "vgLib-1.0/components/VoxglitchComponents.hpp"
+#include "vgLib-1.0/dsp/Random.hpp"
+
+using namespace vgLib_v1;
 
 #include "DrumRandomizer/DrumRandomizer.hpp"
 #include "DrumRandomizer/DrumRandomizerReadoutWidget.hpp"

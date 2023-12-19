@@ -7,12 +7,14 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 
-#include "Common/constants.h"
-#include "Common/common.hpp"
-#include "Common/audio_buffer.hpp"
-#include "Common/dsp/StereoPan.hpp"
-#include "Common/Theme.hpp"
-#include "Common/components/VoxglitchComponents.hpp"
+#include "vgLib-1.0/constants.h"
+#include "vgLib-1.0/common.hpp"
+#include "vgLib-1.0/audio_buffer.hpp"
+#include "vgLib-1.0/dsp/StereoPan.hpp"
+#include "vgLib-1.0/Theme.hpp"
+#include "vgLib-1.0/components/VoxglitchComponents.hpp"
+
+using namespace vgLib_v1;
 
 #include "GrainFx/defines.h"
 #include "GrainFx/SimpleTableOsc.hpp"

@@ -1,10 +1,11 @@
 #include "plugin.hpp"
-#include "Common/constants.cpp"
+#include "vgLib-1.0/constants.cpp"
 
 Plugin* pluginInstance;
 
 void init(Plugin* p) {
   pluginInstance = p;
+  p->addModel(modelArpSeq);
   p->addModel(modelAutobreak);
   p->addModel(modelAutobreakStudio);  
   p->addModel(modelByteBeat);

@@ -5,10 +5,12 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 
-#include "Common/constants.h"
-#include "Common/Theme.hpp"
-#include "Common/components/VoxglitchComponents.hpp"
-#include "Common/sample_mc.hpp"
+#include "vgLib-1.0/constants.h"
+#include "vgLib-1.0/Theme.hpp"
+#include "vgLib-1.0/components/VoxglitchComponents.hpp"
+#include "vgLib-1.0/sample_mc.hpp"
+
+using namespace vgLib_v1;
 
 #include "WavBankMC/defines.h"
 #include "WavBankMC/WavBankMC.hpp"

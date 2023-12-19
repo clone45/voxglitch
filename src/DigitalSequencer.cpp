@@ -20,11 +20,14 @@
 #include <array>
 
 #include "DigitalSequencer/defines.h"
-#include "Common/constants.h"
-#include "Common/Theme.hpp"
-#include "Common/components/VoxglitchComponents.hpp"
-#include "Common/sequencer/Sequencer.hpp"
-#include "Common/sequencer/VoltageSequencer.hpp"
+
+#include "vgLib-1.0/constants.h"
+#include "vgLib-1.0/Theme.hpp"
+#include "vgLib-1.0/components/VoxglitchComponents.hpp"
+#include "vgLib-1.0/sequencer/Sequencer.hpp"
+#include "vgLib-1.0/sequencer/VoltageSequencer.hpp"
+
+using namespace vgLib_v1;
 
 #include "DigitalSequencer/GateSequencer.hpp"
 #include "DigitalSequencer/DigitalSequencer.hpp"

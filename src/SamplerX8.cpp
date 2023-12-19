@@ -5,12 +5,14 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 
-#include "Common/constants.h"
-#include "Common/sample.hpp"
-#include "Common/Theme.hpp"
-#include "Common/components/VoxglitchComponents.hpp"
-#include "Common/SamplePlayer.hpp"
-#include "Common/dsp/StereoPan.hpp"
+#include "vgLib-1.0/constants.h"
+#include "vgLib-1.0/sample.hpp"
+#include "vgLib-1.0/Theme.hpp"
+#include "vgLib-1.0/components/VoxglitchComponents.hpp"
+#include "vgLib-1.0/SamplePlayer.hpp"
+#include "vgLib-1.0/dsp/StereoPan.hpp"
+
+using namespace vgLib_v1;
 
 #include "SamplerX8/defines.h"
 #include "SamplerX8/SamplerX8.hpp"

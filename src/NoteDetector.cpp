@@ -4,15 +4,16 @@
 
 #include "plugin.hpp"
 #include "osdialog.h"
-#include "Common/constants.h"
 
-#include "Common/Theme.hpp"
-#include "Common/components/VoxglitchComponents.hpp"
-#include "Common/widgets/NoteReadoutWidget.hpp"
+#include "vgLib-1.0/constants.h"
+#include "vgLib-1.0/Theme.hpp"
+#include "vgLib-1.0/components/VoxglitchComponents.hpp"
+#include "vgLib-1.0/widgets/NoteReadoutWidget.hpp"
+#include "vgLib-1.0/helpers/JSON.hpp"
+#include "vgLib-1.0/helpers/NOTES.hpp"
+#include "vgLib-1.0/customParamQuantities.hpp"
 
-#include "Common/helpers/JSON.hpp"
-#include "Common/helpers/NOTES.hpp"
-#include "Common/customParamQuantities.hpp"
+using namespace vgLib_v1;
 
 #include "NoteDetector/NoteDetector.hpp"
 #include "NoteDetector/NoteDetectorWidget.hpp"
