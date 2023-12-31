@@ -1,5 +1,11 @@
 # Developer notes
 
+## Useful links
+
+- Project status tracker: https://github.com/VCVRack/library/projects/1
+- Voxglitch issue for updates: https://github.com/VCVRack/library/issues/626
+
+
 ## Calculations
 
 See the following for a spreadsheet of the panel width and detail layer width for each HP panel width:

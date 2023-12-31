@@ -221,8 +221,6 @@ struct ArpSeqWidget : VoxglitchModuleWidget
                 float knob_height_px = 21;
                 float startX = 247.55; // Starting X position
 
-                DEBUG("page_index: %d", page_index);
-
                 for (int i = 0; i < 16; i++)
                 {
                     int cycle_knob_index = ArpSeq::CYCLE_KNOBS + (page_index * 16) + i;
@@ -230,11 +228,6 @@ struct ArpSeqWidget : VoxglitchModuleWidget
                     number_chooser->box.size = Vec(knob_width_px, knob_height_px);
 
                     int *count_down_pointer = module->pages[page_index].cycle_counters->getCountDownPointer(i);
-
-                    if(!count_down_pointer)
-                    {
-                        DEBUG("count_down_pointer is NULL");
-                    }
 
                     addParam(number_chooser);
 

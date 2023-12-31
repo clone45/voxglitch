@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="10"
+   height="10"
+   viewBox="0 0 3.3866667 3.3866667"
+   version="1.1"
+   id="svg203"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   sodipodi:docname="DigitalSwitchOn.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview205"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     showgrid="false"
+     inkscape:zoom="76.846546"
+     inkscape:cx="4.5870637"
+     inkscape:cy="2.8758612"
+     inkscape:window-width="3840"
+     inkscape:window-height="2066"
+     inkscape:window-x="2869"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs200" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:none;stroke:#f8d744;stroke-width:0.256;stroke-opacity:1"
+       id="rect376"
+       width="3.1306667"
+       x="0.12800001"
+       y="0.12800001"
+       height="3.1306667" />
+    <rect
+       style="fill:#f8d744;fill-opacity:1;stroke:#f8d744;stroke-width:0.256;stroke-opacity:1"
+       id="rect376-3"
+       width="2.1136508"
+       x="0.63658929"
+       y="0.63658941"
+       height="0.92882532" />
+  </g>
+</svg>
