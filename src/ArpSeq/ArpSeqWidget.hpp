@@ -125,7 +125,7 @@ struct ArpSeqWidget : VoxglitchModuleWidget
     {
         setModule(module);
 
-        theme.load("ArpSeq");
+        theme.load("arpseq");
         applyTheme();
 
         if (theme.showScrews())

@@ -1,3 +1,6 @@
+#include <cctype> // for std::isupper
+#include <string>
+
 struct Theme
 {
     std::string name = "default";
@@ -12,13 +15,13 @@ struct Theme
 
         // Check to see if the Voxglitch config file does not exist.  If it's missing,
         // then copy it from the res/ folder to the user folder.
-        if (!rack::system::exists(asset::user("vxo.json")))
+        if (!rack::system::exists(asset::user("Voxglitch.json")))
         {
-            rack::system::copy(asset::plugin(pluginInstance, "res/voxglitch_config.json"), asset::user("vxo.json"));
+            rack::system::copy(asset::plugin(pluginInstance, "res/voxglitch_config.json"), asset::user("Voxglitch.json"));
         }
 
         // Get the path to the config file
-        std::string config_file_path = asset::user("vxo.json");
+        std::string config_file_path = asset::user("Voxglitch.json");
 
         // Load theme selection, either "light" or "default"
         if (rack::system::exists(config_file_path.c_str()))
@@ -47,6 +50,15 @@ struct Theme
     bool load(std::string slug)
     {
         json_error_t error;
+
+        // Check if slug contains any uppercase letters
+        for (char c : slug)
+        {
+            if (std::isupper(static_cast<unsigned char>(c)))
+            {
+                return false; // Slug contains an uppercase letter
+            }
+        }
 
         std::string config_file_path = asset::plugin(pluginInstance, "res/" + slug + "/themes/" + name + "/config.json");
 
