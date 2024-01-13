@@ -187,17 +187,17 @@ struct Quantizer
 const bool Quantizer::chromaticScale[12] = { true, true, true, true, true, true, true, true, true, true, true, true };
 const bool Quantizer::majorScale[12] = { true, false, true, false, true, true, false, true, false, true, false, true };
 const bool Quantizer::minorScale[12] = { true, false, true, true, false, true, false, true, true, false, true, false };
-const bool Quantizer::pentatonicScale[12] = { true, false, true, false, false, true, false, true, false, false, true, false };
+const bool Quantizer::pentatonicScale[12] = { true, false, true, false, false, true, false, true, false, false, true, false }; // Possibly incorrect
 const bool Quantizer::dorianScale[12] = { true, false, true, true, false, true, false, true, false, true, true, false };
 const bool Quantizer::phrygianScale[12] = { true, true, false, true, false, true, false, true, true, false, true, false };
 const bool Quantizer::lydianScale[12] = { true, false, true, false, true, false, true, true, false, true, false, true };
 const bool Quantizer::mixolydianScale[12] = { true, false, true, false, true, true, false, true, false, true, true, false };
 const bool Quantizer::harmonicMinorScale[12] = { true, false, true, true, false, true, false, true, true, false, false, true };
 const bool Quantizer::melodicMinorScale[12] = { true, false, true, true, false, true, false, true, false, true, false, true };
-const bool Quantizer::bluesScale[12] = { true, false, true, true, true, true, false, true, false, true, true, false };
-const bool Quantizer::wholeToneScale[12] = { true, false, true, false, true, false, true, false, true, false, true, false };
-const bool Quantizer::diminishedScale[12] = { true, true, false, true, true, false, true, true, false, true, true, false };
-
+const bool Quantizer::bluesScale[12] = { true, false, true, true, true, true, false, true, false, true, true, false }; // possibly incorrect
+const bool Quantizer::wholeToneScale[12] = { true, false, true, false, true, false, true, false, true, false, true, false }; // possibly incorrect
+const bool Quantizer::diminishedScale[12] = { true, true, false, true, true, false, true, true, false, true, true, false }; // possibly incorrect
+                                            
 
 // Definition of scales array
 const bool* Quantizer::scales[NUM_SCALES] = { 
