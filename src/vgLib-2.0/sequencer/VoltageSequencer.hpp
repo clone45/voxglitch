@@ -1,5 +1,7 @@
 #include <iomanip>
 
+#include "VoltageSequencerHistory.hpp"
+
 namespace vgLib_v2
 {
 
@@ -130,6 +132,8 @@ namespace vgLib_v2
                 return this->bipolar_default_value;
             }
         }
+
+
 
         void shiftLeftInWindow()
         {
@@ -335,6 +339,31 @@ namespace vgLib_v2
             this->sample_and_hold = src_sequence->sample_and_hold;
             */
         }
+
+        // This function is for backwards compatibility with vgLib-1.0
+        void clear()
+        {
+            initialize();
+        }
+
+        // This function is for backwards compatibility with vgLib-1.0
+        void shiftLeft()
+        {
+            this->shiftLeftInWindow();
+        }
+
+        // This function is for backwards compatibility with vgLib-1.0
+        void shiftRight()
+        {
+            this->shiftRightInWindow();
+        }
+
+        // This function is for backwards compatibility with vgLib-1.0
+        void randomize()
+        {
+            this->randomizeInWindow();
+        }
+
     };
 
 } // namespace vgLib_v2

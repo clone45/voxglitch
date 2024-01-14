@@ -167,6 +167,20 @@ namespace vgLib_v2
             return (max_length);
         }
 
+        // This function is for backwards compatibility with vgLib-1.0
+        int getLength()
+        {
+            return (max_length);
+        }
+
+        // This function is for backwards compatibility with vgLib-1.0
+        void setLength(unsigned int length)
+        {
+            this->setMaxLength(length);
+            this->setWindowStart(0);
+            this->setWindowEnd(length - 1);
+        }
+
         void initialize()
         {
             window_start = 0;

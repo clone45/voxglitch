@@ -133,9 +133,33 @@ struct AutobreakStudio : VoxglitchSamplerModule
   {
     config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 
-    configInput(CLOCK_INPUT, "Clock Input");
-    configInput(RESET_INPUT, "Reset Input");
-    configInput(MEMORY_SELECT_INPUT, "Memory Select");
+    configInput(CLOCK_INPUT, "Clock CV");
+    configInput(RESET_INPUT, "Reset CV");
+    configInput(MEMORY_SELECT_INPUT, "Memory Select CV");
+    configInput(RATCHET_INPUT, "Ratchet CV");
+
+    configInput(POSITION_CV_INPUT, "Position CV");
+    configInput(SAMPLE_CV_INPUT, "Sample CV");
+    configInput(VOLUME_CV_INPUT, "Volume CV");
+    configInput(PAN_CV_INPUT, "Pan CV");
+    configInput(REVERSE_CV_INPUT, "Reverse CV");
+    configInput(RATCHET_CV_INPUT, "Ratchet CV");
+
+    configOutput(POSITION_CV_OUTPUT, "Position CV");
+    configOutput(SAMPLE_CV_OUTPUT, "Sample CV");
+    configOutput(VOLUME_CV_OUTPUT, "Volume CV");
+    configOutput(PAN_CV_OUTPUT, "Pan CV");
+    configOutput(REVERSE_CV_OUTPUT, "Reverse CV");
+    configOutput(RATCHET_CV_OUTPUT, "Ratchet CV");
+
+    configOutput(AUDIO_OUTPUT_LEFT, "Audio Mix Left");
+    configOutput(AUDIO_OUTPUT_RIGHT, "Audio Mix Right");
+
+    for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
+    {
+      configOutput(LEFT_INDIVIDUAL_OUTPUTS + i, "Left Individual");
+      configOutput(RIGHT_INDIVIDUAL_OUTPUTS + i, "Right Individual");
+    }
 
     for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
     {

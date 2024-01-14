@@ -45,7 +45,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
                 //
                 // Display the pattern
                 //
-                for (unsigned int i = 0; i < MAX_SEQUENCER_STEPS; i++)
+                for (int i = 0; i < MAX_SEQUENCER_STEPS; i++)
                 {
                     value = sequencer->getValue(i);
 
