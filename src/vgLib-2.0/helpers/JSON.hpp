@@ -48,13 +48,20 @@ namespace vgLib_v2
 
             // Load sequence values
             json_t *sequencer_json = json_object_get(sequencer_data_json, "sequence");
+
+            // Backwards compatibility with old format
+            if(! sequencer_json || ! json_is_array(sequencer_json))
+            {
+                sequencer_json = json_object_get(sequencer_data_json, "values");
+            }
+
             if (sequencer_json && json_is_array(sequencer_json))
             {
                 size_t index;
                 json_t *value_json;
                 json_array_foreach(sequencer_json, index, value_json)
                 {
-                    if (index < NUMBER_OF_STEPS)
+                    if (index < (unsigned int) sequencer.getMaxLength())
                     {
                         sequencer.setValue(index, json_real_value(value_json));
                     }
@@ -79,7 +86,7 @@ namespace vgLib_v2
         static json_t *saveSequencer(VoltageSequencer &sequencer)
         {
             json_t *sequencer_json = json_array();
-            for (unsigned int column = 0; column < NUMBER_OF_STEPS; column++)
+            for (unsigned int column = 0; column < (unsigned int) sequencer.getMaxLength(); column++)
             {
                 json_array_append_new(sequencer_json, json_real(sequencer.getValue(column)));
             }

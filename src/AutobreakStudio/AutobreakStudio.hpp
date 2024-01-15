@@ -5,6 +5,12 @@ Autobreak Studio
 Automatic Breakbeat module for VCV Rack by Voxglitch,
 with extra "stuff".
 
+Improvement ideas:
+
+- Add sample name tooltip to both the waveform display and the sample selection sequencer
+- Add more sample slots (infinite?)
+- Snap the sample knob
+
 */
 
 struct AutobreakStudio : VoxglitchSamplerModule
@@ -45,15 +51,11 @@ struct AutobreakStudio : VoxglitchSamplerModule
   // the correct step.
   unsigned int sequencer_step = 0;
 
-  // StereoSmoothSubModule loop_smooth;
   DeclickFilter declick_filter;
   StereoPan stereo_pan;
 
   std::string root_dir;
   std::string path;
-
-  // bool waveform_visible[NUMBER_OF_SAMPLES];
-  // float waveform_playback_percentage = 0.0;
 
   Sample samples[NUMBER_OF_SAMPLES];
   std::string loaded_filenames[NUMBER_OF_SAMPLES] = {""};
@@ -68,12 +70,12 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
   AutobreakMemory autobreak_memory[16];
 
-  VoltageSequencer* position_sequencer = &autobreak_memory[0].position_sequencer;
-  VoltageSequencer* sample_sequencer = &autobreak_memory[0].sample_sequencer;
-  VoltageSequencer* volume_sequencer = &autobreak_memory[0].volume_sequencer;
-  VoltageSequencer* pan_sequencer = &autobreak_memory[0].pan_sequencer;
-  VoltageSequencer* reverse_sequencer = &autobreak_memory[0].reverse_sequencer;
-  VoltageSequencer* ratchet_sequencer = &autobreak_memory[0].ratchet_sequencer;
+  VoltageSequencer *position_sequencer = &autobreak_memory[0].position_sequencer;
+  VoltageSequencer *sample_sequencer = &autobreak_memory[0].sample_sequencer;
+  VoltageSequencer *volume_sequencer = &autobreak_memory[0].volume_sequencer;
+  VoltageSequencer *pan_sequencer = &autobreak_memory[0].pan_sequencer;
+  VoltageSequencer *reverse_sequencer = &autobreak_memory[0].reverse_sequencer;
+  VoltageSequencer *ratchet_sequencer = &autobreak_memory[0].ratchet_sequencer;
 
   float left_output = 0;
   float right_output = 0;
@@ -155,21 +157,21 @@ struct AutobreakStudio : VoxglitchSamplerModule
     configOutput(AUDIO_OUTPUT_LEFT, "Audio Mix Left");
     configOutput(AUDIO_OUTPUT_RIGHT, "Audio Mix Right");
 
-    for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
+    for (unsigned int i = 0; i < NUMBER_OF_SAMPLES; i++)
     {
       configOutput(LEFT_INDIVIDUAL_OUTPUTS + i, "Left Individual");
       configOutput(RIGHT_INDIVIDUAL_OUTPUTS + i, "Right Individual");
     }
 
-    for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
+    for (unsigned int i = 0; i < NUMBER_OF_MEMORY_SLOTS; i++)
     {
       configSwitch(MEMORY_BUTTONS + i, 0.0, 1.0, 0.0, "Memory Slot");
     }
 
     //
     // Initialize all of the waveform displays
-    // 
-    for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
+    //
+    for (unsigned int i = 0; i < NUMBER_OF_SAMPLES; i++)
     {
       waveform_model[i].sample = &samples[i];
       waveform_model[i].visible = false;
@@ -179,7 +181,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
     std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 
-    clock_ignore_on_reset = (long) (44100 / 100);
+    clock_ignore_on_reset = (long)(44100 / 100);
   }
 
   // Autosave settings
@@ -199,17 +201,27 @@ struct AutobreakStudio : VoxglitchSamplerModule
     //
     json_t *memory_json = json_object();
 
-    for(unsigned int memory_index = 0; memory_index < NUMBER_OF_MEMORY_SLOTS; memory_index++)
+    for (unsigned int memory_index = 0; memory_index < NUMBER_OF_MEMORY_SLOTS; memory_index++)
     {
       json_t *sequencers_json = json_object();
 
       // Save position sequencer values
+      /* Old code:
       saveSequencer(sequencers_json, &autobreak_memory[memory_index].position_sequencer, "position_sequencer");
       saveSequencer(sequencers_json, &autobreak_memory[memory_index].sample_sequencer, "sample_sequencer");
       saveSequencer(sequencers_json, &autobreak_memory[memory_index].volume_sequencer, "volume_sequencer");
       saveSequencer(sequencers_json, &autobreak_memory[memory_index].pan_sequencer, "pan_sequencer");
       saveSequencer(sequencers_json, &autobreak_memory[memory_index].reverse_sequencer, "reverse_sequencer");
       saveSequencer(sequencers_json, &autobreak_memory[memory_index].ratchet_sequencer, "ratchet_sequencer");
+      */
+
+      // New code:
+      json_object_set_new(sequencers_json, "position_sequencer", JSON::saveSequencer(autobreak_memory[memory_index].position_sequencer));
+      json_object_set_new(sequencers_json, "sample_sequencer", JSON::saveSequencer(autobreak_memory[memory_index].sample_sequencer));
+      json_object_set_new(sequencers_json, "volume_sequencer", JSON::saveSequencer(autobreak_memory[memory_index].volume_sequencer));
+      json_object_set_new(sequencers_json, "pan_sequencer", JSON::saveSequencer(autobreak_memory[memory_index].pan_sequencer));
+      json_object_set_new(sequencers_json, "reverse_sequencer", JSON::saveSequencer(autobreak_memory[memory_index].reverse_sequencer));
+      json_object_set_new(sequencers_json, "ratchet_sequencer", JSON::saveSequencer(autobreak_memory[memory_index].ratchet_sequencer));
 
       json_object_set(memory_json, std::string("memory_slot_" + std::to_string(memory_index)).c_str(), sequencers_json);
     }
@@ -222,10 +234,11 @@ struct AutobreakStudio : VoxglitchSamplerModule
     return json_root;
   }
 
-  void saveSequencer(json_t *memory_json, VoltageSequencer* sequencer, std::string sequencer_name)
-  {
+  /*
+    void saveSequencer(json_t *memory_json, VoltageSequencer *sequencer, std::string sequencer_name)
+    {
       json_t *sequencer_values_json_array = json_array();
-      for(unsigned int column = 0; column < NUMBER_OF_STEPS; column++)
+      for (unsigned int column = 0; column < NUMBER_OF_STEPS; column++)
       {
         json_array_append_new(sequencer_values_json_array, json_real(sequencer->getValue(column)));
       }
@@ -235,7 +248,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
       json_object_set(data_json, "length", json_integer(sequencer->getLength()));
 
       json_object_set_new(memory_json, sequencer_name.c_str(), data_json);
-  }
+    }
+    */
 
   // Autoload settings
   void dataFromJson(json_t *json_root) override
@@ -258,41 +272,54 @@ struct AutobreakStudio : VoxglitchSamplerModule
     //
     json_t *memory_json = json_object_get(json_root, "memory");
 
-    if(memory_json)
+    if (memory_json)
     {
-      for(unsigned int memory_slot_index=0; memory_slot_index<NUMBER_OF_MEMORY_SLOTS; memory_slot_index++)
+      for (unsigned int memory_slot_index = 0; memory_slot_index < NUMBER_OF_MEMORY_SLOTS; memory_slot_index++)
       {
         std::string key = "memory_slot_" + std::to_string(memory_slot_index);
-        json_t *memory_slot = json_object_get(memory_json, key.c_str());
+        json_t *memory_slot_json_object = json_object_get(memory_json, key.c_str());
 
-        if(memory_slot)
+        if (memory_slot_json_object)
         {
+          /*
           loadSequencer(memory_slot, &autobreak_memory[memory_slot_index].position_sequencer, "position_sequencer");
           loadSequencer(memory_slot, &autobreak_memory[memory_slot_index].sample_sequencer, "sample_sequencer");
           loadSequencer(memory_slot, &autobreak_memory[memory_slot_index].volume_sequencer, "volume_sequencer");
           loadSequencer(memory_slot, &autobreak_memory[memory_slot_index].pan_sequencer, "pan_sequencer");
           loadSequencer(memory_slot, &autobreak_memory[memory_slot_index].reverse_sequencer, "reverse_sequencer");
           loadSequencer(memory_slot, &autobreak_memory[memory_slot_index].ratchet_sequencer, "ratchet_sequencer");
+          */
+
+          JSON::loadSequencer(memory_slot_json_object, "position_sequencer", autobreak_memory[memory_slot_index].position_sequencer);
+          JSON::loadSequencer(memory_slot_json_object, "sample_sequencer", autobreak_memory[memory_slot_index].sample_sequencer);
+          JSON::loadSequencer(memory_slot_json_object, "volume_sequencer", autobreak_memory[memory_slot_index].volume_sequencer);
+          JSON::loadSequencer(memory_slot_json_object, "pan_sequencer", autobreak_memory[memory_slot_index].pan_sequencer);
+          JSON::loadSequencer(memory_slot_json_object, "reverse_sequencer", autobreak_memory[memory_slot_index].reverse_sequencer);
+          JSON::loadSequencer(memory_slot_json_object, "ratchet_sequencer", autobreak_memory[memory_slot_index].ratchet_sequencer);
         }
       }
     }
 
     // Load selected memory index
     json_t *selected_memory_index_json = json_object_get(json_root, "selected_memory_index");
-    if(selected_memory_index_json) selectMemory(json_integer_value(selected_memory_index_json));
+    if (selected_memory_index_json)
+      selectMemory(json_integer_value(selected_memory_index_json));
   }
 
-  void loadSequencer(json_t *memory_slot_json, VoltageSequencer* sequencer, std::string sequencer_name)
+/*
+  void loadSequencer(json_t *memory_slot_json, VoltageSequencer *sequencer, std::string sequencer_name)
   {
     // Get the sequencer data by looking u pthe sequencer name
     json_t *sequencer_data_json = json_object_get(memory_slot_json, sequencer_name.c_str());
-    if(! sequencer_data_json) return;
+    if (!sequencer_data_json)
+      return;
 
     //
     // Load the sequencer values
     //
     json_t *sequencer_array_json = json_object_get(sequencer_data_json, "values");
-    if(! sequencer_array_json) return;
+    if (!sequencer_array_json)
+      return;
 
     size_t sequencer_index;
     json_t *value_json;
@@ -305,11 +332,12 @@ struct AutobreakStudio : VoxglitchSamplerModule
     // Load the sequencer length
     //
     json_t *sequencer_length_json = json_object_get(sequencer_data_json, "length");
-    if(! sequencer_length_json) return;
+    if (!sequencer_length_json)
+      return;
 
     sequencer->setLength(json_integer_value(sequencer_length_json));
   }
-
+*/
   void selectMemory(unsigned int i)
   {
     selected_memory_index = i;
@@ -332,73 +360,73 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
   float getVolume()
   {
-    if(inputs[VOLUME_CV_INPUT].isConnected())
+    if (inputs[VOLUME_CV_INPUT].isConnected())
     {
-      return(inputs[VOLUME_CV_INPUT].getVoltage() / 10.0);
+      return (inputs[VOLUME_CV_INPUT].getVoltage() / 10.0);
     }
     else
     {
-      return(volume_sequencer->getValue());
+      return (volume_sequencer->getValue());
     }
   }
 
   float getPan()
   {
-    if(inputs[PAN_CV_INPUT].isConnected())
+    if (inputs[PAN_CV_INPUT].isConnected())
     {
-      return(inputs[PAN_CV_INPUT].getVoltage() / 10.0);
+      return (inputs[PAN_CV_INPUT].getVoltage() / 10.0);
     }
     else
     {
-      return(pan_sequencer->getValue());
+      return (pan_sequencer->getValue());
     }
   }
 
   float getSample()
   {
-    if(inputs[SAMPLE_CV_INPUT].isConnected())
+    if (inputs[SAMPLE_CV_INPUT].isConnected())
     {
-      return(inputs[SAMPLE_CV_INPUT].getVoltage() / 10.0);
+      return (inputs[SAMPLE_CV_INPUT].getVoltage() / 10.0);
     }
     else
     {
-      return(sample_sequencer->getValue());
+      return (sample_sequencer->getValue());
     }
   }
 
   float getPosition()
   {
-    if(inputs[POSITION_CV_INPUT].isConnected())
+    if (inputs[POSITION_CV_INPUT].isConnected())
     {
-      return(inputs[POSITION_CV_INPUT].getVoltage() / 10.0);
+      return (inputs[POSITION_CV_INPUT].getVoltage() / 10.0);
     }
     else
     {
-      return(position_sequencer->getValue());
+      return (position_sequencer->getValue());
     }
   }
 
   float getReverse()
   {
-    if(inputs[REVERSE_CV_INPUT].isConnected())
+    if (inputs[REVERSE_CV_INPUT].isConnected())
     {
-      return(inputs[REVERSE_CV_INPUT].getVoltage() / 10.0);
+      return (inputs[REVERSE_CV_INPUT].getVoltage() / 10.0);
     }
     else
     {
-      return(reverse_sequencer->getValue());
+      return (reverse_sequencer->getValue());
     }
   }
 
   float getRatchet()
   {
-    if(inputs[RATCHET_CV_INPUT].isConnected())
+    if (inputs[RATCHET_CV_INPUT].isConnected())
     {
-      return(inputs[RATCHET_CV_INPUT].getVoltage() / 10.0);
+      return (inputs[RATCHET_CV_INPUT].getVoltage() / 10.0);
     }
     else
     {
-      return(ratchet_sequencer->getValue());
+      return (ratchet_sequencer->getValue());
     }
   }
 
@@ -425,27 +453,27 @@ struct AutobreakStudio : VoxglitchSamplerModule
     if (clearButtonTrigger.process(params[CLEAR_BUTTON].getValue()))
     {
       autobreak_memory[selected_memory_index].clear();
-			clearPulse.trigger(1e-3f);
-		}
+      clearPulse.trigger(1e-3f);
+    }
 
     // Process copy button
     if (copyButtonTrigger.process(params[COPY_BUTTON].getValue()))
     {
       copy_mode ^= true;
-		}
+    }
 
     // Memory selection
     //
-    if(copy_mode == false)
+    if (copy_mode == false)
     {
-      if(inputs[MEMORY_SELECT_INPUT].isConnected())
+      if (inputs[MEMORY_SELECT_INPUT].isConnected())
       {
         // Read the memory input.  If the reading is different than the currently
         // selected memory slot, then load up the newly selected slot.
         unsigned int memory_input_value = int((inputs[MEMORY_SELECT_INPUT].getVoltage() / 10.0) * NUMBER_OF_MEMORY_SLOTS);
         memory_input_value = clamp(memory_input_value, 0, NUMBER_OF_MEMORY_SLOTS - 1);
 
-        if(memory_input_value != previously_selected_memory_index)
+        if (memory_input_value != previously_selected_memory_index)
         {
           selectMemory(memory_input_value);
           previously_selected_memory_index = selected_memory_index;
@@ -453,9 +481,9 @@ struct AutobreakStudio : VoxglitchSamplerModule
       }
       else // Listen for manual memory button presses
       {
-        for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
+        for (unsigned int i = 0; i < NUMBER_OF_MEMORY_SLOTS; i++)
         {
-          if(memory_button_triggers[i].process(params[MEMORY_BUTTONS + i].getValue()))
+          if (memory_button_triggers[i].process(params[MEMORY_BUTTONS + i].getValue()))
           {
             selectMemory(i);
           }
@@ -463,7 +491,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
       }
 
       // Highlight only selected memory buttton
-      for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
+      for (unsigned int i = 0; i < NUMBER_OF_MEMORY_SLOTS; i++)
       {
         params[MEMORY_BUTTONS + i].setValue(selected_memory_index == i);
       }
@@ -472,19 +500,17 @@ struct AutobreakStudio : VoxglitchSamplerModule
     {
       // copy_mode is true, so now, when a memory bank is clicked on,
       // copy the currently selected memory to that desination.
-      for(unsigned int i=0; i<NUMBER_OF_MEMORY_SLOTS; i++)
+      for (unsigned int i = 0; i < NUMBER_OF_MEMORY_SLOTS; i++)
       {
-        if(memory_button_triggers[i].process(params[MEMORY_BUTTONS + i].getValue()))
+        if (memory_button_triggers[i].process(params[MEMORY_BUTTONS + i].getValue()))
         {
-          if(i != selected_memory_index)
+          if (i != selected_memory_index)
           {
             autobreak_memory[i].copy(&autobreak_memory[selected_memory_index]);
           }
         }
       }
     }
-
-
 
     // Process reset input
     //
@@ -515,10 +541,9 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
         // set flag to wait for next trigger to continue
         reset_signal = true;
-        clock_ignore_on_reset = (long) (args.sampleRate / 100);
+        clock_ignore_on_reset = (long)(args.sampleRate / 100);
       }
     }
-
 
     // See if the clock input has triggered and store the results
     bool clock_trigger = false;
@@ -529,7 +554,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     // will trigger the sequencers to step.  This time is measured by the
     // clock_ignore_on_reset counter.  When it's 0, that means enough time
     // has passed that the module should pay attention to clock inputs.
-    if(clock_ignore_on_reset == 0)
+    if (clock_ignore_on_reset == 0)
     {
       clock_trigger = clockTrigger.process(inputs[CLOCK_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger);
     }
@@ -543,11 +568,11 @@ struct AutobreakStudio : VoxglitchSamplerModule
     // The reset_signal flag is set when the reset input is triggered.  When reset
     // is triggered, then we want to wait until the next clock pulse before
     // doing any sample output or stepping the sequencers.
-    if(reset_signal == true)
+    if (reset_signal == true)
     {
       // Once reset is triggered, don't run any sequencer stuff until
       // the next clock trigger comes in.
-      if (! clock_trigger)
+      if (!clock_trigger)
       {
         return;
       }
@@ -584,7 +609,6 @@ struct AutobreakStudio : VoxglitchSamplerModule
     }
     Sample *selected_sample = &samples[selected_sample_slot];
 
-
     //
     // Handle BPM detection
     //
@@ -595,7 +619,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
       {
         // Compute BPM based on incoming clock
         double elapsed_time = time_counter - timer_before;
-        if (elapsed_time > 0) bpm = 30.0 / elapsed_time;
+        if (elapsed_time > 0)
+          bpm = 30.0 / elapsed_time;
       }
 
       timer_before = time_counter;
@@ -603,7 +628,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
     // If BPM hasn't been determined yet, wait until it has to start
     // running the engine.
-    if(bpm == 0.0) return;
+    if (bpm == 0.0)
+      return;
 
     //
     // Handle ratcheting
@@ -638,7 +664,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
       ratchet_counter = 0;
     }
 
-    if(ratchetTrigger.process(inputs[RATCHET_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
+    if (ratchetTrigger.process(inputs[RATCHET_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
     {
       ratchet_triggered = true;
       ratchet_counter = 0;
@@ -696,7 +722,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
     // Optionally jump to new breakbeat position
     if (clock_trigger)
     {
-      if(do_not_step_sequencers == false)
+      if (do_not_step_sequencers == false)
       {
         position_sequencer->step();
         sample_sequencer->step();
@@ -737,7 +763,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
     }
 
     // Clear out the do_not_step_sequencers flag
-    if(do_not_step_sequencers == true) do_not_step_sequencers = false;
+    if (do_not_step_sequencers == true)
+      do_not_step_sequencers = false;
 
     // Loop the theoretical_playback_position
     if (theoretical_playback_position >= samples_to_play_per_loop)
