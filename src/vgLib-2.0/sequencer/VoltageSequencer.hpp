@@ -50,7 +50,6 @@ namespace vgLib_v2
         }
 
         // Returns the 'raw' output from the sequencer, which ranges from 0 to 1.
-        // To get the value with the selected range applied, see getOutput()
         double getValue(int index)
         {
             return sequence[index];
@@ -62,7 +61,6 @@ namespace vgLib_v2
             return getValue(getPlaybackPosition());
         }
 
-        // Index should be between 0 and 7
         void setValue(int index, double value)
         {
             float old_value = sequence[index];

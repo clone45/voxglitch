@@ -12,6 +12,7 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     theme.load("digital_sequencer");
     applyTheme();
 
+ 
     // =================== PLACE COMPONENTS ====================================
 
     if (theme.showScrews())
@@ -95,6 +96,7 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     gates_display->box.pos = mm2px(themePos("GATE_SEQUENCER"));
     gates_display->module = module;
     addChild(gates_display);
+
   }
 
   void addLayers()
@@ -117,7 +119,7 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
 
       if (module)
       {
-        text_to_display = std::to_string(module->voltage_sequencers[sequencer_number].sequence_length);
+        text_to_display = std::to_string(module->voltage_sequencers[sequencer_number].getLength());
       }
 
       std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
@@ -148,13 +150,20 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
 
     void onAction(const event::Action &e) override
     {
+      /* 
+
+      TODO: I'll need to convert the snap division indexes to just snap divisions,
+      then use module->voltage_sequencers[i].setSnapDivision(snap_division)
+    
       for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
       {
         module->voltage_sequencers[i].snap_division_index = snap_division_index;
       }
+      */
     }
   };
 
+  /*
   struct AllInputSnapsItem : MenuItem
   {
     DigitalSequencer *module;
@@ -337,6 +346,8 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     }
   };
 
+  */
+
   struct QuickKeyMenu : MenuItem
   {
     Menu *createChildMenu() override
@@ -420,6 +431,7 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     {
       Menu *menu = new Menu;
 
+      /* TODO: restore this
       OutputRangeItem *output_range_item = createMenuItem<OutputRangeItem>("Output Range", RIGHT_ARROW);
       output_range_item->sequencer_number = this->sequencer_number;
       output_range_item->module = module;
@@ -434,6 +446,7 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
       sample_and_hold_item->sequencer_number = this->sequencer_number;
       sample_and_hold_item->module = module;
       menu->addChild(sample_and_hold_item);
+      */
 
       return menu;
     }
@@ -450,10 +463,12 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     menu->addChild(createMenuLabel("Sequencer Settings"));
 
     // Add "all" sequencer settings
+    /* TODO: restore this
     AllSequencersItem *all_sequencer_items;
     all_sequencer_items = createMenuItem<AllSequencersItem>("All Sequencers", RIGHT_ARROW);
     all_sequencer_items->module = module;
     menu->addChild(all_sequencer_items);
+    */
 
     // Add individual sequencer settings
     SequencerItem *sequencer_items[6];

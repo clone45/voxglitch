@@ -3,8 +3,6 @@ namespace vgLib_v2
 
     struct GateSequencer : Sequencer
     {
-        // std::array<bool, MAX_SEQUENCER_STEPS> sequence;
-
         std::vector<bool> sequence;
         HistoryManager history_manager;
         bool default_value = false;

@@ -23,17 +23,16 @@ struct GateSequencerDisplay : SequencerDisplay
 
       if(module)
       {
-        for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
+        for(unsigned int i=0; i < module->selected_gate_sequencer->getMaxLength(); i++)
         {
           value = module->selected_gate_sequencer->getValue(i);
 
           // Draw grey background bar
-          if(i < module->selected_gate_sequencer->getLength()) {
-            // bar_color = nvgRGBA(60, 60, 64, 255);
+          // if(i < module->selected_gate_sequencer->getWindowEnd()) {
+          if(i < 32) {
             bar_color = brightness(nvgRGBA(60, 60, 64, 255), settings::rackBrightness);
           }
           else {
-            // bar_color = nvgRGBA(45, 45, 45, 255);
             bar_color = brightness(nvgRGBA(45, 45, 45, 255), settings::rackBrightness);
           }
           drawBar(vg, i, GATE_BAR_HEIGHT, GATES_DRAW_AREA_HEIGHT, bar_color);
@@ -44,7 +43,8 @@ struct GateSequencerDisplay : SequencerDisplay
           {
             bar_color = nvgRGBA(255, 255, 255, 250);
           }
-          else if(i < module->selected_gate_sequencer->getLength())
+
+          else if(i < module->selected_gate_sequencer->getWindowEnd())
           {
             bar_color = nvgRGBA(255, 255, 255, 150);
           }
@@ -67,7 +67,7 @@ struct GateSequencerDisplay : SequencerDisplay
       {
         int demo_sequence[32] = {1,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,1,1,0,0,0,0};
 
-        for(unsigned int i=0; i < MAX_SEQUENCER_STEPS; i++)
+        for(unsigned int i=0; i < module->selected_gate_sequencer->getWindowEnd(); i++)
         {
           value = demo_sequence[i];
 
@@ -132,7 +132,7 @@ struct GateSequencerDisplay : SequencerDisplay
 
     int drag_bar_x_index = getIndexFromX(drag_position.x);
 
-    if(drag_bar_x_index < 0 || drag_bar_x_index > (MAX_SEQUENCER_STEPS - 1))
+    if(drag_bar_x_index < 0 || drag_bar_x_index > (module->selected_gate_sequencer->getMaxLength() - 1))
     {
       drag_bar_x_index = -1;
       this->mouse_lock = false;
@@ -181,7 +181,7 @@ struct GateSequencerDisplay : SequencerDisplay
 
   double barWidth()
   {
-    return((DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING);
+    return((DRAW_AREA_WIDTH / module->selected_gate_sequencer->getMaxLength()) - BAR_HORIZONTAL_PADDING);
   }
 
 };
