@@ -36,6 +36,8 @@ namespace vgLib_v2
         unsigned int snap_division = 0;
         HistoryManager history_manager;
 
+        double range_low = 0.0;
+        double range_high = 10.0;
 
         // constructor
         VoltageSequencer(unsigned int sequence_length = 32, float default_value = 0.0)
@@ -49,6 +51,19 @@ namespace vgLib_v2
             sequence.assign(length, value);
         }
 
+        // Method to set the voltage range
+        void setRange(double low, double high)
+        {
+            range_low = low;
+            range_high = high;
+        }
+
+        // Modified applyRange method
+        double applyRange(double value)
+        {
+            return range_low + value * (range_high - range_low);
+        }
+
         // Returns the 'raw' output from the sequencer, which ranges from 0 to 1.
         double getValue(int index)
         {
@@ -60,6 +75,18 @@ namespace vgLib_v2
         {
             return getValue(getPlaybackPosition());
         }
+
+        // Returns the value with the range applied, in terms of voltage
+        double getVoltage(int index)
+        {
+            double internalValue = sequence[index];
+            return applyRange(internalValue);
+        }
+
+        double getVoltage()
+        {
+            return getVoltage(getPlaybackPosition());
+        }     
 
         void setValue(int index, double value)
         {

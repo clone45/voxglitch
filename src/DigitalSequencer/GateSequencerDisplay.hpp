@@ -28,8 +28,7 @@ struct GateSequencerDisplay : SequencerDisplay
           value = module->selected_gate_sequencer->getValue(i);
 
           // Draw grey background bar
-          // if(i < module->selected_gate_sequencer->getWindowEnd()) {
-          if(i < 32) {
+          if(i < module->selected_gate_sequencer->getWindowEnd()) {
             bar_color = brightness(nvgRGBA(60, 60, 64, 255), settings::rackBrightness);
           }
           else {
@@ -67,7 +66,7 @@ struct GateSequencerDisplay : SequencerDisplay
       {
         int demo_sequence[32] = {1,0,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,1,1,0,0,0,0};
 
-        for(unsigned int i=0; i < module->selected_gate_sequencer->getWindowEnd(); i++)
+        for(unsigned int i=0; i < 32; i++)
         {
           value = demo_sequence[i];
 

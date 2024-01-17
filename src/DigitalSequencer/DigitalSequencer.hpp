@@ -439,7 +439,7 @@ struct DigitalSequencer : VoxglitchModule
         bool trigger_output_pulse = false;
         this->sample_rate = args.sampleRate;
 
-        /*
+
         //
         // See if someone pressed one of the sequence selection buttons
         //
@@ -577,13 +577,7 @@ struct DigitalSequencer : VoxglitchModule
                 continue; // Skip setting voltage when sample_and_hold is true and getValue() is false
             }
 
-            float value = voltage_sequencers[i].getValue();
-
-            // TODO
-            // Value will range from 0 to 1. Map the value to the voltage range
-            //
-
-            float voltage = value;
+            float voltage = voltage_sequencers[i].getVoltage();
 
             outputs[voltage_outputs[i]].setVoltage(voltage);
 
@@ -628,6 +622,5 @@ struct DigitalSequencer : VoxglitchModule
         if (clock_ignore_on_reset > 0) clock_ignore_on_reset--;
         if (tooltip_timer > 0) tooltip_timer--;
 
-        */
     }
 };
