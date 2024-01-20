@@ -9,16 +9,15 @@ extern Plugin* pluginInstance;
 // Declare each Model, defined in each module source file
 // extern Model* modelMyModule;
 
-/*
+
 extern Model *modelArpSeq;
 extern Model *modelAutobreak;
 extern Model *modelAutobreakStudio;
 extern Model *modelByteBeat;
 extern Model *modelDigitalProgrammer;
-*/
 extern Model *modelDigitalSequencer;
-/*
 extern Model *modelDigitalSequencerXP;
+/*
 extern Model *modelDrumRandomizer;
 extern Model *modelGlitchSequencer;
 extern Model *modelGhosts;

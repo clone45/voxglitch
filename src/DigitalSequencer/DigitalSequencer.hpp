@@ -14,10 +14,12 @@ struct DigitalSequencer : VoxglitchModule
 
     unsigned int tooltip_timer = 0;
 
-    VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
+    // VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
+    std::vector<VoltageSequencer> voltage_sequencers;
     VoltageSequencer *selected_voltage_sequencer;
 
-    GateSequencer gate_sequencers[NUMBER_OF_SEQUENCERS];
+    // GateSequencer gate_sequencers[NUMBER_OF_SEQUENCERS];
+    std::vector<GateSequencer> gate_sequencers;
     GateSequencer *selected_gate_sequencer;
 
     unsigned int selected_sequencer_index = 0;
@@ -101,6 +103,9 @@ struct DigitalSequencer : VoxglitchModule
     //
     DigitalSequencer()
     {
+        voltage_sequencers.resize(NUMBER_OF_SEQUENCERS);
+        gate_sequencers.resize(NUMBER_OF_SEQUENCERS);
+
         voltage_outputs[0] = SEQ1_CV_OUTPUT;
         voltage_outputs[1] = SEQ2_CV_OUTPUT;
         voltage_outputs[2] = SEQ3_CV_OUTPUT;
@@ -194,135 +199,17 @@ struct DigitalSequencer : VoxglitchModule
     ==================================================================================================================================================
     */
 
-    /*
-json_t *dataToJson() override
-{
-    json_t *json_root = json_object();
-
-    json_t *sequences_json_array = json_array();
-
-    for (int sequencer_number = 0; sequencer_number < NUMBER_OF_SEQUENCERS; sequencer_number++)
-    {
-        // create a string such as sequencer_1
-        std::string sequencer_name = "sequencer_" + std::to_string(sequencer_number);
-
-        json_object_set_new(sequences_json_array, sequencer_name.c_str(), JSON::serializeVoltageSequencer(this->voltage_sequencers[sequencer_number]));
-    }
-
-
-
-      //
-      // Save patterns
-      //
-
-      json_t *sequences_json_array = json_array();
-
-      for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
-      {
-        json_t *pattern_json_array = json_array();
-
-        for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
-        {
-          json_array_append_new(pattern_json_array, json_real(this->voltage_sequencers[sequencer_number].getValue(i)));
-        }
-
-        json_array_append_new(sequences_json_array, pattern_json_array);
-      }
-
-      json_object_set(json_root, "patterns", sequences_json_array);
-      json_decref(sequences_json_array);
-
-
-      //
-      // Save gates
-      //
-
-      json_t *gates_json_array = json_array();
-
-      for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
-      {
-        json_t *pattern_json_array = json_array();
-
-        for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
-        {
-          json_array_append_new(pattern_json_array, json_integer(this->gate_sequencers[sequencer_number].getValue(i)));
-        }
-
-        json_array_append_new(gates_json_array, pattern_json_array);
-      }
-
-      json_object_set(json_root, "gates", gates_json_array);
-      json_decref(gates_json_array);
-
-      //
-      // Save sequencer lengths
-      //
-      json_t *sequencer_lengths_json_array = json_array();
-      for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
-      {
-        json_array_append_new(sequencer_lengths_json_array, json_integer(this->voltage_sequencers[sequencer_number].getLength()));
-      }
-      json_object_set(json_root, "lengths", sequencer_lengths_json_array);
-      json_decref(sequencer_lengths_json_array);
-
-      //
-      // Save sequencer voltage range index selections
-      //
-      json_t *sequencer_voltage_range_json_array = json_array();
-      for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
-      {
-        json_array_append_new(sequencer_voltage_range_json_array, json_integer(this->voltage_sequencers[sequencer_number].voltage_range_index));
-      }
-      json_object_set(json_root, "voltage_ranges", sequencer_voltage_range_json_array);
-      json_decref(sequencer_voltage_range_json_array);
-
-      //
-      // Save sequencer snap index selections
-      //
-      json_t *sequencer_snap_json_array = json_array();
-      for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
-      {
-        json_array_append_new(sequencer_snap_json_array, json_integer(this->voltage_sequencers[sequencer_number].snap_division_index));
-      }
-      json_object_set(json_root, "snap_divisions", sequencer_snap_json_array);
-      json_decref(sequencer_snap_json_array);
-
-      //
-      // Save sequencer sample and hold selections
-      //
-      json_t *sequencer_sh_json_array = json_array();
-      for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
-      {
-        json_array_append_new(sequencer_sh_json_array, json_integer(this->voltage_sequencers[sequencer_number].sample_and_hold));
-      }
-      json_object_set(json_root, "sample_and_hold", sequencer_sh_json_array);
-      json_decref(sequencer_sh_json_array);
-
-
-      // Save Legacy Reset mode
-      json_object_set_new(json_root, "legacy_reset", json_integer(legacy_reset));
-
-    return json_root;
-}
-      */
 
     json_t *dataToJson() override
     {
         json_t *json_root = json_object();
         
         // Save the voltage sequencers
-        json_t *voltage_sequences_json_array = json_array();
-        for (int i = 0; i < NUMBER_OF_SEQUENCERS; i++) {
-            json_array_append_new(voltage_sequences_json_array, this->voltage_sequencers[i].serialize());
-        }
-        json_object_set_new(json_root, "voltage_sequencers", voltage_sequences_json_array);
+        json_object_set_new(json_root, "voltage_sequencers", SEQUENCERS::serialize(this->voltage_sequencers));
+        json_object_set_new(json_root, "gate_sequencers", SEQUENCERS::serialize(this->gate_sequencers));
 
-        // Save the gate sequencers
-        json_t *gate_sequences_json_array = json_array();
-        for (int i = 0; i < NUMBER_OF_SEQUENCERS; i++) {
-            json_array_append_new(gate_sequences_json_array, this->gate_sequencers[i].serialize());
-        }
-        json_object_set_new(json_root, "gate_sequencers", gate_sequences_json_array);
+        // Save Legacy Reset mode
+        json_object_set_new(json_root, "legacy_reset", json_boolean(legacy_reset));
 
         return json_root;
     }
@@ -330,38 +217,11 @@ json_t *dataToJson() override
     void dataFromJson(json_t *json_root) override
     {
         // Load the voltage sequencers
-        json_t *voltage_sequences_json_array = json_object_get(json_root, "voltage_sequencers");
-
-        if (voltage_sequences_json_array && json_is_array(voltage_sequences_json_array))
-        {
-            size_t index;
-            json_t *json_sequencer;
-
-            json_array_foreach(voltage_sequences_json_array, index, json_sequencer)
-            {
-                if (index < NUMBER_OF_SEQUENCERS)
-                {
-                    this->voltage_sequencers[index].deserialize(json_sequencer);
-                }
-            }
-        }
-
-        // Load the gate sequencers
-        json_t *gate_sequences_json_array = json_object_get(json_root, "gate_sequencers");
-
-        if (gate_sequences_json_array && json_is_array(gate_sequences_json_array))
-        {
-            size_t index;
-            json_t *json_sequencer;
-
-            json_array_foreach(gate_sequences_json_array, index, json_sequencer)
-            {
-                if (index < NUMBER_OF_SEQUENCERS)
-                {
-                    this->gate_sequencers[index].deserialize(json_sequencer);
-                }
-            }
-        }
+        SEQUENCERS::deserialize(this->voltage_sequencers, json_object_get(json_root, "voltage_sequencers"));
+        SEQUENCERS::deserialize(this->gate_sequencers, json_object_get(json_root, "gate_sequencers"));
+        
+        // Load Legacy Reset mode
+        legacy_reset = JSON::getBoolean(json_root, "legacy_reset");
     }
 
     /*

@@ -1,23 +1,79 @@
 {
-    "slug": "voxglitch",
-    "name": "Voxglitch",
-    "version": "2.28.0",
-    "license": "GPL-3.0-or-later",
-    "brand": "Voxglitch",
-    "author": "Bret Truchan",
-    "authorEmail": "clone45@gmail.com",
-    "authorUrl": "",
-    "pluginUrl": "https://github.com/clone45/voxglitch",
-    "manualUrl": "https://github.com/clone45/voxglitch",
-    "sourceUrl": "https://github.com/clone45/voxglitch",
-    "donateUrl": "https://www.patreon.com/voxglitch",
-    "changelogUrl": "https://github.com/clone45/voxglitch/blob/master/docs/changelog.md",
-    "modules": [
+  "slug": "voxglitch",
+  "name": "Voxglitch",
+  "version": "2.28.0",
+  "license": "GPL-3.0-or-later",
+  "brand": "Voxglitch",
+  "author": "Bret Truchan",
+  "authorEmail": "clone45@gmail.com",
+  "authorUrl": "",
+  "pluginUrl": "https://github.com/clone45/voxglitch",
+  "manualUrl": "https://github.com/clone45/voxglitch",
+  "sourceUrl": "https://github.com/clone45/voxglitch",
+  "donateUrl": "https://www.patreon.com/voxglitch",
+  "changelogUrl": "https://github.com/clone45/voxglitch/blob/master/docs/changelog.md",
+  "modules": [
     {
-        "slug": "digitalsequencer",
-        "name": "Digital Sequencer",
-        "description": "Six-in-one cv/gate sequencers with independent control over clock division and sequence length.",
-        "tags": ["Sequencer"]
+      "slug": "arpseq",
+      "name": "ArpSeq",
+      "description": "Arpeggiator and Sequencer Hybrid",
+      "tags": [
+        "Utility",
+        "Sequencer"
+      ],
+      "manualUrl": "https://docs.google.com/document/d/1eZ3NOTOMBoTuiFCpqTsKA6RBkN2Fk8rBIJbEp-pRykA/edit?usp=sharing"
+    },
+    {
+      "slug": "autobreak",
+      "name": "Autobreak",
+      "description": "Automatic breakbeat sample chopper",
+      "tags": [
+        "Sampler",
+        "Drum"
+      ]
+    },
+    {
+      "slug": "AutobreakStudio",
+      "name": "Autobreak Studio",
+      "description": "Advanced automatic breakbeat sample chopper",
+      "tags": [
+        "Sampler",
+        "Drum"
+      ]
+    },
+    {
+      "slug": "bytebeat",
+      "name": "Byte Beat",
+      "description": "Bytebeat player with built-in presets.",
+      "tags": [
+        "Oscillator"
+      ]
+    },
+    {
+      "slug": "digitalprogrammer",
+      "name": "Digital Programmer",
+      "description": "16 channel polyphonic programmer with built-in bank memory slots",
+      "tags": [
+        "Utility",
+        "Polyphonic"
+      ]
+    },
+    {
+      "slug": "digitalsequencer",
+      "name": "Digital Sequencer",
+      "description": "Six-in-one cv/gate sequencers with independent control over clock division and sequence length.",
+      "tags": [
+        "Sequencer"
+      ]
+    },
+    {
+      "slug": "digitalsequencerxp",
+      "name": "Digital Sequencer XP",
+      "description": "Polyphonic version of the Digital Sequencer.  Sixteen-in-one cv/gate sequencers with independent control over clock division and sequence length.",
+      "tags": [
+        "Sequencer",
+        "Polyphonic"
+      ]
     }
   ]
 }

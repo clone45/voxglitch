@@ -18,16 +18,19 @@
 #include <fstream>
 #include <array>
 
-#include "vgLib-1.0/constants.h"
-#include "vgLib-1.0/Theme.hpp"
-#include "vgLib-1.0/components/VoxglitchComponents.hpp"
-#include "vgLib-1.0/sequencer/Sequencer.hpp"
-#include "vgLib-1.0/sequencer/VoltageSequencer.hpp"
+#include "vgLib-2.0/constants.h"
+#include "vgLib-2.0/Theme.hpp"
+#include "vgLib-2.0/components/VoxglitchComponents.hpp"
+#include "vgLib-2.0/sequencer/Sequencer.hpp"
+#include "vgLib-2.0/sequencer/VoltageSequencer.hpp"
+#include "vgLib-2.0/sequencer/GateSequencer.hpp"
+#include "vgLib-2.0/helpers/JSON.hpp"
+#include "vgLib-2.0/helpers/SEQUENCERS.hpp"
 
-using namespace vgLib_v1;
+using namespace vgLib_v2;
 
 #include "DigitalSequencerXP/defines.h"
-#include "DigitalSequencerXP/GateSequencer.hpp"
+
 #include "DigitalSequencerXP/DigitalSequencerXP.hpp"
 #include "DigitalSequencerXP/SequencerDisplay.hpp"
 #include "DigitalSequencerXP/VoltageSequencerDisplayXP.hpp"

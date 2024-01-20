@@ -122,12 +122,12 @@ namespace vgLib_v2
             sequence_playback_position = 0;
         }
 
-        int getPlaybackPosition()
+        int getPlaybackPosition() const
         {
             return (sequence_playback_position);
         }
 
-        int getPosition()
+        int getPosition() const
         {
             return (sequence_playback_position);
         }
@@ -137,7 +137,7 @@ namespace vgLib_v2
             this->window_start = clamp(window_start, 0, this->window_end);
         }
 
-        int getWindowStart()
+        int getWindowStart() const
         {
             return (window_start);
         }
@@ -147,12 +147,12 @@ namespace vgLib_v2
             this->window_end = clamp(window_end, this->window_start, this->max_length);
         }
 
-        bool isWithinWindow(int position)
+        bool isWithinWindow(int position) const
         {
             return ((position >= window_start) && (position <= window_end));
         }
 
-        int getWindowEnd()
+        int getWindowEnd() const
         {
             return (window_end);
         }
@@ -162,7 +162,7 @@ namespace vgLib_v2
             this->max_length = max_length;
         }
 
-        int getMaxLength()
+        int getMaxLength() const
         {
             return (max_length);
         }
@@ -190,7 +190,7 @@ namespace vgLib_v2
         }
 
         // serialize
-        virtual json_t *serialize()
+        virtual json_t *serialize() const
         {
             json_t *sequencer_data_json = json_object();
 

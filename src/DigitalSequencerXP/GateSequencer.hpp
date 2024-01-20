@@ -1,3 +1,4 @@
+/*
 struct GateSequencer : Sequencer
 {
   std::array<bool, MAX_SEQUENCER_STEPS> sequence;
@@ -63,3 +64,4 @@ struct GateSequencer : Sequencer
     sequence.fill(0.0);
   }
 };
+*/

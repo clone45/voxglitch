@@ -64,6 +64,7 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
     DigitalSequencerXP *module = dynamic_cast<DigitalSequencerXP *>(this->module);
     assert(module);
 
+    /*
     menu->addChild(new MenuEntry); // For spacing only
     menu->addChild(createMenuLabel("Sequencer Settings"));
 
@@ -90,6 +91,7 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
 
     menu->addChild(new MenuEntry); // For spacing only
     menu->addChild(createMenuItem<QuickKeyMenu>("Quick Key Reference", RIGHT_ARROW));
+    */
   }
 
   void step() override
@@ -161,14 +163,15 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
   // ==========================================================================================
   //
 
+  /*
   struct AllInputSnapsValueItem : MenuItem {
     DigitalSequencerXP *module;
-    int snap_division_index = 0;
+    int snap_division = 0;
 
     void onAction(const event::Action &e) override {
       for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
       {
-        module->voltage_sequencers[i].snap_division_index = snap_division_index;
+        module->voltage_sequencers[i].setSnapDivision(snap_division);
       }
     }
   };
@@ -185,7 +188,7 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
       {
         AllInputSnapsValueItem *all_input_snaps_value_item = createMenuItem<AllInputSnapsValueItem>(module->snap_division_names[i]);
         all_input_snaps_value_item->module = module;
-        all_input_snaps_value_item->snap_division_index = i;
+        all_input_snaps_value_item->snap_division = i;
         menu->addChild(all_input_snaps_value_item);
       }
 
@@ -195,12 +198,12 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
 
   struct AllOutputRangesValueItem : MenuItem {
     DigitalSequencerXP *module;
-    int range_index = 0;
+    int voltage_rage = 0;
 
     void onAction(const event::Action &e) override {
       for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
       {
-        module->voltage_sequencers[i].voltage_range_index = range_index;
+        module->voltage_sequencers[i].setVoltageRange(voltage_rage);
       }
     }
   };
@@ -215,7 +218,7 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
       {
         AllOutputRangesValueItem *all_output_ranges_value_item = createMenuItem<AllOutputRangesValueItem>(module->voltage_range_names[i]);
         all_output_ranges_value_item->module = module;
-        all_output_ranges_value_item->range_index = i;
+        all_output_ranges_value_item->voltage_range = i;
         menu->addChild(all_output_ranges_value_item);
       }
 
@@ -279,11 +282,11 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
 
   struct InputSnapValueItem : MenuItem {
     DigitalSequencerXP *module;
-    int snap_division_index = 0;
+    int snap_division = 0;
     int sequencer_number = 0;
 
     void onAction(const event::Action &e) override {
-      module->voltage_sequencers[sequencer_number].snap_division_index = snap_division_index;
+      module->voltage_sequencers[sequencer_number].setSnapDivision(snap_division);
     }
   };
 
@@ -296,9 +299,9 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
 
       for (unsigned int i=0; i < NUMBER_OF_SNAP_DIVISIONS; i++)
       {
-        InputSnapValueItem *input_snap_value_item = createMenuItem<InputSnapValueItem>(module->snap_division_names[i], CHECKMARK(module->voltage_sequencers[sequencer_number].snap_division_index == i));
+        InputSnapValueItem *input_snap_value_item = createMenuItem<InputSnapValueItem>(module->snap_division_names[i], CHECKMARK(module->voltage_sequencers[sequencer_number].snap_division == i));
         input_snap_value_item->module = module;
-        input_snap_value_item->snap_division_index = i;
+        input_snap_value_item->snap_division = i;
         input_snap_value_item->sequencer_number = this->sequencer_number;
         menu->addChild(input_snap_value_item);
       }
@@ -329,11 +332,11 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
   struct OutputRangeValueItem : MenuItem {
 
     DigitalSequencerXP *module;
-    int range_index = 0;
+    int voltage_range = 0;
     int sequencer_number = 0;
 
     void onAction(const event::Action &e) override {
-      module->voltage_sequencers[sequencer_number].voltage_range_index = range_index;
+      module->voltage_sequencers[sequencer_number].setVoltageRange(voltage_range);
     }
   };
 
@@ -346,9 +349,9 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
 
       for (unsigned int i=0; i < NUMBER_OF_VOLTAGE_RANGES; i++)
       {
-        OutputRangeValueItem *output_range_value_menu_item = createMenuItem<OutputRangeValueItem>(module->voltage_range_names[i], CHECKMARK(module->voltage_sequencers[sequencer_number].voltage_range_index == i));
+        OutputRangeValueItem *output_range_value_menu_item = createMenuItem<OutputRangeValueItem>(module->voltage_range_names[i], CHECKMARK(module->voltage_sequencers[sequencer_number].voltage_range == i));
         output_range_value_menu_item->module = module;
-        output_range_value_menu_item->range_index = i;
+        output_range_value_menu_item->voltage_range = i;
         output_range_value_menu_item->sequencer_number = this->sequencer_number;
         menu->addChild(output_range_value_menu_item);
       }
@@ -412,6 +415,7 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
     }
   };
 
+
   struct SequencerItem : MenuItem {
     DigitalSequencerXP *module;
     unsigned int sequencer_number = 0;
@@ -454,5 +458,6 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
       return menu;
     }
   };
+    */
 
 };

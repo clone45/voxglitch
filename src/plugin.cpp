@@ -5,18 +5,16 @@ Plugin* pluginInstance;
 
 void init(Plugin* p) {
   pluginInstance = p;
-  /*
+
   p->addModel(modelArpSeq);
   p->addModel(modelAutobreak);
-  p->addModel(modelAutobreakStudio);  
+  p->addModel(modelAutobreakStudio); 
   p->addModel(modelByteBeat);
   p->addModel(modelDigitalProgrammer);
-  */
-
   p->addModel(modelDigitalSequencer);
+  p->addModel(modelDigitalSequencerXP);
 
   /*
-  p->addModel(modelDigitalSequencerXP);
   p->addModel(modelDrumRandomizer);  
   p->addModel(modelGlitchSequencer);
   p->addModel(modelGhosts);

@@ -1,6 +1,7 @@
 #include <iomanip>
 
 #include "VoltageSequencerHistory.hpp"
+#include "../helpers/JSON.hpp"
 
 namespace vgLib_v2
 {
@@ -45,31 +46,31 @@ namespace vgLib_v2
         }
 
         // Modified applyRange method
-        double applyRange(double value)
+        double applyRange(double value) const
         {
             return range_low + value * (range_high - range_low);
         }
 
         // Returns the 'raw' output from the sequencer, which ranges from 0 to 1.
-        double getValue(int index)
+        double getValue(int index) const
         {
             return sequence[index];
         }
 
         // Same as GetValue(int index), but if no index is provided, returns the value at the current playback position.
-        double getValue()
+        double getValue() const
         {
             return getValue(getPlaybackPosition());
         }
 
         // Returns the value with the range applied, in terms of voltage
-        double getVoltage(int index)
+        double getVoltage(int index) const
         {
             double internalValue = sequence[index];
             return applyRange(internalValue);
         }
 
-        double getVoltage()
+        double getVoltage() const
         {
             return getVoltage(getPlaybackPosition());
         }     
@@ -121,7 +122,7 @@ namespace vgLib_v2
             this->polarity = new_polarity;
         }
 
-        Polarity getPolarity()
+        Polarity getPolarity() const
         {
             return this->polarity;
         }
@@ -132,7 +133,7 @@ namespace vgLib_v2
             this->bipolar_default_value = bipolar_default_value;
         }
 
-        double getDefault()
+        double getDefault() const
         {
             if (this->polarity == UNIPOLAR)
             {
@@ -375,7 +376,7 @@ namespace vgLib_v2
             this->randomizeInWindow();
         }
 
-        json_t *serialize() override
+        json_t *serialize() const override
         {
             json_t* voltage_sequencer_json = Sequencer::serialize();
 
@@ -426,6 +427,13 @@ namespace vgLib_v2
                 }
             }
 
+            this->snap_division = JSON::getInteger(json, "snap_division");
+            this->range_low = JSON::getNumber(json, "range_low");
+            this->range_high = JSON::getNumber(json, "range_high");
+            this->sample_and_hold = JSON::getBoolean(json, "sample_and_hold");
+
+
+            /*
             // Get the polarity
             json_t* polarity_json = json_object_get(json, "polarity");
             if (polarity_json && json_is_integer(polarity_json))
@@ -460,6 +468,8 @@ namespace vgLib_v2
             {
                 this->sample_and_hold = json_boolean_value(sample_and_hold_json);
             }
+            */
+
         }
 
     };
