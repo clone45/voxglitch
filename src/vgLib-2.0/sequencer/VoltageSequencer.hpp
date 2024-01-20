@@ -410,8 +410,6 @@ namespace vgLib_v2
         {
             Sequencer::deserialize(json);
 
-
-
             // Get the values array
             json_t* values_array_json = json_object_get(json, "values");
             if (values_array_json && json_is_array(values_array_json))

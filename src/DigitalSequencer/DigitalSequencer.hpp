@@ -309,34 +309,56 @@ json_t *dataToJson() override
     json_t *dataToJson() override
     {
         json_t *json_root = json_object();
-        json_t *sequences_json_array = json_array();
-
-        for (int sequencer_number = 0; sequencer_number < NUMBER_OF_SEQUENCERS; sequencer_number++)
-        {
-            // Append the serialized VoltageSequencer to the sequences array
-            json_array_append_new(sequences_json_array, this->voltage_sequencers[sequencer_number].serialize());
+        
+        // Save the voltage sequencers
+        json_t *voltage_sequences_json_array = json_array();
+        for (int i = 0; i < NUMBER_OF_SEQUENCERS; i++) {
+            json_array_append_new(voltage_sequences_json_array, this->voltage_sequencers[i].serialize());
         }
+        json_object_set_new(json_root, "voltage_sequencers", voltage_sequences_json_array);
 
-        // Add the array to the root object under the key "sequencers"
-        json_object_set_new(json_root, "voltage_sequencers", sequences_json_array);
+        // Save the gate sequencers
+        json_t *gate_sequences_json_array = json_array();
+        for (int i = 0; i < NUMBER_OF_SEQUENCERS; i++) {
+            json_array_append_new(gate_sequences_json_array, this->gate_sequencers[i].serialize());
+        }
+        json_object_set_new(json_root, "gate_sequencers", gate_sequences_json_array);
 
         return json_root;
     }
 
     void dataFromJson(json_t *json_root) override
     {
-        json_t *sequences_json_array = json_object_get(json_root, "voltage_sequencers");
+        // Load the voltage sequencers
+        json_t *voltage_sequences_json_array = json_object_get(json_root, "voltage_sequencers");
 
-        if (sequences_json_array && json_is_array(sequences_json_array))
+        if (voltage_sequences_json_array && json_is_array(voltage_sequences_json_array))
         {
             size_t index;
             json_t *json_sequencer;
 
-            json_array_foreach(sequences_json_array, index, json_sequencer)
+            json_array_foreach(voltage_sequences_json_array, index, json_sequencer)
             {
                 if (index < NUMBER_OF_SEQUENCERS)
                 {
                     this->voltage_sequencers[index].deserialize(json_sequencer);
+                }
+            }
+        }
+
+        // Load the gate sequencers
+        json_t *gate_sequences_json_array = json_object_get(json_root, "gate_sequencers");
+
+        if (gate_sequences_json_array && json_is_array(gate_sequences_json_array))
+        {
+            size_t index;
+            json_t *json_sequencer;
+
+            json_array_foreach(gate_sequences_json_array, index, json_sequencer)
+            {
+                if (index < NUMBER_OF_SEQUENCERS)
+                {
+                    this->gate_sequencers[index].deserialize(json_sequencer);
                 }
             }
         }

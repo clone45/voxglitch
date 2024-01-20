@@ -110,6 +110,46 @@ namespace vgLib_v2
             history_manager.endSession();
         }
 
+        void deserialize(json_t* json) override 
+        {
+            Sequencer::deserialize(json);
+
+            json_t* values_array_json = json_object_get(json, "values");
+            if (values_array_json && json_is_array(values_array_json))
+            {
+                json_t* value_json;
+                unsigned int index;
+
+                json_array_foreach(values_array_json, index, value_json)
+                {
+                    if (index < (unsigned int) getMaxLength())
+                    {
+                        if (json_is_boolean(value_json))
+                        {
+                            bool value = json_boolean_value(value_json);
+                            setValue(index, value);
+                        }
+                    }
+                }
+            }
+        }
+
+        json_t *serialize() override
+        {
+            json_t* gate_sequencer_json = Sequencer::serialize();
+
+            json_t *values_array = json_array();
+            for (unsigned int column = 0; column < (unsigned int) getMaxLength(); column++)
+            {
+                bool value = getValue(column);
+                json_array_append_new(values_array, json_boolean(value));
+            }
+
+            json_object_set_new(gate_sequencer_json, "values", values_array);
+
+            return gate_sequencer_json;
+        }
+
 
     };
 
