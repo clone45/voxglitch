@@ -5,27 +5,13 @@
 namespace vgLib_v2
 {
 
-    struct VoltageSequencer : Sequencer
+    struct VoltageSequencer : public Sequencer
     {
         enum Polarity
         {
             UNIPOLAR, // = 0
             BIPOLAR   // = 1
         };
-
-        /* TODO: possibly implement defaults this way, because default values for things such as
-                sample and hold and snap division are not currently stored, and thus cannot be
-                _restored_ when the sequencer is reset.
-
-        struct defaults 
-        {
-            Polarity polarity = UNIPOLAR;
-            double unipolar_value = 0.0;
-            double bipolar_value = 0.0;
-            unsigned int snap_division = 0;
-            bool sample_and_hold = false;
-        };
-        */
 
         double unipolar_default_value = 0.0;
         double bipolar_default_value = 0.0;
@@ -387,6 +373,95 @@ namespace vgLib_v2
         void randomize()
         {
             this->randomizeInWindow();
+        }
+
+        json_t *serialize() override
+        {
+            json_t* voltage_sequencer_json = Sequencer::serialize();
+
+            // Add specific attributes for VoltageSequencer
+            json_object_set_new(voltage_sequencer_json, "polarity", json_integer(getPolarity()));
+            json_object_set_new(voltage_sequencer_json, "snap_division", json_integer(snap_division));
+            json_object_set_new(voltage_sequencer_json, "range_low", json_real(range_low));
+            json_object_set_new(voltage_sequencer_json, "range_high", json_real(range_high));
+            json_object_set_new(voltage_sequencer_json, "sample_and_hold", json_boolean(sample_and_hold));
+
+            // Create a JSON array for the sequence values
+            //
+            // Just a quick reminder on naming conventions: Values for a voltage sequencer always
+            // range between 0 and 1.  The "voltages" are the values mapped based on range and
+            // polarity.  This is why the JSON array is called "values" and not "voltages".
+            //
+
+            json_t *values_array = json_array();
+            for (unsigned int column = 0; column < (unsigned int) getMaxLength(); column++)
+            {
+                json_array_append_new(values_array, json_real(getValue(column)));
+            }
+
+            // Add sequence array and other properties to the JSON object
+            json_object_set_new(voltage_sequencer_json, "values", values_array);
+
+            return voltage_sequencer_json;
+        }
+
+        // Deserialize a VoltageSequencer from a JSON object
+        void deserialize(json_t* json) override 
+        {
+            Sequencer::deserialize(json);
+
+
+
+            // Get the values array
+            json_t* values_array_json = json_object_get(json, "values");
+            if (values_array_json && json_is_array(values_array_json))
+            {
+                json_t* value_json;
+                unsigned int index;
+
+                json_array_foreach(values_array_json, index, value_json)
+                {
+                    if (index < (unsigned int) getMaxLength())
+                    {
+                        setValue(index, json_real_value(value_json));
+                    }
+                }
+            }
+
+            // Get the polarity
+            json_t* polarity_json = json_object_get(json, "polarity");
+            if (polarity_json && json_is_integer(polarity_json))
+            {
+                this->polarity = (Polarity) json_integer_value(polarity_json);
+            }
+
+            // Get the snap division
+            json_t* snap_division_json = json_object_get(json, "snap_division");
+            if (snap_division_json && json_is_integer(snap_division_json))
+            {
+                this->snap_division = json_integer_value(snap_division_json);
+            }
+
+            // Get the range low
+            json_t* range_low_json = json_object_get(json, "range_low");
+            if (range_low_json && json_is_real(range_low_json))
+            {
+                this->range_low = json_real_value(range_low_json);
+            }
+
+            // Get the range high
+            json_t* range_high_json = json_object_get(json, "range_high");
+            if (range_high_json && json_is_real(range_high_json))
+            {
+                this->range_high = json_real_value(range_high_json);
+            }
+
+            // Get the sample and hold
+            json_t* sample_and_hold_json = json_object_get(json, "sample_and_hold");
+            if (sample_and_hold_json && json_is_boolean(sample_and_hold_json))
+            {
+                this->sample_and_hold = json_boolean_value(sample_and_hold_json);
+            }
         }
 
     };

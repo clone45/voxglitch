@@ -1,0 +1,182 @@
+{
+    "slug": "voxglitch",
+    "name": "Voxglitch",
+    "version": "2.28.0",
+    "license": "GPL-3.0-or-later",
+    "brand": "Voxglitch",
+    "author": "Bret Truchan",
+    "authorEmail": "clone45@gmail.com",
+    "authorUrl": "",
+    "pluginUrl": "https://github.com/clone45/voxglitch",
+    "manualUrl": "https://github.com/clone45/voxglitch",
+    "sourceUrl": "https://github.com/clone45/voxglitch",
+    "donateUrl": "https://www.patreon.com/voxglitch",
+    "changelogUrl": "https://github.com/clone45/voxglitch/blob/master/docs/changelog.md",
+    "modules": [
+    {
+        "slug": "arpseq",
+        "name": "ArpSeq",
+        "description": "Arpeggiator and Sequencer Hybrid",
+        "tags": ["Utility", "Sequencer"],
+        "manualUrl": "https://docs.google.com/document/d/1eZ3NOTOMBoTuiFCpqTsKA6RBkN2Fk8rBIJbEp-pRykA/edit?usp=sharing"
+    },
+    {
+        "slug": "autobreak",
+        "name": "Autobreak",
+        "description": "Automatic breakbeat sample chopper",
+        "tags": ["Sampler", "Drum"]
+    },
+    {
+        "slug": "AutobreakStudio",
+        "name": "Autobreak Studio", 
+        "description": "Advanced automatic breakbeat sample chopper",
+        "tags": ["Sampler", "Drum"]
+    },    
+    {
+        "slug": "bytebeat",
+        "name": "Byte Beat",
+        "description": "Bytebeat player with built-in presets.",
+        "tags": ["Oscillator"]
+    },
+    {
+        "slug": "digitalprogrammer",
+        "name": "Digital Programmer",
+        "description": "16 channel polyphonic programmer with built-in bank memory slots",
+        "tags": ["Utility", "Polyphonic"]
+    },
+
+    {
+        "slug": "digitalsequencer",
+        "name": "Digital Sequencer",
+        "description": "Six-in-one cv/gate sequencers with independent control over clock division and sequence length.",
+        "tags": ["Sequencer"]
+    },
+    {
+        "slug": "digitalsequencerxp",
+        "name": "Digital Sequencer XP",
+        "description": "Polyphonic version of the Digital Sequencer.  Sixteen-in-one cv/gate sequencers with independent control over clock division and sequence length.",
+        "tags": ["Sequencer", "Polyphonic"]
+    },
+    {
+        "slug": "drumrandomizer",
+        "name": "Drum Randomizer",
+        "description": "Apply per-step percentage playback to gate sequences.",
+        "tags": ["Utility", "Polyphonic"]
+    },    
+    {
+        "slug": "glitchsequencer",
+        "name": "Glitch Sequencer",
+        "description": "Cellular Automaton Gate Sequencer.",
+        "tags": ["Sequencer"]
+    },
+    {
+        "slug": "ghosts",
+        "name": "Ghosts",
+        "description": "Granular synthesis sample player/scanner with looping grains.",
+        "tags": ["Granular", "Sampler"]
+    },
+    {
+        "slug": "grainfx",
+        "name": "Grain Fx",
+        "description": "Granular effects for incoming audio.",
+        "tags": ["Granular", "Sampler"]
+    },
+    {
+        "slug": "GrainEngineMK2",
+        "name": "Grain Engine MK2",
+        "description": "Granular syntesis based .wav player",
+        "tags": ["Granular", "Sampler"]
+    },
+    {
+        "slug": "GrainEngineMK2Expander",
+        "name": "Grain Engine MK2 Expander",
+        "description": "External audio recorder expander for Grain Engine MK2",
+        "tags": ["Granular", "Sampler", "Expander"]
+    },
+    {
+        "slug": "groovebox",
+        "name": "Groove Box",
+        "description": "8-track sample based groovebox with parameter locks",
+        "tags": ["Sampler"]
+    },
+    {
+        "slug": "GrooveBoxExpander",
+        "name": "Groove Box Expander",
+        "description": "Expander module for the Voxglitch Groovebox that provides Mutes, Solos, Gate Outputs, and track-level control over volume, pan, and pitch.",
+        "tags": ["Sampler"]
+    },
+    {
+        "slug": "hazumi",
+        "name": "Hazumi",
+        "description": "Bouncing ball sequencer",
+        "tags": ["Sequencer"]
+    },
+    {
+        "slug": "onepoint",
+        "name": "One Point",
+        "description": "CV sequencer that uses external file as sequence data",
+        "tags": ["Sequencer"]
+    },        
+    {
+        "slug": "onezero",
+        "name": "One Zero",
+        "description": "Gate sequencer that uses external file as sequence data",
+        "tags": ["Sequencer"]
+    },       
+    {
+        "slug": "looper",
+        "name": "Looper",
+        "description": "Bare minimum sample looper",
+        "tags": ["Sampler"]
+    },
+    {
+        "slug": "noteDetector",
+        "name": "Note Detector",
+        "description": "Produces a gate or trigger output when a specified note is detected at the CV input",
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/note-detector.md",
+        "tags": ["Utility"]
+    }, 
+    {
+        "slug": "repeater",
+        "name": "Repeater",
+        "description": "Looping sample player with playback offset control.",
+        "tags": ["Sampler"]
+    },
+    {
+        "slug": "satanonaut",
+        "name": "Satanonaut",
+        "description": "Based on the new comic Galacto Pitfighter: An alien entity hell-bent on mutilating your audio.",
+        "tags": ["Effect"]
+    },
+    {
+        "slug": "sampler16p",
+        "name": "Sampler16P",
+        "description": "Sixteen stereo sample playback devices in one compact module.",
+        "tags": ["Sampler"]
+    },
+    {
+        "slug": "samplerx8",
+        "name": "SamplerX8",
+        "description": "Eight stereo sample playback devices in one compact module.",
+        "tags": ["Sampler"]
+    },    
+    {
+        "slug": "wavbank",
+        "name": "Wav Bank",
+        "description": "Sample player that can load and switch between all .wav files in a folder.",
+        "tags": ["Sampler"]
+    },
+    {
+        "slug": "wavbankmc",
+        "name": "Wav Bank MC",
+        "description": "Extended version of Wav Bank that supports multi-channel WAV files",
+        "tags": ["Sampler", "Polyphonic"]
+    },
+    {
+        "slug": "xy",
+        "name": "XY",
+        "description": "CV output generator with built in gesture recording.",
+        "tags": ["Sequencer", "Recording", "Envelope Generator"]
+    }
+  ]
+}

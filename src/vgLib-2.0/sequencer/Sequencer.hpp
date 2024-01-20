@@ -188,6 +188,65 @@ namespace vgLib_v2
             sequence_playback_position = 0;
             pingpong_direction = 1;
         }
+
+        // serialize
+        virtual json_t *serialize()
+        {
+            json_t *sequencer_data_json = json_object();
+
+            // serialize window_start, window_end, sequence_playback_position, pingpong_direction, playback_mode
+            json_object_set_new(sequencer_data_json, "window_start", json_integer(this->getWindowStart()));
+            json_object_set_new(sequencer_data_json, "window_end", json_integer(this->getWindowEnd()));
+            json_object_set_new(sequencer_data_json, "sequence_playback_position", json_integer(this->getPlaybackPosition()));
+            json_object_set_new(sequencer_data_json, "pingpong_direction", json_integer(this->pingpong_direction));
+            json_object_set_new(sequencer_data_json, "playback_mode", json_integer(this->playback_mode));
+
+            return sequencer_data_json;
+        }
+
+        // deserialize
+        virtual void deserialize(json_t *json_sequencer)
+        {
+            if (!json_sequencer || !json_is_object(json_sequencer))
+                return;
+
+            // deserialize window_start, window_end, sequence_playback_position, pingpong_direction, playback_mode
+
+            // Load window_start
+            json_t *window_start_json = json_object_get(json_sequencer, "window_start");
+            if (window_start_json && json_is_integer(window_start_json))
+            {
+                this->setWindowStart(json_integer_value(window_start_json));
+            }
+
+            // Load window_end
+            json_t *window_end_json = json_object_get(json_sequencer, "window_end");
+            if (window_end_json && json_is_integer(window_end_json))
+            {
+                this->setWindowEnd(json_integer_value(window_end_json));
+            }
+
+            // Load sequence_playback_position
+            json_t *sequence_playback_position_json = json_object_get(json_sequencer, "sequence_playback_position");
+            if (sequence_playback_position_json && json_is_integer(sequence_playback_position_json))
+            {
+                this->setPosition(json_integer_value(sequence_playback_position_json));
+            }
+
+            // Load pingpong_direction
+            json_t *pingpong_direction_json = json_object_get(json_sequencer, "pingpong_direction");
+            if (pingpong_direction_json && json_is_integer(pingpong_direction_json))
+            {
+                this->pingpong_direction = json_integer_value(pingpong_direction_json);
+            }
+
+            // Load playback_mode
+            json_t *playback_mode_json = json_object_get(json_sequencer, "playback_mode");
+            if (playback_mode_json && json_is_integer(playback_mode_json))
+            {
+                this->setPlaybackMode(json_integer_value(playback_mode_json));
+            }
+        }
     };
 
 } // namespace vgLib_v2

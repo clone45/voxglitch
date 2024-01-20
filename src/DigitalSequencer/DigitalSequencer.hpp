@@ -133,7 +133,7 @@ struct DigitalSequencer : VoxglitchModule
             voltage_sequencers[i].assign(MAX_SEQUENCER_STEPS, 0.0);
             voltage_sequencers[i].setMaxLength(MAX_SEQUENCER_STEPS);
             voltage_sequencers[i].setWindowEnd(MAX_SEQUENCER_STEPS - 1);
-            
+
             gate_sequencers[i].assign(MAX_SEQUENCER_STEPS, 0.0);
             gate_sequencers[i].setMaxLength(MAX_SEQUENCER_STEPS);
             gate_sequencers[i].setWindowEnd(MAX_SEQUENCER_STEPS - 1);
@@ -194,232 +194,152 @@ struct DigitalSequencer : VoxglitchModule
     ==================================================================================================================================================
     */
 
+    /*
+json_t *dataToJson() override
+{
+    json_t *json_root = json_object();
+
+    json_t *sequences_json_array = json_array();
+
+    for (int sequencer_number = 0; sequencer_number < NUMBER_OF_SEQUENCERS; sequencer_number++)
+    {
+        // create a string such as sequencer_1
+        std::string sequencer_name = "sequencer_" + std::to_string(sequencer_number);
+
+        json_object_set_new(sequences_json_array, sequencer_name.c_str(), JSON::serializeVoltageSequencer(this->voltage_sequencers[sequencer_number]));
+    }
+
+
+
+      //
+      // Save patterns
+      //
+
+      json_t *sequences_json_array = json_array();
+
+      for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
+      {
+        json_t *pattern_json_array = json_array();
+
+        for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
+        {
+          json_array_append_new(pattern_json_array, json_real(this->voltage_sequencers[sequencer_number].getValue(i)));
+        }
+
+        json_array_append_new(sequences_json_array, pattern_json_array);
+      }
+
+      json_object_set(json_root, "patterns", sequences_json_array);
+      json_decref(sequences_json_array);
+
+
+      //
+      // Save gates
+      //
+
+      json_t *gates_json_array = json_array();
+
+      for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
+      {
+        json_t *pattern_json_array = json_array();
+
+        for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
+        {
+          json_array_append_new(pattern_json_array, json_integer(this->gate_sequencers[sequencer_number].getValue(i)));
+        }
+
+        json_array_append_new(gates_json_array, pattern_json_array);
+      }
+
+      json_object_set(json_root, "gates", gates_json_array);
+      json_decref(gates_json_array);
+
+      //
+      // Save sequencer lengths
+      //
+      json_t *sequencer_lengths_json_array = json_array();
+      for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
+      {
+        json_array_append_new(sequencer_lengths_json_array, json_integer(this->voltage_sequencers[sequencer_number].getLength()));
+      }
+      json_object_set(json_root, "lengths", sequencer_lengths_json_array);
+      json_decref(sequencer_lengths_json_array);
+
+      //
+      // Save sequencer voltage range index selections
+      //
+      json_t *sequencer_voltage_range_json_array = json_array();
+      for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
+      {
+        json_array_append_new(sequencer_voltage_range_json_array, json_integer(this->voltage_sequencers[sequencer_number].voltage_range_index));
+      }
+      json_object_set(json_root, "voltage_ranges", sequencer_voltage_range_json_array);
+      json_decref(sequencer_voltage_range_json_array);
+
+      //
+      // Save sequencer snap index selections
+      //
+      json_t *sequencer_snap_json_array = json_array();
+      for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
+      {
+        json_array_append_new(sequencer_snap_json_array, json_integer(this->voltage_sequencers[sequencer_number].snap_division_index));
+      }
+      json_object_set(json_root, "snap_divisions", sequencer_snap_json_array);
+      json_decref(sequencer_snap_json_array);
+
+      //
+      // Save sequencer sample and hold selections
+      //
+      json_t *sequencer_sh_json_array = json_array();
+      for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
+      {
+        json_array_append_new(sequencer_sh_json_array, json_integer(this->voltage_sequencers[sequencer_number].sample_and_hold));
+      }
+      json_object_set(json_root, "sample_and_hold", sequencer_sh_json_array);
+      json_decref(sequencer_sh_json_array);
+
+
+      // Save Legacy Reset mode
+      json_object_set_new(json_root, "legacy_reset", json_integer(legacy_reset));
+
+    return json_root;
+}
+      */
+
     json_t *dataToJson() override
     {
         json_t *json_root = json_object();
+        json_t *sequences_json_array = json_array();
 
-        /*
+        for (int sequencer_number = 0; sequencer_number < NUMBER_OF_SEQUENCERS; sequencer_number++)
+        {
+            // Append the serialized VoltageSequencer to the sequences array
+            json_array_append_new(sequences_json_array, this->voltage_sequencers[sequencer_number].serialize());
+        }
 
-          //
-          // Save patterns
-          //
+        // Add the array to the root object under the key "sequencers"
+        json_object_set_new(json_root, "voltage_sequencers", sequences_json_array);
 
-          json_t *sequences_json_array = json_array();
-
-          for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
-          {
-            json_t *pattern_json_array = json_array();
-
-            for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
-            {
-              json_array_append_new(pattern_json_array, json_real(this->voltage_sequencers[sequencer_number].getValue(i)));
-            }
-
-            json_array_append_new(sequences_json_array, pattern_json_array);
-          }
-
-          json_object_set(json_root, "patterns", sequences_json_array);
-          json_decref(sequences_json_array);
-
-
-          //
-          // Save gates
-          //
-
-          json_t *gates_json_array = json_array();
-
-          for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
-          {
-            json_t *pattern_json_array = json_array();
-
-            for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
-            {
-              json_array_append_new(pattern_json_array, json_integer(this->gate_sequencers[sequencer_number].getValue(i)));
-            }
-
-            json_array_append_new(gates_json_array, pattern_json_array);
-          }
-
-          json_object_set(json_root, "gates", gates_json_array);
-          json_decref(gates_json_array);
-
-          //
-          // Save sequencer lengths
-          //
-          json_t *sequencer_lengths_json_array = json_array();
-          for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
-          {
-            json_array_append_new(sequencer_lengths_json_array, json_integer(this->voltage_sequencers[sequencer_number].getLength()));
-          }
-          json_object_set(json_root, "lengths", sequencer_lengths_json_array);
-          json_decref(sequencer_lengths_json_array);
-
-          //
-          // Save sequencer voltage range index selections
-          //
-          json_t *sequencer_voltage_range_json_array = json_array();
-          for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
-          {
-            json_array_append_new(sequencer_voltage_range_json_array, json_integer(this->voltage_sequencers[sequencer_number].voltage_range_index));
-          }
-          json_object_set(json_root, "voltage_ranges", sequencer_voltage_range_json_array);
-          json_decref(sequencer_voltage_range_json_array);
-
-          //
-          // Save sequencer snap index selections
-          //
-          json_t *sequencer_snap_json_array = json_array();
-          for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
-          {
-            json_array_append_new(sequencer_snap_json_array, json_integer(this->voltage_sequencers[sequencer_number].snap_division_index));
-          }
-          json_object_set(json_root, "snap_divisions", sequencer_snap_json_array);
-          json_decref(sequencer_snap_json_array);
-
-          //
-          // Save sequencer sample and hold selections
-          //
-          json_t *sequencer_sh_json_array = json_array();
-          for(int sequencer_number=0; sequencer_number<NUMBER_OF_SEQUENCERS; sequencer_number++)
-          {
-            json_array_append_new(sequencer_sh_json_array, json_integer(this->voltage_sequencers[sequencer_number].sample_and_hold));
-          }
-          json_object_set(json_root, "sample_and_hold", sequencer_sh_json_array);
-          json_decref(sequencer_sh_json_array);
-
-
-          // Save Legacy Reset mode
-          json_object_set_new(json_root, "legacy_reset", json_integer(legacy_reset));
-          */
         return json_root;
     }
 
-    // Autoload settings
     void dataFromJson(json_t *json_root) override
     {
-        //
-        // Load patterns
-        //
+        json_t *sequences_json_array = json_object_get(json_root, "voltage_sequencers");
 
-        /*
-
-        json_t *pattern_arrays_data = json_object_get(json_root, "patterns");
-
-        if(pattern_arrays_data)
+        if (sequences_json_array && json_is_array(sequences_json_array))
         {
-          size_t pattern_number;
-          json_t *json_pattern_array;
+            size_t index;
+            json_t *json_sequencer;
 
-          json_array_foreach(pattern_arrays_data, pattern_number, json_pattern_array)
-          {
-            for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
+            json_array_foreach(sequences_json_array, index, json_sequencer)
             {
-              // Get pattern data, regardless if it's an int or real.  json_number_value
-              // will convert the result to a real.
-              double value = json_number_value(json_array_get(json_pattern_array, i));
-
-              // If the value is greater than 1.0, it means that an older patch is being
-              // loaded and we'll need to convert the voltage from 0 to 214
-              if(value > 1.0)
-              {
-                value = value / 214.0;
-              }
-
-              this->voltage_sequencers[pattern_number].setValue(i, value);
+                if (index < NUMBER_OF_SEQUENCERS)
+                {
+                    this->voltage_sequencers[index].deserialize(json_sequencer);
+                }
             }
-          }
         }
-
-        //
-        // Load gates
-        //
-
-        json_t *gates_arrays_data = json_object_get(json_root, "gates");
-
-        if(gates_arrays_data)
-        {
-          size_t pattern_number;
-          json_t *json_pattern_array;
-
-          json_array_foreach(gates_arrays_data, pattern_number, json_pattern_array)
-          {
-            for(int i=0; i<MAX_SEQUENCER_STEPS; i++)
-            {
-              // this->gates[pattern_number][i] = json_integer_value(json_array_get(json_pattern_array, i));
-              this->gate_sequencers[pattern_number].setValue(i, json_integer_value(json_array_get(json_pattern_array, i)));
-            }
-          }
-        }
-
-        //
-        // Load lengths
-        //
-        json_t *lengths_json_array = json_object_get(json_root, "lengths");
-
-        if(lengths_json_array)
-        {
-          size_t sequencer_number;
-          json_t *length_json;
-
-          json_array_foreach(lengths_json_array, sequencer_number, length_json)
-          {
-            this->voltage_sequencers[sequencer_number].setLength(json_integer_value(length_json));
-            this->gate_sequencers[sequencer_number].setLength(json_integer_value(length_json));
-          }
-        }
-
-        //
-        // Load voltage ranges
-        //
-        json_t *voltage_ranges_json_array = json_object_get(json_root, "voltage_ranges");
-
-        if(voltage_ranges_json_array)
-        {
-          size_t sequencer_number;
-          json_t *voltage_range_json;
-
-          json_array_foreach(voltage_ranges_json_array, sequencer_number, voltage_range_json)
-          {
-            this->voltage_sequencers[sequencer_number].voltage_range_index = json_integer_value(voltage_range_json);
-          }
-        }
-
-        //
-        // Load snap divisions
-        //
-        json_t *snap_divions_json_array = json_object_get(json_root, "snap_divisions");
-
-        if(snap_divions_json_array)
-        {
-          size_t sequencer_number;
-          json_t *snap_divion_json;
-
-          json_array_foreach(snap_divions_json_array, sequencer_number, snap_divion_json)
-          {
-            this->voltage_sequencers[sequencer_number].snap_division_index = json_integer_value(snap_divion_json);
-          }
-        }
-
-        //
-        // Load Sample and Hold settings
-        //
-        json_t *sh_json_array = json_object_get(json_root, "sample_and_hold");
-
-        if(sh_json_array)
-        {
-          size_t sequencer_number;
-          json_t *sh_json;
-
-          json_array_foreach(sh_json_array, sequencer_number, sh_json)
-          {
-            this->voltage_sequencers[sequencer_number].sample_and_hold = json_integer_value(sh_json);
-          }
-        }
-
-
-        json_t* legacy_reset_json = json_object_get(json_root, "legacy_reset");
-        if (legacy_reset_json) legacy_reset = json_integer_value(legacy_reset_json);
-            */
     }
 
     /*
@@ -439,7 +359,6 @@ struct DigitalSequencer : VoxglitchModule
         bool trigger_output_pulse = false;
         this->sample_rate = args.sampleRate;
 
-
         //
         // See if someone pressed one of the sequence selection buttons
         //
@@ -447,30 +366,30 @@ struct DigitalSequencer : VoxglitchModule
         // which will be used to look up the selected voltage and gate sequencers from
         // the voltage_sequencers[] and gate_sequencers[] arrays
 
-        for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
+        for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
         {
-          if(sequencer_button_triggers[i].process(params[SEQUENCER_SELECTION_BUTTONS + i].getValue()))
-          {
-            selected_sequencer_index = i;
-          }
+            if (sequencer_button_triggers[i].process(params[SEQUENCER_SELECTION_BUTTONS + i].getValue()))
+            {
+                selected_sequencer_index = i;
+            }
         }
 
         selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
         selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
 
         // Highlight only selected sequence buttton
-        for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
+        for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
         {
-          params[SEQUENCER_SELECTION_BUTTONS + i].setValue(selected_sequencer_index == i);
+            params[SEQUENCER_SELECTION_BUTTONS + i].setValue(selected_sequencer_index == i);
         }
 
         //
         // Set all of the sequence lengths by checking the corresponding knobs
         //
-        for(unsigned int i=0; i<NUMBER_OF_SEQUENCERS; i++)
+        for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
         {
-          voltage_sequencers[i].setLength(clamp((int) params[SEQUENCER_LENGTH_KNOBS + i].getValue(), 1, 32));
-          gate_sequencers[i].setLength(clamp((int) params[SEQUENCER_LENGTH_KNOBS + i].getValue(), 1, 32));
+            voltage_sequencers[i].setLength(clamp((int)params[SEQUENCER_LENGTH_KNOBS + i].getValue(), 1, 32));
+            gate_sequencers[i].setLength(clamp((int)params[SEQUENCER_LENGTH_KNOBS + i].getValue(), 1, 32));
         }
 
         //
@@ -489,138 +408,132 @@ struct DigitalSequencer : VoxglitchModule
         if (frozen == false)
         {
 
-          // On incoming RESET, reset the sequencers
-          if(resetTrigger.process(inputs[RESET_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
-          {
-            // Set up a (reverse) counter so that the clock input will ignore
-            // incoming clock pulses for 1 millisecond after a reset input. This
-            // is to comply with VCV Rack's standards.  See section "Timing" at
-            // https://vcvrack.com/manual/VoltageStandards
-
-            clock_ignore_on_reset = (long) (args.sampleRate / 100);
-
-            stepTrigger.reset();
-            first_step = true;
-
-            for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
+            // On incoming RESET, reset the sequencers
+            if (resetTrigger.process(inputs[RESET_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
             {
-              sequencer_step_triggers[i].reset();
-              voltage_sequencers[i].reset();
-              gate_sequencers[i].reset();
-            }
-          }
+                // Set up a (reverse) counter so that the clock input will ignore
+                // incoming clock pulses for 1 millisecond after a reset input. This
+                // is to comply with VCV Rack's standards.  See section "Timing" at
+                // https://vcvrack.com/manual/VoltageStandards
 
-          //
-          // The legacy reset option in the context menu tells the module to accept
-          // clock signals immedately after resetting.  Reset signals are supposed to
-          // cause clock signals to be ignored for 1 millisecond, however, some older
-          // modules don't do that, so this flag helps with compatibility with older
-          // modules.
-          //
-          if(legacy_reset || clock_ignore_on_reset == 0)
-          {
-            // Check to see if there's a pulse at the global step trigger input.
-            bool global_step_trigger = stepTrigger.process(inputs[STEP_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger);
-            bool step;
+                clock_ignore_on_reset = (long)(args.sampleRate / 100);
 
-            // reset_first_step ensures that the first step of the sequence is not skipped
-            // after a reset.  This functionality is disbled in legacy reset mode.
-            bool reset_first_step = false;
+                stepTrigger.reset();
+                first_step = true;
 
-            for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
-            {
-              step = false;
-
-              // This line is saying, "If there's a wire connected to the individual
-              // sequencer's step input, then it should override the global step
-              // trigger input for this specific sequencer"
-              if(inputs[sequencer_step_inputs[i]].isConnected() == false)
-              {
-                if(global_step_trigger) step = true;
-              }
-              else if (sequencer_step_triggers[i].process(inputs[sequencer_step_inputs[i]].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
-              {
-                step = true;
-              }
-
-              if(step) // Step == true means, "step the sequencer forward one step"
-              {
-                // If legacy reset is true or it's not the first step of the sequence
-                // then go ahead and step the sequences.  Otherwise skip the first
-                // step.
-                if(legacy_reset || first_step == false)
+                for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
                 {
-                  voltage_sequencers[i].step();
-                  gate_sequencers[i].step();
+                    sequencer_step_triggers[i].reset();
+                    voltage_sequencers[i].reset();
+                    gate_sequencers[i].reset();
                 }
-                else
-                {
-                  reset_first_step = true;
-                }
-
-                // If the gate sequence is TRUE, then start the pulse generator to
-                // output the gate signal.
-                if(gate_sequencers[i].getValue()) gateOutputPulseGenerators[i].trigger(0.01f);
-              }
             }
 
-            // If the first step of the sequence was skipped, don't skip it again later on!
-            if(reset_first_step == true) first_step = false;
-          }
-
-          // output values
-          for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
-          {
-
-            if (voltage_sequencers[i].sample_and_hold && !gate_sequencers[i].getValue())
+            //
+            // The legacy reset option in the context menu tells the module to accept
+            // clock signals immedately after resetting.  Reset signals are supposed to
+            // cause clock signals to be ignored for 1 millisecond, however, some older
+            // modules don't do that, so this flag helps with compatibility with older
+            // modules.
+            //
+            if (legacy_reset || clock_ignore_on_reset == 0)
             {
-                continue; // Skip setting voltage when sample_and_hold is true and getValue() is false
+                // Check to see if there's a pulse at the global step trigger input.
+                bool global_step_trigger = stepTrigger.process(inputs[STEP_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger);
+                bool step;
+
+                // reset_first_step ensures that the first step of the sequence is not skipped
+                // after a reset.  This functionality is disbled in legacy reset mode.
+                bool reset_first_step = false;
+
+                for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
+                {
+                    step = false;
+
+                    // This line is saying, "If there's a wire connected to the individual
+                    // sequencer's step input, then it should override the global step
+                    // trigger input for this specific sequencer"
+                    if (inputs[sequencer_step_inputs[i]].isConnected() == false)
+                    {
+                        if (global_step_trigger)
+                            step = true;
+                    }
+                    else if (sequencer_step_triggers[i].process(inputs[sequencer_step_inputs[i]].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger))
+                    {
+                        step = true;
+                    }
+
+                    if (step) // Step == true means, "step the sequencer forward one step"
+                    {
+                        // If legacy reset is true or it's not the first step of the sequence
+                        // then go ahead and step the sequences.  Otherwise skip the first
+                        // step.
+                        if (legacy_reset || first_step == false)
+                        {
+                            voltage_sequencers[i].step();
+                            gate_sequencers[i].step();
+                        }
+                        else
+                        {
+                            reset_first_step = true;
+                        }
+
+                        // If the gate sequence is TRUE, then start the pulse generator to
+                        // output the gate signal.
+                        if (gate_sequencers[i].getValue())
+                            gateOutputPulseGenerators[i].trigger(0.01f);
+                    }
+                }
+
+                // If the first step of the sequence was skipped, don't skip it again later on!
+                if (reset_first_step == true)
+                    first_step = false;
             }
 
-            float voltage = voltage_sequencers[i].getVoltage();
+            // output values
+            for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
+            {
 
-            outputs[voltage_outputs[i]].setVoltage(voltage);
+                if (voltage_sequencers[i].sample_and_hold && !gate_sequencers[i].getValue())
+                {
+                    continue; // Skip setting voltage when sample_and_hold is true and getValue() is false
+                }
 
-          }
+                float voltage = voltage_sequencers[i].getVoltage();
+                outputs[voltage_outputs[i]].setVoltage(voltage);
+            }
         } // END IF NOT FROZEN
 
         else // IF FROZEN
         {
-          // output values
-          for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
-          {
-            // Notice that this ignores sample + hold.  This is the main reason
-            // for duplicating this code between the frozen/not frozen IF statments.
-            // outputs[voltage_outputs[i]].setVoltage(voltage_sequencers[i].getOutput());
+            // output values
+            for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
+            {
+                // Notice that this ignores sample + hold.  This is the main reason
+                // for duplicating this code between the frozen/not frozen IF statments.
+                // outputs[voltage_outputs[i]].setVoltage(voltage_sequencers[i].getOutput());
 
-            float value = voltage_sequencers[i].getValue();
+                float voltage = voltage_sequencers[i].getVoltage();
+                outputs[voltage_outputs[i]].setVoltage(voltage);
+            }
 
-            // TODO
-            // Value will range from 0 to 1. Map the value to the voltage range
-            //
-
-            float voltage = value;
-
-            outputs[voltage_outputs[i]].setVoltage(voltage);
-
-          }
-
-          if(frozen_trigger_gate)
-          {
-            gateOutputPulseGenerators[selected_sequencer_index].trigger(0.01f);
-            frozen_trigger_gate = false;
-          }
+            if (frozen_trigger_gate)
+            {
+                gateOutputPulseGenerators[selected_sequencer_index].trigger(0.01f);
+                frozen_trigger_gate = false;
+            }
         }
 
         // process trigger outputs
-        for(unsigned int i=0; i < NUMBER_OF_SEQUENCERS; i++)
+        for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
         {
-          trigger_output_pulse = gateOutputPulseGenerators[i].process(1.0 / args.sampleRate);
-          outputs[gate_outputs[i]].setVoltage((trigger_output_pulse ? 10.0f : 0.0f));
+            trigger_output_pulse = gateOutputPulseGenerators[i].process(1.0 / args.sampleRate);
+            outputs[gate_outputs[i]].setVoltage((trigger_output_pulse ? 10.0f : 0.0f));
         }
 
-        if (clock_ignore_on_reset > 0) clock_ignore_on_reset--;
-        if (tooltip_timer > 0) tooltip_timer--;
-
-    }
+        if (clock_ignore_on_reset > 0)
+            clock_ignore_on_reset--;
+        if (tooltip_timer > 0)
+            tooltip_timer--;
+    };
 };
