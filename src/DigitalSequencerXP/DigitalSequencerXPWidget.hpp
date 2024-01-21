@@ -26,10 +26,20 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
     voltage_sequencer_display_xp->module = module;
     addChild(voltage_sequencer_display_xp);
 
-    GateSequencerDisplayXP *gates_display = new GateSequencerDisplayXP();
-    gates_display->box.pos = mm2px(Vec(GATES_DRAW_AREA_POSITION_X, GATES_DRAW_AREA_POSITION_Y));
-    gates_display->module = module;
-    addChild(gates_display);
+    if(module)
+    {
+      GateSequencerView *gates_sequencer_view = new GateSequencerView(
+        &module->selected_gate_sequencer,
+        GATES_DRAW_AREA_WIDTH,
+        GATES_DRAW_AREA_HEIGHT,
+        GATE_BAR_HEIGHT,
+        BAR_HORIZONTAL_PADDING, 
+        MAX_SEQUENCER_STEPS
+      );
+      gates_sequencer_view->box.pos = mm2px(Vec(GATES_DRAW_AREA_POSITION_X, GATES_DRAW_AREA_POSITION_Y));
+      addChild(gates_sequencer_view);
+    }
+
 
     addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_1_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 0));
     addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_2_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 1));

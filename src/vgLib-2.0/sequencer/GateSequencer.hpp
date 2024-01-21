@@ -1,3 +1,5 @@
+#pragma once
+
 namespace vgLib_v2
 {
     struct GateSequencer : Sequencer
