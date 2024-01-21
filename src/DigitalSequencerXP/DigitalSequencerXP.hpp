@@ -79,7 +79,6 @@ struct DigitalSequencerXP : VoxglitchModule
     //
     DigitalSequencerXP()
     {
-
         voltage_sequencers.resize(NUMBER_OF_SEQUENCERS);
         gate_sequencers.resize(NUMBER_OF_SEQUENCERS);
 
@@ -90,6 +89,12 @@ struct DigitalSequencerXP : VoxglitchModule
         for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
         {
             voltage_sequencers[i].assign(MAX_SEQUENCER_STEPS, 0.0);
+            voltage_sequencers[i].setMaxLength(MAX_SEQUENCER_STEPS);
+            voltage_sequencers[i].setWindowEnd(MAX_SEQUENCER_STEPS - 1);
+
+            gate_sequencers[i].assign(MAX_SEQUENCER_STEPS, 0.0);
+            gate_sequencers[i].setMaxLength(MAX_SEQUENCER_STEPS);
+            gate_sequencers[i].setWindowEnd(MAX_SEQUENCER_STEPS - 1);
         }
 
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -525,11 +530,11 @@ struct DigitalSequencerXP : VoxglitchModule
                 if (voltage_sequencers[i].sample_and_hold)
                 {
                     if (gate_sequencers[i].getValue())
-                        outputs[POLY_CV_OUTPUT].setVoltage(voltage_sequencers[i].getOutput(), i);
+                        outputs[POLY_CV_OUTPUT].setVoltage(voltage_sequencers[i].getVoltage(), i);
                 }
                 else
                 {
-                    outputs[POLY_CV_OUTPUT].setVoltage(voltage_sequencers[i].getOutput(), i);
+                    outputs[POLY_CV_OUTPUT].setVoltage(voltage_sequencers[i].getVoltage(), i);
                 }
             }
             outputs[POLY_CV_OUTPUT].setChannels(NUMBER_OF_SEQUENCERS);
@@ -543,7 +548,7 @@ struct DigitalSequencerXP : VoxglitchModule
             {
                 // Notice that this ignores sample + hold.  This is the main reason
                 // for duplicating this code between the frozen/not frozen IF statments.
-                outputs[POLY_CV_OUTPUT].setVoltage(voltage_sequencers[i].getOutput(), i);
+                outputs[POLY_CV_OUTPUT].setVoltage(voltage_sequencers[i].getVoltage(), i);
             }
 
             if (frozen_trigger_gate)
