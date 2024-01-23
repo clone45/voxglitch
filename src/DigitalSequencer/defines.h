@@ -6,6 +6,9 @@ const int NUMBER_OF_SNAP_DIVISIONS = 8;
 // Constants for patterns
 const float DRAW_AREA_WIDTH = 486.0;
 const float DRAW_AREA_HEIGHT = 214.0 - 24;
+const float VOLTAGE_BAR_HEIGHT = 214.0 - 24;
+
+
 // const float BAR_HEIGHT = 214.0;
 const float BAR_HEIGHT = 190.0;
 const float BAR_HORIZONTAL_PADDING = .8;

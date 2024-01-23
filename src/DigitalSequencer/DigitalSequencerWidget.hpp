@@ -86,11 +86,29 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
         addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("SEQ6_GATE_OUTPUT"), module, DigitalSequencer::SEQ6_GATE_OUTPUT));
 
         // Main voltage sequencer display
+        /*
         VoltageSequencerDisplay *voltage_sequencer_display = new VoltageSequencerDisplay();
         voltage_sequencer_display->box.pos = mm2px(themePos("CV_SEQUENCER"));
         voltage_sequencer_display->module = module;
         addChild(voltage_sequencer_display);
+        */
 
+        // Voltage sequencer display
+        if (module)
+        {
+            VoltageSequencerView *voltage_sequencer_view = new VoltageSequencerView(
+                &module->selected_voltage_sequencer,
+                DRAW_AREA_WIDTH,
+                DRAW_AREA_HEIGHT,
+                VOLTAGE_BAR_HEIGHT,
+                BAR_HORIZONTAL_PADDING,
+                MAX_SEQUENCER_STEPS);
+
+            voltage_sequencer_view->box.pos = mm2px(themePos("CV_SEQUENCER"));
+            addChild(voltage_sequencer_view);
+        }
+
+        // Gate sequencer display
         if (module)
         {
             GateSequencerView *gates_sequencer_view = new GateSequencerView(
@@ -100,6 +118,7 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
                 GATE_BAR_HEIGHT,
                 BAR_HORIZONTAL_PADDING,
                 MAX_SEQUENCER_STEPS);
+                
             gates_sequencer_view->box.pos = mm2px(themePos("GATE_SEQUENCER"));
             addChild(gates_sequencer_view);
         }
