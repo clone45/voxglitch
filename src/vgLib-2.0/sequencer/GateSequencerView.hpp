@@ -44,12 +44,12 @@ namespace vgLib_v2
 
                 if (*gate_sequencer)
                 {
-                    for (unsigned int i = 0; i < (*gate_sequencer)->getMaxLength(); i++)
+                    for (unsigned int i = 0; i < max_sequencer_steps; i++)
                     {
                         value = (*gate_sequencer)->getValue(i);
 
                         // Draw grey background bar
-                        if (i < (*gate_sequencer)->getWindowEnd())
+                        if (i <= (*gate_sequencer)->getWindowEnd())
                         {
                             bar_color = brightness(nvgRGBA(60, 60, 64, 255), settings::rackBrightness);
                         }
@@ -66,7 +66,7 @@ namespace vgLib_v2
                             bar_color = nvgRGBA(255, 255, 255, 250);
                         }
 
-                        else if (i < (*gate_sequencer)->getWindowEnd())
+                        else if (i <= (*gate_sequencer)->getWindowEnd())
                         {
                             bar_color = nvgRGBA(255, 255, 255, 150);
                         }

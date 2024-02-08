@@ -45,7 +45,7 @@
     "CV_OUTPUT": {"x": 510.00, "y": 349.837158},
     "GATE_OUTPUT": {"x": 470.00, "y": 349.837158},
 
-    "CV_SEQUENCER": {"x": 29.2323, "y": 30.7087},
-    "GATE_SEQUENCER": {"x": 29.2323, "y": 256.5945}
+    "CV_SEQUENCER": {"x": 9.9, "y": 10.0},
+    "GATE_SEQUENCER": {"x": 9.9, "y": 85.0}
   }
 }

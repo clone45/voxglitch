@@ -21,10 +21,26 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
         }
 
         // Main voltage sequencer display
+        /*
         VoltageSequencerDisplayXP *voltage_sequencer_display_xp = new VoltageSequencerDisplayXP();
         voltage_sequencer_display_xp->box.pos = mm2px(Vec(DRAW_AREA_POSITION_X, DRAW_AREA_POSITION_Y));
         voltage_sequencer_display_xp->module = module;
         addChild(voltage_sequencer_display_xp);
+        */
+
+        if (module)
+        {
+            VoltageSequencerView *voltage_sequencer_view = new VoltageSequencerView(
+                &module->selected_voltage_sequencer,
+                DRAW_AREA_WIDTH,
+                DRAW_AREA_HEIGHT,
+                VOLTAGE_BAR_HEIGHT,
+                BAR_HORIZONTAL_PADDING,
+                MAX_SEQUENCER_STEPS);
+
+            voltage_sequencer_view->box.pos = mm2px(themePos("CV_SEQUENCER"));
+            addChild(voltage_sequencer_view);
+        }
 
         if (module)
         {
@@ -36,7 +52,7 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
                 BAR_HORIZONTAL_PADDING,
                 MAX_SEQUENCER_STEPS);
                 
-            gates_sequencer_view->box.pos = mm2px(Vec(GATES_DRAW_AREA_POSITION_X, GATES_DRAW_AREA_POSITION_Y));
+            gates_sequencer_view->box.pos = mm2px(Vec(themePos("GATE_SEQUENCER"))); // This might not be correct
             addChild(gates_sequencer_view);
         }
 

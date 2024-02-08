@@ -1,5 +1,12 @@
 # Developer notes
 
+## Where I am right now
+
+The voltage sequencer for DSXP is not positioned correctly, and I'm nudging it around using the config file.
+However, it doesn't align horizontally with the gate sequencer.  I'm wondering if I haven't converted the
+gate sequencer to use the common drawing code (vgLib-20/sequencer/GateSequencerView.hpp)
+
+
 ## Useful links
 
 - Project status tracker: https://github.com/VCVRack/library/projects/1

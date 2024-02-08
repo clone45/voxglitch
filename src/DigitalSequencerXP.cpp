@@ -25,6 +25,7 @@
 #include "vgLib-2.0/sequencer/VoltageSequencer.hpp"
 #include "vgLib-2.0/sequencer/GateSequencer.hpp"
 #include "vgLib-2.0/sequencer/GateSequencerView.hpp"
+#include "vgLib-2.0/sequencer/VoltageSequencerView.hpp"
 #include "vgLib-2.0/helpers/JSON.hpp"
 #include "vgLib-2.0/helpers/SEQUENCERS.hpp"
 
@@ -34,7 +35,7 @@ using namespace vgLib_v2;
 
 #include "DigitalSequencerXP/DigitalSequencerXP.hpp"
 #include "DigitalSequencerXP/SequencerDisplay.hpp"
-#include "DigitalSequencerXP/VoltageSequencerDisplayXP.hpp"
+// #include "DigitalSequencerXP/VoltageSequencerDisplayXP.hpp"
 // #include "DigitalSequencerXP/GateSequencerDisplayXP.hpp"
 #include "DigitalSequencerXP/DigitalSequencerXPWidget.hpp"
 

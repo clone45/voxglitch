@@ -135,7 +135,7 @@ namespace vgLib_v2
                     for (unsigned int i = 0; i < max_sequencer_steps; i++)
                     {
                         // Draw blue background bars
-                        drawBar(vg, i, BAR_HEIGHT, height, bright_background_color);
+                        drawBar(vg, i, height, height, bright_background_color);
 
                         // Draw bar for value at i
                         drawBar(vg, i, demo_sequence[i], height, lesser_step_highlight_color);
