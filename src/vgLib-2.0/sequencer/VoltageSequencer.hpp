@@ -145,8 +145,6 @@ namespace vgLib_v2
             }
         }
 
-
-
         void shiftLeftInWindow()
         {
             double temp = sequence[this->window_start];

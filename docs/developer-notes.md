@@ -2,9 +2,11 @@
 
 ## Where I am right now
 
-The voltage sequencer for DSXP is not positioned correctly, and I'm nudging it around using the config file.
-However, it doesn't align horizontally with the gate sequencer.  I'm wondering if I haven't converted the
-gate sequencer to use the common drawing code (vgLib-20/sequencer/GateSequencerView.hpp)
+Here's what I think is next:
+
+1. positioning tweaks on digital sequence XP's panel => wait on this!  Will add window control soon.
+2. GateSequencerView may be more modern than VoltageSequencerView when it comes to displaying sequencer window
+3. For all big sequencer modules, save and load the additional sequencer information, like window and polarity
 
 
 ## Useful links
@@ -12,6 +14,14 @@ gate sequencer to use the common drawing code (vgLib-20/sequencer/GateSequencerV
 - Project status tracker: https://github.com/VCVRack/library/projects/1
 - Voxglitch issue for updates: https://github.com/VCVRack/library/issues/626
 
+
+## Bringing a module from v1 to v2
+1. Copy the module code from _backlog to src
+2. Edit the module.cpp code to use vgLib_v2
+3. Update the two theme config files to use new naming (panel_width_px, width_mm, height_mm)
+4. Enable the module in src/plugin.cpp and src/plugin.hpp
+5. Copy the json over from plugin copy.json to plugin.json
+6. Make any module-specific updates, especially for sequencers
 
 ## Calculations
 

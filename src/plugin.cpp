@@ -13,13 +13,16 @@ void init(Plugin* p) {
   p->addModel(modelDigitalProgrammer);
   p->addModel(modelDigitalSequencer);
   p->addModel(modelDigitalSequencerXP);
-
-  /*
   p->addModel(modelDrumRandomizer);  
-  p->addModel(modelGlitchSequencer);
   p->addModel(modelGhosts);
+  p->addModel(modelGlitchSequencer);
   p->addModel(modelGrainEngineMK2);
   p->addModel(modelGrainEngineMK2Expander);
+
+   /*
+
+
+ 
   p->addModel(modelGrainFx);
   p->addModel(modelGrooveBox);
   p->addModel(modelGrooveBoxExpander);

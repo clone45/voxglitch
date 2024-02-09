@@ -262,6 +262,10 @@ struct DigitalSequencerXP : VoxglitchModule
     void dataFromJson(json_t *json_root) override
     {
 
+        // Load the voltage sequencers
+        SEQUENCERS::deserialize(this->voltage_sequencers, json_object_get(json_root, "voltage_sequencers"));
+        SEQUENCERS::deserialize(this->gate_sequencers, json_object_get(json_root, "gate_sequencers"));
+
         /*
         //
         // Load patterns

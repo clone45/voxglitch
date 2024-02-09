@@ -17,12 +17,15 @@ extern Model *modelByteBeat;
 extern Model *modelDigitalProgrammer;
 extern Model *modelDigitalSequencer;
 extern Model *modelDigitalSequencerXP;
-/*
 extern Model *modelDrumRandomizer;
-extern Model *modelGlitchSequencer;
 extern Model *modelGhosts;
+extern Model *modelGlitchSequencer;
 extern Model *modelGrainEngineMK2;
 extern Model *modelGrainEngineMK2Expander;
+
+
+/*
+
 extern Model *modelGrainFx;
 extern Model *modelGrooveBox;
 extern Model *modelGrooveBoxExpander;
