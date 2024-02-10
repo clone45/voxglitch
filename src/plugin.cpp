@@ -1,5 +1,5 @@
 #include "plugin.hpp"
-#include "vgLib-1.0/constants.cpp"
+#include "vgLib-2.0/constants.cpp"
 
 Plugin* pluginInstance;
 
@@ -18,11 +18,6 @@ void init(Plugin* p) {
   p->addModel(modelGlitchSequencer);
   p->addModel(modelGrainEngineMK2);
   p->addModel(modelGrainEngineMK2Expander);
-
-   /*
-
-
- 
   p->addModel(modelGrainFx);
   p->addModel(modelGrooveBox);
   p->addModel(modelGrooveBoxExpander);
@@ -38,5 +33,4 @@ void init(Plugin* p) {
   p->addModel(modelWavBank);
   p->addModel(modelWavBankMC);
   p->addModel(modelXY);
-  */
 }

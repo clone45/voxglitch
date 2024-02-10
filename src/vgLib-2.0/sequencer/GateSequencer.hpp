@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VoltageSequencerHistory.hpp"
+
 namespace vgLib_v2
 {
     struct GateSequencer : Sequencer

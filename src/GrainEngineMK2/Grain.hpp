@@ -28,7 +28,7 @@ struct Grain
   float output_voltage_right = 0;
   bool erase_me = false;
 
-  StereoPan stereo_pan; // vgLib-1.0/dsp/StereoPan.hpp
+  StereoPan stereo_pan; // vgLib-2.0/dsp/StereoPan.hpp
 
   Grain()
   {

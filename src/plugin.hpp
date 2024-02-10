@@ -22,10 +22,6 @@ extern Model *modelGhosts;
 extern Model *modelGlitchSequencer;
 extern Model *modelGrainEngineMK2;
 extern Model *modelGrainEngineMK2Expander;
-
-
-/*
-
 extern Model *modelGrainFx;
 extern Model *modelGrooveBox;
 extern Model *modelGrooveBoxExpander;
@@ -41,4 +37,3 @@ extern Model *modelSatanonaut;
 extern Model *modelWavBank;
 extern Model *modelWavBankMC;
 extern Model *modelXY;
-*/

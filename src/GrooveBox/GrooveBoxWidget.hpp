@@ -385,7 +385,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
 
     menu->addChild(new MenuSeparator()); // For spacing only
 
-    // Add interpolation menu from vgLib-1.0/VoxglitchSamplerModuleWidget.hpp
+    // Add interpolation menu from vgLib-2.0/VoxglitchSamplerModuleWidget.hpp
     menu->addChild(createMenuLabel("Audio Quality"));
     SampleInterpolationMenuItem *sample_interpolation_menu_item = createMenuItem<SampleInterpolationMenuItem>("Interpolation", RIGHT_ARROW);
     sample_interpolation_menu_item->module = module;
