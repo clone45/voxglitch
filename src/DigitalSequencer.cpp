@@ -29,6 +29,7 @@
 #include "vgLib-2.0/sequencer/GateSequencer.hpp"
 #include "vgLib-2.0/sequencer/GateSequencerView.hpp"
 #include "vgLib-2.0/sequencer/VoltageSequencerView.hpp"
+#include "vgLib-2.0/plugins/VGSequencerPlugin.hpp"
 #include "vgLib-2.0/helpers/JSON.hpp"
 #include "vgLib-2.0/helpers/SEQUENCERS.hpp"
 

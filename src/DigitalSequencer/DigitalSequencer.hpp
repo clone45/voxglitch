@@ -1,9 +1,10 @@
+// Look for: TODO: Left off here
+
 struct DigitalSequencer : VoxglitchModule
 {
     dsp::SchmittTrigger stepTrigger;
     dsp::SchmittTrigger sequencer_step_triggers[NUMBER_OF_SEQUENCERS];
     dsp::SchmittTrigger resetTrigger;
-
     dsp::SchmittTrigger sequencer_button_triggers[NUMBER_OF_SEQUENCERS];
 
     long clock_ignore_on_reset = 0;
@@ -14,13 +15,21 @@ struct DigitalSequencer : VoxglitchModule
 
     unsigned int tooltip_timer = 0;
 
-    // VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
-    std::vector<VoltageSequencer> voltage_sequencers;
+    std::vector<VGSequencerPlugin> vg_sequencer_plugins;
+    VGSequencerPlugin *selected_vg_sequencer_plugin;
+
+    // I may be able to remove these two pointers once I get the vg_sequencer_plugins
+    // work completed.
     VoltageSequencer *selected_voltage_sequencer;
+    GateSequencer *selected_gate_sequencer;
+
+    // VoltageSequencer voltage_sequencers[NUMBER_OF_SEQUENCERS];
+    // std::vector<VoltageSequencer> voltage_sequencers;
+    // VoltageSequencer *selected_voltage_sequencer;
 
     // GateSequencer gate_sequencers[NUMBER_OF_SEQUENCERS];
-    std::vector<GateSequencer> gate_sequencers;
-    GateSequencer *selected_gate_sequencer;
+    // std::vector<GateSequencer> gate_sequencers;
+    // GateSequencer *selected_gate_sequencer;
 
     unsigned int selected_sequencer_index = 0;
     int voltage_outputs[NUMBER_OF_SEQUENCERS];
@@ -103,8 +112,9 @@ struct DigitalSequencer : VoxglitchModule
     //
     DigitalSequencer()
     {
-        voltage_sequencers.resize(NUMBER_OF_SEQUENCERS);
-        gate_sequencers.resize(NUMBER_OF_SEQUENCERS);
+        // voltage_sequencers.resize(NUMBER_OF_SEQUENCERS);
+        // gate_sequencers.resize(NUMBER_OF_SEQUENCERS);
+        vg_sequencer_plugins.resize(NUMBER_OF_SEQUENCERS);
 
         voltage_outputs[0] = SEQ1_CV_OUTPUT;
         voltage_outputs[1] = SEQ2_CV_OUTPUT;
@@ -127,14 +137,18 @@ struct DigitalSequencer : VoxglitchModule
         sequencer_step_inputs[4] = SEQUENCER_5_STEP_INPUT;
         sequencer_step_inputs[5] = SEQUENCER_6_STEP_INPUT;
 
-        selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
-        selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
+        // selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
+        // selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
+        selected_vg_sequencer_plugin = &vg_sequencer_plugins[selected_sequencer_index];
+        selected_voltage_sequencer = &selected_vg_sequencer_plugin->voltage_sequencer;
+        selected_gate_sequencer = &selected_vg_sequencer_plugin->gate_sequencer;
 
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 
         for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
         {
             // This will set the size of the voltage sequencer, as well as assign zeros to each element.
+            /*
             voltage_sequencers[i].assign(MAX_SEQUENCER_STEPS, 0.0);
             voltage_sequencers[i].setMaxLength(MAX_SEQUENCER_STEPS);
             voltage_sequencers[i].setWindowEnd(MAX_SEQUENCER_STEPS - 1);
@@ -142,6 +156,11 @@ struct DigitalSequencer : VoxglitchModule
             gate_sequencers[i].assign(MAX_SEQUENCER_STEPS, 0.0);
             gate_sequencers[i].setMaxLength(MAX_SEQUENCER_STEPS);
             gate_sequencers[i].setWindowEnd(MAX_SEQUENCER_STEPS - 1);
+            */
+
+            vg_sequencer_plugins[i].assign(MAX_SEQUENCER_STEPS, 0.0);
+            vg_sequencer_plugins[i].setMaxLength(MAX_SEQUENCER_STEPS);
+            vg_sequencer_plugins[i].setWindowEnd(MAX_SEQUENCER_STEPS - 1);
 
             configParam(SEQUENCER_SELECTION_BUTTONS + i, 0.f, 1.f, 0.f, "Sequencer Selection Button #" + std::to_string(i));
             configParam(SEQUENCER_LENGTH_KNOBS + i, 1, MAX_SEQUENCER_STEPS, MAX_SEQUENCER_STEPS, "Sequence Length Knob #" + std::to_string(i));
@@ -161,11 +180,9 @@ struct DigitalSequencer : VoxglitchModule
     {
         for (int sequencer_number = 0; sequencer_number < NUMBER_OF_SEQUENCERS; sequencer_number++)
         {
-            for (int i = 0; i < MAX_SEQUENCER_STEPS; i++)
-            {
-                this->voltage_sequencers[sequencer_number].randomize();
-                this->gate_sequencers[sequencer_number].randomize();
-            }
+            // this->voltage_sequencers[sequencer_number].randomize();
+            // this->gate_sequencers[sequencer_number].randomize();
+            vg_sequencer_plugins[sequencer_number].randomize();
         }
     }
 
@@ -205,8 +222,8 @@ struct DigitalSequencer : VoxglitchModule
         json_t *json_root = json_object();
         
         // Save the voltage sequencers
-        json_object_set_new(json_root, "voltage_sequencers", SEQUENCERS::serialize(this->voltage_sequencers));
-        json_object_set_new(json_root, "gate_sequencers", SEQUENCERS::serialize(this->gate_sequencers));
+        // json_object_set_new(json_root, "voltage_sequencers", SEQUENCERS::serialize(this->voltage_sequencers));
+        // json_object_set_new(json_root, "gate_sequencers", SEQUENCERS::serialize(this->gate_sequencers));
 
         // Save Legacy Reset mode
         json_object_set_new(json_root, "legacy_reset", json_boolean(legacy_reset));
@@ -217,8 +234,8 @@ struct DigitalSequencer : VoxglitchModule
     void dataFromJson(json_t *json_root) override
     {
         // Load the voltage sequencers
-        SEQUENCERS::deserialize(this->voltage_sequencers, json_object_get(json_root, "voltage_sequencers"));
-        SEQUENCERS::deserialize(this->gate_sequencers, json_object_get(json_root, "gate_sequencers"));
+        // SEQUENCERS::deserialize(this->voltage_sequencers, json_object_get(json_root, "voltage_sequencers"));
+        // SEQUENCERS::deserialize(this->gate_sequencers, json_object_get(json_root, "gate_sequencers"));
         
         // Load Legacy Reset mode
         legacy_reset = JSON::getBoolean(json_root, "legacy_reset");
@@ -256,8 +273,11 @@ struct DigitalSequencer : VoxglitchModule
             }
         }
 
-        selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
-        selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
+        // selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
+        // selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
+        selected_vg_sequencer_plugin = &vg_sequencer_plugins[selected_sequencer_index];
+        selected_voltage_sequencer = &selected_vg_sequencer_plugin->voltage_sequencer;
+        selected_gate_sequencer = &selected_vg_sequencer_plugin->gate_sequencer;
 
         // Highlight only selected sequence buttton
         for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
@@ -270,8 +290,9 @@ struct DigitalSequencer : VoxglitchModule
         //
         for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
         {
-            voltage_sequencers[i].setLength(clamp((int)params[SEQUENCER_LENGTH_KNOBS + i].getValue(), 1, 32));
-            gate_sequencers[i].setLength(clamp((int)params[SEQUENCER_LENGTH_KNOBS + i].getValue(), 1, 32));
+            // voltage_sequencers[i].setLength(clamp((int)params[SEQUENCER_LENGTH_KNOBS + i].getValue(), 1, 32));
+            // gate_sequencers[i].setLength(clamp((int)params[SEQUENCER_LENGTH_KNOBS + i].getValue(), 1, 32));
+            vg_sequencer_plugins[i].setLength(clamp((int)params[SEQUENCER_LENGTH_KNOBS + i].getValue(), 1, 32));
         }
 
         //
@@ -306,8 +327,9 @@ struct DigitalSequencer : VoxglitchModule
                 for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
                 {
                     sequencer_step_triggers[i].reset();
-                    voltage_sequencers[i].reset();
-                    gate_sequencers[i].reset();
+                    // voltage_sequencers[i].reset();
+                    // gate_sequencers[i].reset();
+                    vg_sequencer_plugins[i].reset();
                 }
             }
 
@@ -352,8 +374,9 @@ struct DigitalSequencer : VoxglitchModule
                         // step.
                         if (legacy_reset || first_step == false)
                         {
-                            voltage_sequencers[i].step();
-                            gate_sequencers[i].step();
+                            // voltage_sequencers[i].step();
+                            // gate_sequencers[i].step();
+                            vg_sequencer_plugins[i].step();
                         }
                         else
                         {
@@ -362,7 +385,7 @@ struct DigitalSequencer : VoxglitchModule
 
                         // If the gate sequence is TRUE, then start the pulse generator to
                         // output the gate signal.
-                        if (gate_sequencers[i].getValue())
+                        if (vg_sequencer_plugins[i].gate_sequencer.getValue())
                             gateOutputPulseGenerators[i].trigger(0.01f);
                     }
                 }
@@ -375,13 +398,21 @@ struct DigitalSequencer : VoxglitchModule
             // output values
             for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
             {
-
+                // TODO: Left off here
+                /*
                 if (voltage_sequencers[i].sample_and_hold && !gate_sequencers[i].getValue())
                 {
                     continue; // Skip setting voltage when sample_and_hold is true and getValue() is false
                 }
+                */
 
-                float voltage = voltage_sequencers[i].getVoltage();
+                if(vg_sequencer_plugins[i].voltage_sequencer.sample_and_hold && !vg_sequencer_plugins[i].getGate())
+                {
+                    continue; // Skip setting voltage when sample_and_hold is true and getValue() is false
+                }
+
+                // float voltage = voltage_sequencers[i].getVoltage();
+                float voltage = vg_sequencer_plugins[i].getVoltage();
                 outputs[voltage_outputs[i]].setVoltage(voltage);
             }
         } // END IF NOT FROZEN
@@ -395,7 +426,8 @@ struct DigitalSequencer : VoxglitchModule
                 // for duplicating this code between the frozen/not frozen IF statments.
                 // outputs[voltage_outputs[i]].setVoltage(voltage_sequencers[i].getOutput());
 
-                float voltage = voltage_sequencers[i].getVoltage();
+                // float voltage = voltage_sequencers[i].getVoltage();
+                float voltage = vg_sequencer_plugins[i].getVoltage();
                 outputs[voltage_outputs[i]].setVoltage(voltage);
             }
 

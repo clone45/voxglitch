@@ -144,7 +144,8 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
 
             if (module)
             {
-                text_to_display = std::to_string(module->voltage_sequencers[sequencer_number].getLength());
+                // text_to_display = std::to_string(module->voltage_sequencers[sequencer_number].getLength());
+                text_to_display = std::to_string(module->vg_sequencer_plugins[sequencer_number].voltage_sequencer.getLength());
             }
 
             std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
@@ -443,7 +444,8 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
 
         void onAction(const event::Action &e) override
         {
-            module->voltage_sequencers[sequencer_number].sample_and_hold ^= true; // flip the value
+            // module->voltage_sequencers[sequencer_number].sample_and_hold ^= true; // flip the value
+            module->vg_sequencer_plugins[sequencer_number].toggleSampleAndHold(); // flip the value
         }
     };
 
