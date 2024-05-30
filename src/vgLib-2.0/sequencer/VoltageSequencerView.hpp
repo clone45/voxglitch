@@ -7,7 +7,7 @@
 
 namespace vgLib_v2
 {
-    struct VoltageSequencerView : SequencerView
+    struct VoltageSequencerView : SequencerView, public ISequencerObserver
     {
         bool draw_tooltip = false;
         double draw_tooltip_index = -1.0;
@@ -27,9 +27,9 @@ namespace vgLib_v2
         float tooltip_width = 33.0;
         float tooltip_height = 20.0;
 
-        VoltageSequencer **voltage_sequencer = NULL;
+        VoltageSequencer *voltage_sequencer = NULL;
 
-        VoltageSequencerView(VoltageSequencer **pointer_to_active_voltage_sequencer, float width, float height, float bar_height, float bar_horizontal_padding, unsigned int max_sequencer_steps)
+        VoltageSequencerView(VoltageSequencer *pointer_to_active_voltage_sequencer, float width, float height, float bar_height, float bar_horizontal_padding, unsigned int max_sequencer_steps)
             : SequencerView(width, height, (width / max_sequencer_steps) - bar_horizontal_padding, bar_horizontal_padding, max_sequencer_steps)
         {
             this->voltage_sequencer = pointer_to_active_voltage_sequencer;
@@ -41,6 +41,10 @@ namespace vgLib_v2
             this->max_sequencer_steps = max_sequencer_steps;
 
             box.size = Vec(width, height);
+        }
+
+        void onVoltageSequencerChange(VoltageSequencer* active_sequencer) override {
+            voltage_sequencer = active_sequencer;
         }
 
         void drawLayer(const DrawArgs &args, int layer) override
@@ -55,12 +59,12 @@ namespace vgLib_v2
                 // Save the drawing context to restore later
                 nvgSave(vg);
 
-                if (*voltage_sequencer)
+                if voltage_sequencer
                 {
 
                     /* TODO: fix voltage ranges
-                    double range_low = (*voltage_sequencer)->voltage_ranges[(*voltage_sequencer)->voltage_range_index][0];
-                    double range_high = (*voltage_sequencer)->voltage_ranges[(*voltage_sequencer)->voltage_range_index][1];
+                    double range_low = voltage_sequencer->voltage_ranges[voltage_sequencer->voltage_range_index][0];
+                    double range_high = voltage_sequencer->voltage_ranges[voltage_sequencer->voltage_range_index][1];
 
                     if(range_low < 0 && range_high > 0) draw_from_center = true;
                     */
@@ -73,10 +77,10 @@ namespace vgLib_v2
                     //
                     for (unsigned int i = 0; i < max_sequencer_steps; i++)
                     {
-                        float value = (*voltage_sequencer)->getValue(i);
+                        float value = voltage_sequencer->getValue(i);
 
                         // Draw grey background bar
-                        if (i < (*voltage_sequencer)->getLength())
+                        if (i < voltage_sequencer->getLength())
                         {
                             bar_color = brightness(bright_background_color, settings::rackBrightness);
                         }
@@ -87,12 +91,12 @@ namespace vgLib_v2
 
                         drawBar(vg, i, bar_height, height, bar_color);
 
-                        if (i == (*voltage_sequencer)->getPlaybackPosition())
+                        if (i == voltage_sequencer->getPlaybackPosition())
                         {
                             // Highlight current step
                             bar_color = current_step_highlight_color;
                         }
-                        else if (i < (*voltage_sequencer)->getLength())
+                        else if (i < voltage_sequencer->getLength())
                         {
                             bar_color = lesser_step_highlight_color;
                         }
@@ -108,7 +112,7 @@ namespace vgLib_v2
                         }
 
                         // Highlight the sequence playback column
-                        if (i == (*voltage_sequencer)->getPlaybackPosition())
+                        if (i == voltage_sequencer->getPlaybackPosition())
                         {
                             drawBar(vg, i, height, height, sequence_position_highlight_color);
                         }
@@ -150,7 +154,7 @@ namespace vgLib_v2
                 drawOverlay(vg, width, height);
 
                 /*
-                if (*voltage_sequencer)
+                if voltage_sequencer
                 {
                     if (module->tooltip_timer > 0)
                         draw_tooltip = true;
@@ -216,7 +220,7 @@ namespace vgLib_v2
             clicked_bar_x_index = clamp(clicked_bar_x_index, 0, max_sequencer_steps - 1);
 
             // Apply snap setting to value
-            (*voltage_sequencer)->setValue(clicked_bar_x_index, value);
+            voltage_sequencer->setValue(clicked_bar_x_index, value);
 
             // Tooltip drawing is done in the draw method
             draw_tooltip = true;
@@ -224,7 +228,7 @@ namespace vgLib_v2
             draw_tooltip_y = value * height;
 
             // TODO: I need to use getValue(), then convert to voltage using the range
-            // tooltip_value = (*voltage_sequencer)->getOutput(clicked_bar_x_index);
+            // tooltip_value = voltage_sequencer->getOutput(clicked_bar_x_index);
             tooltip_value = 0; // temporary shiv
         }
 
@@ -251,14 +255,14 @@ namespace vgLib_v2
             while (shift_offset < 0)
             {
                 module->selected_gate_sequencer->shiftLeft();
-                (*voltage_sequencer)->shiftLeft();
+                voltage_sequencer->shiftLeft();
                 shift_offset++;
             }
 
             while (shift_offset > 0)
             {
                 module->selected_gate_sequencer->shiftRight();
-                (*voltage_sequencer)->shiftRight();
+                voltage_sequencer->shiftRight();
                 shift_offset--;
             }
 
@@ -326,7 +330,7 @@ namespace vgLib_v2
                 int bar_x_index = e.pos.x / (bar_width + bar_horizontal_padding);
 
                 // change step here
-                (*voltage_sequencer)->setPosition(bar_x_index);
+                voltage_sequencer->setPosition(bar_x_index);
                 module->selected_gate_sequencer->setPosition(bar_x_index);
             }
             */
@@ -343,7 +347,7 @@ namespace vgLib_v2
 
             if (keypressLeft(e))
             {
-                (*voltage_sequencer)->shiftLeft();
+                voltage_sequencer->shiftLeft();
                 if ((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT)
                     module->selected_gate_sequencer->shiftLeft();
             }
@@ -351,14 +355,14 @@ namespace vgLib_v2
             if (keypressUp(e))
             {
                 int bar_x_index = e.pos.x / (bar_width + bar_horizontal_padding);
-                double value = (*voltage_sequencer)->getValue(bar_x_index);
+                double value = voltage_sequencer->getValue(bar_x_index);
 
                 value = value + (.01 * (214.0 / 10.0));
                 if (value > height)
                     value = height;
 
                 // Apply snap setting to value
-                (*voltage_sequencer)->setValue(bar_x_index, value);
+                voltage_sequencer->setValue(bar_x_index, value);
 
                 module->tooltip_timer = module->sample_rate * 2; // show tooltip for 2 seconds
                 tooltip_value = roundf((value / height) * 1000) / 100;
@@ -369,14 +373,14 @@ namespace vgLib_v2
             if (keypressDown(e))
             {
                 int bar_x_index = e.pos.x / (bar_width + bar_horizontal_padding);
-                double value = (*voltage_sequencer)->getValue(bar_x_index);
+                double value = voltage_sequencer->getValue(bar_x_index);
 
                 value = value - (.01 * (214.0 / 10.0));
                 if (value > height)
                     value = height;
 
                 // Apply snap setting to value
-                (*voltage_sequencer)->setValue(bar_x_index, value);
+                voltage_sequencer->setValue(bar_x_index, value);
 
                 module->tooltip_timer = module->sample_rate * 2; // show tooltip for 2 seconds
                 tooltip_value = roundf((value / height) * 1000) / 100;
@@ -391,7 +395,7 @@ namespace vgLib_v2
                 // Do not randomize if CTRL-r is pressed.  That's for randomizing everything
                 if ((e.mods & RACK_MOD_MASK) != GLFW_MOD_CONTROL)
                 {
-                    (*voltage_sequencer)->randomize();
+                    voltage_sequencer->randomize();
                     if ((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT)
                         module->selected_gate_sequencer->randomize();
                 }
@@ -408,7 +412,7 @@ namespace vgLib_v2
 
             if (e.key == GLFW_KEY_ESCAPE && e.action == GLFW_PRESS)
             {
-                (*voltage_sequencer)->clear();
+                voltage_sequencer->clear();
                 if ((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT)
                     module->selected_gate_sequencer->clear();
             }

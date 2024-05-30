@@ -85,22 +85,16 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
         addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("SEQ5_GATE_OUTPUT"), module, DigitalSequencer::SEQ5_GATE_OUTPUT));
         addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("SEQ6_GATE_OUTPUT"), module, DigitalSequencer::SEQ6_GATE_OUTPUT));
 
-        // Main voltage sequencer display
         /*
-        VoltageSequencerDisplay *voltage_sequencer_display = new VoltageSequencerDisplay();
-        voltage_sequencer_display->box.pos = mm2px(themePos("CV_SEQUENCER"));
-        voltage_sequencer_display->module = module;
-        addChild(voltage_sequencer_display);
-        */
 
         // Voltage sequencer display
         if (module)
         {
             VoltageSequencerView *voltage_sequencer_view = new VoltageSequencerView(
                 &module->selected_voltage_sequencer,
-                DRAW_AREA_WIDTH,
-                DRAW_AREA_HEIGHT,
-                VOLTAGE_BAR_HEIGHT,
+                VOLTAGE_SEQUENCER_WIDTH,
+                VOLTAGE_SEQUENCER_HEIGHT,
+                VOLTAGE_SEQUENCER_BAR_HEIGHT,
                 BAR_HORIZONTAL_PADDING,
                 MAX_SEQUENCER_STEPS);
 
@@ -118,9 +112,27 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
                 GATE_BAR_HEIGHT,
                 BAR_HORIZONTAL_PADDING,
                 MAX_SEQUENCER_STEPS);
-                
+
             gates_sequencer_view->box.pos = mm2px(themePos("GATE_SEQUENCER"));
             addChild(gates_sequencer_view);
+        }
+        */
+
+
+        if (module)
+        {
+            VGSequencerWidget *vg_sequencer_widget = new VGSequencerWidget(
+                &module->selected_vg_sequencer_plugin,
+                VOLTAGE_SEQUENCER_WIDTH,
+                VOLTAGE_SEQUENCER_HEIGHT,
+                VOLTAGE_SEQUENCER_BAR_HEIGHT,
+                GATE_SEQUENCER_WIDTH,
+                GATE_SEQUENCER_HEIGHT,
+                GATE_SEQUENCER_BAR_HEIGHT,
+                BAR_HORIZONTAL_PADDING,
+                MAX_SEQUENCER_STEPS);
+
+            addChild(vg_sequencer_widget);
         }
     }
 

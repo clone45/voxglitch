@@ -276,8 +276,9 @@ struct DigitalSequencer : VoxglitchModule
         // selected_voltage_sequencer = &voltage_sequencers[selected_sequencer_index];
         // selected_gate_sequencer = &gate_sequencers[selected_sequencer_index];
         selected_vg_sequencer_plugin = &vg_sequencer_plugins[selected_sequencer_index];
-        selected_voltage_sequencer = &selected_vg_sequencer_plugin->voltage_sequencer;
-        selected_gate_sequencer = &selected_vg_sequencer_plugin->gate_sequencer;
+        // selected_voltage_sequencer = &selected_vg_sequencer_plugin->voltage_sequencer;
+        // selected_gate_sequencer = &selected_vg_sequencer_plugin->gate_sequencer;
+        vg_sequencer_plugins[selected_sequencer_index].notifySequencerChange();
 
         // Highlight only selected sequence buttton
         for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)

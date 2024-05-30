@@ -4,9 +4,14 @@
 
 Here's what I think is next:
 
-1. positioning tweaks on digital sequence XP's panel => wait on this!  Will add window control soon.
-2. GateSequencerView may be more modern than VoltageSequencerView when it comes to displaying sequencer window
-3. For all big sequencer modules, save and load the additional sequencer information, like window and polarity
+I'm working on setting up my first "plugin" or "component", which is essentially
+a pairing of sequencers.  However, I'm finding out that the VoltageSequencerView 
+taken in a point to a pointer to a voltage sequencer.  This double pointer 
+system may have been overkill.  Although it made it seamless for swapping out
+which sequencer to draw, it's not readily compatible with the new VGSequencer plugin
+because, when using that plugin, each plugin has a voltage sequencer, and the plugin
+itself is swapped around.  I should draw out the relationships before I continue
+and think it over.
 
 
 ## Useful links
