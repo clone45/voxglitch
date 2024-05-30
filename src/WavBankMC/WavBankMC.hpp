@@ -247,6 +247,13 @@ struct WavBankMC : VoxglitchSamplerModule
     }
   }
 
+  void sort_samples_by_filename(std::vector<SampleMC>& samples)
+  {
+      std::sort(samples.begin(), samples.end(), [](const SampleMC& a, const SampleMC& b) {
+          return a.filename < b.filename;
+      });
+  }
+
 	void load_samples_from_path(std::string path)
 	{
 		// Clear out any old .wav files
@@ -285,6 +292,10 @@ struct WavBankMC : VoxglitchSamplerModule
 				this->samples.push_back(new_sample);
 			}
 		}
+
+    // Sort the samples vector based on a member attribute, e.g., filename
+    sort_samples_by_filename(this->samples);
+
 	}
 
   // Helper functions used by WavBankMCReadout
