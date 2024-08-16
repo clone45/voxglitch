@@ -35,6 +35,8 @@ namespace vgLib_v2
 
         void applyTheme()
         {
+
+            /*
             json_t *layers_array = theme.getLayers();
 
             if (layers_array)
@@ -84,6 +86,7 @@ namespace vgLib_v2
 
             panel->box.size.x = theme.getFloat("panel_width_px");
             setPanel(panel);
+            */
 
             // Precompile widgets_json and store it in this structure
             this->widgets_json = theme.getWidgets();

@@ -8,6 +8,8 @@ struct GlitchSequencerWidget : VoxglitchModuleWidget
     theme.load("glitch_sequencer");
     applyTheme();
 
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/glitch_sequencer/panel.svg")));
+
     addInput(createInputCentered<VoxglitchInputPort>(themePos("STEP_INPUT"), module, GlitchSequencer::STEP_INPUT));
     addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, GlitchSequencer::RESET_INPUT));
     addParam(createParamCentered<VoxglitchAttenuator>(themePos("LENGTH_KNOB"), module, GlitchSequencer::LENGTH_KNOB));

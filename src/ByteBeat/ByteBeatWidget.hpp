@@ -8,6 +8,8 @@ struct ByteBeatWidget : VoxglitchModuleWidget
     theme.load("bytebeat");
     applyTheme();
 
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/bytebeat/panel.svg")));
+
     // =================== PLACE COMPONENTS ====================================
 
     if(theme.showScrews())
