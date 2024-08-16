@@ -3,7 +3,7 @@ struct GrainFxWidget : VoxglitchModuleWidget
   GrainFxWidget(GrainFx* module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/grain_fx_front_panel.svg")));
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/grain_fx/panel.svg")));
 
     float y_offset = 1.8;
     float x_offset = -1.8;

@@ -8,6 +8,8 @@ struct HazumiWidget : VoxglitchModuleWidget
     theme.load("hazumi");
     applyTheme();
 
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/hazumi/panel.svg")));
+
     // Add rack screws
     if(theme.showScrews())
     {

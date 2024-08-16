@@ -17,6 +17,8 @@ struct LooperWidget : VoxglitchSamplerModuleWidget
     theme.load("looper");
     applyTheme();
 
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/looper/panel.svg")));
+
     // Add output jacks
     addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_LEFT"), module, Looper::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_RIGHT"), module, Looper::AUDIO_OUTPUT_RIGHT));

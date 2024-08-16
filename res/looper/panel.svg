@@ -8,10 +8,10 @@
    y="0px"
    viewBox="0 0 43.2 364.252"
    xml:space="preserve"
-   sodipodi:docname="typography.svg"
+   sodipodi:docname="panel.svg"
    inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
-   width="15.240mm"
-   height="128.6mm"
+   width="15.24mm"
+   height="128.60001mm"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -48,7 +48,13 @@
 	.st0{fill:#F3EDE7;}
 	.st1{fill:#1C2729;}
 </style>
-<g
+<rect
+   style="fill:#161517;fill-opacity:1;stroke-width:0.72567"
+   id="rect350"
+   width="43.200001"
+   height="364.25198"
+   x="0"
+   y="-0.14172462" /><g
    id="g22"
    style="fill:#f3eee8;fill-opacity:1">
 	<path

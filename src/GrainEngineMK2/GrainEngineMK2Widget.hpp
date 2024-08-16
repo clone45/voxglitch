@@ -8,6 +8,8 @@ struct GrainEngineMK2Widget : VoxglitchModuleWidget
     theme.load("grain_engine_mk2");
     applyTheme();
 
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/grain_engine_mk2/panel.svg")));
+
     // Add rack screws
     if(theme.showScrews())
     {

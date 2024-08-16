@@ -8,6 +8,8 @@ struct GrainEngineMK2ExpanderWidget : VoxglitchModuleWidget
     theme.load("grain_engine_mk2_expander");
     applyTheme();
 
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/grain_engine_mk2_expander/panel.svg")));
+
     addInput(createInputCentered<VoxglitchInputPort>(themePos("AUDIO_IN_LEFT"), module, GrainEngineMK2Expander::AUDIO_IN_LEFT));
     addInput(createInputCentered<VoxglitchInputPort>(themePos("AUDIO_IN_RIGHT"), module, GrainEngineMK2Expander::AUDIO_IN_RIGHT));
 

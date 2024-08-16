@@ -8,6 +8,8 @@ struct DrumRandomizerWidget : VoxglitchModuleWidget
     theme.load("drum_randomizer");
     applyTheme();
 
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/drum_randomizer/panel.svg")));
+
     addInput(createInputCentered<VoxglitchInputPort>(themePos("STEP_INPUT"), module, DrumRandomizer::STEP_INPUT));
     addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, DrumRandomizer::RESET_INPUT));
 

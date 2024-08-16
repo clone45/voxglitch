@@ -2,13 +2,13 @@
 #include "osdialog.h"
 #include "settings.hpp"
 
-#include "vgLib-1.0/constants.h"
-#include "vgLib-1.0/Theme.hpp"
-#include "vgLib-1.0/components/VoxglitchComponents.hpp"
-#include "vgLib-1.0/sample.hpp"
-#include "vgLib-1.0/SamplePlayer.hpp"
+#include "vgLib-2.0/constants.h"
+#include "vgLib-2.0/Theme.hpp"
+#include "vgLib-2.0/components/VoxglitchComponents.hpp"
+#include "vgLib-2.0/sample.hpp"
+#include "vgLib-2.0/SamplePlayer.hpp"
 
-using namespace vgLib_v1;
+using namespace vgLib_v2;
 
 #include "Looper/defines.h"
 #include "Looper/Looper.hpp"
