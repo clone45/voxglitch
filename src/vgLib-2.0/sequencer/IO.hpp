@@ -1,49 +1,13 @@
+#pragma once
+
 #include <jansson.h>
 #include <stdbool.h>
 
 namespace vgLib_v2
 {
-
-    class JSON
+    class IO
     {
-
-    public:
-        static double getNumber(json_t *root, const char *key)
-        {
-            json_t *json_value = json_object_get(root, key);
-            if (json_value && json_is_number(json_value))
-            {
-                return json_number_value(json_value);
-            }
-            return 0.0; // or another default value if required
-        }
-
-        static int getInteger(json_t *root, const char *key)
-        {
-            json_t *json_value = json_object_get(root, key);
-            if (json_value && json_is_integer(json_value))
-            {
-                return json_integer_value(json_value);
-            }
-            return 0; // or another default value if required
-        }
-
-        static bool getBoolean(json_t *root, const char *key)
-        {
-            json_t *json_value = json_object_get(root, key);
-            if (json_value && json_is_boolean(json_value))
-            {
-                return json_boolean_value(json_value);
-            }
-            return false; // or another default value if required
-        }
-
-        /*
-
-        // TODO: These should probably be moved into a separate helper class for specifically loading and saving sequencers
-        // Case in point: NoteReadout module uses the JSON.hpp file for the getNumber, getInteger, and getBoolean functions,
-        // but does not use the loadSequencer and saveSequencer functions.  And needing the VoltageSequencer class to be
-        // included for the JSON.hpp file to work is not ideal.
+        public:
 
         static void loadSequencer(json_t *json, const std::string &sequencer_name, VoltageSequencer &sequencer)
         {
@@ -99,7 +63,6 @@ namespace vgLib_v2
 
             return sequencer_data_json;
         }
-        */
-    };
 
+    };
 } // namespace vgLib_v2

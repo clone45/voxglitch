@@ -28,6 +28,8 @@
 #include "vgLib-2.0/sequencer/ArpSequencer.hpp"
 #include "vgLib-2.0/sequencer/VoltageSequencer.hpp"
 #include "vgLib-2.0/helpers/JSON.hpp"
+#include "vgLib-2.0/helpers/NOTES.hpp"
+#include "vgLib-2.0/sequencer/IO.hpp"
 #include "vgLib-2.0/customParamQuantities.hpp"
 
 using namespace vgLib_v2;
