@@ -13,6 +13,7 @@
 #include "VoxglitchSamplerModule.hpp"
 #include "VoxglitchSamplerModuleWidget.hpp"
 
+#include "VoxglitchRoundShadow.hpp"
 #include "VoxglitchPorts.hpp"
 #include "VoxglitchKnobs.hpp"
 #include "VoxglitchScrews.hpp"
