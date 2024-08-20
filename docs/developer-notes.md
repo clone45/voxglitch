@@ -74,6 +74,37 @@ Size: 6pt
 
 ## Positioning
 
+### Large Knobs
+When positioning RoundHugeBlackKnob with my custom scale decal:
+* large decal is at 16.404 mm  {"x": 33.131, "y": 62.0} px, 
+* RoundHugeBlackKnob knob is at {"x": 60.053509,"y": 83.487495} px
+
+To convert from decal coordinates to knob coordinates:
+
+knob_x = decal_x + 26.922509
+knob_y = decal_y + 21.487495
+
+
+To convert from knob coordinates to decal coordinates:
+
+decal_x_px = knob_x_px - 26.922509
+decal_y_px = knob_y_px - 21.487495
+
+or, if the knob position is in pixels,
+
+decal_x_px = (knob_x_pixels * 2.952756) - 26.922509
+decal_y_px = (knob_y_pixels * 2.952756) - 21.487495
+
+For Bytebeat's large knob:
+
+knob is at 50.1969, 83.487495
+
+decal is calculated as:
+decal_x_px = 50.1969 - 26.922509
+decal_y_px = 83.487495 - 21.487495
+
+
+
 ### Medium knobs
 When trying to find out the correct y-position of a knob within a scale decal:
 knob_position_px = scale_decal_positon_px + 22.78879 px

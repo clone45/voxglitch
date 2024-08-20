@@ -11,8 +11,8 @@ struct AutobreakWidget : VoxglitchSamplerModuleWidget
 //		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/autobreak/panel.svg")));
 
 		setPanel(createPanel(
-			asset::plugin(pluginInstance, "res/autobreak/panel.svg"),
-			asset::plugin(pluginInstance, "res/autobreak/panel-dark.svg")
+			asset::plugin(pluginInstance, "res/autobreak/autobreak_panel.svg"),
+			asset::plugin(pluginInstance, "res/autobreak/autobreak_panel-dark.svg")
 		));
 
 		// =================== PLACE COMPONENTS ====================================

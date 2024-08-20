@@ -8,7 +8,12 @@ struct ByteBeatWidget : VoxglitchModuleWidget
     theme.load("bytebeat");
     applyTheme();
 
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/bytebeat/panel.svg")));
+    // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/bytebeat/panel.svg")));
+
+		setPanel(createPanel(
+			asset::plugin(pluginInstance, "res/bytebeat/bytebeat_panel.svg"),
+			asset::plugin(pluginInstance, "res/bytebeat/bytebeat_panel-dark.svg")
+		));
 
     // =================== PLACE COMPONENTS ====================================
 
@@ -23,7 +28,7 @@ struct ByteBeatWidget : VoxglitchModuleWidget
     // Equation inputs
 
     // addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(COLUMN_3, ROW_3 AND_A_HALF_ROW)), module, ByteBeat::EQUATION_KNOB));
-    auto L1 = createParamCentered<VoxglitchLargeKnob>(mm2px(Vec(17.0, 27.0)), module, ByteBeat::EQUATION_KNOB); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
+    auto L1 = createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(17.0, 27.0)), module, ByteBeat::EQUATION_KNOB); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
     addInput(createInputCentered<VoxglitchInputPort>(mm2px(Vec(32.35, ROW_5)), module, ByteBeat::EQUATION_INPUT));
 
     // Parameter inputs
