@@ -15,7 +15,12 @@ struct DigitalProgrammerWidget : VoxglitchModuleWidget
     theme.load("digital_programmer");
     applyTheme();
 
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_programmer/panel.svg")));
+    // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_programmer/panel.svg")));
+
+		setPanel(createPanel(
+			asset::plugin(pluginInstance, "res/digital_programmer/digital_programmer_panel.svg"),
+			asset::plugin(pluginInstance, "res/digital_programmer/digital_programmer_panel-dark.svg")
+		));
 
     // Optionally show rack screws
     if(theme.showScrews())
