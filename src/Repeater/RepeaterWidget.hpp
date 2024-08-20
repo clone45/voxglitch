@@ -8,7 +8,12 @@ struct RepeaterWidget : VoxglitchSamplerModuleWidget
         theme.load("repeater");
         applyTheme();
 
-        setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/repeater/panel.svg")));
+        // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/repeater/panel.svg")));
+
+        setPanel(createPanel(
+            asset::plugin(pluginInstance, "res/repeater/repeater_panel.svg"),
+            asset::plugin(pluginInstance, "res/repeater/repeater_panel-dark.svg")
+        ));
 
         // Add rack screws
         if (theme.showScrews())

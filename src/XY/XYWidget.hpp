@@ -8,7 +8,12 @@ struct XYWidget : VoxglitchModuleWidget
         theme.load("xy");
         applyTheme();
 
-        setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/xy/panel.svg")));
+        // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/xy/panel.svg")));
+
+        setPanel(createPanel(
+            asset::plugin(pluginInstance, "res/xy/xy_panel.svg"),
+            asset::plugin(pluginInstance, "res/xy/xy_panel-dark.svg")
+        ));
 
         // Add rack screws
         if (theme.showScrews())

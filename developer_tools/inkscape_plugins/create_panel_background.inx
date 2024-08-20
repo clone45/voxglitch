@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+  <name>Create Panel Background</name>
+  <id>org.inkscape.tutorial.create_panel_background</id>
+  <param name="tab" type="notebook">
+    <page name="options" gui-text="Options">
+      <param name="mode" type="optiongroup" appearance="combo" gui-text="Background Color:">
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </param>
+      <param name="help" type="description">This extension will create a new rectangle that fills the entire document, serving as a panel background. The background color will be light (#e7e7e7) or dark (#18181a) based on the selected mode.</param>
+    </page>
+  </param>
+  <effect>
+    <object-type>all</object-type>
+    <effects-menu>
+      <submenu name="Voxglitch Tools"/>
+    </effects-menu>
+  </effect>
+  <script>
+    <command location="inx" interpreter="python">create_panel_background.py</command>
+  </script>
+</inkscape-extension>

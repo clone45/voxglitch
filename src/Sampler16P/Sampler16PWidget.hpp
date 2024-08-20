@@ -8,7 +8,12 @@ struct Sampler16PWidget : VoxglitchSamplerModuleWidget
         theme.load("sampler16p");
         applyTheme();
 
-        setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/sampler16p/panel.svg")));
+        // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/sampler16p/panel.svg")));
+
+        setPanel(createPanel(
+            asset::plugin(pluginInstance, "res/sampler16p/sampler16p_panel.svg"),
+            asset::plugin(pluginInstance, "res/sampler16p/sampler16p_panel-dark.svg")
+        ));
 
         addInput(createInputCentered<VoxglitchInputPort>(themePos("TRIGGER_INPUTS"), module, Sampler16P::TRIGGER_INPUTS));
 

@@ -8,7 +8,12 @@ struct NoteDetectorWidget : VoxglitchModuleWidget
         theme.load("note_detector");
         applyTheme();
 
-        setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/note_detector/panel.svg")));
+        // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/note_detector/panel.svg")));
+
+        setPanel(createPanel(
+            asset::plugin(pluginInstance, "res/note_detector/note_detector_panel.svg"),
+            asset::plugin(pluginInstance, "res/note_detector/note_detector_panel-dark.svg")
+        ));
 
         // Inputs
         addInput(createInputCentered<VoxglitchInputPort>(themePos("CV_INPUT"), module, NoteDetector::CV_INPUT));

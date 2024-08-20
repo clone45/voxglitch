@@ -8,7 +8,7 @@ struct GrainEngineMK2Widget : VoxglitchModuleWidget
         theme.load("grain_engine_mk2");
         applyTheme();
 
-        setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/grain_engine_mk2/panel.svg")));
+        // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/grain_engine_mk2/panel.svg")));
 
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/grain_engine_mk2/grain_engine_mk2_panel.svg"),
@@ -37,7 +37,7 @@ struct GrainEngineMK2Widget : VoxglitchModuleWidget
         // Spawn rate
         addParam(createParamCentered<VoxglitchMediumKnob>(themePos("RATE_KNOB"), module, GrainEngineMK2::RATE_KNOB));
         addParam(createParamCentered<VoxglitchAttenuator>(themePos("RATE_ATTN_KNOB"), module, GrainEngineMK2::RATE_ATTN_KNOB));
-        ;
+        
         addInput(createInputCentered<VoxglitchInputPort>(themePos("RATE_INPUT"), module, GrainEngineMK2::RATE_INPUT));
 
         // Window

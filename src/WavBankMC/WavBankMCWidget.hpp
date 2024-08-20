@@ -8,7 +8,12 @@ struct WavBankMCWidget : VoxglitchModuleWidget
         theme.load("wavbank_mc");
         applyTheme();
 
-        setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/wavbank_mc/panel.svg")));
+        // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/wavbank_mc/panel.svg")));
+
+        setPanel(createPanel(
+            asset::plugin(pluginInstance, "res/wavbank_mc/wavbank_mc_panel.svg"),
+            asset::plugin(pluginInstance, "res/wavbank_mc/wavbank_mc_panel-dark.svg")
+        ));
 
         // Add rack screws
         if (theme.showScrews())

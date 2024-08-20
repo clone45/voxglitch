@@ -11,13 +11,28 @@
    viewBox="0 0 288 364.252"
    style="enable-background:new 0 0 288 364.252;"
    xml:space="preserve"
-   sodipodi:docname="grain_engine_mk2_panel-light.svg"
+   sodipodi:docname="grain_engine_mk2_panel.svg"
    inkscape:version="1.3.2 (091e20e, 2023-11-25, custom)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg"><defs
-   id="defs157" /><sodipodi:namedview
+   id="defs157"><linearGradient
+     id="swatch1"
+     inkscape:swatch="solid"
+     inkscape:label="LIght Panel Background"><stop
+       style="stop-color:#e7e7e7;stop-opacity:1;"
+       offset="0"
+       id="stop1" /></linearGradient><linearGradient
+     inkscape:collect="always"
+     xlink:href="#swatch1"
+     id="linearGradient1"
+     x1="5.6843419e-14"
+     y1="182.12599"
+     x2="288.00003"
+     y2="182.12599"
+     gradientUnits="userSpaceOnUse" /></defs><sodipodi:namedview
    id="namedview155"
    pagecolor="#ffffff"
    bordercolor="#666666"
@@ -46,7 +61,7 @@
 	.st2{fill:#FFFFFF;}
 </style>
 <rect
-   style="fill:#e7e7e7;fill-opacity:1;stroke-width:0.725672"
+   style="fill:url(#linearGradient1);fill-opacity:1;stroke-width:0.725672"
    id="rect350"
    width="288.00003"
    height="364.25198"

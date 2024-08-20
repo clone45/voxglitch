@@ -8,7 +8,12 @@ struct OnePointWidget : VoxglitchModuleWidget
         theme.load("onepoint");
         applyTheme();
 
-        setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/onepoint/panel.svg")));
+        // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/onepoint/panel.svg")));
+
+        setPanel(createPanel(
+            asset::plugin(pluginInstance, "res/onepoint/onepoint_panel.svg"),
+            asset::plugin(pluginInstance, "res/onepoint/onepoint_panel-dark.svg")
+        ));
 
         addInput(createInputCentered<VoxglitchInputPort>(themePos("STEP_INPUT"), module, OnePoint::STEP_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, OnePoint::RESET_INPUT));
