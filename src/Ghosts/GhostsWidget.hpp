@@ -8,7 +8,12 @@ struct GhostsWidget : VoxglitchSamplerModuleWidget
 		theme.load("ghosts");
 		applyTheme();
 
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/ghosts/panel.svg")));
+		// setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/ghosts/panel.svg")));
+
+        setPanel(createPanel(
+            asset::plugin(pluginInstance, "res/ghosts/ghosts_panel.svg"),
+            asset::plugin(pluginInstance, "res/ghosts/ghosts_panel-dark.svg")
+        ));
 
 		// =================== PLACE COMPONENTS ====================================
 
