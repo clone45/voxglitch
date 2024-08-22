@@ -28,7 +28,7 @@ struct GateSequencerDisplay : SequencerDisplay
           value = module->selected_gate_sequencer->getValue(i);
 
           // Draw grey background bar
-          if(i < module->selected_gate_sequencer->getLength()) {
+          if((int) i < module->selected_gate_sequencer->getMaxLength()) {
             // bar_color = nvgRGBA(60, 60, 64, 255);
             bar_color = brightness(nvgRGBA(60, 60, 64, 255), settings::rackBrightness);
           }
@@ -44,7 +44,7 @@ struct GateSequencerDisplay : SequencerDisplay
           {
             bar_color = nvgRGBA(255, 255, 255, 250);
           }
-          else if(i < module->selected_gate_sequencer->getLength())
+          else if((int) i < module->selected_gate_sequencer->getMaxLength())
           {
             bar_color = nvgRGBA(255, 255, 255, 150);
           }
@@ -152,14 +152,14 @@ struct GateSequencerDisplay : SequencerDisplay
   {
     if(keypressRight(e))
     {
-      module->selected_gate_sequencer->shiftRight();
-      if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_voltage_sequencer->shiftRight();
+      module->selected_gate_sequencer->shiftRightInWindow();
+      if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_voltage_sequencer->shiftRightInWindow();
     }
 
     if(keypressLeft(e))
     {
-      module->selected_gate_sequencer->shiftLeft();
-      if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_voltage_sequencer->shiftLeft();
+      module->selected_gate_sequencer->shiftLeftInWindow();
+      if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_voltage_sequencer->shiftLeftInWindow();
     }
 
     // Randomize sequence by hovering over and pressing 'r'

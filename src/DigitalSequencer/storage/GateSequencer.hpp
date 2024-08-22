@@ -23,7 +23,7 @@ struct GateSequencer : Sequencer
     sequence[index] = value;
   }
 
-  void shiftLeft()
+  void shiftLeftInWindow()
   {
     double temp = sequence[0];
     for(unsigned int i=0; i < this->sequence_length-1; i++)

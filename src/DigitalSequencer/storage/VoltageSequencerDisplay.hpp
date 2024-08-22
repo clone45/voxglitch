@@ -33,8 +33,13 @@ struct VoltageSequencerDisplay : SequencerDisplay
 
       if(module)
       {
-        double range_low = module->selected_voltage_sequencer->voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][0];
-        double range_high = module->selected_voltage_sequencer->voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][1];
+        // double range_low = module->selected_voltage_sequencer->voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][0];
+        // double range_high = module->selected_voltage_sequencer->voltage_ranges[module->selected_voltage_sequencer->voltage_range_index][1];
+
+        unsigned int voltage_range_index = module->voltage_range_indexes[module->selected_sequencer_index];
+
+        double range_low  = module->voltage_ranges[voltage_range_index][0];
+        double range_high = module->voltage_ranges[voltage_range_index][1];
 
         if(range_low < 0 && range_high > 0) draw_from_center = true;
 
@@ -46,7 +51,7 @@ struct VoltageSequencerDisplay : SequencerDisplay
           float value = module->selected_voltage_sequencer->getValue(i);
 
           // Draw grey background bar
-          if(i < module->selected_voltage_sequencer->getLength()) {
+          if((int) i < module->selected_voltage_sequencer->getMaxLength()) {
             bar_color = brightness(bright_background_color, settings::rackBrightness);
           }
           else {
@@ -55,12 +60,12 @@ struct VoltageSequencerDisplay : SequencerDisplay
 
           drawBar(vg, i, BAR_HEIGHT, DRAW_AREA_HEIGHT, bar_color);
 
-          if(i == module->selected_voltage_sequencer->getPlaybackPosition())
+          if((int) i == module->selected_voltage_sequencer->getPlaybackPosition())
           {
             // Highlight current step
             bar_color = current_step_highlight_color;
           }
-          else if(i < module->selected_voltage_sequencer->getLength())
+          else if((int) i < module->selected_voltage_sequencer->getMaxLength())
           {
             bar_color = lesser_step_highlight_color;
           }
@@ -76,7 +81,7 @@ struct VoltageSequencerDisplay : SequencerDisplay
           }
 
           // Highlight the sequence playback column
-          if(i == module->selected_voltage_sequencer->getPlaybackPosition())
+          if((int) i == module->selected_voltage_sequencer->getPlaybackPosition())
           {
             drawBar(vg, i, DRAW_AREA_HEIGHT, DRAW_AREA_HEIGHT, sequence_position_highlight_color);
           }
@@ -186,7 +191,8 @@ struct VoltageSequencerDisplay : SequencerDisplay
     draw_tooltip = true;
     draw_tooltip_index = clicked_bar_x_index;
     draw_tooltip_y = value * DRAW_AREA_HEIGHT;
-    tooltip_value = module->selected_voltage_sequencer->getOutput(clicked_bar_x_index);
+    // tooltip_value = module->selected_voltage_sequencer->getOutput(clicked_bar_x_index);
+    tooltip_value = module->getScaledOutput(module->selected_sequencer_index, clicked_bar_x_index);
   }
 
   void startShiftSequences(Vec mouse_position)
@@ -210,15 +216,15 @@ struct VoltageSequencerDisplay : SequencerDisplay
 
     while(shift_offset < 0)
     {
-      module->selected_gate_sequencer->shiftLeft();
-      module->selected_voltage_sequencer->shiftLeft();
+      module->selected_gate_sequencer->shiftLeftInWindow();
+      module->selected_voltage_sequencer->shiftLeftInWindow();
       shift_offset ++;
     }
 
     while(shift_offset > 0)
     {
-      module->selected_gate_sequencer->shiftRight();
-      module->selected_voltage_sequencer->shiftRight();
+      module->selected_gate_sequencer->shiftRightInWindow();
+      module->selected_voltage_sequencer->shiftRightInWindow();
       shift_offset --;
     }
 
@@ -299,8 +305,8 @@ struct VoltageSequencerDisplay : SequencerDisplay
 
     if(keypressLeft(e))
     {
-      module->selected_voltage_sequencer->shiftLeft();
-      if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftLeft();
+      module->selected_voltage_sequencer->shiftLeftInWindow();
+      if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->shiftLeftInWindow();
     }
 
     if(keypressUp(e))
@@ -361,7 +367,7 @@ struct VoltageSequencerDisplay : SequencerDisplay
 
     if(e.key == GLFW_KEY_ESCAPE && e.action == GLFW_PRESS)
     {
-      module->selected_voltage_sequencer->clear();
+      module->selected_voltage_sequencer->zeroInWindow();
       if((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT) module->selected_gate_sequencer->clear();
     }
   }

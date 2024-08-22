@@ -42,6 +42,16 @@ namespace vgLib_v2
             sequence[index] = !sequence[index];
         }
 
+        void shiftLeftInWindow()
+        {
+            shiftLeft();
+        }
+
+        void shiftRightInWindow()
+        {
+            shiftRight();
+        }
+
         void shiftLeft()
         {
             double temp = sequence[0];

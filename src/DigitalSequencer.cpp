@@ -21,19 +21,21 @@
 
 #include "DigitalSequencer/defines.h"
 
-#include "vgLib-1.0/constants.h"
-#include "vgLib-1.0/Theme.hpp"
-#include "vgLib-1.0/components/VoxglitchComponents.hpp"
-#include "vgLib-1.0/sequencer/Sequencer.hpp"
-#include "vgLib-1.0/sequencer/VoltageSequencer.hpp"
+#include "vgLib-2.0/constants.h"
+#include "vgLib-2.0/Theme.hpp"
+#include "vgLib-2.0/components/VoxglitchComponents.hpp"
 
-using namespace vgLib_v1;
+// #include "vgLib-2.0/sequencer/VoltageSequencerHistory.hpp"
+// #include "vgLib-2.0/sequencer/Sequencer.hpp"
+// #include "vgLib-2.0/sequencer/VoltageSequencer.hpp"
+// #include "vgLib-2.0/sequencer/GateSequencer.hpp"
 
-#include "DigitalSequencer/GateSequencer.hpp"
+using namespace vgLib_v2;
+
 #include "DigitalSequencer/DigitalSequencer.hpp"
-#include "DigitalSequencer/SequencerDisplay.hpp"
-#include "DigitalSequencer/VoltageSequencerDisplay.hpp"
-#include "DigitalSequencer/GateSequencerDisplay.hpp"
+// #include "DigitalSequencer/SequencerDisplay.hpp"
+// #include "DigitalSequencer/VoltageSequencerDisplay.hpp"
+// #include "DigitalSequencer/GateSequencerDisplay.hpp"
 #include "DigitalSequencer/DigitalSequencerWidget.hpp"
 
 Model* modelDigitalSequencer = createModel<DigitalSequencer, DigitalSequencerWidget>("digitalsequencer");
