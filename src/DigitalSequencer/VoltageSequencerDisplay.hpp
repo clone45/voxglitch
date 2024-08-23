@@ -289,7 +289,7 @@ struct VoltageSequencerDisplay : SequencerDisplay
 
     void onHover(const event::Hover &e) override
     {
-        if (module->frozen)
+        if (module && module->frozen)
         {
             int bar_x_index = e.pos.x / (bar_width + BAR_HORIZONTAL_PADDING);
 
@@ -304,6 +304,9 @@ struct VoltageSequencerDisplay : SequencerDisplay
 
     void onHoverKey(const event::HoverKey &e) override
     {
+        if (!module)
+            return;
+
         this->shift_key = ((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT);
         this->ctrl_key = ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL);
 

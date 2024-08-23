@@ -43,6 +43,11 @@ namespace vgLib_v2
             sequence[index] = !sequence[index];
         }
 
+        void addGate() // for realtime gate entry
+        {
+            sequence[sequence_playback_position] = ! sequence[sequence_playback_position];
+        }
+
         void shiftLeftInWindow()
         {
             shiftLeft();

@@ -19,7 +19,7 @@ struct DigitalSequencer : VoxglitchModule
     GateSequencer *selected_gate_sequencer = &gate_sequencers[0];
 
     unsigned int selected_sequencer_index = 0;
-    int voltage_outputs[NUMBER_OF_SEQUENCERS] = {};;
+    int voltage_outputs[NUMBER_OF_SEQUENCERS] = {};
     int gate_outputs[NUMBER_OF_SEQUENCERS] = {};
     int sequencer_step_inputs[NUMBER_OF_SEQUENCERS] = {};
     unsigned int snap_division_indexes[NUMBER_OF_SEQUENCERS] = {};
@@ -592,12 +592,6 @@ struct DigitalSequencer : VoxglitchModule
 
                 float output = this->getScaledOutput(i);
 
-                //        unsigned int voltage_range_index = this->voltage_range_indexes[i];
-                //        float value = this->voltage_sequencers[i].getValue();
-                //        float low_voltage = this->voltage_ranges[voltage_range_index][0];
-                //        float high_voltage = this->voltage_ranges[voltage_range_index][1];
-                //        float output = rescale(value, 0.0, 1.0, low_voltage, high_voltage);
-
                 if (voltage_sequencers[i].sample_and_hold)
                 {
                     if (gate_sequencers[i].getValue())
@@ -616,13 +610,6 @@ struct DigitalSequencer : VoxglitchModule
             for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
             {
                 float output = this->getScaledOutput(i);
-
-                // Somewhat unpleasant code duplication here.
-                //        unsigned int voltage_range_index = this->voltage_range_indexes[i];
-                //        float value = this->voltage_sequencers[i].getValue();
-                //        float low_voltage = this->voltage_ranges[voltage_range_index][0];
-                //        float high_voltage = this->voltage_ranges[voltage_range_index][1];
-                //        float output = rescale(value, 0.0, 1.0, low_voltage, high_voltage);
 
                 // Notice that this ignores sample + hold.  This is the main reason
                 // for duplicating this code between the frozen/not frozen IF statments.
