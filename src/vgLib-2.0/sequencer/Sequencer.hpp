@@ -132,6 +132,9 @@ namespace vgLib_v2
             return (sequence_playback_position);
         }
 
+        // Window start and window end start at 0.  This means, for a sequence of 8 steps, 
+        // the window start is 0 and the window end is 7.
+
         void setWindowStart(int window_start)
         {
             this->window_start = clamp(window_start, 0, this->window_end);

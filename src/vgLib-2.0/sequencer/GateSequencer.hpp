@@ -13,6 +13,7 @@ namespace vgLib_v2
         // constructor
         GateSequencer()
         {
+            sequence.assign(sequence_length, 0);
         }
 
         // This must be called before interacting with the voltage sequencer since
