@@ -1,11 +1,14 @@
 struct AutobreakMemory
 {
-    VoltageSequencer position_sequencer;
-    VoltageSequencer sample_sequencer;
-    VoltageSequencer volume_sequencer;
-    VoltageSequencer pan_sequencer;
-    VoltageSequencer reverse_sequencer;
-    VoltageSequencer ratchet_sequencer;
+    AutobreakVoltageSequencer position_sequencer;
+    AutobreakVoltageSequencer sample_sequencer;
+    AutobreakVoltageSequencer volume_sequencer;
+    AutobreakVoltageSequencer pan_sequencer;
+    AutobreakVoltageSequencer reverse_sequencer;
+    AutobreakVoltageSequencer ratchet_sequencer;
+
+    unsigned int snap_division_indexes[6] = {};
+    unsigned int voltage_range_indexes[6] = {};
 
     AutobreakMemory()
     {

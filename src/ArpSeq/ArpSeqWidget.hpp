@@ -128,6 +128,11 @@ struct ArpSeqWidget : VoxglitchModuleWidget
         theme.load("ArpSeq");
         applyTheme();
 
+		setPanel(createPanel(
+			asset::plugin(pluginInstance, "res/arpseq/arpseq_panel.svg"),
+			asset::plugin(pluginInstance, "res/arpseq/arpseq_panel-dark.svg")
+		));
+
         if (theme.showScrews())
         {
             // addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, 0)));
