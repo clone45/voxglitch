@@ -31,9 +31,9 @@
    inkscape:pageopacity="0.0"
    inkscape:pagecheckerboard="0"
    showgrid="false"
-   inkscape:zoom="2.79415"
-   inkscape:cx="429.28977"
-   inkscape:cy="284.70197"
+   inkscape:zoom="3.9515248"
+   inkscape:cx="825.88371"
+   inkscape:cy="417.93993"
    inkscape:window-width="3840"
    inkscape:window-height="2054"
    inkscape:window-x="2869"
@@ -42,7 +42,12 @@
    inkscape:current-layer="Ebene_2"
    inkscape:document-units="mm"
    inkscape:showpageshadow="2"
-   inkscape:deskcolor="#d1d1d1" />
+   inkscape:deskcolor="#d1d1d1"
+   showguides="true"><sodipodi:guide
+     position="692.85387,66.509368"
+     orientation="1,0"
+     id="guide1"
+     inkscape:locked="false" /></sodipodi:namedview>
 <style
    type="text/css"
    id="style2">
@@ -203,4 +208,13 @@
    d="m 584.08725,336.62578 h 1.428 c 1.197,0 1.68,-0.497 1.68,-1.561 v -0.21 c 0,-1.155 -0.483,-1.575 -1.68,-1.575 h -2.513 v 4.9 h 1.085 z m 1.253,-2.457 c 0.588,0 0.77,0.196 0.77,0.749 v 0.07 c 0,0.539 -0.168,0.749 -0.763,0.749 h -1.26 v -1.568 z m 5.396,4.081 c 1.575,0 2.282,-0.686 2.282,-2.303 v -0.427 c 0,-1.617 -0.707,-2.31 -2.282,-2.31 h -0.091 c -1.589,0 -2.289,0.693 -2.289,2.31 v 0.427 c 0,1.617 0.7,2.303 2.289,2.303 z m -0.105,-0.945 c -0.973,0 -1.176,-0.539 -1.176,-1.428 v -0.294 c 0,-0.889 0.203,-1.428 1.176,-1.428 h 0.119 c 0.966,0 1.169,0.539 1.169,1.428 v 0.294 c 0,0.903 -0.203,1.414 -1.169,1.428 z m 7.209,-0.063 h -2.324 v -3.962 h -1.085 v 4.9 h 3.409 z m 2.61699,-1.148 1.841,-2.814 h -1.162 l -1.148,1.855 h -0.042 l -1.148,-1.855 h -1.26 l 1.827,2.828 v 2.072 h 1.092 z m 7.467,2.156 c 1.575,0 2.282,-0.686 2.282,-2.303 v -0.427 c 0,-1.617 -0.707,-2.31 -2.282,-2.31 h -0.091 c -1.589,0 -2.289,0.693 -2.289,2.31 v 0.427 c 0,1.617 0.7,2.303 2.289,2.303 z m -0.105,-0.945 c -0.973,0 -1.176,-0.539 -1.176,-1.428 v -0.294 c 0,-0.889 0.203,-1.428 1.176,-1.428 h 0.119 c 0.966,0 1.169,0.539 1.169,1.428 v 0.294 c 0,0.903 -0.203,1.414 -1.169,1.428 z m 5.921,0.945 c 1.512,0 2.093,-0.518 2.093,-2.03 v -2.94 h -1.106 v 2.877 c 0,0.847 -0.238,1.12 -0.959,1.12 h -0.154 c -0.721,0 -0.959,-0.266 -0.959,-1.12 v -2.877 h -1.106 v 2.94 c 0,1.512 0.574,2.03 2.093,2.03 z m 5.809,-4.032 h 1.512 v -0.938 h -4.095 v 0.938 h 1.491 v 3.962 h 1.092 z"
    id="text426"
    style="font-size:7px;line-height:1.25;font-family:Pilat;-inkscape-font-specification:Pilat;letter-spacing:0.72px;word-spacing:0px;stroke-width:0.96"
-   aria-label="POLY OUT" /></svg>
+   aria-label="POLY OUT" /><rect
+   style="fill:#d2d2d3;fill-opacity:1;stroke:none;stroke-width:0.283465"
+   id="rect2"
+   width="39.26268"
+   height="39.26268"
+   x="673.71027"
+   y="-354.83813"
+   rx="4.5000005"
+   ry="4.4999995"
+   transform="scale(1,-1)" /></svg>
