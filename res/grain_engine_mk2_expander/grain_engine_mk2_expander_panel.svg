@@ -25,9 +25,9 @@
    inkscape:pageopacity="0.0"
    inkscape:pagecheckerboard="0"
    showgrid="false"
-   inkscape:zoom="2.3966923"
-   inkscape:cx="43.184517"
-   inkscape:cy="248.46744"
+   inkscape:zoom="6.7788695"
+   inkscape:cx="49.344511"
+   inkscape:cy="446.01832"
    inkscape:window-width="3840"
    inkscape:window-height="2054"
    inkscape:window-x="2869"
@@ -43,7 +43,16 @@
    height="364.25196850393706"
    style="fill:#e7e7e7;fill-opacity:1;opacity:1;stroke:none"
    inkscape:groupmode="layer"
-   id="rect1" /><defs
+   id="rect1" /><rect
+   style="fill:#d2d2d3;fill-opacity:1;stroke:none;stroke-width:0.283464"
+   id="rect2"
+   width="78.160004"
+   height="55.580612"
+   x="4.1200004"
+   y="-348.84885"
+   rx="4.5000005"
+   ry="4.5"
+   transform="scale(1,-1)" /><defs
    id="defs95" />
 <style
    type="text/css"
