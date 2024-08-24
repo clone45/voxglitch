@@ -11,6 +11,11 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		theme.load("autobreak_studio");
 		applyTheme();
 
+		setPanel(createPanel(
+			asset::plugin(pluginInstance, "res/autobreak_studio/autobreak_studio_panel.svg"),
+			asset::plugin(pluginInstance, "res/autobreak_studio/autobreak_studio_panel-dark.svg")
+		));
+
 		// =================== PLACE COMPONENTS ====================================
 
 

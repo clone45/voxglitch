@@ -21,9 +21,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.8284271"
-     inkscape:cx="420.55176"
-     inkscape:cy="264.98827"
+     inkscape:zoom="7.9999999"
+     inkscape:cx="686.43751"
+     inkscape:cy="446.8125"
      inkscape:document-units="mm"
      inkscape:current-layer="svg11003"
      showgrid="false"
@@ -49,6 +49,11 @@
        orientation="1,0"
        id="guide74725"
        inkscape:locked="false" />
+    <sodipodi:guide
+       position="180.54506,0.64010296"
+       orientation="1,0"
+       id="guide1"
+       inkscape:locked="false" />
   </sodipodi:namedview>
   <rect
      x="0"
@@ -58,6 +63,16 @@
      style="fill:#e7e7e7;fill-opacity:1;opacity:1;stroke:none"
      inkscape:groupmode="layer"
      id="rect1" />
+  <rect
+     style="fill:#d2d2d3;fill-opacity:1;stroke:none;stroke-width:0.0999999"
+     id="rect2"
+     width="30.057003"
+     height="19.607603"
+     x="146.41705"
+     y="-125.40427"
+     rx="1.5875"
+     ry="1.5874999"
+     transform="scale(1,-1)" />
   <defs
      id="defs10997">
     <rect
@@ -249,22 +264,22 @@
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,64.792954,47.169623)"
        id="text6536"
-       style="font-size:14.6667px;line-height:1.25;font-family:Pilat;-inkscape-font-specification:Pilat;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect6538)" />
+       style="font-size:14.6667px;line-height:1.25;font-family:Pilat;-inkscape-font-specification:Pilat;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect6538);display:inline" />
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,64.792954,47.169623)"
        id="text7708"
-       style="font-size:14.6667px;line-height:1.25;font-family:Pilat;-inkscape-font-specification:Pilat;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect7710);fill:#ffffff;fill-opacity:1" />
+       style="font-size:14.6667px;line-height:1.25;font-family:Pilat;-inkscape-font-specification:Pilat;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect7710);display:inline;fill:#ffffff;fill-opacity:1" />
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,64.792954,47.169623)"
        id="text14530"
-       style="font-size:14.6667px;line-height:1.25;font-family:Pilat;-inkscape-font-specification:Pilat;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect14532);fill:#ffffff;fill-opacity:1" />
+       style="font-size:14.6667px;line-height:1.25;font-family:Pilat;-inkscape-font-specification:Pilat;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect14532);display:inline;fill:#ffffff;fill-opacity:1" />
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,64.792954,47.169623)"
        id="text20696"
-       style="font-size:14.6667px;line-height:1.25;font-family:Pilat;-inkscape-font-specification:Pilat;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect20698)" />
+       style="font-size:14.6667px;line-height:1.25;font-family:Pilat;-inkscape-font-specification:Pilat;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect20698);display:inline" />
     <g
        aria-label="LENGTH"
        id="text22574"
@@ -350,7 +365,7 @@
     </g>
     <g
        aria-label="GATE"
-       transform="matrix(0.26458333,0,0,0.26458333,140.48116,25.907443)"
+       transform="matrix(0.26458333,0,0,0.26458333,136.38829,25.907443)"
        id="text53073"
        style="font-size:9.33333px;line-height:1.25;font-family:Pilat;-inkscape-font-specification:Pilat;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect53075);fill:#0c1218">
       <path
@@ -368,7 +383,7 @@
     </g>
     <g
        aria-label="CV"
-       transform="matrix(0.26458333,0,0,0.26458333,155.42139,25.907416)"
+       transform="matrix(0.26458333,0,0,0.26458333,151.32852,25.907416)"
        id="text53073-2"
        style="font-size:9.33333px;line-height:1.25;font-family:Pilat;-inkscape-font-specification:Pilat;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect53075-9);display:inline;fill:#0c1218">
       <path
