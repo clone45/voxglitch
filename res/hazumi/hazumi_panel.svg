@@ -56,9 +56,9 @@
    inkscape:pageopacity="0.0"
    inkscape:pagecheckerboard="0"
    showgrid="false"
-   inkscape:zoom="1.6947174"
-   inkscape:cx="17.997101"
-   inkscape:cy="252.25445"
+   inkscape:zoom="3.3894348"
+   inkscape:cx="166.25191"
+   inkscape:cy="273.05437"
    inkscape:window-width="3840"
    inkscape:window-height="2054"
    inkscape:window-x="2869"
@@ -68,7 +68,12 @@
    units="mm"
    inkscape:document-units="mm"
    inkscape:showpageshadow="2"
-   inkscape:deskcolor="#d1d1d1" />
+   inkscape:deskcolor="#d1d1d1"
+   showguides="true"><sodipodi:guide
+     position="194.56504,16.859131"
+     orientation="0,-1"
+     id="guide1"
+     inkscape:locked="false" /></sodipodi:namedview>
 <style
    type="text/css"
    id="style2">
@@ -256,4 +261,12 @@
    d="M 181.529,345.701 H 19.701 c -0.504,0 -0.912,-0.409 -0.912,-0.912 V 19.749 c 0,-0.504 0.409,-0.912 0.912,-0.912 h 161.827 c 0.504,0 0.912,0.409 0.912,0.912 v 325.039 c 0.001,0.504 -0.407,0.913 -0.911,0.913 z"
    id="path84"
    style="fill:#1c2729;fill-opacity:1;stroke:none;stroke-opacity:1" />
-</svg>
+<rect
+   style="fill:#d2d2d3;fill-opacity:1;stroke:none;stroke-width:0.283465"
+   id="rect2"
+   width="35.266479"
+   height="238.04874"
+   x="196.80295"
+   y="109.36056"
+   rx="4.5"
+   ry="4.5" /></svg>

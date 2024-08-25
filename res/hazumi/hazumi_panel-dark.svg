@@ -44,7 +44,15 @@
    height="364.25196850393706"
    style="fill:#18181a;fill-opacity:1;opacity:1;stroke:none"
    inkscape:groupmode="layer"
-   id="rect1" /><defs
+   id="rect1" /><rect
+   style="fill:#3e3e3e;fill-opacity:1;stroke:none;stroke-width:0.283465"
+   id="rect2"
+   width="35.266479"
+   height="238.04874"
+   x="196.80295"
+   y="109.36056"
+   rx="4.5"
+   ry="4.5" /><defs
    id="defs89"><linearGradient
      inkscape:collect="always"
      id="linearGradient1167"><stop
