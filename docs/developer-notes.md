@@ -67,8 +67,8 @@ Size: 7pt
 
 Font: Pilat Condensed
 Weight: Normal
-Dark Mode Color (r,g,b): 11, 17, 22
-Light Mode Color (r,g,b): 244, 238, 233
+Dark Mode Color (r,g,b): 11, 17, 22 (0b1116ff)
+Light Mode Color (r,g,b): 244, 238, 233 (f4eee9ff)
 Letter spacing: .60
 Size: 6pt
 

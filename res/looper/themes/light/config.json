@@ -21,8 +21,8 @@
     }
 	],
   "widgets": {
-    "AUDIO_OUTPUT_LEFT": {"x": 22.3819,"y": 304.1339},
-    "AUDIO_OUTPUT_RIGHT": {"x": 22.3819,"y": 340.1575},
+    "AUDIO_OUTPUT_LEFT": {"x": 22.3819,"y": 303.249878},
+    "AUDIO_OUTPUT_RIGHT": {"x": 22.3819,"y": 354.949951},
     "RESET_INPUT": {"x": 22.2933,"y": 52.0},
     "VOLUME_SLIDER": {"x": 22.3228,"y": 177.1654}
   }
