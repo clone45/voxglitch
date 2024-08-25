@@ -48,7 +48,7 @@ struct Theme
     {
         json_error_t error;
 
-        std::string config_file_path = asset::plugin(pluginInstance, "res/" + slug + "/themes/" + name + "/config.json");
+        std::string config_file_path = asset::plugin(pluginInstance, "res/" + slug + "/config.json");
 
         // Load theme selection
         json_root = json_load_file(config_file_path.c_str(), 0, &error);

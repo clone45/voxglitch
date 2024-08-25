@@ -1,0 +1,41 @@
+{
+	"panel_width": 240.0,
+	"layers": [
+		{
+      "type": "image",
+      "path": "res/themes/default/background2.jpg",
+      "zoom": 0.15,
+      "width": 81.28,
+      "height": 128.5
+    },
+    {
+      "type": "image",
+      "path": "res/repeater/themes/default/details.png",
+      "width": 81.28,
+      "height": 128.5,
+      "zoom": 0.25
+    },
+    {
+      "type": "svg",
+      "path": "res/repeater/themes/default/typography.svg"
+    }
+	],
+  "widgets": {
+    "CLOCK_DIVISION_KNOB": {"x": 126.563736,"y": 122.269234},
+    "POSITION_KNOB": {"x": 126.375656,"y": 191.931137},
+    "SAMPLE_SELECT_KNOB": {"x": 126.425659,"y": 261.852417},
+    "PITCH_KNOB": {"x": 126.402100,"y": 332.388794},
+    "CLOCK_DIVISION_INPUT": {"x": 42.219269,"y": 121.665604},
+    "POSITION_INPUT": {"x": 42.219269,"y": 191.426514},
+    "SAMPLE_SELECT_INPUT": {"x": 42.219269,"y": 261.237152},
+    "PITCH_INPUT": {"x": 42.219269,"y": 331.698181},
+    "CLOCK_DIVISION_ATTN_KNOB": {"x": 83.563423,"y": 121.868500},
+    "POSITION_ATTN_KNOB": {"x": 83.563423,"y": 191.479111},
+    "SAMPLE_SELECT_ATTN_KNOB": {"x": 83.563423,"y": 261.189728},
+    "TRIG_INPUT": {"x": 196.701385,"y": 121.515594},
+    "SMOOTH_SWITCH": {"x": 195.566832,"y": 192.267241},
+    "WAV_OUTPUT": {"x": 204.649963,"y": 331.449402},
+    "TRG_OUTPUT": {"x": 204.699982,"y": 281.450653},
+    "READOUT": {"x": 29.5276,"y": 57.5787}
+  }
+}

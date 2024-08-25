@@ -1,0 +1,46 @@
+{
+	"panel_width": 390.0,
+	"layers": [
+		{
+      "type": "image",
+      "path": "res/themes/default/background2.jpg",
+      "zoom": 0.15,
+      "width": 132.08,
+      "height": 128.5
+    },
+    {
+      "type": "image",
+      "path": "res/glitch_sequencer/themes/default/details.png",
+      "width": 132.08,
+      "height": 128.5,
+      "zoom": 0.25
+    },
+    {
+      "type": "svg",
+      "path": "res/glitch_sequencer/themes/default/typography.svg"
+    }
+	],
+  "widgets": {
+    "STEP_INPUT": {"x": 32.627510,"y": 333.019562},
+    "RESET_INPUT": {"x": 72.919708,"y": 333.169525},
+    "LENGTH_KNOB": {"x": 112.711708,"y": 333.069550},
+    "TRIGGER_GROUP_BUTTONS_1": {"x": 164.163024,"y": 323.217879},
+    "TRIGGER_GROUP_BUTTONS_2": {"x": 191.911193,"y": 323.217879},
+    "TRIGGER_GROUP_BUTTONS_3": {"x": 219.659362,"y": 323.217879},
+    "TRIGGER_GROUP_BUTTONS_4": {"x": 247.407531,"y": 323.217879},
+    "TRIGGER_GROUP_BUTTONS_5": {"x": 275.1557,"y": 323.217879},
+    "TRIGGER_GROUP_BUTTONS_6": {"x": 302.903869,"y": 323.217879},
+    "TRIGGER_GROUP_BUTTONS_7": {"x": 330.652038,"y": 323.217879},
+    "TRIGGER_GROUP_BUTTONS_8": {"x": 358.400207,"y": 323.217879},
+    "GATE_OUTPUTS_1": {"x": 165.846024,"y": 353.727386},
+    "GATE_OUTPUTS_2": {"x": 193.594193,"y": 353.727386},
+    "GATE_OUTPUTS_3": {"x": 221.342362,"y": 353.727386},
+    "GATE_OUTPUTS_4": {"x": 249.090531,"y": 353.727386},
+    "GATE_OUTPUTS_5": {"x": 276.838700,"y": 353.727386},
+    "GATE_OUTPUTS_6": {"x": 304.586869,"y": 353.727386},
+    "GATE_OUTPUTS_7": {"x": 332.335038,"y": 353.727386},
+    "GATE_OUTPUTS_8": {"x": 360.083207,"y": 353.727386},
+    "GRID_DISPLAY": {"x": 19.9, "y": 19.9},
+    "LENGTH_LABEL": {"x": 30.0, "y": 122.0}
+  }
+}
