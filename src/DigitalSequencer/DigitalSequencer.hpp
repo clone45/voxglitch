@@ -96,12 +96,7 @@ struct DigitalSequencer : VoxglitchModule
     };
     enum LightIds
     {
-        SEQUENCER_1_LIGHT,
-        SEQUENCER_2_LIGHT,
-        SEQUENCER_3_LIGHT,
-        SEQUENCER_4_LIGHT,
-        SEQUENCER_5_LIGHT,
-        SEQUENCER_6_LIGHT,
+        ENUMS(SEQUENCER_LIGHTS, NUMBER_OF_SEQUENCERS),
         NUM_LIGHTS
     };
 
@@ -476,7 +471,8 @@ struct DigitalSequencer : VoxglitchModule
         // Highlight only selected sequence buttton
         for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
         {
-            params[SEQUENCER_SELECTION_BUTTONS + i].setValue(selected_sequencer_index == i);
+            // params[SEQUENCER_SELECTION_BUTTONS + i].setValue(selected_sequencer_index == i);
+            lights[SEQUENCER_LIGHTS + i].setBrightness(selected_sequencer_index == i);
         }
 
         //

@@ -27,12 +27,12 @@ struct GhostsWidget : VoxglitchSamplerModuleWidget
 
 		// Purge
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("PURGE_TRIGGER_INPUT"), module, Ghosts::PURGE_TRIGGER_INPUT));
-		addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("PURGE_BUTTON_PARAM"), module, Ghosts::PURGE_BUTTON_PARAM));
+		addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("PURGE_BUTTON_PARAM"), module, Ghosts::PURGE_BUTTON_PARAM, Ghosts::PURGE_LIGHT));
 		// addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(75.595, 25.974)), module, Ghosts::PURGE_LIGHT));
 
 		// Jitter
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("JITTER_CV_INPUT"), module, Ghosts::JITTER_CV_INPUT));
-		addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("JITTER_SWITCH"), module, Ghosts::JITTER_SWITCH));
+		addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("JITTER_SWITCH"), module, Ghosts::JITTER_SWITCH, Ghosts::JITTER_LIGHT));
 
 		// Modes
 		// addParam(createParamCentered<GhostsModesKnob>(mm2px(Vec(62.366, 65)), module, Ghosts::MODES_KNOB));

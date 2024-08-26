@@ -11,6 +11,7 @@ struct Ghosts : VoxglitchSamplerModule
 	float sr_div_8 = APP->engine->getSampleRate() / 8.0;
 	float sample_rate = APP->engine->getSampleRate();
 	float jitter_spread = 0.0;
+	bool jitter = false;
 	float minimum_ghosts_per_second = 0.0;
 	float maximum_ghosts_per_second = 0.0;
 	unsigned int removal_mode = 0;
@@ -23,6 +24,7 @@ struct Ghosts : VoxglitchSamplerModule
 	Sample sample;
 	dsp::SchmittTrigger purge_trigger;
 	dsp::SchmittTrigger purge_button_trigger;
+	dsp::SchmittTrigger jitter_trigger;
 	Random random;
 
 	float maximum_playback_length = 0; // 1/2 of a second
@@ -73,6 +75,7 @@ struct Ghosts : VoxglitchSamplerModule
 	enum LightIds
 	{
 		PURGE_LIGHT,
+		JITTER_LIGHT,
 		NUM_LIGHTS
 	};
 
@@ -111,6 +114,10 @@ struct Ghosts : VoxglitchSamplerModule
 	{
 		json_t *rootJ = json_object();
 		json_object_set_new(rootJ, "path", json_string(sample.path.c_str()));
+
+		// save jitter state
+		json_object_set_new(rootJ, "jitter", json_boolean(jitter));
+
 		return rootJ;
 	}
 
@@ -123,6 +130,12 @@ struct Ghosts : VoxglitchSamplerModule
 			this->path = json_string_value(loaded_path_json);
 			sample.load(path);
 			loaded_filename = sample.filename;
+		}
+
+		json_t *jitter_json = json_object_get(rootJ, "jitter");
+		if (jitter_json)
+		{
+			jitter = json_boolean_value(jitter_json);
 		}
 	}
 
@@ -173,7 +186,16 @@ struct Ghosts : VoxglitchSamplerModule
 		// Additional Notes
 		// * The jitter switch is ignored if a cable is connected to the jitter CV input.
 
-		if (inputs[JITTER_CV_INPUT].isConnected() ? (inputs[JITTER_CV_INPUT].getVoltage() > 0) : params[JITTER_SWITCH].getValue())
+		// Toggle jitter on/off
+		if(jitter_trigger.process(params[JITTER_SWITCH].getValue()))
+		{
+			jitter = !jitter;
+		}
+
+		lights[JITTER_LIGHT].setBrightness(jitter);
+
+
+		if (inputs[JITTER_CV_INPUT].isConnected() ? (inputs[JITTER_CV_INPUT].getVoltage() > 0) : jitter)
 		{
 			// double r = (static_cast<double>(rand()) / (RAND_MAX / jitter_spread)) - (jitter_spread / 2.0);
 			double r = rescale(random.gen(), 0.0, 1.0, 0.0, jitter_spread) - (jitter_spread / 2.0);
@@ -187,6 +209,7 @@ struct Ghosts : VoxglitchSamplerModule
 			graveyard.markAllForRemoval();
 		}
 		lights[PURGE_LIGHT].setSmoothBrightness(purge_is_triggered, args.sampleTime);
+		
 
 		// Add more ghosts!
 		if (spawn_rate_counter >= 1)

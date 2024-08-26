@@ -65,12 +65,12 @@ struct DigitalSequencerWidget : VoxglitchSamplerModuleWidget
 		addParam(L6);
 
 		// Sequence selection buttons
-		addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_1_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 0));
-		addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_2_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 1));
-		addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_3_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 2));
-		addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_4_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 3));
-		addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_5_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 4));
-		addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_6_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 5));
+		addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_1_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 0, DigitalSequencer::SEQUENCER_LIGHTS + 0));
+		addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_2_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 1, DigitalSequencer::SEQUENCER_LIGHTS + 1));
+		addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_3_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 2, DigitalSequencer::SEQUENCER_LIGHTS + 2));
+		addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_4_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 3, DigitalSequencer::SEQUENCER_LIGHTS + 3));
+		addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_5_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 4, DigitalSequencer::SEQUENCER_LIGHTS + 4));
+		addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_6_BUTTON"), module, DigitalSequencer::SEQUENCER_SELECTION_BUTTONS + 5, DigitalSequencer::SEQUENCER_LIGHTS + 5));
 
 		// CV outputs
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("SEQ1_CV_OUTPUT"), module, DigitalSequencer::SEQ1_CV_OUTPUT));

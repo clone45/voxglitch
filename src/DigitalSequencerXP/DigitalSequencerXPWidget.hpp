@@ -37,22 +37,22 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
         gates_display->module = module;
         addChild(gates_display);
 
-        addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_1_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 0));
-        addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_2_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 1));
-        addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_3_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 2));
-        addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_4_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 3));
-        addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_5_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 4));
-        addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_6_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 5));
-        addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_7_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 6));
-        addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_8_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 7));
-        addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_9_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 8));
-        addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_10_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 9));
-        addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_11_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 10));
-        addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_12_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 11));
-        addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_13_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 12));
-        addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_14_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 13));
-        addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_15_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 14));
-        addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("SEQUENCER_16_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 15));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_1_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 0, DigitalSequencerXP::SEQUENCER_LIGHTS + 0));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_2_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 1, DigitalSequencerXP::SEQUENCER_LIGHTS + 1));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_3_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 2, DigitalSequencerXP::SEQUENCER_LIGHTS + 2));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_4_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 3, DigitalSequencerXP::SEQUENCER_LIGHTS + 3));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_5_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 4, DigitalSequencerXP::SEQUENCER_LIGHTS + 4));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_6_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 5, DigitalSequencerXP::SEQUENCER_LIGHTS + 5));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_7_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 6, DigitalSequencerXP::SEQUENCER_LIGHTS + 6));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_8_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 7, DigitalSequencerXP::SEQUENCER_LIGHTS + 7));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_9_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 8, DigitalSequencerXP::SEQUENCER_LIGHTS + 8));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_10_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 9, DigitalSequencerXP::SEQUENCER_LIGHTS + 9));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_11_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 10, DigitalSequencerXP::SEQUENCER_LIGHTS + 10));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_12_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 11, DigitalSequencerXP::SEQUENCER_LIGHTS + 11));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_13_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 12, DigitalSequencerXP::SEQUENCER_LIGHTS + 12));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_14_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 13, DigitalSequencerXP::SEQUENCER_LIGHTS + 13));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_15_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 14, DigitalSequencerXP::SEQUENCER_LIGHTS + 14));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_16_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 15, DigitalSequencerXP::SEQUENCER_LIGHTS + 15));
 
         // Inputs
         addInput(createInputCentered<VoxglitchPolyPort>(Vec(29.5276, 339.251), module, DigitalSequencerXP::POLY_STEP_INPUT));
