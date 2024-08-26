@@ -21,10 +21,6 @@ struct OneZeroWidget : VoxglitchModuleWidget
         addInput(createInputCentered<VoxglitchInputPort>(themePos("PREV_INPUT"), module, OneZero::PREV_SEQUENCE_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(themePos("NEXT_INPUT"), module, OneZero::NEXT_SEQUENCE_INPUT));
 
-//        addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("PREV_BUTTON"), module, OneZero::PREV_BUTTON_PARAM));
-//        addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("NEXT_BUTTON"), module, OneZero::NEXT_BUTTON_PARAM));
-//        addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("ZERO_BUTTON_PARAM"), module, OneZero::ZERO_BUTTON_PARAM));
-
         addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("ZERO_BUTTON_PARAM"), module, OneZero::ZERO_BUTTON_PARAM, OneZero::ZERO_BUTTON_LIGHT));
         addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("PREV_BUTTON"), module, OneZero::PREV_BUTTON_PARAM, OneZero::PREV_BUTTON_LIGHT));
         addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("NEXT_BUTTON"), module, OneZero::NEXT_BUTTON_PARAM, OneZero::NEXT_BUTTON_LIGHT));

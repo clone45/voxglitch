@@ -8,8 +8,6 @@ struct WavBankMCWidget : VoxglitchModuleWidget
         theme.load("wavbank_mc");
         applyTheme();
 
-        // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/wavbank_mc/panel.svg")));
-
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/wavbank_mc/wavbank_mc_panel.svg"),
             asset::plugin(pluginInstance, "res/wavbank_mc/wavbank_mc_panel-dark.svg")
@@ -30,10 +28,9 @@ struct WavBankMCWidget : VoxglitchModuleWidget
         addInput(createInputCentered<VoxglitchInputPort>(themePos("NEXT_WAV_TRIGGER_INPUT"), module, WavBankMC::NEXT_WAV_TRIGGER_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(themePos("PREV_WAV_TRIGGER_INPUT"), module, WavBankMC::PREV_WAV_TRIGGER_INPUT));
 
-        // TODO: Think of being able to light up the light without pressing the button
-        addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("TRIG_INPUT_BUTTON_PARAM"), module, WavBankMC::TRIG_INPUT_BUTTON_PARAM));
-        addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("NEXT_WAV_BUTTON_PARAM"), module, WavBankMC::NEXT_WAV_BUTTON_PARAM));
-        addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("PREV_WAV_BUTTON_PARAM"), module, WavBankMC::PREV_WAV_BUTTON_PARAM));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("TRIG_INPUT_BUTTON_PARAM"), module, WavBankMC::TRIG_INPUT_BUTTON_PARAM, WavBankMC::TRIG_INPUT_BUTTON_LIGHT));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("NEXT_WAV_BUTTON_PARAM"), module, WavBankMC::NEXT_WAV_BUTTON_PARAM, WavBankMC::NEXT_WAV_BUTTON_LIGHT));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("PREV_WAV_BUTTON_PARAM"), module, WavBankMC::PREV_WAV_BUTTON_PARAM, WavBankMC::PREV_WAV_BUTTON_LIGHT));
 
         addInput(createInputCentered<VoxglitchInputPort>(themePos("PITCH_INPUT"), module, WavBankMC::PITCH_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(themePos("VOLUME_INPUT"), module, WavBankMC::VOLUME_INPUT));

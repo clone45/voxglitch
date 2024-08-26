@@ -19,10 +19,10 @@ struct GrainEngineMK2ExpanderWidget : VoxglitchModuleWidget
         addInput(createInputCentered<VoxglitchInputPort>(themePos("AUDIO_IN_RIGHT"), module, GrainEngineMK2Expander::AUDIO_IN_RIGHT));
 
         addInput(createInputCentered<VoxglitchInputPort>(themePos("RECORD_START_INPUT"), module, GrainEngineMK2Expander::RECORD_START_INPUT));
-        addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("RECORD_START_BUTTON_PARAM"), module, GrainEngineMK2Expander::RECORD_START_BUTTON_PARAM));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("RECORD_START_BUTTON_PARAM"), module, GrainEngineMK2Expander::RECORD_START_BUTTON_PARAM, GrainEngineMK2Expander::RECORDING_LIGHT));
 
         addInput(createInputCentered<VoxglitchInputPort>(themePos("RECORD_STOP_INPUT"), module, GrainEngineMK2Expander::RECORD_STOP_INPUT));
-        addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("RECORD_STOP_BUTTON_PARAM"), module, GrainEngineMK2Expander::RECORD_STOP_BUTTON_PARAM));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("RECORD_STOP_BUTTON_PARAM"), module, GrainEngineMK2Expander::RECORD_STOP_BUTTON_PARAM, GrainEngineMK2Expander::STOPPED_LIGHT));
 
         addInput(createInputCentered<VoxglitchInputPort>(themePos("SAMPLE_SLOT_INPUT"), module, GrainEngineMK2Expander::SAMPLE_SLOT_INPUT));
         addParam(createParamCentered<Trimpot>(themePos("SAMPLE_SLOT_KNOB_PARAM"), module, GrainEngineMK2Expander::SAMPLE_SLOT_KNOB_PARAM));
