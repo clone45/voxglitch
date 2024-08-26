@@ -8,21 +8,17 @@ struct RepeaterWidget : VoxglitchSamplerModuleWidget
         theme.load("repeater");
         applyTheme();
 
-        // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/repeater/panel.svg")));
-
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/repeater/repeater_panel.svg"),
             asset::plugin(pluginInstance, "res/repeater/repeater_panel-dark.svg")
         ));
 
-        // Add rack screws
-        if (theme.showScrews())
-        {
-            addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, 0)));
-            addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-            addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-            addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-        }
+		// Screws
+		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
+		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+
 
         // Medium Knobs
         addParam(createParamCentered<RoundLargeBlackKnob>(themePos("CLOCK_DIVISION_KNOB"), module, Repeater::CLOCK_DIVISION_KNOB));

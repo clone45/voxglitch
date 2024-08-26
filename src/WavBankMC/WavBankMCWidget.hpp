@@ -13,12 +13,10 @@ struct WavBankMCWidget : VoxglitchModuleWidget
             asset::plugin(pluginInstance, "res/wavbank_mc/wavbank_mc_panel-dark.svg")
         ));
 
-        // Add rack screws
-        if (theme.showScrews())
-        {
-            addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, 0)));
-            addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-        }
+        // Screws
+        addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
+        addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+
 
         addParam(createParamCentered<RoundHugeBlackKnob>(themePos("WAV_KNOB"), module, WavBankMC::WAV_KNOB));
         addInput(createInputCentered<VoxglitchInputPort>(themePos("WAV_INPUT"), module, WavBankMC::WAV_INPUT));

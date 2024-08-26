@@ -13,6 +13,11 @@ struct OnePointWidget : VoxglitchModuleWidget
             asset::plugin(pluginInstance, "res/onepoint/onepoint_panel-dark.svg")
         ));
 
+		// Screws
+		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
+		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+
+
         addInput(createInputCentered<VoxglitchInputPort>(themePos("STEP_INPUT"), module, OnePoint::STEP_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, OnePoint::RESET_INPUT));
 

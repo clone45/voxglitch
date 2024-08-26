@@ -15,14 +15,11 @@ struct GrainEngineMK2Widget : VoxglitchModuleWidget
             asset::plugin(pluginInstance, "res/grain_engine_mk2/grain_engine_mk2_panel-dark.svg")
         ));
 
-        // Add rack screws
-        if (theme.showScrews())
-        {
-            addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, 0)));
-            addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-            addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-            addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-        }
+        // Screws
+        addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
+        addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+        addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+        addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
         //
         // Control inputs in the center area of the module

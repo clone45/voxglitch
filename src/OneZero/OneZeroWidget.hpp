@@ -8,12 +8,15 @@ struct OneZeroWidget : VoxglitchModuleWidget
         theme.load("onezero");
         applyTheme();
 
-        // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/onepoint/panel.svg")));
-
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/onezero/onezero_panel.svg"),
             asset::plugin(pluginInstance, "res/onezero/onezero_panel-dark.svg")
         ));
+
+		// Screws
+		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
+		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+
 
         addInput(createInputCentered<VoxglitchInputPort>(themePos("STEP_INPUT"), module, OneZero::STEP_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, OneZero::RESET_INPUT));

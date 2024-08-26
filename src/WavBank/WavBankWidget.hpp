@@ -8,12 +8,11 @@ struct WavBankWidget : VoxglitchSamplerModuleWidget
         theme.load("wavbank");
         applyTheme();
 
-        // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/wavbank/panel.svg")));
-
-        setPanel(createPanel(
-            asset::plugin(pluginInstance, "res/wavbank/wavbank_panel.svg"),
-            asset::plugin(pluginInstance, "res/wavbank/wavbank_panel-dark.svg")
-        ));
+		// Screws
+		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
+		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
         addParam(createParamCentered<RoundHugeBlackKnob>(themePos("WAV_KNOB"), module, WavBank::WAV_KNOB));
         addParam(createParamCentered<Trimpot>(themePos("WAV_ATTN_KNOB"), module, WavBank::WAV_ATTN_KNOB));

@@ -8,14 +8,18 @@ struct AutobreakWidget : VoxglitchSamplerModuleWidget
 		theme.load("autobreak");
 		applyTheme();
 
-//		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/autobreak/panel.svg")));
-
 		setPanel(createPanel(
 			asset::plugin(pluginInstance, "res/autobreak/autobreak_panel.svg"),
 			asset::plugin(pluginInstance, "res/autobreak/autobreak_panel-dark.svg")
 		));
 
 		// =================== PLACE COMPONENTS ====================================
+
+		// Screws
+		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
+		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		addParam(createParamCentered<RoundHugeBlackKnob>(themePos("WAV_KNOB"), module, Autobreak::WAV_KNOB));
 
