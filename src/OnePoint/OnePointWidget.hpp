@@ -21,12 +21,19 @@ struct OnePointWidget : VoxglitchModuleWidget
         addInput(createInputCentered<VoxglitchInputPort>(themePos("PREV_INPUT"), module, OnePoint::PREV_SEQUENCE_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(themePos("NEXT_INPUT"), module, OnePoint::NEXT_SEQUENCE_INPUT));
 
-        addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("PREV_BUTTON"), module, OnePoint::PREV_BUTTON_PARAM));
-        addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("NEXT_BUTTON"), module, OnePoint::NEXT_BUTTON_PARAM));
+        // addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("PREV_BUTTON"), module, OnePoint::PREV_BUTTON_PARAM));
+        // addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("NEXT_BUTTON"), module, OnePoint::NEXT_BUTTON_PARAM));
 
         addInput(createInputCentered<VoxglitchInputPort>(themePos("ZERO_SEQUENCE_INPUT"), module, OnePoint::ZERO_SEQUENCE_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(themePos("CV_SEQUENCE_SELECT"), module, OnePoint::CV_SEQUENCE_SELECT));
-        addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("ZERO_BUTTON_PARAM"), module, OnePoint::ZERO_BUTTON_PARAM));
+        
+        // addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("ZERO_BUTTON_PARAM"), module, OnePoint::ZERO_BUTTON_PARAM));
+
+
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("ZERO_BUTTON_PARAM"), module, OnePoint::ZERO_BUTTON_PARAM, OnePoint::ZERO_BUTTON_LIGHT));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("PREV_BUTTON"), module, OnePoint::PREV_BUTTON_PARAM, OnePoint::PREV_BUTTON_LIGHT));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("NEXT_BUTTON"), module, OnePoint::NEXT_BUTTON_PARAM, OnePoint::NEXT_BUTTON_LIGHT));
+
         addParam(createParamCentered<Trimpot>(themePos("CV_SEQUENCE_ATTN_KNOB"), module, OnePoint::CV_SEQUENCE_ATTN_KNOB));
 
         addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("CV_OUTPUT"), module, OnePoint::CV_OUTPUT));

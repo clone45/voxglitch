@@ -24,14 +24,18 @@
 
     "STEP_INPUT": {"x": 25.6417, "y": 63.3706},
     "RESET_INPUT": {"x": 65.5748, "y": 63.3706},
+    
     "PREV_INPUT": {"x": 25.6417, "y": 157.3509},
     "NEXT_INPUT": {"x": 65.5748, "y": 157.3509},
-    "PREV_BUTTON": {"x": 24.0, "y": 185.8046},
-    "NEXT_BUTTON": {"x": 64.0, "y": 185.8046},
+
+    "PREV_BUTTON": {"x": 25.6417, "y": 185.8046},
+    "NEXT_BUTTON": {"x": 65.5748, "y": 185.8046},
 
     "ZERO_SEQUENCE_INPUT": {"x": 25.6417, "y": 233.47},
+    "ZERO_BUTTON_PARAM": {"x": 25.6417, "y": 261.9237},
+
     "CV_SEQUENCE_SELECT": {"x": 65.5748, "y": 233.47},
-    "ZERO_BUTTON_PARAM": {"x": 24.0, "y": 261.9237},
+    
     "CV_SEQUENCE_ATTN_KNOB": {"x": 65.5748, "y": 261.9237},
 
     "CV_OUTPUT": {"x": 65.5748, "y": 342.437317},
