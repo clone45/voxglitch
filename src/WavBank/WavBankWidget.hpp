@@ -15,8 +15,8 @@ struct WavBankWidget : VoxglitchSamplerModuleWidget
             asset::plugin(pluginInstance, "res/wavbank/wavbank_panel-dark.svg")
         ));
 
-        addParam(createParamCentered<VoxglitchLargeKnob>(themePos("WAV_KNOB"), module, WavBank::WAV_KNOB));
-        addParam(createParamCentered<VoxglitchAttenuator>(themePos("WAV_ATTN_KNOB"), module, WavBank::WAV_ATTN_KNOB));
+        addParam(createParamCentered<RoundHugeBlackKnob>(themePos("WAV_KNOB"), module, WavBank::WAV_KNOB));
+        addParam(createParamCentered<Trimpot>(themePos("WAV_ATTN_KNOB"), module, WavBank::WAV_ATTN_KNOB));
         addParam(createParamCentered<squareToggle>(themePos("LOOP_SWITCH"), module, WavBank::LOOP_SWITCH));
 
         // Input jacks

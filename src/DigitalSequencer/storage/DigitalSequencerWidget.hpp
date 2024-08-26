@@ -42,27 +42,27 @@ struct DigitalSequencerWidget : VoxglitchModuleWidget
     addInput(createInputCentered<VoxglitchInputPort>(themePos("SEQUENCER_6_STEP_INPUT"), module, DigitalSequencer::SEQUENCER_6_STEP_INPUT));
 
     // step length attenuators
-    auto L1 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_1_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 0);
+    auto L1 = createParamCentered<Trimpot>(themePos("SEQUENCER_1_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 0);
     dynamic_cast<Knob *>(L1)->snap = true;
     addParam(L1);
 
-    auto L2 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_2_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 1);
+    auto L2 = createParamCentered<Trimpot>(themePos("SEQUENCER_2_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 1);
     dynamic_cast<Knob *>(L2)->snap = true;
     addParam(L2);
 
-    auto L3 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_3_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 2);
+    auto L3 = createParamCentered<Trimpot>(themePos("SEQUENCER_3_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 2);
     dynamic_cast<Knob *>(L3)->snap = true;
     addParam(L3);
 
-    auto L4 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_4_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 3);
+    auto L4 = createParamCentered<Trimpot>(themePos("SEQUENCER_4_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 3);
     dynamic_cast<Knob *>(L4)->snap = true;
     addParam(L4);
 
-    auto L5 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_5_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 4);
+    auto L5 = createParamCentered<Trimpot>(themePos("SEQUENCER_5_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 4);
     dynamic_cast<Knob *>(L5)->snap = true;
     addParam(L5);
     
-    auto L6 = createParamCentered<VoxglitchAttenuator>(themePos("SEQUENCER_6_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 5);
+    auto L6 = createParamCentered<Trimpot>(themePos("SEQUENCER_6_LENGTH_KNOB"), module, DigitalSequencer::SEQUENCER_LENGTH_KNOBS + 5);
     dynamic_cast<Knob *>(L6)->snap = true;
     addParam(L6);
 

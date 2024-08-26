@@ -20,8 +20,8 @@ struct NoteDetectorWidget : VoxglitchModuleWidget
         addInput(createInputCentered<VoxglitchInputPort>(themePos("CLOCK_INPUT"), module, NoteDetector::CLOCK_INPUT));
 
         // Parameters
-        addParam(createParamCentered<VoxglitchAttenuator>(themePos("NOTE_SELECTION_KNOB"), module, NoteDetector::NOTE_SELECTION_KNOB));
-        addParam(createParamCentered<VoxglitchAttenuator>(themePos("OCTAVE_SELECTION_KNOB"), module, NoteDetector::OCTAVE_SELECTION_KNOB));
+        addParam(createParamCentered<Trimpot>(themePos("NOTE_SELECTION_KNOB"), module, NoteDetector::NOTE_SELECTION_KNOB));
+        addParam(createParamCentered<Trimpot>(themePos("OCTAVE_SELECTION_KNOB"), module, NoteDetector::OCTAVE_SELECTION_KNOB));
 
         // Outputs
         addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("DETECTION_OUTPUT"), module, NoteDetector::DETECTION_OUTPUT));

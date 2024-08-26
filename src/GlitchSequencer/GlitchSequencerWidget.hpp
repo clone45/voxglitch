@@ -17,7 +17,7 @@ struct GlitchSequencerWidget : VoxglitchModuleWidget
 
         addInput(createInputCentered<VoxglitchInputPort>(themePos("STEP_INPUT"), module, GlitchSequencer::STEP_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, GlitchSequencer::RESET_INPUT));
-        addParam(createParamCentered<VoxglitchAttenuator>(themePos("LENGTH_KNOB"), module, GlitchSequencer::LENGTH_KNOB));
+        addParam(createParamCentered<Trimpot>(themePos("LENGTH_KNOB"), module, GlitchSequencer::LENGTH_KNOB));
 
         addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("TRIGGER_GROUP_BUTTONS_1"), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 0));
         addParam(createParamCentered<VoxglitchRoundToggleLampSwitch>(themePos("TRIGGER_GROUP_BUTTONS_2"), module, GlitchSequencer::TRIGGER_GROUP_BUTTONS + 1));

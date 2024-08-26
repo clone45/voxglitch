@@ -471,11 +471,11 @@ struct ArpSeqWidget : VoxglitchModuleWidget
 
         addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, ArpSeq::RESET_INPUT));
 
-        addParam(createParamCentered<VoxglitchMediumBlackKnob>(themePos("RATE_KNOB"), module, ArpSeq::RATE_KNOB));
-        addParam(createParamCentered<VoxglitchMediumBlackKnob>(themePos("SHAPE_KNOB"), module, ArpSeq::SHAPE_KNOB));
+        addParam(createParamCentered<RoundBlackKnob>(themePos("RATE_KNOB"), module, ArpSeq::RATE_KNOB));
+        addParam(createParamCentered<RoundBlackKnob>(themePos("SHAPE_KNOB"), module, ArpSeq::SHAPE_KNOB));
 
-        addParam(createParamCentered<VoxglitchAttenuator>(themePos("RATE_ATTENUATOR"), module, ArpSeq::RATE_ATTENUATOR));
-        addParam(createParamCentered<VoxglitchAttenuator>(themePos("SHAPE_ATTENUATOR"), module, ArpSeq::SHAPE_ATTENUATOR));
+        addParam(createParamCentered<Trimpot>(themePos("RATE_ATTENUATOR"), module, ArpSeq::RATE_ATTENUATOR));
+        addParam(createParamCentered<Trimpot>(themePos("SHAPE_ATTENUATOR"), module, ArpSeq::SHAPE_ATTENUATOR));
 
         addInput(createInputCentered<VoxglitchInputPort>(themePos("RATE_INPUT"), module, ArpSeq::RATE_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(themePos("SHAPE_INPUT"), module, ArpSeq::SHAPE_INPUT));

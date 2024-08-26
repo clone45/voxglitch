@@ -27,7 +27,7 @@ struct OnePointWidget : VoxglitchModuleWidget
         addInput(createInputCentered<VoxglitchInputPort>(themePos("ZERO_SEQUENCE_INPUT"), module, OnePoint::ZERO_SEQUENCE_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(themePos("CV_SEQUENCE_SELECT"), module, OnePoint::CV_SEQUENCE_SELECT));
         addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("ZERO_BUTTON_PARAM"), module, OnePoint::ZERO_BUTTON_PARAM));
-        addParam(createParamCentered<VoxglitchAttenuator>(themePos("CV_SEQUENCE_ATTN_KNOB"), module, OnePoint::CV_SEQUENCE_ATTN_KNOB));
+        addParam(createParamCentered<Trimpot>(themePos("CV_SEQUENCE_ATTN_KNOB"), module, OnePoint::CV_SEQUENCE_ATTN_KNOB));
 
         addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("CV_OUTPUT"), module, OnePoint::CV_OUTPUT));
         addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("EOL_OUTPUT"), module, OnePoint::EOL_OUTPUT)); // end of sequence output

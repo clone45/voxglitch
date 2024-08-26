@@ -40,30 +40,30 @@ struct GhostsWidget : VoxglitchSamplerModuleWidget
 		// Position
 		addParam(createParamCentered<VoxglitchEpicKnob>(themePos("SAMPLE_PLAYBACK_POSITION_KNOB"), module, Ghosts::SAMPLE_PLAYBACK_POSITION_KNOB));
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("SAMPLE_PLAYBACK_POSITION_INPUT"), module, Ghosts::SAMPLE_PLAYBACK_POSITION_INPUT));
-		addParam(createParamCentered<VoxglitchAttenuator>(themePos("SAMPLE_PLAYBACK_POSITION_ATTN_KNOB"), module, Ghosts::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
+		addParam(createParamCentered<Trimpot>(themePos("SAMPLE_PLAYBACK_POSITION_ATTN_KNOB"), module, Ghosts::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
 
 		// Pitch
-		addParam(createParamCentered<VoxglitchMediumBlackKnob>(themePos("PITCH_KNOB"), module, Ghosts::PITCH_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(themePos("PITCH_KNOB"), module, Ghosts::PITCH_KNOB));
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("PITCH_INPUT"), module, Ghosts::PITCH_INPUT));
 		// addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 50.489 - y_offset)), module, Ghosts::PITCH_ATTN_KNOB));
 
 		// Length
-		addParam(createParamCentered<VoxglitchMediumBlackKnob>(themePos("GHOST_PLAYBACK_LENGTH_KNOB"), module, Ghosts::GHOST_PLAYBACK_LENGTH_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(themePos("GHOST_PLAYBACK_LENGTH_KNOB"), module, Ghosts::GHOST_PLAYBACK_LENGTH_KNOB));
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("GHOST_PLAYBACK_LENGTH_INPUT"), module, Ghosts::GHOST_PLAYBACK_LENGTH_INPUT));
-		addParam(createParamCentered<VoxglitchAttenuator>(themePos("GHOST_PLAYBACK_LENGTH_ATTN_KNOB"), module, Ghosts::GHOST_PLAYBACK_LENGTH_ATTN_KNOB));
+		addParam(createParamCentered<Trimpot>(themePos("GHOST_PLAYBACK_LENGTH_ATTN_KNOB"), module, Ghosts::GHOST_PLAYBACK_LENGTH_ATTN_KNOB));
 
 		// Graveyard Capacity
-		addParam(createParamCentered<VoxglitchMediumBlackKnob>(themePos("GRAVEYARD_CAPACITY_KNOB"), module, Ghosts::GRAVEYARD_CAPACITY_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(themePos("GRAVEYARD_CAPACITY_KNOB"), module, Ghosts::GRAVEYARD_CAPACITY_KNOB));
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("GRAVEYARD_CAPACITY_INPUT"), module, Ghosts::GRAVEYARD_CAPACITY_INPUT));
-		addParam(createParamCentered<VoxglitchAttenuator>(themePos("GRAVEYARD_CAPACITY_ATTN_KNOB"), module, Ghosts::GRAVEYARD_CAPACITY_ATTN_KNOB));
+		addParam(createParamCentered<Trimpot>(themePos("GRAVEYARD_CAPACITY_ATTN_KNOB"), module, Ghosts::GRAVEYARD_CAPACITY_ATTN_KNOB));
 
 		// Spawn rate
-		addParam(createParamCentered<VoxglitchMediumBlackKnob>(themePos("GHOST_SPAWN_RATE_KNOB"), module, Ghosts::GHOST_SPAWN_RATE_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(themePos("GHOST_SPAWN_RATE_KNOB"), module, Ghosts::GHOST_SPAWN_RATE_KNOB));
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("GHOST_SPAWN_RATE_INPUT"), module, Ghosts::GHOST_SPAWN_RATE_INPUT));
-		addParam(createParamCentered<VoxglitchAttenuator>(themePos("GHOST_SPAWN_RATE_ATTN_KNOB"), module, Ghosts::GHOST_SPAWN_RATE_ATTN_KNOB));
+		addParam(createParamCentered<Trimpot>(themePos("GHOST_SPAWN_RATE_ATTN_KNOB"), module, Ghosts::GHOST_SPAWN_RATE_ATTN_KNOB));
 
 		// Trim
-		addParam(createParamCentered<VoxglitchAttenuator>(themePos("TRIM_KNOB"), module, Ghosts::TRIM_KNOB));
+		addParam(createParamCentered<Trimpot>(themePos("TRIM_KNOB"), module, Ghosts::TRIM_KNOB));
 
 		// WAV output
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_LEFT"), module, Ghosts::AUDIO_OUTPUT_LEFT));

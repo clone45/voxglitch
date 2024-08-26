@@ -25,10 +25,10 @@ struct RepeaterWidget : VoxglitchSamplerModuleWidget
         }
 
         // Medium Knobs
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("CLOCK_DIVISION_KNOB"), module, Repeater::CLOCK_DIVISION_KNOB));
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("POSITION_KNOB"), module, Repeater::POSITION_KNOB));
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("SAMPLE_SELECT_KNOB"), module, Repeater::SAMPLE_SELECT_KNOB));
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("PITCH_KNOB"), module, Repeater::PITCH_KNOB));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("CLOCK_DIVISION_KNOB"), module, Repeater::CLOCK_DIVISION_KNOB));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("POSITION_KNOB"), module, Repeater::POSITION_KNOB));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("SAMPLE_SELECT_KNOB"), module, Repeater::SAMPLE_SELECT_KNOB));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("PITCH_KNOB"), module, Repeater::PITCH_KNOB));
 
         // CV Inputs
         addInput(createInputCentered<VoxglitchInputPort>(themePos("CLOCK_DIVISION_INPUT"), module, Repeater::CLOCK_DIVISION_INPUT));
@@ -37,10 +37,10 @@ struct RepeaterWidget : VoxglitchSamplerModuleWidget
         addInput(createInputCentered<VoxglitchInputPort>(themePos("PITCH_INPUT"), module, Repeater::PITCH_INPUT));
 
         // Attenuators
-        addParam(createParamCentered<VoxglitchAttenuator>(themePos("CLOCK_DIVISION_ATTN_KNOB"), module, Repeater::CLOCK_DIVISION_ATTN_KNOB));
-        addParam(createParamCentered<VoxglitchAttenuator>(themePos("POSITION_ATTN_KNOB"), module, Repeater::POSITION_ATTN_KNOB));
-        addParam(createParamCentered<VoxglitchAttenuator>(themePos("SAMPLE_SELECT_ATTN_KNOB"), module, Repeater::SAMPLE_SELECT_ATTN_KNOB));
-        // addParam(createParamCentered<VoxglitchAttenuator>(Vec(83.563423,331.700439), module, Repeater::PITCH_ATTN_KNOB));
+        addParam(createParamCentered<Trimpot>(themePos("CLOCK_DIVISION_ATTN_KNOB"), module, Repeater::CLOCK_DIVISION_ATTN_KNOB));
+        addParam(createParamCentered<Trimpot>(themePos("POSITION_ATTN_KNOB"), module, Repeater::POSITION_ATTN_KNOB));
+        addParam(createParamCentered<Trimpot>(themePos("SAMPLE_SELECT_ATTN_KNOB"), module, Repeater::SAMPLE_SELECT_ATTN_KNOB));
+        // addParam(createParamCentered<Trimpot>(Vec(83.563423,331.700439), module, Repeater::PITCH_ATTN_KNOB));
 
         // Clock input
         addInput(createInputCentered<VoxglitchInputPort>(themePos("TRIG_INPUT"), module, Repeater::TRIG_INPUT));

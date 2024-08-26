@@ -25,7 +25,7 @@ struct GrainEngineMK2ExpanderWidget : VoxglitchModuleWidget
         addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("RECORD_STOP_BUTTON_PARAM"), module, GrainEngineMK2Expander::RECORD_STOP_BUTTON_PARAM));
 
         addInput(createInputCentered<VoxglitchInputPort>(themePos("SAMPLE_SLOT_INPUT"), module, GrainEngineMK2Expander::SAMPLE_SLOT_INPUT));
-        addParam(createParamCentered<VoxglitchAttenuator>(themePos("SAMPLE_SLOT_KNOB_PARAM"), module, GrainEngineMK2Expander::SAMPLE_SLOT_KNOB_PARAM));
+        addParam(createParamCentered<Trimpot>(themePos("SAMPLE_SLOT_KNOB_PARAM"), module, GrainEngineMK2Expander::SAMPLE_SLOT_KNOB_PARAM));
 
         addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("PASSTHROUGH_LEFT"), module, GrainEngineMK2Expander::PASSTHROUGH_LEFT));
         addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("PASSTHROUGH_RIGHT"), module, GrainEngineMK2Expander::PASSTHROUGH_RIGHT));

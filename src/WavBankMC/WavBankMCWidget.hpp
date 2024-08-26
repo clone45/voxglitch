@@ -22,9 +22,9 @@ struct WavBankMCWidget : VoxglitchModuleWidget
             addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
         }
 
-        addParam(createParamCentered<VoxglitchLargeKnob>(themePos("WAV_KNOB"), module, WavBankMC::WAV_KNOB));
+        addParam(createParamCentered<RoundHugeBlackKnob>(themePos("WAV_KNOB"), module, WavBankMC::WAV_KNOB));
         addInput(createInputCentered<VoxglitchInputPort>(themePos("WAV_INPUT"), module, WavBankMC::WAV_INPUT));
-        addParam(createParamCentered<VoxglitchAttenuator>(themePos("WAV_ATTN_KNOB"), module, WavBankMC::WAV_ATTN_KNOB));
+        addParam(createParamCentered<Trimpot>(themePos("WAV_ATTN_KNOB"), module, WavBankMC::WAV_ATTN_KNOB));
 
         addInput(createInputCentered<VoxglitchInputPort>(themePos("TRIG_INPUT"), module, WavBankMC::TRIG_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(themePos("NEXT_WAV_TRIGGER_INPUT"), module, WavBankMC::NEXT_WAV_TRIGGER_INPUT));

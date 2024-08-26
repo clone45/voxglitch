@@ -32,20 +32,20 @@ struct ByteBeatWidget : VoxglitchModuleWidget
     addInput(createInputCentered<VoxglitchInputPort>(mm2px(Vec(32.35, ROW_5)), module, ByteBeat::EQUATION_INPUT));
 
     // Parameter inputs
-    auto P1 = createParamCentered<VoxglitchMediumKnob>(mm2px(Vec(51.8, ROW_3)), module, ByteBeat::PARAM_KNOB_1); dynamic_cast<Knob*>(P1)->snap = true; addParam(P1);
+    auto P1 = createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(51.8, ROW_3)), module, ByteBeat::PARAM_KNOB_1); dynamic_cast<Knob*>(P1)->snap = true; addParam(P1);
     addInput(createInputCentered<VoxglitchInputPort>(mm2px(Vec(51.8, ROW_5)), module, ByteBeat::PARAM_INPUT_1));
 
-    auto P2 = createParamCentered<VoxglitchMediumKnob>(mm2px(Vec(69.85, ROW_3)), module, ByteBeat::PARAM_KNOB_2); dynamic_cast<Knob*>(P2)->snap = true; addParam(P2);
+    auto P2 = createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(69.85, ROW_3)), module, ByteBeat::PARAM_KNOB_2); dynamic_cast<Knob*>(P2)->snap = true; addParam(P2);
     addInput(createInputCentered<VoxglitchInputPort>(mm2px(Vec(69.85, ROW_5)), module, ByteBeat::PARAM_INPUT_2));
 
-    auto P3 = createParamCentered<VoxglitchMediumKnob>(mm2px(Vec(88.0, ROW_3)), module, ByteBeat::PARAM_KNOB_3); dynamic_cast<Knob*>(P3)->snap = true; addParam(P3);
+    auto P3 = createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(88.0, ROW_3)), module, ByteBeat::PARAM_KNOB_3); dynamic_cast<Knob*>(P3)->snap = true; addParam(P3);
     addInput(createInputCentered<VoxglitchInputPort>(mm2px(Vec(88.0, ROW_5)), module, ByteBeat::PARAM_INPUT_3));
 
     // Other
     addOutput(createOutputCentered<VoxglitchOutputPort>(mm2px(Vec(88.9, 112.4375)), module, ByteBeat::AUDIO_OUTPUT));
 
     // Pitch
-    addParam(createParamCentered<VoxglitchMediumBlackKnob>(themePos("PITCH_KNOB"), module, ByteBeat::CLOCK_DIVISION_KNOB));
+    addParam(createParamCentered<RoundLargeBlackKnob>(themePos("PITCH_KNOB"), module, ByteBeat::CLOCK_DIVISION_KNOB));
     addInput(createInputCentered<VoxglitchInputPort>(themePos("PITCH_INPUT"), module, ByteBeat::CLOCK_CV_INPUT));
 
     // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_5, ROW_11)), module, ByteBeat::T_INPUT));

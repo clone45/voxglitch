@@ -19,7 +19,7 @@ struct AutobreakWidget : VoxglitchSamplerModuleWidget
 
 		addParam(createParamCentered<RoundHugeBlackKnob>(themePos("WAV_KNOB"), module, Autobreak::WAV_KNOB));
 
-		addParam(createParamCentered<VoxglitchAttenuator>(themePos("WAV_ATTN_KNOB"), module, Autobreak::WAV_ATTN_KNOB));
+		addParam(createParamCentered<Trimpot>(themePos("WAV_ATTN_KNOB"), module, Autobreak::WAV_ATTN_KNOB));
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("WAV_INPUT"), module, Autobreak::WAV_INPUT));
 
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("CLOCK_INPUT"), module, Autobreak::CLOCK_INPUT));

@@ -45,24 +45,24 @@ struct SamplerX8Widget : VoxglitchSamplerModuleWidget
         addInput(createInputCentered<VoxglitchInputPort>(themePos("POSITION_INPUTS_7"), module, SamplerX8::POSITION_INPUTS + 7));
 
         // Add volume knobs
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("VOLUME_KNOBS_0"), module, SamplerX8::VOLUME_KNOBS + 0));
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("VOLUME_KNOBS_1"), module, SamplerX8::VOLUME_KNOBS + 1));
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("VOLUME_KNOBS_2"), module, SamplerX8::VOLUME_KNOBS + 2));
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("VOLUME_KNOBS_3"), module, SamplerX8::VOLUME_KNOBS + 3));
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("VOLUME_KNOBS_4"), module, SamplerX8::VOLUME_KNOBS + 4));
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("VOLUME_KNOBS_5"), module, SamplerX8::VOLUME_KNOBS + 5));
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("VOLUME_KNOBS_6"), module, SamplerX8::VOLUME_KNOBS + 6));
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("VOLUME_KNOBS_7"), module, SamplerX8::VOLUME_KNOBS + 7));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("VOLUME_KNOBS_0"), module, SamplerX8::VOLUME_KNOBS + 0));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("VOLUME_KNOBS_1"), module, SamplerX8::VOLUME_KNOBS + 1));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("VOLUME_KNOBS_2"), module, SamplerX8::VOLUME_KNOBS + 2));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("VOLUME_KNOBS_3"), module, SamplerX8::VOLUME_KNOBS + 3));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("VOLUME_KNOBS_4"), module, SamplerX8::VOLUME_KNOBS + 4));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("VOLUME_KNOBS_5"), module, SamplerX8::VOLUME_KNOBS + 5));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("VOLUME_KNOBS_6"), module, SamplerX8::VOLUME_KNOBS + 6));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("VOLUME_KNOBS_7"), module, SamplerX8::VOLUME_KNOBS + 7));
 
         // Add pan knobs
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("PAN_KNOBS_0"), module, SamplerX8::PAN_KNOBS + 0));
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("PAN_KNOBS_1"), module, SamplerX8::PAN_KNOBS + 1));
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("PAN_KNOBS_2"), module, SamplerX8::PAN_KNOBS + 2));
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("PAN_KNOBS_3"), module, SamplerX8::PAN_KNOBS + 3));
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("PAN_KNOBS_4"), module, SamplerX8::PAN_KNOBS + 4));
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("PAN_KNOBS_5"), module, SamplerX8::PAN_KNOBS + 5));
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("PAN_KNOBS_6"), module, SamplerX8::PAN_KNOBS + 6));
-        addParam(createParamCentered<VoxglitchMediumKnob>(themePos("PAN_KNOBS_7"), module, SamplerX8::PAN_KNOBS + 7));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("PAN_KNOBS_0"), module, SamplerX8::PAN_KNOBS + 0));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("PAN_KNOBS_1"), module, SamplerX8::PAN_KNOBS + 1));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("PAN_KNOBS_2"), module, SamplerX8::PAN_KNOBS + 2));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("PAN_KNOBS_3"), module, SamplerX8::PAN_KNOBS + 3));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("PAN_KNOBS_4"), module, SamplerX8::PAN_KNOBS + 4));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("PAN_KNOBS_5"), module, SamplerX8::PAN_KNOBS + 5));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("PAN_KNOBS_6"), module, SamplerX8::PAN_KNOBS + 6));
+        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("PAN_KNOBS_7"), module, SamplerX8::PAN_KNOBS + 7));
 
         addParam(createParamCentered<squareToggle>(themePos("MUTE_BUTTONS_0"), module, SamplerX8::MUTE_BUTTONS + 0));
         addParam(createParamCentered<squareToggle>(themePos("MUTE_BUTTONS_1"), module, SamplerX8::MUTE_BUTTONS + 1));
