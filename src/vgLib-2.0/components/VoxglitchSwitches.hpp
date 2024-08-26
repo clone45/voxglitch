@@ -95,9 +95,9 @@ struct squareToggle : VoxglitchSwitch {
     addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/square_light_on.svg")));
 
     // Add the shadow below everything
-    voxglitch_shadow = new ImageWidget("res/themes/default/square_shadow.png", 15.0, 15.0, 0.4);
-    this->addChildBottom(voxglitch_shadow);
-    voxglitch_shadow->setPosition(Vec(-11, -8));
+    // voxglitch_shadow = new ImageWidget("res/themes/default/square_shadow.png", 15.0, 15.0, 0.4);
+    // this->addChildBottom(voxglitch_shadow);
+    // voxglitch_shadow->setPosition(Vec(-11, -8));
 
     box.size = Vec(22.0, 22.0); // was 15.5   (19.28)
   }
