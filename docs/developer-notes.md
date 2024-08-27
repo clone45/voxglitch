@@ -1,5 +1,10 @@
 # Developer notes
 
+## TODO
+
+* Label all ports
+* Move groovebox and satanonaut into new collection
+
 ## Calculations
 
 See the following for a spreadsheet of the panel width and detail layer width for each HP panel width:
