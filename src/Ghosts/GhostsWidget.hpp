@@ -8,8 +8,6 @@ struct GhostsWidget : VoxglitchSamplerModuleWidget
 		theme.load("ghosts");
 		applyTheme();
 
-		// setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/ghosts/panel.svg")));
-
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/ghosts/ghosts_panel.svg"),
             asset::plugin(pluginInstance, "res/ghosts/ghosts_panel-dark.svg")
@@ -36,7 +34,7 @@ struct GhostsWidget : VoxglitchSamplerModuleWidget
 		// addParam(createParamCentered<GhostsModesKnob>(mm2px(Vec(62.366, 65)), module, Ghosts::MODES_KNOB));
 
 		// Position
-		addParam(createParamCentered<VoxglitchEpicKnob>(themePos("SAMPLE_PLAYBACK_POSITION_KNOB"), module, Ghosts::SAMPLE_PLAYBACK_POSITION_KNOB));
+		addParam(createParamCentered<RoundBlackKnob>(themePos("SAMPLE_PLAYBACK_POSITION_KNOB"), module, Ghosts::SAMPLE_PLAYBACK_POSITION_KNOB));
 		addInput(createInputCentered<VoxglitchInputPort>(themePos("SAMPLE_PLAYBACK_POSITION_INPUT"), module, Ghosts::SAMPLE_PLAYBACK_POSITION_INPUT));
 		addParam(createParamCentered<Trimpot>(themePos("SAMPLE_PLAYBACK_POSITION_ATTN_KNOB"), module, Ghosts::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
 

@@ -224,8 +224,6 @@ struct ArpSeqWidget : VoxglitchModuleWidget
                 float knob_height_px = 21;
                 float startX = 247.55; // Starting X position
 
-                DEBUG("page_index: %d", page_index);
-
                 for (int i = 0; i < 16; i++)
                 {
                     int cycle_knob_index = ArpSeq::CYCLE_KNOBS + (page_index * 16) + i;
