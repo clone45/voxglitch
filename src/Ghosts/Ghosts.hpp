@@ -19,13 +19,16 @@ struct Ghosts : VoxglitchSamplerModule
 	int step = 0;
 	std::string root_dir;
 	std::string path;
+	Random random;
 
 	GhostsEx graveyard;
 	Sample sample;
+	WaveformModel waveform_model;
+
 	dsp::SchmittTrigger purge_trigger;
 	dsp::SchmittTrigger purge_button_trigger;
 	dsp::SchmittTrigger jitter_trigger;
-	Random random;
+	
 
 	float maximum_playback_length = 0; // 1/2 of a second
 	float minimum_playback_length = 0; // very fast
@@ -108,6 +111,10 @@ struct Ghosts : VoxglitchSamplerModule
 		minimum_ghosts_per_second = modes[mode][3];
 		jitter_spread = modes[mode][4];
 		removal_mode = modes[mode][5];
+
+		waveform_model.sample = &sample;
+		waveform_model.visible = true;
+		waveform_model.playback_percentage = 0.0;
 	}
 
 	json_t *dataToJson() override
@@ -268,6 +275,9 @@ struct Ghosts : VoxglitchSamplerModule
 
 			// TODO: spawn_rate_counter should probably take into consideration the selected sample rate.
 			spawn_rate_counter = spawn_rate_counter + (spawn_rate / sample_rate);
+
+			// Update the waveform display
+            waveform_model.playback_percentage = start_position / sample.size();
 		}
 	}
 

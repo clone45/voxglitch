@@ -11,6 +11,8 @@
 #include "vgLib-2.0/components/VoxglitchComponents.hpp"
 #include "vgLib-2.0/dsp/Random.hpp"
 #include "vgLib-2.0/dsp/StereoSmooth.hpp"
+#include "vgLib-2.0/widgets/WaveformModel.hpp"
+#include "vgLib-2.0/widgets/WaveformWidget.hpp"
 
 using namespace vgLib_v2;
 

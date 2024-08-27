@@ -152,7 +152,7 @@ struct WaveformWidget : TransparentWidget
     void drawContainer(NVGcontext *vg)
     {
         nvgBeginPath(vg);
-        nvgRect(vg, 0.0, 0.0, this->width, this->height);  // todo: compute this instead of hard coded
+        nvgRect(vg, 0.0, 0.0, this->width, this->height);
         nvgFillColor(vg, nvgRGBA(26, 35, 255, 200));
         nvgFill(vg);
     }
@@ -166,7 +166,7 @@ struct WaveformWidget : TransparentWidget
         float line_height = (average_height * this->height);
 
         nvgBeginPath(vg);
-        nvgRect(vg, x, (this->height - line_height) / 2.0, 1.0, line_height);  // todo: compute this instead of hard coded
+        nvgRect(vg, x, (this->height - line_height) / 2.0, 1.0, line_height);
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 200));
         nvgFill(vg);
     }
@@ -176,7 +176,7 @@ struct WaveformWidget : TransparentWidget
         float x_position = clamp(waveform_modal->playback_percentage * width, (float) 0.0, (float) width);
 
         nvgBeginPath(vg);
-        nvgRect(vg, x_position, 2.0, 6.0, 44.0); // todo: compute this instead of hard coded
+        nvgRect(vg, x_position, 2.0, 6.0, this->height);
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 100));
         nvgFill(vg);
     }

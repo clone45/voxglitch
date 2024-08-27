@@ -1,7 +1,10 @@
 struct GhostsWidget : VoxglitchSamplerModuleWidget
 {
+	Ghosts *module;
+
 	GhostsWidget(Ghosts *module)
 	{
+		this->module = module;
 		setModule(module);
 
 		// Load and apply theme
@@ -64,6 +67,15 @@ struct GhostsWidget : VoxglitchSamplerModuleWidget
 		// WAV output
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_LEFT"), module, Ghosts::AUDIO_OUTPUT_LEFT));
 		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_RIGHT"), module, Ghosts::AUDIO_OUTPUT_RIGHT));
+
+		// Waveform visualizer
+		if(module)
+		{
+			WaveformWidget *waveform_widget = new WaveformWidget(WAVEFORM_WIDGET_WIDTH, WAVEFORM_WIDGET_HEIGHT, &this->module->waveform_model);
+			waveform_widget->box.pos = themePos("WAVEFORM_DISPLAY");
+			waveform_widget->hide();
+			addChild(waveform_widget);
+		}
 	}
 
 	void appendContextMenu(Menu *menu) override

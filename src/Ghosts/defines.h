@@ -1,6 +1,9 @@
 #define MAX_GRAVEYARD_CAPACITY 120.0f
 #define MAX_GHOST_SPAWN_RATE 30000.0f
 
+const float WAVEFORM_WIDGET_HEIGHT = 100.0;
+const float WAVEFORM_WIDGET_WIDTH = 190.0;
+
 float modes[4][6] = {
   // Default mode
   {
