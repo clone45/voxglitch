@@ -75,8 +75,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="7.9999999"
-     inkscape:cx="7.4375001"
-     inkscape:cy="127.9375"
+     inkscape:cx="53.5625"
+     inkscape:cy="111.9375"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -686,6 +686,22 @@
        y="55.040977"
        rx="4"
        ry="4" />
+    <rect
+       style="display:inline;fill:#213d42;fill-opacity:1;stroke-width:0.1"
+       id="rect4-0"
+       width="17.618071"
+       height="45.340782"
+       x="69.074432"
+       y="56.162704"
+       rx="0"
+       ry="3" />
+    <rect
+       style="display:inline;fill:#213d42;fill-opacity:1;stroke-width:0.0999999"
+       id="rect4-0-6"
+       width="7.8946328"
+       height="45.340782"
+       x="78.981232"
+       y="56.162624" />
     <g
        id="g23829-2"
        style="stroke:#f4eee9;stroke-width:0.873798;stroke-opacity:1"
