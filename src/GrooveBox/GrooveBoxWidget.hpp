@@ -175,6 +175,10 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
         setModule(module);
         setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel.svg")));
 
+        setPanel(createPanel(
+            asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel.svg"),
+            asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel-dark.svg")));
+
         addInput(createInputCentered<PJ301MPort>(Vec(39.2, 102), module, GrooveBox::STEP_INPUT));
         addInput(createInputCentered<PJ301MPort>(Vec(39.2, 154), module, GrooveBox::RESET_INPUT));
 
