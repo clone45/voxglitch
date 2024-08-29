@@ -8,8 +8,8 @@ struct DigitalSequencerWidget : VoxglitchSamplerModuleWidget
 		setModule(module);
 
 		// Load and apply theme
-		theme.load("digital_sequencer");
-		applyTheme();
+		// theme.load("digital_sequencer");
+		// applyTheme();
 
 		setPanel(createPanel(
 			asset::plugin(pluginInstance, "res/digital_sequencer/digital_sequencer_panel.svg"),

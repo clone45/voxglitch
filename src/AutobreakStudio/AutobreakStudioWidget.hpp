@@ -8,8 +8,8 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		setModule(module);
 
 		// Load and apply theme
-		theme.load("autobreak_studio");
-		applyTheme();
+		// theme.load("autobreak_studio");
+		// applyTheme();
 
 		setPanel(createPanel(
 			asset::plugin(pluginInstance, "res/autobreak_studio/autobreak_studio_panel.svg"),

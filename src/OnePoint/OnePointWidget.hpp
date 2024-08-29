@@ -1,12 +1,12 @@
-struct OnePointWidget : VoxglitchModuleWidget
+struct OnePointWidget : ModuleWidget
 {
     OnePointWidget(OnePoint *module)
     {
         setModule(module);
 
         // Load and apply theme
-        theme.load("onepoint");
-        applyTheme();
+        // theme.load("onepoint");
+        // applyTheme();
 
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/onepoint/onepoint_panel.svg"),

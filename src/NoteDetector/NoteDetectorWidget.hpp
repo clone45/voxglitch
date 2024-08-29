@@ -1,12 +1,12 @@
-struct NoteDetectorWidget : VoxglitchModuleWidget
+struct NoteDetectorWidget : ModuleWidget
 {
     NoteDetectorWidget(NoteDetector *module)
     {
         setModule(module);
 
         // Load and apply theme
-        theme.load("note_detector");
-        applyTheme();
+        // theme.load("note_detector");
+        // applyTheme();
 
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/note_detector/note_detector_panel.svg"),

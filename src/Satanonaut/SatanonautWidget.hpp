@@ -1,4 +1,4 @@
-struct SatanonautWidget : VoxglitchModuleWidget
+struct SatanonautWidget : ModuleWidget
 {
     SatanonautWidget(Satanonaut *module)
     {

@@ -1,12 +1,12 @@
-struct HazumiWidget : VoxglitchModuleWidget
+struct HazumiWidget : ModuleWidget
 {
     HazumiWidget(Hazumi *module)
     {
         setModule(module);
 
         // Load and apply theme
-        theme.load("hazumi");
-        applyTheme();
+        // theme.load("hazumi");
+        // applyTheme();
 
         // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/hazumi/panel.svg")));
 

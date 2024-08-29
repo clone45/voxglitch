@@ -1,12 +1,12 @@
-struct XYWidget : VoxglitchModuleWidget
+struct XYWidget : ModuleWidget
 {
     XYWidget(XY *module)
     {
         setModule(module);
 
         // Load and apply theme
-        theme.load("xy");
-        applyTheme();
+        // theme.load("xy");
+        // applyTheme();
 
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/xy/xy_panel.svg"),

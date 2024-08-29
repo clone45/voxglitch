@@ -3,7 +3,7 @@
 #include "widgets/GrooveboxExpanderSoloButton.hpp"
 #include "widgets/GrooveboxExpanderMuteButton.hpp"
 
-struct GrooveBoxExpanderWidget : VoxglitchModuleWidget
+struct GrooveBoxExpanderWidget : ModuleWidget
 {
     // 1st column 20
 

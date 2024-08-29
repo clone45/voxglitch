@@ -1,12 +1,12 @@
-struct OneZeroWidget : VoxglitchModuleWidget
+struct OneZeroWidget : ModuleWidget
 {
     OneZeroWidget(OneZero *module)
     {
         setModule(module);
 
         // Load and apply theme
-        theme.load("onezero");
-        applyTheme();
+        // theme.load("onezero");
+        // applyTheme();
 
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/onezero/onezero_panel.svg"),

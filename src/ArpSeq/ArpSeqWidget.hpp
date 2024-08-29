@@ -115,7 +115,7 @@ public:
     }
 };
 
-struct ArpSeqWidget : VoxglitchModuleWidget
+struct ArpSeqWidget : ModuleWidget
 {
 
     // Adding a Label pointer for shape readout
@@ -125,8 +125,8 @@ struct ArpSeqWidget : VoxglitchModuleWidget
     {
         setModule(module);
 
-        theme.load("ArpSeq");
-        applyTheme();
+        // theme.load("ArpSeq");
+        // applyTheme();
 
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/arpseq/arpseq_panel.svg"),

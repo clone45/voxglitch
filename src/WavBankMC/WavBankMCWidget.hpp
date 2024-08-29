@@ -1,12 +1,12 @@
-struct WavBankMCWidget : VoxglitchModuleWidget
+struct WavBankMCWidget : ModuleWidget
 {
     WavBankMCWidget(WavBankMC *module)
     {
         setModule(module);
 
         // Load and apply theme
-        theme.load("wavbank_mc");
-        applyTheme();
+        // theme.load("wavbank_mc");
+        // applyTheme();
 
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/wavbank_mc/wavbank_mc_panel.svg"),

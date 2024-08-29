@@ -17,7 +17,7 @@
 #include "vgLib-2.0/dsp/StereoFadeIn.hpp"
 #include "vgLib-2.0/dsp/StereoFadeOut.hpp"
 #include "vgLib-2.0/GrainEngineExpanderMessage.hpp"
-#include "vgLib-2.0/Theme.hpp"
+
 #include "vgLib-2.0/components/VoxglitchComponents.hpp"
 
 using namespace vgLib_v2;

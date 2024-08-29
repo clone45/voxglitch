@@ -14,7 +14,7 @@
 #include "ArpSeq/defines.h"
 
 #include "vgLib-2.0/constants.h"
-#include "vgLib-2.0/Theme.hpp"
+// 
 #include "vgLib-2.0/components/VoxglitchComponents.hpp"
 #include "vgLib-2.0/dsp/Quantizer.hpp"
 #include "vgLib-2.0/dsp/SlewLimiter.hpp"

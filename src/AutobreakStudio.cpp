@@ -11,7 +11,7 @@
 #include "vgLib-2.0/sample.hpp"
 #include "vgLib-2.0/dsp/DeclickFilter.hpp"
 #include "vgLib-2.0/dsp/StereoPan.hpp"
-#include "vgLib-2.0/Theme.hpp"
+// 
 #include "vgLib-2.0/components/VoxglitchComponents.hpp"
 #include "vgLib-2.0/sequencer/VoltageSequencerHistory.hpp"
 #include "vgLib-2.0/widgets/WaveformModel.hpp"

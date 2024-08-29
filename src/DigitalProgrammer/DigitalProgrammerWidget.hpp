@@ -2,7 +2,7 @@
 static DrawTimer drawTimer("DigitalProgrammer");
 #endif
 
-struct DigitalProgrammerWidget : VoxglitchModuleWidget
+struct DigitalProgrammerWidget : ModuleWidget
 {
     DigitalProgrammer *module = NULL;
 
@@ -12,8 +12,8 @@ struct DigitalProgrammerWidget : VoxglitchModuleWidget
         setModule(module);
 
         // Load and apply theme
-        theme.load("digital_programmer");
-        applyTheme();
+        // theme.load("digital_programmer");
+        // applyTheme();
 
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/digital_programmer/digital_programmer_panel.svg"),

@@ -1,12 +1,12 @@
-struct DrumRandomizerWidget : VoxglitchModuleWidget
+struct DrumRandomizerWidget : ModuleWidget
 {
     DrumRandomizerWidget(DrumRandomizer *module)
     {
         setModule(module);
 
         // Load and apply theme
-        theme.load("drum_randomizer");
-        applyTheme();
+        // theme.load("drum_randomizer");
+        // applyTheme();
 
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/drum_randomizer/drum_randomizer_panel.svg"),

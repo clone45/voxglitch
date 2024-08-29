@@ -9,7 +9,7 @@
 #include "VoxglitchPanel.hpp"
 
 #include "VoxglitchModule.hpp"
-#include "VoxglitchModuleWidget.hpp"
+// #include "VoxglitchModuleWidget.hpp"
 #include "VoxglitchSamplerModule.hpp"
 #include "VoxglitchSamplerModuleWidget.hpp"
 

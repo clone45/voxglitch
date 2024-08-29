@@ -1,4 +1,4 @@
-struct GrainFxWidget : VoxglitchModuleWidget
+struct GrainFxWidget : ModuleWidget
 {
   GrainFxWidget(GrainFx* module)
   {

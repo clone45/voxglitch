@@ -6,7 +6,7 @@
 #include "osdialog.h"
 
 #include "vgLib-2.0/constants.h"
-#include "vgLib-2.0/Theme.hpp"
+
 #include "vgLib-2.0/components/VoxglitchComponents.hpp"
 #include "vgLib-2.0/widgets/NoteReadoutWidget.hpp"
 #include "vgLib-2.0/helpers/JSON.hpp"

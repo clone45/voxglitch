@@ -8,8 +8,8 @@ struct GhostsWidget : VoxglitchSamplerModuleWidget
 		setModule(module);
 
 		// Load and apply theme
-		theme.load("ghosts");
-		applyTheme();
+		// theme.load("ghosts");
+		// applyTheme();
 
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/ghosts/ghosts_panel.svg"),

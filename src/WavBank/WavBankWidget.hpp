@@ -5,8 +5,8 @@ struct WavBankWidget : VoxglitchSamplerModuleWidget
         setModule(module);
 
         // Load and apply theme
-        theme.load("wavbank");
-        applyTheme();
+        // theme.load("wavbank");
+        // applyTheme();
 
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/wavbank/wavbank_panel.svg"),

@@ -16,8 +16,8 @@ struct LooperWidget : VoxglitchSamplerModuleWidget
         setModule(module);
 
         // Load and apply theme
-        theme.load("looper");
-        applyTheme();
+        // theme.load("looper");
+        // applyTheme();
 
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/looper/looper_panel.svg"),

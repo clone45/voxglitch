@@ -1,12 +1,12 @@
-struct GlitchSequencerWidget : VoxglitchModuleWidget
+struct GlitchSequencerWidget : ModuleWidget
 {
     GlitchSequencerWidget(GlitchSequencer *module)
     {
         setModule(module);
 
         // Load and apply theme
-        theme.load("glitch_sequencer");
-        applyTheme();
+        // theme.load("glitch_sequencer");
+        // applyTheme();
 
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/glitch_sequencer/glitch_sequencer_panel.svg"),

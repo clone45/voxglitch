@@ -1,4 +1,4 @@
-struct DigitalSequencerXPWidget : VoxglitchModuleWidget
+struct DigitalSequencerXPWidget : ModuleWidget
 {
     DigitalSequencerXP *module;
     int copy_sequencer_index = -1;
@@ -9,8 +9,8 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
         setModule(module);
 
         // Load and apply theme
-        theme.load("digital_sequencer_xp");
-        applyTheme();
+        // theme.load("digital_sequencer_xp");
+        // applyTheme();
 
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/digital_sequencer_xp/digital_sequencer_xp_panel.svg"),

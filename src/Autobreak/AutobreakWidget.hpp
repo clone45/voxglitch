@@ -5,8 +5,8 @@ struct AutobreakWidget : VoxglitchSamplerModuleWidget
 		setModule(module);
 
 		// Load and apply theme
-		theme.load("autobreak");
-		applyTheme();
+		// theme.load("autobreak");
+		// applyTheme();
 
 		setPanel(createPanel(
 			asset::plugin(pluginInstance, "res/autobreak/autobreak_panel.svg"),

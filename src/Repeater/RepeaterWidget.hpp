@@ -5,8 +5,8 @@ struct RepeaterWidget : VoxglitchSamplerModuleWidget
         setModule(module);
 
         // Load and apply theme
-        theme.load("repeater");
-        applyTheme();
+        // theme.load("repeater");
+        // applyTheme();
 
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/repeater/repeater_panel.svg"),

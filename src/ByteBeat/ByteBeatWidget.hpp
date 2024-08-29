@@ -1,12 +1,12 @@
-struct ByteBeatWidget : VoxglitchModuleWidget
+struct ByteBeatWidget : ModuleWidget
 {
   ByteBeatWidget(ByteBeat* module)
   {
     setModule(module);
 
     // Load and apply theme
-    theme.load("bytebeat");
-    applyTheme();
+    // theme.load("bytebeat");
+    // applyTheme();
 
     setPanel(createPanel(
       asset::plugin(pluginInstance, "res/bytebeat/bytebeat_panel.svg"),

@@ -1,12 +1,12 @@
-struct GrainEngineMK2Widget : VoxglitchModuleWidget
+struct GrainEngineMK2Widget : ModuleWidget
 {
     GrainEngineMK2Widget(GrainEngineMK2 *module)
     {
         setModule(module);
 
         // Load and apply theme
-        theme.load("grain_engine_mk2");
-        applyTheme();
+        // theme.load("grain_engine_mk2");
+        // applyTheme();
 
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/grain_engine_mk2/grain_engine_mk2_panel.svg"),

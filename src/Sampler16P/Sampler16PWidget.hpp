@@ -5,8 +5,8 @@ struct Sampler16PWidget : VoxglitchSamplerModuleWidget
         setModule(module);
 
         // Load and apply theme
-        theme.load("sampler16p");
-        applyTheme();
+        // theme.load("sampler16p");
+        // applyTheme();
 
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/sampler16p/sampler16p_panel.svg"),
