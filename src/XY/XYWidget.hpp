@@ -20,21 +20,21 @@ struct XYWidget : VoxglitchModuleWidget
 		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
         // Clock and Reset inputs
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("CLK_INPUT"), module, XY::CLK_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, XY::RESET_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(32.696091, 343.245789), module, XY::CLK_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(73.296082, 343.245789), module, XY::RESET_INPUT));
 
         // X,Y outputs
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("X_OUTPUT"), module, XY::X_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("Y_OUTPUT"), module, XY::Y_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(232.399994, 343.099976), module, XY::X_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(270.450470, 343.099976), module, XY::Y_OUTPUT));
 
         // Retrigger and punch switches
-        addParam(createParamCentered<squareToggle>(themePos("RETRIGGER_SWITCH"), module, XY::RETRIGGER_SWITCH));
-        addParam(createParamCentered<squareToggle>(themePos("PUNCH_SWITCH"), module, XY::PUNCH_SWITCH));
+        addParam(createParamCentered<squareToggle>(Vec(126.240843, 341.270369), module, XY::RETRIGGER_SWITCH));
+        addParam(createParamCentered<squareToggle>(Vec(170.46704, 341.116988), module, XY::PUNCH_SWITCH));
 
         // xy mouse entry box
         XYDisplay *xy_display;
         xy_display = new XYDisplay(module);
-        xy_display->box.pos = themePos("DISPLAY");
+        xy_display->box.pos = Vec(19.750000, 19.750000);
         addChild(xy_display);
     }
 

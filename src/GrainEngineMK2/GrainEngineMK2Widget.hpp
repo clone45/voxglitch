@@ -8,8 +8,6 @@ struct GrainEngineMK2Widget : VoxglitchModuleWidget
         theme.load("grain_engine_mk2");
         applyTheme();
 
-        // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/grain_engine_mk2/panel.svg")));
-
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/grain_engine_mk2/grain_engine_mk2_panel.svg"),
             asset::plugin(pluginInstance, "res/grain_engine_mk2/grain_engine_mk2_panel-dark.svg")
@@ -21,69 +19,56 @@ struct GrainEngineMK2Widget : VoxglitchModuleWidget
         addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
         addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-        //
         // Control inputs in the center area of the module
-        //
-        addParam(createParamCentered<RoundHugeBlackKnob>(themePos("POSITION_KNOB"), module, GrainEngineMK2::POSITION_KNOB));
-        addParam(createParamCentered<Trimpot>(themePos("POSITION_ATTN_KNOB"), module, GrainEngineMK2::POSITION_ATTN_KNOB));
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("POSITION_INPUT"), module, GrainEngineMK2::POSITION_INPUT));
+        addParam(createParamCentered<RoundHugeBlackKnob>(Vec(150.407593, 78.039162), module, GrainEngineMK2::POSITION_KNOB));
+        addParam(createParamCentered<Trimpot>(Vec(224.822815, 59.589138), module, GrainEngineMK2::POSITION_ATTN_KNOB));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(231.972626, 96.289116), module, GrainEngineMK2::POSITION_INPUT));
 
-        addParam(createParamCentered<Trimpot>(themePos("JITTER_KNOB"), module, GrainEngineMK2::JITTER_KNOB));
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("JITTER_INPUT"), module, GrainEngineMK2::JITTER_INPUT));
+        addParam(createParamCentered<Trimpot>(Vec(75.375320, 59.539215), module, GrainEngineMK2::JITTER_KNOB));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(67.875175, 96.400185), module, GrainEngineMK2::JITTER_INPUT));
 
         // Spawn rate
-        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("RATE_KNOB"), module, GrainEngineMK2::RATE_KNOB));
-        addParam(createParamCentered<Trimpot>(themePos("RATE_ATTN_KNOB"), module, GrainEngineMK2::RATE_ATTN_KNOB));
-        
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("RATE_INPUT"), module, GrainEngineMK2::RATE_INPUT));
+        addParam(createParamCentered<RoundLargeBlackKnob>(Vec(33.867897, 178.221176), module, GrainEngineMK2::RATE_KNOB));
+        addParam(createParamCentered<Trimpot>(Vec(33.867897, 223.223434), module, GrainEngineMK2::RATE_ATTN_KNOB));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(33.867897, 260.573914), module, GrainEngineMK2::RATE_INPUT));
 
         // Window
-        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("WINDOW_KNOB"), module, GrainEngineMK2::WINDOW_KNOB));
-        addParam(createParamCentered<Trimpot>(themePos("WINDOW_ATTN_KNOB"), module, GrainEngineMK2::WINDOW_ATTN_KNOB));
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("WINDOW_INPUT"), module, GrainEngineMK2::WINDOW_INPUT));
+        addParam(createParamCentered<RoundLargeBlackKnob>(Vec(91.929710, 178.221176), module, GrainEngineMK2::WINDOW_KNOB));
+        addParam(createParamCentered<Trimpot>(Vec(91.929710, 223.223434), module, GrainEngineMK2::WINDOW_ATTN_KNOB));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(91.929710, 260.573914), module, GrainEngineMK2::WINDOW_INPUT));
 
         // Grains
-        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("GRAINS_KNOB"), module, GrainEngineMK2::GRAINS_KNOB));
-        addParam(createParamCentered<Trimpot>(themePos("GRAINS_ATTN_KNOB"), module, GrainEngineMK2::GRAINS_ATTN_KNOB));
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("GRAINS_INPUT"), module, GrainEngineMK2::GRAINS_INPUT));
+        addParam(createParamCentered<RoundLargeBlackKnob>(Vec(149.991523, 178.221176), module, GrainEngineMK2::GRAINS_KNOB));
+        addParam(createParamCentered<Trimpot>(Vec(149.991523, 223.223434), module, GrainEngineMK2::GRAINS_ATTN_KNOB));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(149.991523, 260.573914), module, GrainEngineMK2::GRAINS_INPUT));
 
         // Pitch
-        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("PITCH_KNOB"), module, GrainEngineMK2::PITCH_KNOB));
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("PITCH_INPUT"), module, GrainEngineMK2::PITCH_INPUT));
+        addParam(createParamCentered<RoundLargeBlackKnob>(Vec(208.303345, 178.221176), module, GrainEngineMK2::PITCH_KNOB));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(208.303345, 260.573914), module, GrainEngineMK2::PITCH_INPUT));
 
         // Sample
-        addParam(createParamCentered<RoundLargeBlackKnob>(themePos("SAMPLE_KNOB"), module, GrainEngineMK2::SAMPLE_KNOB));
-        addParam(createParamCentered<Trimpot>(themePos("SAMPLE_ATTN_KNOB"), module, GrainEngineMK2::SAMPLE_ATTN_KNOB));
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("SAMPLE_INPUT"), module, GrainEngineMK2::SAMPLE_INPUT));
+        addParam(createParamCentered<RoundLargeBlackKnob>(Vec(266.415070, 178.221176), module, GrainEngineMK2::SAMPLE_KNOB));
+        addParam(createParamCentered<Trimpot>(Vec(266.415070, 223.223434), module, GrainEngineMK2::SAMPLE_ATTN_KNOB));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(266.415070, 260.573914), module, GrainEngineMK2::SAMPLE_INPUT));
 
         // Spawn trigger input
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("SPAWN_TRIGGER_INPUT"), module, GrainEngineMK2::SPAWN_TRIGGER_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(33.607643, 342.537292), module, GrainEngineMK2::SPAWN_TRIGGER_INPUT));
 
         // Pan input
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("PAN_INPUT"), module, GrainEngineMK2::PAN_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(91.887779, 342.637268), module, GrainEngineMK2::PAN_INPUT));
 
         // Trim knob
-        addParam(createParamCentered<Trimpot>(themePos("TRIM_KNOB"), module, GrainEngineMK2::TRIM_KNOB));
+        addParam(createParamCentered<Trimpot>(Vec(164.087967, 342.287354), module, GrainEngineMK2::TRIM_KNOB));
 
         // Audio Output
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_LEFT"), module, GrainEngineMK2::AUDIO_OUTPUT_LEFT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_RIGHT"), module, GrainEngineMK2::AUDIO_OUTPUT_RIGHT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(225.577179, 342.537292), module, GrainEngineMK2::AUDIO_OUTPUT_LEFT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(266.140045, 342.452545), module, GrainEngineMK2::AUDIO_OUTPUT_RIGHT));
 
         GrainEngineMK2PosDisplay *pos_display = new GrainEngineMK2PosDisplay();
-        pos_display->box.pos = themePos("DISPLAY");
+        pos_display->box.pos = Vec(26.574804, 124.0157);
         pos_display->module = module;
         addChild(pos_display);
     }
-
-    /*
-    struct BipolarPitchOption : MenuItem {
-      GrainEngineMK2 *module;
-
-      void onAction(const event::Action &e) override {
-        module->bipolar_pitch_mode ^= true; // flip the value
-      }
-    };
-    */
 
     void appendContextMenu(Menu *menu) override
     {

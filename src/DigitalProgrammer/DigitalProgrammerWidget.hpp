@@ -15,8 +15,6 @@ struct DigitalProgrammerWidget : VoxglitchModuleWidget
         theme.load("digital_programmer");
         applyTheme();
 
-        // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/digital_programmer/panel.svg")));
-
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/digital_programmer/digital_programmer_panel.svg"),
             asset::plugin(pluginInstance, "res/digital_programmer/digital_programmer_panel-dark.svg")));
@@ -27,43 +25,87 @@ struct DigitalProgrammerWidget : VoxglitchModuleWidget
         addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
         addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-        //
-        // Loop through each column and draw the sliders
-        //
-        for (unsigned int column = 0; column < NUMBER_OF_SLIDERS; column++)
-        {
-            std::string slider_name("SLIDER_" + std::to_string(column + 1));
-            std::string output_name("OUTPUT_" + std::to_string(column + 1));
-            addSlider(column, themePos(slider_name));
-            addOutputEx(column, themePos(output_name));
-        }
+        // Add sliders
+        addSlider(0, Vec(27.000000, 25.250000));
+        addSlider(1, Vec(58.750000, 25.250000));
+        addSlider(2, Vec(90.500000, 25.250000));
+        addSlider(3, Vec(122.000000, 25.250000));
+        addSlider(4, Vec(154.250000, 25.250000));
+        addSlider(5, Vec(185.750000, 25.250000));
+        addSlider(6, Vec(217.250000, 25.250000));
+        addSlider(7, Vec(249.000000, 25.250000));
+        addSlider(8, Vec(280.750000, 25.250000));
+        addSlider(9, Vec(312.500000, 25.250000));
+        addSlider(10, Vec(344.500000, 25.250000));
+        addSlider(11, Vec(376.250000, 25.250000));
+        addSlider(12, Vec(408.000000, 25.250000));
+        addSlider(13, Vec(439.750000, 25.250000));
+        addSlider(14, Vec(471.500000, 25.250000));
+        addSlider(15, Vec(503.000000, 25.250000));
 
-        // bank buttons
-        for (unsigned int i = 0; i < NUMBER_OF_BANKS; i++)
-        {
-            std::string bank_name("BANK_" + std::to_string(i + 1));
-            addBankButton(i, themePos(bank_name));
-        }
+        // Add outputs
+        addOutputEx(0, Vec(39.233265, 349.703735));
+        addOutputEx(1, Vec(71.086334, 349.703735));
+        addOutputEx(2, Vec(102.949997, 349.703735));
+        addOutputEx(3, Vec(134.663681, 349.703735));
+        addOutputEx(4, Vec(166.403931, 349.703735));
+        addOutputEx(5, Vec(198.153900, 349.703735));
+        addOutputEx(6, Vec(229.803955, 349.703735));
+        addOutputEx(7, Vec(261.553925, 349.703735));
+        addOutputEx(8, Vec(293.399902, 349.703735));
+        addOutputEx(9, Vec(325.000000, 349.703735));
+        addOutputEx(10, Vec(356.599976, 349.703735));
+        addOutputEx(11, Vec(388.400024, 349.703735));
+        addOutputEx(12, Vec(420.149902, 349.703735));
+        addOutputEx(13, Vec(451.849915, 349.703735));
+        addOutputEx(14, Vec(483.699951, 349.703735));
+        addOutputEx(15, Vec(515.500000, 349.703735));
+
+        // Add bank buttons
+        addBankButton(0, Vec(561.8, 126.8));
+        addBankButton(1, Vec(592.3, 126.8));
+        addBankButton(2, Vec(622.8, 126.8));
+        addBankButton(3, Vec(653.3, 126.8));
+        addBankButton(4, Vec(683.8, 126.8));
+        addBankButton(5, Vec(714.3, 126.8));
+        addBankButton(6, Vec(561.8, 157.1));
+        addBankButton(7, Vec(592.3, 157.1));
+        addBankButton(8, Vec(622.8, 157.1));
+        addBankButton(9, Vec(653.3, 157.1));
+        addBankButton(10, Vec(683.8, 157.1));
+        addBankButton(11, Vec(714.3, 157.1));
+        addBankButton(12, Vec(561.8, 187.4));
+        addBankButton(13, Vec(592.3, 187.4));
+        addBankButton(14, Vec(622.8, 187.4));
+        addBankButton(15, Vec(653.3, 187.4));
+        addBankButton(16, Vec(683.8, 187.4));
+        addBankButton(17, Vec(714.3, 187.4));
+        addBankButton(18, Vec(561.8, 217.7));
+        addBankButton(19, Vec(592.3, 217.7));
+        addBankButton(20, Vec(622.8, 217.7));
+        addBankButton(21, Vec(653.3, 217.7));
+        addBankButton(22, Vec(683.8, 217.7));
+        addBankButton(23, Vec(714.3, 217.7));
 
         // Poly add input
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("POLY_ADD_INPUT"), module, DigitalProgrammer::POLY_ADD_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(722.000000, 292.000000), module, DigitalProgrammer::POLY_ADD_INPUT));
 
         // Poly output
-        addOutput(createOutputCentered<VoxglitchPolyPort>(themePos("POLY_OUTPUT"), module, DigitalProgrammer::POLY_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchPolyPort>(Vec(722.250000, 349.500000), module, DigitalProgrammer::POLY_OUTPUT));
 
-        // bank controls
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("BANK_CV_INPUT"), module, DigitalProgrammer::BANK_CV_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("BANK_RESET_INPUT"), module, DigitalProgrammer::BANK_RESET_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("BANK_PREV_INPUT"), module, DigitalProgrammer::BANK_PREV_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("BANK_NEXT_INPUT"), module, DigitalProgrammer::BANK_NEXT_INPUT));
+        // Bank controls
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(574.209290, 50.708843), module, DigitalProgrammer::BANK_CV_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(623.195435, 51.008839), module, DigitalProgrammer::BANK_RESET_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(673.005005, 50.808842), module, DigitalProgrammer::BANK_PREV_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(722.345642, 50.858841), module, DigitalProgrammer::BANK_NEXT_INPUT));
 
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("BANK_PREV_PARAM"), module, DigitalProgrammer::BANK_PREV_PARAM, DigitalProgrammer::BANK_PREV_LIGHT));
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("BANK_NEXT_PARAM"), module, DigitalProgrammer::BANK_NEXT_PARAM, DigitalProgrammer::BANK_NEXT_LIGHT));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(673.005005, 83.425795), module, DigitalProgrammer::BANK_PREV_PARAM, DigitalProgrammer::BANK_PREV_LIGHT));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(722.345642, 83.425795), module, DigitalProgrammer::BANK_NEXT_PARAM, DigitalProgrammer::BANK_NEXT_LIGHT));
 
-        // copy/paste mode toggle
-        addParam(createParamCentered<squareToggle>(themePos("COPY_MODE_PARAM"), module, DigitalProgrammer::COPY_MODE_PARAM));
-        addParam(createParamCentered<squareToggle>(themePos("CLEAR_MODE_PARAM"), module, DigitalProgrammer::CLEAR_MODE_PARAM));
-        addParam(createParamCentered<squareToggle>(themePos("RANDOMIZE_MODE_PARAM"), module, DigitalProgrammer::RANDOMIZE_MODE_PARAM));
+        // Copy/paste mode toggle
+        addParam(createParamCentered<squareToggle>(Vec(573.425398, 290.021529), module, DigitalProgrammer::COPY_MODE_PARAM));
+        addParam(createParamCentered<squareToggle>(Vec(622.616927, 290.116927), module, DigitalProgrammer::CLEAR_MODE_PARAM));
+        addParam(createParamCentered<squareToggle>(Vec(672.266829, 290.016951), module, DigitalProgrammer::RANDOMIZE_MODE_PARAM));
     }
 
     struct InputSnapValueItem : MenuItem

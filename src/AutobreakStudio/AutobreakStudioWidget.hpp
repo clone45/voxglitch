@@ -104,68 +104,68 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 			addChild(lcd_tabs_widget);			
 		}
 
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("CLOCK_INPUT"), module, AutobreakStudio::CLOCK_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, AutobreakStudio::RESET_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("RATCHET_INPUT"), module, AutobreakStudio::RATCHET_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(30.12117, 71.68296), module, AutobreakStudio::CLOCK_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(73.53734, 71.68296), module, AutobreakStudio::RESET_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(117.07335, 71.68296), module, AutobreakStudio::RATCHET_INPUT));
 
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("MEMORY_SELECT_INPUT"), module, AutobreakStudio::MEMORY_SELECT_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(35.5389, 141.75000), module, AutobreakStudio::MEMORY_SELECT_INPUT));
 
-		addParam(createLightParamCentered<VCVLightButton<MediumSimpleLight<WhiteLight>>>(themePos("COPY_BUTTON"), module, AutobreakStudio::COPY_BUTTON, AutobreakStudio::COPY_LIGHT));
-		addParam(createLightParamCentered<VCVLightButton<MediumSimpleLight<WhiteLight>>>(themePos("CLEAR_BUTTON"), module, AutobreakStudio::CLEAR_BUTTON, AutobreakStudio::CLEAR_LIGHT));
+		addParam(createLightParamCentered<VCVLightButton<MediumSimpleLight<WhiteLight>>>(Vec(35.5389, 196.00), module, AutobreakStudio::COPY_BUTTON, AutobreakStudio::COPY_LIGHT));
+		addParam(createLightParamCentered<VCVLightButton<MediumSimpleLight<WhiteLight>>>(Vec(35.5389, 240.00), module, AutobreakStudio::CLEAR_BUTTON, AutobreakStudio::CLEAR_LIGHT));
 
 		// Add inputs for CV sequencer override
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("POSITION_CV_INPUT"), module, AutobreakStudio::POSITION_CV_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("SAMPLE_CV_INPUT"), module, AutobreakStudio::SAMPLE_CV_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("VOLUME_CV_INPUT"), module, AutobreakStudio::VOLUME_CV_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("PAN_CV_INPUT"), module, AutobreakStudio::PAN_CV_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("REVERSE_CV_INPUT"), module, AutobreakStudio::REVERSE_CV_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("RATCHET_CV_INPUT"), module, AutobreakStudio::RATCHET_CV_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(175.6875, 27.12069), module, AutobreakStudio::POSITION_CV_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(242.2439, 27.12069), module, AutobreakStudio::SAMPLE_CV_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(308.4915, 27.12069), module, AutobreakStudio::VOLUME_CV_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(375.3137, 27.12069), module, AutobreakStudio::PAN_CV_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(441.8311, 27.12069), module, AutobreakStudio::REVERSE_CV_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(508.3613, 27.12069), module, AutobreakStudio::RATCHET_CV_INPUT));
 
 		// Add outputs for CV sequencers
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("POSITION_CV_OUTPUT"), module, AutobreakStudio::POSITION_CV_OUTPUT));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("SAMPLE_CV_OUTPUT"), module, AutobreakStudio::SAMPLE_CV_OUTPUT));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("VOLUME_CV_OUTPUT"), module, AutobreakStudio::VOLUME_CV_OUTPUT));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("PAN_CV_OUTPUT"), module, AutobreakStudio::PAN_CV_OUTPUT));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("REVERSE_CV_OUTPUT"), module, AutobreakStudio::REVERSE_CV_OUTPUT));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RATCHET_CV_OUTPUT"), module, AutobreakStudio::RATCHET_CV_OUTPUT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(206.7689, 27.12069), module, AutobreakStudio::POSITION_CV_OUTPUT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(273.0165, 27.12069), module, AutobreakStudio::SAMPLE_CV_OUTPUT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(339.8387, 27.12069), module, AutobreakStudio::VOLUME_CV_OUTPUT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(406.3561, 27.12069), module, AutobreakStudio::PAN_CV_OUTPUT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(472.8863, 27.12069), module, AutobreakStudio::REVERSE_CV_OUTPUT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(539.4166, 27.12069), module, AutobreakStudio::RATCHET_CV_OUTPUT));
 
-		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_1"), module, AutobreakStudio::MEMORY_BUTTONS + 0));
-		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_2"), module, AutobreakStudio::MEMORY_BUTTONS + 1));
-		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_3"), module, AutobreakStudio::MEMORY_BUTTONS + 2));
-		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_4"), module, AutobreakStudio::MEMORY_BUTTONS + 3));
-		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_5"), module, AutobreakStudio::MEMORY_BUTTONS + 4));
-		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_6"), module, AutobreakStudio::MEMORY_BUTTONS + 5));
-		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_7"), module, AutobreakStudio::MEMORY_BUTTONS + 6));
-		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_8"), module, AutobreakStudio::MEMORY_BUTTONS + 7));
-		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_9"), module, AutobreakStudio::MEMORY_BUTTONS + 8));
-		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_10"), module, AutobreakStudio::MEMORY_BUTTONS + 9));
-		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_11"), module, AutobreakStudio::MEMORY_BUTTONS + 10));
-		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_12"), module, AutobreakStudio::MEMORY_BUTTONS + 11));
-		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_13"), module, AutobreakStudio::MEMORY_BUTTONS + 12));
-		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_14"), module, AutobreakStudio::MEMORY_BUTTONS + 13));
-		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_15"), module, AutobreakStudio::MEMORY_BUTTONS + 14));
-		addParam(createParamCentered<squareToggle>(themePos("MEMORY_BUTTON_16"), module, AutobreakStudio::MEMORY_BUTTONS + 15));
+		addParam(createParamCentered<squareToggle>(Vec(76.0244, 127.28123), module, AutobreakStudio::MEMORY_BUTTONS + 0));
+		addParam(createParamCentered<squareToggle>(Vec(76.0244, 157.9642), module, AutobreakStudio::MEMORY_BUTTONS + 1));
+		addParam(createParamCentered<squareToggle>(Vec(76.0244, 188.64717), module, AutobreakStudio::MEMORY_BUTTONS + 2));
+		addParam(createParamCentered<squareToggle>(Vec(76.0244, 219.33014), module, AutobreakStudio::MEMORY_BUTTONS + 3));
+		addParam(createParamCentered<squareToggle>(Vec(76.0244, 250.01311), module, AutobreakStudio::MEMORY_BUTTONS + 4));
+		addParam(createParamCentered<squareToggle>(Vec(76.0244, 280.69608), module, AutobreakStudio::MEMORY_BUTTONS + 5));
+		addParam(createParamCentered<squareToggle>(Vec(76.0244, 311.37905), module, AutobreakStudio::MEMORY_BUTTONS + 6));
+		addParam(createParamCentered<squareToggle>(Vec(76.0244, 342.06202), module, AutobreakStudio::MEMORY_BUTTONS + 7));
+		addParam(createParamCentered<squareToggle>(Vec(109.7851, 127.28123), module, AutobreakStudio::MEMORY_BUTTONS + 8));
+		addParam(createParamCentered<squareToggle>(Vec(109.7851, 157.9642), module, AutobreakStudio::MEMORY_BUTTONS + 9));
+		addParam(createParamCentered<squareToggle>(Vec(109.7851, 188.64717), module, AutobreakStudio::MEMORY_BUTTONS + 10));
+		addParam(createParamCentered<squareToggle>(Vec(109.7851, 219.33014), module, AutobreakStudio::MEMORY_BUTTONS + 11));
+		addParam(createParamCentered<squareToggle>(Vec(109.7851, 250.01311), module, AutobreakStudio::MEMORY_BUTTONS + 12));
+		addParam(createParamCentered<squareToggle>(Vec(109.7851, 280.69608), module, AutobreakStudio::MEMORY_BUTTONS + 13));
+		addParam(createParamCentered<squareToggle>(Vec(109.7851, 311.37905), module, AutobreakStudio::MEMORY_BUTTONS + 14));
+		addParam(createParamCentered<squareToggle>(Vec(109.7851, 342.06202), module, AutobreakStudio::MEMORY_BUTTONS + 15));
 
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_1"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 0));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_2"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 1));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_3"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 2));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_4"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 3));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_5"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 4));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_6"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 5));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_7"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 6));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("LEFT_OUTPUT_8"), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 7));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(178.6329, 315.53934), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 0));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(222.2084, 315.53934), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 1));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(265.7839, 315.53934), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 2));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(309.3594, 315.53934), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 3));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(352.9349, 315.53934), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 4));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(396.5104, 315.53934), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 5));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(440.0859, 315.53934), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 6));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(483.6614, 315.53934), module, AutobreakStudio::LEFT_INDIVIDUAL_OUTPUTS + 7));
 
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RIGHT_OUTPUT_1"), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 0));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RIGHT_OUTPUT_2"), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 1));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RIGHT_OUTPUT_3"), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 2));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RIGHT_OUTPUT_4"), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 3));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RIGHT_OUTPUT_5"), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 4));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RIGHT_OUTPUT_6"), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 5));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RIGHT_OUTPUT_7"), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 6));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("RIGHT_OUTPUT_8"), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 7));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(178.6329, 354.33637), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 0));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(222.2084, 354.33637), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 1));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(265.7839, 354.33637), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 2));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(309.3594, 354.33637), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 3));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(352.9349, 354.33637), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 4));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(396.5104, 354.33637), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 5));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(440.0859, 354.33637), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 6));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(483.6614, 354.33637), module, AutobreakStudio::RIGHT_INDIVIDUAL_OUTPUTS + 7));
 
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_LEFT"), module, AutobreakStudio::AUDIO_OUTPUT_LEFT));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_RIGHT"), module, AutobreakStudio::AUDIO_OUTPUT_RIGHT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(530.0, 315.53934), module, AutobreakStudio::AUDIO_OUTPUT_LEFT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(530.0, 354.33637), module, AutobreakStudio::AUDIO_OUTPUT_RIGHT));
 	}
 
 	void appendContextMenu(Menu *menu) override

@@ -8,17 +8,15 @@ struct Sampler16PWidget : VoxglitchSamplerModuleWidget
         theme.load("sampler16p");
         applyTheme();
 
-        // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/sampler16p/panel.svg")));
-
         setPanel(createPanel(
             asset::plugin(pluginInstance, "res/sampler16p/sampler16p_panel.svg"),
             asset::plugin(pluginInstance, "res/sampler16p/sampler16p_panel-dark.svg")
         ));
 
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("TRIGGER_INPUTS"), module, Sampler16P::TRIGGER_INPUTS));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(22.2933, 52.0), module, Sampler16P::TRIGGER_INPUTS));
 
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_MIX_OUTPUT_LEFT"), module, Sampler16P::AUDIO_MIX_OUTPUT_LEFT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_MIX_OUTPUT_RIGHT"), module, Sampler16P::AUDIO_MIX_OUTPUT_RIGHT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(22.3819, 304.1339), module, Sampler16P::AUDIO_MIX_OUTPUT_LEFT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(22.3819, 340.1575), module, Sampler16P::AUDIO_MIX_OUTPUT_RIGHT));
     }
 
     void appendContextMenu(Menu *menu) override

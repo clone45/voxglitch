@@ -8,27 +8,32 @@ struct WavBankWidget : VoxglitchSamplerModuleWidget
         theme.load("wavbank");
         applyTheme();
 
-		// Screws
-		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+        setPanel(createPanel(
+            asset::plugin(pluginInstance, "res/wavbank/wavbank_panel.svg"),
+            asset::plugin(pluginInstance, "res/wavbank/wavbank_panel-dark.svg")
+        ));
 
-        addParam(createParamCentered<RoundHugeBlackKnob>(themePos("WAV_KNOB"), module, WavBank::WAV_KNOB));
-        addParam(createParamCentered<Trimpot>(themePos("WAV_ATTN_KNOB"), module, WavBank::WAV_ATTN_KNOB));
-        addParam(createParamCentered<squareToggle>(themePos("LOOP_SWITCH"), module, WavBank::LOOP_SWITCH));
+        // Screws
+        addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
+        addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+        addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+        addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+
+        addParam(createParamCentered<RoundHugeBlackKnob>(Vec(48.800396, 78.217896), module, WavBank::WAV_KNOB));
+        addParam(createParamCentered<Trimpot>(Vec(112.900337, 60.692520), module, WavBank::WAV_ATTN_KNOB));
+        addParam(createParamCentered<squareToggle>(Vec(119.4, 278.385604), module, WavBank::LOOP_SWITCH));
 
         // Input jacks
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("TRIG_INPUT"), module, WavBank::TRIG_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("WAV_INPUT"), module, WavBank::WAV_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("PITCH_INPUT"), module, WavBank::PITCH_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(29.850380, 280.335236), module, WavBank::TRIG_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(112.800354, 97.550163), module, WavBank::WAV_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(75.182068, 280.500671), module, WavBank::PITCH_INPUT));
 
         // WAV output
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("WAV_LEFT_OUTPUT"), module, WavBank::WAV_LEFT_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("WAV_RIGHT_OUTPUT"), module, WavBank::WAV_RIGHT_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(74.990524, 349.837158), module, WavBank::WAV_LEFT_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(120.190491, 349.837158), module, WavBank::WAV_RIGHT_OUTPUT));
 
         WavBankReadout *readout = new WavBankReadout();
-        readout->box.pos = themePos("READOUT");
+        readout->box.pos = Vec(13.300354, 141.0);
         readout->box.size = Vec(110, 30); // bounding box of the widget
         readout->module = module;
         addChild(readout);

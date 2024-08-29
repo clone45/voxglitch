@@ -21,19 +21,19 @@ struct AutobreakWidget : VoxglitchSamplerModuleWidget
 		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-		addParam(createParamCentered<RoundHugeBlackKnob>(themePos("WAV_KNOB"), module, Autobreak::WAV_KNOB));
+		addParam(createParamCentered<RoundHugeBlackKnob>(Vec(60.053509, 83.487495), module, Autobreak::WAV_KNOB));
 
-		addParam(createParamCentered<Trimpot>(themePos("WAV_ATTN_KNOB"), module, Autobreak::WAV_ATTN_KNOB));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("WAV_INPUT"), module, Autobreak::WAV_INPUT));
+		addParam(createParamCentered<Trimpot>(Vec(32.749992, 136.200012), module, Autobreak::WAV_ATTN_KNOB));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(86.650009, 136.050018), module, Autobreak::WAV_INPUT));
 
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("CLOCK_INPUT"), module, Autobreak::CLOCK_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, Autobreak::RESET_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("SEQUENCE_INPUT"), module, Autobreak::SEQUENCE_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("RATCHET_INPUT"), module, Autobreak::RATCHET_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("REVERSE_INPUT"), module, Autobreak::REVERSE_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(33.149986, 198.750000), module, Autobreak::CLOCK_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(86.950012, 198.750000), module, Autobreak::RESET_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(33.199993, 250.800018), module, Autobreak::SEQUENCE_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(86.850021, 250.800018), module, Autobreak::RATCHET_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(32.900002, 303.149841), module, Autobreak::REVERSE_INPUT));
 
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_LEFT"), module, Autobreak::AUDIO_OUTPUT_LEFT));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_RIGHT"), module, Autobreak::AUDIO_OUTPUT_RIGHT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(92.500015, 303.249878), module, Autobreak::AUDIO_OUTPUT_LEFT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(92.550034, 354.949951), module, Autobreak::AUDIO_OUTPUT_RIGHT));
 	}
 
 	void appendContextMenu(Menu *menu) override

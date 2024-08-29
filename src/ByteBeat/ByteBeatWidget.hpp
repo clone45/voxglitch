@@ -8,20 +8,18 @@ struct ByteBeatWidget : VoxglitchModuleWidget
     theme.load("bytebeat");
     applyTheme();
 
-    // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/bytebeat/panel.svg")));
-
-		setPanel(createPanel(
-			asset::plugin(pluginInstance, "res/bytebeat/bytebeat_panel.svg"),
-			asset::plugin(pluginInstance, "res/bytebeat/bytebeat_panel-dark.svg")
-		));
+    setPanel(createPanel(
+      asset::plugin(pluginInstance, "res/bytebeat/bytebeat_panel.svg"),
+      asset::plugin(pluginInstance, "res/bytebeat/bytebeat_panel-dark.svg")
+    ));
 
     // =================== PLACE COMPONENTS ====================================
 
-		// Screws
-		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    // Screws
+    addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
     // Equation inputs
 
@@ -43,8 +41,8 @@ struct ByteBeatWidget : VoxglitchModuleWidget
     addOutput(createOutputCentered<VoxglitchOutputPort>(mm2px(Vec(88.9, 112.4375)), module, ByteBeat::AUDIO_OUTPUT));
 
     // Pitch
-    addParam(createParamCentered<RoundLargeBlackKnob>(themePos("PITCH_KNOB"), module, ByteBeat::CLOCK_DIVISION_KNOB));
-    addInput(createInputCentered<VoxglitchInputPort>(themePos("PITCH_INPUT"), module, ByteBeat::CLOCK_CV_INPUT));
+    addParam(createParamCentered<RoundLargeBlackKnob>(Vec(50.1969, 190.67947), module, ByteBeat::CLOCK_DIVISION_KNOB));
+    addInput(createInputCentered<VoxglitchInputPort>(Vec(95.5217, 190.67947), module, ByteBeat::CLOCK_CV_INPUT));
 
     // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_5, ROW_11)), module, ByteBeat::T_INPUT));
     // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_5, ROW_13)), module, ByteBeat::SYNC_CLOCK_INPUT));

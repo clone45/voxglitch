@@ -12,17 +12,17 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
         theme.load("digital_sequencer_xp");
         applyTheme();
 
-		setPanel(createPanel(
-			asset::plugin(pluginInstance, "res/digital_sequencer_xp/digital_sequencer_xp_panel.svg"),
-			asset::plugin(pluginInstance, "res/digital_sequencer_xp/digital_sequencer_xp_panel-dark.svg")));
+        setPanel(createPanel(
+            asset::plugin(pluginInstance, "res/digital_sequencer_xp/digital_sequencer_xp_panel.svg"),
+            asset::plugin(pluginInstance, "res/digital_sequencer_xp/digital_sequencer_xp_panel-dark.svg")));
 
-		// =================== PLACE COMPONENTS ====================================
+        // =================== PLACE COMPONENTS ====================================
 
-		// Screws
-		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+        // Screws
+        addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
+        addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+        addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+        addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
         // Main voltage sequencer display
         VoltageSequencerDisplayXP *voltage_sequencer_display_xp = new VoltageSequencerDisplayXP();
@@ -35,22 +35,22 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
         gates_display->module = module;
         addChild(gates_display);
 
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_1_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 0, DigitalSequencerXP::SEQUENCER_LIGHTS + 0));
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_2_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 1, DigitalSequencerXP::SEQUENCER_LIGHTS + 1));
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_3_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 2, DigitalSequencerXP::SEQUENCER_LIGHTS + 2));
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_4_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 3, DigitalSequencerXP::SEQUENCER_LIGHTS + 3));
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_5_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 4, DigitalSequencerXP::SEQUENCER_LIGHTS + 4));
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_6_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 5, DigitalSequencerXP::SEQUENCER_LIGHTS + 5));
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_7_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 6, DigitalSequencerXP::SEQUENCER_LIGHTS + 6));
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_8_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 7, DigitalSequencerXP::SEQUENCER_LIGHTS + 7));
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_9_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 8, DigitalSequencerXP::SEQUENCER_LIGHTS + 8));
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_10_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 9, DigitalSequencerXP::SEQUENCER_LIGHTS + 9));
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_11_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 10, DigitalSequencerXP::SEQUENCER_LIGHTS + 10));
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_12_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 11, DigitalSequencerXP::SEQUENCER_LIGHTS + 11));
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_13_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 12, DigitalSequencerXP::SEQUENCER_LIGHTS + 12));
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_14_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 13, DigitalSequencerXP::SEQUENCER_LIGHTS + 13));
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_15_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 14, DigitalSequencerXP::SEQUENCER_LIGHTS + 14));
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("SEQUENCER_16_BUTTON"), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 15, DigitalSequencerXP::SEQUENCER_LIGHTS + 15));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(192.9291, 318.6221), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 0, DigitalSequencerXP::SEQUENCER_LIGHTS + 0));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(221.2756, 318.6221), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 1, DigitalSequencerXP::SEQUENCER_LIGHTS + 1));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(249.6221, 318.6221), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 2, DigitalSequencerXP::SEQUENCER_LIGHTS + 2));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(277.9685, 318.6221), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 3, DigitalSequencerXP::SEQUENCER_LIGHTS + 3));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(306.315, 318.6221), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 4, DigitalSequencerXP::SEQUENCER_LIGHTS + 4));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(334.6614, 318.6221), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 5, DigitalSequencerXP::SEQUENCER_LIGHTS + 5));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(363.0079, 318.6221), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 6, DigitalSequencerXP::SEQUENCER_LIGHTS + 6));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(391.3543, 318.6221), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 7, DigitalSequencerXP::SEQUENCER_LIGHTS + 7));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(192.9291, 348.4006), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 8, DigitalSequencerXP::SEQUENCER_LIGHTS + 8));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(221.2756, 348.4006), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 9, DigitalSequencerXP::SEQUENCER_LIGHTS + 9));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(249.6221, 348.4006), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 10, DigitalSequencerXP::SEQUENCER_LIGHTS + 10));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(277.9685, 348.4006), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 11, DigitalSequencerXP::SEQUENCER_LIGHTS + 11));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(306.315, 348.4006), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 12, DigitalSequencerXP::SEQUENCER_LIGHTS + 12));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(334.6614, 348.4006), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 13, DigitalSequencerXP::SEQUENCER_LIGHTS + 13));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(363.0079, 348.4006), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 14, DigitalSequencerXP::SEQUENCER_LIGHTS + 14));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(391.3543, 348.4006), module, DigitalSequencerXP::SEQUENCER_BUTTONS + 15, DigitalSequencerXP::SEQUENCER_LIGHTS + 15));
 
         // Inputs
         addInput(createInputCentered<VoxglitchPolyPort>(Vec(29.5276, 339.251), module, DigitalSequencerXP::POLY_STEP_INPUT));
@@ -59,8 +59,8 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
         // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(10 + 43.632, 114.893)), module, DigitalSequencerXP::POLY_MOD_INPUT));
 
         // Poly CV and Gate outputs
-        addOutput(createOutputCentered<VoxglitchPolyPort>(themePos("CV_OUTPUT"), module, DigitalSequencerXP::POLY_CV_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchPolyPort>(themePos("GATE_OUTPUT"), module, DigitalSequencerXP::POLY_GATE_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchPolyPort>(Vec(498.5, 349.837158), module, DigitalSequencerXP::POLY_CV_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchPolyPort>(Vec(458.50, 349.837158), module, DigitalSequencerXP::POLY_GATE_OUTPUT));
     }
 
     void appendContextMenu(Menu *menu) override
@@ -114,30 +114,6 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
                 e.consume(this);
             }
         }
-
-        /*  TODO: control-c, control-v is used for presets and I shouldn't steal
-                  those clicks.  Rework this using right-click menu.
-        if ((e.key == GLFW_KEY_C) && ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL)) // Control-C
-        {
-          if (e.action == GLFW_PRESS)
-          {
-            copy_sequencer_index = module->selected_sequencer_index;
-            e.consume(this);
-          }
-        }
-
-        if ((e.key == GLFW_KEY_V) && ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL)) // Control-V
-        {
-          if (e.action == GLFW_PRESS)
-          {
-            if (copy_sequencer_index > -1)
-            {
-              module->copy(copy_sequencer_index, module->selected_sequencer_index);
-              e.consume(this);
-            }
-          }
-        }
-        */
 
         // Switch between seuences using the number keys 1-8
         if (e.key >= GLFW_KEY_1 && e.key <= GLFW_KEY_8) // quick-select
@@ -205,7 +181,6 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
         {
             for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
             {
-                // module->voltage_sequencers[i].voltage_range_index = range_index;
                 module->voltage_range_indexes[i] = range_index;
             }
         }
@@ -354,7 +329,6 @@ struct DigitalSequencerXPWidget : VoxglitchModuleWidget
 
         void onAction(const event::Action &e) override
         {
-            // module->voltage_sequencers[sequencer_number].voltage_range_index = range_index;
             module->voltage_range_indexes[sequencer_number] = range_index;
         }
     };

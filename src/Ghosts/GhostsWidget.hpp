@@ -25,54 +25,49 @@ struct GhostsWidget : VoxglitchSamplerModuleWidget
 		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		// Purge
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("PURGE_TRIGGER_INPUT"), module, Ghosts::PURGE_TRIGGER_INPUT));
-		addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("PURGE_BUTTON_PARAM"), module, Ghosts::PURGE_BUTTON_PARAM, Ghosts::PURGE_LIGHT));
-		// addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(75.595, 25.974)), module, Ghosts::PURGE_LIGHT));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(33.96638, 342.80079), module, Ghosts::PURGE_TRIGGER_INPUT));
+		addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(71.59456, 329.94108), module, Ghosts::PURGE_BUTTON_PARAM, Ghosts::PURGE_LIGHT));
 
 		// Jitter
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("JITTER_CV_INPUT"), module, Ghosts::JITTER_CV_INPUT));
-		addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(themePos("JITTER_SWITCH"), module, Ghosts::JITTER_SWITCH, Ghosts::JITTER_LIGHT));
-
-		// Modes
-		// addParam(createParamCentered<GhostsModesKnob>(mm2px(Vec(62.366, 65)), module, Ghosts::MODES_KNOB));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(108.46513, 342.80079), module, Ghosts::JITTER_CV_INPUT));
+		addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(71.59456, 357.40460), module, Ghosts::JITTER_SWITCH, Ghosts::JITTER_LIGHT));
 
 		// Position
-		addParam(createParamCentered<RoundBlackKnob>(themePos("SAMPLE_PLAYBACK_POSITION_KNOB"), module, Ghosts::SAMPLE_PLAYBACK_POSITION_KNOB));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("SAMPLE_PLAYBACK_POSITION_INPUT"), module, Ghosts::SAMPLE_PLAYBACK_POSITION_INPUT));
-		addParam(createParamCentered<Trimpot>(themePos("SAMPLE_PLAYBACK_POSITION_ATTN_KNOB"), module, Ghosts::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
+		addParam(createParamCentered<RoundBlackKnob>(Vec(38.27531, 130.0), module, Ghosts::SAMPLE_PLAYBACK_POSITION_KNOB));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(38.27531, 50.58442), module, Ghosts::SAMPLE_PLAYBACK_POSITION_INPUT));
+		addParam(createParamCentered<Trimpot>(Vec(38.27531, 84.46070), module, Ghosts::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
 
 		// Pitch
-		addParam(createParamCentered<RoundLargeBlackKnob>(themePos("PITCH_KNOB"), module, Ghosts::PITCH_KNOB));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("PITCH_INPUT"), module, Ghosts::PITCH_INPUT));
-		// addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 50.489 - y_offset)), module, Ghosts::PITCH_ATTN_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(Vec(38.27531, 206.17370), module, Ghosts::PITCH_KNOB));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(38.27531, 284.59863), module, Ghosts::PITCH_INPUT));
 
 		// Length
-		addParam(createParamCentered<RoundLargeBlackKnob>(themePos("GHOST_PLAYBACK_LENGTH_KNOB"), module, Ghosts::GHOST_PLAYBACK_LENGTH_KNOB));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("GHOST_PLAYBACK_LENGTH_INPUT"), module, Ghosts::GHOST_PLAYBACK_LENGTH_INPUT));
-		addParam(createParamCentered<Trimpot>(themePos("GHOST_PLAYBACK_LENGTH_ATTN_KNOB"), module, Ghosts::GHOST_PLAYBACK_LENGTH_ATTN_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(Vec(103.48146, 206.17370), module, Ghosts::GHOST_PLAYBACK_LENGTH_KNOB));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(103.48146, 284.59863), module, Ghosts::GHOST_PLAYBACK_LENGTH_INPUT));
+		addParam(createParamCentered<Trimpot>(Vec(103.48146, 251.35435), module, Ghosts::GHOST_PLAYBACK_LENGTH_ATTN_KNOB));
 
 		// Graveyard Capacity
-		addParam(createParamCentered<RoundLargeBlackKnob>(themePos("GRAVEYARD_CAPACITY_KNOB"), module, Ghosts::GRAVEYARD_CAPACITY_KNOB));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("GRAVEYARD_CAPACITY_INPUT"), module, Ghosts::GRAVEYARD_CAPACITY_INPUT));
-		addParam(createParamCentered<Trimpot>(themePos("GRAVEYARD_CAPACITY_ATTN_KNOB"), module, Ghosts::GRAVEYARD_CAPACITY_ATTN_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(Vec(168.78623, 206.17370), module, Ghosts::GRAVEYARD_CAPACITY_KNOB));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(168.78623, 284.59863), module, Ghosts::GRAVEYARD_CAPACITY_INPUT));
+		addParam(createParamCentered<Trimpot>(Vec(168.78623, 251.35435), module, Ghosts::GRAVEYARD_CAPACITY_ATTN_KNOB));
 
 		// Spawn rate
-		addParam(createParamCentered<RoundLargeBlackKnob>(themePos("GHOST_SPAWN_RATE_KNOB"), module, Ghosts::GHOST_SPAWN_RATE_KNOB));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("GHOST_SPAWN_RATE_INPUT"), module, Ghosts::GHOST_SPAWN_RATE_INPUT));
-		addParam(createParamCentered<Trimpot>(themePos("GHOST_SPAWN_RATE_ATTN_KNOB"), module, Ghosts::GHOST_SPAWN_RATE_ATTN_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(Vec(232.01941, 206.17370), module, Ghosts::GHOST_SPAWN_RATE_KNOB));
+		addInput(createInputCentered<VoxglitchInputPort>(Vec(232.01941, 284.59863), module, Ghosts::GHOST_SPAWN_RATE_INPUT));
+		addParam(createParamCentered<Trimpot>(Vec(232.01941, 251.35435), module, Ghosts::GHOST_SPAWN_RATE_ATTN_KNOB));
 
 		// Trim
-		addParam(createParamCentered<Trimpot>(themePos("TRIM_KNOB"), module, Ghosts::TRIM_KNOB));
+		addParam(createParamCentered<Trimpot>(Vec(162.78623, 342.80079), module, Ghosts::TRIM_KNOB));
 
 		// WAV output
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_LEFT"), module, Ghosts::AUDIO_OUTPUT_LEFT));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_RIGHT"), module, Ghosts::AUDIO_OUTPUT_RIGHT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(207.14441, 342.80079), module, Ghosts::AUDIO_OUTPUT_LEFT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(243.19423, 342.80079), module, Ghosts::AUDIO_OUTPUT_RIGHT));
 
 		// Waveform visualizer
 		if(module)
 		{
 			WaveformWidget *waveform_widget = new WaveformWidget(WAVEFORM_WIDGET_WIDTH, WAVEFORM_WIDGET_HEIGHT, &this->module->waveform_model);
-			waveform_widget->box.pos = themePos("WAVEFORM_DISPLAY");
+			waveform_widget->box.pos = Vec(70.0, 45.0);
 			waveform_widget->hide();
 			addChild(waveform_widget);
 		}
