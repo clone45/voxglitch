@@ -25,39 +25,39 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		VoltageSequencerDisplayABS *position_sequencer_display = new VoltageSequencerDisplayABS(& this->module->position_sequencer, 0);
-		position_sequencer_display->box.pos = themePos("SEQUENCER_DISPLAY");
+		position_sequencer_display->box.pos = Vec(157.778, 75.59056); // {"x": 157.778, "y": 75.59056 }
 		position_sequencer_display->module = module;
 		addChild(position_sequencer_display);
 
 		if(module)
 		{
 			VoltageSequencerDisplayABS *sample_sequencer_display = new VoltageSequencerDisplayABS(& this->module->sample_sequencer, 1);
-			sample_sequencer_display->box.pos = themePos("SEQUENCER_DISPLAY");
+			sample_sequencer_display->box.pos = Vec(157.778, 75.59056);
 			sample_sequencer_display->module = module;
 			sample_sequencer_display->hide();
 			addChild(sample_sequencer_display);	
 
 			VoltageSequencerDisplayABS *volume_sequencer_display = new VoltageSequencerDisplayABS(& this->module->volume_sequencer, 2);
-			volume_sequencer_display->box.pos = themePos("SEQUENCER_DISPLAY");
+			volume_sequencer_display->box.pos = Vec(157.778, 75.59056);
 			volume_sequencer_display->module = module;
 			volume_sequencer_display->hide();
 			addChild(volume_sequencer_display);
 
 			VoltageSequencerDisplayABS *pan_sequencer_display = new VoltageSequencerDisplayABS(& this->module->pan_sequencer, 3);
-			pan_sequencer_display->box.pos = themePos("SEQUENCER_DISPLAY");
+			pan_sequencer_display->box.pos = Vec(157.778, 75.59056);
 			pan_sequencer_display->module = module;
 			pan_sequencer_display->hide();
 			pan_sequencer_display->draw_horizontal_guide = true;
 			addChild(pan_sequencer_display);	
 
 			VoltageToggleSequencerDisplay *reverse_sequencer_display = new VoltageToggleSequencerDisplay(& this->module->reverse_sequencer, 4);
-			reverse_sequencer_display->box.pos = themePos("SEQUENCER_DISPLAY");
+			reverse_sequencer_display->box.pos = Vec(157.778, 75.59056);
 			reverse_sequencer_display->module = module;
 			reverse_sequencer_display->hide();
 			addChild(reverse_sequencer_display);
 
 			VoltageSequencerDisplayABS *ratchet_sequencer_display = new VoltageSequencerDisplayABS(& this->module->ratchet_sequencer, 5);
-			ratchet_sequencer_display->box.pos = themePos("SEQUENCER_DISPLAY");
+			ratchet_sequencer_display->box.pos = Vec(157.778, 75.59056);
 			ratchet_sequencer_display->module = module;
 			ratchet_sequencer_display->hide();
 			addChild(ratchet_sequencer_display);
@@ -76,7 +76,7 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 
 
 			LcdTabsWidget *lcd_tabs_widget = new LcdTabsWidget(sequencer_displays);
-			lcd_tabs_widget->box.pos = themePos("TABS_DISPLAY");
+			lcd_tabs_widget->box.pos = Vec(157.778, 50.59056);
 			lcd_tabs_widget->box.size = Vec(DRAW_AREA_WIDTH, LCD_TABS_HEIGHT);
 			lcd_tabs_widget->module = module;
 			addChild(lcd_tabs_widget);
@@ -84,7 +84,7 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 			for(unsigned int i=0; i<NUMBER_OF_SAMPLES; i++)
 			{
 				WaveformWidget *waveform_widget = new WaveformWidget(WAVEFORM_WIDGET_WIDTH, WAVEFORM_WIDGET_HEIGHT, &this->module->waveform_model[i]);
-				waveform_widget->box.pos = themePos("WAVEFORM_DISPLAY");
+				waveform_widget->box.pos = Vec(157.778, 232.61225);
 				waveform_widget->hide();
 				addChild(waveform_widget);
 			}
@@ -94,11 +94,11 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 			std::string placeholder_waveform_file_path = "res/autobreak_studio/themes/default/waveform-placeholder.jpg";
 
 			ImageWidget *image_widget = new ImageWidget(placeholder_waveform_file_path, 900.0, 109.0, 1.0, 0.15);
-			image_widget->box.pos = themePos("WAVEFORM_DISPLAY");
+			image_widget->box.pos =Vec(157.778, 232.61225);
 			addChild(image_widget);
 
 			LcdTabsWidget *lcd_tabs_widget = new LcdTabsWidget(true);
-			lcd_tabs_widget->box.pos = themePos("TABS_DISPLAY");
+			lcd_tabs_widget->box.pos = Vec(157.778, 50.59056);
 			lcd_tabs_widget->box.size = Vec(DRAW_AREA_WIDTH, LCD_TABS_HEIGHT);
 			lcd_tabs_widget->module = module;
 			addChild(lcd_tabs_widget);			

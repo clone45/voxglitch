@@ -128,16 +128,15 @@ struct ArpSeqWidget : VoxglitchModuleWidget
         theme.load("ArpSeq");
         applyTheme();
 
-		setPanel(createPanel(
-			asset::plugin(pluginInstance, "res/arpseq/arpseq_panel.svg"),
-			asset::plugin(pluginInstance, "res/arpseq/arpseq_panel-dark.svg")
-		));
+        setPanel(createPanel(
+            asset::plugin(pluginInstance, "res/arpseq/arpseq_panel.svg"),
+            asset::plugin(pluginInstance, "res/arpseq/arpseq_panel-dark.svg")));
 
-		// Screws
-		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+        // Screws
+        addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
+        addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+        addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+        addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
         ArpSeq *arp_module = dynamic_cast<ArpSeq *>(module);
 
@@ -458,34 +457,34 @@ struct ArpSeqWidget : VoxglitchModuleWidget
         // First column components
         //
 
-        addInput(createInputCentered<VoxglitchPolyPort>(themePos("POLY_NOTES_INPUT"), module, ArpSeq::POLY_NOTES_INPUT));
-        addInput(createInputCentered<VoxglitchPolyPort>(themePos("POLY_GATE_INPUT"), module, ArpSeq::POLY_GATE_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("CLOCK_INPUT"), module, ArpSeq::CLOCK_INPUT));
+        addInput(createInputCentered<VoxglitchPolyPort>(Vec(38.0, 70.51822), module, ArpSeq::POLY_NOTES_INPUT));
+        addInput(createInputCentered<VoxglitchPolyPort>(Vec(38.0, 126.239255), module, ArpSeq::POLY_GATE_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(38.0, 180.0), module, ArpSeq::CLOCK_INPUT));
 
-        addParam(createParamCentered<squareToggle>(themePos("ON_SWITCH"), module, ArpSeq::ON_SWITCH));
-        addParam(createParamCentered<squareToggle>(themePos("LATCH_SWITCH"), module, ArpSeq::LATCH_SWITCH));
+        addParam(createParamCentered<squareToggle>(Vec(92.0, 70.51822), module, ArpSeq::ON_SWITCH));
+        addParam(createParamCentered<squareToggle>(Vec(92.0, 126.239255), module, ArpSeq::LATCH_SWITCH));
 
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, ArpSeq::RESET_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(92.0, 180.0), module, ArpSeq::RESET_INPUT));
 
-        addParam(createParamCentered<RoundBlackKnob>(themePos("RATE_KNOB"), module, ArpSeq::RATE_KNOB));
-        addParam(createParamCentered<RoundBlackKnob>(themePos("SHAPE_KNOB"), module, ArpSeq::SHAPE_KNOB));
+        addParam(createParamCentered<RoundBlackKnob>(Vec(38.0, 276.0), module, ArpSeq::RATE_KNOB));
+        addParam(createParamCentered<RoundBlackKnob>(Vec(92.0, 276.0), module, ArpSeq::SHAPE_KNOB));
 
-        addParam(createParamCentered<Trimpot>(themePos("RATE_ATTENUATOR"), module, ArpSeq::RATE_ATTENUATOR));
-        addParam(createParamCentered<Trimpot>(themePos("SHAPE_ATTENUATOR"), module, ArpSeq::SHAPE_ATTENUATOR));
+        addParam(createParamCentered<Trimpot>(Vec(38.0, 318.0), module, ArpSeq::RATE_ATTENUATOR));
+        addParam(createParamCentered<Trimpot>(Vec(92.0, 318.0), module, ArpSeq::SHAPE_ATTENUATOR));
 
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("RATE_INPUT"), module, ArpSeq::RATE_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("SHAPE_INPUT"), module, ArpSeq::SHAPE_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(38.0, 352.85), module, ArpSeq::RATE_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(92.0, 352.85), module, ArpSeq::SHAPE_INPUT));
 
         //
         // Right-most outputs
         //
 
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("PITCH_OUTPUT"), module, ArpSeq::PITCH_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("GATE_OUTPUT"), module, ArpSeq::GATE_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("PROBABILITY_GATE_OUTPUT"), module, ArpSeq::PROBABILITY_GATE_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("CYCLE_GATE_OUTPUT"), module, ArpSeq::CYCLE_GATE_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("MOD1_OUTPUT"), module, ArpSeq::MOD1_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("MOD2_OUTPUT"), module, ArpSeq::MOD2_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(654.089, 57.0), module, ArpSeq::PITCH_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(654.089, 109.5), module, ArpSeq::GATE_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(654.089, 278.0), module, ArpSeq::PROBABILITY_GATE_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(654.089, 328.7), module, ArpSeq::CYCLE_GATE_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(654.089, 162.0), module, ArpSeq::MOD1_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(654.089, 214.5), module, ArpSeq::MOD2_OUTPUT));
     }
 
 
