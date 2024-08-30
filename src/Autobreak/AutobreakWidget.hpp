@@ -4,14 +4,16 @@ struct AutobreakWidget : VoxglitchSamplerModuleWidget
 	{
 		setModule(module);
 
-		// Load and apply theme
-		// theme.load("autobreak");
-		// applyTheme();
+//		setPanel(createPanel(
+//			asset::plugin(pluginInstance, "res/autobreak/autobreak_panel.svg"),
+//			asset::plugin(pluginInstance, "res/autobreak/autobreak_panel-dark.svg")
+//		));
 
-		setPanel(createPanel(
+        PanelHelper panelHelper(this);
+        panelHelper.loadPanel(
 			asset::plugin(pluginInstance, "res/autobreak/autobreak_panel.svg"),
 			asset::plugin(pluginInstance, "res/autobreak/autobreak_panel-dark.svg")
-		));
+		);
 
 		// =================== PLACE COMPONENTS ====================================
 
@@ -21,19 +23,18 @@ struct AutobreakWidget : VoxglitchSamplerModuleWidget
 		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-		addParam(createParamCentered<RoundHugeBlackKnob>(Vec(60.053509, 83.487495), module, Autobreak::WAV_KNOB));
+		addParam(createParamCentered<RoundHugeBlackKnob>(panelHelper.findNamed("wav_knob"), module, Autobreak::WAV_KNOB));
+		addParam(createParamCentered<Trimpot>(panelHelper.findNamed("wav_attn_knob"), module, Autobreak::WAV_ATTN_KNOB));
+		addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("wav_input"), module, Autobreak::WAV_INPUT));
 
-		addParam(createParamCentered<Trimpot>(Vec(32.749992, 136.200012), module, Autobreak::WAV_ATTN_KNOB));
-		addInput(createInputCentered<VoxglitchInputPort>(Vec(86.650009, 136.050018), module, Autobreak::WAV_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("clock_input"), module, Autobreak::CLOCK_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("reset_input"), module, Autobreak::RESET_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("sequence_input"), module, Autobreak::SEQUENCE_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("ratchet_input"), module, Autobreak::RATCHET_INPUT));
+		addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("reverse_input"), module, Autobreak::REVERSE_INPUT));
 
-		addInput(createInputCentered<VoxglitchInputPort>(Vec(33.149986, 198.750000), module, Autobreak::CLOCK_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(Vec(86.950012, 198.750000), module, Autobreak::RESET_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(Vec(33.199993, 250.800018), module, Autobreak::SEQUENCE_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(Vec(86.850021, 250.800018), module, Autobreak::RATCHET_INPUT));
-		addInput(createInputCentered<VoxglitchInputPort>(Vec(32.900002, 303.149841), module, Autobreak::REVERSE_INPUT));
-
-		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(92.500015, 303.249878), module, Autobreak::AUDIO_OUTPUT_LEFT));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(92.550034, 354.949951), module, Autobreak::AUDIO_OUTPUT_RIGHT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("audio_output_left"), module, Autobreak::AUDIO_OUTPUT_LEFT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("audio_output_right"), module, Autobreak::AUDIO_OUTPUT_RIGHT));
 	}
 
 	void appendContextMenu(Menu *menu) override
