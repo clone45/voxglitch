@@ -6,7 +6,6 @@
 #include "osdialog.h"
 
 #include "vgLib-2.0/constants.h"
-#include "vgLib-2.0/panelHelper.hpp"
 #include "vgLib-2.0/components/VoxglitchComponents.hpp"
 
 using namespace vgLib_v2;

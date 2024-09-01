@@ -21,6 +21,9 @@ struct PanelHelper
     PanelHelper(rack::ModuleWidget* moduleWidget)
         : m_moduleWidget(moduleWidget), m_svg(nullptr) {}
 
+    // Loads the panel from the given filename
+    // Use this if you are using only the light version of the panel
+    
     void loadPanel(const std::string& filename)
     {
         if (!m_svg) {
@@ -30,6 +33,9 @@ struct PanelHelper
         }
     }
 
+    // Loads the panel from the given filenames
+    // Use this if you are using both the light and dark versions of the panel
+
     void loadPanel(const std::string& filename1, const std::string& filename2)
     {
         if (!m_svg) {
@@ -38,6 +44,10 @@ struct PanelHelper
             m_moduleWidget->setPanel(panel);
         }
     }
+
+    // Finds the position of a named control
+    // Returns the center of the control's bounding box
+    // If the control isn't found, returns Vec(0, 0)
 
     Vec findNamed(const std::string& name)
     {

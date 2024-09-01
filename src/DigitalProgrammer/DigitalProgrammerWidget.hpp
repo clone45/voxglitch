@@ -15,9 +15,15 @@ struct DigitalProgrammerWidget : ModuleWidget
         // theme.load("digital_programmer");
         // applyTheme();
 
-        setPanel(createPanel(
+//        setPanel(createPanel(
+//            asset::plugin(pluginInstance, "res/digital_programmer/digital_programmer_panel.svg"),
+//            asset::plugin(pluginInstance, "res/digital_programmer/digital_programmer_panel-dark.svg")));
+
+        PanelHelper panelHelper(this);
+        panelHelper.loadPanel(
             asset::plugin(pluginInstance, "res/digital_programmer/digital_programmer_panel.svg"),
-            asset::plugin(pluginInstance, "res/digital_programmer/digital_programmer_panel-dark.svg")));
+            asset::plugin(pluginInstance, "res/digital_programmer/digital_programmer_panel-dark.svg")
+        );
 
         // Screws
         addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
@@ -44,22 +50,22 @@ struct DigitalProgrammerWidget : ModuleWidget
         addSlider(15, Vec(503.000000, 25.250000));
 
         // Add outputs
-        addOutputEx(0, Vec(39.233265, 349.703735));
-        addOutputEx(1, Vec(71.086334, 349.703735));
-        addOutputEx(2, Vec(102.949997, 349.703735));
-        addOutputEx(3, Vec(134.663681, 349.703735));
-        addOutputEx(4, Vec(166.403931, 349.703735));
-        addOutputEx(5, Vec(198.153900, 349.703735));
-        addOutputEx(6, Vec(229.803955, 349.703735));
-        addOutputEx(7, Vec(261.553925, 349.703735));
-        addOutputEx(8, Vec(293.399902, 349.703735));
-        addOutputEx(9, Vec(325.000000, 349.703735));
-        addOutputEx(10, Vec(356.599976, 349.703735));
-        addOutputEx(11, Vec(388.400024, 349.703735));
-        addOutputEx(12, Vec(420.149902, 349.703735));
-        addOutputEx(13, Vec(451.849915, 349.703735));
-        addOutputEx(14, Vec(483.699951, 349.703735));
-        addOutputEx(15, Vec(515.500000, 349.703735));
+        addOutputEx(0, panelHelper.findNamed("output_0"));
+        addOutputEx(1, panelHelper.findNamed("output_1"));
+        addOutputEx(2, panelHelper.findNamed("output_2"));
+        addOutputEx(3, panelHelper.findNamed("output_3"));
+        addOutputEx(4, panelHelper.findNamed("output_4"));
+        addOutputEx(5, panelHelper.findNamed("output_5"));
+        addOutputEx(6, panelHelper.findNamed("output_6"));
+        addOutputEx(7, panelHelper.findNamed("output_7"));
+        addOutputEx(8, panelHelper.findNamed("output_8"));
+        addOutputEx(9, panelHelper.findNamed("output_9"));
+        addOutputEx(10, panelHelper.findNamed("output_10"));
+        addOutputEx(11, panelHelper.findNamed("output_11"));
+        addOutputEx(12, panelHelper.findNamed("output_12"));
+        addOutputEx(13, panelHelper.findNamed("output_13"));
+        addOutputEx(14, panelHelper.findNamed("output_14"));
+        addOutputEx(15, panelHelper.findNamed("output_15"));
 
         // Add bank buttons
         addBankButton(0, Vec(561.8, 126.8));
@@ -88,24 +94,24 @@ struct DigitalProgrammerWidget : ModuleWidget
         addBankButton(23, Vec(714.3, 217.7));
 
         // Poly add input
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(722.000000, 292.000000), module, DigitalProgrammer::POLY_ADD_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("poly_add_input"), module, DigitalProgrammer::POLY_ADD_INPUT));
 
         // Poly output
-        addOutput(createOutputCentered<VoxglitchPolyPort>(Vec(722.250000, 349.500000), module, DigitalProgrammer::POLY_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchPolyPort>(panelHelper.findNamed("poly_output"), module, DigitalProgrammer::POLY_OUTPUT));
 
         // Bank controls
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(574.209290, 50.708843), module, DigitalProgrammer::BANK_CV_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(623.195435, 51.008839), module, DigitalProgrammer::BANK_RESET_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(673.005005, 50.808842), module, DigitalProgrammer::BANK_PREV_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(722.345642, 50.858841), module, DigitalProgrammer::BANK_NEXT_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("bank_cv_input"), module, DigitalProgrammer::BANK_CV_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("bank_reset_input"), module, DigitalProgrammer::BANK_RESET_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("bank_prev_input"), module, DigitalProgrammer::BANK_PREV_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("bank_next_input"), module, DigitalProgrammer::BANK_NEXT_INPUT));
 
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(673.005005, 83.425795), module, DigitalProgrammer::BANK_PREV_PARAM, DigitalProgrammer::BANK_PREV_LIGHT));
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(722.345642, 83.425795), module, DigitalProgrammer::BANK_NEXT_PARAM, DigitalProgrammer::BANK_NEXT_LIGHT));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(panelHelper.findNamed("bank_prev_button"), module, DigitalProgrammer::BANK_PREV_PARAM, DigitalProgrammer::BANK_PREV_LIGHT));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(panelHelper.findNamed("bank_next_button"), module, DigitalProgrammer::BANK_NEXT_PARAM, DigitalProgrammer::BANK_NEXT_LIGHT));
 
         // Copy/paste mode toggle
-        addParam(createParamCentered<squareToggle>(Vec(573.425398, 290.021529), module, DigitalProgrammer::COPY_MODE_PARAM));
-        addParam(createParamCentered<squareToggle>(Vec(622.616927, 290.116927), module, DigitalProgrammer::CLEAR_MODE_PARAM));
-        addParam(createParamCentered<squareToggle>(Vec(672.266829, 290.016951), module, DigitalProgrammer::RANDOMIZE_MODE_PARAM));
+        addParam(createParamCentered<squareToggle>(panelHelper.findNamed("copy_button"), module, DigitalProgrammer::COPY_MODE_PARAM));
+        addParam(createParamCentered<squareToggle>(panelHelper.findNamed("clear_button"), module, DigitalProgrammer::CLEAR_MODE_PARAM));
+        addParam(createParamCentered<squareToggle>(panelHelper.findNamed("randomize_button"), module, DigitalProgrammer::RANDOMIZE_MODE_PARAM));
     }
 
     struct InputSnapValueItem : MenuItem

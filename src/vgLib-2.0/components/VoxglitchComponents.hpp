@@ -7,6 +7,7 @@
 #include "PanelBackground.hpp"
 
 #include "VoxglitchPanel.hpp"
+#include "../panelHelper.hpp"
 
 #include "VoxglitchModule.hpp"
 // #include "VoxglitchModuleWidget.hpp"
