@@ -56,7 +56,8 @@
         "ratio": "cpp",
         "xthread": "cpp",
         "thread": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "regex": "cpp"
     }
 
 }
