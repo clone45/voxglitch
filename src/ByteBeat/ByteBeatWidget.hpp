@@ -1,60 +1,76 @@
 struct ByteBeatWidget : ModuleWidget
 {
-  ByteBeatWidget(ByteBeat* module)
-  {
-    setModule(module);
+    ByteBeatWidget(ByteBeat *module)
+    {
+        setModule(module);
 
-    // Load and apply theme
-    // theme.load("bytebeat");
-    // applyTheme();
+        PanelHelper panelHelper(this);
+        panelHelper.loadPanel(
+            asset::plugin(pluginInstance, "res/bytebeat/bytebeat_panel.svg"),
+            asset::plugin(pluginInstance, "res/bytebeat/bytebeat_panel-dark.svg")
+        );
 
-    setPanel(createPanel(
-      asset::plugin(pluginInstance, "res/bytebeat/bytebeat_panel.svg"),
-      asset::plugin(pluginInstance, "res/bytebeat/bytebeat_panel-dark.svg")
-    ));
+        // =================== PLACE COMPONENTS ====================================
 
-    // =================== PLACE COMPONENTS ====================================
+        // Screws
+        addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
+        addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+        addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+        addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-    // Screws
-    addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
-    addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-    addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+        // Equation
+        auto equation_knob = createParamCentered<RoundHugeBlackKnob>(panelHelper.findNamed("equation_knob"), module, ByteBeat::EQUATION_KNOB);
+        dynamic_cast<Knob *>(equation_knob)->snap = true;
+        addParam(equation_knob);
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("equation_input"), module, ByteBeat::EQUATION_INPUT));
 
-    // Equation inputs
+        // Pitch
+        addParam(createParamCentered<RoundLargeBlackKnob>(panelHelper.findNamed("pitch_knob"), module, ByteBeat::CLOCK_DIVISION_KNOB));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("pitch_input"), module, ByteBeat::CLOCK_CV_INPUT));
 
-    // addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(COLUMN_3, ROW_3 AND_A_HALF_ROW)), module, ByteBeat::EQUATION_KNOB));
-    auto L1 = createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(17.0, 27.0)), module, ByteBeat::EQUATION_KNOB); dynamic_cast<Knob*>(L1)->snap = true; addParam(L1);
-    addInput(createInputCentered<VoxglitchInputPort>(mm2px(Vec(32.35, ROW_5)), module, ByteBeat::EQUATION_INPUT));
+        // ============================ PARAMETERS ================================
 
-    // Parameter inputs
-    auto P1 = createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(51.8, ROW_3)), module, ByteBeat::PARAM_KNOB_1); dynamic_cast<Knob*>(P1)->snap = true; addParam(P1);
-    addInput(createInputCentered<VoxglitchInputPort>(mm2px(Vec(51.8, ROW_5)), module, ByteBeat::PARAM_INPUT_1));
+        // Knob 1
+        auto knob_1 = createParamCentered<RoundLargeBlackKnob>(panelHelper.findNamed("param_knob_1"), module, ByteBeat::PARAM_KNOB_1);
+        dynamic_cast<Knob *>(knob_1)->snap = true;
+        addParam(knob_1);
 
-    auto P2 = createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(69.85, ROW_3)), module, ByteBeat::PARAM_KNOB_2); dynamic_cast<Knob*>(P2)->snap = true; addParam(P2);
-    addInput(createInputCentered<VoxglitchInputPort>(mm2px(Vec(69.85, ROW_5)), module, ByteBeat::PARAM_INPUT_2));
+        // Input 1
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("param_input_1"), module, ByteBeat::PARAM_INPUT_1));
 
-    auto P3 = createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(88.0, ROW_3)), module, ByteBeat::PARAM_KNOB_3); dynamic_cast<Knob*>(P3)->snap = true; addParam(P3);
-    addInput(createInputCentered<VoxglitchInputPort>(mm2px(Vec(88.0, ROW_5)), module, ByteBeat::PARAM_INPUT_3));
+        // Knob 2
+        auto knob_2 = createParamCentered<RoundLargeBlackKnob>(panelHelper.findNamed("param_knob_2"), module, ByteBeat::PARAM_KNOB_2);
+        dynamic_cast<Knob *>(knob_2)->snap = true;
+        addParam(knob_2);
 
-    // Other
-    addOutput(createOutputCentered<VoxglitchOutputPort>(mm2px(Vec(88.9, 112.4375)), module, ByteBeat::AUDIO_OUTPUT));
+        // Input 2
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("param_input_2"), module, ByteBeat::PARAM_INPUT_2));
 
-    // Pitch
-    addParam(createParamCentered<RoundLargeBlackKnob>(Vec(50.1969, 190.67947), module, ByteBeat::CLOCK_DIVISION_KNOB));
-    addInput(createInputCentered<VoxglitchInputPort>(Vec(95.5217, 190.67947), module, ByteBeat::CLOCK_CV_INPUT));
+        // Knob 3
+        auto knob_3 = createParamCentered<RoundLargeBlackKnob>(panelHelper.findNamed("param_knob_3"), module, ByteBeat::PARAM_KNOB_3);
+        dynamic_cast<Knob *>(knob_3)->snap = true;
+        addParam(knob_3);
 
-    // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_5, ROW_11)), module, ByteBeat::T_INPUT));
-    // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_5, ROW_13)), module, ByteBeat::SYNC_CLOCK_INPUT));
+        // Input 3
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("param_input_3"), module, ByteBeat::PARAM_INPUT_3));
 
-  }
+        // ============================ OUTPUTS ===================================
 
-  /*
-  void add_snapping_parameter_knob(float column, float row, int index)
-  {
-    auto P = createParamCentered<RoundBlackKnob>(mm2px(Vec(column, row)), module, index);
-    dynamic_cast<Knob*>(P)->snap = true;
-    addParam(P);
-  }
-  */
+        // Output
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("audio_output"), module, ByteBeat::AUDIO_OUTPUT));
+
+
+
+        // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_5, ROW_11)), module, ByteBeat::T_INPUT));
+        // addInput(createInputCentered<PJ301MPort>(mm2px(Vec(COLUMN_5, ROW_13)), module, ByteBeat::SYNC_CLOCK_INPUT));
+    }
+
+    /*
+    void add_snapping_parameter_knob(float column, float row, int index)
+    {
+      auto P = createParamCentered<RoundBlackKnob>(mm2px(Vec(column, row)), module, index);
+      dynamic_cast<Knob*>(P)->snap = true;
+      addParam(P);
+    }
+    */
 };
