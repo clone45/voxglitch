@@ -198,7 +198,6 @@ struct DrumRandomizer : VoxglitchModule
         // Communicate choice to the channel readout widget
         channel_display_value = channel_knob_selection;
         step_display_value = step_knob_selection + 1;
-        // step_display_value = (int) step;
 
         // If channel knob changes, then update percentage knob
         if(channel_knob_selection != old_channel_knob_selection)

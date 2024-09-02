@@ -4,24 +4,21 @@ struct DrumRandomizerWidget : ModuleWidget
     {
         setModule(module);
 
-        // Load and apply theme
-        // theme.load("drum_randomizer");
-        // applyTheme();
-
-        setPanel(createPanel(
+        PanelHelper panelHelper(this);
+        panelHelper.loadPanel(
             asset::plugin(pluginInstance, "res/drum_randomizer/drum_randomizer_panel.svg"),
             asset::plugin(pluginInstance, "res/drum_randomizer/drum_randomizer_panel-dark.svg")
-        ));
+        );
 
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(33.63673, 63.3706), module, DrumRandomizer::STEP_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(86.40626, 63.3706), module, DrumRandomizer::RESET_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("clock_input"), module, DrumRandomizer::STEP_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("reset_input"), module, DrumRandomizer::RESET_INPUT));
 
-        addParam(createParamCentered<RoundLargeBlackKnob>(Vec(88.0, 132.77953), module, DrumRandomizer::CHANNEL_KNOB));
-        addParam(createParamCentered<RoundLargeBlackKnob>(Vec(88.0, 197.74016), module, DrumRandomizer::STEP_KNOB));
-        addParam(createParamCentered<RoundLargeBlackKnob>(Vec(88.0, 262.70079), module, DrumRandomizer::PERCENTAGE_KNOB));
+        addParam(createParamCentered<RoundLargeBlackKnob>(panelHelper.findNamed("channel_knob"), module, DrumRandomizer::CHANNEL_KNOB));
+        addParam(createParamCentered<RoundLargeBlackKnob>(panelHelper.findNamed("step_knob"), module, DrumRandomizer::STEP_KNOB));
+        addParam(createParamCentered<RoundLargeBlackKnob>(panelHelper.findNamed("percentage_knob"), module, DrumRandomizer::PERCENTAGE_KNOB));
 
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(33.63673, 349.837158), module, DrumRandomizer::GATE_INPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(86.40626, 349.837158), module, DrumRandomizer::GATE_OUTPUT));
+        addInput(createInputCentered<VoxglitchPolyPort>(panelHelper.findNamed("gate_input"), module, DrumRandomizer::GATE_INPUT));
+        addOutput(createOutputCentered<VoxglitchPolyPort>(panelHelper.findNamed("gate_output"), module, DrumRandomizer::GATE_OUTPUT));
 
         // Add display
         DrumRandomizerReadoutWidget *drum_randomizer_channel_readout_widget = new DrumRandomizerReadoutWidget();
