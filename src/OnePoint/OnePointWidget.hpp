@@ -4,37 +4,34 @@ struct OnePointWidget : ModuleWidget
     {
         setModule(module);
 
-        // Load and apply theme
-        // theme.load("onepoint");
-        // applyTheme();
-
-        setPanel(createPanel(
+        PanelHelper panelHelper(this);
+        panelHelper.loadPanel(
             asset::plugin(pluginInstance, "res/onepoint/onepoint_panel.svg"),
             asset::plugin(pluginInstance, "res/onepoint/onepoint_panel-dark.svg")
-        ));
+        );
 
 		// Screws
 		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
 		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(25.6417, 63.3706), module, OnePoint::STEP_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(65.5748, 63.3706), module, OnePoint::RESET_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("clock_input"), module, OnePoint::STEP_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("reset_input"), module, OnePoint::RESET_INPUT));
 
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(25.6417, 157.3509), module, OnePoint::PREV_SEQUENCE_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(65.5748, 157.3509), module, OnePoint::NEXT_SEQUENCE_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("prev_input"), module, OnePoint::PREV_SEQUENCE_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("next_input"), module, OnePoint::NEXT_SEQUENCE_INPUT));
 
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(25.6417, 233.47), module, OnePoint::ZERO_SEQUENCE_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(65.5748, 233.47), module, OnePoint::CV_SEQUENCE_SELECT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("zero_input"), module, OnePoint::ZERO_SEQUENCE_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("cv_input"), module, OnePoint::CV_SEQUENCE_SELECT));
         
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(25.6417, 261.9237), module, OnePoint::ZERO_BUTTON_PARAM, OnePoint::ZERO_BUTTON_LIGHT));
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(25.6417, 185.8046), module, OnePoint::PREV_BUTTON_PARAM, OnePoint::PREV_BUTTON_LIGHT));
-        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(Vec(65.5748, 185.8046), module, OnePoint::NEXT_BUTTON_PARAM, OnePoint::NEXT_BUTTON_LIGHT));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(panelHelper.findNamed("zero_button"), module, OnePoint::ZERO_BUTTON_PARAM, OnePoint::ZERO_BUTTON_LIGHT));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(panelHelper.findNamed("prev_button"), module, OnePoint::PREV_BUTTON_PARAM, OnePoint::PREV_BUTTON_LIGHT));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(panelHelper.findNamed("next_button"), module, OnePoint::NEXT_BUTTON_PARAM, OnePoint::NEXT_BUTTON_LIGHT));
 
-        addParam(createParamCentered<Trimpot>(Vec(65.5748, 261.9237), module, OnePoint::CV_SEQUENCE_ATTN_KNOB));
+        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("cv_attn_knob"), module, OnePoint::CV_SEQUENCE_ATTN_KNOB));
 
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(65.5748, 342.437317), module, OnePoint::CV_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(25.6417, 342.437317), module, OnePoint::EOL_OUTPUT)); // end of sequence output
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("output"), module, OnePoint::CV_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("eol_output"), module, OnePoint::EOL_OUTPUT)); // end of sequence output
 
         // Add display
         OnePointReadoutWidget *one_point_readout_widget = new OnePointReadoutWidget();
