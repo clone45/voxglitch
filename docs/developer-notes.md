@@ -68,7 +68,7 @@ Light Mode Color
   - Hex: 0b1116f3
 Dark Mode Color: 
   - RGB: 244, 238, 233
-  - Hex: 
+  - Hex: f4eee9f3
 Letter spacing: .88
 Size: 7pt
 
@@ -76,8 +76,8 @@ Size: 7pt
 
 Font: Pilat Condensed
 Weight: Normal
-Dark Mode Color (r,g,b): 11, 17, 22 (0b1116ff)
-Light Mode Color (r,g,b): 244, 238, 233 (f4eee9ff)
+Light Mode Color (r,g,b): 11, 17, 22 (0b1116ff)
+Dark Mode Color (r,g,b): 244, 238, 233 (f4eee9ff)
 Letter spacing: .60
 Size: 6pt
 

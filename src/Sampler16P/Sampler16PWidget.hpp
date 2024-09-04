@@ -4,19 +4,16 @@ struct Sampler16PWidget : VoxglitchSamplerModuleWidget
     {
         setModule(module);
 
-        // Load and apply theme
-        // theme.load("sampler16p");
-        // applyTheme();
-
-        setPanel(createPanel(
+        PanelHelper panelHelper(this);
+        panelHelper.loadPanel(
             asset::plugin(pluginInstance, "res/sampler16p/sampler16p_panel.svg"),
             asset::plugin(pluginInstance, "res/sampler16p/sampler16p_panel-dark.svg")
-        ));
+        );
 
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(22.2933, 52.0), module, Sampler16P::TRIGGER_INPUTS));
+        addInput(createInputCentered<VoxglitchPolyPort>(panelHelper.findNamed("trigger_inputs"), module, Sampler16P::TRIGGER_INPUTS));
 
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(22.3819, 304.1339), module, Sampler16P::AUDIO_MIX_OUTPUT_LEFT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(22.3819, 340.1575), module, Sampler16P::AUDIO_MIX_OUTPUT_RIGHT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("left_output"), module, Sampler16P::AUDIO_MIX_OUTPUT_LEFT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("right_output"), module, Sampler16P::AUDIO_MIX_OUTPUT_RIGHT));
     }
 
     void appendContextMenu(Menu *menu) override
