@@ -15,19 +15,16 @@ struct LooperWidget : VoxglitchSamplerModuleWidget
     {
         setModule(module);
 
-        // Load and apply theme
-        // theme.load("looper");
-        // applyTheme();
-
-        setPanel(createPanel(
+        PanelHelper panelHelper(this);
+        panelHelper.loadPanel(
             asset::plugin(pluginInstance, "res/looper/looper_panel.svg"),
             asset::plugin(pluginInstance, "res/looper/looper_panel-dark.svg")
-        ));
+        );
 
         // Add output jacks
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(22.3819, 303.249878), module, Looper::AUDIO_OUTPUT_LEFT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(22.3819, 354.949951), module, Looper::AUDIO_OUTPUT_RIGHT));
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(22.2933, 52.0), module, Looper::RESET_INPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("left_output"), module, Looper::AUDIO_OUTPUT_LEFT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("right_output"), module, Looper::AUDIO_OUTPUT_RIGHT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("reset_input"), module, Looper::RESET_INPUT));
 
         // Add volume slider
         addParam(createParamCentered<VoxglitchSliderLong>(Vec(22.3228, 177.1654), module, Looper::VOLUME_SLIDER));
