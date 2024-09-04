@@ -23,9 +23,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="3.2729938"
-     inkscape:cx="161.01466"
-     inkscape:cy="104.94979"
+     inkscape:zoom="9.2574244"
+     inkscape:cx="239.59148"
+     inkscape:cy="188.65938"
      inkscape:window-width="3840"
      inkscape:window-height="2054"
      inkscape:window-x="2869"
@@ -184,6 +184,12 @@
        width="80.1875"
        height="24"
        id="rect1-9-1" />
+    <rect
+       x="8"
+       y="109.4375"
+       width="80.1875"
+       height="24"
+       id="rect1-9-6" />
   </defs>
   <g
      inkscape:label="Layer 1"
@@ -196,7 +202,7 @@
        style="font-size:16px;font-family:'Pilat Condensed';-inkscape-font-specification:'Pilat Condensed, ';text-align:center;white-space:pre;shape-inside:url(#rect1);display:inline;fill:#000000;fill-opacity:0.952941;stroke-width:0.377953"><tspan
          x="241.25865"
          y="56.34375"
-         id="tspan1">Voxglitch Typography</tspan></text>
+         id="tspan3">Voxglitch Typography</tspan></text>
     <rect
        style="fill:#888888;fill-opacity:0.952941;stroke-width:0.1"
        id="rect4"
@@ -211,9 +217,9 @@
        style="font-size:10.6667px;font-family:'Pilat Condensed';-inkscape-font-specification:'Pilat Condensed, ';text-align:center;white-space:pre;shape-inside:url(#rect2);display:inline;fill:#000000;fill-opacity:0.952941;stroke-width:0.377953"><tspan
          x="117.86184"
          y="80.522816"
-         id="tspan11"><tspan
+         id="tspan5"><tspan
            style="fill:#0b1116"
-           id="tspan10">Input and output Labels</tspan></tspan></text>
+           id="tspan4">Input and output Labels</tspan></tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,12.509958,-1.6659124)"
@@ -221,9 +227,9 @@
        style="font-size:9.33333px;font-family:'Pilat Condensed';-inkscape-font-specification:'Pilat Condensed, ';text-align:center;letter-spacing:0.88px;white-space:pre;shape-inside:url(#rect2-5);display:inline;fill:#000000;fill-opacity:0.952941;stroke-width:0.377953"><tspan
          x="135.198"
          y="79.356117"
-         id="tspan13"><tspan
+         id="tspan7"><tspan
            style="font-family:Pilat;-inkscape-font-specification:Pilat;fill:#0b1116"
-           id="tspan12">Examples</tspan></tspan></text>
+           id="tspan6">Examples</tspan></tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,7.218301,2.1309435)"
@@ -231,9 +237,9 @@
        style="font-size:9.33333px;font-family:'Pilat Condensed';-inkscape-font-specification:'Pilat Condensed, ';text-align:center;letter-spacing:0.88px;white-space:pre;shape-inside:url(#rect2-5-9);display:inline;fill:#0b1116;fill-opacity:0.952941;stroke-width:0.377953"><tspan
          x="154.00332"
          y="79.356117"
-         id="tspan15"><tspan
+         id="tspan9"><tspan
            style="font-family:Pilat;-inkscape-font-specification:Pilat"
-           id="tspan14">IN</tspan></tspan></text>
+           id="tspan8">IN</tspan></tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,13.405549,2.1309435)"
@@ -241,9 +247,9 @@
        style="font-size:9.33333px;font-family:'Pilat Condensed';-inkscape-font-specification:'Pilat Condensed, ';text-align:center;letter-spacing:0.88px;white-space:pre;shape-inside:url(#rect2-5-9-1);display:inline;fill:#0b1116;fill-opacity:0.952941;stroke-width:0.377953"><tspan
          x="148.79865"
          y="79.356117"
-         id="tspan17"><tspan
+         id="tspan11"><tspan
            style="font-family:Pilat;-inkscape-font-specification:Pilat"
-           id="tspan16">OUT</tspan></tspan></text>
+           id="tspan10">OUT</tspan></tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,23.170223,2.1309435)"
@@ -251,9 +257,9 @@
        style="font-size:9.33333px;font-family:'Pilat Condensed';-inkscape-font-specification:'Pilat Condensed, ';text-align:center;letter-spacing:0.88px;white-space:pre;shape-inside:url(#rect2-5-9-1-4);display:inline;fill:#0b1116;fill-opacity:0.952941;stroke-width:0.377953"><tspan
          x="141.42732"
          y="79.356117"
-         id="tspan20"><tspan
+         id="tspan13"><tspan
            style="font-family:Pilat;-inkscape-font-specification:Pilat"
-           id="tspan19">CLOCK</tspan></tspan></text>
+           id="tspan12">CLOCK</tspan></tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,35.748711,2.1309435)"
@@ -261,9 +267,9 @@
        style="font-size:9.33333px;font-family:'Pilat Condensed';-inkscape-font-specification:'Pilat Condensed, ';text-align:center;letter-spacing:0.88px;white-space:pre;shape-inside:url(#rect2-5-9-1-4-8);display:inline;fill:#0b1116;fill-opacity:0.952941;stroke-width:0.377953"><tspan
          x="142.53332"
          y="79.356117"
-         id="tspan22"><tspan
+         id="tspan15"><tspan
            style="font-family:Pilat;-inkscape-font-specification:Pilat"
-           id="tspan21">RESET</tspan></tspan></text>
+           id="tspan14">RESET</tspan></tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,7.4023746,5.7184851)"
@@ -271,9 +277,9 @@
        style="font-size:9.33333px;font-family:'Pilat Condensed';-inkscape-font-specification:'Pilat Condensed, ';text-align:center;letter-spacing:0.88px;white-space:pre;shape-inside:url(#rect2-5-9-0);display:inline;fill:#f4eee9;fill-opacity:0.952941;stroke-width:0.377953"><tspan
          x="154.00332"
          y="79.356117"
-         id="tspan24"><tspan
+         id="tspan17"><tspan
            style="font-family:Pilat;-inkscape-font-specification:Pilat"
-           id="tspan23">IN</tspan></tspan></text>
+           id="tspan16">IN</tspan></tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,13.405549,5.7184851)"
@@ -281,9 +287,9 @@
        style="font-size:9.33333px;font-family:'Pilat Condensed';-inkscape-font-specification:'Pilat Condensed, ';text-align:center;letter-spacing:0.88px;white-space:pre;shape-inside:url(#rect2-5-9-1-5);display:inline;fill:#f4eee9;fill-opacity:0.952941;stroke-width:0.377953"><tspan
          x="148.79865"
          y="79.356117"
-         id="tspan26"><tspan
+         id="tspan19"><tspan
            style="font-family:Pilat;-inkscape-font-specification:Pilat"
-           id="tspan25">OUT</tspan></tspan></text>
+           id="tspan18">OUT</tspan></tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,23.233039,5.7184851)"
@@ -291,9 +297,9 @@
        style="font-size:9.33333px;font-family:'Pilat Condensed';-inkscape-font-specification:'Pilat Condensed, ';text-align:center;letter-spacing:0.88px;white-space:pre;shape-inside:url(#rect2-5-9-1-4-0);display:inline;fill:#f4eee9;fill-opacity:0.952941;stroke-width:0.377953"><tspan
          x="141.42732"
          y="79.356117"
-         id="tspan28"><tspan
+         id="tspan21"><tspan
            style="font-family:Pilat;-inkscape-font-specification:Pilat"
-           id="tspan27">CLOCK</tspan></tspan></text>
+           id="tspan20">CLOCK</tspan></tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,35.811527,5.7184851)"
@@ -301,9 +307,9 @@
        style="font-size:9.33333px;font-family:'Pilat Condensed';-inkscape-font-specification:'Pilat Condensed, ';text-align:center;letter-spacing:0.88px;white-space:pre;shape-inside:url(#rect2-5-9-1-4-8-1);display:inline;fill:#f4eee9;fill-opacity:0.952941;stroke-width:0.377953"><tspan
          x="142.53332"
          y="79.356117"
-         id="tspan30"><tspan
+         id="tspan23"><tspan
            style="font-family:Pilat;-inkscape-font-specification:Pilat"
-           id="tspan29">RESET</tspan></tspan></text>
+           id="tspan22">RESET</tspan></tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,-31.626636,-11.272102)"
@@ -313,63 +319,63 @@
        y="0"><tspan
          x="145.39648"
          y="132.3483"
-         id="tspan32"><tspan
-           style="text-align:start;text-anchor:start"
-           id="tspan31">Font: Pilat
+         id="tspan25"><tspan
+           style="text-align:start"
+           id="tspan24">Font: Pilat
 </tspan></tspan><tspan
          x="145.39648"
          y="139.01496"
-         id="tspan34"><tspan
-           style="text-align:start;text-anchor:start"
-           id="tspan33">Weight: Normal
+         id="tspan27"><tspan
+           style="text-align:start"
+           id="tspan26">Weight: Normal
 </tspan></tspan><tspan
          x="145.39648"
          y="145.68162"
-         id="tspan36"><tspan
-           style="text-align:start;text-anchor:start"
-           id="tspan35">Light Mode Color 
+         id="tspan29"><tspan
+           style="text-align:start"
+           id="tspan28">Light Mode Color 
 </tspan></tspan><tspan
          x="145.39648"
          y="152.34827"
-         id="tspan38"><tspan
-           style="text-align:start;text-anchor:start"
-           id="tspan37">  - RGB: 11, 17, 22  
+         id="tspan76"><tspan
+           style="text-align:start"
+           id="tspan30">  - RGB: 11, 17, 22  
 </tspan></tspan><tspan
          x="145.39648"
          y="159.01493"
-         id="tspan40"><tspan
-           style="text-align:start;text-anchor:start"
-           id="tspan39">  - Hex: 0b1116f3
+         id="tspan78"><tspan
+           style="text-align:start"
+           id="tspan77">  - Hex: 0b1116f3
 </tspan></tspan><tspan
          x="145.39648"
          y="165.68159"
-         id="tspan42"><tspan
-           style="text-align:start;text-anchor:start"
-           id="tspan41">Dark Mode Color: 
+         id="tspan80"><tspan
+           style="text-align:start"
+           id="tspan79">Dark Mode Color: 
 </tspan></tspan><tspan
          x="145.39648"
          y="172.34824"
-         id="tspan44"><tspan
-           style="text-align:start;text-anchor:start"
-           id="tspan43">  - RGB: 244, 238, 233
+         id="tspan82"><tspan
+           style="text-align:start"
+           id="tspan81">  - RGB: 244, 238, 233
 </tspan></tspan><tspan
          x="145.39648"
          y="179.0149"
-         id="tspan46"><tspan
-           style="text-align:start;text-anchor:start"
-           id="tspan45">  - Hex: 
+         id="tspan84"><tspan
+           style="text-align:start"
+           id="tspan83">  - Hex: 
 </tspan></tspan><tspan
          x="145.39648"
          y="185.68156"
-         id="tspan48"><tspan
-           style="text-align:start;text-anchor:start"
-           id="tspan47">Letter spacing: .88
+         id="tspan86"><tspan
+           style="text-align:start"
+           id="tspan85">Letter spacing: .88
 </tspan></tspan><tspan
          x="145.39648"
          y="192.34821"
-         id="tspan50"><tspan
-           style="text-align:start;text-anchor:start"
-           id="tspan49">Size: 7pt</tspan></tspan></text>
+         id="tspan88"><tspan
+           style="text-align:start"
+           id="tspan87">Size: 7pt</tspan></tspan></text>
     <rect
        style="fill:#888888;fill-opacity:0.952941;stroke-width:0.1"
        id="rect4-8"
@@ -384,7 +390,7 @@
        style="font-size:10.6667px;font-family:'Pilat Condensed';-inkscape-font-specification:'Pilat Condensed, ';text-align:center;white-space:pre;shape-inside:url(#rect2-1);display:inline;fill:#000000;fill-opacity:0.952941;stroke-width:0.377953"><tspan
          x="110.18715"
          y="80.522816"
-         id="tspan51">Module Name (in rectangle)</tspan></text>
+         id="tspan89">Module Name (in rectangle)</tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,12.487165,28.173461)"
@@ -392,9 +398,9 @@
        style="font-size:9.33333px;font-family:'Pilat Condensed';-inkscape-font-specification:'Pilat Condensed, ';text-align:center;letter-spacing:0.88px;white-space:pre;shape-inside:url(#rect2-5-93);display:inline;fill:#000000;fill-opacity:0.952941;stroke-width:0.377953"><tspan
          x="135.198"
          y="79.356117"
-         id="tspan53"><tspan
+         id="tspan91"><tspan
            style="font-family:Pilat;-inkscape-font-specification:Pilat;fill:#0b1116"
-           id="tspan52">Examples</tspan></tspan></text>
+           id="tspan90">Examples</tspan></tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(0.26458333,0,0,0.26458333,-31.649429,18.567271)"
@@ -404,65 +410,65 @@
        y="0"><tspan
          x="145.39648"
          y="132.3483"
-         id="tspan55"><tspan
+         id="tspan93"><tspan
            style="text-align:justify"
-           id="tspan54">Font: Pilat Condensed
+           id="tspan92">Font: Pilat Condensed
 </tspan></tspan><tspan
          x="145.39648"
          y="139.01496"
-         id="tspan57"><tspan
+         id="tspan95"><tspan
            style="text-align:justify"
-           id="tspan56">Weight: Normal
+           id="tspan94">Weight: Normal
 </tspan></tspan><tspan
          x="145.39648"
          y="145.68162"
-         id="tspan59"><tspan
+         id="tspan97"><tspan
            style="text-align:justify"
-           id="tspan58">Dark Mode Color: 
+           id="tspan96">Dark Mode Color: 
 </tspan></tspan><tspan
          x="145.39648"
          y="152.34827"
-         id="tspan61"><tspan
+         id="tspan99"><tspan
            style="text-align:justify"
-           id="tspan60"> - RGB: 11, 17, 22
+           id="tspan98"> - RGB: 11, 17, 22
 </tspan></tspan><tspan
          x="145.39648"
          y="159.01493"
-         id="tspan63"><tspan
+         id="tspan101"><tspan
            dx="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -0.88 0.87999809"
            style="text-align:justify"
-           id="tspan62"> - Hex: 0b1116ff
+           id="tspan100"> - Hex: 0b1116ff
 </tspan></tspan><tspan
          x="145.39648"
          y="165.68159"
-         id="tspan65"><tspan
+         id="tspan103"><tspan
            style="text-align:justify"
-           id="tspan64">Light Mode Color: 
+           id="tspan102">Light Mode Color: 
 </tspan></tspan><tspan
          x="145.39648"
          y="172.34824"
-         id="tspan67"><tspan
+         id="tspan105"><tspan
            style="text-align:justify"
-           id="tspan66"> - RGB: 244, 238, 233 
+           id="tspan104"> - RGB: 244, 238, 233 
 </tspan></tspan><tspan
          x="145.39648"
          y="179.0149"
-         id="tspan69"><tspan
+         id="tspan107"><tspan
            dx="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -0.88 0.87999809"
            style="text-align:justify"
-           id="tspan68"> - Hex: f4eee9ff
+           id="tspan106"> - Hex: f4eee9ff
 </tspan></tspan><tspan
          x="145.39648"
          y="185.68156"
-         id="tspan71"><tspan
+         id="tspan109"><tspan
            style="text-align:justify"
-           id="tspan70">Letter spacing: .60
+           id="tspan108">Letter spacing: .60
 </tspan></tspan><tspan
          x="145.39648"
          y="192.34821"
-         id="tspan73"><tspan
+         id="tspan111"><tspan
            style="text-align:justify"
-           id="tspan72">Size: 6pt</tspan></tspan></text>
+           id="tspan110">Size: 6pt</tspan></tspan></text>
     <path
        class="st0"
        d="M 61.560607,51.192017 V 54.02059 H 48.530053 v -2.828573 h 13.030554 m 0,-0.176389 H 48.530053 c -0.09737,0 -0.176389,0.07902 -0.176389,0.176389 v 2.828573 c 0,0.09737 0.07902,0.176389 0.176389,0.176389 h 13.030554 c 0.09737,0 0.176389,-0.07902 0.176389,-0.176389 v -2.828573 c 0,-0.09737 -0.07902,-0.176389 -0.176389,-0.176389 z"
@@ -473,10 +479,26 @@
        xml:space="preserve"
        transform="matrix(0.26458334,0,0,0.26458334,42.238175,22.539714)"
        id="text1-3"
-       style="font-size:8px;font-family:'Pilat Condensed';-inkscape-font-specification:'Pilat Condensed, ';text-align:center;white-space:pre;shape-inside:url(#rect1-9);display:inline;fill:#000000;fill-opacity:0.952941;stroke-width:0.377953"><tspan
-         x="26.145752"
+       style="font-size:8px;font-family:'Pilat Condensed';-inkscape-font-specification:'Pilat Condensed, ';text-align:center;word-spacing:0.6px;white-space:pre;shape-inside:url(#rect1-9);display:inline;fill:#000000;fill-opacity:0.952941;stroke-width:0.377953"><tspan
+         x="25.845752"
          y="116.4375"
-         id="tspan74">NOTE DETECTOR</tspan></text>
+         id="tspan113"><tspan
+           dx="0 0 0 0 -0.60000002 0.60000038"
+           id="tspan112">NOTE DETECTOR</tspan></tspan></text>
+    <path
+       class="st0"
+       d="m 76.676965,51.119953 v 2.828573 H 63.646411 v -2.828573 h 13.030554 m 0,-0.176389 H 63.646411 c -0.09737,0 -0.176389,0.07902 -0.176389,0.176389 v 2.828573 c 0,0.09737 0.07902,0.176389 0.176389,0.176389 h 13.030554 c 0.09737,0 0.176389,-0.07902 0.176389,-0.176389 v -2.828573 c 0,-0.09737 -0.07902,-0.176389 -0.176389,-0.176389 z"
+       id="path6-4"
+       style="fill:#000000;fill-opacity:0.95274;stroke:none;stroke-width:0.352778"
+       sodipodi:nodetypes="cccccsssssssss" />
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458334,0,0,0.26458334,57.354533,22.46765)"
+       id="text1-3-5"
+       style="font-size:8px;font-family:'Pilat Condensed';-inkscape-font-specification:'Pilat Condensed, ';text-align:center;word-spacing:0.6px;white-space:pre;shape-inside:url(#rect1-9-6);display:inline;fill:#000000;fill-opacity:0.952941;stroke-width:0.377953"><tspan
+         x="38.653755"
+         y="116.4375"
+         id="tspan114">SP-16P</tspan></text>
     <path
        class="st0"
        d="m 61.577586,55.256414 v 2.828573 H 48.547032 v -2.828573 h 13.030554 m 0,-0.176389 H 48.547032 c -0.09737,0 -0.176389,0.07902 -0.176389,0.176389 v 2.828573 c 0,0.09737 0.07902,0.176389 0.176389,0.176389 h 13.030554 c 0.09737,0 0.176389,-0.07902 0.176389,-0.176389 v -2.828573 c 0,-0.09737 -0.07902,-0.176389 -0.176389,-0.176389 z"
@@ -487,9 +509,11 @@
        xml:space="preserve"
        transform="matrix(0.26458334,0,0,0.26458334,42.255154,26.604111)"
        id="text1-3-8"
-       style="font-size:8px;font-family:'Pilat Condensed';-inkscape-font-specification:'Pilat Condensed, ';text-align:center;white-space:pre;shape-inside:url(#rect1-9-1);display:inline;fill:#f4eee9;fill-opacity:1;stroke-width:0.377953"><tspan
-         x="26.145752"
+       style="font-size:8px;font-family:'Pilat Condensed';-inkscape-font-specification:'Pilat Condensed, ';text-align:center;word-spacing:0.6px;white-space:pre;shape-inside:url(#rect1-9-1);display:inline;fill:#f4eee9;fill-opacity:1;stroke-width:0.377953"><tspan
+         x="25.845752"
          y="116.4375"
-         id="tspan75">NOTE DETECTOR</tspan></text>
+         id="tspan116"><tspan
+           dx="0 0 0 0 -0.60000002 0.60000038"
+           id="tspan115">NOTE DETECTOR</tspan></tspan></text>
   </g>
 </svg>
