@@ -4,40 +4,37 @@ struct WavBankMCWidget : ModuleWidget
     {
         setModule(module);
 
-        // Load and apply theme
-        // theme.load("wavbank_mc");
-        // applyTheme();
-
-        setPanel(createPanel(
+        PanelHelper panelHelper(this);
+        panelHelper.loadPanel(
             asset::plugin(pluginInstance, "res/wavbank_mc/wavbank_mc_panel.svg"),
             asset::plugin(pluginInstance, "res/wavbank_mc/wavbank_mc_panel-dark.svg")
-        ));
+        );
 
         // Screws
         addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
         addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 
-        addParam(createParamCentered<RoundHugeBlackKnob>(Vec(202.096863, 80.255463), module, WavBankMC::WAV_KNOB));
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(270.199890, 97.450043), module, WavBankMC::WAV_INPUT));
-        addParam(createParamCentered<Trimpot>(Vec(270.299652, 60.532650), module, WavBankMC::WAV_ATTN_KNOB));
+        addParam(createParamCentered<RoundHugeBlackKnob>(panelHelper.findNamed("wav_knob"), module, WavBankMC::WAV_KNOB));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("wav_input"), module, WavBankMC::WAV_INPUT));
+        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("wav_attn_knob"), module, WavBankMC::WAV_ATTN_KNOB));
 
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(179.650024, 160.600006), module, WavBankMC::TRIG_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(225.000000, 160.600006), module, WavBankMC::NEXT_WAV_TRIGGER_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(270.250000, 160.600006), module, WavBankMC::PREV_WAV_TRIGGER_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("trig_input"), module, WavBankMC::TRIG_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("next_input"), module, WavBankMC::NEXT_WAV_TRIGGER_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("prev_input"), module, WavBankMC::PREV_WAV_TRIGGER_INPUT));
 
-        addParam(createParamCentered<squareToggle>(Vec(179.650024, 188.8), module, WavBankMC::TRIG_INPUT_BUTTON_PARAM));
-        addParam(createParamCentered<squareToggle>(Vec(225.000000, 188.8), module, WavBankMC::NEXT_WAV_BUTTON_PARAM));
-        addParam(createParamCentered<squareToggle>(Vec(270.250000, 188.8), module, WavBankMC::PREV_WAV_BUTTON_PARAM));
+        addParam(createParamCentered<squareToggle>(panelHelper.findNamed("trig_button"), module, WavBankMC::TRIG_INPUT_BUTTON_PARAM));
+        addParam(createParamCentered<squareToggle>(panelHelper.findNamed("next_button"), module, WavBankMC::NEXT_WAV_BUTTON_PARAM));
+        addParam(createParamCentered<squareToggle>(panelHelper.findNamed("prev_button"), module, WavBankMC::PREV_WAV_BUTTON_PARAM));
 
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(179.650055, 240.359680), module, WavBankMC::PITCH_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(225.00006, 240.248474), module, WavBankMC::VOLUME_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("pitch_input"), module, WavBankMC::PITCH_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("volume_input"), module, WavBankMC::VOLUME_INPUT));
 
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(270.199677, 240.283936), module, WavBankMC::POLY_WAV_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(225.000000, 349.589600), module, WavBankMC::LEFT_WAV_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(270.250549, 349.739563), module, WavBankMC::RIGHT_WAV_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("poly_wav_output"), module, WavBankMC::POLY_WAV_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("left_wav_output"), module, WavBankMC::LEFT_WAV_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("right_wav_output"), module, WavBankMC::RIGHT_WAV_OUTPUT));
 
-        addParam(createParamCentered<squareToggle>(Vec(171.816985, 348.506453), module, WavBankMC::LOOP_SWITCH));
+        addParam(createParamCentered<squareToggle>(panelHelper.findNamed("loop_switch"), module, WavBankMC::LOOP_SWITCH));
 
         WavBankMCReadout *readout = new WavBankMCReadout();
         readout->box.pos = Vec(23.6220, 23.6220);
