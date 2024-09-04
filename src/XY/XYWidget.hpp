@@ -4,14 +4,11 @@ struct XYWidget : ModuleWidget
     {
         setModule(module);
 
-        // Load and apply theme
-        // theme.load("xy");
-        // applyTheme();
-
-        setPanel(createPanel(
+        PanelHelper panelHelper(this);
+        panelHelper.loadPanel(
             asset::plugin(pluginInstance, "res/xy/xy_panel.svg"),
             asset::plugin(pluginInstance, "res/xy/xy_panel-dark.svg")
-        ));
+        );
 
 		// Screws
 		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
@@ -20,16 +17,16 @@ struct XYWidget : ModuleWidget
 		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
         // Clock and Reset inputs
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(32.696091, 343.245789), module, XY::CLK_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(73.296082, 343.245789), module, XY::RESET_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("clk_input"), module, XY::CLK_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("reset_input"), module, XY::RESET_INPUT));
 
         // X,Y outputs
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(232.399994, 343.099976), module, XY::X_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(270.450470, 343.099976), module, XY::Y_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("x_output"), module, XY::X_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("y_output"), module, XY::Y_OUTPUT));
 
         // Retrigger and punch switches
-        addParam(createParamCentered<squareToggle>(Vec(126.240843, 341.270369), module, XY::RETRIGGER_SWITCH));
-        addParam(createParamCentered<squareToggle>(Vec(170.46704, 341.116988), module, XY::PUNCH_SWITCH));
+        addParam(createParamCentered<squareToggle>(panelHelper.findNamed("retrigger_switch"), module, XY::RETRIGGER_SWITCH));
+        addParam(createParamCentered<squareToggle>(panelHelper.findNamed("punch_switch"), module, XY::PUNCH_SWITCH));
 
         // xy mouse entry box
         XYDisplay *xy_display;

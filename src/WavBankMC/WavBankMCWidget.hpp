@@ -30,7 +30,7 @@ struct WavBankMCWidget : ModuleWidget
         addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("pitch_input"), module, WavBankMC::PITCH_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("volume_input"), module, WavBankMC::VOLUME_INPUT));
 
-        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("poly_wav_output"), module, WavBankMC::POLY_WAV_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchPolyPort>(panelHelper.findNamed("poly_wav_output"), module, WavBankMC::POLY_WAV_OUTPUT));
         addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("left_wav_output"), module, WavBankMC::LEFT_WAV_OUTPUT));
         addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("right_wav_output"), module, WavBankMC::RIGHT_WAV_OUTPUT));
 
