@@ -4,25 +4,22 @@ struct NoteDetectorWidget : ModuleWidget
     {
         setModule(module);
 
-        // Load and apply theme
-        // theme.load("note_detector");
-        // applyTheme();
-
-        setPanel(createPanel(
+        PanelHelper panelHelper(this);
+        panelHelper.loadPanel(
             asset::plugin(pluginInstance, "res/note_detector/note_detector_panel.svg"),
             asset::plugin(pluginInstance, "res/note_detector/note_detector_panel-dark.svg")
-        ));
+        );
 
         // Inputs
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(30.00000, 63.3706), module, NoteDetector::CV_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(30.00000, 111.4076), module, NoteDetector::CLOCK_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("cv_input"), module, NoteDetector::CV_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("clock_input"), module, NoteDetector::CLOCK_INPUT));
 
         // Parameters
-        addParam(createParamCentered<Trimpot>(Vec(30.00000, 208.74016), module, NoteDetector::NOTE_SELECTION_KNOB));
-        addParam(createParamCentered<Trimpot>(Vec(30.00000, 263.87501), module, NoteDetector::OCTAVE_SELECTION_KNOB));
+        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("note_knob"), module, NoteDetector::NOTE_SELECTION_KNOB));
+        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("octave_knob"), module, NoteDetector::OCTAVE_SELECTION_KNOB));
 
         // Outputs
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(30.00000, 349.837158), module, NoteDetector::DETECTION_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("output"), module, NoteDetector::DETECTION_OUTPUT));
 
         // Add display
         NoteReadoutWidget *note_readout_widget = new NoteReadoutWidget("");

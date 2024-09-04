@@ -63,8 +63,12 @@ The HP in the examples is the same HP as Glitch Sequencer. The numbers match tho
 
 Font: Pilat
 Weight: Normal
-Dark Mode Color (r,g,b): 11, 17, 22
-Light Mode Color (r,g,b): 244, 238, 233
+Light Mode Color 
+  - RGB: 11, 17, 22  
+  - Hex: 0b1116f3
+Dark Mode Color: 
+  - RGB: 244, 238, 233
+  - Hex: 
 Letter spacing: .88
 Size: 7pt
 
