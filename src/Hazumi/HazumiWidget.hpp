@@ -4,16 +4,11 @@ struct HazumiWidget : ModuleWidget
     {
         setModule(module);
 
-        // Load and apply theme
-        // theme.load("hazumi");
-        // applyTheme();
-
-        // setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/hazumi/panel.svg")));
-
-        setPanel(createPanel(
+        PanelHelper panelHelper(this);
+        panelHelper.loadPanel(
             asset::plugin(pluginInstance, "res/hazumi/hazumi_panel.svg"),
             asset::plugin(pluginInstance, "res/hazumi/hazumi_panel-dark.svg")
-        ));
+        );
 
         // Screws
         addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
@@ -24,17 +19,17 @@ struct HazumiWidget : ModuleWidget
 
         // =================== PLACE COMPONENTS ====================================
 
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(223.500000, 41.499992), module, Hazumi::STEP_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(223.500000, 92.250000), module, Hazumi::RESET_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("clock_input"), module, Hazumi::STEP_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("reset_input"), module, Hazumi::RESET_INPUT));
 
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(223.500000, 135.100006), module, Hazumi::GATE_OUTPUTS + 0));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(223.500000, 164.400024), module, Hazumi::GATE_OUTPUTS + 1));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(223.500000, 193.750031), module, Hazumi::GATE_OUTPUTS + 2));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(223.500000, 223.000000), module, Hazumi::GATE_OUTPUTS + 3));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(223.500000, 252.568787), module, Hazumi::GATE_OUTPUTS + 4));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(223.500000, 282.013977), module, Hazumi::GATE_OUTPUTS + 5));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(223.500000, 311.304443), module, Hazumi::GATE_OUTPUTS + 6));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(223.500000, 340.698181), module, Hazumi::GATE_OUTPUTS + 7));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("output_1"), module, Hazumi::GATE_OUTPUTS + 0));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("output_2"), module, Hazumi::GATE_OUTPUTS + 1));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("output_3"), module, Hazumi::GATE_OUTPUTS + 2));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("output_4"), module, Hazumi::GATE_OUTPUTS + 3));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("output_5"), module, Hazumi::GATE_OUTPUTS + 4));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("output_6"), module, Hazumi::GATE_OUTPUTS + 5));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("output_7"), module, Hazumi::GATE_OUTPUTS + 6));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("output_8"), module, Hazumi::GATE_OUTPUTS + 7));
 
         // Add display
         HazumiSequencerDisplay *hazumi_sequencer_display = new HazumiSequencerDisplay();
