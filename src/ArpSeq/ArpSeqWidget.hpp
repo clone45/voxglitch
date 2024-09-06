@@ -443,6 +443,13 @@ struct ArpSeqWidget : ModuleWidget
                 asset::plugin(pluginInstance, "res/xy/xy_panel.svg"),
                 asset::plugin(pluginInstance, "res/xy/xy_panel-dark.svg")
             );
+
+
+            SvgPanel *panel_render = new SvgPanel();
+            panel_render->box.pos = Vec(129.012, 13.735);
+            panel_render->setBackground(APP->window->loadSvg(asset::plugin(pluginInstance, "res/arpseq/readout/library_render.svg")));
+            panel_render->panelBorder->visible = false;
+            addChild(panel_render);
         }
 
         //
