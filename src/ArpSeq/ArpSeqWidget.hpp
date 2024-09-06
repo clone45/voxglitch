@@ -128,9 +128,11 @@ struct ArpSeqWidget : ModuleWidget
         // theme.load("ArpSeq");
         // applyTheme();
 
-        setPanel(createPanel(
+        PanelHelper panelHelper(this);
+        panelHelper.loadPanel(
             asset::plugin(pluginInstance, "res/arpseq/arpseq_panel.svg"),
-            asset::plugin(pluginInstance, "res/arpseq/arpseq_panel-dark.svg")));
+            asset::plugin(pluginInstance, "res/arpseq/arpseq_panel-dark.svg")
+        );
 
         // Screws
         addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
@@ -430,11 +432,17 @@ struct ArpSeqWidget : ModuleWidget
 
             // Load the SVG panel
 
-            SvgPanel *panel = new SvgPanel();
-            panel->box.pos = Vec(129.012, 13.735);
-            panel->setBackground(APP->window->loadSvg(asset::plugin(pluginInstance, "res/arpseq/readout/library_render.svg")));
-            panel->panelBorder->visible = false;
-            addChild(panel);
+//            SvgPanel *panel = new SvgPanel();
+//            panel->box.pos = Vec(129.012, 13.735);
+//            panel->setBackground(APP->window->loadSvg(asset::plugin(pluginInstance, "res/arpseq/readout/library_render.svg")));
+//            panel->panelBorder->visible = false;
+//            addChild(panel);
+
+            
+            panelHelper.loadPanel(
+                asset::plugin(pluginInstance, "res/xy/xy_panel.svg"),
+                asset::plugin(pluginInstance, "res/xy/xy_panel-dark.svg")
+            );
         }
 
         //
@@ -457,34 +465,34 @@ struct ArpSeqWidget : ModuleWidget
         // First column components
         //
 
-        addInput(createInputCentered<VoxglitchPolyPort>(Vec(38.0, 70.51822), module, ArpSeq::POLY_NOTES_INPUT));
-        addInput(createInputCentered<VoxglitchPolyPort>(Vec(38.0, 126.239255), module, ArpSeq::POLY_GATE_INPUT));
+        addInput(createInputCentered<VoxglitchPolyPort>(panelHelper.findNamed("pitch_input"), module, ArpSeq::POLY_NOTES_INPUT));
+        addInput(createInputCentered<VoxglitchPolyPort>(panelHelper.findNamed("gate_input"), module, ArpSeq::POLY_GATE_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(Vec(38.0, 180.0), module, ArpSeq::CLOCK_INPUT));
 
-        addParam(createParamCentered<squareToggle>(Vec(92.0, 70.51822), module, ArpSeq::ON_SWITCH));
-        addParam(createParamCentered<squareToggle>(Vec(92.0, 126.239255), module, ArpSeq::LATCH_SWITCH));
+        addParam(createParamCentered<squareToggle>(panelHelper.findNamed("on_switch"), module, ArpSeq::ON_SWITCH));
+        addParam(createParamCentered<squareToggle>(panelHelper.findNamed("latch_switch"), module, ArpSeq::LATCH_SWITCH));
 
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(92.0, 180.0), module, ArpSeq::RESET_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("reset_input"), module, ArpSeq::RESET_INPUT));
 
-        addParam(createParamCentered<RoundBlackKnob>(Vec(38.0, 276.0), module, ArpSeq::RATE_KNOB));
-        addParam(createParamCentered<RoundBlackKnob>(Vec(92.0, 276.0), module, ArpSeq::SHAPE_KNOB));
+        addParam(createParamCentered<RoundBlackKnob>(panelHelper.findNamed("rate_knob"), module, ArpSeq::RATE_KNOB));
+        addParam(createParamCentered<RoundBlackKnob>(panelHelper.findNamed("shape_knob"), module, ArpSeq::SHAPE_KNOB));
 
-        addParam(createParamCentered<Trimpot>(Vec(38.0, 318.0), module, ArpSeq::RATE_ATTENUATOR));
-        addParam(createParamCentered<Trimpot>(Vec(92.0, 318.0), module, ArpSeq::SHAPE_ATTENUATOR));
+        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("rate_attn_knob"), module, ArpSeq::RATE_ATTENUATOR));
+        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("shape_attn_knob"), module, ArpSeq::SHAPE_ATTENUATOR));
 
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(38.0, 352.85), module, ArpSeq::RATE_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(92.0, 352.85), module, ArpSeq::SHAPE_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("rate_input"), module, ArpSeq::RATE_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("shape_input"), module, ArpSeq::SHAPE_INPUT));
 
         //
         // Right-most outputs
         //
 
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(654.089, 57.0), module, ArpSeq::PITCH_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(654.089, 109.5), module, ArpSeq::GATE_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(654.089, 278.0), module, ArpSeq::PROBABILITY_GATE_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(654.089, 328.7), module, ArpSeq::CYCLE_GATE_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(654.089, 162.0), module, ArpSeq::MOD1_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(Vec(654.089, 214.5), module, ArpSeq::MOD2_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("pitch_output"), module, ArpSeq::PITCH_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("gate_output"), module, ArpSeq::GATE_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("prob_output"), module, ArpSeq::PROBABILITY_GATE_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("cycle_output"), module, ArpSeq::CYCLE_GATE_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("mod1_output"), module, ArpSeq::MOD1_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("mod2_output"), module, ArpSeq::MOD2_OUTPUT));
     }
 
 
