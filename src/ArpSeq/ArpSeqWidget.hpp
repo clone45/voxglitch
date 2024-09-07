@@ -429,15 +429,6 @@ struct ArpSeqWidget : ModuleWidget
         {
             // Render an svg file that looks like the digital panel for the library
             // This is a "hard coded" version of the module that is rendered when the module is not loaded
-
-            // Load the SVG panel
-
-//            SvgPanel *panel = new SvgPanel();
-//            panel->box.pos = Vec(129.012, 13.735);
-//            panel->setBackground(APP->window->loadSvg(asset::plugin(pluginInstance, "res/arpseq/readout/library_render.svg")));
-//            panel->panelBorder->visible = false;
-//            addChild(panel);
-
             
             panelHelper.loadPanel(
                 asset::plugin(pluginInstance, "res/xy/xy_panel.svg"),
