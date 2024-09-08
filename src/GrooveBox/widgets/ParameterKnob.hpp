@@ -1,19 +1,12 @@
-struct ParameterKnob : SvgKnob
+struct ParameterKnob : Trimpot
 {
-  widget::SvgWidget *bg;
   GrooveBox *module;
   unsigned int parameter_index = 0;
   unsigned int step = 0;
 
   ParameterKnob()
   {
-    minAngle = -0.83 * M_PI;
-    maxAngle = 0.83 * M_PI;
-
-    setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_TrimpotMedium.svg")));
-    bg = new widget::SvgWidget;
-    bg->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_TrimpotMedium_bg.svg")));
-    fb->addChildBelow(bg, tw);
+    // We don't need to set custom SVGs anymore as we're using the built-in Trimpot
   }
 
   void onDoubleClick(const DoubleClickEvent &e) override

@@ -6,7 +6,7 @@ struct GrooveboxSoftButton : SvgSwitch
     GrooveboxSoftButton()
     {
         momentary = false;
-        shadow->opacity = 0;
+        // shadow->opacity = 0;
                                                                      
         addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_soft_button.svg")));
         addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_soft_button_lit.svg")));

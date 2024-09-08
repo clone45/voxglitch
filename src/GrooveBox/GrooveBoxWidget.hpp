@@ -175,12 +175,19 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
         setModule(module);
         setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel.svg")));
 
-        setPanel(createPanel(
-            asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel.svg"),
-            asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel-dark.svg")));
+//        setPanel(createPanel(
+//            asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel.svg"),
+//            asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel-dark.svg")));
 
-        addInput(createInputCentered<PJ301MPort>(Vec(39.2, 102), module, GrooveBox::STEP_INPUT));
-        addInput(createInputCentered<PJ301MPort>(Vec(39.2, 154), module, GrooveBox::RESET_INPUT));
+        PanelHelper panelHelper(this);
+        panelHelper.loadPanel(
+            asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel.svg"),
+            asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel-dark.svg")
+        );
+
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(39.2, 104), module, GrooveBox::STEP_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(39.2, 156), module, GrooveBox::RESET_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(87.622, 104), module, GrooveBox::MEM_INPUT));
 
         // sequence length indicator
         SequenceLengthWidget *sequence_length_widget = new SequenceLengthWidget();
@@ -264,23 +271,21 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
         //
         for (unsigned int i = 0; i < NUMBER_OF_MEMORY_SLOTS; i++)
         {
-            float x = memory_slot_button_positions[i][0];
-            float y = memory_slot_button_positions[i][1];
+            // float x = memory_slot_button_positions[i][0];
+            // float y = memory_slot_button_positions[i][1];
+            Vec pos = panelHelper.findNamed("memory_button_" + std::to_string(i+1));
 
-            GrooveboxMemoryButton *groovebox_memory_button = createParamCentered<GrooveboxMemoryButton>(Vec(x, y), module, GrooveBox::MEMORY_SLOT_BUTTONS + i);
+            GrooveboxMemoryButton *groovebox_memory_button = createParamCentered<GrooveboxMemoryButton>(pos, module, GrooveBox::MEMORY_SLOT_BUTTONS + i);
             groovebox_memory_button->module = module;
             groovebox_memory_button->memory_slot = i;
             addParam(groovebox_memory_button);
         }
 
-        // Memory CV input
-        addInput(createInputCentered<PJ301MPort>(Vec(87.622, 102), module, GrooveBox::MEM_INPUT));
-
-        GrooveboxSoftButton *copy_button = createParamCentered<GrooveboxSoftButton>(Vec(86.56, 152.50), module, GrooveBox::COPY_BUTTON);
+        GrooveboxSoftButton *copy_button = createParamCentered<GrooveboxSoftButton>(panelHelper.findNamed("copy_button"), module, GrooveBox::COPY_BUTTON);
         copy_button->momentary = true;
         addParam(copy_button);
 
-        GrooveboxSoftButton *paste_button = createParamCentered<GrooveboxSoftButton>(Vec(86.56, 193), module, GrooveBox::PASTE_BUTTON);
+        GrooveboxSoftButton *paste_button = createParamCentered<GrooveboxSoftButton>(panelHelper.findNamed("paste_button"), module, GrooveBox::PASTE_BUTTON);
         paste_button->momentary = true;
         addParam(paste_button);
 
