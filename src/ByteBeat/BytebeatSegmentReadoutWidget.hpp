@@ -1,4 +1,4 @@
-struct SegmentReadoutWidget : TransparentWidget
+struct BytebeatSegmentReadoutWidget : TransparentWidget
 {
     std::string *display_string_ptr = NULL;
     std::string default_string = "0";
@@ -9,7 +9,7 @@ struct SegmentReadoutWidget : TransparentWidget
     float box_pos_x = 0;
     float box_pos_y = 0;
 
-    SegmentReadoutWidget(std::string default_string)
+    BytebeatSegmentReadoutWidget(std::string default_string)
     {
         this->default_string = default_string;
         this->display_string_ptr = &this->default_string;
@@ -51,16 +51,12 @@ struct SegmentReadoutWidget : TransparentWidget
             nvgTextAlign(vg, NVG_ALIGN_RIGHT | NVG_ALIGN_MIDDLE);
 
             // Draw a faded version of the 14 segment display
-            nvgFillColor(args.vg, nvgRGBA(51, 42, 4, 0xff));
+            nvgFillColor(args.vg, nvgRGBA(30, 30, 30, 0xff));
             nvgTextBox(args.vg, -16.0, box_size_y / 2.0, 56.7845, "~~~", NULL);
 
             // Set the color for the 14 segment text
-            nvgFillColor(args.vg, nvgRGBA(255, 215, 20, 0xff));
+            nvgFillColor(args.vg, nvgRGBA(255, 255, 255, 0xff));
 
-            // nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
-
-            // void nvgTextBox(NVGcontext* ctx, float x, float y, float breakRowWidth, const char* string, const char* end);
-            // nvgTextBox(args.vg, -16.0, box_size_y / 2.0, 56.7845, text_to_display.c_str(), NULL);
             nvgTextBox(args.vg, -16.0, box_size_y / 2.0, 56.7845, text_to_display.c_str(), NULL);
         }
 

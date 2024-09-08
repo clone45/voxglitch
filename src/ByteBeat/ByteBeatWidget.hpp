@@ -66,23 +66,23 @@ struct ByteBeatWidget : ModuleWidget
 
         // ============================ READOUTS ===================================
 
-        auto centerReadout = [](SegmentReadoutWidget* widget, Vec pos) {
+        auto centerReadout = [](BytebeatSegmentReadoutWidget* widget, Vec pos) {
             widget->box.pos = pos.minus(Vec(widget->box_size_x / 2, widget->box_size_y / 2));
         };
 
-        SegmentReadoutWidget *param_1_readout_widget = new SegmentReadoutWidget("000");
+        BytebeatSegmentReadoutWidget *param_1_readout_widget = new BytebeatSegmentReadoutWidget("000");
         centerReadout(param_1_readout_widget, panelHelper.findNamed("param_1_readout"));
         if (module != NULL)
             param_1_readout_widget->display_string_ptr = &module->param_1_readout;
         addChild(param_1_readout_widget);
 
-        SegmentReadoutWidget *param_2_readout_widget = new SegmentReadoutWidget("000");
+        BytebeatSegmentReadoutWidget *param_2_readout_widget = new BytebeatSegmentReadoutWidget("000");
         centerReadout(param_2_readout_widget, panelHelper.findNamed("param_2_readout"));
         if (module != NULL)
             param_2_readout_widget->display_string_ptr = &module->param_2_readout;
         addChild(param_2_readout_widget);
 
-        SegmentReadoutWidget *param_3_readout_widget = new SegmentReadoutWidget("000");
+        BytebeatSegmentReadoutWidget *param_3_readout_widget = new BytebeatSegmentReadoutWidget("000");
         centerReadout(param_3_readout_widget, panelHelper.findNamed("param_3_readout"));
         if (module != NULL)
             param_3_readout_widget->display_string_ptr = &module->param_3_readout;

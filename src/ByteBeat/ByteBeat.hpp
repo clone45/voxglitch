@@ -291,9 +291,9 @@ struct ByteBeat : Module
   }
 
   void updateReadouts() {
-    param_1_readout = string::f("%03d", (int)p1);
-    param_2_readout = string::f("%03d", (int)p2);
-    param_3_readout = string::f("%03d", (int)p3);
+    param_1_readout = string::f("%d", (int)p1);
+    param_2_readout = string::f("%d", (int)p2);
+    param_3_readout = string::f("%d", (int)p3);
   }
 
 };

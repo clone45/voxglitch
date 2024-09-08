@@ -12,7 +12,7 @@ using namespace vgLib_v2;
 
 // #include "ByteBeat/calculator.hpp"
 #include "ByteBeat/defines.h"
-#include "ByteBeat/SegmentReadoutWidget.hpp"
+#include "ByteBeat/BytebeatSegmentReadoutWidget.hpp"
 #include "ByteBeat/ByteBeat.hpp"
 #include "ByteBeat/ByteBeatWidget.hpp"
 
