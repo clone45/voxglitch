@@ -185,9 +185,9 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
             asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel-dark.svg")
         );
 
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(39.2, 104), module, GrooveBox::STEP_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(39.2, 156), module, GrooveBox::RESET_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(Vec(87.622, 104), module, GrooveBox::MEM_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("clock_input"), module, GrooveBox::STEP_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("reset_input"), module, GrooveBox::RESET_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("mem_input"), module, GrooveBox::MEM_INPUT));
 
         // sequence length indicator
         SequenceLengthWidget *sequence_length_widget = new SequenceLengthWidget();
@@ -214,12 +214,15 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
             //
             // Drum step buttons
             //
-            GrooveboxStepButton *step_button = createParamCentered<GrooveboxStepButton>(Vec(button_positions[i][0], button_positions[i][1]), module, GrooveBox::DRUM_PADS + i);
+
+            Vec pos = panelHelper.findNamed("step_button_" + std::to_string(i+1));
+
+            GrooveboxStepButton *step_button = createParamCentered<GrooveboxStepButton>(pos, module, GrooveBox::DRUM_PADS + i);
             step_button->module = module;
             step_button->index = i;
-            GrooveboxSmallLight *inner_button = new GrooveboxSmallLight((module) ? &module->inner_light_booleans[i] : &dummy_boolean);
-            inner_button->box.pos = Vec(10.358, 6.710);
-            step_button->addChild(inner_button);
+//            GrooveboxSmallLight *inner_button = new GrooveboxSmallLight((module) ? &module->inner_light_booleans[i] : &dummy_boolean);
+//            inner_button->box.pos = Vec(10.358, 6.710);
+//            step_button->addChild(inner_button);
             addParam(step_button);
 
             //

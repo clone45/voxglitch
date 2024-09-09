@@ -1,4 +1,4 @@
-struct GrooveboxStepButton : SvgSwitch
+struct GrooveboxStepButton : squareToggle
 {
     GrooveBox *module;
     unsigned int index = 0;
@@ -8,10 +8,10 @@ struct GrooveboxStepButton : SvgSwitch
         momentary = false;
         shadow->opacity = 0;
 
-        addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_step_button.svg")));
-        addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_step_button_lit.svg")));
+        // addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_step_button.svg")));
+        //addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_step_button_lit.svg")));
 
-        box.size = Vec(31.004, 31.004); // was 15.5   (19.28)
+        // box.size = Vec(31.004, 31.004); // was 15.5   (19.28)
     }
 
     void draw(const DrawArgs &args) override
