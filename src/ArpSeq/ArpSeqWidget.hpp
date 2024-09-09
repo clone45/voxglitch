@@ -115,7 +115,7 @@ public:
     }
 };
 
-struct ArpSeqWidget : VoxglitchModuleWidget
+struct ArpSeqWidget : ModuleWidget
 {
 
     // Adding a Label pointer for shape readout
@@ -125,16 +125,20 @@ struct ArpSeqWidget : VoxglitchModuleWidget
     {
         setModule(module);
 
-        theme.load("arpseq");
-        applyTheme();
+        // theme.load("ArpSeq");
+        // applyTheme();
 
-        if (theme.showScrews())
-        {
-            // addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, 0)));
-            addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-            addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-            addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-        }
+        PanelHelper panelHelper(this);
+        panelHelper.loadPanel(
+            asset::plugin(pluginInstance, "res/arpseq/arpseq_panel.svg"),
+            asset::plugin(pluginInstance, "res/arpseq/arpseq_panel-dark.svg")
+        );
+
+        // Screws
+        addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
+        addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+        addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+        addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
         ArpSeq *arp_module = dynamic_cast<ArpSeq *>(module);
 
@@ -228,6 +232,11 @@ struct ArpSeqWidget : VoxglitchModuleWidget
                     number_chooser->box.size = Vec(knob_width_px, knob_height_px);
 
                     int *count_down_pointer = module->pages[page_index].cycle_counters->getCountDownPointer(i);
+
+                    if(!count_down_pointer)
+                    {
+                        DEBUG("count_down_pointer is NULL");
+                    }
 
                     addParam(number_chooser);
 
@@ -420,14 +429,18 @@ struct ArpSeqWidget : VoxglitchModuleWidget
         {
             // Render an svg file that looks like the digital panel for the library
             // This is a "hard coded" version of the module that is rendered when the module is not loaded
+            
+            panelHelper.loadPanel(
+                asset::plugin(pluginInstance, "res/xy/xy_panel.svg"),
+                asset::plugin(pluginInstance, "res/xy/xy_panel-dark.svg")
+            );
 
-            // Load the SVG panel
 
-            SvgPanel *panel = new SvgPanel();
-            panel->box.pos = Vec(129.012, 13.735);
-            panel->setBackground(APP->window->loadSvg(asset::plugin(pluginInstance, "res/arpseq/readout/library_render.svg")));
-            panel->panelBorder->visible = false;
-            addChild(panel);
+            SvgPanel *panel_render = new SvgPanel();
+            panel_render->box.pos = Vec(129.012, 13.735);
+            panel_render->setBackground(APP->window->loadSvg(asset::plugin(pluginInstance, "res/arpseq/readout/library_render.svg")));
+            panel_render->panelBorder->visible = false;
+            addChild(panel_render);
         }
 
         //
@@ -450,34 +463,34 @@ struct ArpSeqWidget : VoxglitchModuleWidget
         // First column components
         //
 
-        addInput(createInputCentered<VoxglitchPolyPort>(themePos("POLY_NOTES_INPUT"), module, ArpSeq::POLY_NOTES_INPUT));
-        addInput(createInputCentered<VoxglitchPolyPort>(themePos("POLY_GATE_INPUT"), module, ArpSeq::POLY_GATE_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("CLOCK_INPUT"), module, ArpSeq::CLOCK_INPUT));
+        addInput(createInputCentered<VoxglitchPolyPort>(panelHelper.findNamed("pitch_input"), module, ArpSeq::POLY_NOTES_INPUT));
+        addInput(createInputCentered<VoxglitchPolyPort>(panelHelper.findNamed("gate_input"), module, ArpSeq::POLY_GATE_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(Vec(38.0, 180.0), module, ArpSeq::CLOCK_INPUT));
 
-        addParam(createParamCentered<squareToggle>(themePos("ON_SWITCH"), module, ArpSeq::ON_SWITCH));
-        addParam(createParamCentered<squareToggle>(themePos("LATCH_SWITCH"), module, ArpSeq::LATCH_SWITCH));
+        addParam(createParamCentered<squareToggle>(panelHelper.findNamed("on_switch"), module, ArpSeq::ON_SWITCH));
+        addParam(createParamCentered<squareToggle>(panelHelper.findNamed("latch_switch"), module, ArpSeq::LATCH_SWITCH));
 
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, ArpSeq::RESET_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("reset_input"), module, ArpSeq::RESET_INPUT));
 
-        addParam(createParamCentered<VoxglitchMediumBlackKnob>(themePos("RATE_KNOB"), module, ArpSeq::RATE_KNOB));
-        addParam(createParamCentered<VoxglitchMediumBlackKnob>(themePos("SHAPE_KNOB"), module, ArpSeq::SHAPE_KNOB));
+        addParam(createParamCentered<RoundBlackKnob>(panelHelper.findNamed("rate_knob"), module, ArpSeq::RATE_KNOB));
+        addParam(createParamCentered<RoundBlackKnob>(panelHelper.findNamed("shape_knob"), module, ArpSeq::SHAPE_KNOB));
 
-        addParam(createParamCentered<VoxglitchAttenuator>(themePos("RATE_ATTENUATOR"), module, ArpSeq::RATE_ATTENUATOR));
-        addParam(createParamCentered<VoxglitchAttenuator>(themePos("SHAPE_ATTENUATOR"), module, ArpSeq::SHAPE_ATTENUATOR));
+        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("rate_attn_knob"), module, ArpSeq::RATE_ATTENUATOR));
+        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("shape_attn_knob"), module, ArpSeq::SHAPE_ATTENUATOR));
 
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("RATE_INPUT"), module, ArpSeq::RATE_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("SHAPE_INPUT"), module, ArpSeq::SHAPE_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("rate_input"), module, ArpSeq::RATE_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("shape_input"), module, ArpSeq::SHAPE_INPUT));
 
         //
         // Right-most outputs
         //
 
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("PITCH_OUTPUT"), module, ArpSeq::PITCH_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("GATE_OUTPUT"), module, ArpSeq::GATE_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("PROBABILITY_GATE_OUTPUT"), module, ArpSeq::PROBABILITY_GATE_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("CYCLE_GATE_OUTPUT"), module, ArpSeq::CYCLE_GATE_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("MOD1_OUTPUT"), module, ArpSeq::MOD1_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("MOD2_OUTPUT"), module, ArpSeq::MOD2_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("pitch_output"), module, ArpSeq::PITCH_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("gate_output"), module, ArpSeq::GATE_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("prob_output"), module, ArpSeq::PROBABILITY_GATE_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("cycle_output"), module, ArpSeq::CYCLE_GATE_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("mod1_output"), module, ArpSeq::MOD1_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("mod2_output"), module, ArpSeq::MOD2_OUTPUT));
     }
 
 

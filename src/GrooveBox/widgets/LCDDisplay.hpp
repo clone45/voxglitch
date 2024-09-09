@@ -26,13 +26,10 @@ struct LCDDisplay : TransparentWidget
         {
             const auto vg = args.vg;
 
-            if (module)
-            {
-                nvgBeginPath(vg);
-                nvgRect(vg, 0, 0, box.size.x, box.size.y);
-                nvgFillColor(vg, LCDColorScheme::getBackgroundColor());
-                nvgFill(vg);
-            }
+            nvgBeginPath(vg);
+            nvgRect(vg, 0, 0, box.size.x, box.size.y);
+            nvgFillColor(vg, LCDColorScheme::getBackgroundColor());
+            nvgFill(vg);
         }
         Widget::drawLayer(args, layer);
     }

@@ -10,26 +10,24 @@
 // Special thanks to the entire VCV Rack community for their support.
 //
 
-
-#include "plugin.hpp"
-#include "osdialog.h"
-#include "settings.hpp"
-
 // These two includes are required for Mac
 #include <fstream>
 #include <array>
 
+#include "plugin.hpp"
+#include "osdialog.h"
+
+#include "vgLib-2.0/constants.h"
+
+#include "vgLib-2.0/components/VoxglitchComponents.hpp"
+#include "vgLib-2.0/sequencer/VoltageSequencerHistory.hpp"
+#include "vgLib-2.0/sequencer/Sequencer.hpp"
+#include "vgLib-2.0/sequencer/VoltageSequencer.hpp"
+#include "vgLib-2.0/sequencer/GateSequencer.hpp"
+
+using namespace vgLib_v2;
+
 #include "DigitalSequencer/defines.h"
-
-#include "vgLib-1.0/constants.h"
-#include "vgLib-1.0/Theme.hpp"
-#include "vgLib-1.0/components/VoxglitchComponents.hpp"
-#include "vgLib-1.0/sequencer/Sequencer.hpp"
-#include "vgLib-1.0/sequencer/VoltageSequencer.hpp"
-
-using namespace vgLib_v1;
-
-#include "DigitalSequencer/GateSequencer.hpp"
 #include "DigitalSequencer/DigitalSequencer.hpp"
 #include "DigitalSequencer/SequencerDisplay.hpp"
 #include "DigitalSequencer/VoltageSequencerDisplay.hpp"

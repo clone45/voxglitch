@@ -7,7 +7,7 @@
    viewBox="0 0 6.2251167 6.2251169"
    version="1.1"
    id="svg5"
-   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25, custom)"
    sodipodi:docname="voxglitch_output_port.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -25,15 +25,17 @@
      showgrid="false"
      units="px"
      width="23.528px"
-     inkscape:zoom="35.195347"
-     inkscape:cx="12.47324"
-     inkscape:cy="9.8876706"
+     inkscape:zoom="32"
+     inkscape:cx="-4.015625"
+     inkscape:cy="-1.203125"
      inkscape:window-width="3840"
-     inkscape:window-height="2066"
+     inkscape:window-height="2054"
      inkscape:window-x="2869"
      inkscape:window-y="-11"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer1" />
+     inkscape:current-layer="layer1"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1" />
   <defs
      id="defs2">
     <linearGradient
@@ -293,28 +295,11 @@
        r="1.6758709"
        id="circle65" />
     <circle
-       class="st7"
-       cx="4.6458182"
-       cy="2.6733501"
-       r="0.063499995"
-       id="circle69"
-       style="fill:#97948b;fill-rule:evenodd;stroke-width:0.264583" />
-    <circle
        style="fill:url(#SVGID_00000007430458143656581190000006615774667949187770_);fill-rule:evenodd;stroke-width:0.264583"
        cx="3.1125584"
        cy="3.1125584"
        r="1.4628812"
        id="circle78" />
-    <path
-       class="st9"
-       d="M 4.8278519,3.3057042 C 4.8881769,2.6503313 4.5762332,2.0166542 4.0198144,1.665023 3.4633957,1.3133918 2.7569582,1.3033376 2.1910145,1.6390938 2.7484915,1.2432772 3.489854,1.2234334 4.0679686,1.5885584 4.6460832,1.9536834 4.9461207,2.6320751 4.8278519,3.3057042 Z"
-       id="path82"
-       style="fill:#56564d;fill-rule:evenodd;stroke-width:0.264583" />
-    <path
-       class="st10"
-       d="M 1.3967353,2.9614813 C 1.3554603,3.7938605 1.9142603,4.537075 2.7254728,4.7286334 3.5366853,4.9201917 4.3687998,4.505325 4.7042915,3.7422667 4.4315061,4.587875 3.5549415,5.0823813 2.6900186,4.878123 1.8253603,4.6741292 1.262327,3.839898 1.3967353,2.9614813 Z"
-       id="path86"
-       style="fill:#d7d5ce;fill-rule:evenodd;stroke-width:0.264583" />
     <circle
        cx="3.1125584"
        cy="3.1125584"
@@ -322,76 +307,14 @@
        id="circle90"
        style="fill-rule:evenodd;stroke-width:0.264583" />
     <path
-       class="st11"
-       d="m 3.5689644,4.6487292 c 0.1230313,-0.050535 0.2418292,-0.1100667 0.3561292,-0.1780646 0.1143,-0.067998 0.2230437,-0.1444625 0.3262312,-0.2283354 -0.062442,0.1262063 -0.1600729,0.231775 -0.281252,0.3037417 -0.1211792,0.072231 -0.26035,0.10795 -0.4011084,0.1026583 z"
-       id="path94"
-       style="fill:#3b3b3b;fill-rule:evenodd;stroke-width:0.264583" />
-    <path
-       class="st12"
-       d="M 1.7922874,4.1346438 C 1.883304,4.2314813 1.9814645,4.3214396 2.0857103,4.403725 2.1899561,4.4860105 2.3000228,4.560623 2.4153811,4.6270334 2.275152,4.6135396 2.141802,4.5600938 2.0312061,4.4727813 1.9208749,4.3854688 1.8377957,4.2679938 1.7922874,4.1346438 Z"
-       id="path98"
-       style="fill:#5b5b5b;fill-rule:evenodd;stroke-width:0.264583" />
-    <path
        class="st13"
        d="m 0.40481243,2.2632459 c -0.0293688,0.1497542 -0.0518583,0.301625 -0.0672042,0.4542896 -0.0156104,0.1526646 -0.0240771,0.3061229 -0.0254,0.4585229 -0.0407458,-0.1415521 -0.0537104,-0.3029479 -0.0373062,-0.4648729 0.0164041,-0.161925 0.0613833,-0.3175 0.1299104,-0.4479396 z"
        id="path102"
        style="fill:#595957;fill-rule:evenodd;stroke-width:0.264583" />
     <path
-       class="st10"
-       d="M 1.3393207,2.4508355 C 1.309952,2.6005897 1.2874624,2.7524605 1.2721166,2.9051251 1.2565061,3.0577896 1.2480395,3.211248 1.2467166,3.363648 1.2059707,3.2220959 1.1930061,3.0607001 1.2094103,2.8987751 1.2258145,2.7368501 1.2707936,2.5815397 1.3393207,2.4508355 Z"
-       id="path104"
-       style="fill:#d7d5ce;fill-rule:evenodd;stroke-width:0.264583" />
-    <path
        class="st14"
        d="m 5.8496727,2.3661688 c 0.029369,0.1497542 0.051858,0.301625 0.067204,0.4542896 0.01561,0.1526646 0.024077,0.3061229 0.0254,0.4585229 0.040746,-0.1415521 0.05371,-0.3029479 0.037306,-0.4648729 -0.016404,-0.161925 -0.061383,-0.3175 -0.12991,-0.4479396 z"
        id="path108"
        style="fill:#61605e;fill-rule:evenodd;stroke-width:0.264583" />
-    <circle
-       class="st15"
-       cx="0.83925819"
-       cy="4.0883417"
-       r="0.12699999"
-       id="circle112"
-       style="fill:#2e2e2e;fill-rule:evenodd;stroke-width:0.264583" />
-    <circle
-       class="st16"
-       cx="5.4197249"
-       cy="4.0724669"
-       r="0.12699999"
-       id="circle116"
-       style="fill:#1f1f23;fill-rule:evenodd;stroke-width:0.264583" />
-    <circle
-       class="st17"
-       cx="0.90275812"
-       cy="2.0656023"
-       r="0.12699999"
-       id="circle120"
-       style="fill:#1d1d1f;fill-rule:evenodd;stroke-width:0.264583" />
-    <circle
-       class="st18"
-       cx="4.7884288"
-       cy="4.6492586"
-       r="0.063499995"
-       id="circle124"
-       style="fill:#1b1b1d;fill-rule:evenodd;stroke-width:0.264583" />
-    <circle
-       class="st18"
-       cx="0.83925819"
-       cy="2.4238482"
-       r="0.063499995"
-       id="circle128"
-       style="fill:#1b1b1d;fill-rule:evenodd;stroke-width:0.264583" />
-    <path
-       class="st19"
-       d="M 1.1800416,3.1136167 C 1.2162895,3.7629042 1.5642165,4.3545125 2.1137561,4.7019105 2.6632957,5.0493084 3.346979,5.1096334 3.9491707,4.8638355 3.3496249,5.1612271 2.6384249,5.12445 2.0727457,4.7667334 1.5073311,4.4092813 1.1689291,3.782748 1.1800416,3.1136167 Z"
-       id="path132"
-       style="fill:#373737;fill-rule:evenodd;stroke-width:0.264583" />
-    <circle
-       class="st20"
-       cx="1.4366875"
-       cy="2.5770416"
-       r="0.096572921"
-       id="circle136"
-       style="fill:#a5a4a0;fill-rule:evenodd;stroke-width:0.264583" />
   </g>
 </svg>

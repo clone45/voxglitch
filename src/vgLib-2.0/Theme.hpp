@@ -1,6 +1,3 @@
-#include <cctype> // for std::isupper
-#include <string>
-
 struct Theme
 {
     std::string name = "default";
@@ -13,32 +10,34 @@ struct Theme
         json_t *json_root_local;
         json_error_t error;
 
-        // Check to see if the Voxglitch config file does not exist.  If it's missing,
-        // then copy it from the res/ folder to the user folder.
-        if (!rack::system::exists(asset::user("Voxglitch.json")))
-        {
-            rack::system::copy(asset::plugin(pluginInstance, "res/voxglitch_config.json"), asset::user("Voxglitch.json"));
-        }
+//        // Check to see if the Voxglitch config file does not exist.  If it's missing,
+//        // then copy it from the res/ folder to the user folder.
+//        if (!rack::system::exists(asset::user("vxo.json")))
+//        {
+//            rack::system::copy(asset::plugin(pluginInstance, "res/voxglitch_config.json"), asset::user("vxo.json"));
+//        }
+//
+//        // Get the path to the config file
+//        std::string config_file_path = asset::user("vxo.json");
+//
+//        // Load theme selection, either "light" or "default"
+//        if (rack::system::exists(config_file_path.c_str()))
+//        {
+//            json_root_local = json_load_file(config_file_path.c_str(), 0, &error);
+//            if (json_root_local)
+//            {
+//                json_t *theme_json = json_object_get(json_root_local, "theme");
+//                if (theme_json)
+//                    name = json_string_value(theme_json);
+//                json_decref(json_root_local);
+//            }
+//        }
+//        else
+//        {
+//            name = "default";
+//        }
 
-        // Get the path to the config file
-        std::string config_file_path = asset::user("Voxglitch.json");
-
-        // Load theme selection, either "light" or "default"
-        if (rack::system::exists(config_file_path.c_str()))
-        {
-            json_root_local = json_load_file(config_file_path.c_str(), 0, &error);
-            if (json_root_local)
-            {
-                json_t *theme_json = json_object_get(json_root_local, "theme");
-                if (theme_json)
-                    name = json_string_value(theme_json);
-                json_decref(json_root_local);
-            }
-        }
-        else
-        {
-            name = "default";
-        }
+        name = "default";
     }
 
     ~Theme()
@@ -49,34 +48,25 @@ struct Theme
 
     bool load(std::string slug)
     {
-        json_error_t error;
-
-        // Check if slug contains any uppercase letters
-        for (char c : slug)
-        {
-            if (std::isupper(static_cast<unsigned char>(c)))
-            {
-                return false; // Slug contains an uppercase letter
-            }
-        }
-
-        std::string config_file_path = asset::plugin(pluginInstance, "res/" + slug + "/themes/" + name + "/config.json");
-
-        // Load theme selection
-        json_root = json_load_file(config_file_path.c_str(), 0, &error);
-
-        if (!json_root)
-        {
-            return (false);
-        }
-
-        // Store this for quick access for later
-        widgets = json_object_get(json_root, "widgets");
-
-        // Optionally show or hide screws.  Screws are shown by default.
-        json_t *show_screws_json = json_object_get(json_root, "show_screws");
-        if (show_screws_json)
-            show_screws = json_boolean_value(show_screws_json);
+//        json_error_t error;
+//
+//        std::string config_file_path = asset::plugin(pluginInstance, "res/" + slug + "/config.json");
+//
+//        // Load theme selection
+//        json_root = json_load_file(config_file_path.c_str(), 0, &error);
+//
+//        if (!json_root)
+//        {
+//            return (false);
+//        }
+//
+//        // Store this for quick access for later
+//        widgets = json_object_get(json_root, "widgets");
+//
+//        // Optionally show or hide screws.  Screws are shown by default.
+//        json_t *show_screws_json = json_object_get(json_root, "show_screws");
+//        if (show_screws_json)
+//            show_screws = json_boolean_value(show_screws_json);
 
         return (true);
     }

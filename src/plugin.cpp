@@ -1,5 +1,5 @@
 #include "plugin.hpp"
-#include "vgLib-1.0/constants.cpp"
+#include "vgLib-2.0/constants.cpp"
 
 Plugin* pluginInstance;
 

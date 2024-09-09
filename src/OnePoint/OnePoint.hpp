@@ -14,7 +14,13 @@ struct OnePoint : VoxglitchModule
     dsp::BooleanTrigger next_sequence_button_trigger;
     dsp::BooleanTrigger prev_sequence_button_trigger;
     dsp::BooleanTrigger zero_sequence_button_trigger;
+
     dsp::PulseGenerator eol_pulse_generator;
+
+    // Pulses for illuminating the buttons
+    dsp::PulseGenerator prevPulse;
+    dsp::PulseGenerator nextPulse;
+    dsp::PulseGenerator zeroPulse;
 
     std::vector<std::vector<float>> sequences;
     unsigned int step = 0;
@@ -53,6 +59,9 @@ struct OnePoint : VoxglitchModule
     };
     enum LightIds
     {
+        PREV_BUTTON_LIGHT,
+        NEXT_BUTTON_LIGHT,
+        ZERO_BUTTON_LIGHT,
         NUM_LIGHTS
     };
 
@@ -121,18 +130,21 @@ struct OnePoint : VoxglitchModule
         if (next_sequence_trigger.process(inputs[NEXT_SEQUENCE_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger) || next_sequence_button_trigger.process(params[NEXT_BUTTON_PARAM].getValue()))
         {
             selected_sequence = ((selected_sequence + 1) % sequences.size());
+            nextPulse.trigger(1e-3f);
         }
 
         // Process PREV trigger and button
         if (prev_sequence_trigger.process(inputs[PREV_SEQUENCE_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger) || prev_sequence_button_trigger.process(params[PREV_BUTTON_PARAM].getValue()))
         {
             selected_sequence = (selected_sequence == 0) ? sequences.size() - 1 : selected_sequence - 1;
+            prevPulse.trigger(1e-3f);
         }
 
         // Process ZERO trigger and button
         if (zero_sequence_trigger.process(inputs[ZERO_SEQUENCE_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger) || zero_sequence_button_trigger.process(params[ZERO_BUTTON_PARAM].getValue()))
         {
             selected_sequence = 0;
+            zeroPulse.trigger(1e-3f);
         }
 
         // Process RESET input
@@ -190,6 +202,15 @@ struct OnePoint : VoxglitchModule
                 reset_timer.reset();
             }
         }
+
+        bool prevGate = prevPulse.process(args.sampleTime);
+        bool nextGate = nextPulse.process(args.sampleTime);
+        bool zeroGate = zeroPulse.process(args.sampleTime);
+
+        // Lights
+        lights[PREV_BUTTON_LIGHT].setSmoothBrightness(prevGate, args.sampleTime);
+        lights[NEXT_BUTTON_LIGHT].setSmoothBrightness(nextGate, args.sampleTime);
+        lights[ZERO_BUTTON_LIGHT].setSmoothBrightness(zeroGate, args.sampleTime);
 
         //
         // Outputs

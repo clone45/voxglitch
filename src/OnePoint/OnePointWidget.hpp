@@ -1,71 +1,77 @@
-struct OnePointWidget : VoxglitchModuleWidget
+struct OnePointWidget : ModuleWidget
 {
-  OnePointWidget(OnePoint *module)
-  {
-    setModule(module);
-
-    // Load and apply theme
-    theme.load("onepoint");
-    applyTheme();
-
-    addInput(createInputCentered<VoxglitchInputPort>(themePos("STEP_INPUT"), module, OnePoint::STEP_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(themePos("RESET_INPUT"), module, OnePoint::RESET_INPUT));
-
-    addInput(createInputCentered<VoxglitchInputPort>(themePos("PREV_INPUT"), module, OnePoint::PREV_SEQUENCE_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(themePos("NEXT_INPUT"), module, OnePoint::NEXT_SEQUENCE_INPUT));
-    
-    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("PREV_BUTTON"), module, OnePoint::PREV_BUTTON_PARAM));    
-    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("NEXT_BUTTON"), module, OnePoint::NEXT_BUTTON_PARAM));
-
-    addInput(createInputCentered<VoxglitchInputPort>(themePos("ZERO_SEQUENCE_INPUT"), module, OnePoint::ZERO_SEQUENCE_INPUT));
-    addInput(createInputCentered<VoxglitchInputPort>(themePos("CV_SEQUENCE_SELECT"), module, OnePoint::CV_SEQUENCE_SELECT));
-    addParam(createParamCentered<VoxglitchRoundMomentaryLampSwitch>(themePos("ZERO_BUTTON_PARAM"), module, OnePoint::ZERO_BUTTON_PARAM));    
-    addParam(createParamCentered<VoxglitchAttenuator>(themePos("CV_SEQUENCE_ATTN_KNOB"), module, OnePoint::CV_SEQUENCE_ATTN_KNOB));    
- 
-    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("CV_OUTPUT"), module, OnePoint::CV_OUTPUT));
-    addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("EOL_OUTPUT"), module, OnePoint::EOL_OUTPUT)); // end of sequence output
-
-    // Add display
-    OnePointReadoutWidget *one_point_readout_widget = new OnePointReadoutWidget();
-    one_point_readout_widget->box.pos = themePos("READOUT");
-    one_point_readout_widget->module = module;
-    addChild(one_point_readout_widget);
-
-  }
-
-  struct LoadFileMenuItem : MenuItem
-  {
-    OnePoint *module;
-
-    void onAction(const event::Action &e) override
+    OnePointWidget(OnePoint *module)
     {
-      std::string path = module->selectFileVCV();
-      module->loadData(path);
-      module->path = path;
+        setModule(module);
+
+        PanelHelper panelHelper(this);
+        panelHelper.loadPanel(
+            asset::plugin(pluginInstance, "res/onepoint/onepoint_panel.svg"),
+            asset::plugin(pluginInstance, "res/onepoint/onepoint_panel-dark.svg")
+        );
+
+		// Screws
+		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
+		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+
+
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("clock_input"), module, OnePoint::STEP_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("reset_input"), module, OnePoint::RESET_INPUT));
+
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("prev_input"), module, OnePoint::PREV_SEQUENCE_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("next_input"), module, OnePoint::NEXT_SEQUENCE_INPUT));
+
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("zero_input"), module, OnePoint::ZERO_SEQUENCE_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("cv_input"), module, OnePoint::CV_SEQUENCE_SELECT));
+        
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(panelHelper.findNamed("zero_button"), module, OnePoint::ZERO_BUTTON_PARAM, OnePoint::ZERO_BUTTON_LIGHT));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(panelHelper.findNamed("prev_button"), module, OnePoint::PREV_BUTTON_PARAM, OnePoint::PREV_BUTTON_LIGHT));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(panelHelper.findNamed("next_button"), module, OnePoint::NEXT_BUTTON_PARAM, OnePoint::NEXT_BUTTON_LIGHT));
+
+        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("cv_attn_knob"), module, OnePoint::CV_SEQUENCE_ATTN_KNOB));
+
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("output"), module, OnePoint::CV_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("eol_output"), module, OnePoint::EOL_OUTPUT)); // end of sequence output
+
+        // Add display
+        OnePointReadoutWidget *one_point_readout_widget = new OnePointReadoutWidget();
+        one_point_readout_widget->box.pos = Vec(16.6063, 110.5335);
+        one_point_readout_widget->module = module;
+        addChild(one_point_readout_widget);
     }
-  };
 
-  void appendContextMenu(Menu *menu) override
-  {
-    OnePoint *module = dynamic_cast<OnePoint *>(this->module);
-    assert(module);
-
-    // Menu in development
-    menu->addChild(new MenuEntry); // For spacing only
-
-    LoadFileMenuItem *load_file_menu_item = createMenuItem<LoadFileMenuItem>("Load File");
-    load_file_menu_item->module = module;
-    menu->addChild(load_file_menu_item);
-
-    if(module->path != "")
+    struct LoadFileMenuItem : MenuItem
     {
-      std::string filename = rack::system::getFilename(module->path);
-      menu->addChild(createMenuLabel(filename));
-    }
-    else
-    {
-      menu->addChild(createMenuLabel("No file loaded"));
-    }
-  }
+        OnePoint *module;
 
+        void onAction(const event::Action &e) override
+        {
+            std::string path = module->selectFileVCV();
+            module->loadData(path);
+            module->path = path;
+        }
+    };
+
+    void appendContextMenu(Menu *menu) override
+    {
+        OnePoint *module = dynamic_cast<OnePoint *>(this->module);
+        assert(module);
+
+        // Menu in development
+        menu->addChild(new MenuEntry); // For spacing only
+
+        LoadFileMenuItem *load_file_menu_item = createMenuItem<LoadFileMenuItem>("Load File");
+        load_file_menu_item->module = module;
+        menu->addChild(load_file_menu_item);
+
+        if (module->path != "")
+        {
+            std::string filename = rack::system::getFilename(module->path);
+            menu->addChild(createMenuLabel(filename));
+        }
+        else
+        {
+            menu->addChild(createMenuLabel("No file loaded"));
+        }
+    }
 };

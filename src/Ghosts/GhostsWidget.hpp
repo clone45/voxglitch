@@ -1,66 +1,73 @@
 struct GhostsWidget : VoxglitchSamplerModuleWidget
 {
+	Ghosts *module;
+
 	GhostsWidget(Ghosts *module)
 	{
+		this->module = module;
 		setModule(module);
 
-		// Load and apply theme
-		theme.load("ghosts");
-		applyTheme();
+        PanelHelper panelHelper(this);
+        panelHelper.loadPanel(
+            asset::plugin(pluginInstance, "res/ghosts/ghosts_panel.svg"),
+            asset::plugin(pluginInstance, "res/ghosts/ghosts_panel-dark.svg")
+        );
 
 		// =================== PLACE COMPONENTS ====================================
 
-		if (theme.showScrews())
-		{
-			addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, 0)));
-			addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-			addChild(createWidget<ScrewHexBlack>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-			addChild(createWidget<ScrewHexBlack>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-		}
+		// Screws
+		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
+		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		// Purge
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("PURGE_TRIGGER_INPUT"), module, Ghosts::PURGE_TRIGGER_INPUT));
-		addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("PURGE_BUTTON_PARAM"), module, Ghosts::PURGE_BUTTON_PARAM));
-		// addChild(createLightCentered<MediumLight<GreenLight>>(mm2px(Vec(75.595, 25.974)), module, Ghosts::PURGE_LIGHT));
+		addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("purge_input"), module, Ghosts::PURGE_TRIGGER_INPUT));
+		addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(panelHelper.findNamed("purge_button"), module, Ghosts::PURGE_BUTTON_PARAM, Ghosts::PURGE_LIGHT));
 
 		// Jitter
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("JITTER_CV_INPUT"), module, Ghosts::JITTER_CV_INPUT));
-		addParam(createParamCentered<VoxglitchRoundLampSwitch>(themePos("JITTER_SWITCH"), module, Ghosts::JITTER_SWITCH));
-
-		// Modes
-		// addParam(createParamCentered<GhostsModesKnob>(mm2px(Vec(62.366, 65)), module, Ghosts::MODES_KNOB));
+		addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("jitter_input"), module, Ghosts::JITTER_CV_INPUT));
+		addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(panelHelper.findNamed("jitter_button"), module, Ghosts::JITTER_SWITCH, Ghosts::JITTER_LIGHT));
 
 		// Position
-		addParam(createParamCentered<VoxglitchEpicKnob>(themePos("SAMPLE_PLAYBACK_POSITION_KNOB"), module, Ghosts::SAMPLE_PLAYBACK_POSITION_KNOB));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("SAMPLE_PLAYBACK_POSITION_INPUT"), module, Ghosts::SAMPLE_PLAYBACK_POSITION_INPUT));
-		addParam(createParamCentered<VoxglitchAttenuator>(themePos("SAMPLE_PLAYBACK_POSITION_ATTN_KNOB"), module, Ghosts::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
+		addParam(createParamCentered<RoundBlackKnob>(panelHelper.findNamed("position_knob"), module, Ghosts::SAMPLE_PLAYBACK_POSITION_KNOB));
+		addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("position_input"), module, Ghosts::SAMPLE_PLAYBACK_POSITION_INPUT));
+		addParam(createParamCentered<Trimpot>(panelHelper.findNamed("position_attn_knob"), module, Ghosts::SAMPLE_PLAYBACK_POSITION_ATTN_KNOB));
 
 		// Pitch
-		addParam(createParamCentered<VoxglitchMediumBlackKnob>(themePos("PITCH_KNOB"), module, Ghosts::PITCH_KNOB));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("PITCH_INPUT"), module, Ghosts::PITCH_INPUT));
-		// addParam(createParamCentered<Trimpot>(mm2px(Vec(26, 50.489 - y_offset)), module, Ghosts::PITCH_ATTN_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(panelHelper.findNamed("pitch_knob"), module, Ghosts::PITCH_KNOB));
+		addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("pitch_input"), module, Ghosts::PITCH_INPUT));
 
 		// Length
-		addParam(createParamCentered<VoxglitchMediumBlackKnob>(themePos("GHOST_PLAYBACK_LENGTH_KNOB"), module, Ghosts::GHOST_PLAYBACK_LENGTH_KNOB));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("GHOST_PLAYBACK_LENGTH_INPUT"), module, Ghosts::GHOST_PLAYBACK_LENGTH_INPUT));
-		addParam(createParamCentered<VoxglitchAttenuator>(themePos("GHOST_PLAYBACK_LENGTH_ATTN_KNOB"), module, Ghosts::GHOST_PLAYBACK_LENGTH_ATTN_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(panelHelper.findNamed("length_knob"), module, Ghosts::GHOST_PLAYBACK_LENGTH_KNOB));
+		addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("length_input"), module, Ghosts::GHOST_PLAYBACK_LENGTH_INPUT));
+		addParam(createParamCentered<Trimpot>(panelHelper.findNamed("length_attn_knob"), module, Ghosts::GHOST_PLAYBACK_LENGTH_ATTN_KNOB));
 
 		// Graveyard Capacity
-		addParam(createParamCentered<VoxglitchMediumBlackKnob>(themePos("GRAVEYARD_CAPACITY_KNOB"), module, Ghosts::GRAVEYARD_CAPACITY_KNOB));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("GRAVEYARD_CAPACITY_INPUT"), module, Ghosts::GRAVEYARD_CAPACITY_INPUT));
-		addParam(createParamCentered<VoxglitchAttenuator>(themePos("GRAVEYARD_CAPACITY_ATTN_KNOB"), module, Ghosts::GRAVEYARD_CAPACITY_ATTN_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(panelHelper.findNamed("quota_knob"), module, Ghosts::GRAVEYARD_CAPACITY_KNOB));
+		addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("quota_input"), module, Ghosts::GRAVEYARD_CAPACITY_INPUT));
+		addParam(createParamCentered<Trimpot>(panelHelper.findNamed("quota_attn_knob"), module, Ghosts::GRAVEYARD_CAPACITY_ATTN_KNOB));
 
 		// Spawn rate
-		addParam(createParamCentered<VoxglitchMediumBlackKnob>(themePos("GHOST_SPAWN_RATE_KNOB"), module, Ghosts::GHOST_SPAWN_RATE_KNOB));
-		addInput(createInputCentered<VoxglitchInputPort>(themePos("GHOST_SPAWN_RATE_INPUT"), module, Ghosts::GHOST_SPAWN_RATE_INPUT));
-		addParam(createParamCentered<VoxglitchAttenuator>(themePos("GHOST_SPAWN_RATE_ATTN_KNOB"), module, Ghosts::GHOST_SPAWN_RATE_ATTN_KNOB));
+		addParam(createParamCentered<RoundLargeBlackKnob>(panelHelper.findNamed("spawn_knob"), module, Ghosts::GHOST_SPAWN_RATE_KNOB));
+		addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("spawn_input"), module, Ghosts::GHOST_SPAWN_RATE_INPUT));
+		addParam(createParamCentered<Trimpot>(panelHelper.findNamed("spawn_attn_knob"), module, Ghosts::GHOST_SPAWN_RATE_ATTN_KNOB));
 
 		// Trim
-		addParam(createParamCentered<VoxglitchAttenuator>(themePos("TRIM_KNOB"), module, Ghosts::TRIM_KNOB));
+		addParam(createParamCentered<Trimpot>(panelHelper.findNamed("trim_knob"), module, Ghosts::TRIM_KNOB));
 
 		// WAV output
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_LEFT"), module, Ghosts::AUDIO_OUTPUT_LEFT));
-		addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("AUDIO_OUTPUT_RIGHT"), module, Ghosts::AUDIO_OUTPUT_RIGHT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("left_output"), module, Ghosts::AUDIO_OUTPUT_LEFT));
+		addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("right_output"), module, Ghosts::AUDIO_OUTPUT_RIGHT));
+
+		// Waveform visualizer
+		if(module)
+		{
+			WaveformWidget *waveform_widget = new WaveformWidget(WAVEFORM_WIDGET_WIDTH, WAVEFORM_WIDGET_HEIGHT, &this->module->waveform_model);
+			waveform_widget->box.pos = Vec(70.0, 45.0);
+			waveform_widget->hide();
+			addChild(waveform_widget);
+		}
 	}
 
 	void appendContextMenu(Menu *menu) override

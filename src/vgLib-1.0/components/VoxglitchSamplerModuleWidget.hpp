@@ -1,7 +1,7 @@
 namespace vgLib_v1
 {
 
-    struct VoxglitchSamplerModuleWidget : VoxglitchModuleWidget
+    struct VoxglitchSamplerModuleWidget : ModuleWidget
     {
         struct InterpolationOffOption : MenuItem
         {

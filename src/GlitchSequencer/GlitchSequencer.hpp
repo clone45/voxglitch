@@ -168,7 +168,8 @@ struct GlitchSequencer : VoxglitchModule
     // Highlight only selected sequence buttton
     for(int i=0; i<NUMBER_OF_TRIGGER_GROUPS; i++)
     {
-      params[TRIGGER_GROUP_BUTTONS + i].setValue(selected_trigger_group_index == i);
+      // params[TRIGGER_GROUP_BUTTONS + i].setValue(selected_trigger_group_index == i);
+      lights[TRIGGER_GROUP_LIGHTS + i].setBrightness(selected_trigger_group_index == i);
     }
 
     // Process Step Input
@@ -188,7 +189,7 @@ struct GlitchSequencer : VoxglitchModule
       trigger_output_pulse = gateOutputPulseGenerators[i].process(1.0 / args.sampleRate);
       outputs[GATE_OUTPUTS + i].setVoltage((trigger_output_pulse ? 10.0f : 0.0f));
 
-      lights[TRIGGER_GROUP_LIGHTS + i].setBrightness(selected_trigger_group_index == i);
+      // lights[TRIGGER_GROUP_LIGHTS + i].setBrightness(selected_trigger_group_index == i);
     }
 
     if (clock_ignore_on_reset > 0) clock_ignore_on_reset--;

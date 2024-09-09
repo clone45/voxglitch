@@ -5,3 +5,5 @@
 /plugin.dll
 .DS_Store
 /.vscode/settings.json
+resolve_conflicts.py
+

@@ -1,27 +1,29 @@
-struct NoteDetectorWidget : VoxglitchModuleWidget
+struct NoteDetectorWidget : ModuleWidget
 {
     NoteDetectorWidget(NoteDetector *module)
     {
         setModule(module);
 
-        // Load and apply theme
-        theme.load("note_detector");
-        applyTheme();
+        PanelHelper panelHelper(this);
+        panelHelper.loadPanel(
+            asset::plugin(pluginInstance, "res/note_detector/note_detector_panel.svg"),
+            asset::plugin(pluginInstance, "res/note_detector/note_detector_panel-dark.svg")
+        );
 
         // Inputs
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("CV_INPUT"), module, NoteDetector::CV_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(themePos("CLOCK_INPUT"), module, NoteDetector::CLOCK_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("cv_input"), module, NoteDetector::CV_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("clock_input"), module, NoteDetector::CLOCK_INPUT));
 
         // Parameters
-        addParam(createParamCentered<VoxglitchAttenuator>(themePos("NOTE_SELECTION_KNOB"), module, NoteDetector::NOTE_SELECTION_KNOB));
-        addParam(createParamCentered<VoxglitchAttenuator>(themePos("OCTAVE_SELECTION_KNOB"), module, NoteDetector::OCTAVE_SELECTION_KNOB));
+        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("note_knob"), module, NoteDetector::NOTE_SELECTION_KNOB));
+        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("octave_knob"), module, NoteDetector::OCTAVE_SELECTION_KNOB));
 
         // Outputs
-        addOutput(createOutputCentered<VoxglitchOutputPort>(themePos("DETECTION_OUTPUT"), module, NoteDetector::DETECTION_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("output"), module, NoteDetector::DETECTION_OUTPUT));
 
         // Add display
         NoteReadoutWidget *note_readout_widget = new NoteReadoutWidget("");
-        note_readout_widget->box.pos = themePos("NOTE_READOUT");
+        note_readout_widget->box.pos = Vec(7.5, 143.0);
         note_readout_widget->box.size = Vec(45.0, 20.0);
         note_readout_widget->font_size = 12;
         if (module)

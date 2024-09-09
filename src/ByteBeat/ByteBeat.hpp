@@ -43,13 +43,20 @@ struct ByteBeat : Module
   uint8_t clock_division_counter = 0;
   uint8_t clock_division = 2;
 
+  std::string param_1_readout = "000";
+  std::string param_2_readout = "000";
+  std::string param_3_readout = "000";
+
   enum ParamIds {
     CLOCK_DIVISION_KNOB,
     EQUATION_KNOB,
     PARAM_KNOB_1,
     PARAM_KNOB_2,
     PARAM_KNOB_3,
-		NUM_PARAMS
+    PARAM_ATTENUATOR_1,  // New
+    PARAM_ATTENUATOR_2,  // New
+    PARAM_ATTENUATOR_3,  // New
+    NUM_PARAMS
 	};
 	enum InputIds {
     PARAM_INPUT_1,
@@ -81,11 +88,15 @@ struct ByteBeat : Module
     configParam(EQUATION_KNOB, 0.0f, NUMBER_OF_EQUATIONS - 1, 0.0f, "EquationKnob");
     paramQuantities[EQUATION_KNOB]->snapEnabled = true;
 
-    configParam(PARAM_KNOB_1, 0.0f, 128, 0.0f, "ParamKnob1");
-    configParam(PARAM_KNOB_2, 0.0f, 128, 0.0f, "ParamKnob2");
-    configParam(PARAM_KNOB_3, 0.0f, 128, 0.0f, "ParamKnob3");
+    configParam(PARAM_KNOB_1, 0.0f, 128.0f, 0.0f, "ParamKnob1");
+    configParam(PARAM_KNOB_2, 0.0f, 128.0f, 0.0f, "ParamKnob2");
+    configParam(PARAM_KNOB_3, 0.0f, 128.0f, 0.0f, "ParamKnob3");
 
     configParam(CLOCK_DIVISION_KNOB, 0.0f, 1.0f, 0.0f, "ClockDivisionKnob");  // 256 gives us the entire range.  Anything after that wraps
+
+    configParam(PARAM_ATTENUATOR_1, 0.f, 1.f, 1.f, "Parameter 1 Attenuator", "%", 0.f, 100.f);
+    configParam(PARAM_ATTENUATOR_2, 0.f, 1.f, 1.f, "Parameter 2 Attenuator", "%", 0.f, 100.f);
+    configParam(PARAM_ATTENUATOR_3, 0.f, 1.f, 1.f, "Parameter 3 Attenuator", "%", 0.f, 100.f);
 	}
 
 	// Autosave module data.  VCV Rack decides when this should be called.
@@ -130,22 +141,20 @@ struct ByteBeat : Module
     return(out);
   }
 
-  float calculate_parameter_input(int input_index, int knob_index, float maximum_value)
+  float calculate_parameter_input(int input_index, int knob_index, int attenuator_index, float maximum_value)
   {
-    float input_value = inputs[input_index].getVoltage() / 10.0; // ranges from 0 to 10
-    float knob_value = params[knob_index].getValue(); // ranges from 0 to 128
-    float out = 0;
-
-    if(inputs[input_index].isConnected())
-    {
-      input_value = clamp(input_value, 0.0, 1.0);
-      out = clamp((input_value * maximum_value) + knob_value, 0.0, maximum_value);
+    float input_value = inputs[input_index].getVoltage() / 10.0 * maximum_value; // Scale input to 0-128 range
+    float knob_value = params[knob_index].getValue();
+    float attenuator_value = params[attenuator_index].getValue();
+    
+    float cv_contribution = 0.0f;
+    if (inputs[input_index].isConnected()) {
+        cv_contribution = input_value * attenuator_value;
     }
-    else
-    {
-      out = knob_value;
-    }
-    return(out);
+    
+    float out = clamp(knob_value + cv_contribution, 0.0f, maximum_value);
+    
+    return out;
   }
 
 	void process(const ProcessArgs &args) override
@@ -177,9 +186,11 @@ struct ByteBeat : Module
 
     uint32_t equation = params[EQUATION_KNOB].getValue() + ((inputs[EQUATION_INPUT].getVoltage() / 10.0) * (float) NUMBER_OF_EQUATIONS);
 
-    p1 = calculate_parameter_input(PARAM_INPUT_1, PARAM_KNOB_1, 128.0);
-    p2 = calculate_parameter_input(PARAM_INPUT_2, PARAM_KNOB_2, 128.0);
-    p3 = calculate_parameter_input(PARAM_INPUT_3, PARAM_KNOB_3, 128.0);
+    p1 = calculate_parameter_input(PARAM_INPUT_1, PARAM_KNOB_1, PARAM_ATTENUATOR_1, 128.0);
+    p2 = calculate_parameter_input(PARAM_INPUT_2, PARAM_KNOB_2, PARAM_ATTENUATOR_2, 128.0);
+    p3 = calculate_parameter_input(PARAM_INPUT_3, PARAM_KNOB_3, PARAM_ATTENUATOR_3, 128.0);
+
+    updateReadouts();
 
     // Send the equation, parameters, and expression selections to the "compute"
     // function.  The output of the "compute" function will be a float representing
@@ -277,6 +288,12 @@ struct ByteBeat : Module
   {
     if(b == 0) return(0);
     return(a % b);
+  }
+
+  void updateReadouts() {
+    param_1_readout = string::f("%d", (int)p1);
+    param_2_readout = string::f("%d", (int)p2);
+    param_3_readout = string::f("%d", (int)p3);
   }
 
 };

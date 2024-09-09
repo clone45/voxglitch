@@ -1,6 +1,3 @@
-#include <cctype> // for std::isupper
-#include <string>
-
 namespace vgLib_v1
 {
 
@@ -53,15 +50,6 @@ namespace vgLib_v1
         bool load(std::string slug)
         {
             json_error_t error;
-
-            // Check if slug contains any uppercase letters
-            for (char c : slug)
-            {
-                if (std::isupper(static_cast<unsigned char>(c)))
-                {
-                    return false; // Slug contains an uppercase letter
-                }
-            }
 
             std::string config_file_path = asset::plugin(pluginInstance, "res/" + slug + "/themes/" + name + "/config.json");
 

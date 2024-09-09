@@ -2,13 +2,13 @@
 #include "osdialog.h"
 #include "settings.hpp"
 
-#include "vgLib-1.0/constants.h"
-#include "vgLib-1.0/Theme.hpp"
-#include "vgLib-1.0/components/VoxglitchComponents.hpp"
-#include "vgLib-1.0/sequencer/Sequencer.hpp"
-#include "vgLib-1.0/sequencer/GateSequencer.hpp"
+#include "vgLib-2.0/constants.h"
 
-using namespace vgLib_v1;
+#include "vgLib-2.0/components/VoxglitchComponents.hpp"
+#include "vgLib-2.0/sequencer/Sequencer.hpp"
+#include "vgLib-2.0/sequencer/GateSequencer.hpp"
+
+using namespace vgLib_v2;
 
 #include "OneZero/defines.h"
 #include "OneZero/OneZero.hpp"

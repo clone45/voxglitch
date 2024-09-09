@@ -301,8 +301,8 @@ struct ArpSeq : Module
         {
             json_t *page_json = json_object();
 
-            json_object_set_new(page_json, "voltage_sequencer", JSON::saveSequencer(pages[page].voltage_sequencer));
-            json_object_set_new(page_json, "chance_sequencer", JSON::saveSequencer(pages[page].chance_sequencer));
+            json_object_set_new(page_json, "voltage_sequencer", IO::saveSequencer(pages[page].voltage_sequencer));
+            json_object_set_new(page_json, "chance_sequencer", IO::saveSequencer(pages[page].chance_sequencer));
 
             json_array_append_new(pages_json, page_json);
         }
@@ -347,8 +347,8 @@ struct ArpSeq : Module
             json_t *page_json = json_array_get(pages_json, page);
             if (page_json)
             {
-                JSON::loadSequencer(page_json, "voltage_sequencer", pages[page].voltage_sequencer);
-                JSON::loadSequencer(page_json, "chance_sequencer", pages[page].chance_sequencer);
+                IO::loadSequencer(page_json, "voltage_sequencer", pages[page].voltage_sequencer);
+                IO::loadSequencer(page_json, "chance_sequencer", pages[page].chance_sequencer);
             }
         }
 
@@ -723,6 +723,7 @@ struct ArpSeq : Module
             }
         }
     }
+
 
     void resetCycleCounters()
     {

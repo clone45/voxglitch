@@ -7,12 +7,14 @@
 #include "PanelBackground.hpp"
 
 #include "VoxglitchPanel.hpp"
+#include "../panelHelper.hpp"
 
 #include "VoxglitchModule.hpp"
-#include "VoxglitchModuleWidget.hpp"
+// #include "VoxglitchModuleWidget.hpp"
 #include "VoxglitchSamplerModule.hpp"
 #include "VoxglitchSamplerModuleWidget.hpp"
 
+#include "VoxglitchRoundShadow.hpp"
 #include "VoxglitchPorts.hpp"
 #include "VoxglitchKnobs.hpp"
 #include "VoxglitchScrews.hpp"

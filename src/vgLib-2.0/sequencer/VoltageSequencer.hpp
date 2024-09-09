@@ -153,6 +153,11 @@ namespace vgLib_v2
             sequence[window_start] = temp;
         }
 
+        void randomize() // for backwards compatibility
+        {
+            randomizeInWindow();
+        }
+
         void randomizeInWindow()
         {
             history_manager.startSession();

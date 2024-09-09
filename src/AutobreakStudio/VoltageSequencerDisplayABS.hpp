@@ -1,7 +1,7 @@
 struct VoltageSequencerDisplayABS : SequencerDisplayABS
 {
     AutobreakStudio *module;
-    VoltageSequencer **sequencer_ptr_ptr;
+    AutobreakVoltageSequencer **sequencer_ptr_ptr;
 
     bool shift_key = false;
     bool ctrl_key = false;
@@ -14,7 +14,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
     int control_sequence_column = 0;
     unsigned int sequencer_type = 0;
 
-    VoltageSequencerDisplayABS(VoltageSequencer **sequencer_instance, unsigned int sequencer_type)
+    VoltageSequencerDisplayABS(AutobreakVoltageSequencer **sequencer_instance, unsigned int sequencer_type)
     {
         this->sequencer_ptr_ptr = sequencer_instance;
         this->sequencer_type = sequencer_type;
@@ -40,7 +40,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
             if (module)
             {
                 // Get a pointer to the Voltage Sequencer
-                VoltageSequencer *sequencer = *sequencer_ptr_ptr;
+                AutobreakVoltageSequencer *sequencer = *sequencer_ptr_ptr;
 
                 //
                 // Display the pattern
@@ -138,7 +138,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
     {
         if (module)
         {
-            VoltageSequencer *sequencer = *sequencer_ptr_ptr;
+            AutobreakVoltageSequencer *sequencer = *sequencer_ptr_ptr;
 
             double bar_width = (DRAW_AREA_WIDTH / (double)MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
             int clicked_bar_x_index = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
@@ -211,7 +211,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
 
     void startControlSequence(Vec mouse_position)
     {
-        VoltageSequencer *sequencer = *sequencer_ptr_ptr;
+        AutobreakVoltageSequencer *sequencer = *sequencer_ptr_ptr;
 
         int clicked_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
         clicked_column = clamp(clicked_column, 0, MAX_SEQUENCER_STEPS);
@@ -222,7 +222,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
     {
         if (module)
         {
-            VoltageSequencer *sequencer = *sequencer_ptr_ptr;
+            AutobreakVoltageSequencer *sequencer = *sequencer_ptr_ptr;
 
             int drag_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
             int shift_offset = drag_column - this->shift_sequence_column;
@@ -247,7 +247,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
     {
         if (module)
         {
-            VoltageSequencer *sequencer = *sequencer_ptr_ptr;
+            AutobreakVoltageSequencer *sequencer = *sequencer_ptr_ptr;
 
             int drag_column = mouse_position.x / (bar_width + BAR_HORIZONTAL_PADDING);
             drag_column = clamp(drag_column, 0, MAX_SEQUENCER_STEPS);
@@ -329,7 +329,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
 
     void onHoverKey(const event::HoverKey &e) override
     {
-        VoltageSequencer *sequencer = *sequencer_ptr_ptr;
+        AutobreakVoltageSequencer *sequencer = *sequencer_ptr_ptr;
 
         this->shift_key = ((e.mods & RACK_MOD_MASK) == GLFW_MOD_SHIFT);
         this->ctrl_key = ((e.mods & RACK_MOD_MASK) == GLFW_MOD_CONTROL);
@@ -355,7 +355,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
     struct ShiftLeftMenuItem : MenuItem
     {
         AutobreakStudio *module;
-        VoltageSequencer *sequencer;
+        AutobreakVoltageSequencer *sequencer;
 
         void onAction(const event::Action &e) override
         {
@@ -366,7 +366,7 @@ struct VoltageSequencerDisplayABS : SequencerDisplayABS
     struct ShiftRightMenuItem : MenuItem
     {
         AutobreakStudio *module;
-        VoltageSequencer *sequencer;
+        AutobreakVoltageSequencer *sequencer;
 
         void onAction(const event::Action &e) override
         {

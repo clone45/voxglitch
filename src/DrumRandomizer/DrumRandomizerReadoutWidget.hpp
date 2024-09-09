@@ -43,7 +43,7 @@ struct DrumRandomizerReadoutWidget : TransparentWidget
 
         // Draw black background
         nvgBeginPath(vg);
-        // nvgRect(vg, 0, 0, box.size.x, box.size.y);
+
         nvgRoundedRect(vg, 0, 0, box.size.x, box.size.y, 3.0);
         nvgFillColor(vg, nvgRGB(0, 0, 0));
         nvgFill(vg);

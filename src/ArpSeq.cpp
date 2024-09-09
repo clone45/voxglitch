@@ -14,7 +14,7 @@
 #include "ArpSeq/defines.h"
 
 #include "vgLib-2.0/constants.h"
-#include "vgLib-2.0/Theme.hpp"
+// 
 #include "vgLib-2.0/components/VoxglitchComponents.hpp"
 #include "vgLib-2.0/dsp/Quantizer.hpp"
 #include "vgLib-2.0/dsp/SlewLimiter.hpp"
@@ -28,6 +28,8 @@
 #include "vgLib-2.0/sequencer/ArpSequencer.hpp"
 #include "vgLib-2.0/sequencer/VoltageSequencer.hpp"
 #include "vgLib-2.0/helpers/JSON.hpp"
+#include "vgLib-2.0/helpers/NOTES.hpp"
+#include "vgLib-2.0/sequencer/IO.hpp"
 #include "vgLib-2.0/customParamQuantities.hpp"
 
 using namespace vgLib_v2;

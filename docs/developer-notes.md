@@ -1,10 +1,9 @@
 # Developer notes
 
-## Useful links
+## TODO
 
-- Project status tracker: https://github.com/VCVRack/library/projects/1
-- Voxglitch issue for updates: https://github.com/VCVRack/library/issues/626
-
+* Label all ports
+* Move groovebox and satanonaut into new collection
 
 ## Calculations
 
@@ -64,8 +63,12 @@ The HP in the examples is the same HP as Glitch Sequencer. The numbers match tho
 
 Font: Pilat
 Weight: Normal
-Dark Mode Color (r,g,b): 11, 17, 22
-Light Mode Color (r,g,b): 244, 238, 233
+Light Mode Color 
+  - RGB: 11, 17, 22  
+  - Hex: 0b1116f3
+Dark Mode Color: 
+  - RGB: 244, 238, 233
+  - Hex: f4eee9f3
 Letter spacing: .88
 Size: 7pt
 
@@ -73,12 +76,43 @@ Size: 7pt
 
 Font: Pilat Condensed
 Weight: Normal
-Dark Mode Color (r,g,b): 11, 17, 22
-Light Mode Color (r,g,b): 244, 238, 233
+Light Mode Color (r,g,b): 11, 17, 22 (0b1116ff)
+Dark Mode Color (r,g,b): 244, 238, 233 (f4eee9ff)
 Letter spacing: .60
 Size: 6pt
 
 ## Positioning
+
+### Large Knobs
+When positioning RoundHugeBlackKnob with my custom scale decal:
+* large decal is at 16.404 mm  {"x": 33.131, "y": 62.0} px, 
+* RoundHugeBlackKnob knob is at {"x": 60.053509,"y": 83.487495} px
+
+To convert from decal coordinates to knob coordinates:
+
+knob_x = decal_x + 26.922509
+knob_y = decal_y + 21.487495
+
+
+To convert from knob coordinates to decal coordinates:
+
+decal_x_px = knob_x_px - 26.922509
+decal_y_px = knob_y_px - 21.487495
+
+or, if the knob position is in pixels,
+
+decal_x_px = (knob_x_pixels * 2.952756) - 26.922509
+decal_y_px = (knob_y_pixels * 2.952756) - 21.487495
+
+For Bytebeat's large knob:
+
+knob is at 50.1969, 83.487495
+
+decal is calculated as:
+decal_x_px = 50.1969 - 26.922509
+decal_y_px = 83.487495 - 21.487495
+
+
 
 ### Medium knobs
 When trying to find out the correct y-position of a knob within a scale decal:

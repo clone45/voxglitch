@@ -55,9 +55,9 @@ struct WavBankMC : VoxglitchSamplerModule
 		NUM_OUTPUTS
 	};
 	enum LightIds {
-    NEXT_WAV_LIGHT,
-    PREV_WAV_LIGHT,
-    TRIG_LIGHT,
+    NEXT_WAV_BUTTON_LIGHT,
+    PREV_WAV_BUTTON_LIGHT,
+    TRIG_INPUT_BUTTON_LIGHT,
 		NUM_LIGHTS
 	};
 
@@ -220,7 +220,7 @@ struct WavBankMC : VoxglitchSamplerModule
   bool process_trg_input()
   {
     bool trg_is_triggered = trg_cv_trigger.process(inputs[TRIG_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger) || trg_button_trigger.process(params[TRIG_INPUT_BUTTON_PARAM].getValue());
-    lights[TRIG_LIGHT].setSmoothBrightness(trg_is_triggered, this->sample_time);
+    lights[TRIG_INPUT_BUTTON_LIGHT].setSmoothBrightness(trg_is_triggered, this->sample_time);
     return(trg_is_triggered);
   }
 
@@ -231,12 +231,12 @@ struct WavBankMC : VoxglitchSamplerModule
     // If next_wav button is pressed, step to the next sample
     bool next_wav_is_triggered = next_wav_cv_trigger.process(inputs[NEXT_WAV_TRIGGER_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger) || next_wav_button_trigger.process(params[NEXT_WAV_BUTTON_PARAM].getValue());
     if(next_wav_is_triggered) increment_selected_sample();
-    lights[NEXT_WAV_LIGHT].setSmoothBrightness(next_wav_is_triggered, this->sample_time);
+    lights[NEXT_WAV_BUTTON_LIGHT].setSmoothBrightness(next_wav_is_triggered, this->sample_time);
 
     // Now do prev_wav_is_triggered
     bool prev_wav_is_triggered = prev_wav_cv_trigger.process(inputs[PREV_WAV_TRIGGER_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger) || prev_wav_button_trigger.process(params[PREV_WAV_BUTTON_PARAM].getValue());
     if(prev_wav_is_triggered) decrement_selected_sample();
-    lights[PREV_WAV_LIGHT].setSmoothBrightness(prev_wav_is_triggered, this->sample_time);
+    lights[PREV_WAV_BUTTON_LIGHT].setSmoothBrightness(prev_wav_is_triggered, this->sample_time);
 
     // If either wav navigation button is detected, then set the WAV knob to
     // match the currently selected sample
