@@ -16,13 +16,27 @@ struct GrooveboxSoftButton : SvgSwitch
    
     void drawLayer(const DrawArgs& args, int layer) override 
     {
-        ParamQuantity *param_quantity = this->getParamQuantity();
-
-        if (layer == 1 && param_quantity && param_quantity->getValue()) 
+        if (layer == 1)
         {
-            nvgGlobalCompositeBlendFunc(args.vg, NVG_ONE_MINUS_DST_COLOR, NVG_ONE);
-            SvgSwitch::draw(args);
-            drawHalo(args);
+            ParamQuantity *param_quantity = this->getParamQuantity();
+
+            if (!param_quantity || module == nullptr)
+            {
+                // We're in the library view or don't have a valid param_quantity
+                // Draw the default state (unlit button)
+                SvgSwitch::draw(args);
+            }
+            else if (momentary)
+            {
+                // For one-shot buttons, always draw the unlit state
+                SvgSwitch::draw(args);
+            }
+            else if (param_quantity->getValue()) 
+            {
+                nvgGlobalCompositeBlendFunc(args.vg, NVG_ONE_MINUS_DST_COLOR, NVG_ONE);
+                SvgSwitch::draw(args);
+                drawHalo(args);
+            }
         }
         
         Widget::drawLayer(args, layer);
@@ -32,7 +46,13 @@ struct GrooveboxSoftButton : SvgSwitch
     {
         ParamQuantity *param_quantity = this->getParamQuantity();
 
-        if (param_quantity && (param_quantity->getValue() == false)) 
+        if (!param_quantity || module == nullptr || momentary) 
+        {
+            // We're in the library view, don't have a valid param_quantity, or it's a one-shot button
+            // Draw the default state (unlit button)
+            SvgSwitch::draw(args);
+        }
+        else if (param_quantity->getValue() == false) 
         {
             SvgSwitch::draw(args);
         }

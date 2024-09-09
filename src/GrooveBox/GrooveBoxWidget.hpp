@@ -17,31 +17,6 @@
 #include "widgets/LCDRatchetDisplay.hpp"
 #include "widgets/LCDTrackDisplay.hpp"
 
-float memory_slot_button_left_col_X = 126.05; // 125.5;
-float memory_slot_button_col_Xstep = 31.25;   // 31.4;
-float memory_slot_button_top_row_Y = 106.35;  // 106.0;
-float memory_slot_button_row_Ystep = 31.25;   // 31.4;
-float memory_slot_button_positions[NUMBER_OF_MEMORY_SLOTS][2] = {
-    {memory_slot_button_left_col_X, memory_slot_button_top_row_Y},
-    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep, memory_slot_button_top_row_Y},
-    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep * 2, memory_slot_button_top_row_Y},
-    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep * 3, memory_slot_button_top_row_Y},
-
-    {memory_slot_button_left_col_X, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep},
-    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep},
-    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep * 2, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep},
-    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep * 3, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep},
-
-    {memory_slot_button_left_col_X, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep * 2},
-    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep * 2},
-    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep * 2, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep * 2},
-    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep * 3, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep * 2},
-
-    {memory_slot_button_left_col_X, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep * 3},
-    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep * 3},
-    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep * 2, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep * 3},
-    {memory_slot_button_left_col_X + memory_slot_button_col_Xstep * 3, memory_slot_button_top_row_Y + memory_slot_button_row_Ystep * 3}};
-
 float function_button_left_col_X = 18.2;
 float function_button_col_Xstep = 81.26; // 81.16;
 float function_button_top_row_Y = 333.5; // 332.6;
@@ -66,16 +41,6 @@ float function_button_positions[NUMBER_OF_PARAMETER_LOCKS][2] = {
     {function_button_left_col_X + function_button_col_Xstep * 7, function_button_top_row_Y + function_button_row_Ystep}};
 
 bool dummy_boolean = false;
-
-float track_button_positions[NUMBER_OF_TRACKS][2] = {
-    {257, 102 - 1.6},
-    {257, 133.33 - 1.6},
-    {257, 164.664 - 1.6},
-    {257, 196 - 1.6},
-    {462.4 - 14, 102 - 1.6},
-    {462.4 - 14, 133.33 - 1.6},
-    {462.4 - 14, 164.664 - 1.6},
-    {462.4 - 14, 196 - 1.6}};
 
 struct ModdedCL1362 : SvgPort
 {
@@ -175,10 +140,6 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
         setModule(module);
         setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel.svg")));
 
-//        setPanel(createPanel(
-//            asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel.svg"),
-//            asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel-dark.svg")));
-
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
             asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel.svg"),
@@ -220,9 +181,6 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
             GrooveboxStepButton *step_button = createParamCentered<GrooveboxStepButton>(pos, module, GrooveBox::DRUM_PADS + i);
             step_button->module = module;
             step_button->index = i;
-//            GrooveboxSmallLight *inner_button = new GrooveboxSmallLight((module) ? &module->inner_light_booleans[i] : &dummy_boolean);
-//            inner_button->box.pos = Vec(10.358, 6.710);
-//            step_button->addChild(inner_button);
             addParam(step_button);
 
             //
@@ -274,8 +232,6 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
         //
         for (unsigned int i = 0; i < NUMBER_OF_MEMORY_SLOTS; i++)
         {
-            // float x = memory_slot_button_positions[i][0];
-            // float y = memory_slot_button_positions[i][1];
             Vec pos = panelHelper.findNamed("memory_button_" + std::to_string(i+1));
 
             GrooveboxMemoryButton *groovebox_memory_button = createParamCentered<GrooveboxMemoryButton>(pos, module, GrooveBox::MEMORY_SLOT_BUTTONS + i);
@@ -604,7 +560,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
         {
             Menu *menu = new Menu;
 
-            LCDColorMenuItem *lcd_color_menu_item_0 = createMenuItem<LCDColorMenuItem>("Legacy Red", CHECKMARK(LCDColorScheme::selected_color_scheme == 0));
+            LCDColorMenuItem *lcd_color_menu_item_0 = createMenuItem<LCDColorMenuItem>("Cool White", CHECKMARK(LCDColorScheme::selected_color_scheme == 0));
             lcd_color_menu_item_0->module = module;
             lcd_color_menu_item_0->theme_id = 0;
             menu->addChild(lcd_color_menu_item_0);
@@ -614,7 +570,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
             lcd_color_menu_item_1->theme_id = 1;
             menu->addChild(lcd_color_menu_item_1);
 
-            LCDColorMenuItem *lcd_color_menu_item_2 = createMenuItem<LCDColorMenuItem>("Cool White", CHECKMARK(LCDColorScheme::selected_color_scheme == 2));
+            LCDColorMenuItem *lcd_color_menu_item_2 = createMenuItem<LCDColorMenuItem>("Legacy Red", CHECKMARK(LCDColorScheme::selected_color_scheme == 2));
             lcd_color_menu_item_2->module = module;
             lcd_color_menu_item_2->theme_id = 2;
             menu->addChild(lcd_color_menu_item_2);
