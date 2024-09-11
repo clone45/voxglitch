@@ -28,8 +28,17 @@ struct GrooveboxSoftButton : SvgSwitch
             }
             else if (momentary)
             {
-                // For one-shot buttons, always draw the unlit state
-                SvgSwitch::draw(args);
+                // For momentary buttons, check the light value
+                if (module->lights[paramId].getBrightness() > 0.f)
+                {
+                    nvgGlobalCompositeBlendFunc(args.vg, NVG_ONE_MINUS_DST_COLOR, NVG_ONE);
+                    SvgSwitch::draw(args);
+                    drawHalo(args);
+                }
+                else
+                {
+                    SvgSwitch::draw(args);
+                }
             }
             else if (param_quantity->getValue()) 
             {

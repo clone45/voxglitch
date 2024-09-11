@@ -157,7 +157,6 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
         addChild(sequence_length_widget);
 
         RangeGrabberLeftWidget *range_grabber_left_widget = new RangeGrabberLeftWidget();
-        // range_grabber_left_widget->setPosition(Vec(button_positions[0][0] - range_grabber_left_widget->radius, button_positions[0][1] - 25 - range_grabber_left_widget->radius));
         range_grabber_left_widget->setPosition(Vec(button_positions[0][0] - range_grabber_left_widget->radius, button_positions[0][1] - 25 - range_grabber_left_widget->radius));
         range_grabber_left_widget->module = module;
         addChild(range_grabber_left_widget);
@@ -178,7 +177,13 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
 
             Vec pos = panelHelper.findNamed("step_button_" + std::to_string(i+1));
 
-            GrooveboxStepButton *step_button = createParamCentered<GrooveboxStepButton>(pos, module, GrooveBox::DRUM_PADS + i);
+            GrooveboxStepButton *step_button = createLightParamCentered<GrooveboxStepButton>(
+                pos, 
+                module, 
+                GrooveBox::DRUM_PADS + i, 
+                GrooveBox::STEP_LIGHTS + i
+            );
+
             step_button->module = module;
             step_button->index = i;
             addParam(step_button);
@@ -234,33 +239,35 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
         {
             Vec pos = panelHelper.findNamed("memory_button_" + std::to_string(i+1));
 
-            GrooveboxMemoryButton *groovebox_memory_button = createParamCentered<GrooveboxMemoryButton>(pos, module, GrooveBox::MEMORY_SLOT_BUTTONS + i);
+            GrooveboxMemoryButton *groovebox_memory_button = createLightParamCentered<GrooveboxMemoryButton>(pos, module, GrooveBox::MEMORY_SLOT_BUTTONS + i, GrooveBox::MEMORY_SLOT_LIGHTS + i);
             groovebox_memory_button->module = module;
             groovebox_memory_button->memory_slot = i;
             addParam(groovebox_memory_button);
         }
 
-        GrooveboxSoftButton *copy_button = createParamCentered<GrooveboxSoftButton>(panelHelper.findNamed("copy_button"), module, GrooveBox::COPY_BUTTON);
-        copy_button->momentary = true;
-        addParam(copy_button);
-
-        GrooveboxSoftButton *paste_button = createParamCentered<GrooveboxSoftButton>(panelHelper.findNamed("paste_button"), module, GrooveBox::PASTE_BUTTON);
-        paste_button->momentary = true;
-        addParam(paste_button);
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(panelHelper.findNamed("copy_button"), module, GrooveBox::COPY_BUTTON, GrooveBox::COPY_LIGHT));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(panelHelper.findNamed("paste_button"), module, GrooveBox::PASTE_BUTTON, GrooveBox::PASTE_LIGHT));
 
         //
         // LCD displays
         //
 
+        auto centerDisplay = [](Widget* widget, Vec pos) {
+            widget->box.pos = pos.minus(widget->box.size.div(2));
+        };
+
         LCDTrackDisplay *lcd_track_display = new LCDTrackDisplay(module);
+        centerDisplay(lcd_track_display, panelHelper.findNamed("lcd_display"));
         addChild(lcd_track_display);
 
         if (module) // skip these when viewinng the module in the library
         {
             LCDSampleDisplay *lcd_sample_display = new LCDSampleDisplay(module);
+            centerDisplay(lcd_sample_display, panelHelper.findNamed("lcd_display"));
             addChild(lcd_sample_display);
 
             LCDRatchetDisplay *lcd_ratchet_display = new LCDRatchetDisplay(module);
+            centerDisplay(lcd_ratchet_display, panelHelper.findNamed("lcd_display"));
             addChild(lcd_ratchet_display);
         }
     }

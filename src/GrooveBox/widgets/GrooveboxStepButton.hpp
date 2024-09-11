@@ -1,4 +1,4 @@
-struct GrooveboxStepButton : squareToggle
+struct GrooveboxStepButton : VCVLightBezel<BlueLight>
 {
     GrooveBox *module;
     unsigned int index = 0;
@@ -6,18 +6,24 @@ struct GrooveboxStepButton : squareToggle
     GrooveboxStepButton()
     {
         momentary = false;
-        shadow->opacity = 0;
-
-        // addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_step_button.svg")));
-        //addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_step_button_lit.svg")));
-
-        // box.size = Vec(31.004, 31.004); // was 15.5   (19.28)
+        // Remove the shadow opacity setting as it's not applicable to VCVLightBezel
     }
 
-    void draw(const DrawArgs &args) override
-    {
-        SvgSwitch::draw(args);
-    }
+//    void drawLayer(const DrawArgs &args, int layer) override
+//    {
+//        if (layer == 1)
+//        {
+//            if (module)
+//            {
+//                // Use the module's light value to set the brightness
+//                // float brightness = module->lights[GrooveBox::STEP_LIGHTS + index].getBrightness();
+//                
+//                // Set the brightness of the light
+//                // module->lights[GrooveBox::STEP_LIGHTS + index].setBrightness(brightness);
+//            }
+//        }
+//        VCVLightBezel::drawLayer(args, layer);
+//    }
 
     struct ClearLocksMenuItem : MenuItem
     {

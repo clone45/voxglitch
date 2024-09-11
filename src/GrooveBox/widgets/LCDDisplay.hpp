@@ -20,6 +20,12 @@ struct LCDDisplay : TransparentWidget
         box.pos.y = box_pos_y;
     }
 
+    void setPosition(Vec pos)
+    {
+        box.pos.x = pos.x;
+        box.pos.y = pos.y;
+    }
+
     void drawLayer(const DrawArgs &args, int layer) override
     {
         if (layer == 1)

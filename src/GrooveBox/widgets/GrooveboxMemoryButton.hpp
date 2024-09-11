@@ -1,6 +1,7 @@
-struct GrooveboxMemoryButton : GrooveboxSoftButton
+struct GrooveboxMemoryButton : VCVLightLatch<MediumSimpleLight<GreenLight>>
 {
     unsigned int memory_slot = 0;
+    GrooveBox *module;
 
     void onButton(const event::Button &e) override
     {
