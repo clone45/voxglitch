@@ -1,5 +1,13 @@
 ## Change Log
 
+## 2.29.0
+* This release focuses on simplifying the front panel code to be more compatible with Cardinal
+* Ghosts front panel has been simplified, and a waveform readout has been added
+* Satanonaut front panel is been minified and simplified
+* SampleX8 front panel has been compressed
+* The old voxglitch theme system has been removed in favor of Rack's new(ish) dark theme support
+* Sorry for not updating the changelog for each release
+
 ## 2.25.1
 * Updated OneZero so that, when parsing files, only "1" and "0" strings are considered
 * Fixed bug in Groovebox where it would crash if importing a "kit" was aborted
