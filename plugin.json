@@ -39,6 +39,12 @@
         "tags": ["Oscillator"]
     },
     {
+        "slug": "conferencecall",
+        "name": "Conference Call",
+        "description": "ADPCM audio compressor.",
+        "tags": ["Effect"]
+    },
+    {
         "slug": "digitalprogrammer",
         "name": "Digital Programmer",
         "description": "16 channel polyphonic programmer with built-in bank memory slots",

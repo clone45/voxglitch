@@ -13,6 +13,7 @@ extern Model *modelArpSeq;
 extern Model *modelAutobreak;
 extern Model *modelAutobreakStudio;
 extern Model *modelByteBeat;
+extern Model *modelConferenceCall;
 extern Model *modelDigitalProgrammer;
 extern Model *modelDigitalSequencer;
 extern Model *modelDigitalSequencerXP;
