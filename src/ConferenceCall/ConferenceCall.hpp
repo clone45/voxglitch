@@ -1,8 +1,5 @@
-#include "ADPCMEffectsWrapper.hpp"
-#include "BlockADPCMProcessor.hpp"
-#include "UDPNetworkSimulator.hpp"
+#include "VoIPSimulator.hpp"
 #include <rack.hpp>
-#include <vector>
 
 struct ConferenceCall : Module
 {
@@ -32,15 +29,7 @@ struct ConferenceCall : Module
         NUM_LIGHTS
     };
 
-    BlockADPCMProcessor adpcmProcessor;
-    ADPCMEffectsWrapper adpcmWrapper{adpcmProcessor};
-    UDPNetworkSimulator udp{48000, 20};  // 48 kHz sample rate, 20ms frames
-
-    std::vector<float> inputBufferLeft;
-    std::vector<float> inputBufferRight;
-    std::vector<float> outputBufferLeft;
-    std::vector<float> outputBufferRight;
-
+    VoIPSimulator voip;
     bool compressionEnabled;
 
     ConferenceCall()
@@ -51,9 +40,6 @@ struct ConferenceCall : Module
         configParam(DROPOUT_PARAM, 0.f, 1.f, 0.f, "Dropout Amount");
         configParam(LATENCY_PARAM, 0.f, 500.f, 0.f, "Latency (ms)");
         configParam(JITTER_PARAM, 0.f, 1.f, 0.f, "Jitter Amount");
-
-        inputBufferLeft.reserve(BlockADPCMProcessor::BLOCK_SIZE);
-        inputBufferRight.reserve(BlockADPCMProcessor::BLOCK_SIZE);
 
         compressionEnabled = false;
     }
@@ -80,47 +66,20 @@ struct ConferenceCall : Module
         float outputLeft = inputLeft;
         float outputRight = inputRight;
 
-        // Add inputs to buffer
-        inputBufferLeft.push_back(inputLeft);
-        inputBufferRight.push_back(inputRight);
-
-        if (compressionEnabled && inputBufferLeft.size() == BlockADPCMProcessor::BLOCK_SIZE)
+        if (compressionEnabled)
         {
-            std::vector<uint8_t> compressedLeft = adpcmWrapper.compress(inputBufferLeft);
-            std::vector<uint8_t> compressedRight = adpcmWrapper.compress(inputBufferRight);
+            voip.setNetworkParams(
+                params[DROPOUT_PARAM].getValue(),
+                params[LATENCY_PARAM].getValue(),
+                params[JITTER_PARAM].getValue()
+            );
 
-            udp.setDropoutRate(params[DROPOUT_PARAM].getValue());
-            udp.setLatency(params[LATENCY_PARAM].getValue());
-            udp.setJitter(params[JITTER_PARAM].getValue());
+            voip.pushSamples(inputLeft, inputRight);
+            voip.process();
 
-            udp.post(compressedLeft, compressedRight);
-            udp.process();
-
-            std::pair<std::vector<uint8_t>, std::vector<uint8_t>> received = udp.get();
-            std::vector<uint8_t>& receivedLeft = received.first;
-            std::vector<uint8_t>& receivedRight = received.second;
-
-            if (!receivedLeft.empty() && !receivedRight.empty()) {
-                std::vector<float> decompressedLeft = adpcmWrapper.decompress(receivedLeft);
-                std::vector<float> decompressedRight = adpcmWrapper.decompress(receivedRight);
-
-                // Append decompressed data to output buffer
-                outputBufferLeft.insert(outputBufferLeft.end(), decompressedLeft.begin(), decompressedLeft.end());
-                outputBufferRight.insert(outputBufferRight.end(), decompressedRight.begin(), decompressedRight.end());
+            if (voip.hasOutput()) {
+                std::tie(outputLeft, outputRight) = voip.popOutputSamples();
             }
-
-            // Clear input buffers
-            inputBufferLeft.clear();
-            inputBufferRight.clear();
-        }
-
-        // Use processed output if available, otherwise use input directly
-        if (!outputBufferLeft.empty() && !outputBufferRight.empty())
-        {
-            outputLeft = outputBufferLeft.front();
-            outputRight = outputBufferRight.front();
-            outputBufferLeft.erase(outputBufferLeft.begin());
-            outputBufferRight.erase(outputBufferRight.begin());
         }
 
         lights[COMPRESSION_LIGHT].setBrightness(compressionEnabled ? 1.0f : 0.0f);

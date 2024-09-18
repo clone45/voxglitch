@@ -1,6 +1,10 @@
 // src/ConferenceCall/BlockADPCMProcessor.hpp
 #pragma once
 
+#include <vector>
+#include <cstdint>
+#include <algorithm>
+
 class BlockADPCMProcessor
 {
 public:
@@ -8,10 +12,8 @@ public:
     static const int STEP_TABLE_SIZE = 89;
     static const int INDEX_TABLE_SIZE = 16;
 
-    BlockADPCMProcessor()
+    BlockADPCMProcessor() : stepIndex(0), predictor(0)
     {
-        stepIndex = 0;
-        predictor = 0;
         initializeTables();
     }
 
@@ -63,6 +65,19 @@ public:
         }
 
         return output;
+    }
+
+    // New method to get the current state
+    std::pair<int, float> getState() const
+    {
+        return {stepIndex, predictor};
+    }
+
+    // New method to set the state
+    void setState(int newStepIndex, float newPredictor)
+    {
+        stepIndex = newStepIndex;
+        predictor = newPredictor;
     }
 
 private:
