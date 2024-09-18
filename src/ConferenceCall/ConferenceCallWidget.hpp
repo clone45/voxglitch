@@ -22,7 +22,7 @@ struct ConferenceCallWidget : ModuleWidget
         addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("right_output"), module, ConferenceCall::AUDIO_OUTPUT_RIGHT));
 
         // Debug dump trigger
-        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("dump_input"), module, ConferenceCall::DUMP_INPUT));
+        // addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("dump_input"), module, ConferenceCall::DUMP_INPUT));
 
         // Compression toggle and light
         addParam(createParamCentered<CKSS>(panelHelper.findNamed("compression_toggle"), module, ConferenceCall::COMPRESSION_PARAM));

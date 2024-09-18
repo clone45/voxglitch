@@ -1,5 +1,6 @@
 #include "ADPCMEffectsWrapper.hpp"
-#include "BlockADPCMProcessor.hpp" // Include this if not already included
+#include "BlockADPCMProcessor.hpp"
+#include "UDPNetworkSimulator.hpp"
 #include <rack.hpp>
 #include <vector>
 
@@ -9,13 +10,14 @@ struct ConferenceCall : Module
     {
         COMPRESSION_PARAM,
         DROPOUT_PARAM,
+        LATENCY_PARAM,
+        JITTER_PARAM,
         NUM_PARAMS
     };
     enum InputIds
     {
         AUDIO_INPUT_LEFT,
         AUDIO_INPUT_RIGHT,
-        DUMP_INPUT,
         NUM_INPUTS
     };
     enum OutputIds
@@ -31,17 +33,13 @@ struct ConferenceCall : Module
     };
 
     BlockADPCMProcessor adpcmProcessor;
-    ADPCMEffectsWrapper effectsWrapperLeft{adpcmProcessor};
-    ADPCMEffectsWrapper effectsWrapperRight{adpcmProcessor};
-
-    AdaptiveGainControl adaptiveGainControl;
+    ADPCMEffectsWrapper adpcmWrapper{adpcmProcessor};
+    UDPNetworkSimulator udp{48000, 20};  // 48 kHz sample rate, 20ms frames
 
     std::vector<float> inputBufferLeft;
     std::vector<float> inputBufferRight;
     std::vector<float> outputBufferLeft;
     std::vector<float> outputBufferRight;
-
-    dsp::SchmittTrigger dumpTrigger;
 
     bool compressionEnabled;
 
@@ -51,14 +49,13 @@ struct ConferenceCall : Module
 
         configParam(COMPRESSION_PARAM, 0.f, 1.f, 0.f, "ADPCM Compression");
         configParam(DROPOUT_PARAM, 0.f, 1.f, 0.f, "Dropout Amount");
+        configParam(LATENCY_PARAM, 0.f, 500.f, 0.f, "Latency (ms)");
+        configParam(JITTER_PARAM, 0.f, 1.f, 0.f, "Jitter Amount");
 
         inputBufferLeft.reserve(BlockADPCMProcessor::BLOCK_SIZE);
         inputBufferRight.reserve(BlockADPCMProcessor::BLOCK_SIZE);
 
         compressionEnabled = false;
-
-        // Initialize the compression light state
-        lights[COMPRESSION_LIGHT].setBrightness(0.0f); // Set initial brightness to off
     }
 
     json_t *dataToJson() override
@@ -77,64 +74,56 @@ struct ConferenceCall : Module
 
     void process(const ProcessArgs &args) override
     {
-
         float inputLeft = inputs[AUDIO_INPUT_LEFT].getVoltage() / 5.f; // Normalize to [-1, 1]
         float inputRight = inputs[AUDIO_INPUT_RIGHT].getVoltage() / 5.f;
-
-        // Apply adaptive gain
-        // adaptiveGainControl.process(inputLeft, inputRight);
 
         float outputLeft = inputLeft;
         float outputRight = inputRight;
 
-        if (compressionEnabled)
+        // Add inputs to buffer
+        inputBufferLeft.push_back(inputLeft);
+        inputBufferRight.push_back(inputRight);
+
+        if (compressionEnabled && inputBufferLeft.size() == BlockADPCMProcessor::BLOCK_SIZE)
         {
-            float dropoutAmount = params[DROPOUT_PARAM].getValue();
-            effectsWrapperLeft.setDropoutAmount(dropoutAmount);
-            effectsWrapperRight.setDropoutAmount(dropoutAmount);
+            std::vector<uint8_t> compressedLeft = adpcmWrapper.compress(inputBufferLeft);
+            std::vector<uint8_t> compressedRight = adpcmWrapper.compress(inputBufferRight);
 
-            // Add inputs to buffer
-            if (inputBufferLeft.size() < BlockADPCMProcessor::BLOCK_SIZE) 
-            {
-                inputBufferLeft.push_back(inputLeft);
-                inputBufferRight.push_back(inputRight);
-            }
+            udp.setDropoutRate(params[DROPOUT_PARAM].getValue());
+            udp.setLatency(params[LATENCY_PARAM].getValue());
+            udp.setJitter(params[JITTER_PARAM].getValue());
 
-            // Process when input buffer is full
-            if (inputBufferLeft.size() == BlockADPCMProcessor::BLOCK_SIZE)
-            {
-                std::vector<uint8_t> compressedLeft = effectsWrapperLeft.processAndCompress(inputBufferLeft);
-                std::vector<uint8_t> compressedRight = effectsWrapperRight.processAndCompress(inputBufferRight);
+            udp.post(compressedLeft, compressedRight);
+            udp.process();
 
-                std::vector<float> decompressedLeft = effectsWrapperLeft.decompressAndProcess(compressedLeft);
-                std::vector<float> decompressedRight = effectsWrapperRight.decompressAndProcess(compressedRight);
+            std::pair<std::vector<uint8_t>, std::vector<uint8_t>> received = udp.get();
+            std::vector<uint8_t>& receivedLeft = received.first;
+            std::vector<uint8_t>& receivedRight = received.second;
+
+            if (!receivedLeft.empty() && !receivedRight.empty()) {
+                std::vector<float> decompressedLeft = adpcmWrapper.decompress(receivedLeft);
+                std::vector<float> decompressedRight = adpcmWrapper.decompress(receivedRight);
 
                 // Append decompressed data to output buffer
                 outputBufferLeft.insert(outputBufferLeft.end(), decompressedLeft.begin(), decompressedLeft.end());
                 outputBufferRight.insert(outputBufferRight.end(), decompressedRight.begin(), decompressedRight.end());
-
-                // Clear input buffers
-                inputBufferLeft.clear();
-                inputBufferRight.clear();
             }
 
-            // Use processed output if available
-            if (!outputBufferLeft.empty() && !outputBufferRight.empty())
-            {
-                outputLeft = outputBufferLeft.front();
-                outputRight = outputBufferRight.front();
-                outputBufferLeft.erase(outputBufferLeft.begin());
-                outputBufferRight.erase(outputBufferRight.begin());
-            }
-
-            // Update the compression light to indicate it's active
-            lights[COMPRESSION_LIGHT].setBrightness(1.0f); // Set brightness to on
+            // Clear input buffers
+            inputBufferLeft.clear();
+            inputBufferRight.clear();
         }
-        else
+
+        // Use processed output if available, otherwise use input directly
+        if (!outputBufferLeft.empty() && !outputBufferRight.empty())
         {
-            // Turn off the compression light
-            lights[COMPRESSION_LIGHT].setBrightness(0.0f); // Set brightness to off
+            outputLeft = outputBufferLeft.front();
+            outputRight = outputBufferRight.front();
+            outputBufferLeft.erase(outputBufferLeft.begin());
+            outputBufferRight.erase(outputBufferRight.begin());
         }
+
+        lights[COMPRESSION_LIGHT].setBrightness(compressionEnabled ? 1.0f : 0.0f);
 
         outputs[AUDIO_OUTPUT_LEFT].setVoltage(outputLeft * 5.f); // Denormalize to [-5, 5]
         outputs[AUDIO_OUTPUT_RIGHT].setVoltage(outputRight * 5.f);
