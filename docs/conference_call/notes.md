@@ -1,13 +1,20 @@
 ADPCM (Adaptive Differential Pulse Code Modulation) communication systems, like those used in VoIP or digital telephony, often employ various techniques to handle dropouts or packet loss. These techniques aim to maintain audio quality and intelligibility even when some data is lost. Here are some common approaches:
 
-Packet Loss Concealment (PLC):
+== Packet Loss Concealment (PLC):
 
 This is a general term for techniques that try to "fill in" missing audio data.
 Simple PLC might repeat the last known good frame of audio.
 More advanced PLC might use interpolation or prediction based on surrounding audio data.
 
+Some common PLC techniques include:
 
-Forward Error Correction (FEC):
+* Waveform substitution: Repeating the last known good frame.
+* Pitch waveform replication: Repeating the last pitch period of audio.
+* Time-scale modification: Stretching the surrounding audio to fill the gap.
+* Model-based interpolation: Using speech models to generate likely missing data.
+
+
+=== Forward Error Correction (FEC):
 
 Extra data is sent along with the primary audio data to help reconstruct lost packets.
 This increases bandwidth usage but can significantly improve quality in lossy networks.

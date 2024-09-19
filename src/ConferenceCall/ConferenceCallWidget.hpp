@@ -24,6 +24,9 @@ struct ConferenceCallWidget : ModuleWidget
         // Debug dump trigger
         // addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("dump_input"), module, ConferenceCall::DUMP_INPUT));
 
+        // PLC strategy selector
+        addParam(createParamCentered<RoundBlackKnob>(panelHelper.findNamed("plc_strategy_knob"), module, ConferenceCall::PLC_STRATEGY_PARAM));
+
         // Compression toggle and light
         addParam(createParamCentered<CKSS>(panelHelper.findNamed("compression_toggle"), module, ConferenceCall::COMPRESSION_PARAM));
         addChild(createLightCentered<MediumLight<RedLight>>(panelHelper.findNamed("compression_light"), module, ConferenceCall::COMPRESSION_LIGHT));

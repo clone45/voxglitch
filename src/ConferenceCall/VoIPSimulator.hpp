@@ -1,8 +1,10 @@
+// VoIPSimulator.hpp
 #pragma once
 
 #include "ADPCMEffectsWrapper.hpp"
 #include "UDPNetworkSimulator.hpp"
 #include "RTPSession.hpp"
+#include "PLCProcessor.hpp"
 #include <vector>
 
 class VoIPSimulator {
@@ -21,6 +23,10 @@ public:
         udp.setDropoutRate(dropoutRate);
         udp.setLatency(latency);
         udp.setJitter(jitter);
+    }
+
+    void setPLCStrategy(PLCStrategy strategy) {
+        plcProcessor.setStrategy(strategy);
     }
 
     void pushSamples(float left, float right) {
@@ -58,8 +64,19 @@ public:
             RTPPacket receivedPacket = udp.get();
             rtpSession.processReceivedPacket(receivedPacket);
 
-            if (!receivedPacket.getPayload().empty()) {
-                std::pair<std::vector<uint8_t>, std::vector<uint8_t>> deinterleaved = deinterleave(receivedPacket.getPayload());
+            // TODO: This is where JitterBuffer should be added later
+
+            
+            bool packetLost = receivedPacket.getPayload().empty();
+            
+            // Apply Packet Loss Concealment (PLC) if needed:
+            // If packetLost is true, plcProcessor.processPacket will generate concealed data
+            // based on previous good packets. If packetLost is false, it will pass through
+            // the received payload and update its internal state for future concealment.
+            std::vector<uint8_t> processedPayload = plcProcessor.processPacket(receivedPacket.getPayload(), packetLost);
+
+            if (!processedPayload.empty()) {
+                std::pair<std::vector<uint8_t>, std::vector<uint8_t>> deinterleaved = deinterleave(processedPayload);
                 std::vector<uint8_t>& receivedLeft = deinterleaved.first;
                 std::vector<uint8_t>& receivedRight = deinterleaved.second;
 
@@ -80,6 +97,7 @@ private:
     ADPCMEffectsWrapper adpcmWrapper;
     UDPNetworkSimulator udp;
     RTPSession rtpSession;
+    PLCProcessor plcProcessor;
 
     std::vector<float> inputBufferLeft;
     std::vector<float> inputBufferRight;
