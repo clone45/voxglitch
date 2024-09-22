@@ -57,8 +57,19 @@ struct OneZeroReadoutWidget : TransparentWidget
 
     void onDoubleClick(const event::DoubleClick &e) override
     {
+#ifdef USING_CARDINAL_NOT_RACK
+        OneZero *module = this->module;
+        async_dialog_filebrowser(false, NULL, NULL, "Open txt", [module](char* path) {
+            if (path != NULL) {
+                module->loadData(path);
+                module->path = path;
+            }
+            free(path);
+        });
+#else
       std::string path = module->selectFileVCV();
       module->loadData(path);
       module->path = path;
+#endif
     }
 };

@@ -580,10 +580,25 @@ struct GrooveBox : VoxglitchSamplerModule
         loaded_filenames[track_index] = "";
     }
 
-    void importKit(std::string kit_path)
+    void importKitDialog(const std::string& kit_path)
     {
-        std::string destination_path = this->selectPathVCV();
+#ifdef USING_CARDINAL_NOT_RACK
+        async_dialog_filebrowser(false, NULL, samples_root_dir.c_str(), "Import kit", [this, kit_path](char* path) {
+            if (path == NULL)
+                return;
 
+            std::string destination_path = path;
+            free(path);
+            importKit(kit_path, destination_path);
+        });
+#else
+        std::string destination_path = this->selectPathVCV();
+        importKit(kit_path, destination_path);
+#endif
+    }
+
+    void importKit(const std::string& kit_path, const std::string& destination_path)
+    {
         if (destination_path != "")
         {
             // Unzip kit into destination
@@ -659,16 +674,31 @@ struct GrooveBox : VoxglitchSamplerModule
 
     void loadKitDialog()
     {
-        std::string kit_path = this->selectFileVCV("kit:KIT");
+#ifdef USING_CARDINAL_NOT_RACK
+        async_dialog_filebrowser(false, NULL, kit_dir.c_str(), "Load kit", [this](char* path) {
+            if (path == NULL)
+                return;
 
+            std::string kit_path = path;
+            free(path);
+            importKitDialog(kit_path);
+        });
+#else
+        std::string kit_path = this->selectFileVCV("kit:KIT");
         if (kit_path != "")
         {
-            importKit(kit_path);
+            importKitDialog(kit_path);
         }
+#endif
     }
 
     void saveKitDialog()
     {
+#ifdef USING_CARDINAL_NOT_RACK
+        async_dialog_filebrowser(true, NULL, kit_dir.c_str(), "Save kit", [this](char* path) {
+            saveKitDialogHandling(path);
+        });
+#else
         //
         // Credit to PathSet for this code
         //
@@ -676,6 +706,12 @@ struct GrooveBox : VoxglitchSamplerModule
         DEFER({ osdialog_filters_free(filters); });
 
         char *path_char_pointer = osdialog_file(OSDIALOG_SAVE, kit_dir.empty() ? NULL : kit_dir.c_str(), NULL, filters);
+        saveKitDialogHandling(path_char_pointer);
+#endif
+    }
+
+    void saveKitDialogHandling(char *path_char_pointer)
+    {
         if (!path_char_pointer)
         {
             // Fail silently
