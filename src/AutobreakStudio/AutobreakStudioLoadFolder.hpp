@@ -8,13 +8,13 @@ struct AutobreakStudioLoadFolder : MenuItem
         const std::string dir = root_dir.empty() ? "" : root_dir;
 #ifdef USING_CARDINAL_NOT_RACK
         AutobreakStudio *module = this->module;
-        async_dialog_filebrowser(false, NULL, dir.c_str(), text.c_str(), [module](char *path)
-        {
-			if (path) 
-            {
-				if (char *rpath = strrchr(path, CARDINAL_OS_SEP)) *rpath = '\0';
-				pathSelected(module, path);
-			} 
+        async_dialog_filebrowser(false, NULL, dir.c_str(), text.c_str(), [module](char *path) {
+            if (path) {
+                if (char *rpath = strrchr(path, CARDINAL_OS_SEP))
+                    *rpath = '\0';
+                pathSelected(module, path);
+                free(path);
+            }
         });
 #else
         char *path = osdialog_file(OSDIALOG_OPEN_DIR, dir.c_str(), NULL, NULL);
