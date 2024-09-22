@@ -280,6 +280,7 @@ struct OneZero : VoxglitchModule
 	}
     */
 
+#ifndef USING_CARDINAL_NOT_RACK
     std::string selectFileVCV()
     {
         std::string filename_string = "";
@@ -295,4 +296,5 @@ struct OneZero : VoxglitchModule
 
         return (filename_string);
     }
+#endif
 };
