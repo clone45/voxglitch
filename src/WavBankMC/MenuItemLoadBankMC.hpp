@@ -11,6 +11,7 @@ struct MenuItemLoadBankMC : MenuItem
 					if (char *rpath = strrchr(path, CARDINAL_OS_SEP))
 						*rpath = '\0';
 					pathSelected(module, path);
+					free(path);
 				}
 			});
 	#else
