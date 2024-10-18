@@ -1,0 +1,23 @@
+//
+// Voxglitch "FourTrack" module for VCV Rack
+//
+
+#include <fstream>
+
+#include "plugin.hpp"
+#include "osdialog.h"
+
+#include "vgLib-2.0/constants.h"
+#include "vgLib-2.0/sample.hpp"
+#include "vgLib-2.0/components/VoxglitchComponents.hpp"
+
+using namespace vgLib_v2;
+
+#include "FourTrack/Clip.hpp"
+#include "FourTrack/TrackModel.hpp"
+#include "FourTrack/TrackWidget.hpp"
+
+#include "FourTrack/FourTrack.hpp"
+#include "FourTrack/FourTrackWidget.hpp"
+
+Model* modelFourTrack = createModel<FourTrack, FourTrackWidget>("fourtrack");

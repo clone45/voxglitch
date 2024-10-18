@@ -70,6 +70,12 @@
         "tags": ["Utility", "Polyphonic"]
     },    
     {
+        "slug": "fourtrack",
+        "name": "Four Track",
+        "description": "Four track playback device",
+        "tags": ["Sampler"]
+    },
+    {
         "slug": "glitchsequencer",
         "name": "Glitch Sequencer",
         "description": "Cellular Automaton Gate Sequencer.",
