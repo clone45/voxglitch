@@ -60,7 +60,6 @@ namespace vgLib_v2
             return getValue(getPlaybackPosition());
         }
 
-        // Index should be between 0 and 7
         void setValue(int index, double value)
         {
             float old_value = sequence[index];
@@ -101,6 +100,11 @@ namespace vgLib_v2
         void setSnapDivision(unsigned int new_snap_division)
         {
             this->snap_division = new_snap_division;
+        }
+
+        unsigned int getSnapDivision()
+        {
+            return this->snap_division;
         }
 
         void setPolarity(Polarity new_polarity)

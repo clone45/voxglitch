@@ -139,13 +139,13 @@ struct DigitalSequencerWidget : VoxglitchSamplerModuleWidget
 	struct AllInputSnapsValueItem : MenuItem
 	{
 		DigitalSequencer *module;
-		int snap_division_index = 0;
+		int snap_division = 0;
 
 		void onAction(const event::Action &e) override
 		{
 			for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
 			{
-				module->snap_division_indexes[i] = snap_division_index;
+				module->voltage_sequencers[i].setSnapDivision(snap_division);
 			}
 		}
 	};
@@ -162,7 +162,7 @@ struct DigitalSequencerWidget : VoxglitchSamplerModuleWidget
 			{
 				AllInputSnapsValueItem *all_input_snaps_value_item = createMenuItem<AllInputSnapsValueItem>(module->snap_division_names[i]);
 				all_input_snaps_value_item->module = module;
-				all_input_snaps_value_item->snap_division_index = i;
+				all_input_snaps_value_item->snap_division = module->snap_division_values[i];
 				menu->addChild(all_input_snaps_value_item);
 			}
 
@@ -267,12 +267,12 @@ struct DigitalSequencerWidget : VoxglitchSamplerModuleWidget
 	struct InputSnapValueItem : MenuItem
 	{
 		DigitalSequencer *module;
-		int snap_division_index = 0;
+		int snap_division = 0;
 		int sequencer_number = 0;
 
 		void onAction(const event::Action &e) override
 		{
-			module->snap_division_indexes[sequencer_number] = snap_division_index;
+			module->voltage_sequencers[sequencer_number].setSnapDivision(snap_division);
 		}
 	};
 
@@ -287,9 +287,11 @@ struct DigitalSequencerWidget : VoxglitchSamplerModuleWidget
 
 			for (unsigned int i = 0; i < NUMBER_OF_SNAP_DIVISIONS; i++)
 			{
-				InputSnapValueItem *input_snap_value_item = createMenuItem<InputSnapValueItem>(module->snap_division_names[i], CHECKMARK(module->snap_division_indexes[sequencer_number] == i));
+				unsigned int snap_division = module->voltage_sequencers[sequencer_number].getSnapDivision();
+
+				InputSnapValueItem *input_snap_value_item = createMenuItem<InputSnapValueItem>(module->snap_division_names[i], CHECKMARK(module->snap_division_values[i] == snap_division));
 				input_snap_value_item->module = module;
-				input_snap_value_item->snap_division_index = i;
+				input_snap_value_item->snap_division = module->snap_division_values[i];
 				input_snap_value_item->sequencer_number = this->sequencer_number;
 				menu->addChild(input_snap_value_item);
 			}
@@ -306,7 +308,6 @@ struct DigitalSequencerWidget : VoxglitchSamplerModuleWidget
 
 		void onAction(const event::Action &e) override
 		{
-			// module->voltage_sequencers[sequencer_number].voltage_range_index = range_index;
 			module->voltage_range_indexes[sequencer_number] = range_index;
 		}
 	};
@@ -322,7 +323,6 @@ struct DigitalSequencerWidget : VoxglitchSamplerModuleWidget
 
 			for (unsigned int i = 0; i < NUMBER_OF_VOLTAGE_RANGES; i++)
 			{
-				// OutputRangeValueItem *output_range_value_menu_item = createMenuItem<OutputRangeValueItem>(module->voltage_range_names[i], CHECKMARK(module->voltage_sequencers[sequencer_number].voltage_range_index == i));
 				OutputRangeValueItem *output_range_value_menu_item = createMenuItem<OutputRangeValueItem>(module->voltage_range_names[i], CHECKMARK(module->voltage_range_indexes[sequencer_number] == i));
 				output_range_value_menu_item->module = module;
 				output_range_value_menu_item->range_index = i;

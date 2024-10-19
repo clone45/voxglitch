@@ -140,39 +140,39 @@ struct DigitalSequencerXPWidget : ModuleWidget
     // ==========================================================================================
     //
 
-    struct AllInputSnapsValueItem : MenuItem
-    {
-        DigitalSequencerXP *module;
-        int snap_division_index = 0;
+	struct AllInputSnapsValueItem : MenuItem
+	{
+		DigitalSequencerXP *module;
+		int snap_division = 0;
 
-        void onAction(const event::Action &e) override
-        {
-            for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
-            {
-                module->snap_division_indexes[i] = snap_division_index;
-            }
-        }
-    };
+		void onAction(const event::Action &e) override
+		{
+			for (unsigned int i = 0; i < NUMBER_OF_SEQUENCERS; i++)
+			{
+				module->voltage_sequencers[i].setSnapDivision(snap_division);
+			}
+		}
+	};
 
-    struct AllInputSnapsItem : MenuItem
-    {
-        DigitalSequencerXP *module;
+	struct AllInputSnapsItem : MenuItem
+	{
+		DigitalSequencerXP *module;
 
-        Menu *createChildMenu() override
-        {
-            Menu *menu = new Menu;
+		Menu *createChildMenu() override
+		{
+			Menu *menu = new Menu;
 
-            for (unsigned int i = 0; i < NUMBER_OF_SNAP_DIVISIONS; i++)
-            {
-                AllInputSnapsValueItem *all_input_snaps_value_item = createMenuItem<AllInputSnapsValueItem>(module->snap_division_names[i]);
-                all_input_snaps_value_item->module = module;
-                all_input_snaps_value_item->snap_division_index = i;
-                menu->addChild(all_input_snaps_value_item);
-            }
+			for (unsigned int i = 0; i < NUMBER_OF_SNAP_DIVISIONS; i++)
+			{
+				AllInputSnapsValueItem *all_input_snaps_value_item = createMenuItem<AllInputSnapsValueItem>(module->snap_division_names[i]);
+				all_input_snaps_value_item->module = module;
+				all_input_snaps_value_item->snap_division = module->snap_division_values[i];
+				menu->addChild(all_input_snaps_value_item);
+			}
 
-            return menu;
-        }
-    };
+			return menu;
+		}
+	};
 
     struct AllOutputRangesValueItem : MenuItem
     {
@@ -268,39 +268,41 @@ struct DigitalSequencerXPWidget : ModuleWidget
         }
     };
 
-    struct InputSnapValueItem : MenuItem
-    {
-        DigitalSequencerXP *module;
-        int snap_division_index = 0;
-        int sequencer_number = 0;
+	struct InputSnapValueItem : MenuItem
+	{
+		DigitalSequencerXP *module;
+		int snap_division = 0;
+		int sequencer_number = 0;
 
-        void onAction(const event::Action &e) override
-        {
-            module->snap_division_indexes[sequencer_number] = snap_division_index;
-        }
-    };
+		void onAction(const event::Action &e) override
+		{
+			module->voltage_sequencers[sequencer_number].setSnapDivision(snap_division);
+		}
+	};
 
-    struct InputSnapItem : MenuItem
-    {
-        DigitalSequencerXP *module;
-        int sequencer_number = 0;
+	struct InputSnapItem : MenuItem
+	{
+		DigitalSequencerXP *module;
+		int sequencer_number = 0;
 
-        Menu *createChildMenu() override
-        {
-            Menu *menu = new Menu;
+		Menu *createChildMenu() override
+		{
+			Menu *menu = new Menu;
 
-            for (unsigned int i = 0; i < NUMBER_OF_SNAP_DIVISIONS; i++)
-            {
-                InputSnapValueItem *input_snap_value_item = createMenuItem<InputSnapValueItem>(module->snap_division_names[i], CHECKMARK(module->snap_division_indexes[sequencer_number] == i));
-                input_snap_value_item->module = module;
-                input_snap_value_item->snap_division_index = i;
-                input_snap_value_item->sequencer_number = this->sequencer_number;
-                menu->addChild(input_snap_value_item);
-            }
+			for (unsigned int i = 0; i < NUMBER_OF_SNAP_DIVISIONS; i++)
+			{
+				unsigned int snap_division = module->voltage_sequencers[sequencer_number].getSnapDivision();
 
-            return menu;
-        }
-    };
+				InputSnapValueItem *input_snap_value_item = createMenuItem<InputSnapValueItem>(module->snap_division_names[i], CHECKMARK(module->snap_division_values[i] == snap_division));
+				input_snap_value_item->module = module;
+				input_snap_value_item->snap_division = module->snap_division_values[i];
+				input_snap_value_item->sequencer_number = this->sequencer_number;
+				menu->addChild(input_snap_value_item);
+			}
+
+			return menu;
+		}
+	};
 
     struct LabelTextField : TextField
     {
