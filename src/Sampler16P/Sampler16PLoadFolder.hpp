@@ -15,6 +15,7 @@ struct Sampler16PLoadFolder : MenuItem
 				if (char *rpath = strrchr(path, CARDINAL_OS_SEP))
 					*rpath = '\0';
 				pathSelected(module, sample_number, path);
+				free(path);
 			}
 		});
 #else

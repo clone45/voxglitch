@@ -55,6 +55,7 @@ struct DigitalSequencerXP : VoxglitchModule
         {-1.0, 1.0}};
 
     std::string snap_division_names[NUMBER_OF_SNAP_DIVISIONS] = {"None", "8", "10", "12", "16", "24", "32", "36"};
+    unsigned int snap_division_values[NUMBER_OF_SNAP_DIVISIONS] = {0, 8, 10, 12, 16, 24, 32, 36};
 
     enum ParamIds
     {
@@ -230,7 +231,8 @@ struct DigitalSequencerXP : VoxglitchModule
         json_t *sequencer_snap_json_array = json_array();
         for (int sequencer_number = 0; sequencer_number < NUMBER_OF_SEQUENCERS; sequencer_number++)
         {
-            json_array_append_new(sequencer_snap_json_array, json_integer(this->snap_division_indexes[sequencer_number]));
+            // json_array_append_new(sequencer_snap_json_array, json_integer(this->snap_division_indexes[sequencer_number]));
+            json_array_append_new(sequencer_snap_json_array, json_integer(this->voltage_sequencers[sequencer_number].getSnapDivision()));
         }
         json_object_set(json_root, "snap_divisions", sequencer_snap_json_array);
         json_decref(sequencer_snap_json_array);
@@ -337,7 +339,6 @@ struct DigitalSequencerXP : VoxglitchModule
 
             json_array_foreach(voltage_ranges_json_array, sequencer_number, voltage_range_json)
             {
-                // this->voltage_sequencers[sequencer_number].voltage_range_index = json_integer_value(voltage_range_json);
                 this->voltage_range_indexes[sequencer_number] = json_integer_value(voltage_range_json);
             }
         }
@@ -354,7 +355,7 @@ struct DigitalSequencerXP : VoxglitchModule
 
             json_array_foreach(snap_divions_json_array, sequencer_number, snap_divion_json)
             {
-                this->snap_division_indexes[sequencer_number] = json_integer_value(snap_divion_json);
+                voltage_sequencers[sequencer_number].setSnapDivision(json_integer_value(snap_divion_json));
             }
         }
 

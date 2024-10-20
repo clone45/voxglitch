@@ -16,6 +16,14 @@ namespace vgLib_v2
             sequence.assign(sequence_length, 0);
         }
 
+        void setMaxLength(unsigned int length)
+        {
+            sequence_length = length;
+            
+            // Call parent setMaxLength
+            Sequencer::setMaxLength(length);
+        }
+
         // This must be called before interacting with the voltage sequencer since
         // it sets the size of the vector and initializes it with "value"
         void assign(unsigned int length, double value)

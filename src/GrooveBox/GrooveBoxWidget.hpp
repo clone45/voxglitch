@@ -59,12 +59,15 @@ struct LoadSamplesFromFolderMenuItem : MenuItem
     {
 #ifdef USING_CARDINAL_NOT_RACK
         GrooveBox *module = this->module;
-        async_dialog_filebrowser(false, NULL, module->samples_root_dir.c_str(), "Load folder", [module](char *path)
-                                 {
-			if(path){
-				pathSelected(module, std::string(path));
-				free(path);
-			} });
+        // NOTE cardinal does not have async open for folders
+        async_dialog_filebrowser(false, NULL, module->samples_root_dir.c_str(), "Load folder", [module](char *path) {
+            if (path) {
+                if (char *rpath = strrchr(path, CARDINAL_OS_SEP))
+                    *rpath = '\0';
+                pathSelected(module, path);
+                free(path);
+            }
+        });
 #else
         pathSelected(module, module->selectPathVCV());
 #endif
