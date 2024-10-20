@@ -163,6 +163,12 @@ struct Sample
     return(true);
   };
 
+
+  bool isLoaded()
+  {
+    return(this->loaded);
+  }
+
   // Where to put recording code and how to save it?
   void initialize_recording()
   {

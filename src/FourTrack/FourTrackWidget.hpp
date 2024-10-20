@@ -11,9 +11,12 @@ struct FourTrackWidget : VoxglitchSamplerModuleWidget
         );
 
         // Add the track widgets
-        TrackWidget *track_widget_1 = new TrackWidget(140.0, 25.0, 468.0, 100.0, &module->track1);
+        if(module)
+        {
+            TrackWidget *track_widget_1 = new TrackWidget(70.0, 15.0, 468.0, 100.0, &module->track1);
+            addChild(track_widget_1);
+        }
 
-        addChild(track_widget_1);
     }
 
     void appendContextMenu(Menu *menu) override
