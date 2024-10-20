@@ -42,16 +42,29 @@ struct Clip
         }
     }
 
-    // New Setter for Sample Window End
+    // New Setter for Sample Window Start and End
     void setSampleWindow(unsigned int start, unsigned int end)
     {
         if (sample) {
             // Clamp window to the valid sample size
             sample_window_start = rack::math::clamp((int) start, 0, (int) sample->size());
-            updateSampleWindowEnd(); // Recalculate sample_window_end based on new start and clip width
+            sample_window_end = rack::math::clamp((int) end, (int) sample_window_start, (int) sample->size());
             computeAverages(); // Recalculate waveform averages after adjusting window
             normalizeAverages(); // Normalize them after recomputation
         }
+    }
+
+    // Update Clip Width and Adjust Sample Window Start when Resizing from Left
+    void updateClipWidthFromLeft(float new_start_position)
+    {
+        float delta_position = track_position - new_start_position;
+        track_position = new_start_position;
+        clip_width_px += delta_position;
+
+        // Adjust sample window start proportionally
+        unsigned int delta_samples = static_cast<unsigned int>(delta_position * samples_per_pixel);
+        sample_window_start = rack::math::clamp((int)sample_window_start - (int)delta_samples, 0, (int)sample->size());
+        updateSampleWindowEnd(); // Recalculate sample_window_end based on new clip width
     }
 
     // Draw method
@@ -67,7 +80,6 @@ struct Clip
 
         // Calculate clip position and dimensions
         float clip_start_x = track_panel_x + track_position;
-        float clip_width_px = 60.0f; // Hardcoded width for testing, ignoring zoom for now
 
         // Draw the clip rectangle
         nvgBeginPath(vg);
@@ -80,50 +92,6 @@ struct Clip
 
         nvgRestore(vg);
     }
-
-    // Compute waveform averages for the clip
-    /*
-    void computeAverages()
-    {
-        if (!sample || !sample->isLoaded())
-            return;
-
-        float sample_size = sample_window_end - sample_window_start;
-        float chunk_size = sample_size / 200.0f; // Hardcoded width for testing
-        averages.clear();
-        averages.reserve(200); // Predefine size to match the clip width
-
-        for (unsigned int x = 0; x < 200; x++) // Hardcoded width as the number of averages
-        {
-            float left_sum = 0.0;
-            float right_sum = 0.0;
-            unsigned int count = 0;
-
-            unsigned int chunk_start = static_cast<unsigned int>(sample_window_start + (x * chunk_size));
-            unsigned int chunk_end = chunk_start + static_cast<unsigned int>(chunk_size);
-
-            for (unsigned int i = chunk_start; i < chunk_end && i < sample->size(); i++)
-            {
-                float left, right;
-                sample->read(i, &left, &right);
-                left_sum += std::abs(left);
-                right_sum += std::abs(right);
-                count++;
-            }
-
-            if (count > 0)
-            {
-                float average = (left_sum + right_sum) / (2.0f * count);
-                averages.push_back(average);
-                if (average > max_average)
-                    max_average = average;
-            }
-            else
-            {
-                averages.push_back(0.0f);
-            }
-        }
-    } */
 
     // Compute waveform averages for the entire sample
     void computeAverages()
