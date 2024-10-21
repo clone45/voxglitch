@@ -67,6 +67,12 @@ struct Clip
         updateSampleWindowEnd(); // Recalculate sample_window_end based on new clip width
     }
 
+    // Update Clip Position when Dragging
+    void updateClipPosition(float new_track_position)
+    {
+        track_position = new_track_position;
+    }
+
     // Draw method
     // ============================================================================================================
     // This method is called by the TrackWidget to draw the clip

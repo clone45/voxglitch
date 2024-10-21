@@ -6,11 +6,14 @@ struct TrackWidget : TransparentWidget
 {
     TrackModel *track_model = nullptr;
 
-    // New properties to manage resizing interactions
+    // New properties to manage resizing and dragging interactions
     bool resizing = false;
     bool dragging_start = false;
+    bool dragging_clip = false;
     int resizing_clip_index = -1;
+    int dragging_clip_index = -1;
     Vec drag_start_position;
+    Vec drag_clip_start_position;
 
     TrackWidget(float x, float y, float width, float height, TrackModel *track_model) 
     {
@@ -104,31 +107,63 @@ struct TrackWidget : TransparentWidget
                 dragging_start = true;
                 return;
             }
+
+            // Detect if click is within the body of a clip (not edges)
+            for (size_t i = 0; i < track_model->clips.size(); ++i) 
+            {
+                Clip &clip = track_model->clips[i];
+                float clip_start_x = box.pos.x + clip.track_position;
+                float clip_end_x = clip_start_x + clip.clip_width_px;
+
+                if (e.pos.x > clip_start_x && e.pos.x < clip_end_x &&
+                    e.pos.y >= box.pos.y && e.pos.y <= (box.pos.y + box.size.y))
+                {
+                    // Start dragging the clip
+                    dragging_clip = true;
+                    dragging_clip_index = i;
+                    drag_clip_start_position = e.pos; // Store starting position
+                    return;
+                }
+            }
         }
         else if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_RELEASE) 
         {
-            // Stop resizing
+            // Stop resizing or dragging
             resizing = false;
             resizing_clip_index = -1;
             dragging_start = false;
+            dragging_clip = false;
+            dragging_clip_index = -1;
         }
     }
 
-    // Handling mouse dragging for resizing
+    // Handling mouse dragging for resizing and dragging
     void onDragMove(const event::DragMove &e) override
     {
         TransparentWidget::onDragMove(e);
         float zoom = getAbsoluteZoom();
-        drag_start_position = drag_start_position.plus(e.mouseDelta.div(zoom));
+        Vec drag_delta = e.mouseDelta.div(zoom);
 
-        if (resizing && resizing_clip_index != -1) 
+        if (dragging_clip && dragging_clip_index != -1) 
+        {
+            Clip &clip = track_model->clips[dragging_clip_index];
+            float new_position = clip.track_position + drag_delta.x;
+
+            // Ensure new position is within bounds
+            new_position = std::max(new_position, 0.0f); // Prevent moving off left edge
+            // Optionally limit moving off the right of the track
+
+            clip.updateClipPosition(new_position); // Update position
+            drag_clip_start_position = drag_clip_start_position.plus(drag_delta); // Update drag start position
+        }
+        else if (resizing && resizing_clip_index != -1) 
         {
             Clip &clip = track_model->clips[resizing_clip_index];
 
             if (dragging_start) 
             {
                 // Dragging the start of the clip
-                float new_start_position = drag_start_position.x - box.pos.x;
+                float new_start_position = clip.track_position + drag_delta.x;
                 new_start_position = std::max(new_start_position, 0.0f); // Ensure it doesn't go negative
                 float max_start_position = clip.track_position + clip.clip_width_px - 10.0f; // Ensure there's a minimum width
                 new_start_position = std::min(new_start_position, max_start_position);
@@ -139,13 +174,15 @@ struct TrackWidget : TransparentWidget
             else 
             {
                 // Resizing the clip from the right edge
-                float new_width = drag_start_position.x - (box.pos.x + clip.track_position);
+                float new_width = clip.clip_width_px + drag_delta.x;
                 new_width = std::max(new_width, 10.0f); // Set a minimum width to avoid collapsing
 
                 // Update clip width and recalculate sample window
                 clip.clip_width_px = new_width;
                 clip.updateSampleWindowEnd(); // Recalculate sample_window_end based on new width
             }
+
+            drag_start_position = drag_start_position.plus(drag_delta); // Update drag start position
         }
     }
 
