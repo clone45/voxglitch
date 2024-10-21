@@ -46,44 +46,65 @@ struct TrackWidget : TransparentWidget
         nvgSave(vg);
         nvgBeginPath(vg);
 
-        // Determine the start and end indices in the averages vector that correspond to the visible sample window
-        unsigned int visible_average_start_index = track_model->visible_window_start / track_model->samples_per_average;
-        unsigned int visible_average_end_index = track_model->visible_window_end / track_model->samples_per_average;
+        // Determine the start and end indices in the sample that correspond to the visible window
+        unsigned int visible_sample_start = static_cast<unsigned int>(track_model->visible_window_start);
+        unsigned int visible_sample_end = static_cast<unsigned int>(track_model->visible_window_end);
 
-        // Clamp the indices to ensure they are within bounds of the averages vector
-        visible_average_start_index = std::min(visible_average_start_index, static_cast<unsigned int>(track_model->averages.size() - 1));
-        visible_average_end_index = std::min(visible_average_end_index, static_cast<unsigned int>(track_model->averages.size()));
+        // Clamp the indices to ensure they are within the bounds of the sample size
+        visible_sample_start = std::min(visible_sample_start, track_model->sample->size() - 1);
+        visible_sample_end = std::min(visible_sample_end, track_model->sample->size());
 
-        // Debug: Output the number of averages being rendered
-        unsigned int num_averages_rendered = visible_average_end_index - visible_average_start_index;
-        DEBUG("Num averages rendered: %d", num_averages_rendered);
+        // Calculate the number of visible samples
+        unsigned int num_visible_samples = visible_sample_end - visible_sample_start;
 
+        // Decide on a target number of chunks (e.g., 1000)
+        unsigned int num_chunks = 1000;
+        unsigned int chunk_size = std::max(1u, num_visible_samples / num_chunks);
 
-        // Ensure the indices are valid
-        if (visible_average_start_index >= visible_average_end_index)
+        // Calculate width of each chunk
+        float chunk_width = track_width / static_cast<float>(num_chunks);
+
+        // Iterate over chunks to draw the averaged waveform
+        for (unsigned int chunk_index = 0; chunk_index < num_chunks; ++chunk_index)
         {
-            nvgRestore(vg); // Nothing to draw, just return
-            return;
-        }
+            // Determine the range for this chunk
+            unsigned int chunk_start = visible_sample_start + chunk_index * chunk_size;
+            unsigned int chunk_end = std::min(chunk_start + chunk_size, visible_sample_end);
 
-        // Calculate the number of visible averages
-        unsigned int num_visible_averages = visible_average_end_index - visible_average_start_index;
-        float line_width = (track_width / static_cast<float>(num_visible_averages));
+            // Compute the average of this chunk
+            float left_sum = 0.0f;
+            float right_sum = 0.0f;
+            unsigned int count = 0;
 
-        // Draw the visible portion of the waveform
-        for (unsigned int x = visible_average_start_index; x < visible_average_end_index; x++)
-        {
-            float x_position = track_panel_x + ((x - visible_average_start_index) * line_width);
-            float average_height = track_model->averages[x] * track_height;
-            float y_position = track_panel_y + (track_height - average_height) / 2.0f;
+            for (unsigned int i = chunk_start; i < chunk_end; ++i)
+            {
+                float left, right;
+                track_model->sample->read(i, &left, &right);
+                left_sum += std::abs(left);
+                right_sum += std::abs(right);
+                count++;
+            }
 
-            nvgRect(vg, x_position, y_position, line_width, average_height);
+            // Avoid division by zero
+            if (count > 0)
+            {
+                float average_height = (left_sum + right_sum) / (2.0f * count);
+                average_height *= track_height;
+
+                // Calculate the x and y position for drawing
+                float x_position = track_panel_x + chunk_index * chunk_width;
+                float y_position = track_panel_y + (track_height - average_height) / 2.0f;
+
+                // Draw the rectangle representing the chunk
+                nvgRect(vg, x_position, y_position, chunk_width, average_height);
+            }
         }
 
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 200)); // Light grey color for the waveform
         nvgFill(vg);
         nvgRestore(vg);
     }
+
 
     void onHoverScroll(const event::HoverScroll &e) override
     {
