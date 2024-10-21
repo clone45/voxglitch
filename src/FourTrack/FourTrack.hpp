@@ -7,9 +7,6 @@ struct FourTrack : VoxglitchSamplerModule
     // Create a sample
     Sample sample;
 
-    // Create a clip
-    Clip clip1;
-
     enum ParamIds
     {
         NUM_PARAMS
@@ -26,12 +23,8 @@ struct FourTrack : VoxglitchSamplerModule
     FourTrack()
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS);
-
-        sample.load(asset::plugin(pluginInstance, "res/four_track/example.wav"));
-
-        clip1.setSample(&sample);
-
-        track1.addClip(clip1);
+        sample.load("e:/dev/example.wav");
+        track1.setSample(&sample);
     }
 
     // Autosave module data.  VCV Rack decides when this should be called.

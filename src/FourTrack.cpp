@@ -13,7 +13,6 @@
 
 using namespace vgLib_v2;
 
-#include "FourTrack/Clip.hpp"
 #include "FourTrack/TrackModel.hpp"
 #include "FourTrack/TrackWidget.hpp"
 

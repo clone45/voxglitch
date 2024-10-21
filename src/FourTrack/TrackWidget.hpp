@@ -6,14 +6,12 @@ struct TrackWidget : TransparentWidget
 {
     TrackModel *track_model = nullptr;
 
-    // New properties to manage resizing and dragging interactions
-    bool resizing = false;
-    bool dragging_start = false;
-    bool dragging_clip = false;
-    int resizing_clip_index = -1;
-    int dragging_clip_index = -1;
+    // New properties to manage dragging interactions
+    bool dragging = false;
     Vec drag_start_position;
-    Vec drag_clip_start_position;
+    float initial_visible_window_start;
+    float initial_visible_window_end;
+    float cumulative_drag_offset = 0.0f; // Accumulates the drag offset
 
     TrackWidget(float x, float y, float width, float height, TrackModel *track_model) 
     {
@@ -34,188 +32,128 @@ struct TrackWidget : TransparentWidget
         nvgFillColor(vg, nvgRGB(0x20, 0x20, 0x20));
         nvgFill(vg);
 
-        // Draw all clips
-        for (size_t i = 0; i < this->track_model->clips.size(); ++i) 
+        // Draw the waveform
+        if (track_model && track_model->sample && track_model->sample->isLoaded())
         {
-            this->track_model->clips[i].draw(vg, box.pos.x, box.pos.y, box.size.y);
+            drawWaveform(vg, box.pos.x, box.pos.y, box.size.x, box.size.y);
         }
 
         nvgRestore(vg);
     }
 
-    // Helper function to check if the mouse is near the right edge of a clip
-    int getClipIndexAtRightEdge(const Vec &mouse_pos, float resize_threshold = 5.0f)
+    void drawWaveform(NVGcontext *vg, float track_panel_x, float track_panel_y, float track_width, float track_height)
     {
-        for (size_t i = 0; i < track_model->clips.size(); ++i) 
-        {
-            Clip &clip = track_model->clips[i];
-            float clip_start_x = box.pos.x + clip.track_position;
-            float clip_end_x = clip_start_x + clip.clip_width_px;
+        nvgSave(vg);
+        nvgBeginPath(vg);
 
-            if (std::abs(mouse_pos.x - clip_end_x) <= resize_threshold &&
-                mouse_pos.y >= box.pos.y && mouse_pos.y <= (box.pos.y + box.size.y)) 
-            {
-                return i; // Return the index of the clip
-            }
+        // Determine the start and end indices in the averages vector that correspond to the visible sample window
+        unsigned int visible_average_start_index = track_model->visible_window_start / track_model->samples_per_average;
+        unsigned int visible_average_end_index = track_model->visible_window_end / track_model->samples_per_average;
+
+        // Clamp the indices to ensure they are within bounds of the averages vector
+        visible_average_start_index = std::min(visible_average_start_index, static_cast<unsigned int>(track_model->averages.size() - 1));
+        visible_average_end_index = std::min(visible_average_end_index, static_cast<unsigned int>(track_model->averages.size()));
+
+        // Debug: Output the number of averages being rendered
+        unsigned int num_averages_rendered = visible_average_end_index - visible_average_start_index;
+        DEBUG("Num averages rendered: %d", num_averages_rendered);
+
+
+        // Ensure the indices are valid
+        if (visible_average_start_index >= visible_average_end_index)
+        {
+            nvgRestore(vg); // Nothing to draw, just return
+            return;
         }
-        return -1; // Return -1 if no clip is found near the right edge
+
+        // Calculate the number of visible averages
+        unsigned int num_visible_averages = visible_average_end_index - visible_average_start_index;
+        float line_width = (track_width / static_cast<float>(num_visible_averages));
+
+        // Draw the visible portion of the waveform
+        for (unsigned int x = visible_average_start_index; x < visible_average_end_index; x++)
+        {
+            float x_position = track_panel_x + ((x - visible_average_start_index) * line_width);
+            float average_height = track_model->averages[x] * track_height;
+            float y_position = track_panel_y + (track_height - average_height) / 2.0f;
+
+            nvgRect(vg, x_position, y_position, line_width, average_height);
+        }
+
+        nvgFillColor(vg, nvgRGBA(255, 255, 255, 200)); // Light grey color for the waveform
+        nvgFill(vg);
+        nvgRestore(vg);
     }
 
-    // Helper function to check if the mouse is near the left edge of a clip
-    int getClipIndexAtLeftEdge(const Vec &mouse_pos, float resize_threshold = 5.0f)
+    void onHoverScroll(const event::HoverScroll &e) override
     {
-        for (size_t i = 0; i < track_model->clips.size(); ++i) 
+        if (track_model && track_model->sample && track_model->sample->isLoaded())
         {
-            Clip &clip = track_model->clips[i];
-            float clip_start_x = box.pos.x + clip.track_position;
+            // Zoom factor adjustment
+            float zoom_factor = 1.1f;
+            float mouse_relative_x = (e.pos.x - box.pos.x) / box.size.x; // Mouse position relative to the track (0.0 - 1.0)
 
-            if (std::abs(mouse_pos.x - clip_start_x) <= resize_threshold &&
-                mouse_pos.y >= box.pos.y && mouse_pos.y <= (box.pos.y + box.size.y)) 
+            // Calculate the focus point in the sample based on the mouse position
+            float focus_point = track_model->visible_window_start + mouse_relative_x * (track_model->visible_window_end - track_model->visible_window_start);
+
+            if (e.scrollDelta.y > 0)
             {
-                return i; // Return the index of the clip
+                // Zoom in
+                float window_size = track_model->visible_window_end - track_model->visible_window_start;
+                float new_window_size = window_size / zoom_factor;
+                track_model->visible_window_start = std::max(0.0f, focus_point - (mouse_relative_x * new_window_size));
+                track_model->visible_window_end = std::min(static_cast<float>(track_model->sample->size()), track_model->visible_window_start + new_window_size);
             }
+            else if (e.scrollDelta.y < 0)
+            {
+                // Zoom out
+                float window_size = track_model->visible_window_end - track_model->visible_window_start;
+                float new_window_size = window_size * zoom_factor;
+                track_model->visible_window_start = std::max(0.0f, focus_point - (mouse_relative_x * new_window_size));
+                track_model->visible_window_end = std::min(static_cast<float>(track_model->sample->size()), track_model->visible_window_start + new_window_size);
+            }
+            e.consume(this);
         }
-        return -1; // Return -1 if no clip is found near the left edge
     }
 
-    // Handling mouse button presses
     void onButton(const event::Button &e) override
     {
         if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) 
         {
             e.consume(this);
+            dragging = true;
             drag_start_position = e.pos;
 
-            // Detect if click is near the right boundary of any clip
-            int clip_index = getClipIndexAtRightEdge(e.pos);
-            if (clip_index != -1) 
+            // Record the initial window for reference while dragging
+            if (track_model)
             {
-                // Start resizing this clip from the right edge
-                resizing = true;
-                resizing_clip_index = clip_index;
-                dragging_start = false;
-                return;
-            }
-
-            // Detect if click is near the left boundary of any clip
-            clip_index = getClipIndexAtLeftEdge(e.pos);
-            if (clip_index != -1) 
-            {
-                // Start dragging the start of this clip
-                resizing = true;
-                resizing_clip_index = clip_index;
-                dragging_start = true;
-                return;
-            }
-
-            // Detect if click is within the body of a clip (not edges)
-            for (size_t i = 0; i < track_model->clips.size(); ++i) 
-            {
-                Clip &clip = track_model->clips[i];
-                float clip_start_x = box.pos.x + clip.track_position;
-                float clip_end_x = clip_start_x + clip.clip_width_px;
-
-                if (e.pos.x > clip_start_x && e.pos.x < clip_end_x &&
-                    e.pos.y >= box.pos.y && e.pos.y <= (box.pos.y + box.size.y))
-                {
-                    // Start dragging the clip
-                    dragging_clip = true;
-                    dragging_clip_index = i;
-                    drag_clip_start_position = e.pos; // Store starting position
-                    return;
-                }
+                initial_visible_window_start = track_model->visible_window_start;
+                initial_visible_window_end = track_model->visible_window_end;
+                cumulative_drag_offset = 0.0f; // Reset cumulative drag offset
             }
         }
         else if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_RELEASE) 
         {
-            // Stop resizing or dragging
-            resizing = false;
-            resizing_clip_index = -1;
-            dragging_start = false;
-            dragging_clip = false;
-            dragging_clip_index = -1;
+            dragging = false;
         }
     }
 
-    // Handling mouse dragging for resizing and dragging
     void onDragMove(const event::DragMove &e) override
     {
-        TransparentWidget::onDragMove(e);
-        float zoom = getAbsoluteZoom();
-        Vec drag_delta = e.mouseDelta.div(zoom);
-
-        if (dragging_clip && dragging_clip_index != -1) 
+        if (dragging && track_model)
         {
-            Clip &clip = track_model->clips[dragging_clip_index];
-            float new_position = clip.track_position + drag_delta.x;
+            e.consume(this);
+            // Accumulate the horizontal drag delta
+            cumulative_drag_offset += e.mouseDelta.x;
 
-            // Ensure new position is within bounds
-            new_position = std::max(new_position, 0.0f); // Prevent moving off left edge
-            // Optionally limit moving off the right of the track
+            // Convert cumulative_drag_offset to a relative movement in the sample's time space
+            float window_width = initial_visible_window_end - initial_visible_window_start;
+            float track_width = box.size.x;
+            float sample_delta = (cumulative_drag_offset / track_width) * window_width;
 
-            clip.updateClipPosition(new_position); // Update position
-            drag_clip_start_position = drag_clip_start_position.plus(drag_delta); // Update drag start position
+            // Update visible window based on drag
+            track_model->visible_window_start = std::max(0.0f, initial_visible_window_start - sample_delta);
+            track_model->visible_window_end = std::min(static_cast<float>(track_model->sample->size()), track_model->visible_window_start + window_width);
         }
-        else if (resizing && resizing_clip_index != -1) 
-        {
-            Clip &clip = track_model->clips[resizing_clip_index];
-
-            if (dragging_start) 
-            {
-                // Dragging the start of the clip
-                float new_start_position = clip.track_position + drag_delta.x;
-                new_start_position = std::max(new_start_position, 0.0f); // Ensure it doesn't go negative
-                float max_start_position = clip.track_position + clip.clip_width_px - 10.0f; // Ensure there's a minimum width
-                new_start_position = std::min(new_start_position, max_start_position);
-
-                // Update clip's start position and width accordingly
-                clip.updateClipWidthFromLeft(new_start_position);
-            } 
-            else 
-            {
-                // Resizing the clip from the right edge
-                float new_width = clip.clip_width_px + drag_delta.x;
-                new_width = std::max(new_width, 10.0f); // Set a minimum width to avoid collapsing
-
-                // Update clip width and recalculate sample window
-                clip.clip_width_px = new_width;
-                clip.updateSampleWindowEnd(); // Recalculate sample_window_end based on new width
-            }
-
-            drag_start_position = drag_start_position.plus(drag_delta); // Update drag start position
-        }
-    }
-
-    void onHover(const event::Hover &e) override
-    {
-        TransparentWidget::onHover(e);
-        e.consume(this);
-
-        // Check if the mouse is near the right edge of any clip
-        int clip_index = getClipIndexAtRightEdge(e.pos);
-        if (clip_index != -1) 
-        {
-            // Change the mouse pointer to indicate resizing from the right edge
-            glfwSetCursor(APP->window->win, glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
-            return;
-        }
-
-        // Check if the mouse is near the left edge of any clip
-        clip_index = getClipIndexAtLeftEdge(e.pos);
-        if (clip_index != -1) 
-        {
-            // Change the mouse pointer to indicate resizing from the left edge
-            glfwSetCursor(APP->window->win, glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
-            return;
-        }
-
-        // Reset cursor if not near any edge
-        glfwSetCursor(APP->window->win, NULL);
-    }
-
-    void onLeave(const event::Leave &e) override
-    {
-        TransparentWidget::onLeave(e);
-        glfwSetCursor(APP->window->win, NULL);
     }
 };
