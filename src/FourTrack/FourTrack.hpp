@@ -1,3 +1,7 @@
+#include "Marker.hpp"
+
+static int module_count = 0;
+
 struct FourTrack : VoxglitchSamplerModule
 {
 
@@ -14,7 +18,9 @@ struct FourTrack : VoxglitchSamplerModule
     unsigned int playback_position = 0;
     float output_left = 0.0f;
     float output_right = 0.0f;
-    int active_marker = 0;  // Track which marker is currently active
+    int active_marker = 0;  // Track which marker output is currently selected (0-31)
+    dsp::PulseGenerator marker_pulse_generators[32];
+    std::map<unsigned int, std::vector<Marker>> markers;  // position -> markers at that position
 
     enum ParamIds
     {
@@ -43,6 +49,10 @@ struct FourTrack : VoxglitchSamplerModule
 
     FourTrack()
     {
+        module_count++;
+        DEBUG("FourTrack constructor called. Total instances: %d", module_count);
+
+
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
         sample.load("e:/dev/example.wav");
         track.setSample(&sample);
@@ -62,19 +72,76 @@ struct FourTrack : VoxglitchSamplerModule
         }
         params[MARKER_BUTTONS].setValue(1.f);
         active_marker = 0;
+
+        // Add a test marker at 3 seconds (assuming 44.1kHz sample rate)
+        unsigned int test_position = 132300;  // 3 seconds * 44100 samples/sec
+        markers[test_position].push_back(Marker(2));  // Output #3
+
+        track.setMarkers(&markers);
+    }
+
+    void addMarker(unsigned int position) {
+        markers[position].push_back(Marker(active_marker));
+    }
+
+    void removeMarker(unsigned int position) {
+        markers.erase(position);
+    }
+
+    // Optionally, remove markers for a specific output at a position
+    void removeMarkerForOutput(unsigned int position, int output_number) {
+        auto it = markers.find(position);
+        if(it != markers.end()) {
+            auto& marker_list = it->second;
+            marker_list.erase(
+                std::remove_if(
+                    marker_list.begin(),
+                    marker_list.end(),
+                    [output_number](const Marker& m) { return m.output_number == output_number; }
+                ),
+                marker_list.end()
+            );
+            // If no markers left at this position, remove the map entry
+            if(marker_list.empty()) {
+                markers.erase(it);
+            }
+        }
     }
 
     // Autosave module data.  VCV Rack decides when this should be called.
-    json_t *dataToJson() override
-    {
-        json_t *root = json_object();
-        return root;
+
+    /*
+    json_t *dataToJson() override {
+        json_t *rootJ = json_object();
+        
+        json_t *markersJ = json_array();
+        for(const auto& pos_markers : markers) {
+            for(const Marker& m : pos_markers.second) {
+                json_t *markerJ = json_object();
+                json_object_set_new(markerJ, "position", json_integer(pos_markers.first));
+                json_object_set_new(markerJ, "output", json_integer(m.output_number));
+                json_array_append_new(markersJ, markerJ);
+            }
+        }
+        json_object_set_new(rootJ, "markers", markersJ);
+        
+        return rootJ;
     }
 
-    // Load module data
-    void dataFromJson(json_t *root) override
-    {
+    void dataFromJson(json_t *rootJ) override {
+        markers.clear();
+        json_t *markersJ = json_object_get(rootJ, "markers");
+        if(markersJ) {
+            size_t i;
+            json_t *markerJ;
+            json_array_foreach(markersJ, i, markerJ) {
+                unsigned int pos = json_integer_value(json_object_get(markerJ, "position"));
+                int out = json_integer_value(json_object_get(markerJ, "output"));
+                markers[pos].push_back(Marker(out));
+            }
+        }
     }
+    */
 
     void process(const ProcessArgs &args) override
     {
@@ -100,6 +167,21 @@ struct FourTrack : VoxglitchSamplerModule
         // Handle playback
         if (playing && sample.loaded)
         {
+            auto it = markers.find(playback_position);
+            if(it != markers.end()) {
+                // Trigger pulses for all markers at this position
+                for(const Marker& marker : it->second) {
+                    marker_pulse_generators[marker.output_number].trigger(1e-3f); // 1ms trigger
+                }
+            }
+
+            // Process all pulse generators and set outputs
+            for(int i = 0; i < 32; i++) {
+                outputs[MARKER_OUTPUTS + i].setVoltage(
+                    marker_pulse_generators[i].process(args.sampleTime) ? 10.0f : 0.0f
+                );
+            }
+
             if (playback_position < sample.size())
             {
                 sample.read(playback_position, &output_left, &output_right);
@@ -129,7 +211,6 @@ struct FourTrack : VoxglitchSamplerModule
                 // Set new active button
                 active_marker = i;
                 params[MARKER_BUTTONS + i].setValue(1.f);
-                // Here you can add any other logic needed when a marker changes
             }
             // Ensure active marker stays pressed
             else if (i == active_marker && params[MARKER_BUTTONS + i].getValue() == 0.f) {

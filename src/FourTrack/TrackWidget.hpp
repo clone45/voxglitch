@@ -6,12 +6,19 @@ struct TrackWidget : TransparentWidget
 {
     TrackModel *track_model = nullptr;
 
-    // New properties to manage dragging interactions
+    // New properties to manage sample dragging interactions
     bool dragging = false;
     Vec drag_start_position;
     float initial_visible_window_start;
     float initial_visible_window_end;
     float cumulative_drag_offset = 0.0f; // Accumulates the drag offset
+
+    // New properties to manage marker dragging interactions
+    bool dragging_marker = false;
+    unsigned int drag_source_position = 0;  // Original position
+    std::vector<Marker>* markers_being_dragged = nullptr;
+    float drag_start_x = 0.0f;      // Where the drag began
+    float drag_current_x = 0.0f;    // Current dragging position
 
     TrackWidget(float x, float y, float width, float height, TrackModel *track_model) 
     {
@@ -23,7 +30,6 @@ struct TrackWidget : TransparentWidget
     void draw(const DrawArgs &args) override 
     {
         const auto vg = args.vg;
-
         nvgSave(vg);
 
         // Draw the track background
@@ -36,12 +42,11 @@ struct TrackWidget : TransparentWidget
         if (track_model && track_model->sample && track_model->sample->isLoaded())
         {
             drawWaveform(vg, box.pos.x, box.pos.y, box.size.x, box.size.y);
+            drawMarkers(args, box.pos.x, box.pos.y, box.size.x, box.size.y);
         }
 
         nvgRestore(vg);
     }
-
-
 
     void drawWaveform(NVGcontext *vg, float track_panel_x, float track_panel_y, float track_width, float track_height)
     {
@@ -108,6 +113,50 @@ struct TrackWidget : TransparentWidget
         nvgRestore(vg);
     }
 
+    // Add to TrackWidget::draw() after drawing the waveform
+    void drawMarkers(const DrawArgs& args, float track_panel_x, float track_panel_y, float track_width, float track_height) {
+        if (!track_model || !track_model->sample || !track_model->markers) return;
+
+        const auto vg = args.vg;
+        nvgSave(vg);
+
+        unsigned int visible_sample_start = track_model->visible_window_start;
+        unsigned int visible_sample_end = track_model->visible_window_end;
+        float samples_per_pixel = (visible_sample_end - visible_sample_start) / track_width;
+
+        float line_extension = track_height * 1.0f;
+        float triangle_height = 10.0f;
+
+        for (const auto& marker_pair : *(track_model->markers)) {
+            unsigned int pos = marker_pair.first;
+            
+            if (pos < visible_sample_start || pos > visible_sample_end) 
+                continue;
+
+            float x = track_panel_x + ((pos - visible_sample_start) / samples_per_pixel);
+
+            for (const auto& marker : marker_pair.second) {
+                // Draw triangle at top
+                nvgBeginPath(vg);
+                nvgMoveTo(vg, x, track_panel_y);  // Point at bottom
+                nvgLineTo(vg, x - 5, track_panel_y - triangle_height);  // Left point at top
+                nvgLineTo(vg, x + 5, track_panel_y - triangle_height);  // Right point at top
+                nvgClosePath(vg);
+                nvgFillColor(vg, nvgRGBA(32, 178, 170, 255));  // Back to teal
+                nvgFill(vg);
+
+                // Draw vertical line
+                nvgBeginPath(vg);
+                nvgMoveTo(vg, x, track_panel_y);
+                nvgLineTo(vg, x, track_panel_y + line_extension);
+                nvgStrokeColor(vg, nvgRGBA(32, 178, 170, 200));
+                nvgStrokeWidth(vg, 1.0f);
+                nvgStroke(vg);
+            }
+        }
+
+        nvgRestore(vg);
+    }
 
     void onHoverScroll(const event::HoverScroll &e) override
     {
@@ -140,44 +189,76 @@ struct TrackWidget : TransparentWidget
         }
     }
 
-    void onButton(const event::Button &e) override
-    {
-        if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) 
-        {
+    void onButton(const event::Button &e) override {
+        if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) {
             e.consume(this);
+            
+            if (track_model && track_model->markers) {
+                // Check each marker
+                for(auto& marker_pair : *(track_model->markers)) {
+                    float marker_x = box.pos.x + 
+                        ((marker_pair.first - track_model->visible_window_start) * box.size.x / 
+                        (track_model->visible_window_end - track_model->visible_window_start));
+                    
+                    if(std::abs(e.pos.x - marker_x) < 5.0f) {
+                        dragging_marker = true;
+                        drag_source_position = marker_pair.first;
+                        markers_being_dragged = &marker_pair.second;
+                        drag_start_x = e.pos.x;
+                        drag_current_x = e.pos.x;  // Initialize current position
+                        return;
+                    }
+                }
+            }
+
+            // If we didn't click a marker, handle normal waveform dragging
             dragging = true;
             drag_start_position = e.pos;
 
-            // Record the initial window for reference while dragging
-            if (track_model)
-            {
+            if (track_model) {
                 initial_visible_window_start = track_model->visible_window_start;
                 initial_visible_window_end = track_model->visible_window_end;
-                cumulative_drag_offset = 0.0f; // Reset cumulative drag offset
+                cumulative_drag_offset = 0.0f;
             }
         }
-        else if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_RELEASE) 
-        {
+        else if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_RELEASE) {
             dragging = false;
+            dragging_marker = false;
+            markers_being_dragged = nullptr;
         }
     }
 
-    void onDragMove(const event::DragMove &e) override
-    {
-        if (dragging && track_model)
-        {
-            e.consume(this);
-            // Accumulate the horizontal drag delta
+    void onDragMove(const event::DragMove &e) override {
+        e.consume(this);
+            
+        if (dragging_marker && markers_being_dragged && track_model && track_model->markers) {
+            float zoom = getAbsoluteZoom();
+            float current_x = drag_start_x + e.mouseDelta.x/zoom;
+            float relative_x = (current_x - box.pos.x) / box.size.x;
+            relative_x = rack::math::clamp(relative_x, 0.0f, 1.0f);
+            
+            unsigned int new_position = track_model->visible_window_start +
+                relative_x * (track_model->visible_window_end - track_model->visible_window_start);
+            
+            if (new_position != drag_source_position) {
+                std::vector<Marker> markers_copy = *markers_being_dragged;
+                track_model->markers->insert({new_position, markers_copy});
+                track_model->markers->erase(drag_source_position);
+                drag_source_position = new_position;
+                markers_being_dragged = &(track_model->markers->at(new_position));
+                drag_start_x = current_x;  // Update for next move
+            }
+        }
+        else if (dragging && track_model) {
+            // Handle normal waveform dragging
             cumulative_drag_offset += e.mouseDelta.x;
-
-            // Convert cumulative_drag_offset to a relative movement in the sample's time space
             float window_width = initial_visible_window_end - initial_visible_window_start;
             float track_width = box.size.x;
             float sample_delta = (cumulative_drag_offset / track_width) * window_width;
 
-            // Update visible window based on drag
             track_model->visible_window_start = std::max(0.0f, initial_visible_window_start - sample_delta);
-            track_model->visible_window_end = std::min(static_cast<float>(track_model->sample->size()), track_model->visible_window_start + window_width);
+            track_model->visible_window_end = std::min(static_cast<float>(track_model->sample->size()), 
+                track_model->visible_window_start + window_width);
         }
     }
 };

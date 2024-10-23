@@ -2,6 +2,8 @@
 #include <rack.hpp>
 #include <vector>
 
+#include "Marker.hpp"
+
 struct TrackModel
 {
     Sample *sample;
@@ -13,6 +15,8 @@ struct TrackModel
     float zoom_factor = 1.0f; // Zoom level, default is full view
     unsigned int visible_window_start = 0; // Start index of the visible window
     unsigned int visible_window_end = 0;   // End index of the visible window
+    
+    std::map<unsigned int, std::vector<Marker>>* markers = nullptr;
 
     void setSample(Sample *sample) 
     {
@@ -23,6 +27,10 @@ struct TrackModel
             computeAverages(); // Compute averages when sample is set
             normalizeAverages(); // Normalize them after computation
         }
+    }
+
+    void setMarkers(std::map<unsigned int, std::vector<Marker>>* markers_map) {
+        this->markers = markers_map;
     }
 
     // Method to adjust zoom level
