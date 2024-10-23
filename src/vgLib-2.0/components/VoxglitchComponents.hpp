@@ -21,6 +21,8 @@
 #include "VoxglitchSwitches.hpp"
 #include "VoxglitchWidget.hpp"
 
+#include "SmallLightBezel.hpp"
+
 #include "DigitalToggle.hpp"
 #include "DigitalSwitch.hpp"
 #include "DigitalRangeSelector.hpp"

@@ -41,6 +41,8 @@ struct TrackWidget : TransparentWidget
         nvgRestore(vg);
     }
 
+
+
     void drawWaveform(NVGcontext *vg, float track_panel_x, float track_panel_y, float track_width, float track_height)
     {
         nvgSave(vg);
@@ -96,7 +98,8 @@ struct TrackWidget : TransparentWidget
                 float y_position = track_panel_y + (track_height - average_height) / 2.0f;
 
                 // Draw the rectangle representing the chunk
-                nvgRect(vg, x_position, y_position, chunk_width, average_height);
+                float rect_overlap = chunk_width / 4.0f;
+                nvgRect(vg, x_position, y_position, (chunk_width + rect_overlap), average_height);
             }
         }
 

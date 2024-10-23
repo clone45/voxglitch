@@ -6,10 +6,9 @@ struct WaveformWidget : TransparentWidget
     bool refresh = true;
     float width = 0.0;
     float height = 0.0;
+    float indicator_width = 6.0;
+    NVGcolor indicator_color = nvgRGBA(255, 255, 255, 100);
 
-    // Sample *sample;
-    // bool *visible;
-    // float *playback_percentage;
     WaveformModel *waveform_modal;
 
     unsigned int sample_index = 0;
@@ -30,6 +29,26 @@ struct WaveformWidget : TransparentWidget
         this->waveform_modal = waveform_modal;
 
         box.size = Vec(width, height);
+        sample_filename = waveform_modal->sample->filename;
+
+        averages.reserve((unsigned int) width);
+
+        for (unsigned int i = 0; i < width; i++)
+        {
+            averages[i] = 0.0;
+        }
+    }
+
+    // Constructor with position
+    WaveformWidget(float x, float y, float width, float height, WaveformModel *waveform_modal)
+    {
+        box.pos = Vec(x, y);
+        box.size = Vec(width, height);
+
+        this->width = width;
+        this->height = height;
+        this->waveform_modal = waveform_modal;
+
         sample_filename = waveform_modal->sample->filename;
 
         averages.reserve((unsigned int) width);
@@ -141,6 +160,16 @@ struct WaveformWidget : TransparentWidget
         }
     }
 
+    void setIndicatorWidth(float width)
+    {
+        indicator_width = width;
+    }
+
+    void setIndicatorColor(NVGcolor color)
+    {
+        indicator_color = color;
+    }
+
     void drawWaveform(NVGcontext *vg)
     {
         for (unsigned int x = 0; x < this->width; x++)
@@ -166,7 +195,7 @@ struct WaveformWidget : TransparentWidget
         float line_height = (average_height * this->height);
 
         nvgBeginPath(vg);
-        nvgRect(vg, x, (this->height - line_height) / 2.0, 1.0, line_height);
+        nvgRect(vg, box.pos.x + x, (this->height - line_height) / 2.0, 1.0, line_height);
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 200));
         nvgFill(vg);
     }
@@ -176,15 +205,15 @@ struct WaveformWidget : TransparentWidget
         float x_position = clamp(waveform_modal->playback_percentage * width, (float) 0.0, (float) width);
 
         nvgBeginPath(vg);
-        nvgRect(vg, x_position, 2.0, 6.0, this->height);
-        nvgFillColor(vg, nvgRGBA(255, 255, 255, 100));
+        nvgRect(vg, box.pos.x + x_position, 0.0, indicator_width, this->height);
+        nvgFillColor(vg, indicator_color);
         nvgFill(vg);
     }
 
     void highlightSection(NVGcontext *vg)
     {
         nvgBeginPath(vg);
-        nvgRect(vg, waveform_modal->highlight_section_x, 0.0, waveform_modal->highlight_section_width, this->height);
+        nvgRect(vg, box.pos.x + waveform_modal->highlight_section_x, 0.0, waveform_modal->highlight_section_width, this->height);
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 80));
         nvgFill(vg);
     }
