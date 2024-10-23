@@ -9,6 +9,7 @@ struct TrackWidget : TransparentWidget
     // New properties to manage sample dragging interactions
     bool dragging = false;
     Vec drag_start_position;
+    Vec drag_position;
     float initial_visible_window_start;
     float initial_visible_window_end;
     float cumulative_drag_offset = 0.0f; // Accumulates the drag offset
@@ -190,9 +191,14 @@ struct TrackWidget : TransparentWidget
     }
 
     void onButton(const event::Button &e) override {
+
+        TransparentWidget::onButton(e);
+        e.consume(this);
+
         if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) {
-            e.consume(this);
             
+            drag_position = e.pos;  // Store the click position
+
             if (track_model && track_model->markers) {
                 // Check each marker
                 for(auto& marker_pair : *(track_model->markers)) {
@@ -260,5 +266,19 @@ struct TrackWidget : TransparentWidget
             track_model->visible_window_end = std::min(static_cast<float>(track_model->sample->size()), 
                 track_model->visible_window_start + window_width);
         }
+    }
+
+    void onDoubleClick(const event::DoubleClick &e) override {
+        if (track_model && track_model->markers) {
+            float relative_x = (drag_position.x - box.pos.x) / box.size.x;
+            unsigned int click_position = track_model->visible_window_start + 
+                relative_x * (track_model->visible_window_end - track_model->visible_window_start);
+            
+            // Add marker at click position
+            track_model->addMarker(click_position);
+            
+            DEBUG("Added marker at position %d", click_position);
+        }
+        e.consume(this);
     }
 };

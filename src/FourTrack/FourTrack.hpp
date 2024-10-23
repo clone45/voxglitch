@@ -211,6 +211,8 @@ struct FourTrack : VoxglitchSamplerModule
                 // Set new active button
                 active_marker = i;
                 params[MARKER_BUTTONS + i].setValue(1.f);
+
+                track.setActiveMarker(active_marker);
             }
             // Ensure active marker stays pressed
             else if (i == active_marker && params[MARKER_BUTTONS + i].getValue() == 0.f) {

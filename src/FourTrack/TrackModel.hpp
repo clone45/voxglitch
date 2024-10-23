@@ -17,6 +17,7 @@ struct TrackModel
     unsigned int visible_window_end = 0;   // End index of the visible window
     
     std::map<unsigned int, std::vector<Marker>>* markers = nullptr;
+    int active_marker = 0;
 
     void setSample(Sample *sample) 
     {
@@ -31,6 +32,16 @@ struct TrackModel
 
     void setMarkers(std::map<unsigned int, std::vector<Marker>>* markers_map) {
         this->markers = markers_map;
+    }
+
+    void addMarker(unsigned int position) {
+        if (markers) {
+            (*markers)[position].push_back(Marker(active_marker));
+        }
+    }
+
+    void setActiveMarker(int marker) {
+        active_marker = marker;
     }
 
     // Method to adjust zoom level
