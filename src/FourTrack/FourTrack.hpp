@@ -1,7 +1,5 @@
 #include "Marker.hpp"
 
-static int module_count = 0;
-
 struct FourTrack : VoxglitchSamplerModule
 {
 
@@ -49,13 +47,17 @@ struct FourTrack : VoxglitchSamplerModule
 
     FourTrack()
     {
-        module_count++;
-        DEBUG("FourTrack constructor called. Total instances: %d", module_count);
-
-
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+
         sample.load("e:/dev/example.wav");
         track.setSample(&sample);
+
+        // Set up the callback
+        track.onMarkerSelected = [this](int output_number) {
+            params[MARKER_BUTTONS + active_marker].setValue(0.f);
+            params[MARKER_BUTTONS + output_number].setValue(1.f);
+            active_marker = output_number;
+        };        
 
         // Set the waveform model sample for the lower waveform display
         waveform_model.sample = &sample;
@@ -72,10 +74,6 @@ struct FourTrack : VoxglitchSamplerModule
         }
         params[MARKER_BUTTONS].setValue(1.f);
         active_marker = 0;
-
-        // Add a test marker at 3 seconds (assuming 44.1kHz sample rate)
-        unsigned int test_position = 132300;  // 3 seconds * 44100 samples/sec
-        markers[test_position].push_back(Marker(2));  // Output #3
 
         track.setMarkers(&markers);
     }
@@ -110,7 +108,6 @@ struct FourTrack : VoxglitchSamplerModule
 
     // Autosave module data.  VCV Rack decides when this should be called.
 
-    /*
     json_t *dataToJson() override {
         json_t *rootJ = json_object();
         
@@ -141,7 +138,6 @@ struct FourTrack : VoxglitchSamplerModule
             }
         }
     }
-    */
 
     void process(const ProcessArgs &args) override
     {

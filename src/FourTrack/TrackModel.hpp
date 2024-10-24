@@ -7,6 +7,7 @@
 struct TrackModel
 {
     Sample *sample;
+
     unsigned int samples_per_average = 1000; // Number of samples to average per chunk
     std::vector<float> averages; // Store waveform averages
     float max_average = 0.0;
@@ -19,6 +20,9 @@ struct TrackModel
     std::map<unsigned int, std::vector<Marker>>* markers = nullptr;
     int active_marker = 0;
 
+    // Callback for when a marker is selected
+    std::function<void(int)> onMarkerSelected = nullptr;
+
     void setSample(Sample *sample) 
     {
         this->sample = sample;
@@ -30,6 +34,13 @@ struct TrackModel
         }
     }
 
+    void selectMarker(int output_number) {
+        active_marker = output_number;
+        if (onMarkerSelected) {
+            onMarkerSelected(output_number);
+        }
+    }
+
     void setMarkers(std::map<unsigned int, std::vector<Marker>>* markers_map) {
         this->markers = markers_map;
     }
@@ -37,6 +48,12 @@ struct TrackModel
     void addMarker(unsigned int position) {
         if (markers) {
             (*markers)[position].push_back(Marker(active_marker));
+        }
+    }
+
+    void removeMarker(unsigned int position) {
+        if (markers) {
+            markers->erase(position);
         }
     }
 

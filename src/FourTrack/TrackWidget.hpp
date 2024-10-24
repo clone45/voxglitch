@@ -128,6 +128,10 @@ struct TrackWidget : TransparentWidget
         float line_extension = track_height * 1.0f;
         float triangle_height = 10.0f;
 
+        // Define our colors
+        NVGcolor inactive_color = nvgRGBA(100, 100, 100, 180);   // Gray for inactive
+        NVGcolor active_color = nvgRGBA(32, 178, 170, 255);      // Bright teal for active
+
         for (const auto& marker_pair : *(track_model->markers)) {
             unsigned int pos = marker_pair.first;
             
@@ -137,20 +141,26 @@ struct TrackWidget : TransparentWidget
             float x = track_panel_x + ((pos - visible_sample_start) / samples_per_pixel);
 
             for (const auto& marker : marker_pair.second) {
+
+                // Choose color based on whether this marker matches the active output
+                NVGcolor marker_color = (marker.output_number == track_model->active_marker) 
+                    ? active_color 
+                    : inactive_color;
+
                 // Draw triangle at top
                 nvgBeginPath(vg);
                 nvgMoveTo(vg, x, track_panel_y);  // Point at bottom
                 nvgLineTo(vg, x - 5, track_panel_y - triangle_height);  // Left point at top
                 nvgLineTo(vg, x + 5, track_panel_y - triangle_height);  // Right point at top
                 nvgClosePath(vg);
-                nvgFillColor(vg, nvgRGBA(32, 178, 170, 255));  // Back to teal
+                nvgFillColor(vg, marker_color);  // Back to teal
                 nvgFill(vg);
 
                 // Draw vertical line
                 nvgBeginPath(vg);
                 nvgMoveTo(vg, x, track_panel_y);
                 nvgLineTo(vg, x, track_panel_y + line_extension);
-                nvgStrokeColor(vg, nvgRGBA(32, 178, 170, 200));
+                nvgStrokeColor(vg, marker_color);
                 nvgStrokeWidth(vg, 1.0f);
                 nvgStroke(vg);
             }
@@ -191,33 +201,48 @@ struct TrackWidget : TransparentWidget
     }
 
     void onButton(const event::Button &e) override {
-
         TransparentWidget::onButton(e);
         e.consume(this);
 
-        if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) {
-            
-            drag_position = e.pos;  // Store the click position
+        if (track_model && track_model->markers) {
+            // Convert mouse position to marker position for hit testing
+            float marker_distance = 5.0f;  // How close you need to click to a marker
 
-            if (track_model && track_model->markers) {
-                // Check each marker
-                for(auto& marker_pair : *(track_model->markers)) {
-                    float marker_x = box.pos.x + 
-                        ((marker_pair.first - track_model->visible_window_start) * box.size.x / 
-                        (track_model->visible_window_end - track_model->visible_window_start));
-                    
-                    if(std::abs(e.pos.x - marker_x) < 5.0f) {
+            for(auto& marker_pair : *(track_model->markers)) {
+                float marker_x = box.pos.x + 
+                    ((marker_pair.first - track_model->visible_window_start) * box.size.x / 
+                    (track_model->visible_window_end - track_model->visible_window_start));
+                
+                if(std::abs(e.pos.x - marker_x) < marker_distance) {
+                    // Left click - handle dragging (existing code)
+                    if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) {
                         dragging_marker = true;
                         drag_source_position = marker_pair.first;
                         markers_being_dragged = &marker_pair.second;
                         drag_start_x = e.pos.x;
-                        drag_current_x = e.pos.x;  // Initialize current position
+                        drag_current_x = e.pos.x;
+
+                        // Select the output of the clicked marker
+                        // If there are multiple markers at this position, use the first one
+                        if (!marker_pair.second.empty()) {
+                            track_model->selectMarker(marker_pair.second[0].output_number);
+                        }
+
+                        return;
+                    }
+                    // Right click - remove marker
+                    else if (e.button == GLFW_MOUSE_BUTTON_RIGHT && e.action == GLFW_PRESS) {
+                        track_model->removeMarker(marker_pair.first);
+                        DEBUG("Removed marker at position %d", marker_pair.first);
                         return;
                     }
                 }
             }
+        }
 
-            // If we didn't click a marker, handle normal waveform dragging
+        // If we didn't hit a marker, handle normal left-click dragging
+        if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) {
+            drag_position = e.pos;
             dragging = true;
             drag_start_position = e.pos;
 
