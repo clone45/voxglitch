@@ -21,6 +21,30 @@ struct FourTrackWidget : VoxglitchSamplerModuleWidget
         addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("stop_input"), module, FourTrack::STOP_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("reset_input"), module, FourTrack::RESET_INPUT));
 
+        // Start, stop, reset buttons
+
+        Vec start_button_pos = panelHelper.findNamed("start_button");
+        DEBUG("Start button position: (%f, %f)", start_button_pos.x, start_button_pos.y);
+
+        addParam(createLightParamCentered<VCVLightLatch<MediumSimpleLight<GreenLight>>>(
+            panelHelper.findNamed("start_button"), 
+            module, 
+            FourTrack::START_BUTTON, 
+            FourTrack::START_LIGHT
+        ));
+        addParam(createLightParamCentered<VCVLightLatch<MediumSimpleLight<RedLight>>>(
+            panelHelper.findNamed("stop_button"), 
+            module, 
+            FourTrack::STOP_BUTTON, 
+            FourTrack::STOP_LIGHT
+        ));
+        addParam(createLightParamCentered<VCVLightLatch<MediumSimpleLight<WhiteLight>>>(
+            panelHelper.findNamed("reset_button"), 
+            module, 
+            FourTrack::RESET_BUTTON, 
+            FourTrack::RESET_LIGHT
+        ));
+
         // Left and right outputs
         addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("left_output"), module, FourTrack::OUTPUT_LEFT));
         addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("right_output"), module, FourTrack::OUTPUT_RIGHT));
@@ -44,11 +68,11 @@ struct FourTrackWidget : VoxglitchSamplerModuleWidget
         // Add the track widgets
         if(module)
         {
-            TrackWidget *track_widget = new TrackWidget(46.0, 15.0, 468.0, 250.0, &module->track);
+            TrackWidget *track_widget = new TrackWidget(92.0, 30.0, 468.0, 250.0, &module->track);
             addChild(track_widget);
 
             // Add the lower waveform widget
-            WaveformWidget *waveform_widget = new WaveformWidget(46.0, 305.0, 468.0, 35.0, &module->waveform_model);
+            WaveformWidget *waveform_widget = new WaveformWidget(92.0, 305.0, 468.0, 35.0, &module->waveform_model);
             waveform_widget->visible = true;
             waveform_widget->setIndicatorWidth(1.0);
             waveform_widget->setIndicatorColor(nvgRGBA(255, 0, 0, 255));

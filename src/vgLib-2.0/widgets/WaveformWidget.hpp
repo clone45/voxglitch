@@ -195,7 +195,7 @@ struct WaveformWidget : TransparentWidget
         float line_height = (average_height * this->height);
 
         nvgBeginPath(vg);
-        nvgRect(vg, box.pos.x + x, (this->height - line_height) / 2.0, 1.0, line_height);
+        nvgRect(vg, x, (this->height - line_height) / 2.0, 1.0, line_height);
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 200));
         nvgFill(vg);
     }
@@ -205,7 +205,7 @@ struct WaveformWidget : TransparentWidget
         float x_position = clamp(waveform_modal->playback_percentage * width, (float) 0.0, (float) width);
 
         nvgBeginPath(vg);
-        nvgRect(vg, box.pos.x + x_position, 0.0, indicator_width, this->height);
+        nvgRect(vg, x_position, 0.0, indicator_width, this->height);
         nvgFillColor(vg, indicator_color);
         nvgFill(vg);
     }
@@ -213,7 +213,7 @@ struct WaveformWidget : TransparentWidget
     void highlightSection(NVGcontext *vg)
     {
         nvgBeginPath(vg);
-        nvgRect(vg, box.pos.x + waveform_modal->highlight_section_x, 0.0, waveform_modal->highlight_section_width, this->height);
+        nvgRect(vg, waveform_modal->highlight_section_x, 0.0, waveform_modal->highlight_section_width, this->height);
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 80));
         nvgFill(vg);
     }

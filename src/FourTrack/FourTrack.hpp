@@ -18,11 +18,15 @@ struct FourTrack : VoxglitchSamplerModule
     float output_right = 0.0f;
     int active_marker = 0;  // Track which marker output is currently selected (0-31)
     dsp::PulseGenerator marker_pulse_generators[32];
+    dsp::PulseGenerator reset_light_pulse;
     std::map<unsigned int, std::vector<Marker>> markers;  // position -> markers at that position
 
     enum ParamIds
     {
         ENUMS(MARKER_BUTTONS, 32),
+        START_BUTTON,
+        STOP_BUTTON,
+        RESET_BUTTON,
         NUM_PARAMS
     };
     enum InputIds
@@ -42,6 +46,9 @@ struct FourTrack : VoxglitchSamplerModule
     enum LightIds
     {
         ENUMS(MARKER_LIGHTS, 32),
+        START_LIGHT,
+        STOP_LIGHT,
+        RESET_LIGHT,
         NUM_LIGHTS
     };
 
@@ -74,6 +81,11 @@ struct FourTrack : VoxglitchSamplerModule
         }
         params[MARKER_BUTTONS].setValue(1.f);
         active_marker = 0;
+
+        // Configure the transport buttons
+	    configSwitch(START_BUTTON, 0.f, 1.f, 0.f, "Start");
+        configSwitch(STOP_BUTTON, 0.f, 1.f, 0.f, "Stop");
+        configSwitch(RESET_BUTTON, 0.f, 1.f, 0.f, "Reset");
 
         track.setMarkers(&markers);
     }
@@ -145,6 +157,24 @@ struct FourTrack : VoxglitchSamplerModule
         bool start_triggered = start_trigger.process(inputs[START_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger);
         bool stop_triggered = stop_trigger.process(inputs[STOP_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger);
 
+        // Also handle button presses
+        if (params[START_BUTTON].getValue() > 0.f) {
+            start_triggered = true;
+            stop_triggered = false;
+            params[START_BUTTON].setValue(0.f);
+        }
+
+        if (params[STOP_BUTTON].getValue() > 0.f) {
+            stop_triggered = true;
+            start_triggered = false;
+            params[STOP_BUTTON].setValue(0.f);
+        }
+
+        if (params[RESET_BUTTON].getValue() > 0.f) {
+            reset_triggered = true;
+            params[RESET_BUTTON].setValue(0.f);
+        }
+
         if (start_triggered)
         {
             playing = true;
@@ -157,6 +187,7 @@ struct FourTrack : VoxglitchSamplerModule
 
         if (reset_triggered)
         {
+            reset_light_pulse.trigger(0.15);
             playback_position = 0;
         }
 
@@ -216,6 +247,11 @@ struct FourTrack : VoxglitchSamplerModule
             }
             // Update lights to match button states
             lights[MARKER_LIGHTS + i].setBrightness(params[MARKER_BUTTONS + i].getValue());
-        }      
+        }   
+
+        // light up start, stop, reset buttons
+        lights[START_LIGHT].setBrightness(playing ? 1.f : 0.f);
+        lights[STOP_LIGHT].setBrightness(playing ? 0.f : 1.f);
+        lights[RESET_LIGHT].setBrightness(reset_light_pulse.process(args.sampleTime) ? 1.f : 0.f);  
     }
 };

@@ -35,21 +35,21 @@ struct TrackWidget : TransparentWidget
 
         // Draw the track background
         nvgBeginPath(vg);
-        nvgRect(vg, box.pos.x, box.pos.y, box.size.x, box.size.y);
-        nvgFillColor(vg, nvgRGB(0x20, 0x20, 0x20));
+        nvgRect(vg, 0, 0, box.size.x, box.size.y);
+        nvgFillColor(vg, nvgRGB(0x10, 0x20, 0x20));
         nvgFill(vg);
 
         // Draw the waveform
         if (track_model && track_model->sample && track_model->sample->isLoaded())
         {
-            drawWaveform(vg, box.pos.x, box.pos.y, box.size.x, box.size.y);
-            drawMarkers(args, box.pos.x, box.pos.y, box.size.x, box.size.y);
+            drawWaveform(vg, box.size.x, box.size.y);
+            drawMarkers(args, box.size.x, box.size.y);
         }
 
         nvgRestore(vg);
     }
 
-    void drawWaveform(NVGcontext *vg, float track_panel_x, float track_panel_y, float track_width, float track_height)
+    void drawWaveform(NVGcontext *vg, float track_width, float track_height)
     {
         nvgSave(vg);
         nvgBeginPath(vg);
@@ -100,8 +100,8 @@ struct TrackWidget : TransparentWidget
                 average_height *= track_height;
 
                 // Calculate the x and y position for drawing
-                float x_position = track_panel_x + chunk_index * chunk_width;
-                float y_position = track_panel_y + (track_height - average_height) / 2.0f;
+                float x_position = chunk_index * chunk_width;
+                float y_position = (track_height - average_height) / 2.0f;
 
                 // Draw the rectangle representing the chunk
                 float rect_overlap = chunk_width / 4.0f;
@@ -115,7 +115,7 @@ struct TrackWidget : TransparentWidget
     }
 
     // Add to TrackWidget::draw() after drawing the waveform
-    void drawMarkers(const DrawArgs& args, float track_panel_x, float track_panel_y, float track_width, float track_height) {
+    void drawMarkers(const DrawArgs& args, float track_width, float track_height) {
         if (!track_model || !track_model->sample || !track_model->markers) return;
 
         const auto vg = args.vg;
@@ -138,7 +138,7 @@ struct TrackWidget : TransparentWidget
             if (pos < visible_sample_start || pos > visible_sample_end) 
                 continue;
 
-            float x = track_panel_x + ((pos - visible_sample_start) / samples_per_pixel);
+            float x = ((pos - visible_sample_start) / samples_per_pixel);
 
             for (const auto& marker : marker_pair.second) {
 
@@ -149,17 +149,17 @@ struct TrackWidget : TransparentWidget
 
                 // Draw triangle at top
                 nvgBeginPath(vg);
-                nvgMoveTo(vg, x, track_panel_y);  // Point at bottom
-                nvgLineTo(vg, x - 5, track_panel_y - triangle_height);  // Left point at top
-                nvgLineTo(vg, x + 5, track_panel_y - triangle_height);  // Right point at top
+                nvgMoveTo(vg, x, 0);  // Point at bottom
+                nvgLineTo(vg, x - 5, 0 - triangle_height);  // Left point at top
+                nvgLineTo(vg, x + 5, 0 - triangle_height);  // Right point at top
                 nvgClosePath(vg);
                 nvgFillColor(vg, marker_color);  // Back to teal
                 nvgFill(vg);
 
                 // Draw vertical line
                 nvgBeginPath(vg);
-                nvgMoveTo(vg, x, track_panel_y);
-                nvgLineTo(vg, x, track_panel_y + line_extension);
+                nvgMoveTo(vg, x, 0);
+                nvgLineTo(vg, x, line_extension);
                 nvgStrokeColor(vg, marker_color);
                 nvgStrokeWidth(vg, 1.0f);
                 nvgStroke(vg);
@@ -204,14 +204,15 @@ struct TrackWidget : TransparentWidget
         TransparentWidget::onButton(e);
         e.consume(this);
 
+        DEBUG("TrackWidget::onButton() - button: %d, action: %d", e.button, e.action);
+
         if (track_model && track_model->markers) {
             // Convert mouse position to marker position for hit testing
             float marker_distance = 5.0f;  // How close you need to click to a marker
 
-            for(auto& marker_pair : *(track_model->markers)) {
-                float marker_x = box.pos.x + 
-                    ((marker_pair.first - track_model->visible_window_start) * box.size.x / 
-                    (track_model->visible_window_end - track_model->visible_window_start));
+            for(auto& marker_pair : *(track_model->markers)) 
+            {
+                float marker_x = ((marker_pair.first - track_model->visible_window_start) * box.size.x / (track_model->visible_window_end - track_model->visible_window_start));
                 
                 if(std::abs(e.pos.x - marker_x) < marker_distance) {
                     // Left click - handle dragging (existing code)
@@ -265,7 +266,7 @@ struct TrackWidget : TransparentWidget
         if (dragging_marker && markers_being_dragged && track_model && track_model->markers) {
             float zoom = getAbsoluteZoom();
             float current_x = drag_start_x + e.mouseDelta.x/zoom;
-            float relative_x = (current_x - box.pos.x) / box.size.x;
+            float relative_x = current_x / box.size.x;
             relative_x = rack::math::clamp(relative_x, 0.0f, 1.0f);
             
             unsigned int new_position = track_model->visible_window_start +
@@ -295,7 +296,7 @@ struct TrackWidget : TransparentWidget
 
     void onDoubleClick(const event::DoubleClick &e) override {
         if (track_model && track_model->markers) {
-            float relative_x = (drag_position.x - box.pos.x) / box.size.x;
+            float relative_x = drag_position.x / box.size.x;
             unsigned int click_position = track_model->visible_window_start + 
                 relative_x * (track_model->visible_window_end - track_model->visible_window_start);
             
