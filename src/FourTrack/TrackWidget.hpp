@@ -149,9 +149,9 @@ struct TrackWidget : TransparentWidget
 
                 // Draw triangle at top
                 nvgBeginPath(vg);
-                nvgMoveTo(vg, x, 0);  // Point at bottom
-                nvgLineTo(vg, x - 5, 0 - triangle_height);  // Left point at top
-                nvgLineTo(vg, x + 5, 0 - triangle_height);  // Right point at top
+                nvgMoveTo(vg, x, triangle_height);  // Point at bottom
+                nvgLineTo(vg, x - 5, 0);  // Left point at top
+                nvgLineTo(vg, x + 5, 0);  // Right point at top
                 nvgClosePath(vg);
                 nvgFillColor(vg, marker_color);  // Back to teal
                 nvgFill(vg);
