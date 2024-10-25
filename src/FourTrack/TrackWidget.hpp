@@ -259,8 +259,7 @@ struct TrackWidget : TransparentWidget
                     }
                     // Right click - remove marker
                     else if (e.button == GLFW_MOUSE_BUTTON_RIGHT && e.action == GLFW_PRESS) {
-                        track_model->removeMarker(marker_pair.first);
-                        DEBUG("Removed marker at position %d", marker_pair.first);
+                        track_model->removeMarkers(marker_pair.first);
                         return;
                     }
                 }
@@ -295,13 +294,14 @@ struct TrackWidget : TransparentWidget
             float relative_x = current_x / box.size.x;
             relative_x = rack::math::clamp(relative_x, 0.0f, 1.0f);
             
-            unsigned int new_position = track_model->visible_window_start +
-                relative_x * (track_model->visible_window_end - track_model->visible_window_start);
+            unsigned int new_position = track_model->visible_window_start + relative_x * (track_model->visible_window_end - track_model->visible_window_start);
             
             if (new_position != drag_source_position) {
                 std::vector<Marker> markers_copy = *markers_being_dragged;
-                track_model->markers->insert({new_position, markers_copy});
-                track_model->markers->erase(drag_source_position);
+                // track_model->markers->insert({new_position, markers_copy});
+                track_model->insertMarkers(new_position, markers_copy);
+                // track_model->markers->erase(drag_source_position);
+                track_model->removeMarkers(drag_source_position);
                 drag_source_position = new_position;
                 markers_being_dragged = &(track_model->markers->at(new_position));
                 drag_start_x = current_x;  // Update for next move
@@ -315,8 +315,7 @@ struct TrackWidget : TransparentWidget
             float sample_delta = (cumulative_drag_offset / track_width) * window_width;
 
             track_model->visible_window_start = std::max(0.0f, initial_visible_window_start - sample_delta);
-            track_model->visible_window_end = std::min(static_cast<float>(track_model->sample->size()), 
-                track_model->visible_window_start + window_width);
+            track_model->visible_window_end = std::min(static_cast<float>(track_model->sample->size()), track_model->visible_window_start + window_width);
         }
     }
 
@@ -328,8 +327,6 @@ struct TrackWidget : TransparentWidget
             
             // Add marker at click position
             track_model->addMarker(click_position);
-            
-            DEBUG("Added marker at position %d", click_position);
         }
         e.consume(this);
     }

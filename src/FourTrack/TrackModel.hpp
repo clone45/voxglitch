@@ -23,6 +23,9 @@ struct TrackModel
     // Callback for when a marker is selected
     std::function<void(int)> onMarkerSelected = nullptr;
 
+    // Callback for syncing markers with waveform
+    std::function<void()> onSyncMarkers = nullptr;
+
     void setSample(Sample *sample) 
     {
         this->sample = sample;
@@ -48,17 +51,36 @@ struct TrackModel
 
     void setMarkers(std::map<unsigned int, std::vector<Marker>>* markers_map) {
         this->markers = markers_map;
+        onSyncMarkers();
     }
 
     void addMarker(unsigned int position) {
         if (markers) {
             (*markers)[position].push_back(Marker(active_marker));
+            onSyncMarkers();
+        }
+    }
+    
+    void insertMarkers(unsigned int position, const std::vector<Marker>& new_markers) {
+        // Check if the markers pointer is valid
+        if (markers && !new_markers.empty()) {
+            // Insert or update the markers at the given position
+            (*markers)[position] = new_markers;
+            // Sync markers with any listeners
+            if (onSyncMarkers) {
+                onSyncMarkers();
+            }
         }
     }
 
-    void removeMarker(unsigned int position) {
-        if (markers) {
+    void removeMarkers(unsigned int position) {
+        // Check if the markers pointer is valid
+        if (markers && markers->find(position) != markers->end()) {
             markers->erase(position);
+            // Sync markers with any listeners
+            if (onSyncMarkers) {
+                onSyncMarkers();
+            }
         }
     }
 

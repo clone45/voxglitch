@@ -96,6 +96,9 @@ struct WaveformWidget : TransparentWidget
                     drawPositionIndicator(vg);
                 if (waveform_modal->highlight_section)
                     highlightSection(vg);
+
+                // Draw the markers
+                drawMarkers(vg);
             }
 
             nvgRestore(vg);
@@ -234,6 +237,25 @@ struct WaveformWidget : TransparentWidget
         nvgRect(vg, container_padding + waveform_modal->highlight_section_x, container_padding, waveform_modal->highlight_section_width, height - 2 * container_padding);
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 80));
         nvgFill(vg);
+    }
+
+    void drawMarkers(NVGcontext *vg)
+    {
+        nvgBeginPath(vg);
+        for (float marker : waveform_modal->marker_positions)
+        {
+            // Convert marker sample position to x coordinate
+            float x_position = (marker / waveform_modal->sample->size()) * (width - 2 * container_padding);
+            x_position = clamp(container_padding + x_position, 0.0f, (float)(width - 2 * container_padding));
+
+            // Draw the marker line
+            nvgMoveTo(vg, x_position, container_padding);
+            nvgLineTo(vg, x_position, height - container_padding);
+        }
+
+        nvgStrokeColor(vg, nvgRGBA(200, 200, 200, 100));
+        nvgStrokeWidth(vg, 1.0f);
+        nvgStroke(vg);
     }
 
 };

@@ -1,6 +1,4 @@
 // TODO:
-// 1. Load sample
-// 2. Save/Load sample selection
 // 3. Click on bottom waveform to select upper position
 // 4. Explore caching of waveform renderings
 // 5. Fix autobreak studio
@@ -81,6 +79,12 @@ struct FourTrack : VoxglitchSamplerModule
             active_marker = output_number;
         };
 
+        // Set up the callback for synchronizing markers with the waveform
+        track.onSyncMarkers = [this]()
+        {
+            syncMarkers();
+        };
+
         // Set the waveform model sample for the lower waveform display
         waveform_model.sample = &sample;
         waveform_model.visible = true;
@@ -107,17 +111,31 @@ struct FourTrack : VoxglitchSamplerModule
         track.setMarkers(&markers);
     }
 
+    /*
     void addMarker(unsigned int position)
     {
+        DEBUG("FourTrack:: Adding marker at position %d", position);
         markers[position].push_back(Marker(active_marker));
+        synchronizeMarkersWithWaveform();
     }
+
 
     void removeMarker(unsigned int position)
     {
         markers.erase(position);
+        synchronizeMarkersWithWaveform();
+    }
+    */
+
+    void clearMarkers()
+    {
+        markers.clear();
+        syncMarkers();
     }
 
+
     // Optionally, remove markers for a specific output at a position
+    /*
     void removeMarkerForOutput(unsigned int position, int output_number)
     {
         auto it = markers.find(position);
@@ -138,10 +156,16 @@ struct FourTrack : VoxglitchSamplerModule
             }
         }
     }
+    */
 
-    void clearMarkers()
+    void syncMarkers()
     {
-        markers.clear();
+        waveform_model.marker_positions.clear();
+        for (const auto &marker_pair : markers)
+        {
+            // Assuming each position in the map represents a sample position for a marker
+            waveform_model.marker_positions.push_back(marker_pair.first);
+        }
     }
 
     // Autosave module data.  VCV Rack decides when this should be called.
@@ -196,6 +220,8 @@ struct FourTrack : VoxglitchSamplerModule
                 markers[pos].push_back(Marker(out));
             }
         }
+        syncMarkers();
+
 
         // Call VoxglitchSamplerModule::loadSamplerData to load sampler specific data
         loadSamplerData(rootJ);
