@@ -6,6 +6,9 @@ struct TrackWidget : TransparentWidget
 {
     TrackModel *track_model = nullptr;
 
+    // Used to watch for updates to the sample
+    std::string sample_filename = "";
+
     // New properties to manage sample dragging interactions
     bool dragging = false;
     Vec drag_start_position;
@@ -200,6 +203,29 @@ struct TrackWidget : TransparentWidget
         }
     }
 
+    void onHover(const event::Hover &e) override
+    {
+        if (track_model && track_model->markers) 
+        {
+            float marker_distance = 5.0f;  // How close you need to be to a marker to trigger the hover effect
+
+            for (const auto& marker_pair : *(track_model->markers)) 
+            {
+                float marker_x = ((marker_pair.first - track_model->visible_window_start) * box.size.x / (track_model->visible_window_end - track_model->visible_window_start));
+
+                if (std::abs(e.pos.x - marker_x) < marker_distance) 
+                {
+                    // Set the cursor to a drag hand when hovering over a marker
+                    glfwSetCursor(APP->window->win, glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
+                    return;
+                }
+            }
+        }
+
+        // If not hovering over a marker, set the cursor to default
+        glfwSetCursor(APP->window->win, NULL);
+    }
+
     void onButton(const event::Button &e) override {
         TransparentWidget::onButton(e);
         e.consume(this);
@@ -306,5 +332,17 @@ struct TrackWidget : TransparentWidget
             DEBUG("Added marker at position %d", click_position);
         }
         e.consume(this);
+    }
+
+    void step() override
+    {
+        TransparentWidget::step();
+
+        // Sample has changed
+        if (sample_filename != track_model->sample->filename)
+        {
+            sample_filename = track_model->sample->filename;
+            track_model->initialize();
+        }
     }
 };

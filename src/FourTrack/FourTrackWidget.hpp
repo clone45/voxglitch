@@ -66,5 +66,18 @@ struct FourTrackWidget : VoxglitchSamplerModuleWidget
     {
         FourTrack *module = dynamic_cast<FourTrack *>(this->module);
         assert(module);
+
+        menu->addChild(new MenuEntry); // For spacing only
+        menu->addChild(createMenuLabel("Sample"));
+
+        // Add the sample slot to the right-click context menu
+        FourTrackLoadSample *menu_item_load_sample = new FourTrackLoadSample();
+        menu_item_load_sample->text = module->loaded_filename;
+        menu_item_load_sample->module = module;
+        menu->addChild(menu_item_load_sample);
+
+        SampleInterpolationMenuItem *sample_interpolation_menu_item = createMenuItem<SampleInterpolationMenuItem>("Interpolation", RIGHT_ARROW);
+        sample_interpolation_menu_item->module = module;
+        menu->addChild(sample_interpolation_menu_item);
     }
 };

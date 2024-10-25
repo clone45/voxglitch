@@ -17,11 +17,11 @@
 
 using namespace vgLib_v2;
 
-
 #include "FourTrack/TrackModel.hpp"
 #include "FourTrack/TrackWidget.hpp"
 
 #include "FourTrack/FourTrack.hpp"
+#include "FourTrack/FourTrackLoadSample.hpp"
 #include "FourTrack/FourTrackWidget.hpp"
 
 Model* modelFourTrack = createModel<FourTrack, FourTrackWidget>("fourtrack");

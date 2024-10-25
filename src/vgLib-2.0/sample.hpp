@@ -233,4 +233,14 @@ struct Sample
     this->loaded = false;
   }
 
+  std::string getFilename()
+  {
+    return(this->filename);
+  }
+
+  std::string getPath()
+  {
+    return(this->path);
+  }
+
 };

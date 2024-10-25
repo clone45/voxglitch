@@ -26,6 +26,11 @@ struct TrackModel
     void setSample(Sample *sample) 
     {
         this->sample = sample;
+        initialize();
+    }
+
+    void initialize() 
+    {
         if (sample && sample->isLoaded()) 
         {
             visible_window_end = sample->size(); // Initially, set the visible window to the full sample length
