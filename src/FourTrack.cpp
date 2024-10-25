@@ -10,10 +10,12 @@
 #include "vgLib-2.0/constants.h"
 #include "vgLib-2.0/sample.hpp"
 #include "vgLib-2.0/components/VoxglitchComponents.hpp"
+#include "vgLib-2.0/helpers/JSON.hpp"
 
 // For the lower waveform
 #include "vgLib-2.0/widgets/WaveformModel.hpp"
 #include "vgLib-2.0/widgets/WaveformWidget.hpp"
+#include "vgLib-2.0/helpers/JSON.hpp"
 
 using namespace vgLib_v2;
 

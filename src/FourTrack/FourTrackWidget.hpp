@@ -79,5 +79,10 @@ struct FourTrackWidget : VoxglitchSamplerModuleWidget
         SampleInterpolationMenuItem *sample_interpolation_menu_item = createMenuItem<SampleInterpolationMenuItem>("Interpolation", RIGHT_ARROW);
         sample_interpolation_menu_item->module = module;
         menu->addChild(sample_interpolation_menu_item);
+
+        // Add separator and our new option
+        menu->addChild(new MenuEntry);  // Another separator
+        menu->addChild(createBoolPtrMenuItem("Enable Vertical-Drag Zoom", "", &module->enable_vertical_drag_zoom));
+
     }
 };

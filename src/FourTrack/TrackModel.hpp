@@ -18,6 +18,7 @@ struct TrackModel
     unsigned int visible_window_end = 0;   // End index of the visible window
     
     std::map<unsigned int, std::vector<Marker>>* markers = nullptr;
+    bool *enable_vertical_drag_zoom = nullptr;
     int active_marker = 0;
 
     // Callback for when a marker is selected
@@ -40,6 +41,11 @@ struct TrackModel
             computeAverages(); // Compute averages when sample is set
             normalizeAverages(); // Normalize them after computation
         }
+    }
+
+    void setVerticalDragZoomEnabled(bool *enabled) 
+    {
+        enable_vertical_drag_zoom = enabled;
     }
 
     void selectMarker(int output_number) {

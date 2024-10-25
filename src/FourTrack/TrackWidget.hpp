@@ -241,25 +241,30 @@ struct TrackWidget : TransparentWidget
         e.consume(this);
 
         // Handle left-click dragging
-        if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) {
+        if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
+        {
             drag_position = e.pos;
             drag_start_position = e.pos;
-            
+
             // Check for marker dragging
-            if (track_model && track_model->markers) {
+            if (track_model && track_model->markers)
+            {
                 float marker_distance = 5.0f;
-                for (auto &marker_pair : *(track_model->markers)) {
+                for (auto &marker_pair : *(track_model->markers))
+                {
                     float marker_x = ((marker_pair.first - track_model->visible_window_start) *
-                                box.size.x / (track_model->visible_window_end - track_model->visible_window_start));
-                    
-                    if (std::abs(e.pos.x - marker_x) < marker_distance) {
+                                      box.size.x / (track_model->visible_window_end - track_model->visible_window_start));
+
+                    if (std::abs(e.pos.x - marker_x) < marker_distance)
+                    {
                         dragging_marker = true;
                         drag_source_position = marker_pair.first;
                         markers_being_dragged = &marker_pair.second;
                         drag_start_x = e.pos.x;
                         drag_current_x = e.pos.x;
-                        
-                        if (!marker_pair.second.empty()) {
+
+                        if (!marker_pair.second.empty())
+                        {
                             track_model->selectMarker(marker_pair.second[0].output_number);
                         }
                         return;
@@ -269,27 +274,33 @@ struct TrackWidget : TransparentWidget
 
             // If no marker hit, start normal dragging
             dragging = true;
-            if (track_model) {
+            if (track_model)
+            {
                 initial_visible_window_start = track_model->visible_window_start;
                 initial_visible_window_end = track_model->visible_window_end;
                 cumulative_drag_offset = 0.0f;
                 cumulative_zoom_offset = 0.0f;
             }
         }
-        else if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_RELEASE) {
+        else if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_RELEASE)
+        {
             dragging = false;
             dragging_marker = false;
             markers_being_dragged = nullptr;
         }
         // Handle right-click for marker deletion
-        else if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_RIGHT && (e.mods & RACK_MOD_MASK) == 0) {
-            if (track_model && track_model->markers) {
+        else if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_RIGHT && (e.mods & RACK_MOD_MASK) == 0)
+        {
+            if (track_model && track_model->markers)
+            {
                 float marker_distance = 5.0f;
-                for (auto &marker_pair : *(track_model->markers)) {
+                for (auto &marker_pair : *(track_model->markers))
+                {
                     float marker_x = ((marker_pair.first - track_model->visible_window_start) *
-                                box.size.x / (track_model->visible_window_end - track_model->visible_window_start));
-                    
-                    if (std::abs(e.pos.x - marker_x) < marker_distance) {
+                                      box.size.x / (track_model->visible_window_end - track_model->visible_window_start));
+
+                    if (std::abs(e.pos.x - marker_x) < marker_distance)
+                    {
                         track_model->removeMarkers(marker_pair.first);
                         break;
                     }
@@ -301,9 +312,10 @@ struct TrackWidget : TransparentWidget
     void onDragMove(const event::DragMove &e) override
     {
         float final_start, final_end;
-
         e.consume(this);
-        if (dragging && track_model && track_model->sample && track_model->sample->isLoaded()) {
+
+        if (dragging && track_model && track_model->sample && track_model->sample->isLoaded())
+        {
             // Calculate pan offset first
             cumulative_drag_offset += e.mouseDelta.x;
             float window_width = initial_visible_window_end - initial_visible_window_start;
@@ -314,38 +326,42 @@ struct TrackWidget : TransparentWidget
             float new_start = initial_visible_window_start - sample_delta;
             float new_end = new_start + window_width;
 
-            // Always do zoom calculations
-            float zoom_sensitivity = 0.005f;
-            cumulative_zoom_offset += e.mouseDelta.y;
-            float mouse_relative_x = drag_start_position.x / box.size.x;
-            float focus_point = initial_visible_window_start +
-                                mouse_relative_x * (initial_visible_window_end - initial_visible_window_start);
-            float zoom_multiplier = std::exp(cumulative_zoom_offset * zoom_sensitivity);
-            float new_window_size = (initial_visible_window_end - initial_visible_window_start) * zoom_multiplier;
-            float min_window_size = 2.0f;
-            new_window_size = std::max(min_window_size, new_window_size);
+            if (*(track_model->enable_vertical_drag_zoom))
+            {
+                // Handle zooming (vertical)
+                float zoom_sensitivity = 0.005f;
+                cumulative_zoom_offset += e.mouseDelta.y;
+                float mouse_relative_x = drag_start_position.x / box.size.x;
+                float focus_point = initial_visible_window_start +
+                                    mouse_relative_x * (initial_visible_window_end - initial_visible_window_start);
+                float zoom_multiplier = std::exp(cumulative_zoom_offset * zoom_sensitivity);
+                float new_window_size = (initial_visible_window_end - initial_visible_window_start) * zoom_multiplier;
+                float min_window_size = 2.0f;
+                new_window_size = std::max(min_window_size, new_window_size);
 
-            // Update new_start and new_end with zoom
-            new_start = focus_point - (mouse_relative_x * new_window_size) - sample_delta;
-            new_end = new_start + new_window_size;
+                // Update new_start and new_end with zoom
+                new_start = focus_point - (mouse_relative_x * new_window_size) - sample_delta;
+                new_end = new_start + new_window_size;
+            }
 
-            // Edge handling just for position
-            if (new_start <= 0.0f) {
+            // Edge handling (applies to both zooming and non-zooming)
+            if (new_start <= 0.0f)
+            {
                 final_start = 0.0f;
-                final_end = new_window_size;  // Use zoomed window size
-            } else if (new_end >= track_model->sample->size()) {
+                final_end = new_end - new_start; // Maintain window size
+            }
+            else if (new_end >= track_model->sample->size())
+            {
                 final_end = track_model->sample->size();
-                final_start = final_end - new_window_size;  // Use zoomed window size
-            } else {
+                final_start = final_end - (new_end - new_start); // Maintain window size
+            }
+            else
+            {
                 final_start = new_start;
                 final_end = new_end;
             }
 
-            // Apply the final values
-            track_model->visible_window_start = final_start;
-            track_model->visible_window_end = final_end;
-
-            // Clamp values using our final values
+            // Apply and clamp the final values
             track_model->visible_window_start = std::max(0.0f, final_start);
             track_model->visible_window_end = std::min(
                 static_cast<float>(track_model->sample->size()),
@@ -357,9 +373,9 @@ struct TrackWidget : TransparentWidget
             float current_x = drag_start_x + e.mouseDelta.x / zoom;
             float relative_x = current_x / box.size.x;
             relative_x = rack::math::clamp(relative_x, 0.0f, 1.0f);
-            
+
             unsigned int new_position = track_model->visible_window_start + relative_x * (track_model->visible_window_end - track_model->visible_window_start);
-            
+
             if (new_position != drag_source_position)
             {
                 std::vector<Marker> markers_copy = *markers_being_dragged;

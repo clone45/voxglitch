@@ -6,7 +6,7 @@
 // 8. Menu item for setting trigger lengths
 // 9. Context menu for marker: Set to specific sample location
 // 10. Menu item for automatically setting markers??
-// 11. Improve zoom experience <<
+// 11. Menu item for locking markers
 // 12. Add a "clear all markers" menu item
 // 13. Dark panel
 
@@ -33,6 +33,8 @@ struct FourTrack : VoxglitchSamplerModule
     dsp::PulseGenerator marker_pulse_generators[32];
     dsp::PulseGenerator reset_light_pulse;
     std::map<unsigned int, std::vector<Marker>> markers; // position -> markers at that position
+
+    bool enable_vertical_drag_zoom = true;  // Default to enabled
 
     enum ParamIds
     {
@@ -110,54 +112,14 @@ struct FourTrack : VoxglitchSamplerModule
         configSwitch(RESET_BUTTON, 0.f, 1.f, 0.f, "Reset");
 
         track.setMarkers(&markers);
+        track.setVerticalDragZoomEnabled(&enable_vertical_drag_zoom);
     }
-
-    /*
-    void addMarker(unsigned int position)
-    {
-        DEBUG("FourTrack:: Adding marker at position %d", position);
-        markers[position].push_back(Marker(active_marker));
-        synchronizeMarkersWithWaveform();
-    }
-
-
-    void removeMarker(unsigned int position)
-    {
-        markers.erase(position);
-        synchronizeMarkersWithWaveform();
-    }
-    */
 
     void clearMarkers()
     {
         markers.clear();
         syncMarkers();
     }
-
-
-    // Optionally, remove markers for a specific output at a position
-    /*
-    void removeMarkerForOutput(unsigned int position, int output_number)
-    {
-        auto it = markers.find(position);
-        if (it != markers.end())
-        {
-            auto &marker_list = it->second;
-            marker_list.erase(
-                std::remove_if(
-                    marker_list.begin(),
-                    marker_list.end(),
-                    [output_number](const Marker &m)
-                    { return m.output_number == output_number; }),
-                marker_list.end());
-            // If no markers left at this position, remove the map entry
-            if (marker_list.empty())
-            {
-                markers.erase(it);
-            }
-        }
-    }
-    */
 
     void syncMarkers()
     {
@@ -169,13 +131,15 @@ struct FourTrack : VoxglitchSamplerModule
         }
     }
 
-    // Autosave module data.  VCV Rack decides when this should be called.
+    // █▀ ▄▀█ █░█ █▀▀   ▄▀█ █▄░█ █▀▄   █░░ █▀█ ▄▀█ █▀▄
+    // ▄█ █▀█ ▀▄▀ ██▄   █▀█ █░▀█ █▄▀   █▄▄ █▄█ █▀█ █▄▀
 
     json_t *dataToJson() override
     {
         json_t *rootJ = json_object();
 
         json_object_set_new(rootJ, "loaded_sample_path", json_string(sample.getPath().c_str()));
+        json_object_set_new(rootJ, "enable_vertical_drag_zoom", json_boolean(enable_vertical_drag_zoom));
 
         json_t *markersJ = json_array();
         for (const auto &pos_markers : markers)
@@ -206,6 +170,9 @@ struct FourTrack : VoxglitchSamplerModule
             sample.load(json_string_value(loaded_sample_path));
             loaded_filename = sample.getFilename();
         }
+
+        // Load the vertical drag zoom setting
+        enable_vertical_drag_zoom = JSON::getBoolean(rootJ, "enable_vertical_drag_zoom");
 
         // Load the markers
         markers.clear();
