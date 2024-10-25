@@ -2,12 +2,13 @@
 // 3. Click on bottom waveform to select upper position
 // 4. Explore caching of waveform renderings
 // 5. Fix autobreak studio
-// 6. Render markers on bottom waveform
 // 7. Rename module
 // 8. Menu item for setting trigger lengths
 // 9. Context menu for marker: Set to specific sample location
 // 10. Menu item for automatically setting markers??
-// 11. Improve zoom experience
+// 11. Improve zoom experience <<
+// 12. Add a "clear all markers" menu item
+// 13. Dark panel
 
 #include "Marker.hpp"
 

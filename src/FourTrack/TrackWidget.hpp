@@ -2,7 +2,7 @@
 #include <rack.hpp>
 #include <vector>
 
-struct TrackWidget : TransparentWidget 
+struct TrackWidget : TransparentWidget
 {
     TrackModel *track_model = nullptr;
 
@@ -11,27 +11,32 @@ struct TrackWidget : TransparentWidget
 
     // New properties to manage sample dragging interactions
     bool dragging = false;
+    bool dragging_zoom = false;
+    bool shift_key_held = false;
+    bool right_button_held = false;
+
     Vec drag_start_position;
     Vec drag_position;
     float initial_visible_window_start;
     float initial_visible_window_end;
     float cumulative_drag_offset = 0.0f; // Accumulates the drag offset
+    float cumulative_zoom_offset = 0.0f;
 
     // New properties to manage marker dragging interactions
     bool dragging_marker = false;
-    unsigned int drag_source_position = 0;  // Original position
-    std::vector<Marker>* markers_being_dragged = nullptr;
-    float drag_start_x = 0.0f;      // Where the drag began
-    float drag_current_x = 0.0f;    // Current dragging position
+    unsigned int drag_source_position = 0; // Original position
+    std::vector<Marker> *markers_being_dragged = nullptr;
+    float drag_start_x = 0.0f;   // Where the drag began
+    float drag_current_x = 0.0f; // Current dragging position
 
-    TrackWidget(float x, float y, float width, float height, TrackModel *track_model) 
+    TrackWidget(float x, float y, float width, float height, TrackModel *track_model)
     {
         box.size = Vec(width, height);
         box.pos = Vec(x, y);
         this->track_model = track_model;
     }
 
-    void draw(const DrawArgs &args) override 
+    void draw(const DrawArgs &args) override
     {
         const auto vg = args.vg;
         nvgSave(vg);
@@ -118,8 +123,10 @@ struct TrackWidget : TransparentWidget
     }
 
     // Add to TrackWidget::draw() after drawing the waveform
-    void drawMarkers(const DrawArgs& args, float track_width, float track_height) {
-        if (!track_model || !track_model->sample || !track_model->markers) return;
+    void drawMarkers(const DrawArgs &args, float track_width, float track_height)
+    {
+        if (!track_model || !track_model->sample || !track_model->markers)
+            return;
 
         const auto vg = args.vg;
         nvgSave(vg);
@@ -132,31 +139,33 @@ struct TrackWidget : TransparentWidget
         float triangle_height = 10.0f;
 
         // Define our colors
-        NVGcolor inactive_color = nvgRGBA(100, 100, 100, 180);   // Gray for inactive
-        NVGcolor active_color = nvgRGBA(32, 178, 170, 255);      // Bright teal for active
+        NVGcolor inactive_color = nvgRGBA(100, 100, 100, 180); // Gray for inactive
+        NVGcolor active_color = nvgRGBA(32, 178, 170, 255);    // Bright teal for active
 
-        for (const auto& marker_pair : *(track_model->markers)) {
+        for (const auto &marker_pair : *(track_model->markers))
+        {
             unsigned int pos = marker_pair.first;
-            
-            if (pos < visible_sample_start || pos > visible_sample_end) 
+
+            if (pos < visible_sample_start || pos > visible_sample_end)
                 continue;
 
             float x = ((pos - visible_sample_start) / samples_per_pixel);
 
-            for (const auto& marker : marker_pair.second) {
+            for (const auto &marker : marker_pair.second)
+            {
 
                 // Choose color based on whether this marker matches the active output
-                NVGcolor marker_color = (marker.output_number == track_model->active_marker) 
-                    ? active_color 
-                    : inactive_color;
+                NVGcolor marker_color = (marker.output_number == track_model->active_marker)
+                                            ? active_color
+                                            : inactive_color;
 
                 // Draw triangle at top
                 nvgBeginPath(vg);
-                nvgMoveTo(vg, x, triangle_height);  // Point at bottom
-                nvgLineTo(vg, x - 5, 0);  // Left point at top
-                nvgLineTo(vg, x + 5, 0);  // Right point at top
+                nvgMoveTo(vg, x, triangle_height); // Point at bottom
+                nvgLineTo(vg, x - 5, 0);           // Left point at top
+                nvgLineTo(vg, x + 5, 0);           // Right point at top
                 nvgClosePath(vg);
-                nvgFillColor(vg, marker_color);  // Back to teal
+                nvgFillColor(vg, marker_color); // Back to teal
                 nvgFill(vg);
 
                 // Draw vertical line
@@ -205,15 +214,15 @@ struct TrackWidget : TransparentWidget
 
     void onHover(const event::Hover &e) override
     {
-        if (track_model && track_model->markers) 
+        if (track_model && track_model->markers)
         {
-            float marker_distance = 5.0f;  // How close you need to be to a marker to trigger the hover effect
+            float marker_distance = 5.0f; // How close you need to be to a marker to trigger the hover effect
 
-            for (const auto& marker_pair : *(track_model->markers)) 
+            for (const auto &marker_pair : *(track_model->markers))
             {
                 float marker_x = ((marker_pair.first - track_model->visible_window_start) * box.size.x / (track_model->visible_window_end - track_model->visible_window_start));
 
-                if (std::abs(e.pos.x - marker_x) < marker_distance) 
+                if (std::abs(e.pos.x - marker_x) < marker_distance)
                 {
                     // Set the cursor to a drag hand when hovering over a marker
                     glfwSetCursor(APP->window->win, glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
@@ -226,56 +235,45 @@ struct TrackWidget : TransparentWidget
         glfwSetCursor(APP->window->win, NULL);
     }
 
-    void onButton(const event::Button &e) override {
+    void onButton(const event::Button &e) override
+    {
         TransparentWidget::onButton(e);
         e.consume(this);
 
-        DEBUG("TrackWidget::onButton() - button: %d, action: %d", e.button, e.action);
-
-        if (track_model && track_model->markers) {
-            // Convert mouse position to marker position for hit testing
-            float marker_distance = 5.0f;  // How close you need to click to a marker
-
-            for(auto& marker_pair : *(track_model->markers)) 
-            {
-                float marker_x = ((marker_pair.first - track_model->visible_window_start) * box.size.x / (track_model->visible_window_end - track_model->visible_window_start));
-                
-                if(std::abs(e.pos.x - marker_x) < marker_distance) {
-                    // Left click - handle dragging (existing code)
-                    if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) {
+        // Handle left-click dragging
+        if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) {
+            drag_position = e.pos;
+            drag_start_position = e.pos;
+            
+            // Check for marker dragging
+            if (track_model && track_model->markers) {
+                float marker_distance = 5.0f;
+                for (auto &marker_pair : *(track_model->markers)) {
+                    float marker_x = ((marker_pair.first - track_model->visible_window_start) *
+                                box.size.x / (track_model->visible_window_end - track_model->visible_window_start));
+                    
+                    if (std::abs(e.pos.x - marker_x) < marker_distance) {
                         dragging_marker = true;
                         drag_source_position = marker_pair.first;
                         markers_being_dragged = &marker_pair.second;
                         drag_start_x = e.pos.x;
                         drag_current_x = e.pos.x;
-
-                        // Select the output of the clicked marker
-                        // If there are multiple markers at this position, use the first one
+                        
                         if (!marker_pair.second.empty()) {
                             track_model->selectMarker(marker_pair.second[0].output_number);
                         }
-
-                        return;
-                    }
-                    // Right click - remove marker
-                    else if (e.button == GLFW_MOUSE_BUTTON_RIGHT && e.action == GLFW_PRESS) {
-                        track_model->removeMarkers(marker_pair.first);
                         return;
                     }
                 }
             }
-        }
 
-        // If we didn't hit a marker, handle normal left-click dragging
-        if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) {
-            drag_position = e.pos;
+            // If no marker hit, start normal dragging
             dragging = true;
-            drag_start_position = e.pos;
-
             if (track_model) {
                 initial_visible_window_start = track_model->visible_window_start;
                 initial_visible_window_end = track_model->visible_window_end;
                 cumulative_drag_offset = 0.0f;
+                cumulative_zoom_offset = 0.0f;
             }
         }
         else if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_RELEASE) {
@@ -283,48 +281,83 @@ struct TrackWidget : TransparentWidget
             dragging_marker = false;
             markers_being_dragged = nullptr;
         }
-    }
-
-    void onDragMove(const event::DragMove &e) override {
-        e.consume(this);
-            
-        if (dragging_marker && markers_being_dragged && track_model && track_model->markers) {
-            float zoom = getAbsoluteZoom();
-            float current_x = drag_start_x + e.mouseDelta.x/zoom;
-            float relative_x = current_x / box.size.x;
-            relative_x = rack::math::clamp(relative_x, 0.0f, 1.0f);
-            
-            unsigned int new_position = track_model->visible_window_start + relative_x * (track_model->visible_window_end - track_model->visible_window_start);
-            
-            if (new_position != drag_source_position) {
-                std::vector<Marker> markers_copy = *markers_being_dragged;
-                // track_model->markers->insert({new_position, markers_copy});
-                track_model->insertMarkers(new_position, markers_copy);
-                // track_model->markers->erase(drag_source_position);
-                track_model->removeMarkers(drag_source_position);
-                drag_source_position = new_position;
-                markers_being_dragged = &(track_model->markers->at(new_position));
-                drag_start_x = current_x;  // Update for next move
+        // Handle right-click for marker deletion
+        else if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_RIGHT && (e.mods & RACK_MOD_MASK) == 0) {
+            if (track_model && track_model->markers) {
+                float marker_distance = 5.0f;
+                for (auto &marker_pair : *(track_model->markers)) {
+                    float marker_x = ((marker_pair.first - track_model->visible_window_start) *
+                                box.size.x / (track_model->visible_window_end - track_model->visible_window_start));
+                    
+                    if (std::abs(e.pos.x - marker_x) < marker_distance) {
+                        track_model->removeMarkers(marker_pair.first);
+                        break;
+                    }
+                }
             }
         }
-        else if (dragging && track_model) {
-            // Handle normal waveform dragging
+    }
+
+    void onDragMove(const event::DragMove &e) override
+    {
+        e.consume(this);
+        if (dragging && track_model && track_model->sample && track_model->sample->isLoaded()) {
+            // Calculate pan offset
             cumulative_drag_offset += e.mouseDelta.x;
             float window_width = initial_visible_window_end - initial_visible_window_start;
             float track_width = box.size.x;
             float sample_delta = (cumulative_drag_offset / track_width) * window_width;
 
-            track_model->visible_window_start = std::max(0.0f, initial_visible_window_start - sample_delta);
-            track_model->visible_window_end = std::min(static_cast<float>(track_model->sample->size()), track_model->visible_window_start + window_width);
+            // Calculate zoom
+            float zoom_sensitivity = 0.005f;
+            cumulative_zoom_offset += e.mouseDelta.y;
+            float mouse_relative_x = drag_start_position.x / box.size.x;
+            float focus_point = initial_visible_window_start +
+                                mouse_relative_x * (initial_visible_window_end - initial_visible_window_start);
+            float zoom_multiplier = std::exp(cumulative_zoom_offset * zoom_sensitivity);
+            float new_window_size = (initial_visible_window_end - initial_visible_window_start) * zoom_multiplier;
+            float min_window_size = 2.0f;
+            new_window_size = std::max(min_window_size, new_window_size);
+
+            // Apply both pan and zoom
+            float new_start = focus_point - (mouse_relative_x * new_window_size) - sample_delta;
+            float new_end = new_start + new_window_size;
+            
+            // Clamp values
+            track_model->visible_window_start = std::max(0.0f, new_start);
+            track_model->visible_window_end = std::min(
+                static_cast<float>(track_model->sample->size()),
+                new_end);
+        }
+        else if (dragging_marker && markers_being_dragged && track_model && track_model->markers)
+        {
+            float zoom = getAbsoluteZoom();
+            float current_x = drag_start_x + e.mouseDelta.x / zoom;
+            float relative_x = current_x / box.size.x;
+            relative_x = rack::math::clamp(relative_x, 0.0f, 1.0f);
+            
+            unsigned int new_position = track_model->visible_window_start + relative_x * (track_model->visible_window_end - track_model->visible_window_start);
+            
+            if (new_position != drag_source_position)
+            {
+                std::vector<Marker> markers_copy = *markers_being_dragged;
+                track_model->insertMarkers(new_position, markers_copy);
+                track_model->removeMarkers(drag_source_position);
+                drag_source_position = new_position;
+                markers_being_dragged = &(track_model->markers->at(new_position));
+                drag_start_x = current_x; // Update for next move
+            }
         }
     }
 
-    void onDoubleClick(const event::DoubleClick &e) override {
-        if (track_model && track_model->markers) {
+    void onDoubleClick(const event::DoubleClick &e) override
+    {
+        if (track_model && track_model->markers)
+        {
             float relative_x = drag_position.x / box.size.x;
-            unsigned int click_position = track_model->visible_window_start + 
-                relative_x * (track_model->visible_window_end - track_model->visible_window_start);
-            
+            unsigned int click_position = track_model->visible_window_start +
+                                          relative_x * (track_model->visible_window_end - track_model->visible_window_start);
+
             // Add marker at click position
             track_model->addMarker(click_position);
         }
