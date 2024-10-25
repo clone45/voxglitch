@@ -300,15 +300,21 @@ struct TrackWidget : TransparentWidget
 
     void onDragMove(const event::DragMove &e) override
     {
+        float final_start, final_end;
+
         e.consume(this);
         if (dragging && track_model && track_model->sample && track_model->sample->isLoaded()) {
-            // Calculate pan offset
+            // Calculate pan offset first
             cumulative_drag_offset += e.mouseDelta.x;
             float window_width = initial_visible_window_end - initial_visible_window_start;
             float track_width = box.size.x;
             float sample_delta = (cumulative_drag_offset / track_width) * window_width;
 
-            // Calculate zoom
+            // Apply pan
+            float new_start = initial_visible_window_start - sample_delta;
+            float new_end = new_start + window_width;
+
+            // Always do zoom calculations
             float zoom_sensitivity = 0.005f;
             cumulative_zoom_offset += e.mouseDelta.y;
             float mouse_relative_x = drag_start_position.x / box.size.x;
@@ -319,15 +325,31 @@ struct TrackWidget : TransparentWidget
             float min_window_size = 2.0f;
             new_window_size = std::max(min_window_size, new_window_size);
 
-            // Apply both pan and zoom
-            float new_start = focus_point - (mouse_relative_x * new_window_size) - sample_delta;
-            float new_end = new_start + new_window_size;
-            
-            // Clamp values
-            track_model->visible_window_start = std::max(0.0f, new_start);
+            // Update new_start and new_end with zoom
+            new_start = focus_point - (mouse_relative_x * new_window_size) - sample_delta;
+            new_end = new_start + new_window_size;
+
+            // Edge handling just for position
+            if (new_start <= 0.0f) {
+                final_start = 0.0f;
+                final_end = new_window_size;  // Use zoomed window size
+            } else if (new_end >= track_model->sample->size()) {
+                final_end = track_model->sample->size();
+                final_start = final_end - new_window_size;  // Use zoomed window size
+            } else {
+                final_start = new_start;
+                final_end = new_end;
+            }
+
+            // Apply the final values
+            track_model->visible_window_start = final_start;
+            track_model->visible_window_end = final_end;
+
+            // Clamp values using our final values
+            track_model->visible_window_start = std::max(0.0f, final_start);
             track_model->visible_window_end = std::min(
                 static_cast<float>(track_model->sample->size()),
-                new_end);
+                final_end);
         }
         else if (dragging_marker && markers_being_dragged && track_model && track_model->markers)
         {
