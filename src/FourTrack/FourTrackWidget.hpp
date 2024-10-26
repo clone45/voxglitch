@@ -55,7 +55,7 @@ struct FourTrackWidget : VoxglitchSamplerModuleWidget
             WaveformWidget *waveform_widget = new WaveformWidget(92.0, 312.5, 468.0, 40.0, &module->waveform_model);
             waveform_widget->visible = true;
             waveform_widget->setIndicatorWidth(1.0);
-            waveform_widget->setIndicatorColor(nvgRGBA(255, 0, 0, 255));
+            waveform_widget->setIndicatorColor(nvgRGBA(255, 215, 20, 200));
             waveform_widget->setContainerBackgroundColor(nvgRGB(0x10, 0x20, 0x20));
             waveform_widget->setDrawContainerBackground(true);
             addChild(waveform_widget);

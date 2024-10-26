@@ -23,6 +23,16 @@ struct WaveformWidget : TransparentWidget
 
     float max_average = 0.0;
 
+    // New members for scrubber interaction
+    bool scrubber_hover = false;
+    bool scrubber_dragging = false;
+    float scrubber_hit_zone = 5.0f;  // Pixels around scrubber that count as a "hit"
+    
+    // New members for drag position tracking
+    Vec drag_position;
+    float initial_percentage = 0.0f;
+    float cumulative_drag_offset = 0.0f;
+
     // Constructor without position
     WaveformWidget(float width, float height, WaveformModel *waveform_modal)
     {
@@ -257,5 +267,71 @@ struct WaveformWidget : TransparentWidget
         nvgStrokeWidth(vg, 1.0f);
         nvgStroke(vg);
     }
+
+    void onButton(const event::Button &e) override
+    {
+        TransparentWidget::onButton(e);
+        if (e.button == GLFW_MOUSE_BUTTON_LEFT) {
+            if (e.action == GLFW_PRESS) {
+                float scrubber_x = container_padding +
+                    (waveform_modal->playback_percentage * (width - 2 * container_padding));
+               
+                if (std::abs(e.pos.x - scrubber_x) < scrubber_hit_zone) {
+                    scrubber_dragging = true;
+                    waveform_modal->scrubber_dragging = true;
+                    drag_position = e.pos;
+                    initial_percentage = waveform_modal->playback_percentage;
+                    cumulative_drag_offset = 0.0f;
+                    e.consume(this);
+                }
+            }
+            else if (e.action == GLFW_RELEASE) {
+                scrubber_dragging = false;
+                waveform_modal->scrubber_dragging = false;
+            }
+        }
+    }
+
+    void onDragMove(const event::DragMove& e) override {
+        if (scrubber_dragging) {
+            cumulative_drag_offset += e.mouseDelta.x;
+           
+            // Calculate percentage of full width
+            float drag_percentage = cumulative_drag_offset / (width - 2 * container_padding);
+            float new_percentage = initial_percentage + drag_percentage;
+            new_percentage = rack::math::clamp(new_percentage, 0.0f, 1.0f);
+           
+            // Convert to sample position
+            unsigned int new_position = static_cast<unsigned int>(new_percentage * waveform_modal->sample->size());
+            
+            // Use position-based notification
+            waveform_modal->notifyScrubberPosition(new_position);
+            e.consume(this);
+        }
+    }
+
+    void onHover(const event::Hover &e) override
+    {
+        if (!waveform_modal->sample || !waveform_modal->sample->loaded) {
+            return;
+        }
+
+        // Calculate scrubber x position
+        float scrubber_x = container_padding + 
+            (waveform_modal->playback_percentage * (width - 2 * container_padding));
+        
+        // Check if mouse is near scrubber
+        if (std::abs(e.pos.x - scrubber_x) < scrubber_hit_zone) {
+            // Set cursor to horizontal resize cursor
+            glfwSetCursor(APP->window->win, glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
+            scrubber_hover = true;
+        } else {
+            if (scrubber_hover) {
+                glfwSetCursor(APP->window->win, NULL);
+                scrubber_hover = false;
+            }
+        }
+    }
+
 
 };

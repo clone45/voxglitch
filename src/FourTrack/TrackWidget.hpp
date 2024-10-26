@@ -5,29 +5,34 @@
 struct TrackWidget : TransparentWidget
 {
     TrackModel *track_model = nullptr;
-
     // Used to watch for updates to the sample
     std::string sample_filename = "";
 
-    // New properties to manage sample dragging interactions
+    // Properties for sample view dragging/zooming
     bool dragging = false;
     bool dragging_zoom = false;
     bool shift_key_held = false;
     bool right_button_held = false;
-
     Vec drag_start_position;
-    Vec drag_position;
     float initial_visible_window_start;
     float initial_visible_window_end;
-    float cumulative_drag_offset = 0.0f; // Accumulates the drag offset
     float cumulative_zoom_offset = 0.0f;
 
-    // New properties to manage marker dragging interactions
+    // Properties for marker dragging
     bool dragging_marker = false;
-    unsigned int drag_source_position = 0; // Original position
+    unsigned int drag_source_position = 0;
     std::vector<Marker> *markers_being_dragged = nullptr;
-    float drag_start_x = 0.0f;   // Where the drag began
-    float drag_current_x = 0.0f; // Current dragging position
+    float drag_start_x = 0.0f;
+    float drag_current_x = 0.0f;
+
+    // Properties for scrubber interaction
+    bool scrubber_dragging = false;
+    float scrubber_hit_zone = 5.0f;
+    float initial_percentage = 0.0f;
+
+    // Shared properties that can be used by both scrubbing and view dragging
+    Vec drag_position;
+    float cumulative_drag_offset = 0.0f;
 
     TrackWidget(float x, float y, float width, float height, TrackModel *track_model)
     {
@@ -52,6 +57,7 @@ struct TrackWidget : TransparentWidget
         {
             drawWaveform(vg, box.size.x, box.size.y);
             drawMarkers(args, box.size.x, box.size.y);
+            drawPlaybackIndicator(args, box.size.x, box.size.y);
         }
 
         nvgRestore(vg);
@@ -119,6 +125,35 @@ struct TrackWidget : TransparentWidget
 
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 200)); // Light grey color for the waveform
         nvgFill(vg);
+        nvgRestore(vg);
+    }
+
+    void drawPlaybackIndicator(const DrawArgs &args, float track_width, float track_height)
+    {
+        if (!track_model || !track_model->sample)
+            return;
+
+        const auto vg = args.vg;
+        nvgSave(vg);
+
+        // Convert playback percentage to visible window position
+        float sample_position = track_model->playback_percentage * track_model->sample->size();
+
+        // Only draw if the indicator is in the visible window
+        if (sample_position >= track_model->visible_window_start && 
+            sample_position <= track_model->visible_window_end)
+        {
+            float relative_pos = (sample_position - track_model->visible_window_start) / 
+                (track_model->visible_window_end - track_model->visible_window_start);
+            float x_position = relative_pos * track_width;
+
+            // Draw the indicator
+            nvgBeginPath(vg);
+            nvgRect(vg, x_position - 1, 0, 2.0f, track_height);  // 2 pixels wide
+            nvgFillColor(vg, nvgRGBA(255, 215, 20, 200));  // Yellow-ish color like bottom widget
+            nvgFill(vg);
+        }
+
         nvgRestore(vg);
     }
 
@@ -246,6 +281,21 @@ struct TrackWidget : TransparentWidget
             drag_position = e.pos;
             drag_start_position = e.pos;
 
+            // Check for scrubber dragging first
+            float visible_span = track_model->visible_window_end - track_model->visible_window_start;
+            float relative_playback_pos = (track_model->playback_percentage * track_model->sample->size() - 
+                track_model->visible_window_start) / visible_span;
+            float scrubber_x = relative_playback_pos * box.size.x;
+            
+            if (std::abs(e.pos.x - scrubber_x) < scrubber_hit_zone) {
+                scrubber_dragging = true;
+                track_model->scrubber_dragging = true;
+                initial_percentage = track_model->playback_percentage;
+                drag_start_x = e.pos.x;  // Add this line
+                cumulative_drag_offset = 0.0f;
+                return;
+            }
+
             // Check for marker dragging
             if (track_model && track_model->markers && !track_model->isLocked())
             {
@@ -254,7 +304,6 @@ struct TrackWidget : TransparentWidget
                 {
                     float marker_x = ((marker_pair.first - track_model->visible_window_start) *
                                       box.size.x / (track_model->visible_window_end - track_model->visible_window_start));
-
                     if (std::abs(e.pos.x - marker_x) < marker_distance)
                     {
                         dragging_marker = true;
@@ -262,7 +311,6 @@ struct TrackWidget : TransparentWidget
                         markers_being_dragged = &marker_pair.second;
                         drag_start_x = e.pos.x;
                         drag_current_x = e.pos.x;
-
                         if (!marker_pair.second.empty())
                         {
                             track_model->selectMarker(marker_pair.second[0].output_number);
@@ -272,7 +320,7 @@ struct TrackWidget : TransparentWidget
                 }
             }
 
-            // If no marker hit, start normal dragging
+            // If no marker or scrubber hit, start normal dragging
             dragging = true;
             if (track_model)
             {
@@ -287,21 +335,22 @@ struct TrackWidget : TransparentWidget
             dragging = false;
             dragging_marker = false;
             markers_being_dragged = nullptr;
+            if (scrubber_dragging) {
+                scrubber_dragging = false;
+                track_model->scrubber_dragging = false;
+            }
         }
         // Handle right-click for marker deletion
         else if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_RIGHT && (e.mods & RACK_MOD_MASK) == 0)
         {
             bool marker_hit = false;
-
             if (track_model && track_model->markers && !track_model->isLocked())
             {
                 float marker_distance = 5.0f;
-
                 for (auto &marker_pair : *(track_model->markers))
                 {
                     float marker_x = ((marker_pair.first - track_model->visible_window_start) *
                                       box.size.x / (track_model->visible_window_end - track_model->visible_window_start));
-
                     if (std::abs(e.pos.x - marker_x) < marker_distance)
                     {
                         track_model->removeMarkers(marker_pair.first);
@@ -310,7 +359,6 @@ struct TrackWidget : TransparentWidget
                     }
                 }
             }
-
             // Show context menu
             if (!marker_hit && !track_model->isLocked()) createContextMenu();
         }
@@ -318,8 +366,33 @@ struct TrackWidget : TransparentWidget
 
     void onDragMove(const event::DragMove &e) override
     {
-        float final_start, final_end;
         e.consume(this);
+
+        DEBUG("scrubber_dragging: %d", scrubber_dragging);
+
+        if (scrubber_dragging) {
+            float zoom = getAbsoluteZoom();
+            float current_x = drag_start_x + e.mouseDelta.x / zoom;
+            float relative_x = current_x / box.size.x;
+            relative_x = rack::math::clamp(relative_x, 0.0f, 1.0f);
+            
+            DEBUG("zoom: %f", zoom);
+            DEBUG("current_x: %f", current_x);
+            DEBUG("relative_x: %f", relative_x);
+            DEBUG("visible_window_start: %u", track_model->visible_window_start);
+            DEBUG("visible_window_end: %u", track_model->visible_window_end);
+            
+            unsigned int new_position = track_model->visible_window_start + 
+                static_cast<unsigned int>(relative_x * (track_model->visible_window_end - track_model->visible_window_start));
+            
+            DEBUG("new_position: %u", new_position);
+
+            track_model->notifyScrubberPosition(new_position);
+            e.consume(this);
+            return;
+        }
+
+        float final_start, final_end;
 
         if (dragging && track_model && track_model->sample && track_model->sample->isLoaded())
         {

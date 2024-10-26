@@ -17,9 +17,15 @@ struct TrackModel
     unsigned int visible_window_start = 0; // Start index of the visible window
     unsigned int visible_window_end = 0;   // End index of the visible window
     
+    // Scrubbing-related members
+    float playback_percentage = 0.0f;
+    bool scrubber_dragging = false;
+
+    // Marker properties
     std::map<unsigned int, std::vector<Marker>>* markers = nullptr;
     int active_marker = 0;
 
+    // Options
     bool *enable_vertical_drag_zoom = nullptr;
     bool *lock_markers = nullptr;
 
@@ -28,6 +34,9 @@ struct TrackModel
 
     // Callback for syncing markers with waveform
     std::function<void()> onSyncMarkers = nullptr;
+
+    // Callback for when scrubber position changes
+    std::function<void(unsigned int)> onScrubberPositionChanged;
 
     void setSample(Sample *sample) 
     {
@@ -113,6 +122,18 @@ struct TrackModel
 
     void setActiveMarker(int marker) {
         active_marker = marker;
+    }
+
+    void setScrubberPositionCallback(std::function<void(unsigned int)> callback) {
+        onScrubberPositionChanged = callback;
+    }
+    void notifyScrubberPosition(unsigned int position) {
+        if (onScrubberPositionChanged) {
+            onScrubberPositionChanged(position);
+        }
+    }
+    void setPlaybackPercentage(float percentage) {
+        playback_percentage = percentage;
     }
 
     // Method to adjust zoom level
