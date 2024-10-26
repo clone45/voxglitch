@@ -80,9 +80,21 @@ struct FourTrackWidget : VoxglitchSamplerModuleWidget
         sample_interpolation_menu_item->module = module;
         menu->addChild(sample_interpolation_menu_item);
 
-        // Add separator and our new option
+        // Add separator and our new options
         menu->addChild(new MenuEntry);  // Another separator
+        menu->addChild(createMenuLabel("Options"));
         menu->addChild(createBoolPtrMenuItem("Enable Vertical-Drag Zoom", "", &module->enable_vertical_drag_zoom));
+        menu->addChild(createBoolPtrMenuItem("Lock Markers", "", &module->lock_markers));
+
+        menu->addChild(createIndexSubmenuItem("Trigger Length",
+            module->getTriggerLengthNames(),
+            [=]() {
+                return (module->trigger_length_index);
+            },
+            [=](int trigger_length_index) {
+                module->setTriggerLengthIndex(trigger_length_index);
+            }
+        ));
 
     }
 };

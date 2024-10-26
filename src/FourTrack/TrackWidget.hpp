@@ -214,7 +214,7 @@ struct TrackWidget : TransparentWidget
 
     void onHover(const event::Hover &e) override
     {
-        if (track_model && track_model->markers)
+        if (track_model && track_model->markers && !track_model->isLocked())
         {
             float marker_distance = 5.0f; // How close you need to be to a marker to trigger the hover effect
 
@@ -247,7 +247,7 @@ struct TrackWidget : TransparentWidget
             drag_start_position = e.pos;
 
             // Check for marker dragging
-            if (track_model && track_model->markers)
+            if (track_model && track_model->markers && !track_model->isLocked())
             {
                 float marker_distance = 5.0f;
                 for (auto &marker_pair : *(track_model->markers))
@@ -291,9 +291,12 @@ struct TrackWidget : TransparentWidget
         // Handle right-click for marker deletion
         else if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_RIGHT && (e.mods & RACK_MOD_MASK) == 0)
         {
-            if (track_model && track_model->markers)
+            bool marker_hit = false;
+
+            if (track_model && track_model->markers && !track_model->isLocked())
             {
                 float marker_distance = 5.0f;
+
                 for (auto &marker_pair : *(track_model->markers))
                 {
                     float marker_x = ((marker_pair.first - track_model->visible_window_start) *
@@ -302,10 +305,14 @@ struct TrackWidget : TransparentWidget
                     if (std::abs(e.pos.x - marker_x) < marker_distance)
                     {
                         track_model->removeMarkers(marker_pair.first);
+                        marker_hit = true;
                         break;
                     }
                 }
             }
+
+            // Show context menu
+            if (!marker_hit && !track_model->isLocked()) createContextMenu();
         }
     }
 
@@ -367,7 +374,7 @@ struct TrackWidget : TransparentWidget
                 static_cast<float>(track_model->sample->size()),
                 final_end);
         }
-        else if (dragging_marker && markers_being_dragged && track_model && track_model->markers)
+        else if (dragging_marker && markers_being_dragged && track_model && track_model->markers && !track_model->isLocked())
         {
             float zoom = getAbsoluteZoom();
             float current_x = drag_start_x + e.mouseDelta.x / zoom;
@@ -390,7 +397,7 @@ struct TrackWidget : TransparentWidget
 
     void onDoubleClick(const event::DoubleClick &e) override
     {
-        if (track_model && track_model->markers)
+        if (track_model && track_model->markers && !track_model->isLocked())
         {
             float relative_x = drag_position.x / box.size.x;
             unsigned int click_position = track_model->visible_window_start +
@@ -412,5 +419,16 @@ struct TrackWidget : TransparentWidget
             sample_filename = track_model->sample->filename;
             track_model->initialize();
         }
+    }
+
+    void createContextMenu() 
+    {
+        // Create a new menu
+        ui::Menu* menu = createMenu();
+
+        menu->addChild(createMenuItem("Clear All Markers", "", [=]() 
+        {
+            track_model->clearMarkers();
+        }));
     }
 };

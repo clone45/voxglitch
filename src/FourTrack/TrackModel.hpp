@@ -18,8 +18,10 @@ struct TrackModel
     unsigned int visible_window_end = 0;   // End index of the visible window
     
     std::map<unsigned int, std::vector<Marker>>* markers = nullptr;
-    bool *enable_vertical_drag_zoom = nullptr;
     int active_marker = 0;
+
+    bool *enable_vertical_drag_zoom = nullptr;
+    bool *lock_markers = nullptr;
 
     // Callback for when a marker is selected
     std::function<void(int)> onMarkerSelected = nullptr;
@@ -46,6 +48,16 @@ struct TrackModel
     void setVerticalDragZoomEnabled(bool *enabled) 
     {
         enable_vertical_drag_zoom = enabled;
+    }
+
+    void setLockMarkers(bool *locked) 
+    {
+        lock_markers = locked;
+    }
+
+    bool isLocked() 
+    {
+        return lock_markers ? *lock_markers : false;
     }
 
     void selectMarker(int output_number) {
@@ -84,6 +96,15 @@ struct TrackModel
         if (markers && markers->find(position) != markers->end()) {
             markers->erase(position);
             // Sync markers with any listeners
+            if (onSyncMarkers) {
+                onSyncMarkers();
+            }
+        }
+    }
+
+    void clearMarkers() {
+        if (markers) {
+            markers->clear();
             if (onSyncMarkers) {
                 onSyncMarkers();
             }

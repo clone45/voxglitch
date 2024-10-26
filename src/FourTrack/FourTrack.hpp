@@ -1,14 +1,14 @@
 // TODO:
-// 3. Click on bottom waveform to select upper position
-// 4. Explore caching of waveform renderings
-// 5. Fix autobreak studio
-// 7. Rename module
-// 8. Menu item for setting trigger lengths
-// 9. Context menu for marker: Set to specific sample location
-// 10. Menu item for automatically setting markers??
-// 11. Menu item for locking markers
-// 12. Add a "clear all markers" menu item
-// 13. Dark panel
+// -  Menu item for setting trigger lengths
+// -  Menu item for automatically setting markers??
+
+// -  Click on bottom waveform to select upper position / drag scrubber
+// -  Explore caching of waveform renderings
+// -  Fix autobreak studio
+// -  Rename module
+// -  Context menu for marker: 
+//    == Set to specific sample location / Remove Marker
+// -  Dark panel
 
 #include "Marker.hpp"
 
@@ -30,11 +30,18 @@ struct FourTrack : VoxglitchSamplerModule
     float output_left = 0.0f;
     float output_right = 0.0f;
     int active_marker = 0; // Track which marker output is currently selected (0-31)
+    
+
     dsp::PulseGenerator marker_pulse_generators[32];
     dsp::PulseGenerator reset_light_pulse;
     std::map<unsigned int, std::vector<Marker>> markers; // position -> markers at that position
 
-    bool enable_vertical_drag_zoom = true;  // Default to enabled
+    bool enable_vertical_drag_zoom = true;
+    bool lock_markers = false;
+
+    // define trigger lengths
+    std::vector<float> trigger_lengths = {0.001, 0.002, 0.005, 0.010, 0.020, 0.050, 0.100, 0.200};
+    unsigned int trigger_length_index = 0;
 
     enum ParamIds
     {
@@ -113,6 +120,7 @@ struct FourTrack : VoxglitchSamplerModule
 
         track.setMarkers(&markers);
         track.setVerticalDragZoomEnabled(&enable_vertical_drag_zoom);
+        track.setLockMarkers(&lock_markers);
     }
 
     void clearMarkers()
@@ -140,6 +148,8 @@ struct FourTrack : VoxglitchSamplerModule
 
         json_object_set_new(rootJ, "loaded_sample_path", json_string(sample.getPath().c_str()));
         json_object_set_new(rootJ, "enable_vertical_drag_zoom", json_boolean(enable_vertical_drag_zoom));
+        json_object_set_new(rootJ, "lock_markers", json_boolean(lock_markers));
+        json_object_set_new(rootJ, "trigger_length_index", json_real(trigger_length_index));
 
         json_t *markersJ = json_array();
         for (const auto &pos_markers : markers)
@@ -171,8 +181,10 @@ struct FourTrack : VoxglitchSamplerModule
             loaded_filename = sample.getFilename();
         }
 
-        // Load the vertical drag zoom setting
+        // Load the context menu options
         enable_vertical_drag_zoom = JSON::getBoolean(rootJ, "enable_vertical_drag_zoom");
+        lock_markers = JSON::getBoolean(rootJ, "lock_markers");
+        trigger_length_index = JSON::getNumber(rootJ, "trigger_length_index");
 
         // Load the markers
         markers.clear();
@@ -193,6 +205,31 @@ struct FourTrack : VoxglitchSamplerModule
 
         // Call VoxglitchSamplerModule::loadSamplerData to load sampler specific data
         loadSamplerData(rootJ);
+    }
+
+    std::vector<std::string> getTriggerLengthNames() 
+    {
+        std::vector<std::string> names;
+
+        // iterate over trigger_lengths
+        for (unsigned int i = 0; i < trigger_lengths.size(); i++)
+        {
+            // convert the trigger length to a string
+            std::string label = std::to_string(trigger_lengths[i]);
+            label.erase(label.find_last_not_of('0') + 1, std::string::npos);
+            label.erase(label.find_last_not_of('.') + 1, std::string::npos);
+            label += "s";
+
+            // add the string to the vector
+            names.push_back(label);
+        }
+
+        return names;           
+    }
+
+    void setTriggerLengthIndex(int index)
+    {
+        trigger_length_index = index;
     }
 
     void process(const ProcessArgs &args) override
@@ -247,7 +284,7 @@ struct FourTrack : VoxglitchSamplerModule
                 // Trigger pulses for all markers at this position
                 for (const Marker &marker : it->second)
                 {
-                    marker_pulse_generators[marker.output_number].trigger(1e-3f); // 1ms trigger
+                    marker_pulse_generators[marker.output_number].trigger(trigger_lengths[trigger_length_index]);
                 }
             }
 
