@@ -1,5 +1,5 @@
 //
-// Voxglitch "FourTrack" module for VCV Rack
+// Voxglitch "CueResearch" module for VCV Rack
 //
 
 #include <fstream>
@@ -19,11 +19,11 @@
 
 using namespace vgLib_v2;
 
-#include "FourTrack/TrackModel.hpp"
-#include "FourTrack/TrackWidget.hpp"
+#include "CueResearch/TrackModel.hpp"
+#include "CueResearch/TrackWidget.hpp"
 
-#include "FourTrack/FourTrack.hpp"
-#include "FourTrack/FourTrackLoadSample.hpp"
-#include "FourTrack/FourTrackWidget.hpp"
+#include "CueResearch/CueResearch.hpp"
+#include "CueResearch/CueResearchLoadSample.hpp"
+#include "CueResearch/CueResearchWidget.hpp"
 
-Model* modelFourTrack = createModel<FourTrack, FourTrackWidget>("fourtrack");
+Model* modelCueResearch = createModel<CueResearch, CueResearchWidget>("cue_research");

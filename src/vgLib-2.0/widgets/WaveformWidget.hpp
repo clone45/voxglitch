@@ -6,8 +6,13 @@ struct WaveformWidget : TransparentWidget
     bool draw_container_background = false;
     float width = 0.0;
     float height = 0.0;
-    float indicator_width = 6.0;
-    float container_padding = 2.0;
+    float indicator_width = 2.0;
+    
+    // Replace single padding with individual paddings
+    float container_padding_top = 0.0;
+    float container_padding_right = 2.0;
+    float container_padding_bottom = 2.0;
+    float container_padding_left = 0.0;
 
     WaveformModel *waveform_modal;
 
@@ -23,12 +28,10 @@ struct WaveformWidget : TransparentWidget
 
     float max_average = 0.0;
 
-    // New members for scrubber interaction
     bool scrubber_hover = false;
     bool scrubber_dragging = false;
-    float scrubber_hit_zone = 5.0f;  // Pixels around scrubber that count as a "hit"
+    float scrubber_hit_zone = 5.0f;
     
-    // New members for drag position tracking
     Vec drag_position;
     float initial_percentage = 0.0f;
     float cumulative_drag_offset = 0.0f;
@@ -43,9 +46,10 @@ struct WaveformWidget : TransparentWidget
         box.size = Vec(width, height);
         sample_filename = waveform_modal->sample->filename;
 
-        averages.reserve((unsigned int)(width - 2 * container_padding));
+        // Use horizontal padding for width calculation
+        averages.reserve((unsigned int)(width - (container_padding_left + container_padding_right)));
 
-        for (unsigned int i = 0; i < width - 2 * container_padding; i++)
+        for (unsigned int i = 0; i < width - (container_padding_left + container_padding_right); i++)
         {
             averages[i] = 0.0;
         }
@@ -63,9 +67,9 @@ struct WaveformWidget : TransparentWidget
 
         sample_filename = waveform_modal->sample->filename;
 
-        averages.reserve((unsigned int)(width - 2 * container_padding));
+        averages.reserve((unsigned int)(width - (container_padding_left + container_padding_right)));
 
-        for (unsigned int i = 0; i < width - 2 * container_padding; i++)
+        for (unsigned int i = 0; i < width - (container_padding_left + container_padding_right); i++)
         {
             averages[i] = 0.0;
         }
@@ -77,7 +81,6 @@ struct WaveformWidget : TransparentWidget
         {
             const auto vg = args.vg;
 
-            // Save the drawing context to restore later
             nvgSave(vg);
 
             if (draw_container_background)
@@ -89,9 +92,9 @@ struct WaveformWidget : TransparentWidget
                 {
                     max_average = 0.0;
 
-                    if (waveform_modal->sample->size() > (width - 2 * container_padding))
+                    if (waveform_modal->sample->size() > (width - (container_padding_left + container_padding_right)))
                     {
-                        for (unsigned int x = 0; x < (width - 2 * container_padding); x++)
+                        for (unsigned int x = 0; x < (width - (container_padding_left + container_padding_right)); x++)
                         {
                             computeAverages(x, waveform_modal->sample->size());
                         }
@@ -107,7 +110,6 @@ struct WaveformWidget : TransparentWidget
                 if (waveform_modal->highlight_section)
                     highlightSection(vg);
 
-                // Draw the markers
                 drawMarkers(vg);
             }
 
@@ -119,7 +121,6 @@ struct WaveformWidget : TransparentWidget
     {
         TransparentWidget::step();
 
-        // Sample has changed
         if (sample_filename != waveform_modal->sample->filename)
         {
             sample_filename = waveform_modal->sample->filename;
@@ -144,7 +145,7 @@ struct WaveformWidget : TransparentWidget
 
         float left, right;
 
-        float chunk_size = (float)sample_size / (float)(width - 2 * container_padding);
+        float chunk_size = (float)sample_size / (float)(width - (container_padding_left + container_padding_right));
         unsigned int chunk_start = (x * chunk_size);
         unsigned int chunk_end = chunk_start + chunk_size;
 
@@ -172,7 +173,7 @@ struct WaveformWidget : TransparentWidget
 
     void normalizeAverages()
     {
-        for (unsigned int x = 0; x < (width - 2 * container_padding); x++)
+        for (unsigned int x = 0; x < (width - (container_padding_left + container_padding_right)); x++)
         {
             averages[x] = (1.0 / max_average) * averages[x];
         }
@@ -190,7 +191,7 @@ struct WaveformWidget : TransparentWidget
 
     void drawWaveform(NVGcontext *vg)
     {
-        for (unsigned int x = 0; x < (width - 2 * container_padding); x++)
+        for (unsigned int x = 0; x < (width - (container_padding_left + container_padding_right)); x++)
         {
             drawLine(vg, x);
         }
@@ -206,9 +207,29 @@ struct WaveformWidget : TransparentWidget
         container_background_color = color;
     }
 
+    // New padding setters
     void setContainerPadding(float padding)
     {
-        container_padding = padding;
+        container_padding_top = padding;
+        container_padding_right = padding;
+        container_padding_bottom = padding;
+        container_padding_left = padding;
+    }
+
+    void setContainerPadding(float vertical, float horizontal)
+    {
+        container_padding_top = vertical;
+        container_padding_bottom = vertical;
+        container_padding_left = horizontal;
+        container_padding_right = horizontal;
+    }
+
+    void setContainerPadding(float top, float right, float bottom, float left)
+    {
+        container_padding_top = top;
+        container_padding_right = right;
+        container_padding_bottom = bottom;
+        container_padding_left = left;
     }
 
     void drawContainerBackground(NVGcontext *vg)
@@ -221,22 +242,36 @@ struct WaveformWidget : TransparentWidget
 
     void drawLine(NVGcontext *vg, unsigned int x)
     {
-        float average_height = averages[x]; // ranges from 0.0 to 1.0
+        float average_height = averages[x];
         average_height = clamp(average_height, 0.0, 1.0);
-        float line_height = (average_height * (height - 2 * container_padding));
+        float line_height = (average_height * (height - (container_padding_top + container_padding_bottom)));
 
         nvgBeginPath(vg);
-        nvgRect(vg, container_padding + x, (height - line_height) / 2.0, 1.0, line_height);
+        nvgRect(vg, 
+            container_padding_left + x, 
+            (height - line_height) / 2.0, 
+            1.0, 
+            line_height
+        );
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 200));
         nvgFill(vg);
     }
 
     void drawPositionIndicator(NVGcontext *vg)
     {
-        float x_position = clamp(waveform_modal->playback_percentage * (width - 2 * container_padding), 0.0f, (float)(width - 2 * container_padding));
+        float x_position = clamp(
+            waveform_modal->playback_percentage * (width - (container_padding_left + container_padding_right)),
+            0.0f,
+            (float)(width - (container_padding_left + container_padding_right))
+        );
 
         nvgBeginPath(vg);
-        nvgRect(vg, container_padding + x_position, container_padding, indicator_width, height - 2 * container_padding);
+        nvgRect(vg, 
+            container_padding_left + x_position, 
+            container_padding_top, 
+            indicator_width, 
+            height - (container_padding_top + container_padding_bottom)
+        );
         nvgFillColor(vg, indicator_color);
         nvgFill(vg);
     }
@@ -244,7 +279,12 @@ struct WaveformWidget : TransparentWidget
     void highlightSection(NVGcontext *vg)
     {
         nvgBeginPath(vg);
-        nvgRect(vg, container_padding + waveform_modal->highlight_section_x, container_padding, waveform_modal->highlight_section_width, height - 2 * container_padding);
+        nvgRect(vg, 
+            container_padding_left + waveform_modal->highlight_section_x, 
+            container_padding_top, 
+            waveform_modal->highlight_section_width, 
+            height - (container_padding_top + container_padding_bottom)
+        );
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 80));
         nvgFill(vg);
     }
@@ -254,13 +294,16 @@ struct WaveformWidget : TransparentWidget
         nvgBeginPath(vg);
         for (float marker : waveform_modal->marker_positions)
         {
-            // Convert marker sample position to x coordinate
-            float x_position = (marker / waveform_modal->sample->size()) * (width - 2 * container_padding);
-            x_position = clamp(container_padding + x_position, 0.0f, (float)(width - 2 * container_padding));
+            float x_position = (marker / waveform_modal->sample->size()) * 
+                (width - (container_padding_left + container_padding_right));
+            x_position = clamp(
+                container_padding_left + x_position,
+                0.0f,
+                (float)(width - (container_padding_left + container_padding_right))
+            );
 
-            // Draw the marker line
-            nvgMoveTo(vg, x_position, container_padding);
-            nvgLineTo(vg, x_position, height - container_padding);
+            nvgMoveTo(vg, x_position, container_padding_top);
+            nvgLineTo(vg, x_position, height - container_padding_bottom);
         }
 
         nvgStrokeColor(vg, nvgRGBA(200, 200, 200, 100));
@@ -273,8 +316,8 @@ struct WaveformWidget : TransparentWidget
         TransparentWidget::onButton(e);
         if (e.button == GLFW_MOUSE_BUTTON_LEFT) {
             if (e.action == GLFW_PRESS) {
-                float scrubber_x = container_padding +
-                    (waveform_modal->playback_percentage * (width - 2 * container_padding));
+                float scrubber_x = container_padding_left +
+                    (waveform_modal->playback_percentage * (width - (container_padding_left + container_padding_right)));
                
                 if (std::abs(e.pos.x - scrubber_x) < scrubber_hit_zone) {
                     scrubber_dragging = true;
@@ -296,15 +339,13 @@ struct WaveformWidget : TransparentWidget
         if (scrubber_dragging) {
             cumulative_drag_offset += e.mouseDelta.x;
            
-            // Calculate percentage of full width
-            float drag_percentage = cumulative_drag_offset / (width - 2 * container_padding);
+            float drag_percentage = cumulative_drag_offset / 
+                (width - (container_padding_left + container_padding_right));
             float new_percentage = initial_percentage + drag_percentage;
             new_percentage = rack::math::clamp(new_percentage, 0.0f, 1.0f);
            
-            // Convert to sample position
             unsigned int new_position = static_cast<unsigned int>(new_percentage * waveform_modal->sample->size());
             
-            // Use position-based notification
             waveform_modal->notifyScrubberPosition(new_position);
             e.consume(this);
         }
@@ -316,13 +357,10 @@ struct WaveformWidget : TransparentWidget
             return;
         }
 
-        // Calculate scrubber x position
-        float scrubber_x = container_padding + 
-            (waveform_modal->playback_percentage * (width - 2 * container_padding));
+        float scrubber_x = container_padding_left + 
+            (waveform_modal->playback_percentage * (width - (container_padding_left + container_padding_right)));
         
-        // Check if mouse is near scrubber
         if (std::abs(e.pos.x - scrubber_x) < scrubber_hit_zone) {
-            // Set cursor to horizontal resize cursor
             glfwSetCursor(APP->window->win, glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
             scrubber_hover = true;
         } else {
@@ -332,6 +370,4 @@ struct WaveformWidget : TransparentWidget
             }
         }
     }
-
-
 };

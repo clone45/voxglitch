@@ -1,11 +1,11 @@
-struct FourTrackLoadSample : MenuItem
+struct CueResearchLoadSample : MenuItem
 {
-    FourTrack *module;
+    CueResearch *module;
 
     void onAction(const event::Action &e) override
     {
 #ifdef USING_CARDINAL_NOT_RACK
-        FourTrack *module = this->module;
+        CueResearch *module = this->module;
         async_dialog_filebrowser(false, NULL, module->samples_root_dir.c_str(), "Load sample", [module](char *filename)
                                  {
         if(filename)
@@ -18,7 +18,7 @@ struct FourTrackLoadSample : MenuItem
 #endif
     }
 
-    static void fileSelected(FourTrack *module, std::string filename)
+    static void fileSelected(CueResearch *module, std::string filename)
     {
         if (filename != "")
         {

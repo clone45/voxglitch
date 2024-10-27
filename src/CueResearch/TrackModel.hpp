@@ -28,15 +28,11 @@ struct TrackModel
     // Options
     bool *enable_vertical_drag_zoom = nullptr;
     bool *lock_markers = nullptr;
-
-    // Callback for when a marker is selected
-    std::function<void(int)> onMarkerSelected = nullptr;
-
-    // Callback for syncing markers with waveform
-    std::function<void()> onSyncMarkers = nullptr;
-
-    // Callback for when scrubber position changes
-    std::function<void(unsigned int)> onScrubberPositionChanged;
+  
+    std::function<void(int)> onMarkerSelected = nullptr; // Callback for when a marker is selected
+    std::function<void()> onSyncMarkers = nullptr; // Callback for syncing markers with waveform
+    std::function<void(unsigned int)> onScrubberPositionChanged; // Callback for when scrubber position changes
+    std::function<void()> lockMarkers = nullptr; // Callback for setting lock markers value
 
     void setSample(Sample *sample) 
     {

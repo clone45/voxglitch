@@ -1,13 +1,13 @@
-struct FourTrackWidget : VoxglitchSamplerModuleWidget
+struct CueResearchWidget : VoxglitchSamplerModuleWidget
 {
-    FourTrackWidget(FourTrack *module)
+    CueResearchWidget(CueResearch *module)
     {
         setModule(module);
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/four_track/four_track_panel.svg"),
-            asset::plugin(pluginInstance, "res/four_track/four_track_panel-dark.svg"));
+            asset::plugin(pluginInstance, "res/cue_research/cue_research_panel.svg"),
+            asset::plugin(pluginInstance, "res/cue_research/cue_research_panel-dark.svg"));
 
         // Screws
         addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
@@ -16,23 +16,23 @@ struct FourTrackWidget : VoxglitchSamplerModuleWidget
         addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
         // Start, stop, reset inputs
-        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("start_input"), module, FourTrack::START_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("stop_input"), module, FourTrack::STOP_INPUT));
-        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("reset_input"), module, FourTrack::RESET_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("start_input"), module, CueResearch::START_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("stop_input"), module, CueResearch::STOP_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("reset_input"), module, CueResearch::RESET_INPUT));
 
         // Start, stop, reset buttons
-        addParam(createLightParamCentered<VCVLightLatch<MediumSimpleLight<GreenLight>>>(panelHelper.findNamed("start_button"), module, FourTrack::START_BUTTON, FourTrack::START_LIGHT));
-        addParam(createLightParamCentered<VCVLightLatch<MediumSimpleLight<RedLight>>>(panelHelper.findNamed("stop_button"), module, FourTrack::STOP_BUTTON, FourTrack::STOP_LIGHT));
-        addParam(createLightParamCentered<VCVLightLatch<MediumSimpleLight<WhiteLight>>>(panelHelper.findNamed("reset_button"), module, FourTrack::RESET_BUTTON, FourTrack::RESET_LIGHT));
+        addParam(createLightParamCentered<VCVLightLatch<MediumSimpleLight<GreenLight>>>(panelHelper.findNamed("start_button"), module, CueResearch::START_BUTTON, CueResearch::START_LIGHT));
+        addParam(createLightParamCentered<VCVLightLatch<MediumSimpleLight<RedLight>>>(panelHelper.findNamed("stop_button"), module, CueResearch::STOP_BUTTON, CueResearch::STOP_LIGHT));
+        addParam(createLightParamCentered<VCVLightLatch<MediumSimpleLight<WhiteLight>>>(panelHelper.findNamed("reset_button"), module, CueResearch::RESET_BUTTON, CueResearch::RESET_LIGHT));
 
         // Left and right outputs
-        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("left_output"), module, FourTrack::OUTPUT_LEFT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("right_output"), module, FourTrack::OUTPUT_RIGHT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("left_output"), module, CueResearch::OUTPUT_LEFT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("right_output"), module, CueResearch::OUTPUT_RIGHT));
 
         // Marker outputs
         for (int i = 0; i < 32; i++)
         {
-            addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("marker_output_" + std::to_string(i + 1)), module, FourTrack::MARKER_OUTPUTS + i));
+            addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("marker_output_" + std::to_string(i + 1)), module, CueResearch::MARKER_OUTPUTS + i));
         }
 
         // Marker buttons using small light buttons
@@ -41,8 +41,8 @@ struct FourTrackWidget : VoxglitchSamplerModuleWidget
             addParam(createLightParamCentered<SmallLightButton<componentlibrary::WhiteLight>>(
                 panelHelper.findNamed("marker_selector_" + std::to_string(i + 1)),
                 module,
-                FourTrack::MARKER_BUTTONS + i,
-                FourTrack::MARKER_LIGHTS + i));
+                CueResearch::MARKER_BUTTONS + i,
+                CueResearch::MARKER_LIGHTS + i));
         }
 
         // Add the track widgets
@@ -64,14 +64,14 @@ struct FourTrackWidget : VoxglitchSamplerModuleWidget
 
     void appendContextMenu(Menu *menu) override
     {
-        FourTrack *module = dynamic_cast<FourTrack *>(this->module);
+        CueResearch *module = dynamic_cast<CueResearch *>(this->module);
         assert(module);
 
         menu->addChild(new MenuEntry); // For spacing only
         menu->addChild(createMenuLabel("Sample"));
 
         // Add the sample slot to the right-click context menu
-        FourTrackLoadSample *menu_item_load_sample = new FourTrackLoadSample();
+        CueResearchLoadSample *menu_item_load_sample = new CueResearchLoadSample();
         menu_item_load_sample->text = module->loaded_filename;
         menu_item_load_sample->module = module;
         menu->addChild(menu_item_load_sample);

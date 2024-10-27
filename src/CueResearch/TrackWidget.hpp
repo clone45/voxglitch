@@ -9,14 +9,17 @@ struct TrackWidget : TransparentWidget
     std::string sample_filename = "";
 
     // Properties for sample view dragging/zooming
+    Vec drag_start_position;
+    Vec context_menu_target_position;
+
     bool dragging = false;
     bool dragging_zoom = false;
     bool shift_key_held = false;
     bool right_button_held = false;
-    Vec drag_start_position;
     float initial_visible_window_start;
     float initial_visible_window_end;
     float cumulative_zoom_offset = 0.0f;
+    float playback_indicator_width = 1.0f;
 
     // Properties for marker dragging
     bool dragging_marker = false;
@@ -31,7 +34,7 @@ struct TrackWidget : TransparentWidget
     float initial_percentage = 0.0f;
 
     // Shared properties that can be used by both scrubbing and view dragging
-    Vec drag_position;
+    Vec mouse_click_position;
     float cumulative_drag_offset = 0.0f;
 
     TrackWidget(float x, float y, float width, float height, TrackModel *track_model)
@@ -149,7 +152,7 @@ struct TrackWidget : TransparentWidget
 
             // Draw the indicator
             nvgBeginPath(vg);
-            nvgRect(vg, x_position - 1, 0, 2.0f, track_height);  // 2 pixels wide
+            nvgRect(vg, x_position - 1, 0, playback_indicator_width, track_height);
             nvgFillColor(vg, nvgRGBA(255, 215, 20, 200));  // Yellow-ish color like bottom widget
             nvgFill(vg);
         }
@@ -249,24 +252,37 @@ struct TrackWidget : TransparentWidget
 
     void onHover(const event::Hover &e) override
     {
+        // Check for scrubber hover first
+        if (track_model && track_model->sample) {
+            // Convert playback percentage to visible window position
+            float visible_span = track_model->visible_window_end - track_model->visible_window_start;
+            float relative_playback_pos = (track_model->playback_percentage * track_model->sample->size() - 
+                track_model->visible_window_start) / visible_span;
+            float scrubber_x = relative_playback_pos * box.size.x;
+            
+            if (std::abs(e.pos.x - scrubber_x) < scrubber_hit_zone) {
+                glfwSetCursor(APP->window->win, glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
+                return;
+            }
+        }
+
+        // Check for marker hover
         if (track_model && track_model->markers && !track_model->isLocked())
         {
-            float marker_distance = 5.0f; // How close you need to be to a marker to trigger the hover effect
-
+            float marker_distance = 5.0f;
             for (const auto &marker_pair : *(track_model->markers))
             {
-                float marker_x = ((marker_pair.first - track_model->visible_window_start) * box.size.x / (track_model->visible_window_end - track_model->visible_window_start));
-
+                float marker_x = ((marker_pair.first - track_model->visible_window_start) * box.size.x / 
+                    (track_model->visible_window_end - track_model->visible_window_start));
                 if (std::abs(e.pos.x - marker_x) < marker_distance)
                 {
-                    // Set the cursor to a drag hand when hovering over a marker
                     glfwSetCursor(APP->window->win, glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
                     return;
                 }
             }
         }
 
-        // If not hovering over a marker, set the cursor to default
+        // If not hovering over scrubber or marker, set cursor to default
         glfwSetCursor(APP->window->win, NULL);
     }
 
@@ -278,7 +294,7 @@ struct TrackWidget : TransparentWidget
         // Handle left-click dragging
         if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS)
         {
-            drag_position = e.pos;
+            mouse_click_position = e.pos;
             drag_start_position = e.pos;
 
             // Check for scrubber dragging first
@@ -353,13 +369,14 @@ struct TrackWidget : TransparentWidget
                                       box.size.x / (track_model->visible_window_end - track_model->visible_window_start));
                     if (std::abs(e.pos.x - marker_x) < marker_distance)
                     {
-                        track_model->removeMarkers(marker_pair.first);
                         marker_hit = true;
                         break;
                     }
                 }
             }
             // Show context menu
+            context_menu_target_position = e.pos; // Store the position for the context menu
+            if (marker_hit && !track_model->isLocked()) createMarkerContextMenu();
             if (!marker_hit && !track_model->isLocked()) createContextMenu();
         }
     }
@@ -368,26 +385,18 @@ struct TrackWidget : TransparentWidget
     {
         e.consume(this);
 
-        DEBUG("scrubber_dragging: %d", scrubber_dragging);
-
         if (scrubber_dragging) {
             float zoom = getAbsoluteZoom();
             float current_x = drag_start_x + e.mouseDelta.x / zoom;
             float relative_x = current_x / box.size.x;
             relative_x = rack::math::clamp(relative_x, 0.0f, 1.0f);
             
-            DEBUG("zoom: %f", zoom);
-            DEBUG("current_x: %f", current_x);
-            DEBUG("relative_x: %f", relative_x);
-            DEBUG("visible_window_start: %u", track_model->visible_window_start);
-            DEBUG("visible_window_end: %u", track_model->visible_window_end);
-            
             unsigned int new_position = track_model->visible_window_start + 
                 static_cast<unsigned int>(relative_x * (track_model->visible_window_end - track_model->visible_window_start));
-            
-            DEBUG("new_position: %u", new_position);
 
             track_model->notifyScrubberPosition(new_position);
+            drag_start_x = current_x;
+
             e.consume(this);
             return;
         }
@@ -472,14 +481,54 @@ struct TrackWidget : TransparentWidget
     {
         if (track_model && track_model->markers && !track_model->isLocked())
         {
-            float relative_x = drag_position.x / box.size.x;
-            unsigned int click_position = track_model->visible_window_start +
-                                          relative_x * (track_model->visible_window_end - track_model->visible_window_start);
+            // Find markers near the click position
+            std::vector<unsigned int> nearby_markers = findMarkersNearPosition(mouse_click_position);
 
-            // Add marker at click position
-            track_model->addMarker(click_position);
+            if (!nearby_markers.empty())
+            {
+                // Remove the first marker found (since we are returning all nearby markers, but removing only one)
+                track_model->removeMarkers(nearby_markers.front());
+            }
+            else
+            {
+                // If no marker was found at the click position, add a new one
+                float sample_position = mouseToSamplePosition(mouse_click_position);
+                track_model->addMarker(sample_position);
+            }
         }
         e.consume(this);
+    }
+
+    std::vector<unsigned int> findMarkersNearPosition(const Vec &click_position)
+    {
+        std::vector<unsigned int> found_markers;
+
+        if (track_model && track_model->markers && !track_model->isLocked())
+        {
+            float marker_distance = 5.0f; // Tolerance for detecting nearby markers
+
+            for (const auto &marker_pair : *(track_model->markers))
+            {
+                float marker_x = ((marker_pair.first - track_model->visible_window_start) * box.size.x /
+                                (track_model->visible_window_end - track_model->visible_window_start));
+
+                if (std::abs(click_position.x - marker_x) < marker_distance)
+                {
+                    // Add marker position to the found_markers vector
+                    found_markers.push_back(marker_pair.first);
+                }
+            }
+        }
+
+        return found_markers;
+    }
+
+    float mouseToSamplePosition(Vec mouse_pos)
+    {
+        float relative_x = mouse_pos.x / box.size.x;
+        unsigned int sample_position = track_model->visible_window_start +
+                                    relative_x * (track_model->visible_window_end - track_model->visible_window_start);
+        return sample_position;
     }
 
     void step() override
@@ -502,6 +551,28 @@ struct TrackWidget : TransparentWidget
         menu->addChild(createMenuItem("Clear All Markers", "", [=]() 
         {
             track_model->clearMarkers();
+        }));
+
+        // Add marker
+        menu->addChild(createMenuItem("Add Marker", "", [=]() 
+        {
+            float sample_position = mouseToSamplePosition(context_menu_target_position.x);
+            track_model->addMarker(sample_position);
+        }));
+    }
+
+    void createMarkerContextMenu() 
+    {
+        // Create a new menu
+        ui::Menu* menu = createMenu();
+
+        menu->addChild(createMenuItem("Delete Marker", "", [=]() 
+        {
+            std::vector<unsigned int> nearby_markers = findMarkersNearPosition(context_menu_target_position);
+            if (!nearby_markers.empty())
+            {
+                track_model->removeMarkers(nearby_markers.front());
+            }
         }));
     }
 };

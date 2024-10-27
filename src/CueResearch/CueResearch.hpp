@@ -1,18 +1,13 @@
 // TODO:
-// -  Click on bottom waveform to select upper position / drag scrubber
-
+// -  Improve library view
 // -  Menu item for automatically setting markers??
 // -  Explore caching of waveform renderings
 // -  Fix autobreak studio
-// -  Rename module: Cue Research
-// -  Context menu for marker:
-//    == Set to specific sample location / Remove Marker
-// -  Dark panel
 
 #include "Marker.hpp"
 #include "ScrubState.hpp"
 
-struct FourTrack : VoxglitchSamplerModule
+struct CueResearch : VoxglitchSamplerModule
 {
     std::string loaded_filename = "[ EMPTY ]";
 
@@ -79,7 +74,7 @@ struct FourTrack : VoxglitchSamplerModule
         NUM_LIGHTS
     };
 
-    FourTrack()
+    CueResearch()
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 
@@ -127,21 +122,10 @@ struct FourTrack : VoxglitchSamplerModule
         track.setVerticalDragZoomEnabled(&enable_vertical_drag_zoom);
         track.setLockMarkers(&lock_markers);
 
-        // Set up the waveform model's scrubber callback
-//        waveform_model.setScrubberCallback([this](float percentage) { 
-//            onScrubberPositionChanged(percentage); 
-//        });
-
         waveform_model.setScrubberPositionCallback([this](unsigned int position) {
             onScrubberPositionChanged(position);
         });
 
-        // Set up the callback for track model (add this)
-//        track.setScrubberCallback([this](float percentage) {
-//            onScrubberPositionChanged(percentage);
-//        });
-
-        // Update callbacks to use position
         track.setScrubberPositionCallback([this](unsigned int pos) {
             onScrubberPositionChanged(pos);
         });
@@ -161,6 +145,13 @@ struct FourTrack : VoxglitchSamplerModule
             // Assuming each position in the map represents a sample position for a marker
             waveform_model.marker_positions.push_back(marker_pair.first);
         }
+    }
+
+    // Call back for setting lock markers value
+    void setLockMarkers(bool *locked)
+    {
+        lock_markers = locked;
+        track.setLockMarkers(locked);
     }
 
     // Callback called by either widget when scrubbing starts/stops/moves
@@ -377,6 +368,7 @@ struct FourTrack : VoxglitchSamplerModule
         // Handle playback
         if (sample.loaded) {
             if (waveform_model.scrubber_dragging || track.scrubber_dragging) {
+                // ... [existing scrubbing code] ...
                 if (scrub_state.buffer_needs_update) {
                     updateScrubBuffer();
                 }
@@ -385,7 +377,7 @@ struct FourTrack : VoxglitchSamplerModule
                 rate = rack::math::clamp(rate, 0.1f, 2.0f);
                 
                 // Move through buffer
-                unsigned int delta = 1u + static_cast<unsigned int>(rate); // Removed std::max, using addition instead
+                unsigned int delta = 1u + static_cast<unsigned int>(rate);
                 
                 if (scrub_state.scrub_speed > 0) {
                     scrub_state.buffer_position += delta;
@@ -406,7 +398,6 @@ struct FourTrack : VoxglitchSamplerModule
                     }
                 }
 
-                // Simple bounds check instead of using std::min
                 if (scrub_state.buffer_position >= ScrubState::SCRUB_BUFFER_SIZE) {
                     scrub_state.buffer_position = ScrubState::SCRUB_BUFFER_SIZE - 1;
                 }
@@ -423,6 +414,16 @@ struct FourTrack : VoxglitchSamplerModule
             else if (playing) {
                 // Normal playback - increment position
                 if (playback_position < sample.size()) {
+                    // Check if there are markers at the current position
+                    auto it = markers.find(playback_position);
+                    if (it != markers.end()) {
+                        // Trigger pulses for all markers at this position
+                        float trigger_length = trigger_lengths[trigger_length_index];
+                        for (const Marker& marker : it->second) {
+                            marker_pulse_generators[marker.output_number].trigger(trigger_length);
+                        }
+                    }
+
                     sample.read(playback_position, &output_left, &output_right);
                     playback_position++;
                 } else {
