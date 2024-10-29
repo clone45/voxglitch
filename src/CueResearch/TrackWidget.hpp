@@ -308,6 +308,23 @@ struct TrackWidget : TransparentWidget
         glfwSetCursor(APP->window->win, NULL);
     }
 
+    void onLeave(const event::Leave &e) override
+    {
+        TransparentWidget::onLeave(e);
+        
+        // Reset cursor when leaving widget
+        glfwSetCursor(APP->window->win, NULL);
+        
+        // Also reset drag states since we've left the widget
+        if (scrubber_dragging) {
+            scrubber_dragging = false;
+            track_model->scrubber_dragging = false;
+        }
+        dragging_marker = false;
+        markers_being_dragged = nullptr;
+        dragging = false;
+    }
+
     void onButton(const event::Button &e) override
     {
         TransparentWidget::onButton(e);
@@ -383,6 +400,7 @@ struct TrackWidget : TransparentWidget
                 scrubber_dragging = false;
                 track_model->scrubber_dragging = false;
             }
+            glfwSetCursor(APP->window->win, NULL);
         }
         // Handle right-click for marker deletion
         else if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_RIGHT && (e.mods & RACK_MOD_MASK) == 0)
