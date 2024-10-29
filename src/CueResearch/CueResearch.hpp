@@ -3,6 +3,9 @@
 // -  Menu item for automatically setting markers??
 // -  Explore caching of waveform renderings
 // -  Fix autobreak studio
+// -  add horizontal padding to both waveform displays
+// - I'll create a new context menu item called, "Clear markers when loading new sample", and I'll have it turned OFF as default.  
+// - Add option to loop sample playback
 
 #include "Marker.hpp"
 #include "ScrubState.hpp"

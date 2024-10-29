@@ -12,6 +12,9 @@ struct TrackWidget : TransparentWidget
     Vec drag_start_position;
     Vec context_menu_target_position;
 
+    float playback_indicator_width = 2.0f;
+    NVGcolor playback_indicator_color = nvgRGBA(255, 215, 20, 200);
+
     bool dragging = false;
     bool dragging_zoom = false;
     bool shift_key_held = false;
@@ -19,7 +22,6 @@ struct TrackWidget : TransparentWidget
     float initial_visible_window_start;
     float initial_visible_window_end;
     float cumulative_zoom_offset = 0.0f;
-    float playback_indicator_width = 1.0f;
 
     // Properties for marker dragging
     bool dragging_marker = false;
@@ -36,6 +38,12 @@ struct TrackWidget : TransparentWidget
     // Shared properties that can be used by both scrubbing and view dragging
     Vec mouse_click_position;
     float cumulative_drag_offset = 0.0f;
+
+    // Padding properties
+    float container_padding_top = 2.0f;
+    float container_padding_right = 2.0f;
+    float container_padding_bottom = 2.0f;
+    float container_padding_left = 2.0f;
 
     TrackWidget(float x, float y, float width, float height, TrackModel *track_model)
     {
@@ -86,8 +94,9 @@ struct TrackWidget : TransparentWidget
         unsigned int num_chunks = 1000;
         unsigned int chunk_size = std::max(1u, num_visible_samples / num_chunks);
 
-        // Calculate width of each chunk
-        float chunk_width = track_width / static_cast<float>(num_chunks);
+        // Calculate width of each chunk, accounting for padding
+        float drawable_width = track_width - (container_padding_left + container_padding_right);
+        float chunk_width = drawable_width / static_cast<float>(num_chunks);
 
         // Iterate over chunks to draw the averaged waveform
         for (unsigned int chunk_index = 0; chunk_index < num_chunks; ++chunk_index)
@@ -114,11 +123,11 @@ struct TrackWidget : TransparentWidget
             if (count > 0)
             {
                 float average_height = (left_sum + right_sum) / (2.0f * count);
-                average_height *= track_height;
+                average_height *= (track_height - (container_padding_top + container_padding_bottom));
 
-                // Calculate the x and y position for drawing
-                float x_position = chunk_index * chunk_width;
-                float y_position = (track_height - average_height) / 2.0f;
+                // Calculate the x and y position for drawing, accounting for padding
+                float x_position = container_padding_left + (chunk_index * chunk_width);
+                float y_position = container_padding_top + ((track_height - container_padding_top - container_padding_bottom - average_height) / 2.0f);
 
                 // Draw the rectangle representing the chunk
                 float rect_overlap = chunk_width / 4.0f;
@@ -139,21 +148,26 @@ struct TrackWidget : TransparentWidget
         const auto vg = args.vg;
         nvgSave(vg);
 
-        // Convert playback percentage to visible window position
         float sample_position = track_model->playback_percentage * track_model->sample->size();
 
-        // Only draw if the indicator is in the visible window
         if (sample_position >= track_model->visible_window_start && 
             sample_position <= track_model->visible_window_end)
         {
             float relative_pos = (sample_position - track_model->visible_window_start) / 
                 (track_model->visible_window_end - track_model->visible_window_start);
-            float x_position = relative_pos * track_width;
+            
+            float drawable_width = track_width - (container_padding_left + container_padding_right);
+            float x_position = container_padding_left + (relative_pos * drawable_width);
 
-            // Draw the indicator
+            if (playback_indicator_width > 1.0f) {
+                x_position -= (playback_indicator_width / 2.0f);
+            }
+
             nvgBeginPath(vg);
-            nvgRect(vg, x_position - 1, 0, playback_indicator_width, track_height);
-            nvgFillColor(vg, nvgRGBA(255, 215, 20, 200));  // Yellow-ish color like bottom widget
+            nvgRect(vg, x_position, container_padding_top, 
+                    playback_indicator_width, 
+                    track_height - (container_padding_top + container_padding_bottom));
+            nvgFillColor(vg, playback_indicator_color);
             nvgFill(vg);
         }
 
@@ -171,9 +185,10 @@ struct TrackWidget : TransparentWidget
 
         unsigned int visible_sample_start = track_model->visible_window_start;
         unsigned int visible_sample_end = track_model->visible_window_end;
-        float samples_per_pixel = (visible_sample_end - visible_sample_start) / track_width;
+        float drawable_width = track_width - (container_padding_left + container_padding_right);
+        float samples_per_pixel = (visible_sample_end - visible_sample_start) / drawable_width;
 
-        float line_extension = track_height * 1.0f;
+        float line_extension = track_height - (container_padding_top + container_padding_bottom);
         float triangle_height = 10.0f;
 
         // Define our colors
@@ -187,29 +202,28 @@ struct TrackWidget : TransparentWidget
             if (pos < visible_sample_start || pos > visible_sample_end)
                 continue;
 
-            float x = ((pos - visible_sample_start) / samples_per_pixel);
+            float x = container_padding_left + ((pos - visible_sample_start) / samples_per_pixel);
 
             for (const auto &marker : marker_pair.second)
             {
-
                 // Choose color based on whether this marker matches the active output
                 NVGcolor marker_color = (marker.output_number == track_model->active_marker)
                                             ? active_color
                                             : inactive_color;
 
-                // Draw triangle at top
+                // Draw triangle at top, accounting for padding
                 nvgBeginPath(vg);
-                nvgMoveTo(vg, x, triangle_height); // Point at bottom
-                nvgLineTo(vg, x - 5, 0);           // Left point at top
-                nvgLineTo(vg, x + 5, 0);           // Right point at top
+                nvgMoveTo(vg, x, container_padding_top + triangle_height);
+                nvgLineTo(vg, x - 5, container_padding_top);
+                nvgLineTo(vg, x + 5, container_padding_top);
                 nvgClosePath(vg);
-                nvgFillColor(vg, marker_color); // Back to teal
+                nvgFillColor(vg, marker_color);
                 nvgFill(vg);
 
-                // Draw vertical line
+                // Draw vertical line, accounting for padding
                 nvgBeginPath(vg);
-                nvgMoveTo(vg, x, 0);
-                nvgLineTo(vg, x, line_extension);
+                nvgMoveTo(vg, x, container_padding_top);
+                nvgLineTo(vg, x, container_padding_top + line_extension);
                 nvgStrokeColor(vg, marker_color);
                 nvgStrokeWidth(vg, 1.0f);
                 nvgStroke(vg);
@@ -254,11 +268,11 @@ struct TrackWidget : TransparentWidget
     {
         // Check for scrubber hover first
         if (track_model && track_model->sample) {
-            // Convert playback percentage to visible window position
-            float visible_span = track_model->visible_window_end - track_model->visible_window_start;
+            // Convert playback percentage to visible window position, accounting for padding
+            float drawable_width = box.size.x - (container_padding_left + container_padding_right);
             float relative_playback_pos = (track_model->playback_percentage * track_model->sample->size() - 
-                track_model->visible_window_start) / visible_span;
-            float scrubber_x = relative_playback_pos * box.size.x;
+                track_model->visible_window_start) / (track_model->visible_window_end - track_model->visible_window_start);
+            float scrubber_x = container_padding_left + (relative_playback_pos * drawable_width);
             
             if (std::abs(e.pos.x - scrubber_x) < scrubber_hit_zone) {
                 glfwSetCursor(APP->window->win, glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
@@ -270,14 +284,22 @@ struct TrackWidget : TransparentWidget
         if (track_model && track_model->markers && !track_model->isLocked())
         {
             float marker_distance = 5.0f;
+            float drawable_width = box.size.x - (container_padding_left + container_padding_right);
+            
             for (const auto &marker_pair : *(track_model->markers))
             {
-                float marker_x = ((marker_pair.first - track_model->visible_window_start) * box.size.x / 
-                    (track_model->visible_window_end - track_model->visible_window_start));
-                if (std::abs(e.pos.x - marker_x) < marker_distance)
-                {
-                    glfwSetCursor(APP->window->win, glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
-                    return;
+                if (marker_pair.first >= track_model->visible_window_start && 
+                    marker_pair.first <= track_model->visible_window_end) {
+                    
+                    float relative_pos = float(marker_pair.first - track_model->visible_window_start) / 
+                        float(track_model->visible_window_end - track_model->visible_window_start);
+                    float marker_x = container_padding_left + (relative_pos * drawable_width);
+                    
+                    if (std::abs(e.pos.x - marker_x) < marker_distance)
+                    {
+                        glfwSetCursor(APP->window->win, glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
+                        return;
+                    }
                 }
             }
         }
@@ -298,16 +320,15 @@ struct TrackWidget : TransparentWidget
             drag_start_position = e.pos;
 
             // Check for scrubber dragging first
-            float visible_span = track_model->visible_window_end - track_model->visible_window_start;
+            float drawable_width = box.size.x - (container_padding_left + container_padding_right);
             float relative_playback_pos = (track_model->playback_percentage * track_model->sample->size() - 
-                track_model->visible_window_start) / visible_span;
-            float scrubber_x = relative_playback_pos * box.size.x;
+                track_model->visible_window_start) / (track_model->visible_window_end - track_model->visible_window_start);
+            float scrubber_x = container_padding_left + (relative_playback_pos * drawable_width);
             
             if (std::abs(e.pos.x - scrubber_x) < scrubber_hit_zone) {
                 scrubber_dragging = true;
                 track_model->scrubber_dragging = true;
-                initial_percentage = track_model->playback_percentage;
-                drag_start_x = e.pos.x;  // Add this line
+                drag_start_x = e.pos.x;
                 cumulative_drag_offset = 0.0f;
                 return;
             }
@@ -316,22 +337,29 @@ struct TrackWidget : TransparentWidget
             if (track_model && track_model->markers && !track_model->isLocked())
             {
                 float marker_distance = 5.0f;
+                
                 for (auto &marker_pair : *(track_model->markers))
                 {
-                    float marker_x = ((marker_pair.first - track_model->visible_window_start) *
-                                      box.size.x / (track_model->visible_window_end - track_model->visible_window_start));
-                    if (std::abs(e.pos.x - marker_x) < marker_distance)
-                    {
-                        dragging_marker = true;
-                        drag_source_position = marker_pair.first;
-                        markers_being_dragged = &marker_pair.second;
-                        drag_start_x = e.pos.x;
-                        drag_current_x = e.pos.x;
-                        if (!marker_pair.second.empty())
+                    if (marker_pair.first >= track_model->visible_window_start && 
+                        marker_pair.first <= track_model->visible_window_end) {
+                        
+                        float relative_pos = float(marker_pair.first - track_model->visible_window_start) / 
+                            float(track_model->visible_window_end - track_model->visible_window_start);
+                        float marker_x = container_padding_left + (relative_pos * drawable_width);
+                        
+                        if (std::abs(e.pos.x - marker_x) < marker_distance)
                         {
-                            track_model->selectMarker(marker_pair.second[0].output_number);
+                            dragging_marker = true;
+                            drag_source_position = marker_pair.first;
+                            markers_being_dragged = &marker_pair.second;
+                            drag_start_x = e.pos.x;
+                            drag_current_x = e.pos.x;
+                            if (!marker_pair.second.empty())
+                            {
+                                track_model->selectMarker(marker_pair.second[0].output_number);
+                            }
+                            return;
                         }
-                        return;
                     }
                 }
             }
@@ -388,7 +416,9 @@ struct TrackWidget : TransparentWidget
         if (scrubber_dragging) {
             float zoom = getAbsoluteZoom();
             float current_x = drag_start_x + e.mouseDelta.x / zoom;
-            float relative_x = current_x / box.size.x;
+            // Adjust relative_x calculation to account for padding
+            float drawable_width = box.size.x - (container_padding_left + container_padding_right);
+            float relative_x = (current_x - container_padding_left) / drawable_width;
             relative_x = rack::math::clamp(relative_x, 0.0f, 1.0f);
             
             unsigned int new_position = track_model->visible_window_start + 
@@ -396,8 +426,6 @@ struct TrackWidget : TransparentWidget
 
             track_model->notifyScrubberPosition(new_position);
             drag_start_x = current_x;
-
-            e.consume(this);
             return;
         }
 
@@ -460,10 +488,14 @@ struct TrackWidget : TransparentWidget
         {
             float zoom = getAbsoluteZoom();
             float current_x = drag_start_x + e.mouseDelta.x / zoom;
-            float relative_x = current_x / box.size.x;
+            float drawable_width = box.size.x - (container_padding_left + container_padding_right);
+            
+            // Calculate relative position accounting for padding
+            float relative_x = (current_x - container_padding_left) / drawable_width;
             relative_x = rack::math::clamp(relative_x, 0.0f, 1.0f);
 
-            unsigned int new_position = track_model->visible_window_start + relative_x * (track_model->visible_window_end - track_model->visible_window_start);
+            unsigned int new_position = track_model->visible_window_start + 
+                static_cast<unsigned int>(relative_x * (track_model->visible_window_end - track_model->visible_window_start));
 
             if (new_position != drag_source_position)
             {
@@ -505,17 +537,22 @@ struct TrackWidget : TransparentWidget
 
         if (track_model && track_model->markers && !track_model->isLocked())
         {
-            float marker_distance = 5.0f; // Tolerance for detecting nearby markers
+            float marker_distance = 5.0f;
+            float drawable_width = box.size.x - (container_padding_left + container_padding_right);
 
             for (const auto &marker_pair : *(track_model->markers))
             {
-                float marker_x = ((marker_pair.first - track_model->visible_window_start) * box.size.x /
-                                (track_model->visible_window_end - track_model->visible_window_start));
+                if (marker_pair.first >= track_model->visible_window_start && 
+                    marker_pair.first <= track_model->visible_window_end) {
+                    
+                    float relative_pos = float(marker_pair.first - track_model->visible_window_start) / 
+                        float(track_model->visible_window_end - track_model->visible_window_start);
+                    float marker_x = container_padding_left + (relative_pos * drawable_width);
 
-                if (std::abs(click_position.x - marker_x) < marker_distance)
-                {
-                    // Add marker position to the found_markers vector
-                    found_markers.push_back(marker_pair.first);
+                    if (std::abs(click_position.x - marker_x) < marker_distance)
+                    {
+                        found_markers.push_back(marker_pair.first);
+                    }
                 }
             }
         }
@@ -523,11 +560,15 @@ struct TrackWidget : TransparentWidget
         return found_markers;
     }
 
+    // Update mouseToSamplePosition to account for padding
     float mouseToSamplePosition(Vec mouse_pos)
     {
-        float relative_x = mouse_pos.x / box.size.x;
+        float drawable_width = box.size.x - (container_padding_left + container_padding_right);
+        float relative_x = (mouse_pos.x - container_padding_left) / drawable_width;
+        relative_x = rack::math::clamp(relative_x, 0.0f, 1.0f);
+        
         unsigned int sample_position = track_model->visible_window_start +
-                                    relative_x * (track_model->visible_window_end - track_model->visible_window_start);
+            relative_x * (track_model->visible_window_end - track_model->visible_window_start);
         return sample_position;
     }
 
@@ -575,4 +616,35 @@ struct TrackWidget : TransparentWidget
             }
         }));
     }
+
+    void setIndicatorWidth(float width) {
+        playback_indicator_width = width;
+    }
+
+    void setIndicatorColor(NVGcolor color) {
+        playback_indicator_color = color;
+    }
+
+   // Add padding setter methods (matching WaveformWidget's interface)
+    void setContainerPadding(float padding) {
+        container_padding_top = padding;
+        container_padding_right = padding;
+        container_padding_bottom = padding;
+        container_padding_left = padding;
+    }
+
+    void setContainerPadding(float vertical, float horizontal) {
+        container_padding_top = vertical;
+        container_padding_bottom = vertical;
+        container_padding_left = horizontal;
+        container_padding_right = horizontal;
+    }
+
+    void setContainerPadding(float top, float right, float bottom, float left) {
+        container_padding_top = top;
+        container_padding_right = right;
+        container_padding_bottom = bottom;
+        container_padding_left = left;
+    }
+
 };

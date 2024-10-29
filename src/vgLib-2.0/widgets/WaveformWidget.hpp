@@ -9,10 +9,10 @@ struct WaveformWidget : TransparentWidget
     float indicator_width = 2.0;
     
     // Replace single padding with individual paddings
-    float container_padding_top = 0.0;
+    float container_padding_top = 2.0;
     float container_padding_right = 2.0;
     float container_padding_bottom = 2.0;
-    float container_padding_left = 0.0;
+    float container_padding_left = 2.0;
 
     WaveformModel *waveform_modal;
 

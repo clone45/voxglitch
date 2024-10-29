@@ -49,11 +49,15 @@ struct CueResearchWidget : VoxglitchSamplerModuleWidget
         if (module)
         {
             TrackWidget *track_widget = new TrackWidget(92.0, 25.0, 468.0, 280.0, &module->track);
+            track_widget->setContainerPadding(2.0f, 5.0f);
+            track_widget->setIndicatorWidth(1.0f);
+            track_widget->setIndicatorColor(nvgRGBA(255, 215, 20, 200)); 
             addChild(track_widget);
 
             // Add the lower waveform widget
             WaveformWidget *waveform_widget = new WaveformWidget(92.0, 312.5, 468.0, 40.0, &module->waveform_model);
             waveform_widget->visible = true;
+            waveform_widget->setContainerPadding(2.0f, 5.0f);
             waveform_widget->setIndicatorWidth(1.0);
             waveform_widget->setIndicatorColor(nvgRGBA(255, 215, 20, 200));
             waveform_widget->setContainerBackgroundColor(nvgRGB(0x10, 0x20, 0x20));
