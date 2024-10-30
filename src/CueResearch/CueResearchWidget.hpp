@@ -90,6 +90,7 @@ struct CueResearchWidget : VoxglitchSamplerModuleWidget
         menu->addChild(createBoolPtrMenuItem("Enable Vertical-Drag Zoom", "", &module->enable_vertical_drag_zoom));
         menu->addChild(createBoolPtrMenuItem("Lock Markers", "", &module->lock_markers));
         menu->addChild(createBoolPtrMenuItem("Clear markers on sample load", "", &module->clear_markers_on_sample_load));
+        menu->addChild(createBoolPtrMenuItem("Loop sample playback", "", &module->loop_sample_playback));
 
         menu->addChild(createIndexSubmenuItem("Trigger Length",
             module->getTriggerLengthNames(),

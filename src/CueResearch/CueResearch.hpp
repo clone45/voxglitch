@@ -1,9 +1,8 @@
 // TODO:
-// -  Improve library view
-// -  Menu item for automatically setting markers??
-// -  Explore caching of waveform renderings
-// -  Fix autobreak studio
-// - I'll create a new context menu item called, "Clear markers on sample load", and I'll have it turned OFF as default.  
+// - Improve library view
+// - Menu item for automatically setting markers??
+// - Explore caching of waveform renderings
+// - Fix autobreak studio
 // - Add option to loop sample playback
 
 #include "Marker.hpp"
@@ -35,6 +34,7 @@ struct CueResearch : VoxglitchSamplerModule
     bool enable_vertical_drag_zoom = true;
     bool lock_markers = false;
     bool clear_markers_on_sample_load = false;
+    bool loop_sample_playback = false;
 
     // define trigger lengths
     std::vector<float> trigger_lengths = {0.001, 0.002, 0.005, 0.010, 0.020, 0.050, 0.100, 0.200};
@@ -241,6 +241,7 @@ struct CueResearch : VoxglitchSamplerModule
         json_object_set_new(rootJ, "lock_markers", json_boolean(lock_markers));
         json_object_set_new(rootJ, "clear_markers_on_sample_load", json_boolean(clear_markers_on_sample_load));
         json_object_set_new(rootJ, "trigger_length_index", json_real(trigger_length_index));
+        json_object_set_new(rootJ, "loop_sample_playback", json_boolean(loop_sample_playback));
 
         json_t *markersJ = json_array();
         for (const auto &pos_markers : markers)
@@ -277,6 +278,7 @@ struct CueResearch : VoxglitchSamplerModule
         lock_markers = JSON::getBoolean(rootJ, "lock_markers");
         clear_markers_on_sample_load = JSON::getBoolean(rootJ, "clear_markers_on_sample_load");
         trigger_length_index = JSON::getNumber(rootJ, "trigger_length_index");
+        loop_sample_playback = JSON::getBoolean(rootJ, "loop_sample_playback");
 
         // Load the markers
         markers.clear();
@@ -432,9 +434,19 @@ struct CueResearch : VoxglitchSamplerModule
                     sample.read(playback_position, &output_left, &output_right);
                     playback_position++;
                 } else {
-                    playing = false;
-                    playback_position = 0;
-                    output_left = output_right = 0.0f;
+                    if (loop_sample_playback) {
+                        // When looping, wrap the playback position back to start
+                        playback_position = playback_position % sample.size();
+                        
+                        // Read the wrapped position
+                        sample.read(playback_position, &output_left, &output_right);
+                        playback_position++;
+                    } else {
+                        // Original non-looping behavior
+                        playing = false;
+                        playback_position = 0;
+                        output_left = output_right = 0.0f;
+                    }
                 }
             } else {
                 // Stopped - output current position without incrementing
