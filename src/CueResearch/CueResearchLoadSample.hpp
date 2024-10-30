@@ -26,7 +26,10 @@ struct CueResearchLoadSample : MenuItem
             module->loaded_filename = module->sample.getFilename();
             module->setRoot(filename);
 
-            module->clearMarkers();
+            if (module->clear_markers_on_sample_load)
+            {
+                module->clearMarkers();
+            }
         }
     }
 };

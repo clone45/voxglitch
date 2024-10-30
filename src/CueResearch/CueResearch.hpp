@@ -3,8 +3,7 @@
 // -  Menu item for automatically setting markers??
 // -  Explore caching of waveform renderings
 // -  Fix autobreak studio
-// -  add horizontal padding to both waveform displays
-// - I'll create a new context menu item called, "Clear markers when loading new sample", and I'll have it turned OFF as default.  
+// - I'll create a new context menu item called, "Clear markers on sample load", and I'll have it turned OFF as default.  
 // - Add option to loop sample playback
 
 #include "Marker.hpp"
@@ -35,6 +34,7 @@ struct CueResearch : VoxglitchSamplerModule
     // Menu options
     bool enable_vertical_drag_zoom = true;
     bool lock_markers = false;
+    bool clear_markers_on_sample_load = false;
 
     // define trigger lengths
     std::vector<float> trigger_lengths = {0.001, 0.002, 0.005, 0.010, 0.020, 0.050, 0.100, 0.200};
@@ -239,6 +239,7 @@ struct CueResearch : VoxglitchSamplerModule
         json_object_set_new(rootJ, "loaded_sample_path", json_string(sample.getPath().c_str()));
         json_object_set_new(rootJ, "enable_vertical_drag_zoom", json_boolean(enable_vertical_drag_zoom));
         json_object_set_new(rootJ, "lock_markers", json_boolean(lock_markers));
+        json_object_set_new(rootJ, "clear_markers_on_sample_load", json_boolean(clear_markers_on_sample_load));
         json_object_set_new(rootJ, "trigger_length_index", json_real(trigger_length_index));
 
         json_t *markersJ = json_array();
@@ -274,6 +275,7 @@ struct CueResearch : VoxglitchSamplerModule
         // Load the context menu options
         enable_vertical_drag_zoom = JSON::getBoolean(rootJ, "enable_vertical_drag_zoom");
         lock_markers = JSON::getBoolean(rootJ, "lock_markers");
+        clear_markers_on_sample_load = JSON::getBoolean(rootJ, "clear_markers_on_sample_load");
         trigger_length_index = JSON::getNumber(rootJ, "trigger_length_index");
 
         // Load the markers

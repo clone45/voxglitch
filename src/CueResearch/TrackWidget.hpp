@@ -266,6 +266,9 @@ struct TrackWidget : TransparentWidget
 
     void onHover(const event::Hover &e) override
     {
+        // This is necessary in order for the onLeave event to be triggered
+        e.consume(this);
+
         // Check for scrubber hover first
         if (track_model && track_model->sample) {
             // Convert playback percentage to visible window position, accounting for padding
