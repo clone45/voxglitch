@@ -353,6 +353,8 @@ struct WaveformWidget : TransparentWidget
 
     void onHover(const event::Hover &e) override
     {
+        e.consume(this);
+
         if (!waveform_modal->sample || !waveform_modal->sample->loaded) {
             return;
         }
@@ -369,5 +371,11 @@ struct WaveformWidget : TransparentWidget
                 scrubber_hover = false;
             }
         }
+    }
+
+    void onLeave(const event::Leave &e) override
+    {
+        TransparentWidget::onLeave(e);
+        glfwSetCursor(APP->window->win, NULL);
     }
 };
