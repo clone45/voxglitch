@@ -220,6 +220,10 @@ struct TrackWidget : TransparentWidget
 
     void onHoverScroll(const event::HoverScroll &e) override
     {
+        if(track_model->areInteractionsLocked()) return;
+
+        e.consume(this);
+
         if (track_model && track_model->sample && track_model->sample->isLoaded())
         {
             // Zoom factor adjustment
@@ -245,35 +249,15 @@ struct TrackWidget : TransparentWidget
                 track_model->visible_window_start = std::max(0.0f, focus_point - (mouse_relative_x * new_window_size));
                 track_model->visible_window_end = std::min(static_cast<float>(track_model->sample->size()), track_model->visible_window_start + new_window_size);
             }
-            e.consume(this);
             track_model->invalidateCache();
         }
     }
 
-
-        /*
-        // Check for scrubber hover first
-        if (track_model && track_model->sample) {
-            // Convert playback percentage to visible window position, accounting for padding
-            float drawable_width = box.size.x - (container_padding_left + container_padding_right);
-            float relative_playback_pos = float(track_model->playhead_position - 
-                track_model->visible_window_start) / 
-                (track_model->visible_window_end - track_model->visible_window_start);
-            float scrubber_x = container_padding_left + (relative_playback_pos * drawable_width);
-            
-            if (std::abs(e.pos.x - scrubber_x) < scrubber_hit_zone) {
-                scrubber_dragging = true;
-                track_model->scrubber_dragging = true;  // We might want to remove this flag from TrackModel
-                drag_start_x = e.pos.x;
-                cumulative_drag_offset = 0.0f;
-                return;
-            }
-        }
-        */
-
     void onHover(const event::Hover &e) override
     {
         // This is necessary in order for the onLeave event to be triggered
+        if(track_model->areInteractionsLocked()) return;
+
         e.consume(this);
 
         // Check for scrubber hover first
@@ -295,7 +279,7 @@ struct TrackWidget : TransparentWidget
 
 
         // Check for marker hover
-        if (track_model && track_model->markers && !track_model->isLocked())
+        if (track_model && track_model->markers && !track_model->isLockedMarkers())
         {
             float marker_distance = 5.0f;
             float drawable_width = box.size.x - (container_padding_left + container_padding_right);
@@ -342,6 +326,9 @@ struct TrackWidget : TransparentWidget
     void onButton(const event::Button &e) override
     {
         TransparentWidget::onButton(e);
+        
+        if(track_model->areInteractionsLocked()) return;
+
         e.consume(this);
 
         // Handle left-click dragging
@@ -368,7 +355,7 @@ struct TrackWidget : TransparentWidget
             }
 
             // Check for marker dragging
-            if (track_model && track_model->markers && !track_model->isLocked())
+            if (track_model && track_model->markers && !track_model->isLockedMarkers())
             {
                 float marker_distance = 5.0f;
                 
@@ -415,13 +402,8 @@ struct TrackWidget : TransparentWidget
             markers_being_dragged = nullptr;
             if (scrubber_dragging) 
             {
-                DEBUG("Release: last position=%u", track_model->playhead_position);
-
                 scrubber_dragging = false;
                 track_model->scrubber_dragging = false;
-
-                DEBUG("Release: final position=%u", track_model->playhead_position);
-
             }
             glfwSetCursor(APP->window->win, NULL);
         }
@@ -429,7 +411,7 @@ struct TrackWidget : TransparentWidget
         else if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_RIGHT && (e.mods & RACK_MOD_MASK) == 0)
         {
             bool marker_hit = false;
-            if (track_model && track_model->markers && !track_model->isLocked())
+            if (track_model && track_model->markers && !track_model->isLockedMarkers())
             {
                 float marker_distance = 5.0f;
                 for (auto &marker_pair : *(track_model->markers))
@@ -445,15 +427,17 @@ struct TrackWidget : TransparentWidget
             }
             // Show context menu
             context_menu_target_position = e.pos; // Store the position for the context menu
-            if (marker_hit && !track_model->isLocked()) createMarkerContextMenu();
-            if (!marker_hit && !track_model->isLocked()) createContextMenu();
+            if (marker_hit && !track_model->isLockedMarkers()) createMarkerContextMenu();
+            if (!marker_hit && !track_model->isLockedMarkers()) createContextMenu();
         }
     }
 
     void onDragMove(const event::DragMove &e) override
     {
-        e.consume(this);
+        
+        if(track_model->areInteractionsLocked()) return;
 
+        e.consume(this);
 
         if (scrubber_dragging) {
             float zoom = getAbsoluteZoom();
@@ -528,7 +512,7 @@ struct TrackWidget : TransparentWidget
 
             track_model->invalidateCache();
         }
-        else if (dragging_marker && markers_being_dragged && track_model && track_model->markers && !track_model->isLocked())
+        else if (dragging_marker && markers_being_dragged && track_model && track_model->markers && !track_model->isLockedMarkers())
         {
             float zoom = getAbsoluteZoom();
             float current_x = drag_start_x + e.mouseDelta.x / zoom;
@@ -555,7 +539,11 @@ struct TrackWidget : TransparentWidget
 
     void onDoubleClick(const event::DoubleClick &e) override
     {
-        if (track_model && track_model->markers && !track_model->isLocked())
+        e.consume(this);
+
+        if(track_model->areInteractionsLocked()) return;
+
+        if (track_model && track_model->markers && !track_model->isLockedMarkers())
         {
             // Find markers near the click position
             std::vector<unsigned int> nearby_markers = findMarkersNearPosition(mouse_click_position);
@@ -572,14 +560,13 @@ struct TrackWidget : TransparentWidget
                 track_model->addMarker(sample_position);
             }
         }
-        e.consume(this);
     }
 
     std::vector<unsigned int> findMarkersNearPosition(const Vec &click_position)
     {
         std::vector<unsigned int> found_markers;
 
-        if (track_model && track_model->markers && !track_model->isLocked())
+        if (track_model && track_model->markers && !track_model->isLockedMarkers())
         {
             float marker_distance = 5.0f;
             float drawable_width = box.size.x - (container_padding_left + container_padding_right);

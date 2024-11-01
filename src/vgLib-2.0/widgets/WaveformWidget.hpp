@@ -15,7 +15,7 @@ struct WaveformWidget : TransparentWidget
     float container_padding_bottom = 2.0;
     float container_padding_left = 2.0;
 
-    WaveformModel *waveform_modal;
+    WaveformModel *waveform_model;
 
     unsigned int sample_index = 0;
 
@@ -38,14 +38,14 @@ struct WaveformWidget : TransparentWidget
     float cumulative_drag_offset = 0.0f;
 
     // Constructor without position
-    WaveformWidget(float width, float height, WaveformModel *waveform_modal)
+    WaveformWidget(float width, float height, WaveformModel *waveform_model)
     {
         this->width = width;
         this->height = height;
-        this->waveform_modal = waveform_modal;
+        this->waveform_model = waveform_model;
 
         box.size = Vec(width, height);
-        sample_filename = waveform_modal->sample->filename;
+        sample_filename = waveform_model->sample->filename;
 
         // Use horizontal padding for width calculation
         averages.reserve((unsigned int)(width - (container_padding_left + container_padding_right)));
@@ -57,16 +57,16 @@ struct WaveformWidget : TransparentWidget
     }
 
     // Constructor with position
-    WaveformWidget(float x, float y, float width, float height, WaveformModel *waveform_modal)
+    WaveformWidget(float x, float y, float width, float height, WaveformModel *waveform_model)
     {
         box.pos = Vec(x, y);
         box.size = Vec(width, height);
 
         this->width = width;
         this->height = height;
-        this->waveform_modal = waveform_modal;
+        this->waveform_model = waveform_model;
 
-        sample_filename = waveform_modal->sample->filename;
+        sample_filename = waveform_model->sample->filename;
 
         averages.reserve((unsigned int)(width - (container_padding_left + container_padding_right)));
 
@@ -87,17 +87,17 @@ struct WaveformWidget : TransparentWidget
             if (draw_container_background)
                 drawContainerBackground(vg);
 
-            if (waveform_modal->sample && waveform_modal->sample->loaded)
+            if (waveform_model->sample && waveform_model->sample->loaded)
             {
                 if (refresh)
                 {
                     max_average = 0.0;
 
-                    if (waveform_modal->sample->size() > (width - (container_padding_left + container_padding_right)))
+                    if (waveform_model->sample->size() > (width - (container_padding_left + container_padding_right)))
                     {
                         for (unsigned int x = 0; x < (width - (container_padding_left + container_padding_right)); x++)
                         {
-                            computeAverages(x, waveform_modal->sample->size());
+                            computeAverages(x, waveform_model->sample->size());
                         }
                     }
 
@@ -106,9 +106,9 @@ struct WaveformWidget : TransparentWidget
 
                 drawWaveform(vg);
 
-                if (waveform_modal->draw_position_indicator)
+                if (waveform_model->draw_position_indicator)
                     drawPositionIndicator(vg);
-                if (waveform_modal->highlight_section)
+                if (waveform_model->highlight_section)
                     highlightSection(vg);
 
                 drawMarkers(vg);
@@ -122,13 +122,13 @@ struct WaveformWidget : TransparentWidget
     {
         TransparentWidget::step();
 
-        if (sample_filename != waveform_modal->sample->filename)
+        if (sample_filename != waveform_model->sample->filename)
         {
-            sample_filename = waveform_modal->sample->filename;
+            sample_filename = waveform_model->sample->filename;
             refresh = true;
         }
 
-        if (waveform_modal->visible)
+        if (waveform_model->visible)
         {
             this->show();
         }
@@ -154,7 +154,7 @@ struct WaveformWidget : TransparentWidget
         {
             if (i < sample_size)
             {
-                waveform_modal->sample->read(i, &left, &right);
+                waveform_model->sample->read(i, &left, &right);
                 left_sum += std::abs(left);
                 right_sum += std::abs(right);
                 count++;
@@ -260,13 +260,13 @@ struct WaveformWidget : TransparentWidget
 
     void drawPositionIndicator(NVGcontext *vg)
     {
-        if (!waveform_modal || !waveform_modal->sample) return;
+        if (!waveform_model || !waveform_model->sample) return;
 
         float drawable_width = width - (container_padding_left + container_padding_right);
         
         // Convert sample position to x coordinate
-        float relative_pos = static_cast<float>(waveform_modal->playhead_position) / 
-            static_cast<float>(waveform_modal->sample->size());
+        float relative_pos = static_cast<float>(waveform_model->playhead_position) / 
+            static_cast<float>(waveform_model->sample->size());
         float x_position = container_padding_left + (relative_pos * drawable_width);
 
         // Clamp to drawable area
@@ -289,15 +289,15 @@ struct WaveformWidget : TransparentWidget
 
     void highlightSection(NVGcontext *vg)
     {
-        if (!waveform_modal || !waveform_modal->sample) return;
+        if (!waveform_model || !waveform_model->sample) return;
 
         float drawable_width = width - (container_padding_left + container_padding_right);
-        float sample_size = static_cast<float>(waveform_modal->sample->size());
+        float sample_size = static_cast<float>(waveform_model->sample->size());
 
         // Convert sample positions to x coordinates
         float start_x = container_padding_left + 
-            (static_cast<float>(waveform_modal->highlight_section_start) / sample_size * drawable_width);
-        float section_width = static_cast<float>(waveform_modal->highlight_section_length) / 
+            (static_cast<float>(waveform_model->highlight_section_start) / sample_size * drawable_width);
+        float section_width = static_cast<float>(waveform_model->highlight_section_length) / 
             sample_size * drawable_width;
 
         nvgBeginPath(vg);
@@ -313,13 +313,13 @@ struct WaveformWidget : TransparentWidget
 
     void drawMarkers(NVGcontext *vg)
     {
-        if (!waveform_modal || !waveform_modal->sample) return;
+        if (!waveform_model || !waveform_model->sample) return;
 
         float drawable_width = width - (container_padding_left + container_padding_right);
-        float sample_size = static_cast<float>(waveform_modal->sample->size());
+        float sample_size = static_cast<float>(waveform_model->sample->size());
 
         nvgBeginPath(vg);
-        for (float marker_pos : waveform_modal->marker_positions)
+        for (float marker_pos : waveform_model->marker_positions)
         {
             float relative_pos = marker_pos / sample_size;
             float x_position = container_padding_left + (relative_pos * drawable_width);
@@ -334,7 +334,7 @@ struct WaveformWidget : TransparentWidget
             nvgLineTo(vg, x_position, height - container_padding_bottom);
         }
 
-        nvgStrokeColor(vg, nvgRGBA(200, 200, 200, 100));
+        nvgStrokeColor(vg, nvgRGBA(32, 178, 170, 255));
         nvgStrokeWidth(vg, 1.0f);
         nvgStroke(vg);
     }
@@ -342,21 +342,27 @@ struct WaveformWidget : TransparentWidget
     void onButton(const event::Button &e) override
     {
         TransparentWidget::onButton(e);
+
+        if (areInteractionsLocked()) return;
+
         if (e.button == GLFW_MOUSE_BUTTON_LEFT) {
-            if (e.action == GLFW_PRESS && waveform_modal && waveform_modal->sample) {
+            if (e.action == GLFW_PRESS && waveform_model && waveform_model->sample) {
                 scrubber_dragging = true;
-                waveform_modal->scrubber_dragging = true;
+                waveform_model->scrubber_dragging = true;
                 drag_position = e.pos;
                 e.consume(this);
             }
             else if (e.action == GLFW_RELEASE) {
                 scrubber_dragging = false;
-                waveform_modal->scrubber_dragging = false;
+                waveform_model->scrubber_dragging = false;
             }
         }
     }
 
     void onDragMove(const event::DragMove& e) override {
+
+        if (areInteractionsLocked()) return;
+
         if (scrubber_dragging) {
             float zoom = getAbsoluteZoom();
             float current_x = drag_position.x + e.mouseDelta.x / zoom;
@@ -365,10 +371,10 @@ struct WaveformWidget : TransparentWidget
             relative_x = rack::math::clamp(relative_x, 0.0f, 1.0f);
             
             unsigned int new_position = static_cast<unsigned int>(
-                relative_x * waveform_modal->sample->size()
+                relative_x * waveform_model->sample->size()
             );
 
-            waveform_modal->onDragPlayhead(new_position);
+            waveform_model->onDragPlayhead(new_position);
             drag_position.x = current_x;
             e.consume(this);
         }
@@ -378,12 +384,14 @@ struct WaveformWidget : TransparentWidget
     {
         e.consume(this);
 
-        if (!waveform_modal->sample || !waveform_modal->sample->loaded) {
+        if (areInteractionsLocked()) return;
+
+        if (!waveform_model->sample || !waveform_model->sample->loaded) {
             return;
         }
 
         float scrubber_x = container_padding_left + 
-            (waveform_modal->playback_percentage * (width - (container_padding_left + container_padding_right)));
+            (waveform_model->playback_percentage * (width - (container_padding_left + container_padding_right)));
         
         if (std::abs(e.pos.x - scrubber_x) < scrubber_hit_zone) {
             glfwSetCursor(APP->window->win, glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR));
@@ -400,5 +408,11 @@ struct WaveformWidget : TransparentWidget
     {
         TransparentWidget::onLeave(e);
         glfwSetCursor(APP->window->win, NULL);
+    }
+
+    bool areInteractionsLocked()
+    {
+        // Assume interactions are disabled if the lock_integrations bool pointer is null
+        return (!waveform_model->lock_interactions || *waveform_model->lock_interactions == true);        
     }
 };

@@ -1,7 +1,6 @@
 // TODO:
 // - Improve library view
 // - Menu item for automatically setting markers??
-// - Explore caching of waveform renderings
 // - Fix autobreak studio
 
 #include "Marker.hpp"
@@ -32,6 +31,7 @@ struct CueResearch : VoxglitchSamplerModule
     // Menu options
     bool enable_vertical_drag_zoom = true;
     bool lock_markers = false;
+    bool lock_interactions = false;
     bool clear_markers_on_sample_load = false;
     bool loop_sample_playback = false;
 
@@ -102,6 +102,7 @@ struct CueResearch : VoxglitchSamplerModule
         // Set the waveform model sample for the lower waveform display
         waveform_model.sample = &sample;
         waveform_model.visible = true;
+        waveform_model.setLockInteractions(&lock_interactions);
 
         // Configure parameters and their corresponding lights
         for (int i = 0; i < 32; i++)
@@ -125,6 +126,7 @@ struct CueResearch : VoxglitchSamplerModule
         track_model.setMarkers(&markers);
         track_model.setVerticalDragZoomEnabled(&enable_vertical_drag_zoom);
         track_model.setLockMarkers(&lock_markers);
+        track_model.setLockInteractions(&lock_interactions);
 
         // 
         // 
@@ -167,13 +169,6 @@ struct CueResearch : VoxglitchSamplerModule
             // Assuming each position in the map represents a sample position for a marker
             waveform_model.marker_positions.push_back(marker_pair.first);
         }
-    }
-
-    // Call back for setting lock markers value
-    void setLockMarkers(bool *locked)
-    {
-        lock_markers = locked;
-        track_model.setLockMarkers(locked);
     }
 
     void updateScrubBuffer() {
@@ -236,10 +231,11 @@ struct CueResearch : VoxglitchSamplerModule
 
         json_object_set_new(rootJ, "loaded_sample_path", json_string(sample.getPath().c_str()));
         json_object_set_new(rootJ, "enable_vertical_drag_zoom", json_boolean(enable_vertical_drag_zoom));
-        json_object_set_new(rootJ, "lock_markers", json_boolean(lock_markers));
         json_object_set_new(rootJ, "clear_markers_on_sample_load", json_boolean(clear_markers_on_sample_load));
         json_object_set_new(rootJ, "trigger_length_index", json_real(trigger_length_index));
         json_object_set_new(rootJ, "loop_sample_playback", json_boolean(loop_sample_playback));
+        json_object_set_new(rootJ, "lock_markers", json_boolean(lock_markers));
+        json_object_set_new(rootJ, "lock_interactions", json_boolean(lock_interactions));
 
         json_t *markersJ = json_array();
         for (const auto &pos_markers : markers)
@@ -273,10 +269,11 @@ struct CueResearch : VoxglitchSamplerModule
 
         // Load the context menu options
         enable_vertical_drag_zoom = JSON::getBoolean(rootJ, "enable_vertical_drag_zoom");
-        lock_markers = JSON::getBoolean(rootJ, "lock_markers");
         clear_markers_on_sample_load = JSON::getBoolean(rootJ, "clear_markers_on_sample_load");
         trigger_length_index = JSON::getNumber(rootJ, "trigger_length_index");
         loop_sample_playback = JSON::getBoolean(rootJ, "loop_sample_playback");
+        lock_markers = JSON::getBoolean(rootJ, "lock_markers");
+        lock_interactions = JSON::getBoolean(rootJ, "lock_interactions");
 
         // Load the markers
         markers.clear();

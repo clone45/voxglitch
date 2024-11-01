@@ -3,7 +3,8 @@ struct WaveformModel
     Sample *sample;
     bool visible = false;
     std::vector<float> marker_positions;
-   
+    bool *lock_interactions = nullptr;
+
     // Display properties
     bool draw_position_indicator = true;
     float playback_percentage = 0.0f;  // Keep for compatibility. Remove after updating autobreak.
@@ -22,6 +23,7 @@ struct WaveformModel
     std::function<void(unsigned int)> onPlayheadChanged = nullptr;
     std::function<void(unsigned int)> onDragPlayhead = nullptr;
    
+
     // Marker management
     void addMarker(unsigned int sample_position) {
         if (sample && sample_position < sample->size()) {
@@ -48,5 +50,10 @@ struct WaveformModel
     // Register observers
     void registerDragPlayheadObserver(std::function<void(unsigned int)> callback) {
         onDragPlayhead = callback;
+    }
+
+    void setLockInteractions(bool *lock_interactions_ptr)
+    {
+        lock_interactions = lock_interactions_ptr;
     }
 };

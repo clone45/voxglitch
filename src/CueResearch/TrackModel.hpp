@@ -37,6 +37,7 @@ struct TrackModel
     // Options
     bool *enable_vertical_drag_zoom = nullptr;
     bool *lock_markers = nullptr;
+    bool *lock_interactions = nullptr;
   
     // Keeping these temporarily while testing
     bool scrubber_dragging = false;
@@ -84,14 +85,24 @@ struct TrackModel
         enable_vertical_drag_zoom = enabled;
     }
 
-    void setLockMarkers(bool *locked) 
+    void setLockMarkers(bool *lock_markers_ptr) 
     {
-        lock_markers = locked;
+        lock_markers = lock_markers_ptr;
     }
 
-    bool isLocked() 
+    void setLockInteractions(bool *lock_interactions_ptr)
+    {
+        lock_interactions = lock_interactions_ptr;
+    }
+
+    bool isLockedMarkers() 
     {
         return lock_markers ? *lock_markers : false;
+    }
+
+    bool areInteractionsLocked()
+    {
+        return lock_interactions ? *lock_interactions : false;
     }
 
     void selectMarker(int output_number) {
