@@ -3,7 +3,6 @@
 // - Menu item for automatically setting markers??
 // - Explore caching of waveform renderings
 // - Fix autobreak studio
-// - Add option to loop sample playback
 
 #include "Marker.hpp"
 #include "ScrubState.hpp"
@@ -12,9 +11,9 @@ struct CueResearch : VoxglitchSamplerModule
 {
     std::string loaded_filename = "[ EMPTY ]";
 
-    TrackModel track;
-    Sample sample;
+    TrackModel track_model;
     WaveformModel waveform_model;
+    Sample sample;
 
     dsp::SchmittTrigger start_trigger;
     dsp::SchmittTrigger stop_trigger;
@@ -42,9 +41,11 @@ struct CueResearch : VoxglitchSamplerModule
 
     // scrubbing-related members
     ScrubState scrub_state;
-    float last_scrub_percentage = 0.0f;
-    float last_scrub_time = 0.0f;
-    bool scrubbing = false;
+    // bool scrubbing = false;
+
+    // Added 10/31
+    std::vector<std::function<void(unsigned int)>> playback_position_observers;
+    unsigned int previous_playback_position = 0;
 
     enum ParamIds
     {
@@ -82,10 +83,10 @@ struct CueResearch : VoxglitchSamplerModule
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 
         // sample.load("e:/dev/example.wav");
-        track.setSample(&sample);
+        track_model.setSample(&sample);
 
         // Set up the callback
-        track.onMarkerSelected = [this](int output_number)
+        track_model.onMarkerSelected = [this](int output_number)
         {
             params[MARKER_BUTTONS + active_marker].setValue(0.f);
             params[MARKER_BUTTONS + output_number].setValue(1.f);
@@ -93,7 +94,7 @@ struct CueResearch : VoxglitchSamplerModule
         };
 
         // Set up the callback for synchronizing markers with the waveform
-        track.onSyncMarkers = [this]()
+        track_model.onSyncMarkers = [this]()
         {
             syncMarkers();
         };
@@ -121,16 +122,34 @@ struct CueResearch : VoxglitchSamplerModule
         configSwitch(STOP_BUTTON, 0.f, 1.f, 0.f, "Stop");
         configSwitch(RESET_BUTTON, 0.f, 1.f, 0.f, "Reset");
 
-        track.setMarkers(&markers);
-        track.setVerticalDragZoomEnabled(&enable_vertical_drag_zoom);
-        track.setLockMarkers(&lock_markers);
+        track_model.setMarkers(&markers);
+        track_model.setVerticalDragZoomEnabled(&enable_vertical_drag_zoom);
+        track_model.setLockMarkers(&lock_markers);
 
-        waveform_model.setScrubberPositionCallback([this](unsigned int position) {
-            onScrubberPositionChanged(position);
+        // 
+        // 
+
+        registerPlaybackObserver([this](unsigned int position)
+        {
+            track_model.updatePlayheadPosition(position);
         });
 
-        track.setScrubberPositionCallback([this](unsigned int pos) {
-            onScrubberPositionChanged(pos);
+        // Set up the callback for scrubber position changes (registerPlayheadObserver) to call onDragPlayhead
+        track_model.registerDragPlayheadObserver([this](unsigned int position)
+        {
+            onDragPlayhead(position);
+        });
+
+        // Register playback observer for waveform playhead position
+        registerPlaybackObserver([this](unsigned int position)
+        {
+            waveform_model.updatePlayheadPosition(position);
+        });
+
+        // Set up the callback for waveform scrubbing
+        waveform_model.registerDragPlayheadObserver([this](unsigned int position)
+        {
+            onDragPlayhead(position);
         });
     }
 
@@ -154,79 +173,58 @@ struct CueResearch : VoxglitchSamplerModule
     void setLockMarkers(bool *locked)
     {
         lock_markers = locked;
-        track.setLockMarkers(locked);
-    }
-
-    // Callback called by either widget when scrubbing starts/stops/moves
-    void onScrubberDragged(float percentage, bool started = false, bool ended = false) {
-        if (started) {
-            scrubbing = true;
-        } else if (ended) {
-            scrubbing = false;
-        }
-
-        if (sample.loaded) {
-            // Update both displays
-            waveform_model.playback_percentage = percentage;
-            track.setPlaybackPercentage(percentage); // We'll need to add this to TrackModel
-
-            // Handle audio scrubbing
-            unsigned int new_position = static_cast<unsigned int>(percentage * sample.size());
-            scrub_state.target_position = std::min(new_position, sample.size());
-            scrub_state.buffer_needs_update = true;
-            playback_position = scrub_state.target_position;
-            
-            // Update scrub speed for buffer playback
-            updateScrubSpeed(percentage, APP->engine->getSampleTime());
-        }
-    }
-
-    void updateScrubSpeed(float new_percentage, float current_time) {
-        // Calculate speed based on change in position over time
-        float delta_time = current_time - last_scrub_time;
-        if (delta_time > 0) {
-            float delta_position = new_percentage - last_scrub_percentage;
-            scrub_state.scrub_speed = delta_position / delta_time;
-        }
-        
-        last_scrub_percentage = new_percentage;
-        last_scrub_time = current_time;
-    }
-
-    void onScrubberPositionChanged(unsigned int position) {
-        if (sample.loaded) {
-            scrub_state.target_position = std::min(position, sample.size());
-            scrub_state.buffer_needs_update = true;
-            playback_position = scrub_state.target_position;
-            
-            // Update visual percentage for both views
-            float percentage = float(position) / float(sample.size());
-            waveform_model.setPlaybackPercentage(percentage);
-            track.setPlaybackPercentage(percentage);
-            
-            // Update scrub speed for buffer playback
-            updateScrubSpeed(percentage, APP->engine->getSampleTime());
-        }
+        track_model.setLockMarkers(locked);
     }
 
     void updateScrubBuffer() {
-        // Start filling from target position
-        unsigned int fill_position = scrub_state.target_position;
+        unsigned int buffer_midpoint = ScrubState::SCRUB_BUFFER_SIZE / 2;
         
-        // Fill buffer with sequential samples centered around target position
-        unsigned int buffer_start = (fill_position > ScrubState::SCRUB_BUFFER_SIZE/2) 
-            ? fill_position - ScrubState::SCRUB_BUFFER_SIZE/2 
+        // Start filling from half a buffer before target position
+        unsigned int fill_start = (scrub_state.target_position >= buffer_midpoint)
+            ? scrub_state.target_position - buffer_midpoint
             : 0;
-
-        for (size_t i = 0; i < ScrubState::SCRUB_BUFFER_SIZE && buffer_start < sample.size(); i++, buffer_start++) {
-            float left, right;
-            sample.read(buffer_start, &left, &right);
-            scrub_state.buffer_left[i] = left;
-            scrub_state.buffer_right[i] = right;
+            
+        for (size_t i = 0; i < ScrubState::SCRUB_BUFFER_SIZE; i++) {
+            if (fill_start + i < sample.size()) {
+                float left, right;
+                sample.read(fill_start + i, &left, &right);
+                
+                // Triangle envelope centered at buffer midpoint
+                float envelope = 1.0f - std::abs((float)(i - buffer_midpoint) / buffer_midpoint);
+                
+                scrub_state.buffer_left[i] = left * envelope;
+                scrub_state.buffer_right[i] = right * envelope;
+            } else {
+                scrub_state.buffer_left[i] = 0.0f;
+                scrub_state.buffer_right[i] = 0.0f;
+            }
         }
         
         scrub_state.buffer_needs_update = false;
-        scrub_state.buffer_position = ScrubState::SCRUB_BUFFER_SIZE/2; // Start in middle of buffer
+        scrub_state.buffer_position = buffer_midpoint;  // Start playback from middle
+    }
+
+    //
+    // Playback and scrubbing
+    // Added 10/31
+    //
+
+    void registerPlaybackObserver(std::function<void(unsigned int)> callback) {
+        playback_position_observers.push_back(callback);
+    }
+
+    void onDragPlayhead(unsigned int position) 
+    {
+        scrub_state.display_position = position;  // Set display position directly
+        scrub_state.target_position = position;   // Set target for buffer system
+        broadcastPlaybackPosition(position);      // Broadcast display position
+    }
+
+    void broadcastPlaybackPosition(unsigned int position) {
+        // DEBUG("Broadcasting position: %u", position);
+        for(auto& observer : playback_position_observers) {
+            observer(position);
+        }
     }
 
     // █▀ ▄▀█ █░█ █▀▀   ▄▀█ █▄░█ █▀▄   █░░ █▀█ ▄▀█ █▀▄
@@ -373,52 +371,35 @@ struct CueResearch : VoxglitchSamplerModule
         }
 
         // Handle playback
-        if (sample.loaded) {
-            if (waveform_model.scrubber_dragging || track.scrubber_dragging) {
-                // ... [existing scrubbing code] ...
+        if (sample.loaded) 
+        {
+            if (waveform_model.scrubber_dragging || track_model.scrubber_dragging) {
                 if (scrub_state.buffer_needs_update) {
                     updateScrubBuffer();
                 }
 
-                float rate = std::abs(scrub_state.scrub_speed) * 50.0f;
-                rate = rack::math::clamp(rate, 0.1f, 2.0f);
+                // Buffer playback for audio
+                unsigned int buffer_position = scrub_state.buffer_position;
+                buffer_position += 1;  // or some other increment
                 
-                // Move through buffer
-                unsigned int delta = 1u + static_cast<unsigned int>(rate);
+                if (buffer_position >= ScrubState::SCRUB_BUFFER_SIZE * 3/4) {
+                    scrub_state.buffer_needs_update = true;
+                    buffer_position = ScrubState::SCRUB_BUFFER_SIZE/2;
+                }
                 
-                if (scrub_state.scrub_speed > 0) {
-                    scrub_state.buffer_position += delta;
-                    if (scrub_state.buffer_position >= ScrubState::SCRUB_BUFFER_SIZE * 3/4) {
-                        scrub_state.buffer_needs_update = true;
-                        scrub_state.buffer_position = ScrubState::SCRUB_BUFFER_SIZE/2;
-                    }
-                } else {
-                    if (scrub_state.buffer_position < delta) {
-                        scrub_state.buffer_needs_update = true;
-                        scrub_state.buffer_position = ScrubState::SCRUB_BUFFER_SIZE/2;
-                    } else {
-                        scrub_state.buffer_position -= delta;
-                    }
-                    if (scrub_state.buffer_position <= ScrubState::SCRUB_BUFFER_SIZE/4) {
-                        scrub_state.buffer_needs_update = true;
-                        scrub_state.buffer_position = ScrubState::SCRUB_BUFFER_SIZE/2;
-                    }
-                }
+                scrub_state.buffer_position = buffer_position;
+                
+                // Output audio from buffer
+                output_left = scrub_state.buffer_left[buffer_position];
+                output_right = scrub_state.buffer_right[buffer_position];
 
-                if (scrub_state.buffer_position >= ScrubState::SCRUB_BUFFER_SIZE) {
-                    scrub_state.buffer_position = ScrubState::SCRUB_BUFFER_SIZE - 1;
-                }
-
-                output_left = scrub_state.buffer_left[scrub_state.buffer_position];
-                output_right = scrub_state.buffer_right[scrub_state.buffer_position];
-
-                // Update playback position based on buffer position
-                if (scrub_state.target_position >= ScrubState::SCRUB_BUFFER_SIZE/2) {
-                    playback_position = scrub_state.target_position - 
-                        ScrubState::SCRUB_BUFFER_SIZE/2 + scrub_state.buffer_position;
-                }
+                // Use display position for UI updates
+                playback_position = scrub_state.display_position;
             }
             else if (playing) {
+
+                // DEBUG("Playing: %d", playback_position);
+
                 // Normal playback - increment position
                 if (playback_position < sample.size()) {
                     // Check if there are markers at the current position
@@ -458,9 +439,7 @@ struct CueResearch : VoxglitchSamplerModule
             }
 
             // Position indicator always shows playback_position
-            float current_percentage = float(playback_position) / float(sample.size());
-            waveform_model.setPlaybackPercentage(current_percentage);
-            track.setPlaybackPercentage(current_percentage);
+            broadcastPlaybackPosition(playback_position);
         }
 
         // Process marker outputs
@@ -481,7 +460,7 @@ struct CueResearch : VoxglitchSamplerModule
                 params[MARKER_BUTTONS + active_marker].setValue(0.f);
                 active_marker = i;
                 params[MARKER_BUTTONS + i].setValue(1.f);
-                track.setActiveMarker(active_marker);
+                track_model.setActiveMarker(active_marker);
             }
             else if (i == active_marker && params[MARKER_BUTTONS + i].getValue() == 0.f)
             {

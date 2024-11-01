@@ -48,7 +48,7 @@ struct CueResearchWidget : VoxglitchSamplerModuleWidget
         // Add the track widgets
         if (module)
         {
-            TrackWidget *track_widget = new TrackWidget(92.0, 25.0, 468.0, 280.0, &module->track);
+            TrackWidget *track_widget = new TrackWidget(92.0, 25.0, 468.0, 280.0, &module->track_model);
             track_widget->setContainerPadding(2.0f, 5.0f);
             track_widget->setIndicatorWidth(1.0f);
             track_widget->setIndicatorColor(nvgRGBA(255, 215, 20, 200)); 

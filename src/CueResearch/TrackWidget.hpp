@@ -33,7 +33,7 @@ struct TrackWidget : TransparentWidget
     // Properties for scrubber interaction
     bool scrubber_dragging = false;
     float scrubber_hit_zone = 5.0f;
-    float initial_percentage = 0.0f;
+    // float initial_percentage = 0.0f;
 
     // Shared properties that can be used by both scrubbing and view dragging
     Vec mouse_click_position;
@@ -50,6 +50,13 @@ struct TrackWidget : TransparentWidget
         box.size = Vec(width, height);
         box.pos = Vec(x, y);
         this->track_model = track_model;
+
+        // Register for playhead updates
+        track_model->onPlayheadChanged = [this](unsigned int position) {
+            // Force redraw when playhead position changes
+            // This will trigger drawPlaybackIndicator with new position
+            // Widget::dirty = true;
+        };
     }
 
     void draw(const DrawArgs &args) override
@@ -74,68 +81,45 @@ struct TrackWidget : TransparentWidget
         nvgRestore(vg);
     }
 
-    void drawWaveform(NVGcontext *vg, float track_width, float track_height)
-    {
+    void drawWaveform(NVGcontext *vg, float track_width, float track_height) {
+        if (!track_model || !track_model->sample) return;
+
         nvgSave(vg);
         nvgBeginPath(vg);
 
-        // Determine the start and end indices in the sample that correspond to the visible window
-        unsigned int visible_sample_start = static_cast<unsigned int>(track_model->visible_window_start);
-        unsigned int visible_sample_end = static_cast<unsigned int>(track_model->visible_window_end);
+        // Clamp visible window to sample bounds
+        unsigned int visible_sample_start = std::min(
+            static_cast<unsigned int>(track_model->visible_window_start),
+            track_model->sample->size() - 1
+        );
+        unsigned int visible_sample_end = std::min(
+            static_cast<unsigned int>(track_model->visible_window_end),
+            track_model->sample->size()
+        );
 
-        // Clamp the indices to ensure they are within the bounds of the sample size
-        visible_sample_start = std::min(visible_sample_start, track_model->sample->size() - 1);
-        visible_sample_end = std::min(visible_sample_end, track_model->sample->size());
+        // Check if we need to update the cache
+        bool needs_update = !track_model->cache_valid ||
+            visible_sample_start != track_model->cached_visible_start ||
+            visible_sample_end != track_model->cached_visible_end ||
+            track_width != track_model->cached_width ||
+            track_height != track_model->cached_height;
 
-        // Calculate the number of visible samples
-        unsigned int num_visible_samples = visible_sample_end - visible_sample_start;
+        if (needs_update) {
+            track_model->updateWaveformCache(
+                track_width, track_height,
+                container_padding_left, container_padding_right,
+                container_padding_top, container_padding_bottom
+            );
+        }
 
-        // Decide on a target number of chunks (e.g., 1000)
-        unsigned int num_chunks = 1000;
-        unsigned int chunk_size = std::max(1u, num_visible_samples / num_chunks);
-
-        // Calculate width of each chunk, accounting for padding
-        float drawable_width = track_width - (container_padding_left + container_padding_right);
-        float chunk_width = drawable_width / static_cast<float>(num_chunks);
-
-        // Iterate over chunks to draw the averaged waveform
-        for (unsigned int chunk_index = 0; chunk_index < num_chunks; ++chunk_index)
-        {
-            // Determine the range for this chunk
-            unsigned int chunk_start = visible_sample_start + chunk_index * chunk_size;
-            unsigned int chunk_end = std::min(chunk_start + chunk_size, visible_sample_end);
-
-            // Compute the average of this chunk
-            float left_sum = 0.0f;
-            float right_sum = 0.0f;
-            unsigned int count = 0;
-
-            for (unsigned int i = chunk_start; i < chunk_end; ++i)
-            {
-                float left, right;
-                track_model->sample->read(i, &left, &right);
-                left_sum += std::abs(left);
-                right_sum += std::abs(right);
-                count++;
-            }
-
-            // Avoid division by zero
-            if (count > 0)
-            {
-                float average_height = (left_sum + right_sum) / (2.0f * count);
-                average_height *= (track_height - (container_padding_top + container_padding_bottom));
-
-                // Calculate the x and y position for drawing, accounting for padding
-                float x_position = container_padding_left + (chunk_index * chunk_width);
-                float y_position = container_padding_top + ((track_height - container_padding_top - container_padding_bottom - average_height) / 2.0f);
-
-                // Draw the rectangle representing the chunk
-                float rect_overlap = chunk_width / 4.0f;
-                nvgRect(vg, x_position, y_position, (chunk_width + rect_overlap), average_height);
+        // Draw from cache
+        for (const auto& chunk : track_model->chunk_cache) {
+            if (chunk.valid) {
+                nvgRect(vg, chunk.x_position, chunk.y_position, chunk.width, chunk.average_height);
             }
         }
 
-        nvgFillColor(vg, nvgRGBA(255, 255, 255, 200)); // Light grey color for the waveform
+        nvgFillColor(vg, nvgRGBA(255, 255, 255, 200));
         nvgFill(vg);
         nvgRestore(vg);
     }
@@ -148,13 +132,14 @@ struct TrackWidget : TransparentWidget
         const auto vg = args.vg;
         nvgSave(vg);
 
-        float sample_position = track_model->playback_percentage * track_model->sample->size();
+        // Use position directly instead of calculating from percentage
+        unsigned int position = track_model->playhead_position;  // New property we added to TrackModel
 
-        if (sample_position >= track_model->visible_window_start && 
-            sample_position <= track_model->visible_window_end)
+        if (position >= track_model->visible_window_start && 
+            position <= track_model->visible_window_end)
         {
-            float relative_pos = (sample_position - track_model->visible_window_start) / 
-                (track_model->visible_window_end - track_model->visible_window_start);
+            float relative_pos = float(position - track_model->visible_window_start) / 
+                float(track_model->visible_window_end - track_model->visible_window_start);
             
             float drawable_width = track_width - (container_padding_left + container_padding_right);
             float x_position = container_padding_left + (relative_pos * drawable_width);
@@ -261,8 +246,30 @@ struct TrackWidget : TransparentWidget
                 track_model->visible_window_end = std::min(static_cast<float>(track_model->sample->size()), track_model->visible_window_start + new_window_size);
             }
             e.consume(this);
+            track_model->invalidateCache();
         }
     }
+
+
+        /*
+        // Check for scrubber hover first
+        if (track_model && track_model->sample) {
+            // Convert playback percentage to visible window position, accounting for padding
+            float drawable_width = box.size.x - (container_padding_left + container_padding_right);
+            float relative_playback_pos = float(track_model->playhead_position - 
+                track_model->visible_window_start) / 
+                (track_model->visible_window_end - track_model->visible_window_start);
+            float scrubber_x = container_padding_left + (relative_playback_pos * drawable_width);
+            
+            if (std::abs(e.pos.x - scrubber_x) < scrubber_hit_zone) {
+                scrubber_dragging = true;
+                track_model->scrubber_dragging = true;  // We might want to remove this flag from TrackModel
+                drag_start_x = e.pos.x;
+                cumulative_drag_offset = 0.0f;
+                return;
+            }
+        }
+        */
 
     void onHover(const event::Hover &e) override
     {
@@ -273,8 +280,11 @@ struct TrackWidget : TransparentWidget
         if (track_model && track_model->sample) {
             // Convert playback percentage to visible window position, accounting for padding
             float drawable_width = box.size.x - (container_padding_left + container_padding_right);
-            float relative_playback_pos = (track_model->playback_percentage * track_model->sample->size() - 
-                track_model->visible_window_start) / (track_model->visible_window_end - track_model->visible_window_start);
+            
+            float relative_playback_pos = float(track_model->playhead_position - 
+                track_model->visible_window_start) / 
+                (track_model->visible_window_end - track_model->visible_window_start);
+
             float scrubber_x = container_padding_left + (relative_playback_pos * drawable_width);
             
             if (std::abs(e.pos.x - scrubber_x) < scrubber_hit_zone) {
@@ -282,6 +292,7 @@ struct TrackWidget : TransparentWidget
                 return;
             }
         }
+
 
         // Check for marker hover
         if (track_model && track_model->markers && !track_model->isLocked())
@@ -341,8 +352,11 @@ struct TrackWidget : TransparentWidget
 
             // Check for scrubber dragging first
             float drawable_width = box.size.x - (container_padding_left + container_padding_right);
-            float relative_playback_pos = (track_model->playback_percentage * track_model->sample->size() - 
-                track_model->visible_window_start) / (track_model->visible_window_end - track_model->visible_window_start);
+            
+            float relative_playback_pos = float(track_model->playhead_position - 
+                track_model->visible_window_start) / 
+                (track_model->visible_window_end - track_model->visible_window_start);
+
             float scrubber_x = container_padding_left + (relative_playback_pos * drawable_width);
             
             if (std::abs(e.pos.x - scrubber_x) < scrubber_hit_zone) {
@@ -399,9 +413,15 @@ struct TrackWidget : TransparentWidget
             dragging = false;
             dragging_marker = false;
             markers_being_dragged = nullptr;
-            if (scrubber_dragging) {
+            if (scrubber_dragging) 
+            {
+                DEBUG("Release: last position=%u", track_model->playhead_position);
+
                 scrubber_dragging = false;
                 track_model->scrubber_dragging = false;
+
+                DEBUG("Release: final position=%u", track_model->playhead_position);
+
             }
             glfwSetCursor(APP->window->win, NULL);
         }
@@ -434,10 +454,10 @@ struct TrackWidget : TransparentWidget
     {
         e.consume(this);
 
+
         if (scrubber_dragging) {
             float zoom = getAbsoluteZoom();
             float current_x = drag_start_x + e.mouseDelta.x / zoom;
-            // Adjust relative_x calculation to account for padding
             float drawable_width = box.size.x - (container_padding_left + container_padding_right);
             float relative_x = (current_x - container_padding_left) / drawable_width;
             relative_x = rack::math::clamp(relative_x, 0.0f, 1.0f);
@@ -445,7 +465,8 @@ struct TrackWidget : TransparentWidget
             unsigned int new_position = track_model->visible_window_start + 
                 static_cast<unsigned int>(relative_x * (track_model->visible_window_end - track_model->visible_window_start));
 
-            track_model->notifyScrubberPosition(new_position);
+            // Use new method instead of notifyScrubberPosition
+            track_model->onDragPlayhead(new_position);
             drag_start_x = current_x;
             return;
         }
@@ -504,6 +525,8 @@ struct TrackWidget : TransparentWidget
             track_model->visible_window_end = std::min(
                 static_cast<float>(track_model->sample->size()),
                 final_end);
+
+            track_model->invalidateCache();
         }
         else if (dragging_marker && markers_being_dragged && track_model && track_model->markers && !track_model->isLocked())
         {
@@ -527,7 +550,7 @@ struct TrackWidget : TransparentWidget
                 markers_being_dragged = &(track_model->markers->at(new_position));
                 drag_start_x = current_x; // Update for next move
             }
-        }
+        } 
     }
 
     void onDoubleClick(const event::DoubleClick &e) override

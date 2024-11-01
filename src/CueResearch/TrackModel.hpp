@@ -4,6 +4,14 @@
 
 #include "Marker.hpp"
 
+struct WaveformChunk {
+    float average_height;
+    float x_position;
+    float y_position;
+    float width;
+    bool valid;
+};
+
 struct TrackModel
 {
     Sample *sample;
@@ -18,8 +26,9 @@ struct TrackModel
     unsigned int visible_window_end = 0;   // End index of the visible window
     
     // Scrubbing-related members
-    float playback_percentage = 0.0f;
-    bool scrubber_dragging = false;
+    // float playback_percentage = 0.0f;
+    // bool scrubber_dragging = false;
+    unsigned int playhead_position = 0;
 
     // Marker properties
     std::map<unsigned int, std::vector<Marker>>* markers = nullptr;
@@ -29,14 +38,30 @@ struct TrackModel
     bool *enable_vertical_drag_zoom = nullptr;
     bool *lock_markers = nullptr;
   
+    // Keeping these temporarily while testing
+    bool scrubber_dragging = false;
+    std::function<void(unsigned int)> onDragPlayhead;
+    // end temporary
+
+    // Callbacks
     std::function<void(int)> onMarkerSelected = nullptr; // Callback for when a marker is selected
     std::function<void()> onSyncMarkers = nullptr; // Callback for syncing markers with waveform
-    std::function<void(unsigned int)> onScrubberPositionChanged; // Callback for when scrubber position changes
     std::function<void()> lockMarkers = nullptr; // Callback for setting lock markers value
+    std::function<void(unsigned int)> onPlayheadChanged = nullptr;
+
+    // Cache-related members
+    std::vector<WaveformChunk> chunk_cache;
+    bool cache_valid = false;
+    unsigned int cached_visible_start = 0;
+    unsigned int cached_visible_end = 0;
+    float cached_width = 0;
+    float cached_height = 0;
+    static const unsigned int NUM_CHUNKS = 1000;
 
     void setSample(Sample *sample) 
     {
         this->sample = sample;
+        invalidateCache();
         initialize();
     }
 
@@ -48,6 +73,10 @@ struct TrackModel
             computeAverages(); // Compute averages when sample is set
             normalizeAverages(); // Normalize them after computation
         }
+    }
+
+    void invalidateCache() {
+        cache_valid = false;
     }
 
     void setVerticalDragZoomEnabled(bool *enabled) 
@@ -120,16 +149,20 @@ struct TrackModel
         active_marker = marker;
     }
 
-    void setScrubberPositionCallback(std::function<void(unsigned int)> callback) {
-        onScrubberPositionChanged = callback;
-    }
-    void notifyScrubberPosition(unsigned int position) {
-        if (onScrubberPositionChanged) {
-            onScrubberPositionChanged(position);
+    // Add new methods
+    void updatePlayheadPosition(unsigned int position) {
+        if (position != playhead_position) {
+            playhead_position = position;
+            // Tell the widget to update its display
+            if (onPlayheadChanged) {
+                onPlayheadChanged(position);
+            }
         }
     }
-    void setPlaybackPercentage(float percentage) {
-        playback_percentage = percentage;
+
+    // Register call back for playhead position changes
+    void registerDragPlayheadObserver(std::function<void(unsigned int)> callback) {
+        onDragPlayhead = callback;
     }
 
     // Method to adjust zoom level
@@ -137,6 +170,63 @@ struct TrackModel
     {
         zoom_factor = rack::math::clamp(new_zoom_factor, 0.1f, 10.0f); // Clamp zoom factor to a reasonable range
         updateVisibleWindow();
+    }
+
+    void updateWaveformCache(float track_width, float track_height, float padding_left, float padding_right, 
+                           float padding_top, float padding_bottom) {
+        if (!sample || !sample->isLoaded()) return;
+
+        unsigned int num_visible_samples = visible_window_end - visible_window_start;
+        unsigned int chunk_size = std::max(1u, num_visible_samples / NUM_CHUNKS);
+        float drawable_width = track_width - (padding_left + padding_right);
+        float chunk_width = drawable_width / static_cast<float>(NUM_CHUNKS);
+        float rect_overlap = chunk_width / 4.0f;
+
+        // Resize cache if needed
+        if (chunk_cache.size() != NUM_CHUNKS) {
+            chunk_cache.resize(NUM_CHUNKS);
+        }
+
+        // Update each chunk
+        for (unsigned int chunk_index = 0; chunk_index < NUM_CHUNKS; ++chunk_index) {
+            WaveformChunk& chunk = chunk_cache[chunk_index];
+            
+            unsigned int chunk_start = visible_window_start + chunk_index * chunk_size;
+            unsigned int chunk_end = std::min(chunk_start + chunk_size, visible_window_end);
+
+            float left_sum = 0.0f;
+            float right_sum = 0.0f;
+            unsigned int count = 0;
+
+            for (unsigned int i = chunk_start; i < chunk_end; ++i) {
+                float left, right;
+                sample->read(i, &left, &right);
+                left_sum += std::abs(left);
+                right_sum += std::abs(right);
+                count++;
+            }
+
+            if (count > 0) {
+                float average_height = (left_sum + right_sum) / (2.0f * count);
+                average_height *= (track_height - (padding_top + padding_bottom));
+                
+                chunk.average_height = average_height;
+                chunk.x_position = padding_left + (chunk_index * chunk_width);
+                chunk.y_position = padding_top + 
+                    ((track_height - padding_top - padding_bottom - average_height) / 2.0f);
+                chunk.width = chunk_width + rect_overlap;
+                chunk.valid = true;
+            } else {
+                chunk.valid = false;
+            }
+        }
+
+        // Update cache state
+        cache_valid = true;
+        cached_visible_start = visible_window_start;
+        cached_visible_end = visible_window_end;
+        cached_width = track_width;
+        cached_height = track_height;
     }
 
     // Update the visible window based on the current zoom factor
@@ -152,6 +242,8 @@ struct TrackModel
         // Update the visible window start and end, clamped to valid ranges
         visible_window_start = std::max(0, static_cast<int>(visible_center) - static_cast<int>(visible_span / 2));
         visible_window_end = std::min(sample_size, visible_window_start + visible_span);
+
+        invalidateCache();
     }
 
     // Compute waveform averages for the entire sample

@@ -7,7 +7,8 @@ struct WaveformWidget : TransparentWidget
     float width = 0.0;
     float height = 0.0;
     float indicator_width = 2.0;
-    
+    unsigned int initial_sample_position = 0;
+
     // Replace single padding with individual paddings
     float container_padding_top = 2.0;
     float container_padding_right = 2.0;
@@ -259,15 +260,25 @@ struct WaveformWidget : TransparentWidget
 
     void drawPositionIndicator(NVGcontext *vg)
     {
-        float x_position = clamp(
-            waveform_modal->playback_percentage * (width - (container_padding_left + container_padding_right)),
-            0.0f,
-            (float)(width - (container_padding_left + container_padding_right))
+        if (!waveform_modal || !waveform_modal->sample) return;
+
+        float drawable_width = width - (container_padding_left + container_padding_right);
+        
+        // Convert sample position to x coordinate
+        float relative_pos = static_cast<float>(waveform_modal->playhead_position) / 
+            static_cast<float>(waveform_modal->sample->size());
+        float x_position = container_padding_left + (relative_pos * drawable_width);
+
+        // Clamp to drawable area
+        x_position = rack::math::clamp(
+            x_position,
+            container_padding_left,
+            width - container_padding_right
         );
 
         nvgBeginPath(vg);
         nvgRect(vg, 
-            container_padding_left + x_position, 
+            x_position - (indicator_width / 2.0f),  // Center the indicator 
             container_padding_top, 
             indicator_width, 
             height - (container_padding_top + container_padding_bottom)
@@ -278,11 +289,22 @@ struct WaveformWidget : TransparentWidget
 
     void highlightSection(NVGcontext *vg)
     {
+        if (!waveform_modal || !waveform_modal->sample) return;
+
+        float drawable_width = width - (container_padding_left + container_padding_right);
+        float sample_size = static_cast<float>(waveform_modal->sample->size());
+
+        // Convert sample positions to x coordinates
+        float start_x = container_padding_left + 
+            (static_cast<float>(waveform_modal->highlight_section_start) / sample_size * drawable_width);
+        float section_width = static_cast<float>(waveform_modal->highlight_section_length) / 
+            sample_size * drawable_width;
+
         nvgBeginPath(vg);
         nvgRect(vg, 
-            container_padding_left + waveform_modal->highlight_section_x, 
+            start_x,
             container_padding_top, 
-            waveform_modal->highlight_section_width, 
+            section_width, 
             height - (container_padding_top + container_padding_bottom)
         );
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 80));
@@ -291,15 +313,21 @@ struct WaveformWidget : TransparentWidget
 
     void drawMarkers(NVGcontext *vg)
     {
+        if (!waveform_modal || !waveform_modal->sample) return;
+
+        float drawable_width = width - (container_padding_left + container_padding_right);
+        float sample_size = static_cast<float>(waveform_modal->sample->size());
+
         nvgBeginPath(vg);
-        for (float marker : waveform_modal->marker_positions)
+        for (float marker_pos : waveform_modal->marker_positions)
         {
-            float x_position = (marker / waveform_modal->sample->size()) * 
-                (width - (container_padding_left + container_padding_right));
-            x_position = clamp(
-                container_padding_left + x_position,
-                0.0f,
-                (float)(width - (container_padding_left + container_padding_right))
+            float relative_pos = marker_pos / sample_size;
+            float x_position = container_padding_left + (relative_pos * drawable_width);
+
+            x_position = rack::math::clamp(
+                x_position,
+                container_padding_left,
+                width - container_padding_right
             );
 
             nvgMoveTo(vg, x_position, container_padding_top);
@@ -315,18 +343,11 @@ struct WaveformWidget : TransparentWidget
     {
         TransparentWidget::onButton(e);
         if (e.button == GLFW_MOUSE_BUTTON_LEFT) {
-            if (e.action == GLFW_PRESS) {
-                float scrubber_x = container_padding_left +
-                    (waveform_modal->playback_percentage * (width - (container_padding_left + container_padding_right)));
-               
-                if (std::abs(e.pos.x - scrubber_x) < scrubber_hit_zone) {
-                    scrubber_dragging = true;
-                    waveform_modal->scrubber_dragging = true;
-                    drag_position = e.pos;
-                    initial_percentage = waveform_modal->playback_percentage;
-                    cumulative_drag_offset = 0.0f;
-                    e.consume(this);
-                }
+            if (e.action == GLFW_PRESS && waveform_modal && waveform_modal->sample) {
+                scrubber_dragging = true;
+                waveform_modal->scrubber_dragging = true;
+                drag_position = e.pos;
+                e.consume(this);
             }
             else if (e.action == GLFW_RELEASE) {
                 scrubber_dragging = false;
@@ -337,16 +358,18 @@ struct WaveformWidget : TransparentWidget
 
     void onDragMove(const event::DragMove& e) override {
         if (scrubber_dragging) {
-            cumulative_drag_offset += e.mouseDelta.x;
-           
-            float drag_percentage = cumulative_drag_offset / 
-                (width - (container_padding_left + container_padding_right));
-            float new_percentage = initial_percentage + drag_percentage;
-            new_percentage = rack::math::clamp(new_percentage, 0.0f, 1.0f);
-           
-            unsigned int new_position = static_cast<unsigned int>(new_percentage * waveform_modal->sample->size());
+            float zoom = getAbsoluteZoom();
+            float current_x = drag_position.x + e.mouseDelta.x / zoom;
+            float drawable_width = width - (container_padding_left + container_padding_right);
+            float relative_x = (current_x - container_padding_left) / drawable_width;
+            relative_x = rack::math::clamp(relative_x, 0.0f, 1.0f);
             
-            waveform_modal->notifyScrubberPosition(new_position);
+            unsigned int new_position = static_cast<unsigned int>(
+                relative_x * waveform_modal->sample->size()
+            );
+
+            waveform_modal->onDragPlayhead(new_position);
+            drag_position.x = current_x;
             e.consume(this);
         }
     }

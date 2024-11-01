@@ -2,48 +2,51 @@ struct WaveformModel
 {
     Sample *sample;
     bool visible = false;
-
     std::vector<float> marker_positions;
-
-    // Vertical line to show playback position
+   
+    // Display properties
     bool draw_position_indicator = true;
-    float playback_percentage = 0.0;
+    float playback_percentage = 0.0f;  // Keep for compatibility. Remove after updating autobreak.
+    unsigned int playhead_position = 0;  // Changed from percentage to position
     bool scrubber_dragging = false;
-
-    // Overlay to highlight a section of the waveform
+   
+    // Optional section highlighting
     bool highlight_section = false;
-    float highlight_section_x = 0.0;
-    float highlight_section_width = 0.0;
+    unsigned int highlight_section_start = 0;  // Changed from x to sample position
+    unsigned int highlight_section_length = 0;  // Changed from width to sample count
+   
+    unsigned int highlight_section_x = 0;  // Temporary, for backwards compatibility
+    unsigned int highlight_section_width = 0;  // Temporary, for backwards compatibility
 
-    // Callback for scrubber movement
-    std::function<void(unsigned int)> onScrubberPositionChanged;
-
-    void addMarker(float sample_position)
-    {
-        // Ensure the marker position is within the valid range
-        if (sample_position >= 0 && sample_position <= sample->size())
-        {
+    // Callbacks
+    std::function<void(unsigned int)> onPlayheadChanged = nullptr;
+    std::function<void(unsigned int)> onDragPlayhead = nullptr;
+   
+    // Marker management
+    void addMarker(unsigned int sample_position) {
+        if (sample && sample_position < sample->size()) {
             marker_positions.push_back(sample_position);
-            DEBUG("Added marker at position %f", sample_position);
+            DEBUG("Added marker at position %u", sample_position);
         }
     }
-
-    void clearMarkers()
-    {
+   
+    void clearMarkers() {
         marker_positions.clear();
     }
-
-    void setPlaybackPercentage(float percentage) {
-        playback_percentage = percentage;
-    }
-
-    void setScrubberPositionCallback(std::function<void(unsigned int)> callback) {
-        onScrubberPositionChanged = callback;
-    }
-
-    void notifyScrubberPosition(unsigned int position) {
-        if (onScrubberPositionChanged) {
-            onScrubberPositionChanged(position);
+   
+    void updatePlayheadPosition(unsigned int position) {
+        if (position != playhead_position) {
+            playhead_position = position;
+            playback_percentage = sample ? 
+                static_cast<float>(position) / static_cast<float>(sample->size()) : 0.0f;
+            if (onPlayheadChanged) {
+                onPlayheadChanged(position);
+            }
         }
+    }
+
+    // Register observers
+    void registerDragPlayheadObserver(std::function<void(unsigned int)> callback) {
+        onDragPlayhead = callback;
     }
 };
