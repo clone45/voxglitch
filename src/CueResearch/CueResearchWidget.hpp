@@ -64,6 +64,17 @@ struct CueResearchWidget : VoxglitchSamplerModuleWidget
             waveform_widget->setDrawContainerBackground(true);
             addChild(waveform_widget);
         }
+        else
+        {
+            // Show placeholders when in library browser
+            std::string placeholder_path = "res/cue_research/library-placeholder.png";
+            
+            // Main track view placeholder
+            ImageWidget *track_placeholder = new ImageWidget(placeholder_path, 1056.0, 738.0, 1.0, 0.15);
+            track_placeholder->box.pos = Vec(92.0, 25.0);
+            addChild(track_placeholder);
+        }
+
     }
 
     void appendContextMenu(Menu *menu) override

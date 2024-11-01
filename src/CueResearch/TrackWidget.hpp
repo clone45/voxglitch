@@ -182,6 +182,10 @@ struct TrackWidget : TransparentWidget
 
         for (const auto &marker_pair : *(track_model->markers))
         {
+            if (!isValidMarker(marker_pair.first)) {
+                continue;
+            }
+
             unsigned int pos = marker_pair.first;
 
             if (pos < visible_sample_start || pos > visible_sample_end)
@@ -286,6 +290,10 @@ struct TrackWidget : TransparentWidget
             
             for (const auto &marker_pair : *(track_model->markers))
             {
+                if (!isValidMarker(marker_pair.first)) {
+                    continue;
+                }
+
                 if (marker_pair.first >= track_model->visible_window_start && 
                     marker_pair.first <= track_model->visible_window_end) {
                     
@@ -361,6 +369,10 @@ struct TrackWidget : TransparentWidget
                 
                 for (auto &marker_pair : *(track_model->markers))
                 {
+                    if (!isValidMarker(marker_pair.first)) {
+                        continue;
+                    }
+
                     if (marker_pair.first >= track_model->visible_window_start && 
                         marker_pair.first <= track_model->visible_window_end) {
                         
@@ -439,7 +451,8 @@ struct TrackWidget : TransparentWidget
 
         e.consume(this);
 
-        if (scrubber_dragging) {
+        if (scrubber_dragging) 
+        {
             float zoom = getAbsoluteZoom();
             float current_x = drag_start_x + e.mouseDelta.x / zoom;
             float drawable_width = box.size.x - (container_padding_left + container_padding_right);
@@ -514,6 +527,13 @@ struct TrackWidget : TransparentWidget
         }
         else if (dragging_marker && markers_being_dragged && track_model && track_model->markers && !track_model->isLockedMarkers())
         {
+            // First, verify the marker still exists at drag_source_position
+            if (!isValidMarker(drag_source_position)) {
+                dragging_marker = false;
+                markers_being_dragged = nullptr;
+                return;
+            }
+
             float zoom = getAbsoluteZoom();
             float current_x = drag_start_x + e.mouseDelta.x / zoom;
             float drawable_width = box.size.x - (container_padding_left + container_padding_right);
@@ -550,6 +570,16 @@ struct TrackWidget : TransparentWidget
 
             if (!nearby_markers.empty())
             {
+                // If we're about to remove a marker that's being dragged, clean up the drag state
+                if (dragging_marker && nearby_markers.front() == drag_source_position) 
+                {
+                    dragging_marker = false;
+                    markers_being_dragged = nullptr;
+
+                    // Set mouse pointer back to default
+                    glfwSetCursor(APP->window->win, NULL);
+                }
+
                 // Remove the first marker found (since we are returning all nearby markers, but removing only one)
                 track_model->removeMarkers(nearby_markers.front());
             }
@@ -573,6 +603,10 @@ struct TrackWidget : TransparentWidget
 
             for (const auto &marker_pair : *(track_model->markers))
             {
+                if (!isValidMarker(marker_pair.first)) {
+                    continue;
+                }
+
                 if (marker_pair.first >= track_model->visible_window_start && 
                     marker_pair.first <= track_model->visible_window_end) {
                     
@@ -654,6 +688,13 @@ struct TrackWidget : TransparentWidget
 
     void setIndicatorColor(NVGcolor color) {
         playback_indicator_color = color;
+    }
+
+    bool isValidMarker(unsigned int position) const {
+        if (!track_model || !track_model->markers) {
+            return false;
+        }
+        return track_model->markers->find(position) != track_model->markers->end();
     }
 
    // Add padding setter methods (matching WaveformWidget's interface)
