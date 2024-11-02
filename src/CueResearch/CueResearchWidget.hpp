@@ -126,6 +126,11 @@ struct CueResearchWidget : VoxglitchSamplerModuleWidget
             }
         ));
 
+        // Add action to clear markers
+        menu->addChild(createMenuItem("Clear All Markers", "", [=]() {
+            module->clearMarkers();
+        }));
+
         menu->addChild(new MenuSeparator());
         menu->addChild(createBoolPtrMenuItem("Lock Markers", "", &module->lock_markers));
         menu->addChild(createBoolPtrMenuItem("Lock Mouse Interaction", "", &module->lock_interactions));
