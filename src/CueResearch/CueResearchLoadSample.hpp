@@ -25,11 +25,13 @@ struct CueResearchLoadSample : MenuItem
             module->sample.load(filename);
             module->loaded_filename = module->sample.getFilename();
             module->setRoot(filename);
-
             if (module->clear_markers_on_sample_load)
             {
                 module->clearMarkers();
             }
+            // Notify track model and waveform model of sample change
+            module->track_model.onSampleChanged();
+            // module->waveform_model.onSampleChanged();
         }
     }
 };

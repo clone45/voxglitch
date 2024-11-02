@@ -115,7 +115,7 @@ struct TrackWidget : TransparentWidget
         // Draw from cache
         for (const auto& chunk : track_model->chunk_cache) {
             if (chunk.valid) {
-                nvgRect(vg, chunk.x_position, chunk.y_position, chunk.width, chunk.average_height);
+                nvgRect(vg, chunk.x_position, chunk.y_position, chunk.width + 0.2, chunk.average_height);
             }
         }
 

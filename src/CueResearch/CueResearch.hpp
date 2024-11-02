@@ -1,7 +1,5 @@
 // TODO:
-// - Menu item for automatically setting markers??
 // - Fix autobreak studio
-// - option to normalize sample
 // - write documentation
 
 #include "Marker.hpp"

@@ -160,6 +160,15 @@ struct TrackModel
         active_marker = marker;
     }
 
+    void onSampleChanged() {
+        cache_valid = false;
+        if (sample && sample->isLoaded()) {
+            visible_window_start = 0;
+            visible_window_end = sample->size();
+        }
+        invalidateCache();
+    }
+
     // Add new methods
     void updatePlayheadPosition(unsigned int position) {
         if (position != playhead_position) {
