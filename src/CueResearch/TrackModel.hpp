@@ -187,75 +187,93 @@ struct TrackModel
                         float padding_top, float padding_bottom) {
         if (!sample || !sample->isLoaded()) return;
 
-        // Calculate how many samples are currently visible in the window
-        unsigned int num_visible_samples = visible_window_end - visible_window_start;
-        
-        // Determine how many samples each chunk will represent
-        // Use max to ensure we don't divide by zero if num_visible_samples is small
-        unsigned int chunk_size = std::max(1u, num_visible_samples / NUM_CHUNKS);
-        
-        // Calculate the actual drawable area width after accounting for padding
         float drawable_width = track_width - (padding_left + padding_right);
         
-        // Ensure our cache vector is the right size
-        if (chunk_cache.size() != NUM_CHUNKS) {
-            chunk_cache.resize(NUM_CHUNKS);
-        }
+        // Calculate chunk size based on visible window rather than total sample size
+        float pixels_per_chunk = 1.0f;
+        unsigned int visible_samples = visible_window_end - visible_window_start;
+        unsigned int chunks_needed = std::max(
+            static_cast<unsigned int>(drawable_width / pixels_per_chunk),
+            1000u
+        );
+        
+        // Use the smaller of:
+        // 1. Global chunk size (for stability)
+        // 2. Visible chunk size (for detail when zoomed)
+        unsigned int global_chunk_size = std::max(1u, sample->size() / chunks_needed);
+        unsigned int visible_chunk_size = std::max(1u, visible_samples / chunks_needed);
+        unsigned int chunk_size = std::min(global_chunk_size, visible_chunk_size);
+        
+        // Calculate which chunks are visible
+        unsigned int first_chunk = visible_window_start / chunk_size;
+        unsigned int last_chunk = (visible_window_end / chunk_size) + 1;
+        unsigned int actual_chunks = last_chunk - first_chunk;
+        
+        chunk_cache.resize(actual_chunks);
+        
+        for (unsigned int i = 0; i < actual_chunks; ++i) {
+            WaveformChunk& chunk = chunk_cache[i];
+            
+            // Calculate chunk boundaries, clamped to sample range
+            unsigned int chunk_start = std::min((first_chunk + i) * chunk_size, sample->size());
+            unsigned int chunk_end = std::min(chunk_start + chunk_size, sample->size());
+            
+            // Skip if chunk is outside visible range
+            if (chunk_start >= visible_window_end || chunk_end <= visible_window_start) {
+                chunk.valid = false;
+                continue;
+            }
 
-        // Process each chunk of the waveform
-        for (unsigned int chunk_index = 0; chunk_index < NUM_CHUNKS; ++chunk_index) {
-            WaveformChunk& chunk = chunk_cache[chunk_index];
+            // Clamp chunk boundaries to visible window
+            unsigned int visible_start = std::max(chunk_start, visible_window_start);
+            unsigned int visible_end = std::min(chunk_end, visible_window_end);
             
-            // Calculate the sample range this chunk represents
-            unsigned int chunk_start = visible_window_start + chunk_index * chunk_size;
-            // Ensure we don't read past the visible window
-            unsigned int chunk_end = std::min(chunk_start + chunk_size, visible_window_end);
+            if (visible_start >= visible_end) {
+                chunk.valid = false;
+                continue;
+            }
             
-            // Calculate average amplitude for this chunk of samples
             float left_sum = 0.0f;
             float right_sum = 0.0f;
             unsigned int count = 0;
-            for (unsigned int i = chunk_start; i < chunk_end; ++i) {
+            
+            for (unsigned int pos = visible_start; pos < visible_end; ++pos) {
                 float left, right;
-                sample->read(i, &left, &right);
+                sample->read(pos, &left, &right);
                 left_sum += std::abs(left);
                 right_sum += std::abs(right);
                 count++;
             }
 
             if (count > 0) {
-                // Calculate average amplitude and scale it to our display height
                 float average_height = (left_sum + right_sum) / (2.0f * count);
                 average_height *= (track_height - (padding_top + padding_bottom));
                 
                 chunk.average_height = average_height;
-
-                // Calculate x position using the same formula used for markers and playhead
-                // This ensures visual alignment between waveform chunks and markers
-                float relative_pos = float(chunk_start - visible_window_start) /
+                
+                // Calculate position using visible sample range
+                float relative_pos = float(visible_start - visible_window_start) /
                     float(visible_window_end - visible_window_start);
                 chunk.x_position = padding_left + (relative_pos * drawable_width);
-
-                // Center the waveform chunk vertically in the available space
+                
                 chunk.y_position = padding_top +
                     ((track_height - padding_top - padding_bottom - average_height) / 2.0f);
-
-                // Calculate the width of this chunk by finding where the next chunk would start
-                // This ensures no gaps between chunks and maintains proper alignment
-                float next_chunk_start = chunk_start + chunk_size;
-                float next_relative_pos = float(next_chunk_start - visible_window_start) /
+                
+                // Calculate width based on visible portion of chunk
+                float end_relative_pos = float(visible_end - visible_window_start) /
                     float(visible_window_end - visible_window_start);
-                float next_x = padding_left + (next_relative_pos * drawable_width);
-                chunk.width = next_x - chunk.x_position;
+                float end_x = padding_left + (end_relative_pos * drawable_width);
+                chunk.width = end_x - chunk.x_position;
+                
+                // Clamp width to drawable area
+                chunk.width = std::min(chunk.width, drawable_width - (chunk.x_position - padding_left));
                 
                 chunk.valid = true;
             } else {
                 chunk.valid = false;
             }
         }
-
-        // Update cache validation flags and stored dimensions
-        // This prevents unnecessary recalculation when nothing has changed
+        
         cache_valid = true;
         cached_visible_start = visible_window_start;
         cached_visible_end = visible_window_end;
