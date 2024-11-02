@@ -12,7 +12,8 @@ void init(Plugin* p) {
   p->addModel(modelDigitalProgrammer);
   p->addModel(modelDigitalSequencer);
   p->addModel(modelDigitalSequencerXP);
-  p->addModel(modelDrumRandomizer);  
+  p->addModel(modelDrumRandomizer);
+  p->addModel(modelCueResearch); 
   p->addModel(modelGlitchSequencer);
   p->addModel(modelGhosts);
   p->addModel(modelGrainEngineMK2);

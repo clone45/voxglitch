@@ -104,7 +104,7 @@ struct SamplePlayer
 
       if(loop > 0)
       {
-        // Remember, loop is NOT a boolean, but rather a position
+        // Remember, loop is NOT a boolean, but rather a position (really?)
         float loop_position = (sample_start * sample_size) + ((sample_size - sample_start) * loop);
 
         // Check to see if playback_position is past the loop point

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <jansson.h>
 #include <stdbool.h>
 

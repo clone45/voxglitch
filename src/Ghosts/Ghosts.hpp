@@ -114,7 +114,7 @@ struct Ghosts : VoxglitchSamplerModule
 
 		waveform_model.sample = &sample;
 		waveform_model.visible = true;
-		waveform_model.playback_percentage = 0.0;
+		waveform_model.playhead_position = 0;
 	}
 
 	json_t *dataToJson() override
@@ -277,7 +277,7 @@ struct Ghosts : VoxglitchSamplerModule
 			spawn_rate_counter = spawn_rate_counter + (spawn_rate / sample_rate);
 
 			// Update the waveform display
-            waveform_model.playback_percentage = start_position / sample.size();
+            waveform_model.updatePlayheadPosition(start_position);
 		}
 	}
 

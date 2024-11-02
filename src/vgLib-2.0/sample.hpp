@@ -163,6 +163,12 @@ struct Sample
     return(true);
   };
 
+
+  bool isLoaded()
+  {
+    return(this->loaded);
+  }
+
   // Where to put recording code and how to save it?
   void initialize_recording()
   {
@@ -225,6 +231,16 @@ struct Sample
     this->filename = "";
     this->display_name = "";
     this->loaded = false;
+  }
+
+  std::string getFilename()
+  {
+    return(this->filename);
+  }
+
+  std::string getPath()
+  {
+    return(this->path);
   }
 
 };

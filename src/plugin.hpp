@@ -17,6 +17,7 @@ extern Model *modelDigitalProgrammer;
 extern Model *modelDigitalSequencer;
 extern Model *modelDigitalSequencerXP;
 extern Model *modelDrumRandomizer;
+extern Model *modelCueResearch;
 extern Model *modelGlitchSequencer;
 extern Model *modelGhosts;
 extern Model *modelGrainEngineMK2;

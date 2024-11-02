@@ -64,6 +64,12 @@
         "tags": ["Utility", "Polyphonic"]
     },    
     {
+        "slug": "cue_research",
+        "name": "Cue Research",
+        "description": "Sample player with cue based trigger outputs",
+        "tags": ["Sampler"]
+    },
+    {
         "slug": "glitchsequencer",
         "name": "Glitch Sequencer",
         "description": "Cellular Automaton Gate Sequencer.",
