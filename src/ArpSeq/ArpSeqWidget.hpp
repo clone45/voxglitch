@@ -233,11 +233,6 @@ struct ArpSeqWidget : ModuleWidget
 
                     int *count_down_pointer = module->pages[page_index].cycle_counters->getCountDownPointer(i);
 
-                    if(!count_down_pointer)
-                    {
-                        DEBUG("count_down_pointer is NULL");
-                    }
-
                     addParam(number_chooser);
 
                     dynamic_cast<NumberChooser*>(number_chooser)->setCycleCountDownPtr(count_down_pointer);

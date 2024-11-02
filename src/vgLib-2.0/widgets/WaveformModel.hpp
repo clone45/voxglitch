@@ -28,7 +28,6 @@ struct WaveformModel
     void addMarker(unsigned int sample_position) {
         if (sample && sample_position < sample->size()) {
             marker_positions.push_back(sample_position);
-            DEBUG("Added marker at position %u", sample_position);
         }
     }
    

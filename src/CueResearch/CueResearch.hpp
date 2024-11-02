@@ -1,6 +1,11 @@
-// TODO:
-// - Fix autobreak studio
-// - write documentation
+//  _____             ______                              _     
+// /  __ \            | ___ \                            | |    
+// | /  \/_   _  ___  | |_/ /___  ___  ___  __ _ _ __ ___| |__  
+// | |   | | | |/ _ \ |    // _ \/ __|/ _ \/ _` | '__/ __| '_ \ 
+// | \__/\ |_| |  __/ | |\ \  __/\__ \  __/ (_| | | | (__| | | |
+//  \____/\__,_|\___| \_| \_\___||___/\___|\__,_|_|  \___|_| |_|
+//                                                              
+// A collaboration between Bret Truchan and Claude AI.
 
 #include "Marker.hpp"
 #include "ScrubState.hpp"
@@ -127,9 +132,6 @@ struct CueResearch : VoxglitchSamplerModule
         track_model.setLockMarkers(&lock_markers);
         track_model.setLockInteractions(&lock_interactions);
 
-        // 
-        // 
-
         registerPlaybackObserver([this](unsigned int position)
         {
             track_model.updatePlayheadPosition(position);
@@ -232,7 +234,6 @@ struct CueResearch : VoxglitchSamplerModule
     }
 
     void broadcastPlaybackPosition(unsigned int position) {
-        // DEBUG("Broadcasting position: %u", position);
         for(auto& observer : playback_position_observers) {
             observer(position);
         }
@@ -386,7 +387,8 @@ struct CueResearch : VoxglitchSamplerModule
         // Handle playback
         if (sample.loaded) 
         {
-            if (waveform_model.scrubber_dragging || track_model.scrubber_dragging) {
+            if (waveform_model.scrubber_dragging || track_model.scrubber_dragging) 
+            {
                 if (scrub_state.buffer_needs_update) {
                     updateScrubBuffer();
                 }
@@ -409,10 +411,8 @@ struct CueResearch : VoxglitchSamplerModule
                 // Use display position for UI updates
                 playback_position = scrub_state.display_position;
             }
-            else if (playing) {
-
-                // DEBUG("Playing: %d", playback_position);
-
+            else if (playing) 
+            {
                 // Normal playback - increment position
                 if (playback_position < sample.size()) {
                     // Check if there are markers at the current position
@@ -442,7 +442,9 @@ struct CueResearch : VoxglitchSamplerModule
                         output_left = output_right = 0.0f;
                     }
                 }
-            } else {
+            } 
+            else 
+            {
                 // Stopped - output current position without incrementing
                 if (playback_position < sample.size()) {
                     sample.read(playback_position, &output_left, &output_right);
