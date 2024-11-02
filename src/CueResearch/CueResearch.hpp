@@ -1,7 +1,7 @@
 // TODO:
-// - Improve library view
 // - Menu item for automatically setting markers??
 // - Fix autobreak studio
+// - option to normalize sample
 
 #include "Marker.hpp"
 #include "ScrubState.hpp"

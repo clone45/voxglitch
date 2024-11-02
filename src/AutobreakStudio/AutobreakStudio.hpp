@@ -149,7 +149,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
         {
             waveform_model[i].sample = &samples[i];
             waveform_model[i].visible = false;
-            waveform_model[i].playback_percentage = 0.0;
+            waveform_model[i].playhead_position = 0;
         }
         waveform_model[0].visible = true;
 
@@ -636,8 +636,7 @@ struct AutobreakStudio : VoxglitchSamplerModule
 
             // Update the playback position so that the position indicator can be
             // drawn at the correct location on the waveform display
-            // waveform_playback_percentage = actual_playback_position / selected_sample->size();
-            waveform_model[selected_sample_slot].playback_percentage = actual_playback_position / selected_sample->size();
+            waveform_model[selected_sample_slot].updatePlayheadPosition(actual_playback_position);
 
             // Read the sample
             selected_sample->read((int)actual_playback_position, &left_output, &right_output);
