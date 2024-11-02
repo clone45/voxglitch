@@ -18,6 +18,7 @@ struct CueResearch : VoxglitchSamplerModule
     TrackModel track_model;
     WaveformModel waveform_model;
     Sample sample;
+    ScrubState scrub_state;
 
     dsp::SchmittTrigger start_trigger;
     dsp::SchmittTrigger stop_trigger;
@@ -44,13 +45,7 @@ struct CueResearch : VoxglitchSamplerModule
     std::vector<float> trigger_lengths = {0.001, 0.002, 0.005, 0.010, 0.020, 0.050, 0.100, 0.200};
     unsigned int trigger_length_index = 0;
 
-    // scrubbing-related members
-    ScrubState scrub_state;
-    // bool scrubbing = false;
-
-    // Added 10/31
     std::vector<std::function<void(unsigned int)>> playback_position_observers;
-    unsigned int previous_playback_position = 0;
 
     enum ParamIds
     {
