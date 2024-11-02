@@ -113,6 +113,20 @@ struct CueResearchWidget : VoxglitchSamplerModuleWidget
         ));
 
         menu->addChild(new MenuSeparator());
+        menu->addChild(createMenuLabel("Actions"));
+        menu->addChild(createIndexSubmenuItem("Place markers at divisions",
+            {"4", "8", "16", "32"},
+            [=]() {
+                return -1;  // No selection is persistent
+            },
+            [=](int division_index) {
+                // Convert index to number of divisions
+                int divisions = 4u << division_index;  // 4, 8, 16, or 32
+                module->placeMarkersAtDivisions(divisions);
+            }
+        ));
+
+        menu->addChild(new MenuSeparator());
         menu->addChild(createBoolPtrMenuItem("Lock Markers", "", &module->lock_markers));
         menu->addChild(createBoolPtrMenuItem("Lock Mouse Interaction", "", &module->lock_interactions));
 

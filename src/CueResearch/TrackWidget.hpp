@@ -222,6 +222,170 @@ struct TrackWidget : TransparentWidget
         nvgRestore(vg);
     }
 
+    // Add helper method for consistent position calculations
+    float sampleToScreenX(unsigned int sample_pos) const {
+        if (!track_model || !track_model->sample) return 0.0f;
+        
+        float drawable_width = box.size.x - (container_padding_left + container_padding_right);
+        float relative_pos = 0.0f;
+        
+        if (track_model->visible_window_end > track_model->visible_window_start) {
+            relative_pos = float(sample_pos - track_model->visible_window_start) / 
+                float(track_model->visible_window_end - track_model->visible_window_start);
+        }
+        
+        relative_pos = rack::math::clamp(relative_pos, 0.0f, 1.0f);
+        return container_padding_left + (relative_pos * drawable_width);
+    }
+    
+    // Add helper for screen to sample position conversion
+    unsigned int screenToSample(float screen_x) const {
+        if (!track_model || !track_model->sample) return 0;
+        
+        float drawable_width = box.size.x - (container_padding_left + container_padding_right);
+        float relative_pos = (screen_x - container_padding_left) / drawable_width;
+        relative_pos = rack::math::clamp(relative_pos, 0.0f, 1.0f);
+        
+        return track_model->visible_window_start + 
+            (relative_pos * (track_model->visible_window_end - track_model->visible_window_start));
+    }
+
+
+
+    std::vector<unsigned int> findMarkersNearPosition(const Vec &click_position)
+    {
+        std::vector<unsigned int> found_markers;
+
+        if (track_model && track_model->markers && !track_model->isLockedMarkers())
+        {
+            float marker_distance = 5.0f;
+            float drawable_width = box.size.x - (container_padding_left + container_padding_right);
+
+            for (const auto &marker_pair : *(track_model->markers))
+            {
+                if (!isValidMarker(marker_pair.first)) {
+                    continue;
+                }
+
+                if (marker_pair.first >= track_model->visible_window_start && 
+                    marker_pair.first <= track_model->visible_window_end) {
+                    
+                    float relative_pos = float(marker_pair.first - track_model->visible_window_start) / 
+                        float(track_model->visible_window_end - track_model->visible_window_start);
+                    float marker_x = container_padding_left + (relative_pos * drawable_width);
+
+                    if (std::abs(click_position.x - marker_x) < marker_distance)
+                    {
+                        found_markers.push_back(marker_pair.first);
+                    }
+                }
+            }
+        }
+
+        return found_markers;
+    }
+
+    // Update mouseToSamplePosition to account for padding
+    float mouseToSamplePosition(Vec mouse_pos)
+    {
+        float drawable_width = box.size.x - (container_padding_left + container_padding_right);
+        float relative_x = (mouse_pos.x - container_padding_left) / drawable_width;
+        relative_x = rack::math::clamp(relative_x, 0.0f, 1.0f);
+        
+        unsigned int sample_position = track_model->visible_window_start +
+            relative_x * (track_model->visible_window_end - track_model->visible_window_start);
+        return sample_position;
+    }
+
+    void step() override
+    {
+        TransparentWidget::step();
+
+        // Sample has changed
+        if (sample_filename != track_model->sample->filename)
+        {
+            sample_filename = track_model->sample->filename;
+            track_model->initialize();
+        }
+    }
+
+    void createContextMenu() 
+    {
+        // Create a new menu
+        ui::Menu* menu = createMenu();
+
+        menu->addChild(createMenuItem("Clear All Markers", "", [=]() 
+        {
+            track_model->clearMarkers();
+        }));
+
+        // Add marker
+        menu->addChild(createMenuItem("Add Marker", "", [=]() 
+        {
+            float sample_position = mouseToSamplePosition(context_menu_target_position.x);
+            track_model->addMarker(sample_position);
+        }));
+    }
+
+    void createMarkerContextMenu() 
+    {
+        // Create a new menu
+        ui::Menu* menu = createMenu();
+
+        menu->addChild(createMenuItem("Delete Marker", "", [=]() 
+        {
+            std::vector<unsigned int> nearby_markers = findMarkersNearPosition(context_menu_target_position);
+            if (!nearby_markers.empty())
+            {
+                track_model->removeMarkers(nearby_markers.front());
+            }
+        }));
+    }
+
+    void setIndicatorWidth(float width) {
+        playback_indicator_width = width;
+    }
+
+    void setIndicatorColor(NVGcolor color) {
+        playback_indicator_color = color;
+    }
+
+    bool isValidMarker(unsigned int position) const {
+        if (!track_model || !track_model->markers) {
+            return false;
+        }
+        return track_model->markers->find(position) != track_model->markers->end();
+    }
+
+   // Add padding setter methods (matching WaveformWidget's interface)
+    void setContainerPadding(float padding) {
+        container_padding_top = padding;
+        container_padding_right = padding;
+        container_padding_bottom = padding;
+        container_padding_left = padding;
+    }
+
+    void setContainerPadding(float vertical, float horizontal) {
+        container_padding_top = vertical;
+        container_padding_bottom = vertical;
+        container_padding_left = horizontal;
+        container_padding_right = horizontal;
+    }
+
+    void setContainerPadding(float top, float right, float bottom, float left) {
+        container_padding_top = top;
+        container_padding_right = right;
+        container_padding_bottom = bottom;
+        container_padding_left = left;
+    }
+
+    //
+    //
+    //  █▀▀ █░█ █▀▀ █▄░█ ▀█▀   █░█ ▄▀█ █▄░█ █▀▄ █░░ █ █▄░█ █▀▀
+    //  ██▄ ▀▄▀ ██▄ █░▀█ ░█░   █▀█ █▀█ █░▀█ █▄▀ █▄▄ █ █░▀█ █▄█    // Event handling
+    //
+    
+
     void onHoverScroll(const event::HoverScroll &e) override
     {
         if(track_model->areInteractionsLocked()) return;
@@ -590,133 +754,6 @@ struct TrackWidget : TransparentWidget
                 track_model->addMarker(sample_position);
             }
         }
-    }
-
-    std::vector<unsigned int> findMarkersNearPosition(const Vec &click_position)
-    {
-        std::vector<unsigned int> found_markers;
-
-        if (track_model && track_model->markers && !track_model->isLockedMarkers())
-        {
-            float marker_distance = 5.0f;
-            float drawable_width = box.size.x - (container_padding_left + container_padding_right);
-
-            for (const auto &marker_pair : *(track_model->markers))
-            {
-                if (!isValidMarker(marker_pair.first)) {
-                    continue;
-                }
-
-                if (marker_pair.first >= track_model->visible_window_start && 
-                    marker_pair.first <= track_model->visible_window_end) {
-                    
-                    float relative_pos = float(marker_pair.first - track_model->visible_window_start) / 
-                        float(track_model->visible_window_end - track_model->visible_window_start);
-                    float marker_x = container_padding_left + (relative_pos * drawable_width);
-
-                    if (std::abs(click_position.x - marker_x) < marker_distance)
-                    {
-                        found_markers.push_back(marker_pair.first);
-                    }
-                }
-            }
-        }
-
-        return found_markers;
-    }
-
-    // Update mouseToSamplePosition to account for padding
-    float mouseToSamplePosition(Vec mouse_pos)
-    {
-        float drawable_width = box.size.x - (container_padding_left + container_padding_right);
-        float relative_x = (mouse_pos.x - container_padding_left) / drawable_width;
-        relative_x = rack::math::clamp(relative_x, 0.0f, 1.0f);
-        
-        unsigned int sample_position = track_model->visible_window_start +
-            relative_x * (track_model->visible_window_end - track_model->visible_window_start);
-        return sample_position;
-    }
-
-    void step() override
-    {
-        TransparentWidget::step();
-
-        // Sample has changed
-        if (sample_filename != track_model->sample->filename)
-        {
-            sample_filename = track_model->sample->filename;
-            track_model->initialize();
-        }
-    }
-
-    void createContextMenu() 
-    {
-        // Create a new menu
-        ui::Menu* menu = createMenu();
-
-        menu->addChild(createMenuItem("Clear All Markers", "", [=]() 
-        {
-            track_model->clearMarkers();
-        }));
-
-        // Add marker
-        menu->addChild(createMenuItem("Add Marker", "", [=]() 
-        {
-            float sample_position = mouseToSamplePosition(context_menu_target_position.x);
-            track_model->addMarker(sample_position);
-        }));
-    }
-
-    void createMarkerContextMenu() 
-    {
-        // Create a new menu
-        ui::Menu* menu = createMenu();
-
-        menu->addChild(createMenuItem("Delete Marker", "", [=]() 
-        {
-            std::vector<unsigned int> nearby_markers = findMarkersNearPosition(context_menu_target_position);
-            if (!nearby_markers.empty())
-            {
-                track_model->removeMarkers(nearby_markers.front());
-            }
-        }));
-    }
-
-    void setIndicatorWidth(float width) {
-        playback_indicator_width = width;
-    }
-
-    void setIndicatorColor(NVGcolor color) {
-        playback_indicator_color = color;
-    }
-
-    bool isValidMarker(unsigned int position) const {
-        if (!track_model || !track_model->markers) {
-            return false;
-        }
-        return track_model->markers->find(position) != track_model->markers->end();
-    }
-
-   // Add padding setter methods (matching WaveformWidget's interface)
-    void setContainerPadding(float padding) {
-        container_padding_top = padding;
-        container_padding_right = padding;
-        container_padding_bottom = padding;
-        container_padding_left = padding;
-    }
-
-    void setContainerPadding(float vertical, float horizontal) {
-        container_padding_top = vertical;
-        container_padding_bottom = vertical;
-        container_padding_left = horizontal;
-        container_padding_right = horizontal;
-    }
-
-    void setContainerPadding(float top, float right, float bottom, float left) {
-        container_padding_top = top;
-        container_padding_right = right;
-        container_padding_bottom = bottom;
-        container_padding_left = left;
     }
 
 };

@@ -2,6 +2,7 @@
 // - Menu item for automatically setting markers??
 // - Fix autobreak studio
 // - option to normalize sample
+// - write documentation
 
 #include "Marker.hpp"
 #include "ScrubState.hpp"
@@ -169,6 +170,23 @@ struct CueResearch : VoxglitchSamplerModule
             // Assuming each position in the map represents a sample position for a marker
             waveform_model.marker_positions.push_back(marker_pair.first);
         }
+    }
+
+    void placeMarkersAtDivisions(unsigned int num_divisions) {  // Changed to unsigned int
+        if (!sample.loaded) return;
+        
+        markers.clear();
+        
+        unsigned int division_size = sample.size() / num_divisions;
+        
+        for (unsigned int i = 1; i < num_divisions; i++) {
+            unsigned int position = i * division_size;
+            if (position < sample.size()) {
+                markers[position].push_back(Marker(active_marker));
+            }
+        }
+        
+        syncMarkers();
     }
 
     void updateScrubBuffer() {
