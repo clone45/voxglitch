@@ -70,6 +70,12 @@
         "tags": ["Sampler"]
     },
     {
+        "slug": "cue_research_expander",
+        "name": "Cue Research Expander",
+        "description": "Expander that provides additional controls for the Cue Research module.",
+        "tags": ["Utility"]
+    },
+    {
         "slug": "glitchsequencer",
         "name": "Glitch Sequencer",
         "description": "Cellular Automaton Gate Sequencer.",
