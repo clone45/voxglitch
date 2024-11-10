@@ -30,6 +30,7 @@ void init(Plugin* p) {
   p->addModel(modelSamplerX8);
   p->addModel(modelSampler16P);
   p->addModel(modelSatanonaut);
+  p->addModel(modelSatanonautUnearthed);
   p->addModel(modelWavBank);
   p->addModel(modelWavBankMC);
   p->addModel(modelXY);
