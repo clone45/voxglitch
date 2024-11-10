@@ -155,6 +155,12 @@
         "tags": ["Effect"]
     },
     {
+        "slug": "satanonaut_unearthed",
+        "name": "Satanonaut Unearthed",
+        "description": "Satanonaut blank panel",
+        "tags": ["Effect"]
+    },    
+    {
         "slug": "sampler16p",
         "name": "Sampler16P",
         "description": "Sixteen stereo sample playback devices in one compact module.",
