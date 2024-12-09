@@ -721,35 +721,54 @@ struct TrackWidget : TransparentWidget
         } 
     }
 
-    void onDoubleClick(const event::DoubleClick &e) override
-    {
-        e.consume(this);
-
-        if(track_model->areInteractionsLocked()) return;
-
-        if (track_model && track_model->markers && !track_model->isLockedMarkers())
-        {
-            // Find markers near the click position
-            std::vector<unsigned int> nearby_markers = findMarkersNearPosition(mouse_click_position);
-
-            if (!nearby_markers.empty())
-            {
-                // If we're about to remove a marker that's being dragged, clean up the drag state
-                if (dragging_marker && nearby_markers.front() == drag_source_position) 
-                {
+    bool removeMarkersNearMouse(const Vec& mouse_position) {
+        if (track_model && track_model->markers && !track_model->isLockedMarkers()) {
+            std::vector<unsigned int> nearby_markers = findMarkersNearPosition(mouse_position);
+            if (!nearby_markers.empty()) {
+                // Handle drag state cleanup
+                if (dragging_marker && nearby_markers.front() == drag_source_position) {
                     dragging_marker = false;
                     markers_being_dragged = nullptr;
-
-                    // Set mouse pointer back to default
                     glfwSetCursor(APP->window->win, NULL);
                 }
-
-                // Remove the first marker found (since we are returning all nearby markers, but removing only one)
                 track_model->removeMarkers(nearby_markers.front());
+                return true;
             }
-            else
-            {
-                // If no marker was found at the click position, add a new one
+        }
+        return false;
+    }
+
+    bool removeJumpMarkersNearMouse(const Vec& mouse_position) {
+        if (track_model && !track_model->isLockedMarkers()) {
+            unsigned int position = findJumpMarkerNearPosition(mouse_position);
+            if (position != UINT_MAX) {  // or some other sentinel value
+                // Handle drag state cleanup if needed
+                if (dragging_marker && position == drag_source_position) {
+                    dragging_marker = false;
+                    markers_being_dragged = nullptr;
+                    glfwSetCursor(APP->window->win, NULL);
+                }
+                track_model->removeJumpMarker(position);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void onDoubleClick(const event::DoubleClick &e) override {
+        e.consume(this);
+        if(track_model->areInteractionsLocked()) return;
+
+        // Check if we're in jump mode or output mode
+        if (track_model->in_jump_mode) {
+            if (!removeJumpMarkersNearMouse(mouse_click_position)) {
+                // No jump marker found, add one
+                float sample_position = mouseToSamplePosition(mouse_click_position);
+                track_model->addJumpMarker(sample_position);
+            }
+        } else {
+            if (!removeMarkersNearMouse(mouse_click_position)) {
+                // No marker found, add one
                 float sample_position = mouseToSamplePosition(mouse_click_position);
                 track_model->addMarker(sample_position);
             }

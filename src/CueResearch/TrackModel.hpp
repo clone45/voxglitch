@@ -12,6 +12,11 @@ struct WaveformChunk {
     bool valid;
 };
 
+enum class MarkerMode {
+    OUTPUT,  // For trigger output markers
+    JUMP     // For jump position markers
+};
+
 struct TrackModel
 {
     Sample *sample;
@@ -32,7 +37,10 @@ struct TrackModel
 
     // Marker properties
     std::map<unsigned int, std::vector<Marker>>* markers = nullptr;
+    std::map<int, unsigned int>* jump_positions = nullptr;  // Add this
+    MarkerMode marker_mode = MarkerMode::OUTPUT;           // Add this
     int active_marker = 0;
+
 
     // Options
     bool *enable_vertical_drag_zoom = nullptr;
@@ -76,6 +84,11 @@ struct TrackModel
         }
     }
 
+    // Update mode management
+    void setMarkerMode(MarkerMode mode) {
+        marker_mode = mode;
+    }
+
     void invalidateCache() {
         cache_valid = false;
     }
@@ -105,10 +118,11 @@ struct TrackModel
         return lock_interactions ? *lock_interactions : false;
     }
 
-    void selectMarker(int output_number) {
-        active_marker = output_number;
-        if (onMarkerSelected) {
-            onMarkerSelected(output_number);
+    void selectMarker(int marker_number, MarkerMode mode) {
+        active_marker = marker_number;
+        marker_mode = mode;
+        if (onMarkerSelected && mode == MarkerMode::OUTPUT) {
+            onMarkerSelected(marker_number);  // Only trigger callback for output markers
         }
     }
 
@@ -117,9 +131,20 @@ struct TrackModel
         onSyncMarkers();
     }
 
+    // Add these methods
+    void setJumpPositions(std::map<int, unsigned int>* jump_positions_map) {
+        this->jump_positions = jump_positions_map;
+        if (onSyncMarkers) {
+            onSyncMarkers();
+        }
+    }
+
     void addMarker(unsigned int position) {
-        if (markers) {
+        if (marker_mode == MarkerMode::OUTPUT && markers) {
             (*markers)[position].push_back(Marker(active_marker));
+            onSyncMarkers();
+        } else if (marker_mode == MarkerMode::JUMP && jump_positions) {
+            (*jump_positions)[active_marker] = position;
             onSyncMarkers();
         }
     }

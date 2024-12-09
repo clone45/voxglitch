@@ -28,11 +28,12 @@ struct CueResearch : VoxglitchSamplerModule
     unsigned int playback_position = 0;
     float output_left = 0.0f;
     float output_right = 0.0f;
-    int active_marker = 0; // Track which marker output is currently selected (0-31)
+    int selected_output_index = 0; // Track which marker output is currently selected (0-31)
 
     dsp::PulseGenerator marker_pulse_generators[32];
     dsp::PulseGenerator reset_light_pulse;
     std::map<unsigned int, std::vector<Marker>> markers; // position -> markers at that position
+    std::map<int, unsigned int> jump_positions; // for the expander
 
     // Menu options
     bool enable_vertical_drag_zoom = true;
@@ -88,9 +89,16 @@ struct CueResearch : VoxglitchSamplerModule
         // Set up the callback
         track_model.onMarkerSelected = [this](int output_number)
         {
-            params[MARKER_BUTTONS + active_marker].setValue(0.f);
-            params[MARKER_BUTTONS + output_number].setValue(1.f);
-            active_marker = output_number;
+            params[MARKER_BUTTONS + selected_output_index].setValue(0.f); // Turn off the previous output marker button
+            params[MARKER_BUTTONS + output_number].setValue(1.f);   // Turn on the new output marker button
+            selected_output_index = output_number;
+        };
+
+        track_model.onJumpMarkerSelected = [this](int input_number)
+        {
+            // TODO: Complete this
+            //  - this would be incorrect: selected_output_index = input_number;
+            //  - we may need to introduce a new variable to track the selected jump marker
         };
 
         // Set up the callback for synchronizing markers with the waveform
@@ -116,7 +124,8 @@ struct CueResearch : VoxglitchSamplerModule
             configParam(MARKER_BUTTONS + i, 0.f, 1.f, 0.f, "Marker Selection Button #" + std::to_string(i));
         }
         params[MARKER_BUTTONS].setValue(1.f);
-        active_marker = 0;
+        selected_output_index = 0;
+        // TODO: maybe set selected_input_index if we add that variable
 
         // Configure the transport buttons
         configSwitch(START_BUTTON, 0.f, 1.f, 0.f, "Start");
@@ -178,7 +187,7 @@ struct CueResearch : VoxglitchSamplerModule
         for (unsigned int i = 1; i < num_divisions; i++) {
             unsigned int position = i * division_size;
             if (position < sample.size()) {
-                markers[position].push_back(Marker(active_marker));
+                markers[position].push_back(Marker(selected_output_index));
             }
         }
         
@@ -266,8 +275,18 @@ struct CueResearch : VoxglitchSamplerModule
         // Call VoxglitchSamplerModule::saveSamplerData to save sampler data
         saveSamplerData(rootJ);
 
-        return rootJ;
-    }
+        // Save jump positions
+        json_t* jumpPosJ = json_object();
+        for (const auto& pair : jump_positions)
+        {
+            json_object_set_new(jumpPosJ, 
+                std::to_string(pair.first).c_str(), 
+                json_integer(pair.second));
+        }
+        json_object_set_new(rootJ, "jump_positions", jumpPosJ);
+
+            return rootJ;
+        }
 
     void dataFromJson(json_t *rootJ) override
     {
@@ -306,6 +325,19 @@ struct CueResearch : VoxglitchSamplerModule
 
         // Call VoxglitchSamplerModule::loadSamplerData to load sampler specific data
         loadSamplerData(rootJ);
+
+        // Load jump positions
+        jump_positions.clear();
+        json_t* jumpPosJ = json_object_get(rootJ, "jump_positions");
+        if (jumpPosJ) {
+            const char* key;
+            json_t* value;
+            json_object_foreach(jumpPosJ, key, value) {
+                int input = std::stoi(key);
+                unsigned int position = json_integer_value(value);
+                jump_positions[input] = position;
+            }
+        }
     }
 
     std::vector<std::string> getTriggerLengthNames()
@@ -466,14 +498,14 @@ struct CueResearch : VoxglitchSamplerModule
         // Handle marker button changes
         for (int i = 0; i < 32; i++)
         {
-            if (params[MARKER_BUTTONS + i].getValue() > 0.f && i != active_marker)
+            if (params[MARKER_BUTTONS + i].getValue() > 0.f && i != selected_output_index)
             {
-                params[MARKER_BUTTONS + active_marker].setValue(0.f);
-                active_marker = i;
-                params[MARKER_BUTTONS + i].setValue(1.f);
-                track_model.setActiveMarker(active_marker);
+                params[MARKER_BUTTONS + selected_output_index].setValue(0.f); // Turn off the previous output marker button
+                selected_output_index = i;
+                params[MARKER_BUTTONS + i].setValue(1.f); // Turn on the new output marker button
+                track_model.setActiveMarker(selected_output_index);
             }
-            else if (i == active_marker && params[MARKER_BUTTONS + i].getValue() == 0.f)
+            else if (i == selected_output_index && params[MARKER_BUTTONS + i].getValue() == 0.f)
             {
                 params[MARKER_BUTTONS + i].setValue(1.f);
             }
