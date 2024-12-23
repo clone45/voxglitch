@@ -31,6 +31,8 @@ void init(Plugin* p) {
   p->addModel(modelSampler16P);
   p->addModel(modelSatanonaut);
   p->addModel(modelSatanonautUnearthed);
+  p->addModel(modelVectorRotation);
+  p->addModel(modelVectorTranslation);
   p->addModel(modelWavBank);
   p->addModel(modelWavBankMC);
   p->addModel(modelXY);

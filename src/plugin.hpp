@@ -35,6 +35,8 @@ extern Model *modelSamplerX8;
 extern Model *modelSampler16P;
 extern Model *modelSatanonaut;
 extern Model *modelSatanonautUnearthed;
+extern Model *modelVectorRotation;
+extern Model *modelVectorTranslation;
 extern Model *modelWavBank;
 extern Model *modelWavBankMC;
 extern Model *modelXY;
