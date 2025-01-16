@@ -42,6 +42,9 @@ struct GrainEngineMK2Expander : Module
     // Constructor
     GrainEngineMK2Expander()
     {
+        // Seed the random number generator with current time
+        std::srand(std::time(nullptr) + reinterpret_cast<std::uintptr_t>(this));
+
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
         configParam(RECORD_START_BUTTON_PARAM, 0.f, 1.f, 0.f, "RecordStartButtonParam");
         configParam(RECORD_STOP_BUTTON_PARAM, 0.f, 1.f, 0.f, "RecordEndButtonParam");
@@ -62,21 +65,15 @@ struct GrainEngineMK2Expander : Module
         delete sample;
     }
 
-    json_t *dataToJson() override
-    {
-        json_t *root = json_object();
-        json_object_set_new(root, "patch_uuid", json_string(patch_uuid.c_str()));
-        return root;
-    }
-
     void dataFromJson(json_t *root) override
     {
+        // There should only be a patch uuid for older versions of patches
+        // before the module id started being used.
         json_t *patch_uuid_json = json_object_get(root, "patch_uuid");
-        if (patch_uuid_json)
-            patch_uuid = json_string_value(patch_uuid_json);
-
-        if (patch_uuid == "")
-            patch_uuid = random_string(12);
+        if (patch_uuid_json) {
+            const char* new_uuid = json_string_value(patch_uuid_json);
+            patch_uuid = new_uuid;
+        }
     }
 
     void process(const ProcessArgs &args) override
@@ -122,11 +119,10 @@ struct GrainEngineMK2Expander : Module
                 sample_slot += params[SAMPLE_SLOT_KNOB_PARAM].getValue();
                 sample_slot = clamp(sample_slot, 0, 4);
 
-                // Build up a filename for the .wav file in the format grain_engine_[patch_uuid]_s[sample_slot].wave
-                if (patch_uuid == "")
-                    patch_uuid = random_string(12);
+                // Build up a filename for the .wav file in the format grain_engine_[module_instance_id]_s[sample_slot].wave
+                std::string module_instance_id = std::to_string(this->id);
                 std::string path = asset::user(WAV_FOLDER_NAME);
-                std::string filename = "grain_engine_" + patch_uuid + "_s" + std::to_string(sample_slot) + ".wav";
+                std::string filename = "grain_engine_" + module_instance_id + "_s" + std::to_string(sample_slot) + ".wav";
 
                 // Prepare message for sending to Grain Engine MK2
                 // GrainEngineExpanderMessage *message_to_grain_engine = (GrainEngineExpanderMessage *) rightExpander.module->leftExpander.producerMessage;
@@ -137,6 +133,9 @@ struct GrainEngineMK2Expander : Module
 
                 // Save the recorded audio to disk
                 sample->save_recorded_audio(path + "/" + filename);
+
+                // Debug the filename
+                // std::string debug_message = "BRETFOO Saved: " + path + "/" + filename;
 
                 // Tell Grain Engine MK2 that the message is ready for receiving
                 message_to_grain_engine->message_received = false;
@@ -154,21 +153,5 @@ struct GrainEngineMK2Expander : Module
             lights[RECORDING_LIGHT].setBrightness(false);
             lights[STOPPED_LIGHT].setBrightness(false);
         }
-    }
-
-    std::string random_string(size_t length)
-    {
-        auto randchar = []() -> char
-        {
-            const char charset[] =
-                "0123456789"
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                "abcdefghijklmnopqrstuvwxyz";
-            const size_t max_index = (sizeof(charset) - 1);
-            return charset[rand() % max_index];
-        };
-        std::string str(length, 0);
-        std::generate_n(str.begin(), length, randchar);
-        return str;
     }
 };
