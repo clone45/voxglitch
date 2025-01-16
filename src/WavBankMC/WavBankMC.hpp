@@ -415,6 +415,7 @@ struct WavBankMC : VoxglitchSamplerModule
           last_output_voltage[channel] = output_voltage;
 
           // Output the audio
+          output_voltage *= 5.0f;  // Scale -1/+1 to -5V/+5V
     			outputs[POLY_WAV_OUTPUT].setVoltage(output_voltage, channel);
 
           if(channel == 0) outputs[LEFT_WAV_OUTPUT].setVoltage(output_voltage);
