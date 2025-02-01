@@ -121,6 +121,14 @@ struct OnePoint : VoxglitchModule
         return kLowerBound + (kX - kLowerBound) % range_size;
     }
 
+    void selectNewSequence(unsigned int new_sequence) {
+        selected_sequence = new_sequence;
+        // Ensure step is valid for the new sequence
+        if (step >= sequences[selected_sequence].size()) {
+            step = 0;
+        }
+    }    
+
     void process(const ProcessArgs &args) override
     {
         if (sequences.empty())
@@ -129,21 +137,22 @@ struct OnePoint : VoxglitchModule
         // Process NEXT trigger and button
         if (next_sequence_trigger.process(inputs[NEXT_SEQUENCE_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger) || next_sequence_button_trigger.process(params[NEXT_BUTTON_PARAM].getValue()))
         {
-            selected_sequence = ((selected_sequence + 1) % sequences.size());
+            selectNewSequence((selected_sequence + 1) % sequences.size());
             nextPulse.trigger(1e-3f);
         }
 
         // Process PREV trigger and button
         if (prev_sequence_trigger.process(inputs[PREV_SEQUENCE_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger) || prev_sequence_button_trigger.process(params[PREV_BUTTON_PARAM].getValue()))
         {
-            selected_sequence = (selected_sequence == 0) ? sequences.size() - 1 : selected_sequence - 1;
+            unsigned int new_sequence = (selected_sequence == 0) ? sequences.size() - 1 : selected_sequence - 1;
+            selectNewSequence(new_sequence);
             prevPulse.trigger(1e-3f);
         }
 
         // Process ZERO trigger and button
         if (zero_sequence_trigger.process(inputs[ZERO_SEQUENCE_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger) || zero_sequence_button_trigger.process(params[ZERO_BUTTON_PARAM].getValue()))
         {
-            selected_sequence = 0;
+            selectNewSequence(0);
             zeroPulse.trigger(1e-3f);
         }
 
@@ -152,6 +161,8 @@ struct OnePoint : VoxglitchModule
         {
             reset();
         }
+
+        unsigned int previous_real_selected_sequence = real_selected_sequence;
 
         // Adjust selected sequence based on CV input (if connected)
         if (inputs[CV_SEQUENCE_SELECT].isConnected())
@@ -165,6 +176,13 @@ struct OnePoint : VoxglitchModule
         else
         {
             real_selected_sequence = selected_sequence;
+        }
+
+        // If we've changed sequences via CV, ensure step is valid for the new sequence
+        if (previous_real_selected_sequence != real_selected_sequence) {
+            if (step >= sequences[real_selected_sequence].size()) {
+                step = 0;
+            }
         }
 
         // Process STEP input
