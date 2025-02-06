@@ -83,8 +83,23 @@ struct VoltageSequencerDisplayXP : SequencerDisplay
                     }
 
                     // Draw bars for the sequence values
-                    if (value > 0)
-                        drawBar(vg, i, (value * DRAW_AREA_HEIGHT), DRAW_AREA_HEIGHT, bar_color);
+                    if (draw_from_center) {
+                        float half_height = DRAW_AREA_HEIGHT / 2.0;
+                        if (value > 0.5) {
+                            // Draw up from center
+                            float bar_height = (value - 0.5) * 2 * half_height;
+                            drawBar(vg, i, bar_height, half_height, bar_color);
+                        } else {
+                            // Draw down from center
+                            float bar_height = (0.5 - value) * 2 * half_height;
+                            drawBar(vg, i, bar_height, half_height + bar_height, bar_color);
+                        }
+                    } else {
+                        // Original unipolar drawing
+                        if (value > 0) {
+                            drawBar(vg, i, (value * DRAW_AREA_HEIGHT), DRAW_AREA_HEIGHT, bar_color);
+                        }
+                    }
 
                     // Highlight the sequence playback column
                     if ((int)i == module->selected_voltage_sequencer->getPlaybackPosition())
