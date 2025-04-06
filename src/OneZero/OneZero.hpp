@@ -83,6 +83,7 @@ struct OneZero : VoxglitchModule
     {
         json_t *json_root = json_object();
         json_object_set_new(json_root, "path", json_string(path.c_str()));
+        json_object_set_new(json_root, "selected_sequence", json_integer(selected_sequence));
         return json_root;
     }
 
@@ -94,6 +95,16 @@ struct OneZero : VoxglitchModule
         {
             this->path = json_string_value(loaded_path_json);
             this->loadData(this->path);
+            
+            // Restore the selected sequence if it exists in the saved data
+            json_t *loaded_sequence_json = json_object_get(json_root, "selected_sequence");
+            if (loaded_sequence_json)
+            {
+                unsigned int loaded_sequence = json_integer_value(loaded_sequence_json);
+                // Make sure the loaded sequence is valid
+                if (loaded_sequence < sequences.size())
+                    this->selected_sequence = loaded_sequence;
+            }
         }       
     }
 
@@ -227,7 +238,7 @@ struct OneZero : VoxglitchModule
     {
         std::ifstream input_file(path);
 
-        selected_sequence = 0;
+        // Note: We don't reset selected_sequence here anymore as it will be set in dataFromJson if available
 
         // Clear out existing data
         sequences.clear();
