@@ -1,5 +1,5 @@
-#include "../vgLib-2.0/components/VoxglitchTooltip.hpp"
-#include "../vgLib-2.0/components/DigitalSequencerTooltip.hpp"
+#include "vgLib-2.0/components/VoxglitchTooltip.hpp"
+#include "vgLib-2.0/components/DigitalSequencerTooltip.hpp"
 
 struct ArpVoltageSequencerDisplay : ArpSequencerDisplay
 {

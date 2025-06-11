@@ -1,5 +1,5 @@
-#include "../vgLib-2.0/components/VoxglitchTooltip.hpp"
-#include "../vgLib-2.0/components/DigitalHSliderTooltip.hpp"
+#include "vgLib-2.0/components/VoxglitchTooltip.hpp"
+#include "vgLib-2.0/components/DigitalHSliderTooltip.hpp"
 
 struct SlewSlider : DigitalHorizontalSlider
 {

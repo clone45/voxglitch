@@ -1,3 +1,4 @@
+// src\modules\core\plugin.hpp
 #pragma once
 #include <rack.hpp>
 

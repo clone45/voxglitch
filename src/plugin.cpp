@@ -1,3 +1,4 @@
+// src\modules\core\plugin.cpp
 #include "plugin.hpp"
 #include "vgLib-2.0/constants.cpp"
 
