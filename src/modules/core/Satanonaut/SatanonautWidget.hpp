@@ -6,8 +6,8 @@ struct SatanonautWidget : ModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/satanonaut/satanonaut_panel.svg"),
-            asset::plugin(pluginInstance, "res/satanonaut/satanonaut_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/satanonaut/satanonaut_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/satanonaut/satanonaut_panel-dark.svg")
         );
 
 		// Screws

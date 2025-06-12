@@ -5,14 +5,14 @@ struct AutobreakWidget : VoxglitchSamplerModuleWidget
 		setModule(module);
 
 //		setPanel(createPanel(
-//			asset::plugin(pluginInstance, "res/autobreak/autobreak_panel.svg"),
-//			asset::plugin(pluginInstance, "res/autobreak/autobreak_panel-dark.svg")
+//			asset::plugin(pluginInstance, "res/modules/autobreak/autobreak_panel.svg"),
+//			asset::plugin(pluginInstance, "res/modules/autobreak/autobreak_panel-dark.svg")
 //		));
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-			asset::plugin(pluginInstance, "res/autobreak/autobreak_panel.svg"),
-			asset::plugin(pluginInstance, "res/autobreak/autobreak_panel-dark.svg")
+			asset::plugin(pluginInstance, "res/modules/autobreak/autobreak_panel.svg"),
+			asset::plugin(pluginInstance, "res/modules/autobreak/autobreak_panel-dark.svg")
 		);
 
 		// =================== PLACE COMPONENTS ====================================

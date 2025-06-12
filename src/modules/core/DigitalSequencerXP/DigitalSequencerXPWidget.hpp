@@ -14,8 +14,8 @@ struct DigitalSequencerXPWidget : ModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/digital_sequencer_xp/digital_sequencer_xp_panel.svg"),
-            asset::plugin(pluginInstance, "res/digital_sequencer_xp/digital_sequencer_xp_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/digital_sequencer_xp/digital_sequencer_xp_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/digital_sequencer_xp/digital_sequencer_xp_panel-dark.svg")
         );
 
         // =================== PLACE COMPONENTS ====================================

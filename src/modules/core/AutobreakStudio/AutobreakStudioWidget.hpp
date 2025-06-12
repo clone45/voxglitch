@@ -12,14 +12,14 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		// applyTheme();
 
 //		setPanel(createPanel(
-//			asset::plugin(pluginInstance, "res/autobreak_studio/autobreak_studio_panel.svg"),
-//			asset::plugin(pluginInstance, "res/autobreak_studio/autobreak_studio_panel-dark.svg")
+//			asset::plugin(pluginInstance, "res/modules/autobreak_studio/autobreak_studio_panel.svg"),
+//			asset::plugin(pluginInstance, "res/modules/autobreak_studio/autobreak_studio_panel-dark.svg")
 //		));
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-			asset::plugin(pluginInstance, "res/autobreak_studio/autobreak_studio_panel.svg"),
-			asset::plugin(pluginInstance, "res/autobreak_studio/autobreak_studio_panel-dark.svg")
+			asset::plugin(pluginInstance, "res/modules/autobreak_studio/autobreak_studio_panel.svg"),
+			asset::plugin(pluginInstance, "res/modules/autobreak_studio/autobreak_studio_panel-dark.svg")
 		);
 
 		// =================== PLACE COMPONENTS ====================================
@@ -97,7 +97,7 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		}
 		else
 		{
-			std::string placeholder_waveform_file_path = "res/autobreak_studio/themes/default/waveform-placeholder.jpg";
+			std::string placeholder_waveform_file_path = "res/modules/autobreak_studio/themes/default/waveform-placeholder.jpg";
 
 			ImageWidget *image_widget = new ImageWidget(placeholder_waveform_file_path, 900.0, 109.0, 1.0, 0.15);
 			image_widget->box.pos =Vec(157.778, 232.61225);

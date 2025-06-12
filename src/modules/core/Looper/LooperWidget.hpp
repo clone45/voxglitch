@@ -17,8 +17,8 @@ struct LooperWidget : VoxglitchSamplerModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/looper/looper_panel.svg"),
-            asset::plugin(pluginInstance, "res/looper/looper_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/looper/looper_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/looper/looper_panel-dark.svg")
         );
 
         // Add output jacks

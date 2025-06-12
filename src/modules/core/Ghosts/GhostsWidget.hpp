@@ -9,8 +9,8 @@ struct GhostsWidget : VoxglitchSamplerModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/ghosts/ghosts_panel.svg"),
-            asset::plugin(pluginInstance, "res/ghosts/ghosts_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/ghosts/ghosts_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/ghosts/ghosts_panel-dark.svg")
         );
 
 		// =================== PLACE COMPONENTS ====================================

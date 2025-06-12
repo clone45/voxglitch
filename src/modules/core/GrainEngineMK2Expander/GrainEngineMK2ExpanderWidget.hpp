@@ -6,8 +6,8 @@ struct GrainEngineMK2ExpanderWidget : ModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/grain_engine_mk2_expander/grain_engine_mk2_expander_panel.svg"),
-            asset::plugin(pluginInstance, "res/grain_engine_mk2_expander/grain_engine_mk2_expander_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/grain_engine_mk2_expander/grain_engine_mk2_expander_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/grain_engine_mk2_expander/grain_engine_mk2_expander_panel-dark.svg")
         );
 
         addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("left_input"), module, GrainEngineMK2Expander::AUDIO_IN_LEFT));

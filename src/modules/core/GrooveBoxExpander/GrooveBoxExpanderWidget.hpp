@@ -38,7 +38,7 @@ struct GrooveBoxExpanderWidget : ModuleWidget
     {
         ModdedCL1362()
         {
-            setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/modded_CL1362.svg")));
+            setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/modules/components/modded_CL1362.svg")));
         }
     };
 
@@ -47,8 +47,8 @@ struct GrooveBoxExpanderWidget : ModuleWidget
         setModule(module);
 
         setPanel(createPanel(
-            asset::plugin(pluginInstance, "res/groovebox_expander/groove_box_expander_front_panel.svg"),
-            asset::plugin(pluginInstance, "res/groovebox_expander/groove_box_expander_front_panel-dark.svg")));
+            asset::plugin(pluginInstance, "res/modules/groovebox_expander/groove_box_expander_front_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/groovebox_expander/groove_box_expander_front_panel-dark.svg")));
 
         for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
         {

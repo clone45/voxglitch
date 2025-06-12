@@ -46,7 +46,7 @@ struct ModdedCL1362 : SvgPort
 {
     ModdedCL1362()
     {
-        setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/modded_CL1362.svg")));
+        setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/modules/components/modded_CL1362.svg")));
     }
 };
 
@@ -141,12 +141,12 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
     GrooveBoxWidget(GrooveBox *module)
     {
         setModule(module);
-        setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel.svg")));
+        setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/modules/groovebox/groove_box_front_panel.svg")));
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel.svg"),
-            asset::plugin(pluginInstance, "res/groovebox/groove_box_front_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/groovebox/groove_box_front_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/groovebox/groove_box_front_panel-dark.svg")
         );
 
         addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("clock_input"), module, GrooveBox::STEP_INPUT));

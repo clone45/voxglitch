@@ -15,7 +15,7 @@ struct SatanonautEffectReadout : TransparentWidget
 			text_to_display = "#" + std::to_string(module->selected_effect);
 		}
 
-    std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+    std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/fonts/ShareTechMono-Regular.ttf"));
   	if (font) {
   		nvgFontSize(args.vg, 40);
   		nvgFontFaceId(args.vg, font->handle);

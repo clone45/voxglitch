@@ -6,8 +6,8 @@ struct WavBankWidget : VoxglitchSamplerModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/wavbank/wavbank_panel.svg"),
-            asset::plugin(pluginInstance, "res/wavbank/wavbank_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/wavbank/wavbank_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/wavbank/wavbank_panel-dark.svg")
         );
 
         // Screws

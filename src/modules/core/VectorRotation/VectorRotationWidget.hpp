@@ -3,8 +3,8 @@ struct VectorRotationWidget : ModuleWidget {
         setModule(module);
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/vector_rotation/vector_rotation_panel.svg"),
-            asset::plugin(pluginInstance, "res/vector_rotation/vector_rotation_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/vector_rotation/vector_rotation_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/vector_rotation/vector_rotation_panel-dark.svg")
         );
 
         // Add rotation knobs

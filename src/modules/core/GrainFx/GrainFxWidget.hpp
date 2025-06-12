@@ -3,7 +3,7 @@ struct GrainFxWidget : ModuleWidget
   GrainFxWidget(GrainFx* module)
   {
     setModule(module);
-    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/grain_fx/panel.svg")));
+    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/modules/grain_fx/panel.svg")));
 
     float y_offset = 1.8;
     float x_offset = -1.8;

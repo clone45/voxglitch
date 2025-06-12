@@ -6,8 +6,8 @@ struct HazumiWidget : ModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/hazumi/hazumi_panel.svg"),
-            asset::plugin(pluginInstance, "res/hazumi/hazumi_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/hazumi/hazumi_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/hazumi/hazumi_panel-dark.svg")
         );
 
         // Screws

@@ -7,8 +7,8 @@ struct GrooveboxSmallLight : SvgWidget
 
   GrooveboxSmallLight(bool *state)
   {
-    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_led.svg")));
-    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_led_lit.svg")));
+    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/modules/groovebox/groove_box_led.svg")));
+    addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/modules/groovebox/groove_box_led_lit.svg")));
 
     this->state_bool_ptr = state;
   }

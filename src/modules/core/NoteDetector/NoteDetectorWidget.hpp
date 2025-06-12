@@ -6,8 +6,8 @@ struct NoteDetectorWidget : ModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/note_detector/note_detector_panel.svg"),
-            asset::plugin(pluginInstance, "res/note_detector/note_detector_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/note_detector/note_detector_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/note_detector/note_detector_panel-dark.svg")
         );
 
         // Inputs

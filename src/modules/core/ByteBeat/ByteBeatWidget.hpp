@@ -6,8 +6,8 @@ struct ByteBeatWidget : ModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/bytebeat/bytebeat_panel.svg"),
-            asset::plugin(pluginInstance, "res/bytebeat/bytebeat_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/bytebeat/bytebeat_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/bytebeat/bytebeat_panel-dark.svg")
         );
 
         // =================== PLACE COMPONENTS ====================================

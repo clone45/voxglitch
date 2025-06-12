@@ -12,7 +12,7 @@ struct NumberChooser : app::SvgKnob
         for (int i = 0; i < 16; ++i)
         {
             // Use string manipulation to create the file path dynamically
-            std::string filePath = "res/arpseq/readout/" + std::to_string(i + 1) + ".svg";
+            std::string filePath = "res/modules/arpseq/readout/" + std::to_string(i + 1) + ".svg";
             framesSvg.push_back(APP->window->loadSvg(asset::plugin(pluginInstance, filePath)));
         }
 
@@ -130,8 +130,8 @@ struct ArpSeqWidget : ModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/arpseq/arpseq_panel.svg"),
-            asset::plugin(pluginInstance, "res/arpseq/arpseq_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/arpseq/arpseq_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/arpseq/arpseq_panel-dark.svg")
         );
 
         // Screws
@@ -426,14 +426,14 @@ struct ArpSeqWidget : ModuleWidget
             // This is a "hard coded" version of the module that is rendered when the module is not loaded
             
             panelHelper.loadPanel(
-                asset::plugin(pluginInstance, "res/xy/xy_panel.svg"),
-                asset::plugin(pluginInstance, "res/xy/xy_panel-dark.svg")
+                asset::plugin(pluginInstance, "res/modules/xy/xy_panel.svg"),
+                asset::plugin(pluginInstance, "res/modules/xy/xy_panel-dark.svg")
             );
 
 
             SvgPanel *panel_render = new SvgPanel();
             panel_render->box.pos = Vec(129.012, 13.735);
-            panel_render->setBackground(APP->window->loadSvg(asset::plugin(pluginInstance, "res/arpseq/readout/library_render.svg")));
+            panel_render->setBackground(APP->window->loadSvg(asset::plugin(pluginInstance, "res/modules/arpseq/readout/library_render.svg")));
             panel_render->panelBorder->visible = false;
             addChild(panel_render);
         }

@@ -13,8 +13,8 @@ struct DigitalSequencerWidget : ModuleWidget
     // applyTheme();
 
 		setPanel(createPanel(
-			asset::plugin(pluginInstance, "res/digital_sequencer/digital_sequencer_panel.svg"),
-			asset::plugin(pluginInstance, "res/digital_sequencer/digital_sequencer_panel-dark.svg")
+			asset::plugin(pluginInstance, "res/modules/digital_sequencer/digital_sequencer_panel.svg"),
+			asset::plugin(pluginInstance, "res/modules/digital_sequencer/digital_sequencer_panel-dark.svg")
 		));
 
     // =================== PLACE COMPONENTS ====================================
@@ -128,7 +128,7 @@ struct DigitalSequencerWidget : ModuleWidget
         text_to_display = std::to_string(module->voltage_sequencers[sequencer_number].max_length);
       }
 
-      std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+      std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/fonts/ShareTechMono-Regular.ttf"));
       if (font)
       {
         nvgFontSize(vg, 9);

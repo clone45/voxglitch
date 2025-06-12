@@ -6,8 +6,8 @@ struct CueResearchWidget : VoxglitchSamplerModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/cue_research/cue_research_panel.svg"),
-            asset::plugin(pluginInstance, "res/cue_research/cue_research_panel-dark.svg"));
+            asset::plugin(pluginInstance, "res/modules/cue_research/cue_research_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/cue_research/cue_research_panel-dark.svg"));
 
         // Screws
         addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
@@ -67,7 +67,7 @@ struct CueResearchWidget : VoxglitchSamplerModuleWidget
         else
         {
             // Show placeholders when in library browser
-            std::string placeholder_path = "res/cue_research/library-placeholder.png";
+            std::string placeholder_path = "res/modules/cue_research/library-placeholder.png";
             
             // Main track view placeholder
             ImageWidget *track_placeholder = new ImageWidget(placeholder_path, 1056.0, 738.0, 1.0, 0.15);

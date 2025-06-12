@@ -16,13 +16,13 @@ struct DigitalProgrammerWidget : ModuleWidget
         // applyTheme();
 
 //        setPanel(createPanel(
-//            asset::plugin(pluginInstance, "res/digital_programmer/digital_programmer_panel.svg"),
-//            asset::plugin(pluginInstance, "res/digital_programmer/digital_programmer_panel-dark.svg")));
+//            asset::plugin(pluginInstance, "res/modules/digital_programmer/digital_programmer_panel.svg"),
+//            asset::plugin(pluginInstance, "res/modules/digital_programmer/digital_programmer_panel-dark.svg")));
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/digital_programmer/digital_programmer_panel.svg"),
-            asset::plugin(pluginInstance, "res/digital_programmer/digital_programmer_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/digital_programmer/digital_programmer_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/digital_programmer/digital_programmer_panel-dark.svg")
         );
 
         // Screws

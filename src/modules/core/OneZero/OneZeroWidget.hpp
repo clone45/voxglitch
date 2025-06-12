@@ -6,8 +6,8 @@ struct OneZeroWidget : ModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/onezero/onezero_panel.svg"),
-            asset::plugin(pluginInstance, "res/onezero/onezero_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/onezero/onezero_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/onezero/onezero_panel-dark.svg")
         );
 
 		// Screws

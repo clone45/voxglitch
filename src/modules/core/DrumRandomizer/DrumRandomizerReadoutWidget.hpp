@@ -48,7 +48,7 @@ struct DrumRandomizerReadoutWidget : TransparentWidget
         nvgFillColor(vg, nvgRGB(0, 0, 0));
         nvgFill(vg);
 
-        std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/Segment14.ttf"));
+        std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/fonts/Segment14.ttf"));
         if (font)
         {
             // Set common font attributes

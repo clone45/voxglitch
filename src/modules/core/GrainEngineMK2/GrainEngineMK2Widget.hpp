@@ -6,8 +6,8 @@ struct GrainEngineMK2Widget : ModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/grain_engine_mk2/grain_engine_mk2_panel.svg"),
-            asset::plugin(pluginInstance, "res/grain_engine_mk2/grain_engine_mk2_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/grain_engine_mk2/grain_engine_mk2_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/grain_engine_mk2/grain_engine_mk2_panel-dark.svg")
         );
 
         // Screws

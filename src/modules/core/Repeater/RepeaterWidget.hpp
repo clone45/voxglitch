@@ -6,8 +6,8 @@ struct RepeaterWidget : VoxglitchSamplerModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/repeater/repeater_panel.svg"),
-            asset::plugin(pluginInstance, "res/repeater/repeater_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/repeater/repeater_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/repeater/repeater_panel-dark.svg")
         );
 
 		// Screws

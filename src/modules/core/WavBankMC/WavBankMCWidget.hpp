@@ -6,8 +6,8 @@ struct WavBankMCWidget : ModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/wavbank_mc/wavbank_mc_panel.svg"),
-            asset::plugin(pluginInstance, "res/wavbank_mc/wavbank_mc_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/wavbank_mc/wavbank_mc_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/wavbank_mc/wavbank_mc_panel-dark.svg")
         );
 
         // Screws

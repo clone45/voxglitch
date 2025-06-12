@@ -6,8 +6,8 @@ struct XYWidget : ModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/xy/xy_panel.svg"),
-            asset::plugin(pluginInstance, "res/xy/xy_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/xy/xy_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/xy/xy_panel-dark.svg")
         );
 
 		// Screws

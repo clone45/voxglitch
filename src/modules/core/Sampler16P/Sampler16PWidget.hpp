@@ -6,8 +6,8 @@ struct Sampler16PWidget : VoxglitchSamplerModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/sampler16p/sampler16p_panel.svg"),
-            asset::plugin(pluginInstance, "res/sampler16p/sampler16p_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/sampler16p/sampler16p_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/sampler16p/sampler16p_panel-dark.svg")
         );
 
         addInput(createInputCentered<VoxglitchPolyPort>(panelHelper.findNamed("trigger_inputs"), module, Sampler16P::TRIGGER_INPUTS));

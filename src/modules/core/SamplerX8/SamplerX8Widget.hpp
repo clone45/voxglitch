@@ -6,8 +6,8 @@ struct SamplerX8Widget : VoxglitchSamplerModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/samplerx8/samplerx8_panel.svg"),
-            asset::plugin(pluginInstance, "res/samplerx8/samplerx8_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/samplerx8/samplerx8_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/samplerx8/samplerx8_panel-dark.svg")
         );
         // Add volume knobs
         addParam(createParamCentered<RoundLargeBlackKnob>(panelHelper.findNamed("volume_knob_1"), module, SamplerX8::VOLUME_KNOBS + 0));

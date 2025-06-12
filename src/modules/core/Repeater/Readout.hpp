@@ -27,7 +27,7 @@ struct Readout : TransparentWidget
             }
         }
 
-        std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/ShareTechMono-Regular.ttf"));
+        std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/fonts/ShareTechMono-Regular.ttf"));
         if (font)
         {
             nvgFontSize(args.vg, 12);

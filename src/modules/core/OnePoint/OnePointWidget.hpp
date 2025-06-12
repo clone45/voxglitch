@@ -6,8 +6,8 @@ struct OnePointWidget : ModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/onepoint/onepoint_panel.svg"),
-            asset::plugin(pluginInstance, "res/onepoint/onepoint_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/onepoint/onepoint_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/onepoint/onepoint_panel-dark.svg")
         );
 
 		// Screws

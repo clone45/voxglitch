@@ -8,8 +8,8 @@ struct GrooveboxSoftButton : SvgSwitch
         momentary = false;
         // shadow->opacity = 0;
                                                                      
-        addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_soft_button.svg")));
-        addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/groovebox/groove_box_soft_button_lit.svg")));
+        addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/modules/groovebox/groove_box_soft_button.svg")));
+        addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/modules/groovebox/groove_box_soft_button_lit.svg")));
 
         box.size = Vec(16.240, 16.240); // was 15.5   (19.28)
     }

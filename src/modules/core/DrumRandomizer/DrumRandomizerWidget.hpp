@@ -6,8 +6,8 @@ struct DrumRandomizerWidget : ModuleWidget
 
         PanelHelper panelHelper(this);
         panelHelper.loadPanel(
-            asset::plugin(pluginInstance, "res/drum_randomizer/drum_randomizer_panel.svg"),
-            asset::plugin(pluginInstance, "res/drum_randomizer/drum_randomizer_panel-dark.svg")
+            asset::plugin(pluginInstance, "res/modules/drum_randomizer/drum_randomizer_panel.svg"),
+            asset::plugin(pluginInstance, "res/modules/drum_randomizer/drum_randomizer_panel-dark.svg")
         );
 
         addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("clock_input"), module, DrumRandomizer::STEP_INPUT));
