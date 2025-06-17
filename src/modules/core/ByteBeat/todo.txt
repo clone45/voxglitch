@@ -1,1 +1,0 @@
-How about creating multiple outputs at t, t+1, t+2, etc?  These can be routed back into the params for more strange.

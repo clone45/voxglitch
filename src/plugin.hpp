@@ -10,6 +10,7 @@ extern Plugin* pluginInstance;
 // Declare each Model, defined in each module source file
 // extern Model* modelMyModule;
 
+// Core
 extern Model *modelArpSeq;
 extern Model *modelAutobreak;
 extern Model *modelAutobreakStudio;

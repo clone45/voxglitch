@@ -6,6 +6,8 @@ Plugin* pluginInstance;
 
 void init(Plugin* p) {
   pluginInstance = p;
+
+  // Core
   p->addModel(modelArpSeq);
   p->addModel(modelAutobreak);
   p->addModel(modelAutobreakStudio);  
@@ -36,4 +38,5 @@ void init(Plugin* p) {
   p->addModel(modelWavBank);
   p->addModel(modelWavBankMC);
   p->addModel(modelXY);
+  
 }

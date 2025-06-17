@@ -1,3 +1,0 @@
-#define NUMBER_OF_SAMPLES 5
-#define NUMBER_OF_SAMPLES_FLOAT 5.0
-#define GAIN 5.0
