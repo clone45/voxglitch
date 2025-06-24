@@ -3,8 +3,8 @@ struct DigitalToggle : SvgWidget
     bool *state = nullptr;
     bool old_state = false;
 
-    std::string svg_on = "res/arpseq/readout/QuantizeOn.svg";
-    std::string svg_off = "res/arpseq/readout/QuantizeOff.svg";
+    std::string svg_on = "res/modules/arpseq/readout/QuantizeOn.svg";
+    std::string svg_off = "res/modules/arpseq/readout/QuantizeOff.svg";
 
     DigitalToggle(bool *state)
     {

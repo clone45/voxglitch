@@ -6,14 +6,6 @@ struct VoxglitchPort : SvgPort
     }
 };
 
-struct BlankPort : VoxglitchPort
-{
-    BlankPort()
-    {
-        setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/blank-port.svg")));
-    }
-};
-
 struct VoxglitchInputPort : VoxglitchPort
 {
     VoxglitchInputPort()

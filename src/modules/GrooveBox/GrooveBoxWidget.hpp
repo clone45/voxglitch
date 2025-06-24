@@ -46,7 +46,7 @@ struct ModdedCL1362 : SvgPort
 {
     ModdedCL1362()
     {
-        setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/modules/components/modded_CL1362.svg")));
+        setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/modded_CL1362.svg")));
     }
 };
 
