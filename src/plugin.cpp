@@ -27,6 +27,7 @@ void init(Plugin* p) {
   p->addModel(modelHazumi);
   p->addModel(modelOnePoint);
   p->addModel(modelOneZero);
+  p->addModel(modelPCMBug);
   p->addModel(modelLooper);
   p->addModel(modelNoteDetector);
   p->addModel(modelRepeater);

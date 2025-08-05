@@ -30,6 +30,7 @@ extern Model *modelGrooveBoxExpander;
 extern Model *modelHazumi;
 extern Model *modelOnePoint;
 extern Model *modelOneZero;
+extern Model *modelPCMBug;
 extern Model *modelLooper;
 extern Model *modelNoteDetector;
 extern Model *modelRepeater;
