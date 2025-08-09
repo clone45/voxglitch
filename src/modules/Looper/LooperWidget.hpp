@@ -47,5 +47,44 @@ struct LooperWidget : VoxglitchSamplerModuleWidget
         SampleInterpolationMenuItem *sample_interpolation_menu_item = createMenuItem<SampleInterpolationMenuItem>("Interpolation", RIGHT_ARROW);
         sample_interpolation_menu_item->module = module;
         menu->addChild(sample_interpolation_menu_item);
+
+        menu->addChild(new MenuEntry); // For spacing
+        menu->addChild(createMenuLabel("Output"));
+
+        // Add output range selector
+        OutputRangeItem *output_range_item = createMenuItem<OutputRangeItem>("Output Range", RIGHT_ARROW);
+        output_range_item->module = module;
+        menu->addChild(output_range_item);
     }
+
+    struct OutputRangeValueItem : MenuItem
+    {
+        Looper *module;
+        int range_index = 0;
+
+        void onAction(const event::Action &e) override
+        {
+            module->voltage_range_index = range_index;
+        }
+    };
+
+    struct OutputRangeItem : MenuItem
+    {
+        Looper *module;
+
+        Menu *createChildMenu() override
+        {
+            Menu *menu = new Menu;
+
+            for (unsigned int i = 0; i < 8; i++)
+            {
+                OutputRangeValueItem *output_range_value_item = createMenuItem<OutputRangeValueItem>(module->voltage_range_names[i], CHECKMARK(module->voltage_range_index == i));
+                output_range_value_item->module = module;
+                output_range_value_item->range_index = i;
+                menu->addChild(output_range_value_item);
+            }
+
+            return menu;
+        }
+    };
 };

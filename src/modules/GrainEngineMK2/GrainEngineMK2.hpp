@@ -113,8 +113,9 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
         configParam(GRAINS_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "GrainsAttnKnob");
         configParam(RATE_KNOB, 0.0f, 1.0f, 0.7f, "RateKnob");
         configParam(RATE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "RateAttnKnob");
-        configParam(SAMPLE_KNOB, 0.0f, 1.0f, 0.0f, "SampleKnob");
+        configParam(SAMPLE_KNOB, 0.0f, 4.0f, 0.0f, "SampleKnob");
         configParam(SAMPLE_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "SampleAttnKnob");
+        paramQuantities[SAMPLE_KNOB]->snapEnabled = true;
 
         std::fill_n(loaded_filenames, NUMBER_OF_SAMPLES, "[ EMPTY ]");
 
@@ -247,7 +248,15 @@ struct GrainEngineMK2 : VoxglitchSamplerModule
         //  Set selected sample based on inputs.
         //  This must happen before we calculate start_position
 
-        selected_sample_index = (unsigned int)calculate_inputs(SAMPLE_INPUT, SAMPLE_KNOB, SAMPLE_ATTN_KNOB, NUMBER_OF_SAMPLES_FLOAT);
+        // Get the sample knob value directly (now 0-4) and add CV input influence
+        float sample_knob_value = params[SAMPLE_KNOB].getValue();
+        float sample_cv_input = 0.0f;
+        if (inputs[SAMPLE_INPUT].isConnected())
+        {
+            sample_cv_input = (inputs[SAMPLE_INPUT].getVoltage() / 10.0f) * params[SAMPLE_ATTN_KNOB].getValue() * 4.0f; // Scale CV to 0-4 range
+        }
+        
+        selected_sample_index = (unsigned int)clamp(sample_knob_value + sample_cv_input, 0.0f, 4.0f);
         selected_sample_index = clamp(selected_sample_index, 0, NUMBER_OF_SAMPLES - 1);
 
         // TODO: If sample selection changed, call updateSampleRateDivision();

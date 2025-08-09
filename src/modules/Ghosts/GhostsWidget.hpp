@@ -82,5 +82,12 @@ struct GhostsWidget : VoxglitchSamplerModuleWidget
 		menu_item_load_sample->text = module->loaded_filename;
 		menu_item_load_sample->module = module;
 		menu->addChild(menu_item_load_sample);
+
+		// Add Remove Sample menu item
+		menu->addChild(createMenuItem("Remove Sample", "", [=]() {
+			module->sample.unload();
+			module->loaded_filename = "[ EMPTY ]";
+			module->graveyard.markAllForRemoval();  // Clear any playing ghosts
+		}));
 	}
 };
