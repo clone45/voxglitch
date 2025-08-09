@@ -8,6 +8,31 @@ struct Looper : VoxglitchSamplerModule
   float left_audio = 0;
   float right_audio = 0;
   std::string root_dir;
+  
+  // Voltage range settings
+  unsigned int voltage_range_index = 3; // Default to -5.0 to 5.0
+  
+  std::string voltage_range_names[8] = {
+    "0.0 to 10.0",
+    "-10.0 to 10.0", 
+    "0.0 to 5.0",
+    "-5.0 to 5.0",
+    "0.0 to 3.0",
+    "-3.0 to 3.0",
+    "0.0 to 1.0",
+    "-1.0 to 1.0"
+  };
+  
+  double voltage_ranges[8][2] = {
+    {0.0, 10.0},
+    {-10.0, 10.0},
+    {0.0, 5.0},
+    {-5.0, 5.0},
+    {0.0, 3.0},
+    {-3.0, 3.0},
+    {0.0, 1.0},
+    {-1.0, 1.0}
+  };
 
   enum ParamIds {
     VOLUME_SLIDER,
@@ -34,6 +59,7 @@ struct Looper : VoxglitchSamplerModule
 	{
 		json_t *root = json_object();
 		json_object_set_new(root, "loaded_sample_path", json_string(sample_player.getPath().c_str()));
+		json_object_set_new(root, "voltage_range_index", json_integer(voltage_range_index));
 
     // Call VoxglitchSamplerModule::saveSamplerData to save sampler data
     saveSamplerData(root);
@@ -49,6 +75,12 @@ struct Looper : VoxglitchSamplerModule
 		{
 			if(sample_player.loadSample(json_string_value(loaded_sample_path))) sample_player.trigger(0.0, true); // starting position=0.0, loop=true
 			loaded_filename = sample_player.getFilename();
+		}
+		
+		json_t *voltage_range_index_json = json_object_get(root, "voltage_range_index");
+		if (voltage_range_index_json)
+		{
+			voltage_range_index = json_integer_value(voltage_range_index_json);
 		}
 
     // Call VoxglitchSamplerModule::loadSamplerData to load sampler specific data
@@ -68,9 +100,17 @@ struct Looper : VoxglitchSamplerModule
     sample_player.step(0.0, 0.0, 1.0, true);
 
     float volume = params[VOLUME_SLIDER].getValue();
+    
+    // Scale audio from -1 to +1 range to selected voltage range
+    double min_voltage = voltage_ranges[voltage_range_index][0];
+    double max_voltage = voltage_ranges[voltage_range_index][1];
+    
+    // Rescale from -1..+1 to min_voltage..max_voltage
+    float left_scaled = rescale(left_audio * volume, -1.0f, 1.0f, min_voltage, max_voltage);
+    float right_scaled = rescale(right_audio * volume, -1.0f, 1.0f, min_voltage, max_voltage);
 
-    outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_audio * volume);
-    outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_audio * volume);
+    outputs[AUDIO_OUTPUT_LEFT].setVoltage(left_scaled);
+    outputs[AUDIO_OUTPUT_RIGHT].setVoltage(right_scaled);
   }
 
   void onSampleRateChange(const SampleRateChangeEvent& e) override
