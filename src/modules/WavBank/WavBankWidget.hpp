@@ -30,6 +30,9 @@ struct WavBankWidget : VoxglitchSamplerModuleWidget
         addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("left_output"), module, WavBank::WAV_LEFT_OUTPUT));
         addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("right_output"), module, WavBank::WAV_RIGHT_OUTPUT));
 
+        // End of sample trigger output
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("end_of_sample_output"), module, WavBank::END_OF_SAMPLE_OUTPUT));
+
         WavBankReadout *readout = new WavBankReadout();
         readout->box.pos = Vec(13.300354, 141.0);
         readout->box.size = Vec(110, 30); // bounding box of the widget

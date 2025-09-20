@@ -16,6 +16,11 @@ struct WavBank : VoxglitchSamplerModule
 
 	bool playback = false;
 
+	// End-of-sample trigger output
+	dsp::PulseGenerator endOfSamplePulse;
+	bool previousPlaybackState = false;
+	double previousPlaybackPosition = 0.0;
+
 	enum ParamIds
 	{
 		WAV_KNOB,
@@ -34,6 +39,7 @@ struct WavBank : VoxglitchSamplerModule
 	{
 		WAV_LEFT_OUTPUT,
 		WAV_RIGHT_OUTPUT,
+		END_OF_SAMPLE_OUTPUT,
 		NUM_OUTPUTS
 	};
 	enum LightIds
@@ -53,6 +59,7 @@ struct WavBank : VoxglitchSamplerModule
 		configInput(TRIG_INPUT, "Trigger");
 		configInput(WAV_INPUT, "Wave Selection");
 		configInput(PITCH_INPUT, "Pitch");
+		configOutput(END_OF_SAMPLE_OUTPUT, "End of Sample Trigger");
 		// configSwitch(SWITCH_TEST, 0.0f, 1.0f, 1.0f, "Something", {"Value", "Other Value"});
 	}
 
@@ -209,6 +216,9 @@ struct WavBank : VoxglitchSamplerModule
 
 		if (playback)
 		{
+			// Store previous playback position before stepping
+			previousPlaybackPosition = selected_sample_player->playback_position;
+
 			float left_audio;
 			float right_audio;
 
@@ -220,6 +230,38 @@ struct WavBank : VoxglitchSamplerModule
 			outputs[WAV_RIGHT_OUTPUT].setVoltage(right_audio * GAIN);
 
 			selected_sample_player->step(pitch, SAMPLE_START_POSITION, SAMPLE_END_POSITION, loop);
+
+			// Detect end of sample (works in both loop and non-loop modes)
+			if (selected_sample_player->sample.loaded)
+			{
+				unsigned int sample_size = selected_sample_player->sample.size() * SAMPLE_END_POSITION;
+
+				if (loop)
+				{
+					// In loop mode, detect when playback position wraps around
+					if (previousPlaybackPosition >= (sample_size - 1) &&
+						selected_sample_player->playback_position < previousPlaybackPosition)
+					{
+						// Sample reached end and looped back
+						endOfSamplePulse.trigger(0.01f);
+					}
+				}
+				else
+				{
+					// In non-loop mode, detect when sample stops playing
+					if (!selected_sample_player->playing && previousPlaybackState)
+					{
+						// Sample just ended - trigger the pulse
+						endOfSamplePulse.trigger(0.01f);
+					}
+				}
+			}
+
+			previousPlaybackState = selected_sample_player->playing;
 		}
+
+		// Process the pulse generator and output the trigger
+		bool endPulse = endOfSamplePulse.process(1.0 / args.sampleRate);
+		outputs[END_OF_SAMPLE_OUTPUT].setVoltage(endPulse ? 10.0f : 0.0f);
 	}
 };

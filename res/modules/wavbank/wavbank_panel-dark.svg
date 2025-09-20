@@ -11,7 +11,7 @@
    viewBox="0 0 144 364.252"
    xml:space="preserve"
    sodipodi:docname="wavbank_panel-dark.svg"
-   inkscape:version="1.3.2 (091e20e, 2023-11-25, custom)"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -24,9 +24,9 @@
    inkscape:pageopacity="0.0"
    inkscape:pagecheckerboard="0"
    showgrid="false"
-   inkscape:zoom="4.7933846"
-   inkscape:cx="100.65956"
-   inkscape:cy="117.97509"
+   inkscape:zoom="6.7788695"
+   inkscape:cx="26.5531"
+   inkscape:cy="399.5504"
    inkscape:window-width="3840"
    inkscape:window-height="2054"
    inkscape:window-x="2869"
@@ -43,7 +43,12 @@
    style="fill:#18181a;fill-opacity:1;opacity:1;stroke:none"
    inkscape:groupmode="layer"
    id="rect1" /><defs
-   id="defs61" />
+   id="defs61"><rect
+     x="31.77519"
+     y="71.188644"
+     width="255.1181"
+     height="85.548592"
+     id="rect2-5-9-1-5" /></defs>
 <style
    type="text/css"
    id="style2">
@@ -163,4 +168,9 @@
    id="polyline54"
    transform="translate(0.20862086)"
    style="fill:#f3ede7;fill-opacity:1;stroke:none" />
-</svg>
+<path
+   style="font-size:9.33333px;font-family:Pilat;-inkscape-font-specification:Pilat;text-align:center;letter-spacing:0.88px;white-space:pre;fill:#f4eee9;fill-opacity:0.952941;stroke-width:0.377953"
+   d="m 153.88532,78.142784 h -3.416 v -1.455999 h 3.416 v -1.204 h -3.416 v -1.446666 h 3.416 v -1.213333 h -4.86267 v 6.533331 h 4.86267 z m 8.06666,-5.319998 h -1.428 v 4.965332 h -0.056 l -2.55733,-4.965332 h -2.24 v 6.533331 h 1.428 v -4.955998 h 0.056 l 2.56667,4.955998 h 2.23066 z m 7.79601,3.079999 c 0,-2.155999 -0.952,-3.079999 -3.052,-3.079999 h -2.83733 v 6.533331 h 2.83733 c 2.1,0 3.052,-0.914666 3.052,-3.070666 z m -3.07067,-1.857333 c 1.288,0 1.596,0.756 1.596,1.941333 v 0.205333 c 0,1.204 -0.308,1.922666 -1.596,1.941333 h -1.372 v -4.087999 z"
+   id="text2-5-5-9-1"
+   transform="matrix(0.75000005,0,0,0.75000005,-90.720877,257.58691)"
+   aria-label="END" /></svg>
