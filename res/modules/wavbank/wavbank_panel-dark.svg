@@ -168,7 +168,16 @@
    id="polyline54"
    transform="translate(0.20862086)"
    style="fill:#f3ede7;fill-opacity:1;stroke:none" />
-<path
+<rect
+   style="font-variation-settings:normal;vector-effect:none;fill:#3e3e3e;fill-opacity:1;stroke:none;stroke-width:0.282805;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000"
+   id="rect2-5"
+   width="40.983311"
+   height="50.584255"
+   x="8.1026211"
+   y="-354.89691"
+   rx="4.5000005"
+   ry="4.5"
+   transform="scale(1,-1)" /><path
    style="font-size:9.33333px;font-family:Pilat;-inkscape-font-specification:Pilat;text-align:center;letter-spacing:0.88px;white-space:pre;fill:#f4eee9;fill-opacity:0.952941;stroke-width:0.377953"
    d="m 153.88532,78.142784 h -3.416 v -1.455999 h 3.416 v -1.204 h -3.416 v -1.446666 h 3.416 v -1.213333 h -4.86267 v 6.533331 h 4.86267 z m 8.06666,-5.319998 h -1.428 v 4.965332 h -0.056 l -2.55733,-4.965332 h -2.24 v 6.533331 h 1.428 v -4.955998 h 0.056 l 2.56667,4.955998 h 2.23066 z m 7.79601,3.079999 c 0,-2.155999 -0.952,-3.079999 -3.052,-3.079999 h -2.83733 v 6.533331 h 2.83733 c 2.1,0 3.052,-0.914666 3.052,-3.070666 z m -3.07067,-1.857333 c 1.288,0 1.596,0.756 1.596,1.941333 v 0.205333 c 0,1.204 -0.308,1.922666 -1.596,1.941333 h -1.372 v -4.087999 z"
    id="text2-5-5-9-1"
