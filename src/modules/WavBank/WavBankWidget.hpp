@@ -98,6 +98,9 @@ struct WavBankWidget : VoxglitchSamplerModuleWidget
         trigger_mode_menu->module = module;
         menu->addChild(trigger_mode_menu);
 
+        // Add auto-increment option
+        menu->addChild(createBoolPtrMenuItem("Auto-Increment on Completion", "", &module->auto_increment_on_completion));
+
         // Add the "Select Directory Containing WAV Files" menu item
         MenuItemLoadBank *menu_item_load_bank = new MenuItemLoadBank();
         menu_item_load_bank->text = "Select Directory Containing WAV Files";

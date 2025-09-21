@@ -21,6 +21,9 @@ struct WavBank : VoxglitchSamplerModule
 	bool previousPlaybackState = false;
 	double previousPlaybackPosition = 0.0;
 
+	// Auto-increment feature
+	bool auto_increment_on_completion = false;  // Disabled by default
+
 	enum ParamIds
 	{
 		WAV_KNOB,
@@ -69,6 +72,7 @@ struct WavBank : VoxglitchSamplerModule
 		json_t *json_root = json_object();
 		json_object_set_new(json_root, "path", json_string(this->path.c_str()));
 		json_object_set_new(json_root, "trig_input_response_mode", json_integer(trig_input_response_mode));
+		json_object_set_new(json_root, "auto_increment_on_completion", json_boolean(auto_increment_on_completion));
 		return json_root;
 	}
 
@@ -86,6 +90,11 @@ struct WavBank : VoxglitchSamplerModule
 		json_t *trig_input_response_mode_json = json_object_get(json_root, "trig_input_response_mode");
 		if (trig_input_response_mode_json)
 			trig_input_response_mode = json_integer_value(trig_input_response_mode_json);
+
+		// Load auto-increment setting
+		json_t *auto_increment_json = json_object_get(json_root, "auto_increment_on_completion");
+		if (auto_increment_json)
+			auto_increment_on_completion = json_boolean_value(auto_increment_json);
 	}
 
 	void load_samples_from_path(std::string path)
@@ -244,6 +253,13 @@ struct WavBank : VoxglitchSamplerModule
 					{
 						// Sample reached end and looped back
 						endOfSamplePulse.trigger(0.01f);
+
+						// Auto-increment if enabled AND no CV control
+						// Don't auto-increment when CV is controlling sample selection
+						if (auto_increment_on_completion && !inputs[WAV_INPUT].isConnected())
+						{
+							incrementSampleSelection();
+						}
 					}
 				}
 				else
@@ -253,6 +269,13 @@ struct WavBank : VoxglitchSamplerModule
 					{
 						// Sample just ended - trigger the pulse
 						endOfSamplePulse.trigger(0.01f);
+
+						// Auto-increment if enabled AND no CV control
+						// Don't auto-increment when CV is controlling sample selection
+						if (auto_increment_on_completion && !inputs[WAV_INPUT].isConnected())
+						{
+							incrementSampleSelection();
+						}
 					}
 				}
 			}
@@ -263,5 +286,41 @@ struct WavBank : VoxglitchSamplerModule
 		// Process the pulse generator and output the trigger
 		bool endPulse = endOfSamplePulse.process(1.0 / args.sampleRate);
 		outputs[END_OF_SAMPLE_OUTPUT].setVoltage(endPulse ? 10.0f : 0.0f);
+	}
+
+private:
+	void incrementSampleSelection()
+	{
+		unsigned int number_of_samples = sample_players.size();
+		if (number_of_samples == 0) return;
+
+		// Calculate next sample index with wrap-around
+		unsigned int next_sample = (selected_sample_slot + 1) % number_of_samples;
+
+		// Update the WAV_KNOB parameter value
+		// The knob ranges from 0.0 to 1.0, so we need to scale appropriately
+		float knob_value = (float)next_sample / (float)(number_of_samples - 1);
+
+		// Use setValue to programmatically change the parameter
+		// This will update the knob position visually
+		params[WAV_KNOB].setValue(knob_value);
+
+		// Stop the current sample
+		sample_players[selected_sample_slot].stop();
+
+		// Update the selected sample slot
+		selected_sample_slot = next_sample;
+
+		// Get the loop setting
+		bool loop = params[LOOP_SWITCH].getValue();
+
+		// Start playback of the new sample
+		sample_players[selected_sample_slot].trigger(SAMPLE_START_POSITION, loop);
+
+		// Ensure playback flag is set
+		playback = true;
+
+		// Trigger declick filter for smooth transition
+		declick_filter.trigger();
 	}
 };
