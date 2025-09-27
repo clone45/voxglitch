@@ -37,6 +37,7 @@ void init(Plugin* p) {
   p->addModel(modelVectorRotation);
   p->addModel(modelWavBank);
   p->addModel(modelWavBankMC);
+  p->addModel(modelNetrunner);
   p->addModel(modelXY);
   
 }

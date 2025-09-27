@@ -1,0 +1,16 @@
+{
+  "samples": [
+    {
+      "name": "Kick",
+      "url": "https://example.com/samples/kick.wav"
+    },
+    {
+      "name": "Snare",
+      "url": "https://example.com/samples/snare.wav"
+    },
+    {
+      "name": "HiHat",
+      "url": "https://example.com/samples/hihat.wav"
+    }
+  ]
+}

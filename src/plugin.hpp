@@ -40,4 +40,5 @@ extern Model *modelSatanonautUnearthed;
 extern Model *modelVectorRotation;
 extern Model *modelWavBank;
 extern Model *modelWavBankMC;
+extern Model *modelNetrunner;
 extern Model *modelXY;

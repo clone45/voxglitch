@@ -191,6 +191,12 @@
         "tags": ["Sampler", "Polyphonic"]
     },
     {
+        "slug": "netrunner",
+        "name": "Netrunner",
+        "description": "Sample player that loads audio files from URLs",
+        "tags": ["Sampler", "Network"]
+    },
+    {
         "slug": "xy",
         "name": "XY",
         "description": "CV output generator with built in gesture recording.",
