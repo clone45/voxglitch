@@ -1,0 +1,14 @@
+prefix=/c/code/voxglitch/dep/ffmpeg/..
+exec_prefix=${prefix}
+libdir=/c/code/voxglitch/dep/ffmpeg/../lib
+includedir=/c/code/voxglitch/dep/ffmpeg/../include
+
+Name: libavcodec
+Description: FFmpeg codec library
+Version: 60.31.102
+Requires: libavutil >= 58.29.100
+Requires.private: 
+Conflicts:
+Libs: -L${libdir}  -lavcodec -lm -latomic -lole32 -luser32
+Libs.private: 
+Cflags: -I${includedir}

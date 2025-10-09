@@ -31,7 +31,7 @@ struct NetrunnerWidget : VoxglitchSamplerModuleWidget
 
         NetrunnerReadout *readout = new NetrunnerReadout();
         readout->box.pos = Vec(13.300354, 141.0);
-        readout->box.size = Vec(110, 30);
+        readout->box.size = Vec(220, 30);
         readout->module = module;
         addChild(readout);
     }
@@ -95,6 +95,7 @@ struct NetrunnerWidget : VoxglitchSamplerModuleWidget
         menu->addChild(trigger_mode_menu);
 
         menu->addChild(createBoolPtrMenuItem("Auto-Increment on Completion", "", &module->auto_increment_on_completion));
+        menu->addChild(createBoolPtrMenuItem("Send Rack Token", "", &module->send_rack_token));
 
         menu->addChild(new MenuEntry);
         SampleInterpolationMenuItem *sample_interpolation_menu_item = createMenuItem<SampleInterpolationMenuItem>("Interpolation", RIGHT_ARROW);

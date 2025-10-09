@@ -12,6 +12,8 @@
 #include <system.hpp>
 #include <random.hpp>
 
+#include "AudioLoader.hpp"
+
 class AsyncSampleLoader {
 private:
     std::atomic<bool> loadRequested{false};
@@ -73,18 +75,8 @@ private:
             }
         }
 
-        std::string display = filename;
-        size_t dotPos = display.find_last_of('.');
-        if (dotPos != std::string::npos) {
-            std::string ext = display.substr(dotPos);
-            std::string extLower = ext;
-            std::transform(extLower.begin(), extLower.end(), extLower.begin(), [](unsigned char c) { return std::tolower(c); });
-            if (extLower == ".wav") {
-                display = display.substr(0, dotPos);
-            }
-        }
-
-        return display;
+        // Keep the full filename including extension
+        return filename;
     }
 
     static std::string createTempFilePath() {
@@ -97,6 +89,39 @@ private:
 
 public:
     AsyncSampleLoader() = default;
+
+    AsyncSampleLoader(const AsyncSampleLoader&) = delete;
+    AsyncSampleLoader& operator=(const AsyncSampleLoader&) = delete;
+
+    AsyncSampleLoader(AsyncSampleLoader&& other) noexcept
+        : loadRequested(other.loadRequested.load()),
+          loadComplete(other.loadComplete.load()),
+          shouldAbort(other.shouldAbort.load()),
+          loadingSample(std::move(other.loadingSample)),
+          readySample(std::move(other.readySample)),
+          loadingPath(std::move(other.loadingPath)),
+          loadingBPM(other.loadingBPM),
+          loaderThread(std::move(other.loaderThread)) {
+    }
+
+    AsyncSampleLoader& operator=(AsyncSampleLoader&& other) noexcept {
+        if (this != &other) {
+            shouldAbort = true;
+            if (loaderThread.joinable()) {
+                loaderThread.join();
+            }
+
+            loadRequested.store(other.loadRequested.load());
+            loadComplete.store(other.loadComplete.load());
+            shouldAbort.store(other.shouldAbort.load());
+            loadingSample = std::move(other.loadingSample);
+            readySample = std::move(other.readySample);
+            loadingPath = std::move(other.loadingPath);
+            loadingBPM = other.loadingBPM;
+            loaderThread = std::move(other.loaderThread);
+        }
+        return *this;
+    }
 
     ~AsyncSampleLoader() {
         shouldAbort = true;
@@ -137,7 +162,6 @@ public:
             if (remoteSource) {
                 std::string downloadUrl = transformDownloadUrl(path);
                 downloadedPath = createTempFilePath();
-                INFO("Netrunner: downloading %s to temporary file %s", downloadUrl.c_str(), downloadedPath.c_str());
                 if (!rack::network::requestDownload(downloadUrl, downloadedPath)) {
                     WARN("Netrunner: download failed for %s", path.c_str());
                     cleanupDownload();
@@ -146,7 +170,6 @@ public:
                 }
 
                 if (shouldAbort.load()) {
-                    INFO("Netrunner: download aborted for %s", path.c_str());
                     cleanupDownload();
                     loadRequested = false;
                     return;
@@ -156,16 +179,50 @@ public:
                 localPath = downloadedPath;
             }
 
-            bool success = newSample->load(localPath);
+            // Use FFmpeg AudioLoader to load the audio file
+            vgLib_v2::AudioLoader loader;
+            vgLib_v2::AudioData audioData;
+            std::string error;
+
+            bool success = loader.loadFile(localPath, audioData, error);
 
             if (shouldAbort.load()) {
-                INFO("Netrunner: load aborted for %s", path.c_str());
                 cleanupDownload();
                 loadRequested = false;
                 return;
             }
 
             if (success) {
+                // Convert AudioData (interleaved) to Sample format (separate L/R buffers)
+                newSample->sample_audio_buffer.clear();
+                newSample->sample_rate = audioData.sampleRate;
+                newSample->channels = audioData.channels;
+
+                if (audioData.channels == 1) {
+                    // Mono: duplicate to both channels
+                    for (int64_t i = 0; i < audioData.totalSamples; i++) {
+                        float sample = audioData.samples[i];
+                        newSample->sample_audio_buffer.push_back(sample, sample);
+                    }
+                } else if (audioData.channels == 2) {
+                    // Stereo: de-interleave
+                    for (int64_t i = 0; i < audioData.totalSamples; i++) {
+                        float left = audioData.samples[i * 2];
+                        float right = audioData.samples[i * 2 + 1];
+                        newSample->sample_audio_buffer.push_back(left, right);
+                    }
+                } else {
+                    // Multi-channel: use first two channels
+                    for (int64_t i = 0; i < audioData.totalSamples; i++) {
+                        float left = audioData.samples[i * audioData.channels];
+                        float right = audioData.samples[i * audioData.channels + 1];
+                        newSample->sample_audio_buffer.push_back(left, right);
+                    }
+                }
+
+                newSample->sample_length = newSample->sample_audio_buffer.size();
+                newSample->loaded = true;
+
                 if (remoteSource) {
                     std::string filename = getFilenameFromSource(path);
                     if (!filename.empty()) {
@@ -173,14 +230,22 @@ public:
                         newSample->display_name = deriveDisplayName(path);
                     }
                     newSample->path = path;
+                } else {
+                    newSample->filename = rack::system::getFilename(localPath);
+                    newSample->display_name = newSample->filename;
+                    // Remove file extension from display name
+                    size_t lastDot = newSample->display_name.find_last_of('.');
+                    if (lastDot != std::string::npos) {
+                        newSample->display_name = newSample->display_name.substr(0, lastDot);
+                    }
+                    newSample->path = localPath;
                 }
 
                 readySample = std::move(newSample);
                 loadComplete = true;
             } else {
-                WARN("Netrunner: failed to load sample from %s", localPath.c_str());
+                WARN("Netrunner: failed to load sample from %s - %s", localPath.c_str(), error.c_str());
                 if (downloaded) {
-                    INFO("Netrunner: keeping downloaded file for inspection: %s", localPath.c_str());
                     downloaded = false;
                 }
             }

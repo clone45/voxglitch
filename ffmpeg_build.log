@@ -1,0 +1,2 @@
+Makefile:106: ../../plugin.mk: No such file or directory
+make: *** No rule to make target '../../plugin.mk'.  Stop.

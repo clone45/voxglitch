@@ -1,0 +1,28 @@
+{
+  "samples": [
+    {
+      "name": "Beatswtich2",
+      "url": "E:/mp3s/BeatSwitch2.mp3"
+    },
+    {
+      "name": "Gret Drums",
+      "url": "https://s3.us-west-1.amazonaws.com/voxglitch.public/gret/095+Gret+Drums.wav"
+    },
+    {
+      "name": "Gret Flt",
+      "url": "https://s3.us-west-1.amazonaws.com/voxglitch.public/gret/095+Gret+Flt.wav"
+    },
+    {
+      "name": "Gret Vocals",
+      "url": "https://s3.us-west-1.amazonaws.com/voxglitch.public/gret/095+Gret+Vocals.wav"
+    },
+    {
+      "name": "CW Radio",
+      "url": "https://s3.us-west-1.amazonaws.com/voxglitch.public/cw_175_Radio.wav"
+    },
+    {
+      "name": "Harsh But Fair",
+      "url": "https://s3.us-west-1.amazonaws.com/voxglitch.public/breaks_drloop_125_harshbutfair.wav"
+    }
+  ]
+}

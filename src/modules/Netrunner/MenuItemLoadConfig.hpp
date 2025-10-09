@@ -13,7 +13,7 @@ struct MenuItemLoadConfig : MenuItem
           }
         });
     #else
-        std::string path = module->selectFileVCV();
+        std::string path = module->selectFileVCV("JSON:json");
         pathSelected(module, path);
     #endif
   }

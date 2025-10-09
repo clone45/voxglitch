@@ -8,8 +8,9 @@ struct Netrunner : VoxglitchSamplerModule
 	unsigned int trig_input_response_mode = TRIGGER;
 	std::string path;
 	bool loading_samples = false;
+	bool send_rack_token = true;
 
-	std::vector<SamplePlayer> sample_players;
+	std::vector<NetrunnerSamplePlayer> sample_players;
 	std::vector<AsyncSampleLoader> async_loaders;
 	std::vector<std::string> pending_urls;
 
@@ -60,6 +61,13 @@ struct Netrunner : VoxglitchSamplerModule
 		configInput(WAV_INPUT, "Wave Selection");
 		configInput(PITCH_INPUT, "Pitch");
 		configOutput(END_OF_SAMPLE_OUTPUT, "End of Sample Trigger");
+
+		// Log user token
+		// INFO("settings::token: %s", settings::token.c_str());
+
+		// Use debug to show the token:
+		DEBUG("========================================================================");
+		DEBUG("settings::token: %s", settings::token.c_str());
 	}
 
 	json_t *dataToJson() override
@@ -68,6 +76,7 @@ struct Netrunner : VoxglitchSamplerModule
 		json_object_set_new(json_root, "path", json_string(this->path.c_str()));
 		json_object_set_new(json_root, "trig_input_response_mode", json_integer(trig_input_response_mode));
 		json_object_set_new(json_root, "auto_increment_on_completion", json_boolean(auto_increment_on_completion));
+		json_object_set_new(json_root, "send_rack_token", json_boolean(send_rack_token));
 		return json_root;
 	}
 
@@ -90,6 +99,10 @@ struct Netrunner : VoxglitchSamplerModule
 		json_t *auto_increment_json = json_object_get(json_root, "auto_increment_on_completion");
 		if (auto_increment_json)
 			auto_increment_on_completion = json_boolean_value(auto_increment_json);
+
+		json_t *send_rack_token_json = json_object_get(json_root, "send_rack_token");
+		if (send_rack_token_json)
+			send_rack_token = json_boolean_value(send_rack_token_json);
 	}
 
 	void load_samples_from_config(std::string config_path)
@@ -129,7 +142,6 @@ struct Netrunner : VoxglitchSamplerModule
 		}
 
 		size_t num_samples = json_array_size(samples_array);
-		INFO("Netrunner: Loading %zu samples from config", num_samples);
 
 		for (size_t i = 0; i < num_samples; i++)
 		{
@@ -143,6 +155,14 @@ struct Netrunner : VoxglitchSamplerModule
 
 			std::string url = json_string_value(url_json);
 
+			// Append rack token to URL if enabled (only for HTTP/HTTPS URLs)
+			bool isHttpUrl = (url.rfind("http://", 0) == 0 || url.rfind("https://", 0) == 0);
+			if (send_rack_token && !settings::token.empty() && isHttpUrl)
+			{
+				std::string separator = (url.find('?') != std::string::npos) ? "&" : "?";
+				url += separator + "token=" + settings::token;
+			}
+
 			std::string name = "";
 			json_t* name_json = json_object_get(sample_obj, "name");
 			if (name_json && json_is_string(name_json))
@@ -150,7 +170,7 @@ struct Netrunner : VoxglitchSamplerModule
 				name = json_string_value(name_json);
 			}
 
-			SamplePlayer sample_player;
+			NetrunnerSamplePlayer sample_player;
 			sample_player.sample.display_name = name.empty() ? url : name;
 			sample_players.push_back(sample_player);
 
@@ -158,8 +178,6 @@ struct Netrunner : VoxglitchSamplerModule
 			async_loaders.push_back(std::move(loader));
 
 			pending_urls.push_back(url);
-
-			INFO("Netrunner: Queued sample %zu: %s -> %s", i, name.c_str(), url.c_str());
 		}
 
 		json_decref(root);
@@ -193,8 +211,7 @@ struct Netrunner : VoxglitchSamplerModule
 				std::unique_ptr<Sample> loaded_sample = async_loaders[i].getLoadedSample();
 				if (loaded_sample && i < sample_players.size())
 				{
-					sample_players[i].sample = *loaded_sample;
-					INFO("Netrunner: Sample %zu loaded successfully", i);
+					sample_players[i].applySample(std::move(loaded_sample));
 				}
 			}
 		}
