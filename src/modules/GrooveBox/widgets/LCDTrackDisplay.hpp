@@ -324,32 +324,48 @@ struct TrackSampleNudge : TransparentWidget
             std::string filename = module->sample_players[track_number].getFilename();
 
             std::vector<std::string> directory_list = system::getEntries(directory);
-            std::vector<std::string> wav_files;
+            std::vector<std::string> audio_files;
 
-            // Folders might contain things that aren't .wav files, and we need to
+            // Now supports WAV, AIFF, FLAC, MP3, and ALAC formats via FFmpeg
+            const std::vector<std::string> supportedExtensions = {
+                "wav", ".wav",
+                "aiff", ".aiff", "aif", ".aif",
+                "flac", ".flac",
+                "mp3", ".mp3",
+                "m4a", ".m4a", "alac", ".alac"
+            };
+
+            // Folders might contain things that aren't audio files, and we need to
             // weed those out. In order to do that, we iterate over the directory list
-            // and populate a new vector called "wav_files".
+            // and populate a new vector called "audio_files".
             for (auto entry : directory_list)
             {
-                if (
-                    (rack::string::lowercase(system::getExtension(entry)) == "wav") ||
-                    (rack::string::lowercase(system::getExtension(entry)) == ".wav"))
+                std::string ext = rack::string::lowercase(system::getExtension(entry));
+
+                // Check if extension is in supported list
+                bool isSupported = std::find(
+                    supportedExtensions.begin(),
+                    supportedExtensions.end(),
+                    ext
+                ) != supportedExtensions.end();
+
+                if (isSupported)
                 {
-                    wav_files.push_back(entry);
+                    audio_files.push_back(entry);
                 }
             }
 
             // Now that we have a clean list, search for the currently selected
-            // wav file.  If we find it (which we should), find the next sample.
-            for (unsigned i = 0; i < wav_files.size(); i++)
+            // audio file.  If we find it (which we should), find the next sample.
+            for (unsigned i = 0; i < audio_files.size(); i++)
             {
-                std::string filename_in_directory = rack::system::getFilename(wav_files[i]);
+                std::string filename_in_directory = rack::system::getFilename(audio_files[i]);
 
                 if (filename_in_directory.compare(filename) == 0) // Found it!
                 {
                     int index = i + direction;
-                    index = clamp(index, 0, wav_files.size() - 1);
-                    fileSelected(this->module, this->track_number, wav_files[index]);
+                    index = clamp(index, 0, audio_files.size() - 1);
+                    fileSelected(this->module, this->track_number, audio_files[index]);
                     break;
                 }
             }

@@ -272,14 +272,28 @@ struct WavBankMC : VoxglitchSamplerModule
 		// TODO: Decide on a maximum memory consuption allowed and abort if
 		// that amount of member would be exhausted by loading all of the files
 		// in the folder.
+
+		// Now supports WAV, AIFF, FLAC, MP3, and ALAC formats via FFmpeg
+		const std::vector<std::string> supportedExtensions = {
+			"wav", ".wav",
+			"aiff", ".aiff", "aif", ".aif",
+			"flac", ".flac",
+			"mp3", ".mp3",
+			"m4a", ".m4a", "alac", ".alac"
+		};
+
 		for (auto entry : dirList)
 		{
-			if (
-        // Something happened in Rack 2 where the extension started to include
-        // the ".", so I decided to check for both versions, just in case.
-        (rack::string::lowercase(system::getExtension(entry)) == "wav") ||
-        (rack::string::lowercase(system::getExtension(entry)) == ".wav")
-      )
+			std::string ext = rack::string::lowercase(system::getExtension(entry));
+
+			// Check if extension is in supported list
+			bool isSupported = std::find(
+				supportedExtensions.begin(),
+				supportedExtensions.end(),
+				ext
+			) != supportedExtensions.end();
+
+			if (isSupported)
 			{
         // Create new multi-channel sample.  This structure is defined in Common/sample_mc.hpp
 				SampleMC new_sample;

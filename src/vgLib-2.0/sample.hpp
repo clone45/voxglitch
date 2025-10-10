@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AudioFile.h"
+#include "../modules/Netrunner/AudioLoader.hpp"  // FFmpeg-based audio loader
 
 struct SampleAudioBuffer
 {
@@ -105,62 +106,75 @@ struct Sample
     this->loading = true;
     this->loaded = false;
 
-    // initialize some transient variables
-    float left = 0;
-    float right = 0;
+    // Use FFmpeg AudioLoader
+    vgLib_v2::AudioLoader loader;
+    vgLib_v2::AudioData audioData;
+    std::string error;
 
-    // Load the audio file
-    if(! audioFile.load(path))
+    bool success = loader.loadFile(path, audioData, error);
+
+    if (!success)
     {
+      WARN("Failed to load sample from %s - %s", path.c_str(), error.c_str());
       this->loading = false;
       this->loaded = false;
-      return(false);
+      return false;
     }
 
-    // Read details about the loaded sample
-    uint32_t sampleRate = audioFile.getSampleRate();
-    int numSamples = audioFile.getNumSamplesPerChannel();
-    int numChannels = audioFile.getNumChannels();
-
-    this->channels = numChannels;
-    this->sample_rate = sampleRate;
+    // Store audio properties
+    this->channels = audioData.channels;
+    this->sample_rate = audioData.sampleRate;
     sample_audio_buffer.clear();
 
-    //
-    // Copy the sample data from the AudioFile object to floating point vectors
-    //
-    for(int i = 0; i < numSamples; i++)
+    // Convert AudioData (interleaved) to Sample format (separate L/R buffers)
+    if (audioData.channels == 1)
     {
-      if(numChannels == 2)
+      // Mono: duplicate to both channels
+      for (int64_t i = 0; i < audioData.totalSamples; i++)
       {
-        left = audioFile.samples[0][i];  // [channel][sample_index]
-        right = audioFile.samples[1][i];
+        float sample = audioData.samples[i];
+        sample_audio_buffer.push_back(sample, sample);
       }
-      else if(numChannels == 1)
+    }
+    else if (audioData.channels == 2)
+    {
+      // Stereo: de-interleave
+      for (int64_t i = 0; i < audioData.totalSamples; i++)
       {
-        left = audioFile.samples[0][i];
-        right = left;
+        float left = audioData.samples[i * 2];
+        float right = audioData.samples[i * 2 + 1];
+        sample_audio_buffer.push_back(left, right);
       }
-
-      sample_audio_buffer.push_back(left, right);
+    }
+    else
+    {
+      // Multi-channel: use first two channels
+      for (int64_t i = 0; i < audioData.totalSamples; i++)
+      {
+        float left = audioData.samples[i * audioData.channels];
+        float right = audioData.samples[i * audioData.channels + 1];
+        sample_audio_buffer.push_back(left, right);
+      }
     }
 
-    // Store sample length and file information to this object for the rest
-    // of the patch to reference.
+    // Store sample length and file information
     this->sample_length = sample_audio_buffer.size();
     this->filename = system::getFilename(path);
     this->display_name = filename;
-    this->display_name.erase(this->display_name.length()-4); // remove the .wav extension
+
+    // Remove file extension from display name (handle various extensions)
+    size_t lastDot = this->display_name.find_last_of('.');
+    if (lastDot != std::string::npos)
+    {
+      this->display_name = this->display_name.substr(0, lastDot);
+    }
+
     this->path = path;
 
     this->loading = false;
     this->loaded = true;
 
-    // Now that the audioFile has been read into memory, clear it out
-    audioFile.samples[0].resize(0);
-    audioFile.samples[1].resize(0);
-
-    return(true);
+    return true;
   };
 
 
@@ -172,7 +186,7 @@ struct Sample
   // Where to put recording code and how to save it?
   void initialize_recording()
   {
-    // Clear out audioFile data.  audioFile represents the .wav file information
+    // Clear out audioFile data.  audioFile represents the audio file information
     // that can be loaded or saved.  In this case, we're going to be saving incoming audio pretty soon.
     audioFile.samples[0].resize(0);
     audioFile.samples[1].resize(0);
