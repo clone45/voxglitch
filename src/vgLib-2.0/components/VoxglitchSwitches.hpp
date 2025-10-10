@@ -71,3 +71,25 @@ struct squareToggle : VoxglitchSwitch {
   }
 
 };
+
+// TempestVS1 Switches
+
+// VS1 Push Button (for Mode, Preset, Clear buttons)
+struct VS1PushButton : SvgSwitch {
+	VS1PushButton() {
+		momentary = true;
+		shadow->opacity = 0;
+		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/vs1_pushbutton_off.svg")));
+		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/vs1_pushbutton_on.svg")));
+	}
+};
+
+// NKK Two-Position Switch (uses VCV Rack's built-in component)
+struct NKKTwoPosition : SvgSwitch {
+	NKKTwoPosition() {
+		shadow->opacity = 0;
+		// Only load the down (0) and up (2) frames, skipping middle (1)
+		addFrame(APP->window->loadSvg(asset::system("res/ComponentLibrary/NKK_0.svg")));
+		addFrame(APP->window->loadSvg(asset::system("res/ComponentLibrary/NKK_2.svg")));
+	}
+};

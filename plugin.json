@@ -118,22 +118,23 @@
         "tags": ["Sequencer"]
     },
     {
-        "slug": "onepoint",
-        "name": "One Point",
-        "description": "CV sequencer that uses external file as sequence data",
-        "tags": ["Sequencer"]
-    },        
-    {
-        "slug": "onezero",
-        "name": "One Zero",
-        "description": "Gate sequencer that uses external file as sequence data",
-        "tags": ["Sequencer"]
-    },       
-    {
         "slug": "looper",
         "name": "Looper",
         "description": "Bare minimum sample looper",
         "tags": ["Sampler"]
+    },         
+    {
+        "slug": "netrunner",
+        "name": "Netrunner",
+        "description": "Sample player that loads audio files from URLs",
+        "tags": ["Sampler", "Network"],
+        "hidden": true
+    },
+    {
+        "slug": "tempest-vs1",
+        "name": "Tempest VS-1",
+        "description": "MIDI controller interface for Dave Smith Instruments Tempest",
+        "tags": ["MIDI", "Controller", "Utility"]
     },
     {
         "slug": "noteDetector",
@@ -142,6 +143,18 @@
         "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/note-detector.md",
         "tags": ["Utility"]
     }, 
+    {
+        "slug": "onepoint",
+        "name": "One Point",
+        "description": "CV sequencer that uses external file as sequence data",
+        "tags": ["Sequencer"]
+    },   
+    {
+        "slug": "onezero",
+        "name": "One Zero",
+        "description": "Gate sequencer that uses external file as sequence data",
+        "tags": ["Sequencer"]
+    },          
     {
         "slug": "repeater",
         "name": "Repeater",
@@ -189,12 +202,6 @@
         "name": "Wav Bank MC",
         "description": "Extended version of Wav Bank that supports multi-channel WAV files",
         "tags": ["Sampler", "Polyphonic"]
-    },
-    {
-        "slug": "netrunner",
-        "name": "Netrunner",
-        "description": "Sample player that loads audio files from URLs",
-        "tags": ["Sampler", "Network"]
     },
     {
         "slug": "xy",

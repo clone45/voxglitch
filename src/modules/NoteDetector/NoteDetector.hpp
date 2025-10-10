@@ -50,6 +50,8 @@ struct NoteDetector : VoxglitchModule
     {
         TRIGGER,
         GATE,
+        CLOCKED_TRIGGER,
+        CLOCKED_GATE,
         NUM_OUTPUT_MODES
     };
 
@@ -69,7 +71,7 @@ struct NoteDetector : VoxglitchModule
      *
      * The JSON object contains the following key-value pairs:
      * - "version": A string representing the version of the module.
-     * - "output_mode": An integer indicating the current output mode of the module (e.g., Trigger or Gate).
+     * - "output_mode": An integer indicating the current output mode of the module (0=Trigger, 1=Gate, 2=Clocked Trigger, 3=Clocked Gate).
      * - "tolerance": An integer representing the index of the currently selected tolerance level.
      * - "trigger_length_index": An integer indicating the index of the selected trigger length.
      * - "use_flat_notation": An integer (treated as a boolean) indicating whether flat notation is used (1) or not (0).
@@ -77,7 +79,7 @@ struct NoteDetector : VoxglitchModule
      * Example JSON object:
      * {
      *   "version": "2.0.0",
-     *   "output_mode": 0,
+     *   "output_mode": 2,
      *   "tolerance": 3,
      *   "trigger_length_index": 2,
      *   "use_flat_notation": 1
@@ -113,7 +115,7 @@ struct NoteDetector : VoxglitchModule
      *
      * The JSON object should contain the following key-value pairs:
      * - "version": A string representing the version of the module.
-     * - "output_mode": An integer indicating the output mode of the module (e.g., Trigger or Gate).
+     * - "output_mode": An integer indicating the output mode of the module (0=Trigger, 1=Gate, 2=Clocked Trigger, 3=Clocked Gate).
      * - "tolerance": An integer representing the index of the tolerance level.
      * - "trigger_length_index": An integer indicating the index of the trigger length.
      * - "use_flat_notation": An integer (treated as a boolean) indicating the use of flat notation (1) or not (0).
@@ -121,14 +123,15 @@ struct NoteDetector : VoxglitchModule
      * Example JSON object:
      * {
      *   "version": "2.0.0",
-     *   "output_mode": 0,
+     *   "output_mode": 2,
      *   "tolerance": 3,
      *   "trigger_length_index": 2,
      *   "use_flat_notation": 1
      * }
      *
      * @note If the JSON object does not contain any of these keys, the corresponding setting
-     *       in the module should remain unchanged.
+     *       in the module should remain unchanged. Backward compatibility is maintained as old
+     *       patches with output_mode values 0 and 1 will continue to work correctly.
      */
     void dataFromJson(json_t *root) override
     {
@@ -251,35 +254,27 @@ struct NoteDetector : VoxglitchModule
             return;
         }
 
-        // Clocked operation
-        if(inputs[CLOCK_INPUT].isConnected())
+        // Process clock input if needed for clocked modes
+        bool clocked = clock_trigger.process(inputs[CLOCK_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger);
+        bool clock_is_high = inputs[CLOCK_INPUT].getVoltage() >= constants::gate_high_trigger;
+
+        switch (output_mode)
         {
-            bool clocked = clock_trigger.process(inputs[CLOCK_INPUT].getVoltage(), constants::gate_low_trigger, constants::gate_high_trigger);
+            case TRIGGER:
+                processTriggerModeFreeform(target_voltage, cv_input, is_within_tolerance, args);
+                break;
 
-            switch (output_mode)
-            {
-                case TRIGGER:
-                    processTriggerModeClocked(is_within_tolerance, clocked, args);
-                    break;
+            case GATE:
+                processGateModeFreeform(target_voltage, cv_input, is_within_tolerance, args);
+                break;
 
-                case GATE:
-                    processGateModeClocked(is_within_tolerance, clocked, args);
-                    break;
-            }
-        }
-        // Freeform without a clock attached
-        else
-        {
-            switch (output_mode)
-            {
-                case TRIGGER:
-                    processTriggerModeFreeform(target_voltage, cv_input, is_within_tolerance, args);
-                    break;
+            case CLOCKED_TRIGGER:
+                processTriggerModeClocked(is_within_tolerance, clocked, args);
+                break;
 
-                case GATE:
-                    processGateModeFreeform(target_voltage, cv_input, is_within_tolerance, args);
-                    break;
-            }
+            case CLOCKED_GATE:
+                processGateModeClocked(is_within_tolerance, clock_is_high, args);
+                break;
         }
     }
 
@@ -327,9 +322,9 @@ struct NoteDetector : VoxglitchModule
         }
     }
 
-    void processGateModeClocked(bool is_within_tolerance, bool clocked, const ProcessArgs &args)
+    void processGateModeClocked(bool is_within_tolerance, bool clock_is_high, const ProcessArgs &args)
     {
-        if (is_within_tolerance && clocked)
+        if (is_within_tolerance && clock_is_high)
         {
             outputs[DETECTION_OUTPUT].setVoltage(10.0f);
         }

@@ -129,3 +129,100 @@ struct TEpicKnob : TBase {
 	}
 };
 typedef TEpicKnob<> VoxglitchEpicKnob;
+
+// TempestVS1 Knobs - Moog-style knobs for the TempestVS1 module
+
+// VS1 Knob DI (Double Indicator)
+template <typename TBase = VoxglitchKnob>
+struct TVS1KnobDI : TBase {
+	Widget* bg;
+	TVS1KnobDI() {
+		// Set the rotating overlay (the knob indicator/pointer)
+		this->svgFile = "moog_style_di.svg";
+		this->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/" + this->svgFile)));
+
+		// Add the static background SVG
+		bg = new SvgWidget();
+		std::shared_ptr<Svg> bgSvg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/moog_style_di_bg.svg"));
+		dynamic_cast<SvgWidget*>(bg)->setSvg(bgSvg);
+		this->addChildBottom(bg);
+		bg->setPosition(Vec(0, 0));
+	}
+};
+typedef TVS1KnobDI<> VS1KnobDI;
+
+// Skirted Ventura Knob (Small knobs SM1-SM4)
+template <typename TBase = VoxglitchKnob>
+struct TSkirtedVenturaKnob : TBase {
+	Widget* bg;
+	TSkirtedVenturaKnob() {
+		// Set the rotating overlay
+		this->svgFile = "skirted_ventura.svg";
+		this->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/" + this->svgFile)));
+
+		// Add the static background SVG
+		bg = new SvgWidget();
+		std::shared_ptr<Svg> bgSvg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/skirted_ventura_bg.svg"));
+		dynamic_cast<SvgWidget*>(bg)->setSvg(bgSvg);
+		this->addChildBottom(bg);
+		bg->setPosition(Vec(0, 0));
+	}
+};
+typedef TSkirtedVenturaKnob<> SkirtedVenturaKnob;
+
+// Flying Saucer Skirt Knob (Epic center knob)
+template <typename TBase = VoxglitchKnob>
+struct TFlyingSaucerSkirtKnob : TBase {
+	Widget* bg;
+	TFlyingSaucerSkirtKnob() {
+		// Set the rotating overlay
+		this->svgFile = "flying_saucer_skirt_knob.svg";
+		this->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/" + this->svgFile)));
+
+		// Add the static background SVG
+		bg = new SvgWidget();
+		std::shared_ptr<Svg> bgSvg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/flying_saucer_skirt_knob_bg.svg"));
+		dynamic_cast<SvgWidget*>(bg)->setSvg(bgSvg);
+		this->addChildBottom(bg);
+		bg->setPosition(Vec(0, 0));
+	}
+};
+typedef TFlyingSaucerSkirtKnob<> FlyingSaucerSkirtKnob;
+
+// VS1 Center Knob (Moog-style center knob)
+template <typename TBase = VoxglitchKnob>
+struct TMoogStyleCenterKnob : TBase {
+	Widget* bg;
+	TMoogStyleCenterKnob() {
+		// Set the rotating overlay (the knob indicator/pointer)
+		this->svgFile = "moog_style_center.svg";
+		this->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/" + this->svgFile)));
+
+		// Add the static background SVG
+		bg = new SvgWidget();
+		std::shared_ptr<Svg> bgSvg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/moog_style_center_bg.svg"));
+		dynamic_cast<SvgWidget*>(bg)->setSvg(bgSvg);
+		this->addChildBottom(bg);
+		bg->setPosition(Vec(0, 0));
+	}
+};
+typedef TMoogStyleCenterKnob<> VS1CenterKnob;
+
+// VS1 Rotary Knob (Moog-style rotary encoder without indicator)
+template <typename TBase = VoxglitchKnob>
+struct TMoogStyleRotaryKnob : TBase {
+	Widget* bg;
+	TMoogStyleRotaryKnob() {
+		// Set the rotating overlay (without indicator dot)
+		this->svgFile = "moog_style_rotary.svg";
+		this->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/" + this->svgFile)));
+
+		// Add the static background SVG
+		bg = new SvgWidget();
+		std::shared_ptr<Svg> bgSvg = APP->window->loadSvg(asset::plugin(pluginInstance, "res/components/moog_style_rotary_bg.svg"));
+		dynamic_cast<SvgWidget*>(bg)->setSvg(bgSvg);
+		this->addChildBottom(bg);
+		bg->setPosition(Vec(0, 0));
+	}
+};
+typedef TMoogStyleRotaryKnob<> VS1RotaryKnob;

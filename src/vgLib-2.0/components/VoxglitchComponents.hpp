@@ -3,6 +3,8 @@
 #define voxglitch_components_h
 // =========================================
 
+#include <osdialog.h>
+
 #include "ImageWidget.hpp"
 #include "PanelBackground.hpp"
 

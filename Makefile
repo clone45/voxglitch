@@ -35,9 +35,11 @@ ifdef ARCH_LIN
 endif
 
 ifdef ARCH_MAC
-	# macOS SDK version flag
-	MAC_SDK_FLAGS = -mmacosx-version-min=10.9
+	# macOS SDK version flag (updated to match VCV Rack requirements)
+	MAC_SDK_FLAGS = -mmacosx-version-min=10.13
 	FLAGS += $(MAC_SDK_FLAGS)
+	# macOS needs pthread for FFmpeg threading
+	LDFLAGS += -lpthread
 endif
 
 # Add .cpp files to the build
@@ -100,6 +102,8 @@ $(ffmpeg):
 # Include the Rack plugin Makefile framework
 include $(RACK_DIR)/plugin.mk
 
-# Add Windows system libraries after plugin.mk (required by FFmpeg)
+# Add platform-specific system libraries after plugin.mk (required by FFmpeg)
 # These must come after the Rack SDK linker flags
-LDFLAGS := $(LDFLAGS) -lbcrypt -lws2_32
+ifdef ARCH_WIN
+	LDFLAGS := $(LDFLAGS) -lbcrypt -lws2_32
+endif

@@ -41,4 +41,5 @@ extern Model *modelVectorRotation;
 extern Model *modelWavBank;
 extern Model *modelWavBankMC;
 extern Model *modelNetrunner;
+extern Model *modelTempestVS1;
 extern Model *modelXY;

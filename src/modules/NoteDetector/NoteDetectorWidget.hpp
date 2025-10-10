@@ -42,7 +42,9 @@ struct NoteDetectorWidget : ModuleWidget
         menu->addChild(createIndexSubmenuItem("Output Mode",
             {
                 "Trigger",
-                "Gate"
+                "Gate",
+                "Clocked Trigger",
+                "Clocked Gate"
             },
             [=]() {
                 return(module->output_mode);

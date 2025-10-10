@@ -14,13 +14,11 @@
    - [Controls](#controls)
    - [Display](#display)
 
-3. [Operational Modes](#3-operational-modes)
+3. [Output Modes](#3-output-modes)
    - [Trigger Mode](#trigger-mode)
    - [Gate Mode](#gate-mode)
-
-4. [Clocked vs. Freeform Modes](#4-clocked-vs-freeform-modes)
-   - [Clocked Mode](#clocked-mode)
-   - [Freeform Mode](#freeform-mode)
+   - [Clocked Trigger Mode](#clocked-trigger-mode)
+   - [Clocked Gate Mode](#clocked-gate-mode)
 
 5. [Customizing Settings](#5-customizing-settings)
    - [Output Mode Selection](#output-mode-selection)
@@ -49,25 +47,26 @@ The Note Detector is a collaboration between Voxglitch and Omri Cohen.
 - Configurable output for generating either triggers or gates corresponding to pitch detection.
 - Fine-grained tolerance settings for pitch detection
 - A user-friendly display providing instant visual feedback of the target note.
-- Clock input for detecting repeated notes, allowing multiple detections of the same note within a sequence.
+- Clock input for clocked modes, enabling precise timing and detection of repeated notes within a sequence.
+- Four distinct output modes: Trigger, Gate, Clocked Trigger, and Clocked Gate.
 
 ### Quick-Start Guide
 
 To quickly integrate the Note Detector into your workflow:
 
 1. Patch a CV source (e.g., a sequencer or keyboard module that outputs CV pitch information) to the CV IN port of the Note Detector.
-2. Connect a gate or trigger source from the same sequencer to the CLOCK IN port. This will enable the Note Detector to register repeated notes in the sequence.
-3. Select the target note using the NOTE and OCTAVE knobs
+2. Select the target note using the NOTE and OCTAVE knobs.
+3. Choose an output mode from the context menu (right-click):
+   - **Trigger** or **Gate**: Operates independently, no clock required
+   - **Clocked Trigger** or **Clocked Gate**: Requires a clock signal connected to CLOCK IN
 4. Connect the OUTPUT to the desired module (e.g., an envelope generator or drum module)
 
-#### Sample Patch:
+#### Sample Patch (Clocked Mode):
 - Sequencer Note CV Output > CV IN on Note Detector.
-- Sequencer Gate Output > CLOCK IN on Note Detector (to handle repeated notes).
+- Sequencer Gate Output > CLOCK IN on Note Detector (for clocked modes).
 - Note Detector OUTPUT > CV Input to a kick drum module or ADSR
 
-This setup enables the Note Detector to track and output each instance of a note, including repeated notes.  
-
-You can omit the clock input cable, which will cause the module to run in "Freeform Mode" (see below), which will still output a trigger or gate when the note is detected, but will be unable to detect when the same note repeats in a sequence since the pitch doesn't change.
+This setup enables the Note Detector to track and output each instance of a note, including repeated notes.
 
 # 2. Interface and Controls
 
@@ -77,7 +76,7 @@ The front panel of the Note Detector is elegantly laid out to ensure immediate a
 
 ### Input Ports
 - **CV IN**: Plug the output from your CV source—like a sequencer or keyboard—into this jack. The module will scrutinize the incoming voltage to discern the note being played.
-- **CLOCK IN**: This jack accepts a gate or trigger signal that matches the rhythm of your notes. It's crucial for recognizing consecutive occurrences of the same note, ensuring each is accurately detected and articulated.  If you do not connect a cable to the CLOCK INPUT, the module is considered to be in "freeform mode" (see the section below on Clocked vs. Freeform modes.)
+- **CLOCK IN**: This jack accepts a gate or trigger signal. Required only when using **Clocked Trigger** or **Clocked Gate** modes. The clock signal determines when note detection occurs, crucial for recognizing consecutive occurrences of the same note.
 
 ### Output Ports
 - **OUTPUT**: This jack emits a trigger or gate signal in response to the detected notes. The character of this signal, whether a succinct trigger or an elongated gate, is contingent on the module's Output Mode, which is configured through the context menu.
@@ -90,47 +89,91 @@ The front panel of the Note Detector is elegantly laid out to ensure immediate a
 - **Note Readout**: Displays the note and (optionally) octave that you wish to detect.  It can be configured to display notes with sharps or flats through the "Notation" context menu.
 
 
-# 3. Operational Modes
+# 3. Output Modes
 
-The Note Detector module offers two primary operational modes to suit different musical applications and preferences: Trigger Mode and Gate Mode. These modes determine how the module responds when it detects the specified note.
+The Note Detector module offers four distinct output modes to suit different musical applications and preferences. These modes determine how the module responds when it detects the specified note.
 
 ## Trigger Mode
 
-**Description:**  
-Trigger Mode is designed to output a short, percussive pulse when the module detects the chosen note. This mode is ideal for triggering events with precision, such as starting an envelope, advancing a sequencer, or activating a drum hit.  The trigger length, which defaults to 0.01 seconds, is configured through the Trigger Length context menu.
+**Description:**
+Trigger Mode outputs a short, percussive pulse when the module detects the chosen note entering tolerance. This mode operates independently and does not require a clock input. The trigger length (default 0.01 seconds) is configurable through the Trigger Length context menu.
+
+**Behavior:**
+- Outputs a pulse when the detected note **enters** the tolerance range
+- Trigger occurs on note changes or when adjusting the target note/octave knobs
+- Cannot detect repeated instances of the same note without pitch change
+- No clock input required
 
 **How to Use:**
+1. Connect your CV source to the CV IN jack
+2. Select the desired note and octave using the NOTE and OCTAVE knobs
+3. Select "Trigger" from the Output Mode context menu (right-click)
+4. The OUTPUT will emit a brief pulse when the selected note is detected
 
-1. Connect your CV and Clock sources to the CV IN and CLOCK IN jacks, respectively.
-2. Select the desired note and octave using the NOTE and OCTAVE knobs.
-3. Engage Trigger Mode by selecting it from the context menu (right-click on the module to access it).
-4. The OUTPUT will emit a brief trigger pulse each time the selected note is detected, useful for triggering envelope generators, clocking sequencers, or most all other common applications.
-
-**Application Example:**  
-Set the sequencer to loop a melody and the Note Detector to trigger a drum module every time a C# note is played, regardless of the octave.
+**Application Example:**
+Trigger a drum hit every time a melody changes to a C# note, regardless of octave.
 
 ## Gate Mode
 
-**Description:**  
-Gate Mode outputs a continuous voltage signal as long as the detected note matches the selected parameters. This mode is useful for sustaining notes or effects, like holding a note on a synthesizer or maintaining a gate signal for the duration of a note.
+**Description:**
+Gate Mode outputs a continuous 10V signal for as long as the detected note matches the selected parameters. This mode operates independently without requiring a clock input.
+
+**Behavior:**
+- Output stays high (10V) while the note is within tolerance
+- Output goes low (0V) when the note leaves tolerance
+- Continuous evaluation of the CV input
+- No clock input required
 
 **How to Use:**
+1. Connect your CV source to the CV IN jack
+2. Set the NOTE and OCTAVE knobs to define the target pitch
+3. Select "Gate" from the Output Mode context menu
+4. The OUTPUT will produce a sustained 10V signal while the specified note is present
 
-1. Ensure that your CV and Clock sources are patched into the CV IN and CLOCK IN jacks.
-2. Set the NOTE and OCTAVE knobs to define the pitch that will hold the gate open.
-3. Switch to Gate Mode via the context menu.
-4. The OUTPUT will produce a sustained 10V signal for as long as the specified note is present at the input.
+**Application Example:**
+Sustain a pad sound on a synthesizer module only when an F# in octave 3 is being played, creating selective layering.
 
-**Application Example:**  
-Use the Note Detector to sustain a pad sound on a polyphonic synthesizer module every time an F# in the 3rd octave is detected, creating a layered texture over a melody.
+## Clocked Trigger Mode
 
-# 4. Clocked vs. Freeform Modes
+**Description:**
+Clocked Trigger Mode outputs a short pulse when the target note is detected **and** a clock rising edge occurs. This mode requires a clock input and is essential for detecting repeated instances of the same note in a sequence.
 
-## Clocked Mode
-When a cable is connected to the clock input, evaluation of the note input will only occur when the clock signal transitions from high to low.  This is valuable for identifying instances of the same note that are adjacent in a sequence, that would be impossible to detect based on pitch change alone.
+**Behavior:**
+- Outputs a pulse only on clock rising edges when note matches
+- Can detect consecutive identical notes in a sequence
+- Trigger length is configurable via context menu
+- **Requires** clock input connected to CLOCK IN
 
-## Freeform Mode
-The Note Detector is considered in "freeform" mode if a cable is not present in the CLOCK input.  In Freeform Mode, the Note Detector operates independently of an external clock signal. This mode allows the module to continuously and autonomously analyze the incoming CV signal for note detection. It's particularly effective in scenarios where the sequence of notes varies dynamically or does not require recognition of adjacent, repeated notes.
+**How to Use:**
+1. Connect your CV source to the CV IN jack
+2. Connect a gate/trigger source (typically from your sequencer) to CLOCK IN
+3. Select the desired note and octave using the NOTE and OCTAVE knobs
+4. Select "Clocked Trigger" from the Output Mode context menu
+5. The OUTPUT will emit a pulse on each clock edge when the selected note is present
+
+**Application Example:**
+Trigger a kick drum on every instance of C4 in a bassline sequence, including when C4 repeats consecutively.
+
+## Clocked Gate Mode
+
+**Description:**
+Clocked Gate Mode outputs a gate signal that follows the clock's high/low state, but only when the target note is detected. This mode acts as a "note-filtered clock passthrough."
+
+**Behavior:**
+- Output follows the clock signal's voltage (high/low) while note is within tolerance
+- Output stays low when note doesn't match, regardless of clock state
+- Maintains the clock's rhythm and duty cycle
+- **Requires** clock input connected to CLOCK IN
+
+**How to Use:**
+1. Connect your CV source to the CV IN jack
+2. Connect a gate/trigger source to CLOCK IN
+3. Set the NOTE and OCTAVE knobs to define the target pitch
+4. Select "Clocked Gate" from the Output Mode context menu
+5. The OUTPUT will mirror the clock signal only when the specified note is present
+
+**Application Example:**
+Pass clock pulses to an envelope generator only when a specific note (e.g., A3) is playing, creating rhythmic filtering based on melodic content.
 
 
 # 5. Customizing Settings
@@ -139,20 +182,25 @@ The Note Detector module provides a variety of settings that can be customized t
 
 ## Output Mode Selection
 
-The Note Detector can output either triggers or gates based on the incoming CV signal. Here's how to select the output mode:
+The Note Detector offers four distinct output modes:
 
 1. Right-click on the module to open the context menu.
 2. Locate the Output Mode option.
-3. Choose Trigger to output a short pulse when a note is detected.
-4. Choose Gate to output a sustained voltage as long as the detected note is held.
+3. Choose from:
+   - **Trigger**: Short pulse on note detection (no clock required)
+   - **Gate**: Sustained voltage while note is held (no clock required)
+   - **Clocked Trigger**: Short pulse on clock edge when note matches (requires clock)
+   - **Clocked Gate**: Clock passthrough while note matches (requires clock)
 
 ## Trigger Length Adjustment
 
-When in Trigger Mode, you can adjust the length of the output pulse:
+When using **Trigger** or **Clocked Trigger** modes, you can adjust the length of the output pulse:
 
 1. Right-click on the module to access the context menu.
 2. Select the Trigger Length submenu.
-3. Choose from predefined trigger length options, which determine the duration of the pulse sent from the OUTPUT port.
+3. Choose from predefined trigger length options (ranging from 0.001s to 0.2s), which determine the duration of the pulse sent from the OUTPUT port.
+
+**Note:** This setting only applies to Trigger and Clocked Trigger modes. It has no effect on Gate or Clocked Gate modes.
 
 ## Tolerance Level Configuration
 
