@@ -23,8 +23,7 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      # Note: FFmpeg is built as part of the build process, not a git submodule
 
     - name: Set up Xcode
       uses: maxim-lobanov/setup-xcode@v1
