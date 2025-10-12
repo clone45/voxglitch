@@ -137,9 +137,17 @@ jobs:
       run: |
         # Only set CROSS_COMPILE for x64 builds (cross-compiling from arm64)
         # macos-latest runners are arm64, so arm64 builds are native
+        echo "Building for architecture: ${{ matrix.arch }}"
+
         if [ "${{ matrix.arch }}" = "x64" ]; then
+          echo "Setting CROSS_COMPILE=x64 for cross-compilation"
           export CROSS_COMPILE=x64
+        else
+          echo "Native arm64 build - CROSS_COMPILE not set"
+          unset CROSS_COMPILE
         fi
+
+        echo "CROSS_COMPILE is: ${CROSS_COMPILE:-<not set>}"
 
         # Build the plugin
         make -j$(sysctl -n hw.ncpu) RACK_DIR=$HOME/Rack-SDK
@@ -154,6 +162,8 @@ jobs:
         # Only set CROSS_COMPILE for x64 builds
         if [ "${{ matrix.arch }}" = "x64" ]; then
           export CROSS_COMPILE=x64
+        else
+          unset CROSS_COMPILE
         fi
 
         # Create the distribution package
