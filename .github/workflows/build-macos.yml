@@ -140,8 +140,8 @@ jobs:
         echo "Building for architecture: ${{ matrix.arch }}"
 
         if [ "${{ matrix.arch }}" = "x64" ]; then
-          echo "Setting CROSS_COMPILE=x64 for cross-compilation"
-          export CROSS_COMPILE=x64
+          echo "Setting CROSS_COMPILE for x64 cross-compilation"
+          export CROSS_COMPILE=x86_64-apple-darwin
         else
           echo "Native arm64 build - CROSS_COMPILE not set"
           unset CROSS_COMPILE
@@ -161,7 +161,7 @@ jobs:
       run: |
         # Only set CROSS_COMPILE for x64 builds
         if [ "${{ matrix.arch }}" = "x64" ]; then
-          export CROSS_COMPILE=x64
+          export CROSS_COMPILE=x86_64-apple-darwin
         else
           unset CROSS_COMPILE
         fi
