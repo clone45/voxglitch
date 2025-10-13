@@ -3,7 +3,7 @@ on:
   [push, pull_request]
 
 env:
-  rack-sdk-version: 2.6.4
+  rack-sdk-version: 2.5.2
   rack-plugin-toolchain-dir: /home/build/rack-plugin-toolchain
 
 defaults:
@@ -22,18 +22,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install build dependencies
-        run: |
-          apt-get update
-          apt-get install -y wget git autoconf automake libtool pkg-config unzip
-
-      - name: Download and setup VCV Rack SDK
-        run: |
-          cd $HOME
-          wget https://vcvrack.com/downloads/Rack-SDK-${{ env.rack-sdk-version }}-lin-x64.zip
-          unzip Rack-SDK-${{ env.rack-sdk-version }}-lin-x64.zip
-          echo "RACK_DIR=$HOME/Rack-SDK" >> $GITHUB_ENV
-
       - name: Cache FFmpeg build
         id: cache-ffmpeg
         uses: actions/cache@v4
@@ -41,22 +29,18 @@ jobs:
           path: |
             dep/lib
             dep/include
-          key: ffmpeg-6.1-linux-v1
+            dep/ffmpeg
+          key: ffmpeg-6.1-linux-toolchain-v2
           restore-keys: |
-            ffmpeg-6.1-linux-
+            ffmpeg-6.1-linux-toolchain-
 
-      - name: Build FFmpeg dependency
-        if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
+      - name: Build plugin using toolchain environment
         run: |
-          make dep RACK_DIR=$HOME/Rack-SDK
-
-      - name: Build plugin
-        run: |
-          make -j$(nproc) RACK_DIR=$HOME/Rack-SDK
-
-      - name: Create distribution package
-        run: |
-          make dist RACK_DIR=$HOME/Rack-SDK
+          export RACK_DIR=${{ env.rack-plugin-toolchain-dir }}/Rack-SDK-${{ env.rack-sdk-version }}-lin
+          cd $GITHUB_WORKSPACE
+          make -j$(nproc) dep
+          make -j$(nproc)
+          make dist
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -74,18 +58,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install build dependencies
-        run: |
-          apt-get update
-          apt-get install -y wget git autoconf automake libtool pkg-config unzip
-
-      - name: Download and setup VCV Rack SDK
-        run: |
-          cd $HOME
-          wget https://vcvrack.com/downloads/Rack-SDK-${{ env.rack-sdk-version }}-win-x64.zip
-          unzip Rack-SDK-${{ env.rack-sdk-version }}-win-x64.zip
-          echo "RACK_DIR=$HOME/Rack-SDK" >> $GITHUB_ENV
-
       - name: Cache FFmpeg build
         id: cache-ffmpeg
         uses: actions/cache@v4
@@ -93,22 +65,18 @@ jobs:
           path: |
             dep/lib
             dep/include
-          key: ffmpeg-6.1-windows-v1
+            dep/ffmpeg
+          key: ffmpeg-6.1-windows-toolchain-v2
           restore-keys: |
-            ffmpeg-6.1-windows-
+            ffmpeg-6.1-windows-toolchain-
 
-      - name: Build FFmpeg dependency
-        if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
+      - name: Build plugin using toolchain environment
         run: |
-          make dep RACK_DIR=$HOME/Rack-SDK
-
-      - name: Build plugin
-        run: |
-          make -j$(nproc) RACK_DIR=$HOME/Rack-SDK
-
-      - name: Create distribution package
-        run: |
-          make dist RACK_DIR=$HOME/Rack-SDK
+          export RACK_DIR=${{ env.rack-plugin-toolchain-dir }}/Rack-SDK-${{ env.rack-sdk-version }}-win
+          cd $GITHUB_WORKSPACE
+          make -j$(nproc) dep
+          make -j$(nproc)
+          make dist
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

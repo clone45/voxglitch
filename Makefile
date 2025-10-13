@@ -61,6 +61,7 @@ $(ffmpeg):
 	cd dep/ffmpeg && ./configure \
 		--prefix="$(DEP_PATH)" \
 		$(if $(ARCH_MAC),--extra-cflags="$(MAC_SDK_FLAGS)" --extra-ldflags="$(MAC_SDK_FLAGS)",) \
+		$(if $(ARCH_WIN),--cross-prefix=x86_64-w64-mingw32- --arch=x86_64 --target-os=mingw32,) \
 		--enable-pic \
 		--enable-gpl \
 		--disable-programs \
