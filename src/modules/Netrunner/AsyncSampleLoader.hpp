@@ -162,7 +162,8 @@ public:
             if (remoteSource) {
                 std::string downloadUrl = transformDownloadUrl(path);
                 downloadedPath = createTempFilePath();
-                if (!rack::network::requestDownload(downloadUrl, downloadedPath)) {
+                float progress = 0.0f;
+                if (!rack::network::requestDownload(downloadUrl, downloadedPath, &progress)) {
                     WARN("Netrunner: download failed for %s", path.c_str());
                     cleanupDownload();
                     loadRequested = false;
