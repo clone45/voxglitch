@@ -36,7 +36,7 @@ jobs:
 
       - name: Build plugin using toolchain environment
         run: |
-          export RACK_DIR=${{ env.rack-plugin-toolchain-dir }}/Rack-SDK-${{ env.rack-sdk-version }}-lin
+          export RACK_DIR=${{ env.rack-plugin-toolchain-dir }}/Rack-SDK-lin
           cd $GITHUB_WORKSPACE
           make -j$(nproc) dep
           make -j$(nproc)
@@ -72,7 +72,7 @@ jobs:
 
       - name: Build plugin using toolchain environment
         run: |
-          export RACK_DIR=${{ env.rack-plugin-toolchain-dir }}/Rack-SDK-${{ env.rack-sdk-version }}-win
+          export RACK_DIR=${{ env.rack-plugin-toolchain-dir }}/Rack-SDK-win
           cd $GITHUB_WORKSPACE
           make -j$(nproc) dep
           make -j$(nproc)
