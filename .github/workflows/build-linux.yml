@@ -1,0 +1,55 @@
+name: Build for Linux
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+env:
+  rack-plugin-toolchain-dir: /home/build/rack-plugin-toolchain
+
+jobs:
+  build-linux:
+    name: Linux x64
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/qno/rack-plugin-toolchain-win-linux
+      options: --user root
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache FFmpeg build
+        id: cache-ffmpeg
+        uses: actions/cache@v4
+        with:
+          path: |
+            dep/lib
+            dep/include
+            dep/ffmpeg
+          key: ffmpeg-6.1-linux-toolchain-v3
+          restore-keys: |
+            ffmpeg-6.1-linux-toolchain-
+
+      - name: Build plugin using toolchain
+        run: |
+          export PLUGIN_DIR=$GITHUB_WORKSPACE
+          pushd ${{ env.rack-plugin-toolchain-dir }}
+          make plugin-build-lin-x64
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ env.rack-plugin-toolchain-dir }}/plugin-build
+          name: linux
+
+      - name: Upload release assets (if tagged)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ${{ env.rack-plugin-toolchain-dir }}/plugin-build/*.vcvplugin
+          token: ${{ secrets.GITHUB_TOKEN }}
