@@ -1,6 +1,6 @@
 ## Cue Research
 
-![DigitalProgrammer](images/cue-research/front-panel.jpg)
+![DigitalProgrammer](./front-panel.jpg)
 
 Cue Research is a sample playback module designed for triggering events at specific points in your audio. Load any WAV file and place markers throughout your sample, each one assigned to trigger one of 32 dedicated trigger outputs. The dual waveform display provides both detailed and overview perspectives, allowing for precise marker placement through intuitive zooming, panning, and audio-preview scrubbing. Whether you're syncing specific hits in a drum loop, creating complex rhythmic patterns from a sample, or choreographing precise moment-based events, Cue Research gives you sample-accurate control over your triggers.
 

@@ -1,6 +1,6 @@
 ## Wav Bank
 
-![WaveBank](images/wav-bank-front-panel-0101448.png)
+![WaveBank](./wav-bank-front-panel-0101448.png)
 
 The Wav Bank module is a sample player.  It loads all .wav files from a folder and can switch between them on the fly.  All .wav files from the selected folder will be preloaded, so please keep file sizes reasonable.
 
@@ -17,7 +17,7 @@ The Wav Bank module is a sample player.  It loads all .wav files from a folder a
 
 ### Example Usage
 
-![WaveBank](images/wav-bank-sample-patch-0101447.png)
+![WaveBank](./wav-bank-sample-patch-0101447.png)
 
 1. Reproduce the patch example shown in the image above.
 2. Right click on the module to select a folder containing one or more .wav files.

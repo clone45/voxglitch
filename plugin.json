@@ -24,13 +24,15 @@
         "slug": "autobreak",
         "name": "Autobreak",
         "description": "Automatic breakbeat sample chopper",
-        "tags": ["Sampler", "Drum"]
+        "tags": ["Sampler", "Drum"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/autobreak/user_manual.md"
     },
     {
         "slug": "AutobreakStudio",
-        "name": "Autobreak Studio", 
+        "name": "Autobreak Studio",
         "description": "Advanced automatic breakbeat sample chopper",
-        "tags": ["Sampler", "Drum"]
+        "tags": ["Sampler", "Drum"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/autobreak-studio/user_manual.md"
     },    
     {
         "slug": "bytebeat",
@@ -42,20 +44,23 @@
         "slug": "digitalprogrammer",
         "name": "Digital Programmer",
         "description": "16 channel polyphonic programmer with built-in bank memory slots",
-        "tags": ["Utility", "Polyphonic"]
+        "tags": ["Utility", "Polyphonic"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/digital-programmer/user_manual.md"
     },
 
     {
         "slug": "digitalsequencer",
         "name": "Digital Sequencer",
         "description": "Six-in-one cv/gate sequencers with independent control over clock division and sequence length.",
-        "tags": ["Sequencer"]
+        "tags": ["Sequencer"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/digital-sequencer/user_manual.md"
     },
     {
         "slug": "digitalsequencerxp",
         "name": "Digital Sequencer XP",
         "description": "Polyphonic version of the Digital Sequencer.  Sixteen-in-one cv/gate sequencers with independent control over clock division and sequence length.",
-        "tags": ["Sequencer", "Polyphonic"]
+        "tags": ["Sequencer", "Polyphonic"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/digital-sequencer-xp/user_manual.md"
     },
     {
         "slug": "drumrandomizer",
@@ -67,7 +72,8 @@
         "slug": "cue_research",
         "name": "Cue Research",
         "description": "Sample player with cue based trigger outputs",
-        "tags": ["Sampler"]
+        "tags": ["Sampler"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/cue-research/user_manual.md"
     },
     {
         "slug": "glitchsequencer",
@@ -79,7 +85,8 @@
         "slug": "ghosts",
         "name": "Ghosts",
         "description": "Granular synthesis sample player/scanner with looping grains.",
-        "tags": ["Granular", "Sampler"]
+        "tags": ["Granular", "Sampler"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/ghosts/user_manual.md"
     },
     {
         "slug": "grainfx",
@@ -91,19 +98,22 @@
         "slug": "GrainEngineMK2",
         "name": "Grain Engine MK2",
         "description": "Granular syntesis based .wav player",
-        "tags": ["Granular", "Sampler"]
+        "tags": ["Granular", "Sampler"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/grain-engine-mk2/user_manual.md"
     },
     {
         "slug": "GrainEngineMK2Expander",
         "name": "Grain Engine MK2 Expander",
         "description": "External audio recorder expander for Grain Engine MK2",
-        "tags": ["Granular", "Sampler", "Expander"]
+        "tags": ["Granular", "Sampler", "Expander"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/grain-engine-mk2-expander/user_manual.md"
     },
     {
         "slug": "groovebox",
         "name": "Groove Box",
         "description": "8-track sample based groovebox with parameter locks",
-        "tags": ["Sampler"]
+        "tags": ["Sampler"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/groovebox/user_manual.md"
     },
     {
         "slug": "GrooveBoxExpander",
@@ -115,7 +125,8 @@
         "slug": "hazumi",
         "name": "Hazumi",
         "description": "Bouncing ball sequencer",
-        "tags": ["Sequencer"]
+        "tags": ["Sequencer"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/hazumi/user_manual.md"
     },
     {
         "slug": "looper",
@@ -139,7 +150,7 @@
         "slug": "noteDetector",
         "name": "Note Detector",
         "description": "Produces a gate or trigger output when a specified note is detected at the CV input",
-        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/note-detector.md",
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/note-detector/user_manual.md",
         "tags": ["Utility"]
     }, 
     {
@@ -158,7 +169,8 @@
         "slug": "repeater",
         "name": "Repeater",
         "description": "Looping sample player with playback offset control.",
-        "tags": ["Sampler"]
+        "tags": ["Sampler"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/repeater/user_manual.md"
     },
     {
         "slug": "satanonaut",
@@ -194,7 +206,8 @@
         "slug": "wavbank",
         "name": "Wav Bank",
         "description": "Sample player that can load and switch between all .wav files in a folder.",
-        "tags": ["Sampler"]
+        "tags": ["Sampler"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/wavebank/user_manual.md"
     },
     {
         "slug": "wavbankmc",
@@ -206,7 +219,8 @@
         "slug": "xy",
         "name": "XY",
         "description": "CV output generator with built in gesture recording.",
-        "tags": ["Sequencer", "Recording", "Envelope Generator"]
+        "tags": ["Sequencer", "Recording", "Envelope Generator"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/xy-controller/user_manual.md"
     }
   ]
 }

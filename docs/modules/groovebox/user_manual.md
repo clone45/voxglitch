@@ -1,6 +1,6 @@
 ## Voxglitch Groovebox
 
-![GrooveBox](/docs/images/groovebox/groovebox.jpg)
+![GrooveBox](./groovebox.jpg)
 
 _Graphic Design by [Jim Allman (Interrobang Digital Media)](https://ibang.com/)_
 
@@ -8,7 +8,7 @@ The Voxglitch Groove Box is an 8-track, sample based drum machine with per-step 
 
 ### Minimal Usage
 
-![GrooveBoxMinimalUsage](/docs/images/groovebox/minimal-usage.jpg)
+![GrooveBoxMinimalUsage](./minimal-usage.jpg)
 
 1. Attach a clock to the CLK input.  The clock needs to be fast -- x32 times.
 2. Connect the mix outputs to your audio output
@@ -50,7 +50,7 @@ Once a sample is loaded, you can use the up and down arrows displayed to the rig
 
 The clackity-clack Step Buttons are used to program the rythm used for playback.
 
-![GrooveBoxStepButtons](/docs/images/groovebox/step_buttons.jpg)
+![GrooveBoxStepButtons](./step_buttons.jpg)
 
 The red led indicators above the step buttons show which step is currently active.
 
@@ -60,7 +60,7 @@ It's possible to copy all step data (including parameter lock settings) from one
 
 Here's how:
 
-![GrooveBoxCopyStep](/docs/images/groovebox/copying_step_data.jpg)
+![GrooveBoxCopyStep](./copying_step_data.jpg)
 
 
 1. Right click on a source step button
@@ -90,7 +90,7 @@ Here's an easy to to randomize or clear all steps in a track:
 
 Changing the sequence start and end is done by dragging the sequence length indicator from the endpoints.  Click either the start or end location as indicated in the screen capture below, then drag left or right.
 
-![GrooveBoxTracks](/docs/images/groovebox/change-start-and-end.jpg)
+![GrooveBoxTracks](./change-start-and-end.jpg)
 
 
 ### Parameter Locks
@@ -103,14 +103,14 @@ Here's how they work:
 2. Select what type of thing you want to modify by using the buttons at the very bottom of the module.
 3. Adjust knob underneath whichever steps you want to modify.
 
-![GrooveBoxParameterLocks](/docs/images/groovebox/parameter_locks.jpg)
+![GrooveBoxParameterLocks](./parameter_locks.jpg)
 
 For example, if you wanted to raise the volume on the 5th step of a sequence, select VOLUME, then adjust the 5th knob.
 
 ### Parameter Knobs
 Parameter knobs are used to adjust parameter locks, which are applied to steps.  For example, you might modulate PITCH for different steps in the track.
 
-![GrooveBoxParameterKnobs](/docs/images/groovebox/parameter-knobs.jpg)
+![GrooveBoxParameterKnobs](./parameter-knobs.jpg)
 
 Right click on a parater knob to access some helpful actions, such as clearing, randomizing, and nudging the knob values.
 
@@ -143,9 +143,9 @@ The reset input is used to reset playback to the beginning.
 
 ### Outputs
 
-Individual sample outputs are available at the top of the module  A stereo mix output is available at the two output jacks at the top-right of the module.  
+Individual sample outputs are available at the top of the module  A stereo mix output is available at the two output jacks at the top-right of the module.
 
-![GrooveBoxParameterLocks](/docs/images/groovebox/outputs.jpg)
+![GrooveBoxParameterLocks](./outputs.jpg)
 
 #### Master Volume
 

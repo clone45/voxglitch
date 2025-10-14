@@ -1,6 +1,6 @@
 ## Ghosts
 
-![Ghosts](images/ghosts-front-panel-03.png)
+![Ghosts](./ghosts-front-panel-03.png)
 
 Ghosts is a granular synthesis based sample player.  Load a sample using the right-click context menu and have fun!  In my imagination, this module simulates an old graveyard.  The graveyard spawns "ghosts" and each ghost produces sound.  The sounds that ghosts produce are derived from small slices of your loaded .wav file.  
 
@@ -25,7 +25,7 @@ Ghosts is a granular synthesis based sample player.  Load a sample using the rig
 
 ### Minimal Usage
 
-![Ghosts](images/ghosts-patch-example-02.png)
+![Ghosts](./ghosts-patch-example-02.png)
 
 1. Right click on the module to load a .wav sample. I suggest that the sample be around 3 to 6 seconds long.
 2. Tweak the Length, Quantity, Spawn Rate, and Position knobs.

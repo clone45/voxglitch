@@ -1,6 +1,6 @@
 ## Digital Sequencer XP
 
-![DigitalSequencerXP](images/digital-sequencer-xp/digital-sequencer-xp.jpg)
+![DigitalSequencerXP](./digital-sequencer-xp.jpg)
 
 Digital Sequencer XP is a polyphonic variable length CV/Gate sequencer - times sixteen!  It's very similar to the Digital Sequencer.  It has individual step control over all sequencers, supports a variety of output ranges, and has individual Sample & Hold settings for each sequencer.  It's especially useful if you need a lot of modulation in your patch.
 

@@ -1,5 +1,5 @@
 ## Autobreak Studio
-![AutobreakStudio](images/autobreak-studio/dark-theme-front-panel.jpg)
+![AutobreakStudio](./dark-theme-front-panel.jpg)
 
 Auotbreak Studio turns ordinary drum loops into a break beats.  Load up to 8 drum loops in .wav format, then attach a Clock input running at 16th notes.  That should be enough to hear some output. Please note that loops must be 8 beats long. Need some beats to get started with?  Try [these](https://drive.google.com/file/d/1RwRBpmQjPBpzA53oSWfI4N4Nz-stTU7X/view?usp=sharing)!
 
@@ -20,7 +20,7 @@ Auotbreak Studio turns ordinary drum loops into a break beats.  Load up to 8 dru
 
 (please note that this video is a little old and uses a slightly different front-panel layout)
 
-![Autobreak](images/autobreak-studio/minimal-usage.jpg)
+![Autobreak](./minimal-usage.jpg)
 
 1. Right click on the module to load a .wav sample in the first sample slot.  This should be an 8 bar drum loop, like [this](https://drive.google.com/file/d/1Du3VHSh8jfvxAkt_NjziNreyEWgyrHrr/view?usp=sharing).
 2. Attach a clock input to CLOCK IN running at 16th notes.  Use 8th notes or 32nd notes if the sample is playing too quickly or too slowly.
@@ -87,7 +87,7 @@ To copy a memory slot, follow these steps:
 4. You may repeat step #3 to copy the "source" memory into multiple destinations
 5. Once you are done, press the COPY button again to exit _copy mode_  
 
-![Autobreak](images/autobreak-studio/copy-and-paste.gif)
+![Autobreak](./copy-and-paste.gif)
 
 #### Clearing Memory Slots
 

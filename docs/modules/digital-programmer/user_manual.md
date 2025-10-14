@@ -1,6 +1,6 @@
 ## Digital Programmer
 
-![DigitalProgrammer](images/digital-programmer/digital-programmer.jpg)
+![DigitalProgrammer](./digital-programmer.jpg)
 
 Digital Programmer consists of 16 slides with both individual and polyphonic outputs.  These 16 CV signals would typically be used to control other modules.  In addition, there are 24 memory banks for storing and recalling slider positions.
 

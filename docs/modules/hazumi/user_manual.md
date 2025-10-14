@@ -1,6 +1,6 @@
 ## Hazumi
 
-![XY](images/hazumi-front-panel.png)
+![XY](./hazumi-front-panel.png)
 
 Hazumi is a very minimalistic bouncing ball sequencer with 8 columns and 8 corresponding trigger outputs.
 
@@ -14,4 +14,4 @@ Hazumi is a very minimalistic bouncing ball sequencer with 8 columns and 8 corre
 * OUT - There are 8 outputs, one for each column.  The top output is column #1 and the bottom output is column #8.
 * Example Usage
 
-![](images/hazumi-sample-usage.png)
+![](./hazumi-sample-usage.png)

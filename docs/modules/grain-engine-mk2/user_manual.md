@@ -1,6 +1,6 @@
 ## Grain Engine MK2
 
-<img src="images\grain-engine-mk2\grain-engine-mk2-front-panel-v3.png" alt="grain-engine-mk2-front-panel-v2" style="zoom:75%;" />
+<img src="./grain-engine-mk2-front-panel-v3.png" alt="grain-engine-mk2-front-panel-v2" style="zoom:75%;" />
 
 Grain Engine MK2 is a Granular Synthesis based sample player.  If you're completely new to Granular Synthesis, I would highly recommend that you watch this YouTube video: https://www.youtube.com/watch?v=BWHKKd75V8g.  The first 6 minutes of this video do a wonderful job at introducing the concept of Granular Synthesis.
 
@@ -36,7 +36,7 @@ You may override the internal grain generator using the EXT CLK input.  For exam
 
 POSITION is the most important attribute of a grain.  Position is the starting playback position in the .wav file.  Think of it like the dropping the needle of a record player somewhere in the middle of a song.
 
-<img src="images\grain-engine-mk2\1-create-new-grain.png" alt="1-create-new-grain" style="zoom:50%;" />
+<img src="./1-create-new-grain.png" alt="1-create-new-grain" style="zoom:50%;" />
 
 It's (almost) essential to modulate grain position using LFOs, VCOs, or complex envelope generators.  Other granular synthesis engines do this for you, but I didn't want to make assumptions about how you want to control grain position.  If you don't modulate grain position, all of the grains will start playing back at the same position and sound, at best, like a wavetable playback module.
 
@@ -52,7 +52,7 @@ The Jitter input offers a convenient way of introducing some random fluctuations
 
 The Window is the grain playback length.  A larger window means that the grain will playback a larger portion of the sample.
 
-<img src="images\grain-engine-mk2\grain-window.png" alt="grain-window" style="zoom:50%;" />
+<img src="./grain-window.png" alt="grain-window" style="zoom:50%;" />
 
 #### Pitch
 
@@ -72,13 +72,13 @@ The GRAINS inputs set the maximum number of grains allowed to exist at any one t
 
 To load a sample into Grain Engine MK2, right-click on the front panel and select the sample slot where you'd like to load the sample.  You will be presented with a file selector dialog box.  Currently only .wav files are supported.
 
-<img src="images\grain-engine-mk2\loading-samples.png" alt="loading-samples" style="zoom:20%;" />
+<img src="./loading-samples.png" alt="loading-samples" style="zoom:20%;" />
 
 #### Selecting Samples
 
 The SAMPLE inputs are used to select which sample is playing.  Empty samples *are* selectable but make no sound.
 
-<img src="images\grain-engine-mk2\sample-inputs.png" alt="sample-inputs" style="zoom:30%;" />
+<img src="./sample-inputs.png" alt="sample-inputs" style="zoom:30%;" />
 
 
 
