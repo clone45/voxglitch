@@ -37,7 +37,7 @@ jobs:
       - name: Build plugin using toolchain
         run: |
           export PLUGIN_DIR=$GITHUB_WORKSPACE
-          pushd ${{ env.rack-plugin-toolchain-dir }}
+          cd ${{ env.rack-plugin-toolchain-dir }}
           make plugin-build-lin-x64
 
       - name: Upload artifact
