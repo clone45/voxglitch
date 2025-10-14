@@ -127,8 +127,7 @@
         "slug": "netrunner",
         "name": "Netrunner",
         "description": "Sample player that loads audio files from URLs",
-        "tags": ["Sampler", "Network"],
-        "hidden": true
+        "tags": ["Sampler", "Network"]
     },
     {
         "slug": "tempest-vs1",
