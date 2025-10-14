@@ -30,33 +30,52 @@ jobs:
             dep/lib
             dep/include
             dep/ffmpeg
-          key: ffmpeg-6.1-linux-toolchain-v2
+          key: ffmpeg-6.1-linux-toolchain-v3
           restore-keys: |
             ffmpeg-6.1-linux-toolchain-
 
-      - name: Build plugin using toolchain environment
+      - name: Build plugin using toolchain
         run: |
-          export RACK_DIR=${{ env.rack-plugin-toolchain-dir }}/Rack-SDK-lin
-          cd $GITHUB_WORKSPACE
-          make -j$(nproc) dep
-          make -j$(nproc)
-          make dist
+          export PLUGIN_DIR=$GITHUB_WORKSPACE
+          pushd ${{ env.rack-plugin-toolchain-dir }}
+          make plugin-build-lin-x64
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          path: dist/*.vcvplugin
+          path: ${{ env.rack-plugin-toolchain-dir }}/plugin-build
           name: linux
 
   build-windows:
     name: win
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/qno/rack-plugin-toolchain-win-linux
-      options: --user root
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            git
+            make
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-autotools
+            mingw-w64-x86_64-pkg-config
+            unzip
+            wget
+
+      - name: Download and setup VCV Rack SDK
+        run: |
+          cd $HOME
+          wget https://vcvrack.com/downloads/Rack-SDK-2.6.4-win-x64.zip
+          unzip Rack-SDK-2.6.4-win-x64.zip
 
       - name: Cache FFmpeg build
         id: cache-ffmpeg
@@ -66,17 +85,22 @@ jobs:
             dep/lib
             dep/include
             dep/ffmpeg
-          key: ffmpeg-6.1-windows-toolchain-v2
+          key: ffmpeg-6.1-windows-native-v1
           restore-keys: |
-            ffmpeg-6.1-windows-toolchain-
+            ffmpeg-6.1-windows-native-
 
-      - name: Build plugin using toolchain environment
+      - name: Build FFmpeg dependency
+        if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
         run: |
-          export RACK_DIR=${{ env.rack-plugin-toolchain-dir }}/Rack-SDK-win
-          cd $GITHUB_WORKSPACE
-          make -j$(nproc) dep
-          make -j$(nproc)
-          make dist
+          make dep RACK_DIR=$HOME/Rack-SDK
+
+      - name: Build plugin
+        run: |
+          make -j$(nproc) RACK_DIR=$HOME/Rack-SDK
+
+      - name: Create distribution package
+        run: |
+          make dist RACK_DIR=$HOME/Rack-SDK
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

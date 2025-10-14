@@ -52,6 +52,10 @@ SOURCES += $(wildcard src/modules/Netrunner/*.cpp)
 DISTRIBUTABLES += res
 DISTRIBUTABLES += $(wildcard LICENSE*)
 
+# Dependency target for toolchain compatibility
+.PHONY: dep
+dep: $(ffmpeg)
+
 # FFmpeg build target
 $(ffmpeg):
 	# Clone FFmpeg from official repo
