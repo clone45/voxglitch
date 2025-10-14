@@ -68,6 +68,7 @@ jobs:
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-autotools
             mingw-w64-x86_64-pkg-config
+            mingw-w64-x86_64-jq
             unzip
             wget
 
