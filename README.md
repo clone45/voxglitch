@@ -4,18 +4,22 @@ Modules for VCV Rack.  My apologies if I fall behind on the documentation.
 
 ## Module Documentation
 
-* [Autobreak](docs/autobreak.md)
-* [Autobreak Studio](docs/autobreak-studio.md)
-* [Cue Research](docs/cue-research.md)
-* [Digital Sequencer](docs/digital-sequencer.md)
-* [Ghosts](docs/ghosts.md)
-* [Grain Engine MK2](docs/grain-engine-mk2.md)
-* [Grain Engine MK2 Expander](docs/grain-engine-mk2-expander.md)
-* [Groovebox](docs/groovebox.md)
-* [Hazumi](docs/hazumi.md)
-* [Repeater](docs/repeater.md)
-* [Wavebank](docs/wavebank.md)
-* [XY Controller](docs/xy-controller.md)
+* [Autobreak](docs/modules/autobreak/user_manual.md)
+* [Autobreak Studio](docs/modules/autobreak-studio/user_manual.md)
+* [Cue Research](docs/modules/cue-research/user_manual.md)
+* [Digital Programmer](docs/modules/digital-programmer/user_manual.md)
+* [Digital Sequencer](docs/modules/digital-sequencer/user_manual.md)
+* [Digital Sequencer XP](docs/modules/digital-sequencer-xp/user_manual.md)
+* [Ghosts](docs/modules/ghosts/user_manual.md)
+* [Grain Engine MK2](docs/modules/grain-engine-mk2/user_manual.md)
+* [Grain Engine MK2 Expander](docs/modules/grain-engine-mk2-expander/user_manual.md)
+* [Groovebox](docs/modules/groovebox/user_manual.md)
+* [Hazumi](docs/modules/hazumi/user_manual.md)
+* [Note Detector](docs/modules/note-detector/user_manual.md)
+* [Repeater](docs/modules/repeater/user_manual.md)
+* [Spores](docs/modules/spores/user_manual.md)
+* [Wavebank](docs/modules/wavebank/user_manual.md)
+* [XY Controller](docs/modules/xy-controller/user_manual.md)
 
 ## The Hall of Heros
 
