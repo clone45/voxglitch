@@ -33,6 +33,7 @@ extern Model *modelOneZero;
 extern Model *modelLooper;
 extern Model *modelNoteDetector;
 extern Model *modelRepeater;
+extern Model *modelResomat;
 extern Model *modelSamplerX8;
 extern Model *modelSampler16P;
 extern Model *modelSatanonaut;
