@@ -176,7 +176,7 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: voxglitch-macos-${{ matrix.arch }}
+        name: voxglitch-macos-${{ matrix.arch }}-${{ github.run_number }}-${{ github.sha }}
         path: |
           dist/*.vcvplugin
         retention-days: 30
