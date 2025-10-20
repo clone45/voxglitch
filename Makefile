@@ -110,5 +110,5 @@ include $(RACK_DIR)/plugin.mk
 # Add platform-specific system libraries after plugin.mk (required by FFmpeg)
 # These must come after the Rack SDK linker flags
 ifdef ARCH_WIN
-	LDFLAGS := $(LDFLAGS) -lbcrypt -lws2_32
+	LDFLAGS := $(LDFLAGS) -static-libgcc -static-libstdc++ -lbcrypt -lws2_32
 endif
