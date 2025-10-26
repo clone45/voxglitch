@@ -173,12 +173,6 @@
         "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/repeater/user_manual.md"
     },
     {
-        "slug": "resomat",
-        "name": "Resomat",
-        "description": "Karplus-Strong string synthesizer with multiple excitation methods",
-        "tags": ["Synth", "Physical modeling", "Digital"]
-    },
-    {
         "slug": "satanonaut",
         "name": "Satanonaut",
         "description": "Based on the new comic Galacto Pitfighter: An alien entity hell-bent on mutilating your audio.",
