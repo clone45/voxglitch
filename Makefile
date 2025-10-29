@@ -75,7 +75,7 @@ $(ffmpeg):
 		--prefix="$(DEP_PATH)" \
 		$(if $(FFMPEG_CROSS_COMPILE),--enable-cross-compile --cc="$(FFMPEG_CC)" --cxx="$(FFMPEG_CXX)" --ar="$(FFMPEG_AR)" --ranlib="$(FFMPEG_RANLIB)" --target-os=darwin --arch=x86_64 --extra-cflags="$(MAC_SDK_FLAGS)" --extra-ldflags="$(MAC_SDK_FLAGS)",) \
 		$(if $(ARCH_MAC),$(if $(FFMPEG_CROSS_COMPILE),,--extra-cflags="$(MAC_SDK_FLAGS)" --extra-ldflags="$(MAC_SDK_FLAGS)"),) \
-		$(if $(ARCH_WIN),--cross-prefix=x86_64-w64-mingw32- --arch=x86_64 --target-os=mingw32,) \
+		$(if $(findstring mingw32,$(CC)),--cross-prefix=x86_64-w64-mingw32- --arch=x86_64 --target-os=mingw32,) \
 		--enable-pic \
 		--enable-gpl \
 		--disable-programs \
