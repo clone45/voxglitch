@@ -157,13 +157,15 @@
         "slug": "onepoint",
         "name": "One Point",
         "description": "CV sequencer that uses external file as sequence data",
-        "tags": ["Sequencer"]
-    },   
+        "tags": ["Sequencer"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/onepoint/user_manual.md"
+    },
     {
         "slug": "onezero",
         "name": "One Zero",
         "description": "Gate sequencer that uses external file as sequence data",
-        "tags": ["Sequencer"]
+        "tags": ["Sequencer"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/onezero/user_manual.md"
     },          
     {
         "slug": "repeater",
