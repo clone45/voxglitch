@@ -7,4 +7,5 @@
 .DS_Store
 /.vscode/settings.json
 resolve_conflicts.py
+toolchain-build.log
 

@@ -56,6 +56,15 @@ DISTRIBUTABLES += $(wildcard LICENSE*)
 .PHONY: dep
 dep: $(ffmpeg)
 
+# Detect if we're cross-compiling for macOS (osxcross)
+ifneq ($(findstring darwin,$(CC)),)
+    FFMPEG_CROSS_COMPILE := yes
+    FFMPEG_CC := $(CC)
+    FFMPEG_CXX := $(CXX)
+    FFMPEG_AR := $(AR)
+    FFMPEG_RANLIB := $(RANLIB)
+endif
+
 # FFmpeg build target
 $(ffmpeg):
 	# Clone FFmpeg from official repo
@@ -64,7 +73,8 @@ $(ffmpeg):
 	# Configure FFmpeg with minimal decoder-only build
 	cd dep/ffmpeg && ./configure \
 		--prefix="$(DEP_PATH)" \
-		$(if $(ARCH_MAC),--extra-cflags="$(MAC_SDK_FLAGS)" --extra-ldflags="$(MAC_SDK_FLAGS)",) \
+		$(if $(FFMPEG_CROSS_COMPILE),--enable-cross-compile --cc="$(FFMPEG_CC)" --cxx="$(FFMPEG_CXX)" --ar="$(FFMPEG_AR)" --ranlib="$(FFMPEG_RANLIB)" --target-os=darwin --arch=x86_64 --extra-cflags="$(MAC_SDK_FLAGS)" --extra-ldflags="$(MAC_SDK_FLAGS)",) \
+		$(if $(ARCH_MAC),$(if $(FFMPEG_CROSS_COMPILE),,--extra-cflags="$(MAC_SDK_FLAGS)" --extra-ldflags="$(MAC_SDK_FLAGS)"),) \
 		$(if $(ARCH_WIN),--cross-prefix=x86_64-w64-mingw32- --arch=x86_64 --target-os=mingw32,) \
 		--enable-pic \
 		--enable-gpl \
