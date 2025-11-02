@@ -133,12 +133,6 @@
         "name": "Looper",
         "description": "Bare minimum sample looper",
         "tags": ["Sampler"]
-    },         
-    {
-        "slug": "netrunner",
-        "name": "Netrunner",
-        "description": "Sample player that loads audio files from URLs",
-        "tags": ["Sampler"]
     },
     {
         "slug": "tempest-vs1",
