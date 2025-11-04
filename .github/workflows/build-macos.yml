@@ -23,7 +23,6 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      # Note: FFmpeg is built as part of the build process, not a git submodule
 
     - name: Set up Xcode
       uses: maxim-lobanov/setup-xcode@v1
@@ -43,95 +42,6 @@ jobs:
 
         # Set environment variable for subsequent steps
         echo "RACK_DIR=$HOME/Rack-SDK" >> $GITHUB_ENV
-
-    - name: Cache FFmpeg build
-      id: cache-ffmpeg
-      uses: actions/cache@v4
-      with:
-        path: |
-          dep/lib
-          dep/include
-        key: ffmpeg-6.1-macos-${{ matrix.arch }}-v1
-        restore-keys: |
-          ffmpeg-6.1-macos-${{ matrix.arch }}-
-
-    - name: Build FFmpeg dependency
-      if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
-      run: |
-        # Create dep directory
-        mkdir -p dep
-
-        # Set architecture-specific flags for FFmpeg
-        DEP_PATH="$(pwd)/dep"
-        MAC_SDK_FLAGS="-mmacosx-version-min=10.13"
-
-        # Add architecture-specific flags for cross-compilation
-        if [ "${{ matrix.arch }}" = "arm64" ]; then
-          ARCH_FLAGS="-arch arm64"
-          MAC_SDK_FLAGS="$MAC_SDK_FLAGS $ARCH_FLAGS"
-        else
-          ARCH_FLAGS="-arch x86_64"
-          MAC_SDK_FLAGS="$MAC_SDK_FLAGS $ARCH_FLAGS"
-        fi
-
-        # Clone FFmpeg from official repo
-        cd dep
-        git clone --depth 1 --branch n6.1 https://github.com/FFmpeg/FFmpeg.git ffmpeg
-        cd ffmpeg
-
-        # Configure FFmpeg with minimal decoder-only build
-        ./configure \
-          --prefix="$DEP_PATH" \
-          --extra-cflags="$MAC_SDK_FLAGS" \
-          --extra-ldflags="$MAC_SDK_FLAGS" \
-          --enable-pic \
-          --enable-gpl \
-          --disable-programs \
-          --disable-doc \
-          --disable-avdevice \
-          --disable-swresample \
-          --disable-swscale \
-          --disable-postproc \
-          --disable-avfilter \
-          --disable-network \
-          --disable-iconv \
-          --disable-autodetect \
-          --disable-asm \
-          --disable-x86asm \
-          --disable-everything \
-          --enable-protocol=file \
-          --enable-demuxer=wav \
-          --enable-demuxer=aiff \
-          --enable-demuxer=flac \
-          --enable-demuxer=mov \
-          --enable-demuxer=mp3 \
-          --enable-decoder=pcm_s16le \
-          --enable-decoder=pcm_s24le \
-          --enable-decoder=pcm_f32le \
-          --enable-decoder=pcm_s16be \
-          --enable-decoder=pcm_s24be \
-          --enable-decoder=pcm_f32be \
-          --enable-decoder=flac \
-          --enable-decoder=alac \
-          --enable-decoder=mp3float \
-          --enable-parser=mpegaudio
-
-        # Build FFmpeg (use all CPU cores)
-        make -j$(sysctl -n hw.ncpu)
-
-        # Install to dep/ directory
-        make install
-
-    - name: Verify FFmpeg libraries
-      run: |
-        echo "Checking FFmpeg libraries:"
-        ls -lh dep/lib/libav*.a || echo "FFmpeg libraries not found!"
-
-        # Verify architecture of built libraries
-        if [ -f dep/lib/libavcodec.a ]; then
-          echo "Architecture of libavcodec.a:"
-          lipo -info dep/lib/libavcodec.a
-        fi
 
     - name: Build plugin
       run: |

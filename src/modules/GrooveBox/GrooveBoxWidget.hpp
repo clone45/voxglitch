@@ -81,27 +81,13 @@ struct LoadSamplesFromFolderMenuItem : MenuItem
 
             unsigned int i = 0;
 
-            // Now supports WAV, AIFF, FLAC, MP3, and ALAC formats via FFmpeg
-            const std::vector<std::string> supportedExtensions = {
-                "wav", ".wav",
-                "aiff", ".aiff", "aif", ".aif",
-                "flac", ".flac",
-                "mp3", ".mp3",
-                "m4a", ".m4a", "alac", ".alac"
-            };
-
             for (auto entry : dirList)
             {
-                std::string ext = rack::string::lowercase(system::getExtension(entry));
-
-                // Check if extension is in supported list
-                bool isSupported = std::find(
-                    supportedExtensions.begin(),
-                    supportedExtensions.end(),
-                    ext
-                ) != supportedExtensions.end();
-
-                if (isSupported)
+                if (
+                    // Something happened in Rack 2 where the extension started to include
+                    // the ".", so I decided to check for both versions, just in case.
+                    (rack::string::lowercase(system::getExtension(entry)) == "wav") ||
+                    (rack::string::lowercase(system::getExtension(entry)) == ".wav"))
                 {
                     if (i < NUMBER_OF_TRACKS)
                     {

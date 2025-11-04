@@ -113,27 +113,12 @@ struct WavBank : VoxglitchSamplerModule
 		// loaded out of order.  I think it's a mac thing.
 		sort(dirList.begin(), dirList.end());
 
-		// Now supports WAV, AIFF, FLAC, MP3, and ALAC formats via FFmpeg
-		const std::vector<std::string> supportedExtensions = {
-			"wav", ".wav",
-			"aiff", ".aiff", "aif", ".aif",
-			"flac", ".flac",
-			"mp3", ".mp3",
-			"m4a", ".m4a", "alac", ".alac"
-		};
-
+		// TODO: Consider supporting MP3.
 		for (auto path : dirList)
 		{
-			std::string ext = rack::string::lowercase(system::getExtension(path));
-
-			// Check if extension is in supported list
-			bool isSupported = std::find(
-				supportedExtensions.begin(),
-				supportedExtensions.end(),
-				ext
-			) != supportedExtensions.end();
-
-			if (isSupported)
+			if (
+				(rack::string::lowercase(system::getExtension(path)) == "wav") ||
+				(rack::string::lowercase(system::getExtension(path)) == ".wav"))
 			{
 				SamplePlayer sample_player;
 
@@ -240,9 +225,6 @@ struct WavBank : VoxglitchSamplerModule
 
 		if (playback)
 		{
-			// Store previous playback position before stepping
-			previousPlaybackPosition = selected_sample_player->playback_position;
-
 			float left_audio;
 			float right_audio;
 
@@ -254,88 +236,6 @@ struct WavBank : VoxglitchSamplerModule
 			outputs[WAV_RIGHT_OUTPUT].setVoltage(right_audio * GAIN);
 
 			selected_sample_player->step(pitch, SAMPLE_START_POSITION, SAMPLE_END_POSITION, loop);
-
-			// Detect end of sample (works in both loop and non-loop modes)
-			if (selected_sample_player->sample.loaded)
-			{
-				unsigned int sample_size = selected_sample_player->sample.size() * SAMPLE_END_POSITION;
-
-				if (loop)
-				{
-					// In loop mode, detect when playback position wraps around
-					if (previousPlaybackPosition >= (sample_size - 1) &&
-						selected_sample_player->playback_position < previousPlaybackPosition)
-					{
-						// Sample reached end and looped back
-						endOfSamplePulse.trigger(0.01f);
-
-						// Auto-increment if enabled AND no CV control
-						// Don't auto-increment when CV is controlling sample selection
-						if (auto_increment_on_completion && !inputs[WAV_INPUT].isConnected())
-						{
-							incrementSampleSelection();
-						}
-					}
-				}
-				else
-				{
-					// In non-loop mode, detect when sample stops playing
-					if (!selected_sample_player->playing && previousPlaybackState)
-					{
-						// Sample just ended - trigger the pulse
-						endOfSamplePulse.trigger(0.01f);
-
-						// Auto-increment if enabled AND no CV control
-						// Don't auto-increment when CV is controlling sample selection
-						if (auto_increment_on_completion && !inputs[WAV_INPUT].isConnected())
-						{
-							incrementSampleSelection();
-						}
-					}
-				}
-			}
-
-			previousPlaybackState = selected_sample_player->playing;
 		}
-
-		// Process the pulse generator and output the trigger
-		bool endPulse = endOfSamplePulse.process(1.0 / args.sampleRate);
-		outputs[END_OF_SAMPLE_OUTPUT].setVoltage(endPulse ? 10.0f : 0.0f);
-	}
-
-private:
-	void incrementSampleSelection()
-	{
-		unsigned int number_of_samples = sample_players.size();
-		if (number_of_samples == 0) return;
-
-		// Calculate next sample index with wrap-around
-		unsigned int next_sample = (selected_sample_slot + 1) % number_of_samples;
-
-		// Update the WAV_KNOB parameter value
-		// The knob ranges from 0.0 to 1.0, so we need to scale appropriately
-		float knob_value = (float)next_sample / (float)(number_of_samples - 1);
-
-		// Use setValue to programmatically change the parameter
-		// This will update the knob position visually
-		params[WAV_KNOB].setValue(knob_value);
-
-		// Stop the current sample
-		sample_players[selected_sample_slot].stop();
-
-		// Update the selected sample slot
-		selected_sample_slot = next_sample;
-
-		// Get the loop setting
-		bool loop = params[LOOP_SWITCH].getValue();
-
-		// Start playback of the new sample
-		sample_players[selected_sample_slot].trigger(SAMPLE_START_POSITION, loop);
-
-		// Ensure playback flag is set
-		playback = true;
-
-		// Trigger declick filter for smooth transition
-		declick_filter.trigger();
 	}
 };

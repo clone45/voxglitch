@@ -41,23 +41,6 @@ jobs:
           wget https://vcvrack.com/downloads/Rack-SDK-2.6.4-win-x64.zip
           unzip Rack-SDK-2.6.4-win-x64.zip
 
-      - name: Cache FFmpeg build
-        id: cache-ffmpeg
-        uses: actions/cache@v4
-        with:
-          path: |
-            dep/lib
-            dep/include
-            dep/ffmpeg
-          key: ffmpeg-6.1-windows-native-v1
-          restore-keys: |
-            ffmpeg-6.1-windows-native-
-
-      - name: Build FFmpeg dependency
-        if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
-        run: |
-          make dep RACK_DIR=$HOME/Rack-SDK
-
       - name: Build plugin
         run: |
           make -j$(nproc) RACK_DIR=$HOME/Rack-SDK

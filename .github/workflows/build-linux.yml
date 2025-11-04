@@ -22,18 +22,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Cache FFmpeg build
-        id: cache-ffmpeg
-        uses: actions/cache@v4
-        with:
-          path: |
-            dep/lib
-            dep/include
-            dep/ffmpeg
-          key: ffmpeg-6.1-linux-toolchain-v3
-          restore-keys: |
-            ffmpeg-6.1-linux-toolchain-
-
       - name: Build plugin using toolchain
         run: |
           export PLUGIN_DIR=$GITHUB_WORKSPACE
