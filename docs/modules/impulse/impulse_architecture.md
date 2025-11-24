@@ -4,6 +4,8 @@
 
 The Impulse module is a polyphonic Karplus-Strong synthesizer that supports up to 16 voices. The architecture separates excitation generation from the string simulation itself. This separation made the code easier to maintain, especially when adding the bytebeat excitation sources.
 
+I wrote this documentat in case it'shelpful for other developers who are curious about the implementation.  (Acknowledgements: This was mostly written by AI.)
+
 ## Voice System
 
 Impulse uses an array of 16 independent `ImpulseVoice` objects, each containing its own delay line, filters, and state. While this uses more memory than a shared buffer approach, it makes polyphony straightforward—when a V/Oct input comes in with multiple channels, the module activates as many voices as needed and each processes independently.
