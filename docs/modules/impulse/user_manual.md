@@ -4,7 +4,9 @@
 
 ## Overview
 
-Impulse is an experimental physical modeling synthesizer for VCV Rack based on the Karplus-Strong algorithm. It creates plucking sounds and base sounds either noise or bytebeat equations. The module features a comb delay for harmonic complexity, and three distinct excitation modes for diverse sonic possibilities.
+Impulse is an experimental polyphonic physical modeling synthesizer for VCV Rack based on the Karplus-Strong algorithm. It supports up to 16 independent voices and creates plucking sounds based on either noise or bytebeat equations. The module features a comb delay for harmonic complexity, and three distinct excitation modes for diverse sonic possibilities.
+
+[Read about the code architecture](./impulse_architecture.md)
 
 *** CAUTION ***: The comb delay at the final state of this module can cause extemely loud feedback.
 
@@ -29,7 +31,19 @@ These are the four main panels on the Impulse module.  We'll talk through them o
 
 The two main CV inputs of the Impulse module are trigger input and 1v/Oct input.  These are quite typical for modules, where the trigger input begins note playback, and the 1v/Oct CV input provides the pitch information following the standard 1 volt per octave standard.
 
-This module is sensitive to the timing between the trigger input and the v/oct pitch input.  If the trigger input arrives before a change in the pitch, the new pitch may not be "sampled".  This can happen when sending the pitch through certain quantizers before it reaches the Impulse module.  In order to help you manage this situation, we've added a "Delayed Pitch Sampling" option in the right-click context menu, which will wait for one clock cycle after a trigger impulse arrives before sampling from the pitch input.  
+#### Polyphony
+
+Impulse is a polyphonic module supporting up to 16 independent voices. The number of active voices is automatically determined by the number of channels in the V/OCT input. When you send a polyphonic cable to the V/OCT input, Impulse will automatically configure itself to match that polyphony, with each voice getting its own pitch from its corresponding channel.
+
+The trigger input also supports polyphony, with each channel triggering its corresponding voice independently. This allows for complex polyphonic patterns where each voice can be triggered at different times.
+
+The audio output automatically matches the polyphony of the V/OCT input, providing independent audio streams for each active voice.
+
+Note that while pitch and triggering are handled per-voice, most synthesis parameters (damping, decay, equation settings, etc.) are shared across all voices. This is controlled via CV channel 0, which applies the same modulation to all active voices.
+
+#### Pitch Sampling
+
+This module is sensitive to the timing between the trigger input and the v/oct pitch input.  If the trigger input arrives before a change in the pitch, the new pitch may not be "sampled".  This can happen when sending the pitch through certain quantizers before it reaches the Impulse module.  In order to help you manage this situation, we've added a "Delayed Pitch Sampling" option in the right-click context menu, which will wait for one clock cycle after a trigger impulse arrives before sampling from the pitch input.
 
 
 ![Impulse](./delayed_pitch_sampling.jpg)
@@ -175,6 +189,10 @@ The attenuverters range from -100% to +100%. At the center position (12 o'clock)
 
 The CV inputs accept standard 0-10V control voltages, which are normalized to each parameter's range and scaled by the corresponding attenuverter value.
 
+### CV and Polyphony
+
+In polyphonic mode, the CV modulation architecture uses channel 0 for all synthesis parameters (damping, decay, bleed, equation controls, etc.). This means the same modulation is applied to all active voices, keeping the timbral character consistent across the polyphonic output. Only the V/OCT and TRIGGER inputs respond to multiple channels, with each voice tracking its own pitch and trigger state.
+
 ***
 
 ## Context Menu Options
@@ -216,8 +234,246 @@ This sets the maximum value for the RATE knob, constraining its range. Options i
 ## Technical Specifications
 
 - **Algorithm**: Karplus-Strong physical modeling with bytebeat excitation options
+- **Polyphony**: Up to 16 independent voices
 - **Pitch Range**: -5 to +5 octaves (approximately 20Hz to 20kHz depending on sample rate)
-- **V/OCT Tracking**: 1V/octave standard
-- **CV Inputs**: 0-10V standard range
-- **Audio Output**: ±5V standard VCV Rack audio level
+- **V/OCT Tracking**: 1V/octave standard, polyphonic
+- **Trigger Input**: Polyphonic, independent triggering per voice
+- **Audio Output**: ±5V standard VCV Rack audio level, polyphonic
+- **CV Inputs**: 0-10V standard range (channel 0 modulates all voices)
 - **Equations**: 41 unique bytebeat algorithms
+
+***
+
+## Appendix: Bytebeat Equations
+
+This appendix lists all 41 bytebeat equations available in the Impulse module. Each equation uses the time variable `t` and three parameters (`p1`, `p2`, `p3`) that can be controlled via the P1, P2, and P3 knobs on the module. The default parameter values are P1=128, P2=64, and P3=32.
+
+Note: These equations have been formatted for readability. In the actual implementation, they include safety checks for division by zero and modulo operations.
+
+### Equation 0: Alpha
+```
+((((t^(p1>>3))-456)*(p2+1))/(mod(t>>(p3>>3), 14)+1))+(t*((182>>(mod(t>>15, 16)))&1))
+```
+
+### Equation 1: Omega
+```
+((((t>>5)|(t<<((p3>>4)+1))>>4)*p1)-(div(t, ((1853>>(mod(t>>(p2>>4), 15))))&1)>>(mod(t>>12, 6))))>>4
+```
+
+### Equation 2: Widerange
+```
+(p1^(t>>(p2>>3)))-(t>>(p3>>2))-mod(t, (t&p2))
+```
+
+### Equation 3: Toner
+```
+(t>>mod(t>>12, (p3>>4)))+(mod((p1|t), p2))<<2
+```
+
+### Equation 4: Exploratorium
+```
+(mod(t, (p1+(mod(t, p2)))))^(t>>(p3>>5)))*2
+```
+
+### Equation 5: Melodic
+```
+(t*((t>>9|t>>p1) & p2)) & (p3+5)
+```
+
+### Equation 6: Classic Downward Wiggle
+```
+((t*9&t>>4)|(t*p1&(t>>(5+(p3>>4))))|(t*3&div(t, p2)))-1
+```
+
+### Equation 7: Chewie
+```
+(p1-(((div(p3+1, t))^p1)|(t^(922+p1))))*div((p3+1), p1)*((t+p2)>>mod(p2, 19))
+```
+
+### Equation 8: Buildup
+```
+((div(t, (p3+1))*t) & mod(t, p1)) & (t - div(t, p2)*632)
+```
+
+### Equation 9: Question / Answer
+```
+((t * ((t>>8) | (t>>p3)) & p2 & t>>8)) ^ ((t & (t>>p1)) | (t>>6))
+```
+
+### Equation 10: Sine Wave Wiggle
+```
+sin((((t >> (p1>>5)) ^ ((mod(t, p2+1)) & ((((t >> 4) ^ (t & 64)) & t) & (mod(t, p2+1))) & (p3>>5))) * 8)*0.1)*127
+```
+
+### Equation 11: Rhythmic Cascade
+```
+((t * ((t >> (p1>>5)) | (t >> 8))) & (mod(t, p2+1))) ^ ((t >> (p3>>5)) * ((t >> 12) & (t >> 10)))
+```
+
+### Equation 12: Shifting Rhythm
+```
+(t >> (p1>>5)) * ((mod(t, p2+2)) & (t >> (p3>>5)))
+```
+
+### Equation 13: XOR Pulse
+```
+(t & p1) ^ ((mod(t, p2+1)) * (t >> (p3>>4)))
+```
+
+### Equation 14: Multi-Stream
+```
+(mod(t, p1+1)) | (mod(t, p2+1)) | (t >> 12) | (t >> (p3>>5)) | (mod(t, (p1+p2)/2+1))
+```
+
+### Equation 15: Stepped Melody
+```
+(seq[mod(t >> (p1>>5), 8)] * ((t >> (p2>>5)) | (t >> 12))) + ((t * (p3>>4)) & (t >> 4))
+```
+Note: Uses a sequence array: [0, 1, 0, 2, 1, 3, 2, 4]
+
+### Equation 16: Tan Wave
+```
+tan((t >> (p1>>5))) * (p2+1) + (p3+1)
+```
+
+### Equation 17: High Frequency Buzz
+```
+((t >> (p1>>4)) | (p2>>3)) | (mod(t, p3+1)) * ((t * 3) & (t >> 10))
+```
+
+### Equation 18: Fibonacci Chaos
+```
+(mod(t, p1+1)) | (t >> (p2>>5)) | (t >> 4) | ((((t >> 4) | 16) & scale[mod(t >> 16, 8)]) | (tan((t >> 2)) * 127 + 127) * (fib[mod(t >> 3, 8)] & ((t >> 4) & (mod(t, p3+1)))))
+```
+Note: Uses Fibonacci sequence [1, 1, 2, 3, 5, 8, 13, 21] and scale array [16, 32, 48, 64, 80, 96, 112, 128]
+
+### Equation 19: Sine Chaos
+```
+((sin((t >> (p1>>6))) * 127 + 127) | (abs(t >> 10) | ((t & (p2>>4)) * (t >> 4)))) ^ (t >> 16)) | (mod(t, p3+1))
+```
+
+### Equation 20: Layered Harmonics
+```
+(mod(t, p1+1)) | ((t >> (p3>>5)) + (p2>>4)) | ((t >> 8) ^ ((t >> 10) * ((mod(t, p2+1)) + (t >> 4))))
+```
+
+### Equation 21: Binary Tree
+```
+(((t >> (p1>>4)) & (p2>>3)) | ((mod(t, p3+1)) & (t >> 6))) ^ ((powers[mod(t >> 14, 8)] & ((t >> 8) + (t & 34))) | ((t >> 10) & 32) | (mod(t, p1+1)) | (mod(t, p2+1)))
+```
+Note: Uses powers of 2 array: [1, 3, 7, 15, 31, 63, 127, 255]
+
+### Equation 22: Deep Nested Complexity
+```
+(mod((t>>p1), mod(t, (p1+p3)+1))) | (mod(t, p2+1)) | ((mod(t, (p3>0 ? p3-1 : 1)+1)*p2))
+```
+
+### Equation 23: Shift with Modulo
+```
+((t>>(p1>>4)) | t | t>>6) * p3 + 4 * ((t & (t>>(p2>>4))) | (t>>(p1>>4)))
+```
+
+### Equation 24: Quad Modulo Pattern
+```
+(((t * div(p1, (mod(t, 10) + 10)) & t>>(p3>>4)) & ((t * (p1>>5)) & t>>(p2>>5))) | (t>>4 & p2))<<3
+```
+
+### Equation 25: Masked Complexity
+```
+(t * ((t>>mod(p1, 16) | p2>>9) & (63-p3) & t>>4)) >> mod(t>>12, 15)
+```
+
+### Equation 26: Variable Multiplier Feedback
+```
+((t * ((t>>8) | (t>>p3)) & p2 & t>>8)) ^ ((t & (t>>p1)) | (t>>6))
+```
+
+### Equation 27: Multiplier with Square
+```
+(t * (p1>>5)) & ((t >> p2) * (t >> p3))
+```
+
+### Equation 28: Triple Division Cascade
+```
+(t * (4 | (7 & t>>13)) >> ((~t>>p1) & 1) & p3) + ((t) * (t>>11 & t>>13) * ((~t>>9) & 3) & p2)
+```
+
+### Equation 29: XOR with Variable Multiply
+```
+((p1 | (t>>mod(t>>13, 14))) * (((t>>mod(p1, 12)) - p2) & 249)) >> mod(t>>13, 6) >> mod(p3>>4, 12)
+```
+
+### Equation 30: Combined Multiply-Modulo
+```
+mod((((t * (p1>>4)) + (t >> 4)) * ((mod(t, p2+1)) >> 4)), p3)
+```
+
+### Equation 31: Variable Subtraction
+```
+(div(mod(mod(t >> mod(p1 >> 12, 12), div(t, mod(p2, 12) + 1)), t >> mod(t >> mod(p3, 10), 12)), mod(t >> mod(p2 >> 2, 15), 15))) << 2
+```
+
+### Equation 32: Deep Nested Complexity
+```
+(((t * 4) - (t >> 4)) >> (t & p1) >> ((((mod(t, p2+1))) ^ ((((mod(t, p3+1))) >> 12) & 0x20)) * (((t >> 10) & 51) + ((t & 40) ^ (t & 23)) + mod((t & 44), (t & 17)))))
+```
+
+### Equation 33: Quad Bitwise Mix
+```
+(div((mod(t>>mod(p1>>12, 12), div(t, (mod(p2, 12) + 1))) - (t>>mod(t>>mod(p3, 10), 12))), mod(t>>mod(p1>>2, 15), 15))) << 4
+```
+
+### Equation 34: Modulo Shift Combine
+```
+((t>>3) * ((p1 - 643) | ((mod(325, max(1, t)) | p2) & t)) - ((t>>6) * 35 / mod(p3, t + 1))) >> 6
+```
+
+### Equation 35: Modulo with Product
+```
+((t * div(50*p1, max(1, mod(t, 20011))) & t>>(p1>>12)) - ((t*3) & t>>mod(p3>>5, 255))) | (t>>4 & (255-p2))
+```
+
+### Equation 36: XOR Product Sum
+```
+((720+((45+p1)|div((t^1>>(t-p1)), p2))*t)-(p1>>(p2>>t)))&(255-p3)
+```
+
+### Equation 37: Array Cascade Advanced
+```
+(1099991*t&t<<(p2-mod(t, p1)))>>(p3>>6)
+```
+
+### Equation 38: Large Scale Array
+```
+(((t * (p1>>5)) + (t >> 10)) >> (freq_array[mod(t >> 4, 48)] & p2))
+```
+Note: Uses a 48-element frequency array with values from 64 to 967
+
+### Equation 39: Melodic Array Product
+```
+(melody_array[mod(t * (p1>>5), 20)] * (t >> 4)) * (t >> 10)
+```
+Note: Uses a 20-element melody array with values from 32 to 456
+
+### Equation 40: Complex Modulo Chain
+```
+((mod((((t * (p1>>5)) - (t >> 12))), max(1, (t >> 10))) & (mod(t, p2+1))) & (t >> 4))<<(p3>>5)
+```
+
+### Understanding the Notation
+
+- `t`: Time variable that increments with each sample
+- `p1`, `p2`, `p3`: User-controllable parameters (default: 128, 64, 32)
+- `>>` and `<<`: Bit shift operations (right and left)
+- `&`, `|`, `^`: Bitwise AND, OR, XOR operations
+- `mod(a, b)`: Modulo operation (remainder after division)
+- `div(a, b)`: Safe division operation with zero-check
+- Trigonometric functions (`sin`, `tan`): Return values normalized to bytebeat range
+
+### Tips for Exploration
+
+1. Each equation responds differently to parameter changes. Start with default values and adjust one parameter at a time.
+2. The P1, P2, and P3 parameters have equation-specific effects - there's no universal rule for what they control.
+3. Some equations use lookup tables (arrays) that create melodic or rhythmic patterns.
+4. Equations with trigonometric functions (10, 16, 18, 19) tend to have smoother characteristics.
+5. The Rate and Offset parameters interact with these equations to create evolving textures.
