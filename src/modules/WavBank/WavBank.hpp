@@ -113,12 +113,10 @@ struct WavBank : VoxglitchSamplerModule
 		// loaded out of order.  I think it's a mac thing.
 		sort(dirList.begin(), dirList.end());
 
-		// TODO: Consider supporting MP3.
 		for (auto path : dirList)
 		{
-			if (
-				(rack::string::lowercase(system::getExtension(path)) == "wav") ||
-				(rack::string::lowercase(system::getExtension(path)) == ".wav"))
+			std::string ext = rack::string::lowercase(system::getExtension(path));
+			if (ext == "wav" || ext == ".wav" || ext == "mp3" || ext == ".mp3")
 			{
 				SamplePlayer sample_player;
 

@@ -31,11 +31,10 @@ struct AutobreakStudioLoadFolder : MenuItem
 
             for (auto filename : dirList)
             {
-                if (
-                    // Something happened in Rack 2 where the extension started to include
-                    // the ".", so I decided to check for both versions, just in case.
-                    (rack::string::lowercase(system::getExtension(filename)) == "wav") ||
-                    (rack::string::lowercase(system::getExtension(filename)) == ".wav"))
+                // Something happened in Rack 2 where the extension started to include
+                // the ".", so I decided to check for both versions, just in case.
+                std::string ext = rack::string::lowercase(system::getExtension(filename));
+                if (ext == "wav" || ext == ".wav" || ext == "mp3" || ext == ".mp3")
                 {
                     if (i < 8)
                     {

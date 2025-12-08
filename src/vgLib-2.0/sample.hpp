@@ -1,6 +1,8 @@
 #pragma once
 
 #include "AudioFile.h"
+#include "dr_mp3.h"
+#include <algorithm>
 
 struct SampleAudioBuffer
 {
@@ -65,6 +67,14 @@ struct SampleAudioBuffer
   }
 };
 
+// Helper function to detect MP3 files by extension
+static bool isMP3File(std::string path) {
+  if (path.length() < 4) return false;
+  std::string ext = path.substr(path.length() - 4);
+  std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+  return ext == ".mp3";
+}
+
 struct Sample
 {
   std::string path = "";
@@ -101,6 +111,11 @@ struct Sample
 
   bool load(std::string path)
   {
+    // Detect file type and route to appropriate loader
+    if (isMP3File(path)) {
+      return loadMP3(path);
+    }
+
     // Set loading flags
     this->loading = true;
     this->loaded = false;
@@ -163,6 +178,73 @@ struct Sample
     return(true);
   };
 
+  bool loadMP3(std::string path)
+  {
+    // Set loading flags
+    this->loading = true;
+    this->loaded = false;
+
+    drmp3_config config;
+    drmp3_uint64 totalFrameCount = 0;
+
+    // Load entire MP3 file into memory as float samples
+    float* pSampleData = drmp3_open_file_and_read_pcm_frames_f32(
+        path.c_str(),
+        &config,
+        &totalFrameCount,
+        NULL
+    );
+
+    if (pSampleData == NULL) {
+      this->loading = false;
+      this->loaded = false;
+      return false;
+    }
+
+    // Store metadata
+    this->channels = config.channels;
+    this->sample_rate = config.sampleRate;
+    sample_audio_buffer.clear();
+
+    // Copy samples to our buffer structure
+    // drmp3 returns interleaved samples: [L, R, L, R, ...]
+    for (drmp3_uint64 i = 0; i < totalFrameCount; i++) {
+      float left, right;
+
+      if (config.channels == 2) {
+        left = pSampleData[i * 2];
+        right = pSampleData[i * 2 + 1];
+      } else if (config.channels == 1) {
+        left = pSampleData[i];
+        right = left; // Mono to stereo
+      } else {
+        // For >2 channels, just use first two
+        left = pSampleData[i * config.channels];
+        right = pSampleData[i * config.channels + 1];
+      }
+
+      sample_audio_buffer.push_back(left, right);
+    }
+
+    // Free the loaded data from dr_mp3
+    drmp3_free(pSampleData, NULL);
+
+    // Store sample metadata
+    this->sample_length = sample_audio_buffer.size();
+    this->filename = system::getFilename(path);
+    this->display_name = filename;
+
+    // Remove extension (.mp3)
+    if (this->display_name.length() > 4) {
+      this->display_name.erase(this->display_name.length() - 4);
+    }
+
+    this->path = path;
+    this->loading = false;
+    this->loaded = true;
+
+    return true;
+  }
 
   bool isLoaded()
   {

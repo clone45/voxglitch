@@ -326,14 +326,13 @@ struct TrackSampleNudge : TransparentWidget
             std::vector<std::string> directory_list = system::getEntries(directory);
             std::vector<std::string> wav_files;
 
-            // Folders might contain things that aren't .wav files, and we need to
+            // Folders might contain things that aren't audio files, and we need to
             // weed those out. In order to do that, we iterate over the directory list
             // and populate a new vector called "wav_files".
             for (auto entry : directory_list)
             {
-                if (
-                    (rack::string::lowercase(system::getExtension(entry)) == "wav") ||
-                    (rack::string::lowercase(system::getExtension(entry)) == ".wav"))
+                std::string ext = rack::string::lowercase(system::getExtension(entry));
+                if (ext == "wav" || ext == ".wav" || ext == "mp3" || ext == ".mp3")
                 {
                     wav_files.push_back(entry);
                 }

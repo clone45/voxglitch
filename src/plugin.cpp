@@ -1,4 +1,6 @@
 // src\modules\core\plugin.cpp
+#define DR_MP3_IMPLEMENTATION
+#include "vgLib-2.0/dr_mp3.h"
 #include "plugin.hpp"
 #include "vgLib-2.0/constants.cpp"
 

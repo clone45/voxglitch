@@ -274,12 +274,10 @@ struct WavBankMC : VoxglitchSamplerModule
 		// in the folder.
 		for (auto entry : dirList)
 		{
-			if (
-        // Something happened in Rack 2 where the extension started to include
-        // the ".", so I decided to check for both versions, just in case.
-        (rack::string::lowercase(system::getExtension(entry)) == "wav") ||
-        (rack::string::lowercase(system::getExtension(entry)) == ".wav")
-      )
+			// Something happened in Rack 2 where the extension started to include
+			// the ".", so I decided to check for both versions, just in case.
+			std::string ext = rack::string::lowercase(system::getExtension(entry));
+			if (ext == "wav" || ext == ".wav" || ext == "mp3" || ext == ".mp3")
 			{
         // Create new multi-channel sample.  This structure is defined in Common/sample_mc.hpp
 				SampleMC new_sample;

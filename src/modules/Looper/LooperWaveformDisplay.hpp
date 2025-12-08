@@ -52,7 +52,7 @@ struct LooperWaveformDisplay : TransparentWidget
         pathSelected(module, path);
       });
     #else
-      char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("Wav:wav"));
+      char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, osdialog_filters_parse("Audio:wav,mp3"));
       pathSelected(module, path);
     #endif
   }
