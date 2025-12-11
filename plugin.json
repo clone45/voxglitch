@@ -137,7 +137,7 @@
     {
         "slug": "tempest-vs1",
         "name": "Tempest VS-1",
-        "description": "MIDI controller interface for Dave Smith Instruments Tempest",
+        "description": "MIDI controller interface for Tempest VS-1",
         "tags": ["MIDI", "Controller", "Utility"]
     },
     {
