@@ -135,6 +135,12 @@
         "tags": ["Sampler"]
     },
     {
+        "slug": "maya",
+        "name": "Maya",
+        "description": "AI voice word player with CV-controlled word selection",
+        "tags": ["Sampler", "Voice"]
+    },
+    {
         "slug": "tempest-vs1",
         "name": "Tempest VS-1",
         "description": "MIDI controller interface for Tempest VS-1",

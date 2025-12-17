@@ -30,6 +30,7 @@ void init(Plugin* p) {
   p->addModel(modelOnePoint);
   p->addModel(modelOneZero);
   p->addModel(modelLooper);
+  p->addModel(modelMaya);
   p->addModel(modelNoteDetector);
   p->addModel(modelRepeater);
   p->addModel(modelSamplerX8);
