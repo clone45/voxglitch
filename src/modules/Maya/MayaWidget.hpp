@@ -48,7 +48,7 @@ struct MayaWidget : VoxglitchSamplerModuleWidget
 
 		// Word display - centered on lcd_display element
 		MayaWordDisplay *word_display = new MayaWordDisplay();
-		word_display->box.size = Vec(110, 30);
+		word_display->box.size = Vec(85, 31);  // Match SVG lcd_display dimensions
 		Vec lcd_center = panelHelper.findNamed("lcd_display");
 		word_display->box.pos = Vec(lcd_center.x - word_display->box.size.x / 2, lcd_center.y - word_display->box.size.y / 2);
 		word_display->module = module;

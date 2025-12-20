@@ -138,7 +138,7 @@
         "slug": "maya",
         "name": "Maya",
         "description": "AI voice word player with CV-controlled word selection",
-        "tags": ["Sampler", "Voice"]
+        "tags": ["Sampler"]
     },
     {
         "slug": "tempest-vs1",
