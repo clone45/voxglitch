@@ -87,5 +87,12 @@ struct MayaWidget : VoxglitchSamplerModuleWidget
 				module->pitch_cv_mode = mode;
 			}
 		));
+
+		// About Maya
+		menu->addChild(new MenuEntry);
+		menu->addChild(createMenuLabel("Maya is an AI personality on the R1N platform."));
+		menu->addChild(createMenuItem("Visit r1n.ai", "", [=]() {
+			system::openBrowser("https://r1n.ai");
+		}));
 	}
 };
