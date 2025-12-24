@@ -15,29 +15,61 @@ struct WavBankMCWidget : ModuleWidget
         addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 
-        addParam(createParamCentered<RoundHugeBlackKnob>(panelHelper.findNamed("wav_knob"), module, WavBankMC::WAV_KNOB));
-        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("wav_input"), module, WavBankMC::WAV_INPUT));
-        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("wav_attn_knob"), module, WavBankMC::WAV_ATTN_KNOB));
+        // Sample selection controls
+        addParam(createParamCentered<RoundBlackKnob>(panelHelper.findNamed("sample_knob"), module, WavBankMC::WAV_KNOB));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("sample_input"), module, WavBankMC::WAV_INPUT));
+        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("sample_attn_knob"), module, WavBankMC::WAV_ATTN_KNOB));
 
+        // Start position controls
+        addParam(createParamCentered<RoundBlackKnob>(panelHelper.findNamed("start_knob"), module, WavBankMC::START_KNOB));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("start_input"), module, WavBankMC::START_INPUT));
+        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("start_attn_knob"), module, WavBankMC::START_ATTN_KNOB));
+
+        // End position controls
+        addParam(createParamCentered<RoundBlackKnob>(panelHelper.findNamed("end_knob"), module, WavBankMC::END_KNOB));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("end_input"), module, WavBankMC::END_INPUT));
+        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("end_attn_knob"), module, WavBankMC::END_ATTN_KNOB));
+
+        // Attack envelope controls
+        addParam(createParamCentered<RoundBlackKnob>(panelHelper.findNamed("attack_knob"), module, WavBankMC::ATTACK_KNOB));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("attack_input"), module, WavBankMC::ATTACK_INPUT));
+        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("attack_attn_knob"), module, WavBankMC::ATTACK_ATTN_KNOB));
+
+        // Decay envelope controls
+        addParam(createParamCentered<RoundBlackKnob>(panelHelper.findNamed("decay_knob"), module, WavBankMC::DECAY_KNOB));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("decay_input"), module, WavBankMC::DECAY_INPUT));
+        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("decay_attn_knob"), module, WavBankMC::DECAY_ATTN_KNOB));
+
+        // Trigger and navigation controls
         addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("trig_input"), module, WavBankMC::TRIG_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("next_input"), module, WavBankMC::NEXT_WAV_TRIGGER_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("prev_input"), module, WavBankMC::PREV_WAV_TRIGGER_INPUT));
 
-        addParam(createParamCentered<squareToggle>(panelHelper.findNamed("trig_button"), module, WavBankMC::TRIG_INPUT_BUTTON_PARAM));
-        addParam(createParamCentered<squareToggle>(panelHelper.findNamed("next_button"), module, WavBankMC::NEXT_WAV_BUTTON_PARAM));
-        addParam(createParamCentered<squareToggle>(panelHelper.findNamed("prev_button"), module, WavBankMC::PREV_WAV_BUTTON_PARAM));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(panelHelper.findNamed("trig_button"), module, WavBankMC::TRIG_INPUT_BUTTON_PARAM, WavBankMC::TRIG_INPUT_BUTTON_LIGHT));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(panelHelper.findNamed("next_button"), module, WavBankMC::NEXT_WAV_BUTTON_PARAM, WavBankMC::NEXT_WAV_BUTTON_LIGHT));
+        addParam(createLightParamCentered<VCVLightBezel<WhiteLight>>(panelHelper.findNamed("prev_button"), module, WavBankMC::PREV_WAV_BUTTON_PARAM, WavBankMC::PREV_WAV_BUTTON_LIGHT));
 
+        // Pitch and volume CV inputs with attenuverters
         addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("pitch_input"), module, WavBankMC::PITCH_INPUT));
+        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("pitch_attn_knob"), module, WavBankMC::PITCH_ATTN_KNOB));
         addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("volume_input"), module, WavBankMC::VOLUME_INPUT));
+        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("vol_attn_knob"), module, WavBankMC::VOL_ATTN_KNOB));
 
-        addOutput(createOutputCentered<VoxglitchPolyPort>(panelHelper.findNamed("poly_wav_output"), module, WavBankMC::POLY_WAV_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("left_wav_output"), module, WavBankMC::LEFT_WAV_OUTPUT));
-        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("right_wav_output"), module, WavBankMC::RIGHT_WAV_OUTPUT));
+        // Audio outputs
+        addOutput(createOutputCentered<VoxglitchPolyPort>(panelHelper.findNamed("poly_audio_output"), module, WavBankMC::POLY_WAV_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("left_audio_output"), module, WavBankMC::LEFT_WAV_OUTPUT));
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("right_audio_output"), module, WavBankMC::RIGHT_WAV_OUTPUT));
 
+        // EOC output and division knob
+        addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("eoc_output"), module, WavBankMC::EOC_OUTPUT));
+        addParam(createParamCentered<Trimpot>(panelHelper.findNamed("division_output"), module, WavBankMC::DIVISION_KNOB));
+
+        // Loop switch and CV input
         addParam(createParamCentered<squareToggle>(panelHelper.findNamed("loop_switch"), module, WavBankMC::LOOP_SWITCH));
+        addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("loop_input"), module, WavBankMC::LOOP_INPUT));
 
         WavBankMCReadout *readout = new WavBankMCReadout();
-        readout->box.pos = Vec(23.6220, 23.6220);
+        readout->box.pos = Vec(23.6220, 33.6220);
         readout->box.size = Vec(110, 30);
         readout->module = module;
         addChild(readout);

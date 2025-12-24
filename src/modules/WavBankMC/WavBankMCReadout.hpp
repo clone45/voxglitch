@@ -75,7 +75,7 @@ struct WavBankMCReadout : TransparentWidget
         for(unsigned int i = window_start; i < window_end; i++)
         {
           text_to_display = module->samples[i].display_name;
-          text_to_display.resize(22);
+          text_to_display.resize(28);
 
           if(i == module->selected_sample_slot || (show_hover_effect && hover_row == i))
           {
@@ -120,7 +120,7 @@ struct WavBankMCReadout : TransparentWidget
       for(unsigned int i = 0; i < 20; i++)
       {
         text_to_display = dummy_filenames[i];
-        text_to_display.resize(22);
+        text_to_display.resize(28);
 
         if(i == 12)
         {
