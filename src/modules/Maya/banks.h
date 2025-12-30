@@ -9,7 +9,7 @@ namespace maya {
 // Bank definitions
 // Words are ordered to match the generated audio files (alphabetical within bank)
 
-const unsigned int NUM_BANKS = 9;
+const unsigned int NUM_BANKS = 10;
 
 const std::vector<std::string> BANK_NAMES = {
     "Pronouns",      // Bank 0: 0V-1V
@@ -20,7 +20,8 @@ const std::vector<std::string> BANK_NAMES = {
     "Time",          // Bank 5: 5V-6V
     "Emotions",      // Bank 6: 6V-7V
     "Numbers",       // Bank 7: 7V-8V
-    "Questions"      // Bank 8: 8V-9V
+    "Questions",     // Bank 8: 8V-9V
+    "Promo"          // Bank 9: 9V-10V
 };
 
 // Bank 0: Pronouns & Subjects
@@ -97,6 +98,13 @@ const std::vector<std::string> BANK_8_QUESTIONS = {
     "where", "which", "who", "why", "wow", "wrong", "yes", "yet"
 };
 
+// Bank 9: Promo
+const std::vector<std::string> BANK_9_PROMO = {
+    "vcv", "rack", "module", "control", "voltage", "voxglitch", "vox", "glitch", 
+    "wavehead", "wave", "head", "jeremy", "wentworth", "dot", "com", 
+    "electronic", "music", "techno", "house", "dance", "ambient"
+};
+
 // All banks in order
 const std::vector<const std::vector<std::string>*> ALL_BANKS = {
     &BANK_0_PRONOUNS,
@@ -107,7 +115,8 @@ const std::vector<const std::vector<std::string>*> ALL_BANKS = {
     &BANK_5_TIME,
     &BANK_6_EMOTIONS,
     &BANK_7_NUMBERS,
-    &BANK_8_QUESTIONS
+    &BANK_8_QUESTIONS,
+    &BANK_9_PROMO
 };
 
 // Helper function to get bank index from voltage (0-9V maps to banks 0-8)
