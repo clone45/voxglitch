@@ -14,6 +14,7 @@ The vocabulary is organized into **banks** that map to voltage ranges. This allo
 - 6.0V - 6.99V: Bank 7 (Emotions/States)
 - 7.0V - 7.99V: Bank 8 (Numbers/Quantities)
 - 8.0V - 8.99V: Bank 9 (Questions/Interjections)
+- 9.0V - 9.99V: Bank 10 (Promo)
 
 ---
 
@@ -480,6 +481,46 @@ The vocabulary is organized into **banks** that map to voltage ranges. This allo
 | wrong | Incorrectness |
 
 **Example phrases:** "oh why", "yes I know", "maybe someday"
+
+---
+
+## Bank 10: Promo (9V - 10V)
+*Promotional and music-related terms. VCV Rack and Voxglitch branding.*
+
+### VCV/Voxglitch
+| Word | Notes |
+|------|-------|
+| vcv | VCV Rack |
+| rack | Modular rack |
+| module | Plugin module |
+| control | CV control |
+| voltage | Electrical potential |
+| voxglitch | Plugin developer |
+| vox | Voice/vocal |
+| glitch | Digital artifact |
+
+### Wavehead
+| Word | Notes |
+|------|-------|
+| wavehead | Audio project |
+| wave | Waveform |
+| head | Leader/top |
+| jeremy | First name |
+| wentworth | Last name |
+| dot | Period/separator |
+| com | Commercial TLD |
+
+### Music Genres
+| Word | Notes |
+|------|-------|
+| electronic | Electronic music |
+| music | Musical art |
+| techno | Techno genre |
+| house | House music |
+| dance | Dance music |
+| ambient | Ambient music |
+
+**Example phrases:** "voxglitch vcv rack module", "electronic music techno house"
 
 ---
 

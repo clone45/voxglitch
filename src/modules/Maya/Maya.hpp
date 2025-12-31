@@ -118,6 +118,12 @@ struct Maya : VoxglitchSamplerModule
 	void onSampleRateChange(const SampleRateChangeEvent& e) override
 	{
 		fade_envelope.setSampleRate(e.sampleRate);
+
+		// Update all sample players' step amounts for the new sample rate
+		for (auto& player : sample_players)
+		{
+			player.updateSampleRate();
+		}
 	}
 
 	void load_samples_from_path(std::string path)

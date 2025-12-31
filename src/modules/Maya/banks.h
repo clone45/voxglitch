@@ -21,7 +21,7 @@ const std::vector<std::string> BANK_NAMES = {
     "Emotions",      // Bank 6: 6V-7V
     "Numbers",       // Bank 7: 7V-8V
     "Questions",     // Bank 8: 8V-9V
-    "Promo"          // Bank 9: 9V-10V
+    "Custom"         // Bank 9: 9V-10V (user-replaceable samples)
 };
 
 // Bank 0: Pronouns & Subjects
@@ -98,11 +98,14 @@ const std::vector<std::string> BANK_8_QUESTIONS = {
     "where", "which", "who", "why", "wow", "wrong", "yes", "yet"
 };
 
-// Bank 9: Promo
-const std::vector<std::string> BANK_9_PROMO = {
-    "vcv", "rack", "module", "control", "voltage", "voxglitch", "vox", "glitch", 
-    "wavehead", "wave", "head", "jeremy", "wentworth", "dot", "com", 
-    "electronic", "music", "techno", "house", "dance", "ambient"
+// Bank 9: Custom (user-replaceable samples)
+// Users can replace custom_1.mp3 through custom_21.mp3 with their own audio
+const std::vector<std::string> BANK_9_CUSTOM = {
+    "custom_1", "custom_2", "custom_3", "custom_4", "custom_5",
+    "custom_6", "custom_7", "custom_8", "custom_9", "custom_10",
+    "custom_11", "custom_12", "custom_13", "custom_14", "custom_15",
+    "custom_16", "custom_17", "custom_18", "custom_19", "custom_20",
+    "custom_21"
 };
 
 // All banks in order
@@ -116,7 +119,7 @@ const std::vector<const std::vector<std::string>*> ALL_BANKS = {
     &BANK_6_EMOTIONS,
     &BANK_7_NUMBERS,
     &BANK_8_QUESTIONS,
-    &BANK_9_PROMO
+    &BANK_9_CUSTOM
 };
 
 // Helper function to get bank index from voltage (0-9V maps to banks 0-8)
