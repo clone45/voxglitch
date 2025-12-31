@@ -1,6 +1,7 @@
 #pragma once
 
 #include "banks.h"
+#include "VocabularyLoader.hpp"
 #include "FadeEnvelope.hpp"
 
 struct Maya : VoxglitchSamplerModule
@@ -9,6 +10,8 @@ struct Maya : VoxglitchSamplerModule
 	unsigned int selected_word_index = 0;  // Index within current bank
 	std::string path;
 	bool loading_samples = false;
+
+	maya::Vocabulary vocabulary;  // Loaded vocabulary (from JSON or defaults)
 
 	std::vector<SamplePlayer> sample_players;
 	std::vector<std::string> word_names;  // Store word names for display
@@ -106,6 +109,12 @@ struct Maya : VoxglitchSamplerModule
 	// Called when module is added to the rack
 	void onAdd(const AddEvent& e) override
 	{
+		// Load vocabulary first (from JSON or fallback to defaults)
+		std::string vocab_path = asset::plugin(pluginInstance, "res/modules/maya/vocabulary.json");
+		if (!maya::loadVocabularyFromJson(vocab_path, vocabulary)) {
+			maya::buildDefaultVocabulary(vocabulary);
+		}
+
 		// Load default samples if no samples have been loaded yet
 		if (sample_players.empty() && path.empty())
 		{
@@ -169,13 +178,14 @@ struct Maya : VoxglitchSamplerModule
 	// Returns -1 if word not found
 	int getSampleIndexForBankWord(unsigned int bank, unsigned int word_index)
 	{
-		if (bank >= maya::NUM_BANKS) return -1;
+		if (bank >= vocabulary.banks.size()) return -1;
 
-		const std::vector<std::string>* bank_words = maya::ALL_BANKS[bank];
-		if (word_index >= bank_words->size()) return -1;
+		const maya::VocabularyBank& vbank = vocabulary.banks[bank];
+		if (word_index >= vbank.words.size()) return -1;
 
-		const std::string& word = (*bank_words)[word_index];
-		auto it = word_to_sample_index.find(word);
+		// Use file name (not display) for sample lookup
+		const std::string& filename = vbank.words[word_index].file;
+		auto it = word_to_sample_index.find(filename);
 		if (it != word_to_sample_index.end())
 		{
 			return static_cast<int>(it->second);
@@ -192,19 +202,27 @@ struct Maya : VoxglitchSamplerModule
 		return "";
 	}
 
+	std::string getCurrentWordDisplayName()
+	{
+		if (selected_bank >= vocabulary.banks.size()) return "";
+		const maya::VocabularyBank& bank = vocabulary.banks[selected_bank];
+		if (selected_word_index >= bank.words.size()) return "";
+		return bank.words[selected_word_index].display;
+	}
+
 	std::string getCurrentBankName()
 	{
-		if (selected_bank < maya::BANK_NAMES.size())
+		if (selected_bank < vocabulary.banks.size())
 		{
-			return maya::BANK_NAMES[selected_bank];
+			return vocabulary.banks[selected_bank].name;
 		}
 		return "";
 	}
 
 	unsigned int getWordCountInCurrentBank()
 	{
-		if (selected_bank >= maya::NUM_BANKS) return 0;
-		return maya::ALL_BANKS[selected_bank]->size();
+		if (selected_bank >= vocabulary.banks.size()) return 0;
+		return vocabulary.banks[selected_bank].words.size();
 	}
 
 	unsigned int getWordCount()
@@ -230,14 +248,16 @@ struct Maya : VoxglitchSamplerModule
 		if (sample_players.empty())
 			return;
 
-		// Calculate bank selection (0-9V maps to banks 0-8)
+		// Calculate bank selection (0-9V maps to banks 0-9)
+		unsigned int num_banks = vocabulary.banks.size();
 		float bank_cv = 0.0f;
 		if (inputs[BANK_INPUT].isConnected())
 		{
 			bank_cv = inputs[BANK_INPUT].getVoltage() * params[BANK_ATTN_KNOB].getValue();
 		}
-		float bank_knob = params[BANK_KNOB].getValue() * (maya::NUM_BANKS - 1);
+		float bank_knob = params[BANK_KNOB].getValue() * (num_banks > 0 ? num_banks - 1 : 0);
 		unsigned int new_bank = maya::voltageToBank(bank_cv + bank_knob);
+		if (new_bank >= num_banks && num_banks > 0) new_bank = num_banks - 1;
 
 		// Calculate word selection within bank (0-1 normalized)
 		float word_cv = 0.0f;
@@ -250,9 +270,9 @@ struct Maya : VoxglitchSamplerModule
 
 		// Get word count in the selected bank
 		unsigned int bank_word_count = 0;
-		if (new_bank < maya::NUM_BANKS)
+		if (new_bank < num_banks)
 		{
-			bank_word_count = maya::ALL_BANKS[new_bank]->size();
+			bank_word_count = vocabulary.banks[new_bank].words.size();
 		}
 
 		unsigned int new_word_index = maya::normalizedToWordIndex(word_normalized, bank_word_count);

@@ -107,7 +107,7 @@ struct MayaWordDisplay : TransparentWidget
 		std::string display_text = "";
 		std::string count_text = "";
 
-		std::string word_name = module->getCurrentWordName();
+		std::string word_name = module->getCurrentWordDisplayName();
 		std::string bank_name = module->getCurrentBankName();
 		unsigned int word_count = module->getWordCountInCurrentBank();
 
