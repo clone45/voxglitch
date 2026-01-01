@@ -10,6 +10,7 @@ struct SampleAudioBuffer
   std::vector<float> right_buffer;
   unsigned int interpolation = 1;
   unsigned int virtual_size = 0;
+  float read_offset = 0.0f;
 
   void clear()
   {
@@ -30,6 +31,11 @@ struct SampleAudioBuffer
   unsigned int size()
   {
     return(left_buffer.size());
+  }
+
+  void setOffset(float offset)
+  {
+    read_offset = std::max(0.0f, std::min(1.0f, offset)); // Clamp to 0.0-1.0
   }
 
   void read(unsigned int index, float *left_audio_ptr, float *right_audio_ptr)
@@ -304,6 +310,16 @@ struct Sample
   float getSampleRate()
   {
     return(this->sample_rate);
+  }
+
+  void setOffset(float offset)
+  {
+    sample_audio_buffer.setOffset(offset);
+  }
+
+  float getOffset()
+  {
+    return(sample_audio_buffer.read_offset);
   }
 
   void unload()

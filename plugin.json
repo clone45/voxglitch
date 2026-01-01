@@ -223,6 +223,12 @@
         "description": "CV output generator with built in gesture recording.",
         "tags": ["Sequencer", "Recording", "Envelope Generator"],
         "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/xy-controller/user_manual.md"
+    },
+    {
+        "slug": "kaiseki",
+        "name": "Kaiseki",
+        "description": "OSC-controlled 8-track sample player with time stretching and BPM sync",
+        "tags": ["Sampler", "External", "Utility"]
     }
   ]
 }

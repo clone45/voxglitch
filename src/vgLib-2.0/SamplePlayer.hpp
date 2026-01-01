@@ -204,6 +204,11 @@ struct SamplePlayer
     return(sample.sample_rate);
   }
 
+  void setOffset(unsigned int offset)
+  {
+    sample.setOffset(offset);
+  }
+
   bool isLoaded()
   {
     return(sample.loaded);
