@@ -40,6 +40,10 @@ struct WavBankMCWidget : ModuleWidget
         addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("decay_input"), module, WavBankMC::DECAY_INPUT));
         addParam(createParamCentered<Trimpot>(panelHelper.findNamed("decay_attn_knob"), module, WavBankMC::DECAY_ATTN_KNOB));
 
+        // Attack and Decay LED indicators
+        addChild(createLightCentered<SmallLight<GreenLight>>(panelHelper.findNamed("attack_led"), module, WavBankMC::ATTACK_LED_LIGHT));
+        addChild(createLightCentered<SmallLight<GreenLight>>(panelHelper.findNamed("decay_led"), module, WavBankMC::DECAY_LED_LIGHT));
+
         // Trigger and navigation controls
         addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("trig_input"), module, WavBankMC::TRIG_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("next_input"), module, WavBankMC::NEXT_WAV_TRIGGER_INPUT));
@@ -122,6 +126,58 @@ struct WavBankMCWidget : ModuleWidget
         }
     };
 
+    // Envelope mode menu items
+    struct EnvelopeADOption : MenuItem
+    {
+        WavBankMC *module;
+        void onAction(const event::Action &e) override
+        {
+            module->envelope_mode = WavBankMC::ENVELOPE_AD;
+        }
+    };
+
+    struct EnvelopeStartEndOption : MenuItem
+    {
+        WavBankMC *module;
+        void onAction(const event::Action &e) override
+        {
+            module->envelope_mode = WavBankMC::ENVELOPE_START_END;
+        }
+    };
+
+    struct EnvelopeDisabledOption : MenuItem
+    {
+        WavBankMC *module;
+        void onAction(const event::Action &e) override
+        {
+            module->envelope_mode = WavBankMC::ENVELOPE_DISABLED;
+        }
+    };
+
+    struct EnvelopeModeMenu : MenuItem
+    {
+        WavBankMC *module;
+
+        Menu *createChildMenu() override
+        {
+            Menu *menu = new Menu;
+
+            EnvelopeADOption *ad_option = createMenuItem<EnvelopeADOption>("AD Envelope (decay after attack)", CHECKMARK(module->envelope_mode == WavBankMC::ENVELOPE_AD));
+            ad_option->module = module;
+            menu->addChild(ad_option);
+
+            EnvelopeStartEndOption *start_end_option = createMenuItem<EnvelopeStartEndOption>("Start/End (attack at start, decay at end)", CHECKMARK(module->envelope_mode == WavBankMC::ENVELOPE_START_END));
+            start_end_option->module = module;
+            menu->addChild(start_end_option);
+
+            EnvelopeDisabledOption *disabled_option = createMenuItem<EnvelopeDisabledOption>("Disabled", CHECKMARK(module->envelope_mode == WavBankMC::ENVELOPE_DISABLED));
+            disabled_option->module = module;
+            menu->addChild(disabled_option);
+
+            return menu;
+        }
+    };
+
     //
     // menu structure for selecting between different trigger input behaviors
     //
@@ -179,6 +235,10 @@ struct WavBankMCWidget : ModuleWidget
         SampleChangeModeMenu *sample_change_mode_menu = createMenuItem<SampleChangeModeMenu>("Sample Change Behavior", RIGHT_ARROW);
         sample_change_mode_menu->module = module;
         menu->addChild(sample_change_mode_menu);
+
+        EnvelopeModeMenu *envelope_mode_menu = createMenuItem<EnvelopeModeMenu>("Envelope Mode", RIGHT_ARROW);
+        envelope_mode_menu->module = module;
+        menu->addChild(envelope_mode_menu);
 
         SmoothingMenuItem *smoothing_menu_item = createMenuItem<SmoothingMenuItem>("Smoothing");
         smoothing_menu_item->rightText = CHECKMARK(module->smoothing == 1);

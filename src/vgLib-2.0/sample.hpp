@@ -178,8 +178,10 @@ struct Sample
     this->loaded = true;
 
     // Now that the audioFile has been read into memory, clear it out
-    audioFile.samples[0].resize(0);
-    audioFile.samples[1].resize(0);
+    // Only clear channels that actually exist (handles mono files correctly)
+    for(int ch = 0; ch < numChannels; ch++) {
+      audioFile.samples[ch].resize(0);
+    }
 
     return(true);
   };

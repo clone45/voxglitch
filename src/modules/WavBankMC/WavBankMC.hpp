@@ -34,6 +34,14 @@ struct WavBankMC : VoxglitchSamplerModule
   dsp::PulseGenerator eoc_pulse;
   int last_division[NUMBER_OF_CHANNELS] = {-1};  // Track which division we're in per channel
 
+  // Envelope mode: 0 = AD (decay after attack), 1 = Start/End (attack at start, decay at end), 2 = Disabled
+  enum EnvelopeMode {
+    ENVELOPE_AD = 0,        // Traditional AD: decay starts immediately after attack
+    ENVELOPE_START_END = 1, // Attack at start of region, decay at end of region
+    ENVELOPE_DISABLED = 2   // No envelope effect
+  };
+  unsigned int envelope_mode = ENVELOPE_AD;  // Default to traditional AD envelope
+
 	enum ParamIds {
 		WAV_KNOB,
 		WAV_ATTN_KNOB,
@@ -79,6 +87,8 @@ struct WavBankMC : VoxglitchSamplerModule
     NEXT_WAV_BUTTON_LIGHT,
     PREV_WAV_BUTTON_LIGHT,
     TRIG_INPUT_BUTTON_LIGHT,
+    ATTACK_LED_LIGHT,
+    DECAY_LED_LIGHT,
 		NUM_LIGHTS
 	};
 
@@ -100,7 +110,7 @@ struct WavBankMC : VoxglitchSamplerModule
 		configParam(END_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "End CV Attenuator");
 		configParam(ATTACK_KNOB, 0.0f, 1.0f, 0.0f, "Attack Time");
 		configParam(ATTACK_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "Attack CV Attenuator");
-		configParam(DECAY_KNOB, 0.0f, 1.0f, 1.0f, "Decay Time");
+		configParam(DECAY_KNOB, 0.0f, 1.0f, 0.0f, "Decay Time");
 		configParam(DECAY_ATTN_KNOB, 0.0f, 1.0f, 1.0f, "Decay CV Attenuator");
 		configParam(PITCH_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "Pitch CV Attenuator");
 		configParam(VOL_ATTN_KNOB, 0.0f, 1.0f, 0.0f, "Volume CV Attenuator");
@@ -124,6 +134,7 @@ struct WavBankMC : VoxglitchSamplerModule
 		json_object_set_new(json_root, "path", json_string(this->path.c_str()));
     json_object_set_new(json_root, "sample_change_mode", json_integer(sample_change_mode));
     json_object_set_new(json_root, "smoothing", json_integer(smoothing));
+    json_object_set_new(json_root, "envelope_mode", json_integer(envelope_mode));
 		return json_root;
 	}
 
@@ -145,6 +156,10 @@ struct WavBankMC : VoxglitchSamplerModule
     // Load smoothing
     json_t* smoothing_json = json_object_get(json_root, "smoothing");
     if (smoothing_json) smoothing = json_integer_value(smoothing_json);
+
+    // Load envelope mode
+    json_t* envelope_mode_json = json_object_get(json_root, "envelope_mode");
+    if (envelope_mode_json) envelope_mode = json_integer_value(envelope_mode_json);
 
 	}
 
@@ -187,7 +202,7 @@ struct WavBankMC : VoxglitchSamplerModule
     return attack_value;
   }
 
-  // Get decay time as a normalized value (0.0 = instant, 1.0 = infinite/no decay)
+  // Get decay time as a normalized value (0.0 = no decay, 0.01-0.99 = decay amount, 1.0 = no decay/full sustain)
   float getDecayValue()
   {
     float decay_value = params[DECAY_KNOB].getValue();
@@ -204,8 +219,14 @@ struct WavBankMC : VoxglitchSamplerModule
   // Returns 1.0 when no envelope is needed, otherwise 0.0-1.0
   float calculateEnvelope(double position, double start_pos, double end_pos, float attack, float decay)
   {
-    // Skip envelope calculation if attack=0 and decay=1 (defaults)
-    if (attack <= 0.0f && decay >= 1.0f)
+    // ENVELOPE_DISABLED: No envelope effect
+    if (envelope_mode == ENVELOPE_DISABLED)
+    {
+      return 1.0f;
+    }
+
+    // Skip envelope calculation if attack=0 and decay=0 (no envelope needed)
+    if (attack <= 0.0f && decay <= 0.0f)
     {
       return 1.0f;
     }
@@ -216,26 +237,63 @@ struct WavBankMC : VoxglitchSamplerModule
     double position_in_region = position - start_pos;
     float envelope = 1.0f;
 
-    // Attack phase: fade in at the beginning
-    if (attack > 0.0f)
+    if (envelope_mode == ENVELOPE_AD)
     {
-      // Attack length is a percentage of the region (scaled exponentially for better feel)
+      // Traditional AD envelope: decay starts immediately after attack ends
+      // Special case: decay=1.0 means no decay (full sustain after attack)
+      // Attack and decay times are percentages of the total region
       double attack_length = region_length * attack * attack * 0.5; // max 50% of region
+
       if (position_in_region < attack_length && attack_length > 0)
       {
-        envelope *= (float)(position_in_region / attack_length);
+        // Attack phase: ramp from 0 to 1
+        envelope = (float)(position_in_region / attack_length);
       }
-    }
-
-    // Decay phase: fade out at the end
-    if (decay < 1.0f)
-    {
-      // Decay length is a percentage of the region (scaled exponentially)
-      double decay_length = region_length * (1.0f - decay) * (1.0f - decay) * 0.5; // max 50% of region
-      double distance_from_end = end_pos - position;
-      if (distance_from_end < decay_length && decay_length > 0)
+      else if (decay > 0.0f && decay < 1.0f)
       {
-        envelope *= (float)(distance_from_end / decay_length);
+        // Decay phase: starts immediately after attack, ramps from 1 to 0
+        // Only apply decay if decay < 1.0 (decay=1.0 means no decay/full sustain)
+        double decay_length = region_length * decay * decay * 0.5; // max 50% of region
+        double decay_start = attack_length;
+        double position_in_decay = position_in_region - decay_start;
+
+        if (position_in_decay < decay_length && decay_length > 0)
+        {
+          // Ramp down from 1.0 to 0.0 over decay_length
+          envelope = 1.0f - (float)(position_in_decay / decay_length);
+        }
+        else if (position_in_decay >= decay_length)
+        {
+          // After decay completes, envelope stays at 0
+          envelope = 0.0f;
+        }
+      }
+      // else: decay >= 1.0 means no decay, envelope stays at 1.0 (full sustain)
+    }
+    else // ENVELOPE_START_END
+    {
+      // Original behavior: attack at start of region, decay at end of region
+
+      // Attack phase: fade in at the beginning
+      if (attack > 0.0f)
+      {
+        double attack_length = region_length * attack * attack * 0.5; // max 50% of region
+        if (position_in_region < attack_length && attack_length > 0)
+        {
+          envelope *= (float)(position_in_region / attack_length);
+        }
+      }
+
+      // Decay phase: fade out at the end
+      // Special case: decay=1.0 means no decay
+      if (decay > 0.0f && decay < 1.0f)
+      {
+        double decay_length = region_length * decay * decay * 0.5; // max 50% of region
+        double distance_from_end = end_pos - position;
+        if (distance_from_end < decay_length && decay_length > 0)
+        {
+          envelope *= (float)(distance_from_end / decay_length);
+        }
       }
     }
 
@@ -494,6 +552,69 @@ struct WavBankMC : VoxglitchSamplerModule
     float attack_value = getAttackValue();
     float decay_value = getDecayValue();
 
+    // Calculate envelope LED values based on current playback position (channel 0)
+    // These show the live envelope being applied, not the knob values
+    float attack_led_value = 1.0f;
+    float decay_led_value = 1.0f;
+
+    if (envelope_mode != ENVELOPE_DISABLED && playback[0] && selected_sample->size() > 0)
+    {
+      double region_length = end_position - start_position;
+      if (region_length > 0)
+      {
+        double position_in_region = playback_positions[0] - start_position;
+        double attack_length = region_length * attack_value * attack_value * 0.5;
+
+        if (envelope_mode == ENVELOPE_AD)
+        {
+          // AD mode: attack ramps up, then decay ramps down
+          if (position_in_region < attack_length && attack_length > 0)
+          {
+            // Attack phase: LED ramps from 0 to 1
+            attack_led_value = (float)(position_in_region / attack_length);
+            decay_led_value = 1.0f; // Decay not active yet
+          }
+          else if (decay_value > 0.0f && decay_value < 1.0f)
+          {
+            // Decay phase
+            attack_led_value = 1.0f; // Attack complete
+            double decay_length = region_length * decay_value * decay_value * 0.5;
+            double position_in_decay = position_in_region - attack_length;
+            if (position_in_decay < decay_length && decay_length > 0)
+            {
+              decay_led_value = 1.0f - (float)(position_in_decay / decay_length);
+            }
+            else if (position_in_decay >= decay_length)
+            {
+              decay_led_value = 0.0f;
+            }
+          }
+        }
+        else // ENVELOPE_START_END
+        {
+          // Attack at start
+          if (attack_value > 0.0f && position_in_region < attack_length && attack_length > 0)
+          {
+            attack_led_value = (float)(position_in_region / attack_length);
+          }
+
+          // Decay at end
+          if (decay_value > 0.0f && decay_value < 1.0f)
+          {
+            double decay_length = region_length * decay_value * decay_value * 0.5;
+            double distance_from_end = end_position - playback_positions[0];
+            if (distance_from_end < decay_length && decay_length > 0)
+            {
+              decay_led_value = (float)(distance_from_end / decay_length);
+            }
+          }
+        }
+      }
+    }
+
+    lights[ATTACK_LED_LIGHT].setSmoothBrightness(attack_led_value, sample_time);
+    lights[DECAY_LED_LIGHT].setSmoothBrightness(decay_led_value, sample_time);
+
     // If either the TRG CV input is triggered or the corresponding button is
     // pressed, then restart all playback positions to start position and begin playback.
     if(process_trg_input())
@@ -537,6 +658,13 @@ struct WavBankMC : VoxglitchSamplerModule
         // Note: All channels in a .wav file have the same length
         if (playback_positions[channel] >= end_position)
         {
+          // Trigger EOC when looping back (this is the final division trigger)
+          // Only trigger from channel 0 to avoid multiple triggers
+          if (channel == 0 && playback[channel])
+          {
+            eoc_pulse.trigger(1e-3f);
+          }
+
           // Calculate overshoot and wrap around to start
           double overshoot = playback_positions[channel] - end_position;
           double loop_length = end_position - start_position;
@@ -612,7 +740,10 @@ struct WavBankMC : VoxglitchSamplerModule
           // Copy the left output to the right output if there's only 1 channel
           if(selected_sample->number_of_channels == 1) outputs[RIGHT_WAV_OUTPUT].setVoltage(output_scaled);
 
-          // Increment sample offset (pitch)
+          // Increment sample offset (pitch) using V/Oct standard
+          // 0V = unity (original pitch), ±1V = ±1 octave
+          double base_increment = selected_sample->sample_rate / args.sampleRate;
+
     			if (inputs[PITCH_INPUT].isConnected())
     			{
             float pitch_attn = params[PITCH_ATTN_KNOB].getValue();
@@ -626,14 +757,14 @@ struct WavBankMC : VoxglitchSamplerModule
             {
               channel_pitch = inputs[PITCH_INPUT].getVoltage(0);
             }
-            // Apply attenuverter (0 = no pitch CV effect, 1 = full pitch CV effect)
-            // Pitch CV is bipolar around 5V center, so we scale the deviation from center
-            float pitch_offset = ((channel_pitch / 10.0f) - 0.5f) * pitch_attn;
-    				playback_positions[channel] += (selected_sample->sample_rate / args.sampleRate) + pitch_offset;
+            // Apply attenuator to pitch CV, then use exponential V/Oct scaling
+            // 0V = unity, +1V = octave up (2x), -1V = octave down (0.5x)
+            float pitch = channel_pitch * pitch_attn;
+    				playback_positions[channel] += base_increment * rack::dsp::approxExp2_taylor5(pitch);
     			}
     			else
     			{
-    				playback_positions[channel] += (selected_sample->sample_rate / args.sampleRate);
+    				playback_positions[channel] += base_increment;
     			}
 
           // EOC division trigger: check if we've crossed into a new division
