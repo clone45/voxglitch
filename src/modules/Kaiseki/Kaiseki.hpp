@@ -2,7 +2,7 @@
 
 // Include vgLib for sample handling
 #include "../../vgLib-2.0/sample.hpp"
-#include "../../vgLib-2.0/helpers/Debugging.hpp"
+#include "../../vgLib-2.0/helpers/// DEBUGging.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -168,12 +168,12 @@ struct Kaiseki : VoxglitchSamplerModule
         // Check if this is a string message (for file paths)
         if (!msg.stringValue.empty()) {
             lastStringValue = msg.stringValue;
-            DEBUG("OSC String: %s = \"%s\"", msg.address.c_str(), msg.stringValue.c_str());
+            // DEBUG("OSC String: %s = \"%s\"", msg.address.c_str(), msg.stringValue.c_str());
             handled = messageHandler.handleStringMessage(msg.address, msg.stringValue);
             if (handled) {
-                DEBUG("OSC String message handled successfully");
+                // DEBUG("OSC String message handled successfully");
             } else {
-                DEBUG("OSC String message NOT handled");
+                // DEBUG("OSC String message NOT handled");
             }
         }
         // Check for parameterless messages (like triggers)
@@ -277,12 +277,12 @@ struct Kaiseki : VoxglitchSamplerModule
         // Handle BPM changes from OSC
         float newBPM;
         if (messageHandler.checkBPMChange(newBPM)) {
-            DEBUG("OSC BPM change: %.1f", newBPM);
+            // DEBUG("OSC BPM change: %.1f", newBPM);
             masterClock.setMasterBPM(newBPM);
             // If clock isn't active yet, activate it
             if (!masterClock.getIsActive()) {
                 masterClock.initFromFirstSample(newBPM, args.sampleRate);
-                DEBUG("Master clock activated with OSC BPM: %.1f", newBPM);
+                // DEBUG("Master clock activated with OSC BPM: %.1f", newBPM);
             }
         }
 
@@ -292,11 +292,11 @@ struct Kaiseki : VoxglitchSamplerModule
             if (messageHandler.checkLoadRequest(i, loadPath)) {
                 // Check if this is the same file that's already loaded or being loaded
                 if (tracks[i].isSameFile(loadPath)) {
-                    DEBUG("Ignoring redundant load request for track %d: %s (already loaded)", i + 1, loadPath.c_str());
+                    // DEBUG("Ignoring redundant load request for track %d: %s (already loaded)", i + 1, loadPath.c_str());
                     continue;  // Skip this load request
                 }
 
-                DEBUG("Processing async load request for track %d: %s", i + 1, loadPath.c_str());
+                // DEBUG("Processing async load request for track %d: %s", i + 1, loadPath.c_str());
 
                 // Start fade-out if track is already playing, otherwise start loading immediately
                 if (tracks[i].isLoaded() && tracks[i].isPlaying()) {
@@ -311,31 +311,31 @@ struct Kaiseki : VoxglitchSamplerModule
             // Check if fade-out is complete and ready to start async load
             if (fadeManagers[i].readyToLoad()) {
                 std::string pathToLoad = fadeManagers[i].getPendingLoadPath();
-                DEBUG("Fade-out complete, starting async load for track %d: %s", i + 1, pathToLoad.c_str());
+                // DEBUG("Fade-out complete, starting async load for track %d: %s", i + 1, pathToLoad.c_str());
                 tracks[i].startAsyncLoad(pathToLoad);
                 fadeManagers[i].markLoadComplete();
             }
 
             // Check if async loading is complete
             if (tracks[i].checkAsyncLoadComplete()) {
-                DEBUG("Async load complete for track %d", i + 1);
+                // DEBUG("Async load complete for track %d", i + 1);
 
                 // Handle first sample initialization
                 if (!masterClock.getIsActive()) {
                     float bpm = tracks[i].getBPM();
-                    DEBUG("First sample loaded - initializing master clock with BPM %.1f", bpm);
+                    // DEBUG("First sample loaded - initializing master clock with BPM %.1f", bpm);
                     masterClock.initFromFirstSample(bpm, args.sampleRate);
                     tracks[i].startPlaying(); // First track plays immediately
-                    DEBUG("Track %d started playing immediately (first track)", i + 1);
+                    // DEBUG("Track %d started playing immediately (first track)", i + 1);
                 } else {
-                    DEBUG("Track %d loaded and CUED (waiting for sync), Master BPM: %.1f", i + 1, masterClock.getMasterBPM());
+                    // DEBUG("Track %d loaded and CUED (waiting for sync), Master BPM: %.1f", i + 1, masterClock.getMasterBPM());
                 }
 
                 trackActivityBrightness[i] = 1.0f;
             }
 
             if (messageHandler.checkUnloadRequest(i)) {
-                DEBUG("Processing unload request for track %d", i + 1);
+                // DEBUG("Processing unload request for track %d", i + 1);
                 tracks[i].clear();
                 timeStretchers[i].reset();
                 fadeManagers[i].reset();
@@ -424,9 +424,9 @@ struct Kaiseki : VoxglitchSamplerModule
                     pitchMultiplier = rack::math::clamp(pitchMultiplier, 0.25f, 4.0f);
                 }
 
-                // Debug: Track pitch changes
+                // // DEBUG: Track pitch changes
                 if (std::abs(currentPitch[i] - pitchMultiplier) > 0.001f) {
-                    DEBUG("Track %d pitch change: %.4f -> %.4f", i + 1, currentPitch[i], pitchMultiplier);
+                    // DEBUG("Track %d pitch change: %.4f -> %.4f", i + 1, currentPitch[i], pitchMultiplier);
                     currentPitch[i] = pitchMultiplier;
                 }
 

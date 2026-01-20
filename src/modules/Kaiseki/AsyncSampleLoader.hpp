@@ -153,16 +153,16 @@ public:
             if (remoteSource) {
                 std::string downloadUrl = transformDownloadUrl(path);
                 downloadedPath = createTempFilePath();
-                DEBUG("AsyncSampleLoader: downloading %s to temporary file %s", downloadUrl.c_str(), downloadedPath.c_str());
+                // DEBUG("AsyncSampleLoader: downloading %s to temporary file %s", downloadUrl.c_str(), downloadedPath.c_str());
                 if (!rack::network::requestDownload(downloadUrl, downloadedPath)) {
-                    DEBUG("AsyncSampleLoader: download failed for %s", path.c_str());
+                    // DEBUG("AsyncSampleLoader: download failed for %s", path.c_str());
                     cleanupDownload();
                     loadRequested = false;
                     return;
                 }
 
                 if (shouldAbort.load()) {
-                    DEBUG("AsyncSampleLoader: download aborted for %s", path.c_str());
+                    // DEBUG("AsyncSampleLoader: download aborted for %s", path.c_str());
                     cleanupDownload();
                     loadRequested = false;
                     return;
@@ -175,7 +175,7 @@ public:
             bool success = newSample->load(localPath);
 
             if (shouldAbort.load()) {
-                DEBUG("AsyncSampleLoader: load aborted for %s", path.c_str());
+                //DEBUG("AsyncSampleLoader: load aborted for %s", path.c_str());
                 cleanupDownload();
                 loadRequested = false;
                 return;
@@ -194,9 +194,9 @@ public:
                 readySample = std::move(newSample);
                 loadComplete = true;
             } else {
-                DEBUG("AsyncSampleLoader: failed to load sample from %s", localPath.c_str());
+                // DEBUG("AsyncSampleLoader: failed to load sample from %s", localPath.c_str());
                 if (downloaded) {
-                    DEBUG("AsyncSampleLoader: keeping downloaded file for inspection: %s", localPath.c_str());
+                    // DEBUG("AsyncSampleLoader: keeping downloaded file for inspection: %s", localPath.c_str());
                     downloaded = false; // Skip cleanup below to keep file
                 }
             }
