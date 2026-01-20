@@ -98,7 +98,7 @@ public:
         // Start background loading
         if (asyncLoader.startLoad(path, bpm)) {
             pendingPath = path;
-            DEBUG("Started async load for: %s", path.c_str());
+            // DEBUG("Started async load for: %s", path.c_str());
             return true;
         }
         return false;
@@ -113,7 +113,7 @@ public:
         // Get the loaded sample
         std::unique_ptr<Sample> newSample = asyncLoader.getLoadedSample();
         if (!newSample) {
-            DEBUG("Async load failed - no sample returned");
+            // DEBUG("Async load failed - no sample returned");
             return false;
         }
 
@@ -142,7 +142,7 @@ public:
         samplePlayer.sample.display_name = trackName;
 
         pendingPath.clear();
-        DEBUG("Async load complete for: %s", loadedPath.c_str());
+        // DEBUG("Async load complete for: %s", loadedPath.c_str());
         return true;
     }
 
@@ -250,7 +250,7 @@ public:
 private:
     float extractBPMFromFilename(const std::string& path) {
         std::string filename = getFilenameFromSource(path);
-        DEBUG("BPM extraction from filename: %s", filename.c_str());
+        // DEBUG("BPM extraction from filename: %s", filename.c_str());
 
         // Try various BPM patterns in filename
         // Pattern 1: "kick_120bpm.wav", "loop-140-bpm.wav", "sample_90_BPM.wav"
@@ -260,17 +260,17 @@ private:
         if (std::regex_search(filename, match, bpm_regex)) {
             try {
                 float bpm = std::stof(match[1].str());
-                DEBUG("Pattern 1 match: %s -> %.1f BPM", match[1].str().c_str(), bpm);
+                // DEBUG("Pattern 1 match: %s -> %.1f BPM", match[1].str().c_str(), bpm);
                 if (bpm > 0 && bpm < 300) { // Sanity check
-                    DEBUG("BPM extraction successful (Pattern 1): %.1f", bpm);
+                    // DEBUG("BPM extraction successful (Pattern 1): %.1f", bpm);
                     return bpm;
                 }
-                DEBUG("Pattern 1 BPM out of range: %.1f", bpm);
+                // DEBUG("Pattern 1 BPM out of range: %.1f", bpm);
             } catch (...) {
-                DEBUG("Pattern 1 conversion failed");
+                // DEBUG("Pattern 1 conversion failed");
             }
         } else {
-            DEBUG("Pattern 1 no match");
+            // DEBUG("Pattern 1 no match");
         }
 
         // Pattern 2: Standalone number like "PLX_ELT_128_synth", "095_Gret_Bass", "loop_120_"
@@ -279,19 +279,19 @@ private:
         if (std::regex_search(filename, match, standalone_regex)) {
             try {
                 float bpm = std::stof(match[1].str());
-                DEBUG("Pattern 2 match: %s -> %.1f BPM", match[1].str().c_str(), bpm);
+                // DEBUG("Pattern 2 match: %s -> %.1f BPM", match[1].str().c_str(), bpm);
                 // Common BPM range check (60-200 is typical for most music)
                 // This handles "095" -> 95 BPM
                 if (bpm >= 60 && bpm <= 200) {
-                    DEBUG("BPM extraction successful (Pattern 2): %.1f", bpm);
+                    //  DEBUG("BPM extraction successful (Pattern 2): %.1f", bpm);
                     return bpm;
                 }
-                DEBUG("Pattern 2 BPM out of range: %.1f", bpm);
+                // DEBUG("Pattern 2 BPM out of range: %.1f", bpm);
             } catch (...) {
-                DEBUG("Pattern 2 conversion failed");
+                // DEBUG("Pattern 2 conversion failed");
             }
         } else {
-            DEBUG("Pattern 2 no match");
+            // DEBUG("Pattern 2 no match");
         }
 
         // Pattern 3: Number at end before extension like "beat120.wav"
@@ -299,20 +299,20 @@ private:
         if (std::regex_search(filename, match, end_regex)) {
             try {
                 float bpm = std::stof(match[1].str());
-                DEBUG("Pattern 3 match: %s -> %.1f BPM", match[1].str().c_str(), bpm);
+                // DEBUG("Pattern 3 match: %s -> %.1f BPM", match[1].str().c_str(), bpm);
                 if (bpm >= 60 && bpm <= 200) {
-                    DEBUG("BPM extraction successful (Pattern 3): %.1f", bpm);
+                    // DEBUG("BPM extraction successful (Pattern 3): %.1f", bpm);
                     return bpm;
                 }
-                DEBUG("Pattern 3 BPM out of range: %.1f", bpm);
+                // DEBUG("Pattern 3 BPM out of range: %.1f", bpm);
             } catch (...) {
-                DEBUG("Pattern 3 conversion failed");
+                // DEBUG("Pattern 3 conversion failed");
             }
         } else {
-            DEBUG("Pattern 3 no match");
+            // DEBUG("Pattern 3 no match");
         }
 
-        DEBUG("No BPM patterns matched, using default: 120 BPM");
+        // DEBUG("No BPM patterns matched, using default: 120 BPM");
         return 120.0f; // Default BPM
     }
 };

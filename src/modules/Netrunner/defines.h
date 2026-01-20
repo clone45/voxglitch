@@ -1,7 +1,0 @@
-#define GAIN 5.0
-
-#define SMOOTH_ENABLED 1
-
-#define TRIGGER 0
-#define GATE 1
-#define NUMBER_OF_SAMPLE_DISPLAY_ROWS 7
