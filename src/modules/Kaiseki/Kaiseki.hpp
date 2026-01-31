@@ -2,8 +2,6 @@
 
 // Include vgLib for sample handling
 #include "../../vgLib-2.0/sample.hpp"
-#include "../../vgLib-2.0/helpers/// DEBUGging.hpp"
-
 #include <algorithm>
 #include <cmath>
 
@@ -160,46 +158,22 @@ struct Kaiseki : VoxglitchSamplerModule
         // Store for display
         lastAddress = msg.address;
 
-        // Log all incoming OSC messages
-        VBUG << "OSC RX: " << msg.address;
-
         bool handled = false;
 
         // Check if this is a string message (for file paths)
         if (!msg.stringValue.empty()) {
             lastStringValue = msg.stringValue;
-            // DEBUG("OSC String: %s = \"%s\"", msg.address.c_str(), msg.stringValue.c_str());
             handled = messageHandler.handleStringMessage(msg.address, msg.stringValue);
-            if (handled) {
-                // DEBUG("OSC String message handled successfully");
-            } else {
-                // DEBUG("OSC String message NOT handled");
-            }
         }
         // Check for parameterless messages (like triggers)
         else if (!msg.hasParameters) {
-            VBUG << "OSC Trigger: " << msg.address << " (no parameters)";
             handled = messageHandler.handleTrigger(msg.address);
-            if (handled) {
-                VBUG << "OSC Trigger message handled successfully";
-            } else {
-                VBUG << "OSC Trigger message NOT handled";
-            }
         }
         // Handle numeric messages
         else {
             lastReceivedValue = msg.value;
             lastStringValue = "";
-            VBUG << "OSC Float: " << msg.address << " = " << msg.value;
-
-            // Process numeric message
             handled = messageHandler.handleMessage(msg.address, msg.value);
-
-            if (handled) {
-                VBUG << "OSC message handled successfully";
-            } else {
-                VBUG << "OSC message NOT handled";
-            }
         }
 
         // Check for triggers that need immediate action (regardless of message type)
@@ -207,7 +181,6 @@ struct Kaiseki : VoxglitchSamplerModule
             for (int i = 0; i < NUM_TRACKS; i++) {
                 // Handle track triggers
                 if (messageHandler.trackControls[i].trigger) {
-                    VBUG << "Track " << (i+1) << " trigger activated";
                     trackTriggered[i] = true;
                     messageHandler.trackControls[i].trigger = false;
                     trackActivityBrightness[i] = 1.0f;
@@ -215,7 +188,6 @@ struct Kaiseki : VoxglitchSamplerModule
 
                 // Handle cue triggers
                 if (messageHandler.trackControls[i].cueTrigger) {
-                    VBUG << "Track " << (i+1) << " cue trigger activated";
                     trackCueTriggered[i] = true;
                     messageHandler.trackControls[i].cueTrigger = false;
                     trackActivityBrightness[i] = 1.0f;
