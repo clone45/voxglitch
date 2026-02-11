@@ -180,3 +180,195 @@ All CV inputs accept standard VCV Rack voltage ranges and are additive with the 
 - The **PATT** knobs are the fastest way to completely change the character of a sequence. Slowly sweep through patterns to find ones you like.
 - Changing **Melody Length** and **Accent Length** to different values creates polymetric patterns where the accent pattern cycles independently of the melody.
 - Try extreme **LOW** and **HIGH** values on the melody generator for wide-ranging bass lines, or narrow the range for subtle variations around a single note.
+
+## Appendix: Arpeggio Pattern Visual Reference
+
+When **MELODY SOURCE** is set to **PatArp**, the **PATT** knob selects from 128 arpeggio patterns (0-127). Each pattern below shows its melodic contour across 32 steps. Taller bars represent higher pitch, shorter bars represent lower pitch. A `·` marks a rest (gate off). Steps are grouped in fours to show beat structure.
+
+```
+Reading the contour:  ▁ = lowest   ▄ = middle   █ = highest   · = rest
+```
+
+### Triads (0-15)
+
+Major, minor, diminished, and augmented triads in ascending, descending, and mixed directions.
+
+```
+  0. Major Up                       ▄▅▆▆ ▇███ ▇▆▆▅ ▄·▃▂ ▃▄▄▅ ▆▆▆▅ ▄·▆▆ ▄▄▄▅
+  1. Major Down                     ██▇▆ ▆▅▄· ▃▂▃▄ ▄▅▆▆ ▇███ ▆▆▅· ▆▆▅▄ ▄▄▆▆
+  2. Major Up-Down                  ▄▅▄▆ ▅▆▆▇ ▆█▇· █▇▆▆ ▅▄▄▄ ▅▆▆· ▅▄▅▆ ▄▄▄▅
+  3. Major Down-Up                  ▆▆▅▄ ▄▃·▃ ▄▄▅▆ ▆▇██ █▇▆▆ ▅▄▅▆ ▆▆▅· ▆▆▇▆
+  4. Minor Up                       ▄▅▆▆ ▇██· ▇▆▆▅ ·▄▃▂ ▃▄▄▅ ▆▆▆· ▄▅▆▆ ▄▄▄▅
+  5. Minor Down                     ██▇▆ ▆▅·▄ ▃▂▃▄ ▄▅▆· ▇███ ▆▆▅▄ ▆▆·▄ ▄▄▆▆
+  6. Minor Up-Down                  ▄▅▆▅ ▆▆▇▆ ·▇██ ▇▆▆▅ ▄▄·▄ ▄▅▆▆ ▆▅▄· ▆▄▄▄
+  7. Minor Down-Up                  ▆▆▅▄ ▄·▂▃ ▄▄▅▆ ▆▇██ █▇▆▆ ·▄▅▆ ▆▆▅▄ ▆·▇▆
+  8. Diminished Up                  ▄▅·▆ ▆·▇█ ·█▇· ▆▆·▅ ▄·▃▃ ·▃▃· ▄▅·▆ ▅·▄▅
+  9. Diminished Down                █·▇▇ ·▆▅· ▄▄·▃ ▂·▃▄ ·▅▅· ▆▇·█ ▇·▆▆ ·▅▄·
+ 10. Diminished Up-Down             ▄▅·▅ ·▅▆· ▇·▇▇ ·▇·▇ ▇·▆· ▅▄·▃ ·▄▅· ▅·▄▄
+ 11. Diminished Down-Up             ▇·▆· ▅▅·▄ ·▃▂· ▃·▄▅ ·▆·▇ ▇·█· ▇▇·▆ ▆·▆·
+ 12. Augmented Up                   ▄▅▆▆ ▇███ ▇▆▆▅ ▄▄▃▂ ▃▄▄▅ ▆▆▆▅ ▄▅▆▆ ▆▅▄▅
+ 13. Augmented Down                 ██▇▆ ▆▅▄▄ ▃▂▃▄ ▄▅▆▆ ▇███ ▇▆▆▅ ▆▆▅▄ ▄▄▆▆
+ 14. Augmented Up-Down              ▄▅▆▅ ▆▆▇· █▇██ ▇▆▆▅ ▄▄▃▄ ▄▅▆· ▆▅▄▅ ▆▄▄▄
+ 15. Augmented Down-Up              ▇▆▆▅ ▄▄▃▂ ▃▄▄▅ ▆▆▇· ██▇▆ ▆▅▄▅ ▆▆▆▅ ▆▆▇·
+```
+
+### Seventh Chords (16-31)
+
+Major 7, minor 7, dominant 7, diminished 7, augmented 7, and suspended voicings.
+
+```
+ 16. Major 7 Up                     ▄▅▆▆ ▆▇██ ███▇ ▆▆▆· ▄▄▄▃ ▂▂▃▄ ▄▄▅▆ ▆▆▅·
+ 17. Major 7 Down                   ██▇▆ ▆▆▅· ▄▄▃▂ ▂▃▄▄ ▄▅▆▆ ▆▇█· █▇▆▆ ▅▄▅▆
+ 18. Major 7 Up-Down                ▄▅▆· ▆▇██ ██▇· ▆▆▅▄ ▄▄▂· ▄▄▄▅ ▆▆▆· ▄▄▄▅
+ 19. Minor 7 Up                     ▄▅▆▆ ▆·██ ███▇ ▆·▆▅ ▄▄▄▃ ▂·▃▄ ▄▄▅▆ ▆·▅▄
+ 20. Minor 7 Down                   ██·▆ ▆▆▅▄ ▄▄·▂ ▂▃▄▄ ▄▅·▆ ▆▇██ █▇·▆ ▅▄▅▆
+ 21. Minor 7 Up-Down                ▄▅▆· ▆▇██ ·█▇▆ ▆·▅▄ ▄▄▂· ▄▄▄▅ ·▆▆▅ ▄·▄▅
+ 22. Dominant 7 Up                  ▄▅▆▆ ·▇██ ███▇ ·▆▆▅ ▄▄▄▃ ·▂▃▄ ▄▄▅▆ ·▆▅▄
+ 23. Dominant 7 Down                ██▇· ▆▆▅▄ ▄▄▃· ▂▃▄▄ ▄▅▆· ▆▇██ █▇▆· ▅▄▅▆
+ 24. Half-Dim 7 Up                  ▄▅·▆ ▆·▇█ ██·▇ ▆·▅▅ ▄▄·▃ ▂·▃▃ ▄▄·▅ ▆·▅▄
+ 25. Half-Dim 7 Down                █·▇▆ ·▅▅▄ ·▃▃· ▂▃▃· ▄▅·▆ ▆▇·█ ▇·▆▅ ▅·▅▆
+ 26. Dim 7 Up                       ▄·▅· ▆·▇· ██·▇ ·▆·▅ ·▄▃· ▂·▃· ▄·▅▅ ·▅·▄
+ 27. Dim 7 Down                     █·▇· ▆▅·▄ ·▃·▂ ▂·▃· ▄·▅▆ ·▇·█ ·▇▆· ▅·▅·
+ 28. MinMaj 7 Up                    ▄▅·▆ ▆·██ ·██· ▆▆▆· ▄▄·▃ ▂·▃▄ ·▄▅▆ ·▆▅·
+ 29. Aug 7 Up                       ▄▅▆▆ ▆▇██ ·██▇ ▆▆▆▅ ▄·▄▃ ▂▂▃▄ ▄▄·▆ ▆▆▅▄
+ 30. Aug 7 Shimmer                  ▄▅▆▆ ▆▅▄▅ ▆▇██ █▇▆▇ ██▇▆ ▆▆▅▄ ▄▄▄▅ ▆▅▄▅
+ 31. 7sus4 Up-Down                  ▄▅▆▆ ·▇██ █·█▇ ▆▆·▅ ▄▄▄· ▂▂▃▄ ·▄▅▆ ▆·▅▄
+```
+
+### Extended Chords (32-47)
+
+9th, 11th, 13th chords, add9, 6th chords, and complex jazz voicings.
+
+```
+ 32. Major 9th Ascending            ▄▅▅· ▆▆▇▇ ·███ ·▇▇▆ ▆·▅▅ ▄·▅▅ ▆▆·▇ ▇▆·▅
+ 33. Minor 9th Descending           ██·▇ ▇▆·▆ ▅▅·▄ ▄▃·▂ ▃▃·▄ ▄▅·▆ ▆▆·▇ ██·▇
+ 34. Dominant 9th Arpeggio          ▄·▆▆ ·▆▇· ██·█ ▇·▆▆ ·▅▄· ▅▅·▆ ▇·▇▆ ·▅▅·
+ 35. Add9 Spread Octaves            ▄▅·· ▄▅·· ▄▆·· ▄▅·· █▇·· █▆·· ▇▆·· ▇▆··
+ 36. 6th Chord Waltz                ▄·▆▆ ·▅▄· ▆▆·▆ ▆·▅▄ ·▄▅· ▆▇·▇ ▆·▅▄ ·▄▅·
+ 37. Minor 6th Cascade              ▄▅·▆ ▇·██ ·▆▆· ▄▄·▂ ▃·▄▅ ·▆▆· ▄▅·▇ ▆·▅▄
+ 38. Major 11th Extended            ▄▅·· ▆▆·▇ █··█ █·▇▆ ··▅▅ ·▄▄· ·▆▆· ▆▆··
+ 39. Minor 11th Ascending           ▄·▅▆ ··▇▇ ·██· ·▇▇· ▆▆·· ▄▄·▅ ▅··▆ ▆·▅▄
+ 40. Dominant 13th Full             ▄▅·▆ ·▇▆· █·██ ·█·▇ ▆·▆· ▅▅·▅ ·▆▆· ▆·▅▄
+ 41. Major 13th Smooth              ▄▅▅· ▆▆▆· ▇██· ███· ▇▆▆· ▆▅▅· ▅▅▆· ▆▆▅·
+ 42. Minor 13th Dark                █·█▇ ·▆·▆ ▆·▅· ▄▄·▃ ·▃▄· ▄·▅▅ ·▆·▇ ▇·▇·
+ 43. Add9 Rhythmic Pattern          ▄·▅· ▆·▆▅ ·▆·▅ ·▇·▆ ▆·▅· ▆·▄· ▅▆·▅ ·▅·▆
+ 44. 6th Chord Bouncing             ▄·▅· ▆·▇· █·▇· ▆·▅· ▄·▅· ▆·▆· ▆·▄· ▆·▆·
+ 45. Major 9th Inversion            ▅▅·▆ ·▇▇· ▆·▇▆ ·▅·▄ ▃·▄· ▄▅·▆ ·▇▆· ▅·▄▅
+ 46. Minor 9th Voicing              ▄·▆▇ ▆·██ █·▆▆ ▅·▄▃ ▂·▄▄ ▄·▆▆ ▇·▇▆ ▆·▄▅
+ 47. Extended Jazz Chord            ▄▅·▆ ▇··█ █·▇▆ ··▅▅ ·▄▅· ·▆▇· ▇▆·· ▅▄·▆
+```
+
+### Suspended & Open Voicings (48-63)
+
+Sus2, sus4, power chords, quartal/quintal voicings, and modern open voicings.
+
+```
+ 48. Sus2 Ascending                 ▄▅▆▆ ▇██· ▇▆▆▅ ▄▄▃· ▃▄▄▅ ▆▆▆· ▄▅▆▇ ▆▆▅·
+ 49. Sus2 Descending                ██▇· ▆▅▄▄ ▃▂▃· ▄▅▆▆ ▇██· ▇▆▆▅ ▆▆▅· ▄▄▆▆
+ 50. Sus2 Octave Stack              ▄▅·▄ ▆▇·▆ █▇·▆ ▆▅·▆ ▂▄·▅ ▆▆·▆ ▅▄·▅ ▆▆·▄
+ 51. Sus4 Ascending                 ▄▅▆▆ ▇·██ ▇▆▆· ▄▄▃▂ ▃·▄▅ ▆▆▆· ▄▅▆▇ ▆·▅▄
+ 52. Sus4 Descending                █·▇▆ ▆▅▄· ▃▂▃▄ ▄·▆▆ ▇██· ▇▆▆▅ ▆·▅▄ ▄▄▆·
+ 53. Power Chord Stack              ▄▆·· ██·· ▄▄·· ▄▆·· ▄▆·· ▆▄·· █▆·· ▄▄··
+ 54. Quartal Voicing                ▄··▇ ··█· ·▅·· ▃··▄ ··▆· ·▅·· ▆··▇ ··▄·
+ 55. Quintal Voicing                ▄··· █··· ▄··· ▂··· ▇··· ▄··· ▄··· ▇···
+ 56. Sus2 Add4                      ▄▅▅· ▆▇▇· ██▇· ▆▆▅· ▄▄▃· ▂▃▃· ▄▅▅· ▆▆▅·
+ 57. Sus4 Add2                      ▄▅·▆ ▆▇·█ ██·▇ ▆▆·▅ ▄▄·▃ ▂▃·▄ ▄▅·▆ ▇▆·▄
+ 58. 7sus2 Chord                    ▄▅▆· ▆▇·█ ██·▇ ▆·▆▅ ▄·▄▃ ·▂▃▄ ·▄▅· ▆▆▅·
+ 59. 7sus4 Chord                    ▄·▆▆ ▆·██ █·█▇ ▆·▆▅ ▄·▄▃ ▂·▃▄ ▄·▅▆ ▆·▅▄
+ 60. Power Chord Double             ▄▄·· ▆·██ ··█· ▆▆·· ▄·▄▄ ··▄· ▄▄·· ▆·▆▄
+ 61. Sus2 Sparse                    ▄··· ▅··▆ ···▆ ··▄· ··█· ·▆·· ·▄·· ▅···
+ 62. Sus4 Quartal Blend             ▄·▆· ·▇·█ ··▇· ▆··▅ ·▄·· ▃·▄· ·▆·▆ ··▅·
+ 63. Modern Open Voicing            ▄··▇ ·█·· ▄·▆· ·▆·▄ ··▅· ▆··▆ ·▆·· ▄·▄·
+```
+
+### Bass Lines & Grooves (64-79)
+
+Octave patterns, root-fifth motion, acid riffs, funk syncopation, and rhythmic grooves.
+
+```
+ 64. Octave Pulse                   ▄·▆· ▄·▄· ▄·▆· ▆·▆· ▄·▆· ▄·▄· ▂·▆· ▆·▄·
+ 65. Root-Fifth Groove              ▄··▆ ··▆· ▄··▅ ··▄· ▄··▆ ··▄· ▄··▆ ··▄·
+ 66. Root-Fifth-Octave              ▄·▆· ·▆·█ ··▆· ▄··▆ ·▆·· ▃·▃· ·▆·▆ ··▄·
+ 67. Descending Walk                ▄▄·▄ ▃·▃▂ ·▃▃· ▄▄·▅ ▅·▆▆ ·▆▆· ▆▅·▅ ▄·▄▅
+ 68. Synth Bass Drive               ▄··▄ ·▄·· ▄··▆ ·▄·· ▄··▄ ·▄·· ▄··▆ ·▄··
+ 69. Acid Riff 1                    ·▄·▆ ▆·▆· ·▄·▆ ▆·▅· ·▄·▆ ▅·▆· ·▆·▆ ▄·▆·
+ 70. Funk Syncopation               ▄··▆ ·▄▆· ·▄·▆ ··▆· ▄··▄ ·▆▄· ·▄·▅ ··▆·
+ 71. House Thump                    ▄··· ▄··· ▄··· ▄··· ▄··· ▄··· ▄··· ▄···
+ 72. Root-Fourth Motion             ▄··▅ ▆··▄ ··▆· ▆··▄ ▂··▄ ··▆· ▅··▄ ▅··▄
+ 73. Octave Bounce                  ▄·▄· ·▄·▄ ▆·▆· ·▆·▄ ▂·▆· ·▄·▆ ▆·▄· ·▆·▆
+ 74. Chromatic Descent              ▄▄▄· ▄▄▃· ▃▃▃· ▂▃▃· ▃▃▃· ▄▄▄· ▄▅▅· ▅▅▅·
+ 75. Minor Thirds Pulse             ▄··▅ ··▄· ·▅·· ▆··▅ ··▄· ·▆·· ▅··▄ ··▄·
+ 76. Stutter Bass                   ▄▄·· ·▆▆· ··▄▄ ···▄ ▄··· ▆▆·· ·▆▅· ··▆▄
+ 77. Melodic Bass Line              ▄▅▅· ▆▆·▆ ▆▆·▅ ▅·▄▄ ▄·▃▃ ·▂▃▃ ·▄▄· ▄▅▅·
+ 78. Octave Skip                    ▄··· ·▄·· ▄··· ·▃·· ▂··· ·▆·· ▂··· ·▄··
+ 79. Resting Groove                 ▄··· ▆··▅ ···▆ ··▅· ··▂· ·▆·· ·▅·· ▆···
+```
+
+### Pentatonic & Blues (80-95)
+
+Major/minor pentatonic, blues scale, gospel, country, and rock patterns.
+
+```
+ 80. Major Pentatonic Ascending     ▄▅▅· ▆▆▇· ███· █▇▇· ▆▆▅· ▄▄▄· ▃▂▃· ▄▄▄·
+ 81. Minor Pentatonic Ascending     ▄·▅▆ ·▆▇· █·██ ·▇▇· ▆·▅▅ ·▄▄· ▃·▃▃ ·▄▄·
+ 82. Major Pentatonic Descending    ██·▇ ▇·▆▆ ·▅▄· ▄▃·▂ ▄·▅▆ ·▆▇· ██·█ █·▇▆
+ 83. Minor Pentatonic Descending    █·█▇ ▇·▆▆ ▅·▄▄ ▄·▃▂ ▄·▅▆ ▆·▇▇ █·██ █·▇▆
+ 84. Major Pentatonic Skips         ▄··▆ ·▆·· ▆·▆· ·█·█ ··▇· ▇··▇ ·▆·· ▅·▅·
+ 85. Minor Pentatonic Skips         ▄·▅· ·▆·▆ ··▆· ▇··█ ·█·· ▇·▆· ·▆·▆ ··▅·
+ 86. Blues Scale Ascending          ▄·▅▅ ··▆· ▇▇·· █·█▇ ··▆· ▆▅·· ▄·▄▃ ··▃·
+ 87. Blues Scale Descending         ██·· ▇▇·· ▆▅·· ▄▄·· ▃▃·· ▄▄·· ▅▅·· ▆▇··
+ 88. Asian Pentatonic Feel          ▄··▆ ···▇ ··█· ··▇· ·▆·· ·▄·· ▃··· ▄··▅
+ 89. Gospel Soul Run                ▄▅·▆ ·▆▆· ▅·▄▅ ·▆·█ █·█· ▇▆·▅ ·▄▄· ▃·▄▄
+ 90. Rock Lead Pentatonic           ▄·▅· ▅·▄▅ ·▆·▇ ·▆▆· ▆·▇· ██·█ ·▇·▆ ▆·▅·
+ 91. Country-Style Sequence         ▄·▅▆ ·▅·▅ ▆·▆· ▆▅·▆ ·▇█· ▇·▇▇ ·█·█ █·▇·
+ 92. Blues Shuffle Feel             ▄·▅· ·▅·▆ ··▇· ▇··▇ ·█·· █·▇· ·▆·▆ ··▆·
+ 93. Pentatonic Cascade             ▄▆▅▆ ·▇▇█ █·█▇ █▇·▆ ▆▇▆· ▅▆▅▆ ·▅▄▅ ▄·▄▅
+ 94. Blues Chromatic Insert         ▄·▅▅ ·▆·· ▇·▇█ ·█·· █·▇▇ ·▆·· ▆·▅▅ ·▄··
+ 95. Major-Minor Blend              ▄▅·▆ ·▆·▇ █·█· █·▇▆ ·▆·▅ ·▄▄· ▃·▂· ▃▄·▄
+```
+
+### Genre-Specific (96-111)
+
+80s synth, trance, acid 303, Kraftwerk, Italo disco, ambient, electro, and more.
+
+```
+ 96. 80s Jump Riff                  ▄··▆ ··▆· ▄··▆ ··▆· ▅··▆ ··▅· ▄··▆ ··▅·
+ 97. Take On Me Ascent              ▄·▆· ▆·▇· █·▆· ▅·▆· █·▆· ▆·█· █·▆· ▅·▅·
+ 98. Trance Build Sequence          ▄··· ▅··▇ ··▆· ▆·▆· █·█· ▇▅·▅ ▆·▆▄ ▆·▆▄
+ 99. 303 Acid Walk                  ·▄·▆ ··▅· ▆·▆· ·▅·▆ ·▆·· ▄·▄· ▆··▆ ·▅·▆
+100. Kraftwerk Pulse                ▄··▄ ··▆· ·▅·· ▆··▄ ··▆· ·▆·· █··▄ ··▆·
+101. Italo Disco Hook               ▄·▆· ·▅▆· ▅·▅· ·▇▆· ▅·▄· ·▆▅· ▆·▆· ·▅▆·
+102. Progressive House Arp          ▄▆·▆ ·▇▆· ▄·▅▆ ·▇·█ █·▇· ▆▅·▄ ·▄▅· ▆·▅▄
+103. New Wave Synth Line            ▄··▆ ▆··▆ ··▆▆ ··▆· ·▆▆· ·▆·· █▇·· ▅··▄
+104. Ambient Evolving I             ▄··· ·▆·· ··▆· ···▅ ···· ▆··· ·▄·· ··▆·
+105. Ambient Evolving II            ▄··· ···▆ ···· ··▇· ···· ·▄·· ···· ▅···
+106. Synth Cascade Down             ██▇· █▇·▆ ▇·▆· ▆·▅· ▆·▄· ▅▄·▃ ▄·▃▂ ▄·▅▄
+107. Rhythmic Gate Arp              ▄··▆ ··▅▄ ··▄· ·▆·· ▆··▄ ▇··▆ ··▆· ·▅▆·
+108. Synth Broken Chord             ▄▆·· ▄··▆ ▅··▇ ··▇█ ··▆· ·▆▄· ·▄·· ▄▅··
+109. Acid LFO Ramp                  ·▅▅· ▅▅·▆ ·▆▆· ▆▆·▆ ·▆▅· ▅▅·▅ ·▄▄· ▄▄·▅
+110. Electro Pulse Synth            ▄·▆· ··▆· ▄··· ▆·▇· ··▆· ▄··· ▄·▆· ··▆·
+111. Chromatic Spiral               ▄·▅· ▅··▆ ·▇·▇ ··█· █·█· ·▇·▇ ·▆·· ▅·▅·
+```
+
+### Rhythmic & Experimental (112-127)
+
+Odd meters, Euclidean rhythms, polyrhythm, phasing, glitch, and minimalist patterns.
+
+```
+112. Syncopated Triplet Swing       ▄·▆· ·▆·▇ ··▅· ▆·▆· ·▆·▄ ··▄· ▄·▆· ·▅·▆
+113. Odd Grouping 3+3+2             ▄··▆ ··▄· ▄··▆ ··▆· ▄··▆ ··▇· ▆··▆ ··▅·
+114. Call and Response Major        ▄▅▆▆ ···· ▆▆▅▄ ···· ▄▅▆· ··▄▄ ▆··· █▇··
+115. Stutter and Jump               ▄▄·· ··▆▄ ···· ▇▄▄· ···▄ ▄··· ·▄▄▄ ····
+116. Euclidean 13                   ▄·▄· ▄··▄ ·▄·· ▄·▄· ▆··▆ ·▆·· ▆·▆· ▆··▆
+117. Polyrhythm 3 Against 4         ▄··· ▄··▆ ··▆· ··▄· ·▆·· ▆··· ▆··▅ ··▆·
+118. Reich Phasing Shift            ▄·▆▆ ·▅·▆ ▄·▆· ▅▆·▄ ·▆▄· ▆▄·▆ ·▅▆· ▅·▆▄
+119. Glitch Irregular Gaps          ▄▆·· ▆··· ▄▄▇· ·▄·· ·█·▄ ▆··· ▄▆·▄ ··▆·
+120. Minimalist Void Spaces         ▄··· ···· ▆··· ···· ▄··· ···▄ ···· ····
+121. Syncopated Minor Descent       ·▄·▄ ··▄· ·▆·▄ ··▄· ·▃·▂ ··▄· ·▄·▄ ··▄·
+122. Synth Pop Pulse                ▄·▄· ▆▆·▆ ·▆·▇ ▆·▄· ▄·▆▆ ·▄·▆ ·▆▄· ▆·▆·
+123. Cascading Thirds               ▄▅·▆ ▅·▆· ▆▆·▇ ▆·▇· ▇▆·▅ ▆·▅· ▆▅·▄ ▅·▄·
+124. Reverse Crescendo              ████ ██·▇ ▆▆·▆ ▅·▄· ▄·▅· ·▆·· ▇··· █···
+125. Double Time Stutter            ▄▄·· ▄▄·· ▆▆·· ▆▆·· ▆▆·· ▇▇·· ▆▆·· ▆▆··
+126. Offset Eighth Notes            ·▅·▆ ·▆·▅ ·▆·▆ ·▇·█ ·▆·▇ ·▆·▆ ·▅·▆ ·▄·▄
+127. Chaotic Beauty                 ▄··▇ ▆·▅· ··▅█ ·█·▇ ··▆· ▅▅·· ▅·▆· ·▆▅·
+```
