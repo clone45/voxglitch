@@ -114,7 +114,11 @@ Centralics includes a clock-synced triple delay. Three delay lines run simultane
 - **MORPH X**: Crossfades between delay line A and delay line B. At 0, only A is heard. At 1, only B.
 - **MORPH Y**: Crossfades delay line C into the mix. At 0, you hear the A/B blend. At 1, only C.
 - **CLK DIV**: Divides the clock before it reaches the delay. Higher values create longer delay times. Range 1-16.
-- **MODE**: Selects from 8 delay time presets, each with different rhythmic relationships between the three delay lines:
+- **MODE**: Selects from 24 delay presets. Modes 0-7 are mono (identical signal on both L and R outputs). Modes 8-23 are stereo, panning the three delay taps across the stereo field to produce true left/right separation.
+
+### Mono Modes (0-7)
+
+These modes output the same blended signal to both L and R.
 
 | Mode | Name | Delay A | Delay B | Delay C |
 |------|------|---------|---------|---------|
@@ -126,6 +130,43 @@ Centralics includes a clock-synced triple delay. Three delay lines run simultane
 | 5 | Dub | Dotted 1/8 | Dotted 1/4 | 1/2 |
 | 6 | Tight | 1/16 | 1/8 | Dotted 1/8 |
 | 7 | Wide | 1/8 | 1/4 | 1/2 |
+
+### Stereo Modes: Stable Width (8-12)
+
+These modes add stereo width while keeping the image stable as you morph. The Morph X/Y knobs change the delay character without dramatically shifting the stereo center. Good for general use.
+
+| Mode | Name | Delay A | Delay B | Delay C | Stereo Character |
+|------|------|---------|---------|---------|------------------|
+| 8 | S-Classic | 1/8 | Dotted 1/8 | 1/4 triplet | Moderate L/R spread |
+| 9 | S-Quarters | 1/4 | Dotted 1/4 | 1/2 triplet | Gentle spread, C slightly right |
+| 10 | S-Triplets | 1/8 trip | 1/4 trip | 1/2 trip | Subtle width |
+| 11 | S-Tight | 1/16 | 1/8 | Dotted 1/8 | Very subtle, nearly centered |
+| 12 | S-Ambient | Dotted 1/4 | 1/2 | Dotted whole | Gentle width, long delays |
+
+### Stereo Modes: Spatial Movement (13-17)
+
+These modes use contrasting pan positions so that Morph X/Y intentionally sweeps the stereo field. Use these for performance effects -- modulating the morph knobs or patching LFOs into the morph CV inputs creates animated spatial movement.
+
+| Mode | Name | Delay A | Delay B | Delay C | Stereo Character |
+|------|------|---------|---------|---------|------------------|
+| 13 | S-PingPong | 1/16 | Dotted 1/16 | 1/8 triplet | Full L/R ping-pong |
+| 14 | S-Dub | Dotted 1/8 | Dotted 1/4 | 1/2 | Wide dub, hard L/R |
+| 15 | S-Wide | 1/8 | 1/4 | 1/2 | L-center-R spread |
+| 16 | S-Bounce | 1/8 | 1/4 | Dotted 1/4 | L-R-L bounce |
+| 17 | S-Cross | 1/8 trip | 1/8 | 1/4 trip | Reversed: short right, long left |
+
+### Stereo Modes: Asymmetric Character (18-23)
+
+These modes use moderate but non-symmetric pan placements, creating interesting off-center spatial character. Morphing shifts the image slightly without dramatic swings.
+
+| Mode | Name | Delay A | Delay B | Delay C | Stereo Character |
+|------|------|---------|---------|---------|------------------|
+| 18 | S-Dotted | Dotted 1/16 | Dotted 1/8 | Dotted 1/4 | Moderate, slightly asymmetric |
+| 19 | S-Gallop | 1/16 | 1/8 | Dotted 1/8 | Off-center weight |
+| 20 | S-Swing | 1/8 trip | 1/4 trip | 1/8 | Gentle asymmetry |
+| 21 | S-Poly | 1/8 | 1/8 trip | 1/16 | Off-center polyrhythm |
+| 22 | S-Scatter | 1/16 | 1/8 trip | 1/8 | Scattered across field |
+| 23 | S-Echo | 1/4 | 1/2 | Whole | Long trailing echo |
 
 ## CV Inputs and Outputs
 
@@ -174,6 +215,14 @@ All CV inputs accept standard VCV Rack voltage ranges and are additive with the 
 - The **Dub** mode (5) with moderate feedback creates classic dub echo trails
 - Patch an LFO into the **morph x** or **morph y** CV input for evolving delay textures
 - **CLK DIV** at higher values (8-16) creates long, spacious delays
+
+### Stereo Delay Modes
+
+- **Stable width modes** (8-12) add stereo depth without the image moving around when you adjust Morph X/Y. Start here if you want set-and-forget stereo width.
+- **Spatial movement modes** (13-17) are designed for performance -- Morph X sweeps the delay between left and right. Patch an LFO into Morph X CV for auto-panning echo effects.
+- **Asymmetric modes** (18-23) create interesting off-center spatial placement that adds character without extremes.
+- **S-Ambient** (12) with high CLK DIV and moderate feedback creates wide atmospheric washes.
+- **S-PingPong** (13) with short CLK DIV creates a classic rhythmic ping-pong delay.
 
 ### Pattern Exploration
 
