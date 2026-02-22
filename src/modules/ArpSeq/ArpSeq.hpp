@@ -449,8 +449,25 @@ struct ArpSeq : Module
         //
         if (clock_triggered)
         {
-            time_between_clocks_ms = time_now - time_of_last_clock;
+            // Only update time_between_clocks_ms when we have a valid
+            // previous clock time.  After reset or on first boot,
+            // time_of_last_clock is 0.0 and computing against it would
+            // produce a wildly wrong period (and therefore wrong gate
+            // duration).  Keep the old value until the second clock
+            // establishes a real period.
+            if (time_of_last_clock > 0.0)
+            {
+                time_between_clocks_ms = time_now - time_of_last_clock;
+            }
             time_of_last_clock = time_now;
+        }
+
+        // Suppress clock triggers during the clock-ignore window after
+        // reset.  This prevents the arp and sequencers from stepping
+        // on stale or simultaneous clock edges.
+        if (clock_ignore_on_reset > 0 && !legacy_reset_mode)
+        {
+            clock_triggered = false;
         }
 
         //
@@ -766,6 +783,14 @@ struct ArpSeq : Module
         note_repeat = 2;
 
         resetCycleCounters();
+
+        // Reset clock modifier state so stale multiplication targets
+        // and timing don't fire after reset
+        clock_modifier.reset();
+
+        // Mark time_of_last_clock as invalid so the first clock after
+        // reset doesn't compute a bogus time_between_clocks_ms
+        time_of_last_clock = 0.0;
     }
 
     bool prepareArpSequencer()

@@ -2,7 +2,7 @@
 // TODO:
 // - support Cardinal
 
-#include <fstream>
+#include <sstream>
 
 struct OnePoint : VoxglitchModule
 {
@@ -254,7 +254,8 @@ struct OnePoint : VoxglitchModule
 
     void loadData(std::string path)
     {
-        std::ifstream input_file(path);
+        // Use fopen for UTF-8 path support on Windows
+        FILE* f = fopen(path.c_str(), "r");
 
         // Note: We don't set selected_sequence = 0 here anymore as it will be set in dataFromJson if available
 
@@ -262,8 +263,16 @@ struct OnePoint : VoxglitchModule
         sequences.clear();
 
         // test file open
-        if (input_file)
+        if (f)
         {
+            fseek(f, 0, SEEK_END);
+            long length = ftell(f);
+            fseek(f, 0, SEEK_SET);
+            std::string contents(length, '\0');
+            fread(&contents[0], 1, length, f);
+            fclose(f);
+
+            std::istringstream input_file(contents);
             std::string line = "";
 
             while (std::getline(input_file, line))
@@ -281,8 +290,6 @@ struct OnePoint : VoxglitchModule
 
                 sequences.push_back(sequence);
             }
-
-            input_file.close();
         }
 
         reset();

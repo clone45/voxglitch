@@ -42,7 +42,7 @@
 #include <cassert>
 #include <string>
 #include <cstring>
-#include <fstream>
+#include <cstdio>
 #include <unordered_map>
 #include <iterator>
 #include <algorithm>
@@ -468,30 +468,32 @@ void AudioFile<T>::shouldLogErrorsToConsole (bool logErrors)
 template <class T>
 bool AudioFile<T>::load (std::string filePath)
 {
-    std::ifstream file (filePath, std::ios::binary);
-    
+    // Use fopen() instead of std::ifstream for UTF-8 path support on Windows.
+    // VCV Rack's common.hpp redefines fopen to fopen_u8 on Windows, which
+    // handles UTF-8 to UTF-16 conversion. std::ifstream uses the ANSI codepage
+    // on Windows and fails with CJK/Unicode characters in file paths.
+    FILE* file = fopen (filePath.c_str(), "rb");
+
     // check the file exists
-    if (! file.good())
+    if (! file)
     {
         reportError ("ERROR: File doesn't exist or otherwise can't load file\n"  + filePath);
         return false;
     }
-    
+
     std::vector<uint8_t> fileData;
 
-	file.unsetf (std::ios::skipws);
-
-	file.seekg (0, std::ios::end);
-	size_t length = file.tellg();
-	file.seekg (0, std::ios::beg);
+	fseek (file, 0, SEEK_END);
+	size_t length = ftell (file);
+	fseek (file, 0, SEEK_SET);
 
 	// allocate
 	fileData.resize (length);
 
-	file.read(reinterpret_cast<char*> (fileData.data()), length);
-	file.close();
+	size_t bytesRead = fread (fileData.data(), 1, length, file);
+	fclose (file);
 
-	if (file.gcount() != length)
+	if (bytesRead != length)
 	{
 		reportError ("ERROR: Couldn't read entire file\n" + filePath);
 		return false;
@@ -1110,21 +1112,16 @@ bool AudioFile<T>::saveToAiffFile (std::string filePath)
 template <class T>
 bool AudioFile<T>::writeDataToFile (std::vector<uint8_t>& fileData, std::string filePath)
 {
-    std::ofstream outputFile (filePath, std::ios::binary);
-    
-    if (outputFile.is_open())
+    // Use fopen() for UTF-8 path support on Windows (see load() comment)
+    FILE* outputFile = fopen (filePath.c_str(), "wb");
+
+    if (outputFile)
     {
-        for (size_t i = 0; i < fileData.size(); i++)
-        {
-            char value = (char) fileData[i];
-            outputFile.write (&value, sizeof (char));
-        }
-        
-        outputFile.close();
-        
+        fwrite (fileData.data(), 1, fileData.size(), outputFile);
+        fclose (outputFile);
         return true;
     }
-    
+
     return false;
 }
 

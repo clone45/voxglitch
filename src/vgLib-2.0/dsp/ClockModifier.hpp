@@ -21,11 +21,25 @@ private:
 
 public:
 
+  void reset()
+  {
+    previous_clock_time = 0.0;
+    time_between_clocks_ms = 0.0;
+    timer_targets.clear();
+    clock_division_counter = 0;
+  }
+
   bool clock(double time_now, float rate_factor)
   {
     if(previous_clock_time == 0.0)
     {
+      // First clock after init or reset: record the time but don't
+      // compute a period yet.  Pass the pulse through unchanged since
+      // we can't do meaningful multiplication or division without
+      // knowing the clock period.
       previous_clock_time = time_now;
+      this->rate_factor = rate_factor;
+      return true;
     }
     else
     {

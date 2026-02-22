@@ -1,6 +1,5 @@
 #pragma once
 
-#include <fstream>
 #include <cmath>
 #include <algorithm>
 
@@ -76,19 +75,20 @@ struct MayaIntroAnimation
 
 		// Load pixels from binary file
 		std::string bin_path = asset::plugin(pluginInstance, "res/modules/maya/maya_display_pixels.bin");
-		std::ifstream file(bin_path, std::ios::binary);
+		// Use fopen for UTF-8 path support on Windows
+		FILE* file = fopen(bin_path.c_str(), "rb");
 
-		if (!file.is_open()) return;
+		if (!file) return;
 
 		// Read header: width, height (2 bytes)
 		uint8_t srcWidth, srcHeight;
-		file.read(reinterpret_cast<char*>(&srcWidth), 1);
-		file.read(reinterpret_cast<char*>(&srcHeight), 1);
+		fread(&srcWidth, 1, 1, file);
+		fread(&srcHeight, 1, 1, file);
 
 		// Read packed pixel data
 		std::vector<uint8_t> packedData((srcWidth * srcHeight + 7) / 8);
-		file.read(reinterpret_cast<char*>(packedData.data()), packedData.size());
-		file.close();
+		fread(packedData.data(), 1, packedData.size(), file);
+		fclose(file);
 
 		// Unpack pixels
 		std::vector<std::pair<float, float>> rawPixels;

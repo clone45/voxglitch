@@ -22,9 +22,12 @@ SOURCES += $(wildcard src/osc/*.cpp)
 # Add IP common sources
 SOURCES += $(wildcard src/ip/*.cpp)
 
+# Include Rack SDK's arch.mk early so we can use ARCH_WIN / ARCH_LIN / ARCH_MAC
+# for platform-specific source selection (arch.mk is safe to include before plugin.mk)
+include $(RACK_DIR)/arch.mk
+
 # Add IP library sources (platform-specific, for Kaiseki OSC support)
-# Use $(OS) for early Windows detection (ARCH_WIN is set later by plugin.mk)
-ifeq ($(OS),Windows_NT)
+ifdef ARCH_WIN
     SOURCES += $(wildcard src/ip/win32/*.cpp)
     LDFLAGS += -lws2_32 -lwinmm
 else

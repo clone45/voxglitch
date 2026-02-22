@@ -23,7 +23,7 @@
 
 #include <thread>
 #include <future>
-#include <fstream>
+#include <sstream>
 
 struct GrooveBox : VoxglitchSamplerModule
 {
@@ -606,14 +606,23 @@ struct GrooveBox : VoxglitchSamplerModule
 
             // Read .txt file containing list of files in order
             std::string config_file_path = destination_path + "/kit_samples.txt";
-            std::ifstream input_file(config_file_path);
+            // Use fopen for UTF-8 path support on Windows
+            FILE* input_f = fopen(config_file_path.c_str(), "r");
 
-            if (input_file)
+            if (input_f)
             {
+                fseek(input_f, 0, SEEK_END);
+                long length = ftell(input_f);
+                fseek(input_f, 0, SEEK_SET);
+                std::string contents(length, '\0');
+                fread(&contents[0], 1, length, input_f);
+                fclose(input_f);
+
+                std::istringstream input_stream(contents);
                 std::string line = "";
                 unsigned int sample_number = 0;
 
-                while (std::getline(input_file, line) && (sample_number < NUMBER_OF_TRACKS))
+                while (std::getline(input_stream, line) && (sample_number < NUMBER_OF_TRACKS))
                 {
                     this->sample_players[sample_number].loadSample(destination_path + "/" + line);
                     sample_number++;
@@ -643,13 +652,16 @@ struct GrooveBox : VoxglitchSamplerModule
             //
 
             std::string config_file_path = temp_build_path + "/kit_samples.txt";
-            std::ofstream myfile;
-            myfile.open(config_file_path);
-            for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
-            {
-                myfile << sample_players[i].getFilename() + "\n";
+            // Use fopen for UTF-8 path support on Windows
+            FILE* myfile = fopen(config_file_path.c_str(), "w");
+            if (myfile) {
+                for (unsigned int i = 0; i < NUMBER_OF_TRACKS; i++)
+                {
+                    std::string line = sample_players[i].getFilename() + "\n";
+                    fwrite(line.c_str(), 1, line.size(), myfile);
+                }
+                fclose(myfile);
             }
-            myfile.close();
 
             //
             // Copy current samples into temporary folder
