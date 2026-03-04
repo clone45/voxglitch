@@ -58,6 +58,17 @@ This is a convenience shortcut. It works the same as opening the track's patch, 
 
 You can also drag-and-drop an audio file from your computer on to a track to automatically load it (assuming that you have a sample playing module in the track).  The drag-and-drop operation only allows for one sample to be dropped on one track at a time.  You cannot drop multiple samples on to the module.
 
+### Included Samples Library
+
+Groovebox Advanced ships with a library of drum samples ready to use. The default beat (kick, snare, hi-hat, clap) uses samples from this library, and it includes additional variations and sounds:
+
+- Kicks, snares, hi-hats, and claps (multiple variations of each)
+- FM synthesis hits
+- Glitch and percussion sounds
+- Metal and pluck textures
+
+To find the samples folder on your system, right-click the module and select **Copy Samples Folder Path**. This copies the full path to the clipboard so you can paste it into your file browser or any sample loading dialog.
+
 ### Volume, Pan, and Mute
 
 - **Volume**: Drag the fader up and down to set the track's level from 0 (silent) to 1 (unity). Volume changes are smoothly interpolated to avoid clicks.
