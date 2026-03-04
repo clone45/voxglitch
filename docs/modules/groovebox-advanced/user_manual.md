@@ -467,121 +467,125 @@ After editing the file, right-click the module and select **Reload MIDI Mapping*
 
 # Chapter 6: Module Reference
 
-This chapter lists all internal modules available in the patch editor, organized by category.
+This chapter lists all internal modules available in the patch editor, organized by category. Click a module name for detailed documentation including ports, parameters, and DSP behavior.
 
 ## I/O
 
 | Module | Description |
 |--------|-------------|
-| **Input** | Brings external CV from the module's 6 CV inputs into the patch. Each output corresponds to one of the CV 1-6 jacks on the panel. |
-| **Output** | Sends audio from the patch to the module's audio outputs. Every patch needs one. You can select which output pair to use. |
-| **FxIn** | Receives the mixed audio from all tracks. Used only in the Effects global patch. |
-| **FxOut** | Sends processed audio back to the outputs. Used only in the Effects global patch. |
+| [**Input**](modules/gainput.md) | Brings external CV from the module's 6 CV inputs into the patch. Each output corresponds to one of the CV 1-6 jacks on the panel. |
+| [**Output**](modules/gaoutput.md) | Sends audio from the patch to the module's audio outputs. Every patch needs one. You can select which output pair to use. |
+| [**FxIn**](modules/gaeffectsin.md) | Receives the mixed audio from all tracks. Used only in the Effects global patch. |
+| [**FxOut**](modules/gaeffectsout.md) | Sends processed audio back to the outputs. Used only in the Effects global patch. |
 
 ## Oscillators
 
 | Module | Description |
 |--------|-------------|
-| **VCO** | General-purpose voltage-controlled oscillator with multiple waveforms and 1V/oct pitch tracking. |
-| **LFO** | Low-frequency oscillator for modulation. Outputs a slow-moving signal for controlling other parameters. |
-| **303** | TB-303 style monosynth with built-in acid filter, accent, and glide behavior. |
-| **Carrier** | FM synthesis carrier oscillator. Outputs audio-rate signal. |
-| **Modulator** | FM synthesis modulator oscillator. Connect its output to a Carrier's modulation input. |
-| **Operator** | Combined FM operator with detune and feedback controls. |
-| **Voice** | Pre-built synth voice combining VCO, ADSR envelope, VCA, and filter in one module. |
+| [**VCO**](modules/gavco.md) | General-purpose voltage-controlled oscillator with multiple waveforms and 1V/oct pitch tracking. |
+| [**LFO**](modules/galfo.md) | Low-frequency oscillator for modulation. Outputs a slow-moving signal for controlling other parameters. |
+| [**303**](modules/ga303.md) | TB-303 style monosynth with built-in acid filter, accent, and glide behavior. |
+| [**Carrier**](modules/gacarrier.md) | FM synthesis carrier oscillator. Outputs audio-rate signal. |
+| [**Modulator**](modules/gamodulator.md) | FM synthesis modulator oscillator. Connect its output to a Carrier's modulation input. |
+| [**Operator**](modules/gaoperator.md) | Combined FM operator with detune and feedback controls. |
+| [**Voice**](modules/gavoice.md) | Pre-built synth voice combining VCO, ADSR envelope, VCA, and filter in one module. |
 
 ## Drums
 
 | Module | Description |
 |--------|-------------|
-| **KickDrum** | Synthesized kick drum with pitch, decay, and click controls. |
-| **SnareDrum** | Synthesized snare drum. |
+| [**KickDrum**](modules/gakickdrum.md) | Synthesized kick drum with pitch, decay, and click controls. |
+| [**SnareDrum**](modules/gasnaredrum.md) | Synthesized snare drum. |
 
 ## Samplers
 
 | Module | Description |
 |--------|-------------|
-| **TrigSample** | Plays a sample when triggered. This is the default module in new tracks. |
-| **TrigSampFX** | Triggered sample player with built-in IDM-style effects processing. |
-| **Sampler** | Continuous sample playback with pitch and position scrubbing control. |
-| **Slicer** | Chops a sample into slices and plays them by index. Useful for breakbeat work. |
-| **ByteBeat** | Generates audio from bytebeat formulas. |
+| [**TrigSample**](modules/gatrigsample.md) | Plays a sample when triggered. This is the default module in new tracks. |
+| [**TrigSampFX**](modules/gatrigsamplefx.md) | Triggered sample player with built-in IDM-style effects processing. |
+| [**Sampler**](modules/gasampler.md) | Continuous sample playback with pitch and position scrubbing control. |
+| [**Slicer**](modules/gaslicer.md) | Chops a sample into slices and plays them by index. Useful for breakbeat work. |
+| [**Resample**](modules/garesample.md) | Stereo audio recorder that writes to a shared buffer for use by Replay modules. |
+| [**Replay**](modules/gareplay.md) | Plays back audio recorded by a Resample module with pitch and start position control. |
+| [**ByteBeat**](modules/gabytebeat.md) | Generates audio from bytebeat formulas. |
 
 ## Modulators
 
 | Module | Description |
 |--------|-------------|
-| **Envelope** | ADSR-style envelope generator. Outputs a control signal that rises and falls when triggered. |
+| [**Envelope**](modules/gaenvelope.md) | ADSR-style envelope generator. Outputs a control signal that rises and falls when triggered. |
 
 ## Filters
 
 | Module | Description |
 |--------|-------------|
-| **Filter** | Multi-mode resonant filter with low-pass, high-pass, and band-pass outputs. |
+| [**Filter**](modules/gafilter.md) | Multi-mode resonant filter with low-pass, high-pass, and band-pass outputs. |
 
 ## Mixing
 
 | Module | Description |
 |--------|-------------|
-| **Mixer** | 3-input audio mixer. |
-| **Mixer4** | 4-input audio mixer. |
-| **Mixer6** | 6-input audio mixer. |
-| **Mixer8** | 8-input audio mixer. |
-| **VCA** | Voltage-controlled amplifier. Scales an audio signal by a control voltage. |
-| **Atten** | Attenuverter. Scales a signal by a factor from -1 to +1. |
-| **Scale** | Scales a signal and adds an offset. |
+| [**Mixer**](modules/gamixer.md) | 3-input audio mixer. |
+| [**Mixer4**](modules/gamixer4.md) | 4-input audio mixer. |
+| [**Mixer6**](modules/gamixer6.md) | 6-input audio mixer. |
+| [**Mixer8**](modules/gamixer8.md) | 8-input audio mixer. |
+| [**VCA**](modules/gavca.md) | Voltage-controlled amplifier. Scales an audio signal by a control voltage. |
+| [**Amp**](modules/gaamp.md) | Amplifier with gain, saturation, and clamping options. |
+| [**Atten**](modules/gaatten.md) | Attenuverter. Scales a signal by a factor from -1 to +1. |
+| [**Scale**](modules/gascale.md) | Scales a signal and adds an offset. |
 
 ## Effects
 
 | Module | Description |
 |--------|-------------|
-| **Delay** | Simple delay effect with time and feedback controls. |
-| **TripleDelay** | Three delay lines with independent timing and a 3D morph control. |
-| **SyncDelay** | Clock-synced delay with musical division settings. |
-| **Reverb** | Dattorro plate reverb. |
-| **Distort** | Waveshaping distortion and saturation. |
-| **Comb** | Comb filter effect. |
-| **Pitch** | Pitch shifter. |
-| **Ring Mod** | Ring modulator. Multiplies two signals together. |
-| **Wavefolder** | Wavefolding distortion for west coast synthesis textures. |
-| **Slew** | Slew rate limiter. Smooths signal transitions. Useful for portamento and glide effects. |
-| **Amp** | Amplifier with gain, saturation, and clamping options. |
+| [**Delay**](modules/gadelay.md) | Simple delay effect with time and feedback controls. |
+| [**TripleDelay**](modules/gatripledelay.md) | Three delay lines with independent timing and a 3D morph control. |
+| [**SyncDelay**](modules/gasyncdelay.md) | Clock-synced delay with musical division settings. |
+| [**Reverb**](modules/gareverb.md) | Dattorro plate reverb. |
+| [**Distort**](modules/gadistort.md) | Waveshaping distortion and saturation. |
+| [**Comb**](modules/gacomb.md) | Comb filter effect. |
+| [**Pitch**](modules/gapitch.md) | Pitch shifter. |
+| [**Ring Mod**](modules/garingmod.md) | Ring modulator. Multiplies two signals together. |
+| [**Wavefolder**](modules/gawavefolder.md) | Wavefolding distortion for west coast synthesis textures. |
+| [**Slew**](modules/gaslew.md) | Slew rate limiter. Smooths signal transitions. Useful for portamento and glide effects. |
 
 ## Utilities
 
 | Module | Description |
 |--------|-------------|
-| **Constant** | Outputs a fixed voltage value. |
-| **Integer** | Outputs an integer value from 0 to 64. |
-| **Math** | Basic math operations (add, subtract, multiply, divide) on two input signals. |
-| **Switch** | 2-input signal switch. A gate input selects between inputs A and B. |
-| **Switch3** | 3-input CV switch. A selector input chooses between A, B, and C. |
-| **Switch4** | 4-input CV switch. A selector input chooses between A, B, C, and D. |
-| **Step#** | Outputs the current sequencer step number as a voltage. |
-| **StepRnd** | Outputs a random value that changes on each trigger (sample-and-hold random). |
-| **Script Var** | Reads a variable set by the script engine's SET VAR instruction. Select which slot (0-15) to read. |
-| **Debug** | Displays the current value of its input signal. Useful for troubleshooting patches. |
+| [**Constant**](modules/gaconstant.md) | Outputs a fixed voltage value. |
+| [**Integer**](modules/gainteger.md) | Outputs an integer value from 0 to 64. |
+| [**Math**](modules/gamath.md) | Basic math operations (add, subtract, multiply, divide) on two input signals. |
+| [**Compare**](modules/gacompare.md) | Compares two voltages and outputs a gate based on the result. |
+| [**Logic**](modules/galogic.md) | Logic gates: AND, OR, XOR, NOT. Operates on gate/trigger signals. |
+| [**Switch**](modules/gaswitch.md) | 2-input signal switch. A gate input selects between inputs A and B. |
+| [**Switch3**](modules/gaswitch3.md) | 3-input CV switch. A selector input chooses between A, B, and C. |
+| [**Switch4**](modules/gaswitch4.md) | 4-input CV switch. A selector input chooses between A, B, C, and D. |
+| [**Step#**](modules/gastepnum.md) | Outputs the current sequencer step number as a voltage. |
+| [**StepRnd**](modules/gasteprnd.md) | Outputs a random value that changes on each trigger (sample-and-hold random). |
+| [**Pads**](modules/gapads.md) | Interactive 16-pad controller that outputs pad states as a polyphonic gate signal. |
+| [**Script Var**](modules/gascriptvar.md) | Reads a variable set by the script engine's SET VAR instruction. Select which slot (0-15) to read. |
+| [**Debug**](modules/gadebug.md) | Displays the current value of its input signal. Useful for troubleshooting patches. |
 
 ## Sequencing
 
 | Module | Description |
 |--------|-------------|
-| **StepTrig** | Fires a trigger pulse when the sequencer reaches a step assigned to this track. This is the standard way to trigger sounds. |
-| **Clock** | Internal clock source with BPM control. |
-| **ClockDiv** | Divides an incoming clock by a selectable ratio. |
-| **ClockMult** | Multiplies an incoming clock by a selectable ratio. |
-| **Reset** | Passes through the external reset signal from the module's RESET input. |
-| **Sequencer** | 8-step internal CV sequencer. Outputs a voltage sequence driven by a clock input. |
-| **Sequencer16** | 16-step internal CV sequencer with length control. |
-| **Counter** | Counts clock pulses and outputs the count as a voltage. Wraps at a configurable maximum. |
-| **Logic** | Logic gates: AND, OR, XOR, NOT. Operates on gate/trigger signals. |
-| **Prob** | Probability gate. Passes or blocks triggers based on a probability setting. |
-| **Compare** | Compares two voltages and outputs a gate based on the result. |
-| **Quantize** | Quantizes a voltage to a selectable musical scale. |
-| **PatGen** | Algorithmic pattern generator. Produces CV and gate patterns from 128 preset algorithms. |
-| **PatArp** | Pattern-based arpeggiator. Produces melodic patterns from a library of preset arpeggio shapes. |
-| **Arp** | Arpeggiator with scale quantization. |
-| **Mutate** | Applies mutations to step patterns during playback. Non-destructive: the original pattern is preserved. Used in the Sequencer Control patch. |
-| **SeqIn** | Passes the external clock and reset signals into the Sequencer Control patch. |
-| **SeqCtl** | Receives a step position value and uses it to override the sequencer's current step. Used in the Sequencer Control patch. |
-| **TrackCtl** | Controls per-track volume, pan, and mute via polyphonic CV inputs. Used in the Sequencer Control patch. |
+| [**StepTrig**](modules/gasteptrig.md) | Fires a trigger pulse when the sequencer reaches a step assigned to this track. This is the standard way to trigger sounds. |
+| [**Clock**](modules/gaclock.md) | Internal clock source with BPM control and external sync. |
+| [**ClockDiv**](modules/gaclockdiv.md) | Divides an incoming clock by a selectable ratio. |
+| [**ClockMult**](modules/gaclockmult.md) | Multiplies an incoming clock by a selectable ratio. |
+| [**Reset**](modules/gareset.md) | Passes through the external reset signal from the module's RESET input. |
+| [**Sequencer**](modules/gasequencer.md) | 8-step internal CV sequencer. Outputs a voltage sequence driven by a clock input. |
+| [**Sequencer16**](modules/gasequencer16.md) | 16-step internal CV sequencer with length control. |
+| [**GateSeq**](modules/gagateseq.md) | 32-step binary gate sequencer with chainable operation. |
+| [**Counter**](modules/gacounter.md) | Counts clock pulses and outputs the count as a voltage. Wraps at a configurable maximum. |
+| [**Prob**](modules/gaprob.md) | Probability gate. Passes or blocks triggers based on a probability setting. |
+| [**Quantize**](modules/gaquantize.md) | Quantizes a voltage to a selectable musical scale. |
+| [**PatGen**](modules/gapatgen.md) | Algorithmic pattern generator. Produces CV and gate patterns from 128 preset algorithms. |
+| [**PatArp**](modules/gapatarp.md) | Pattern-based arpeggiator. Produces melodic patterns from a library of preset arpeggio shapes. |
+| [**Arp**](modules/gaarp.md) | Arpeggiator with scale quantization. |
+| [**Mutate**](modules/gamutate.md) | Applies mutations to step patterns during playback. Non-destructive: the original pattern is preserved. Used in the Sequencer Control patch. |
+| [**SeqIn**](modules/gaseqin.md) | Passes the external clock and reset signals into the Sequencer Control patch. |
+| [**SeqCtl**](modules/gaseqctl.md) | Receives a step position value and uses it to override the sequencer's current step. Used in the Sequencer Control patch. |
+| [**TrackCtl**](modules/gatrackctl.md) | Controls per-track volume, pan, and mute via polyphonic CV inputs. Used in the Sequencer Control patch. |
