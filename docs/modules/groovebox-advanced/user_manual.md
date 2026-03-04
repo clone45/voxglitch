@@ -18,6 +18,12 @@ Each track contains its own modular patch. You build sounds by connecting intern
 
 You should hear a basic drum beat immediately. Groovebox Advanced ships with a default beat (kick, snare, hi-hat, clap) that plays as soon as a clock is connected.
 
+## Video Tutorial
+
+Most of this documentation is also covered in this video tutoral:
+
+https://youtu.be/YoOhoPZzr5o
+
 
 # Chapter 1: Basic Operation
 
