@@ -30,14 +30,14 @@ struct HoverIndicatorParam : TParam {
 
     void onEnter(const widget::Widget::EnterEvent& e) override {
         TParam::onEnter(e);
-        if (parentWidget && paramId >= 0) {
+        if (parentWidget && !parentWidget->destroying && paramId >= 0) {
             showOutputRing();
         }
     }
 
     void onLeave(const widget::Widget::LeaveEvent& e) override {
         TParam::onLeave(e);
-        if (parentWidget && paramId >= 0) {
+        if (parentWidget && !parentWidget->destroying && paramId >= 0) {
             hideOutputRing();
         }
     }
@@ -98,7 +98,12 @@ struct MidiConfigButton : VCVButton {
 
 struct TempestVS1Widget : ModuleWidget
 {
+    bool destroying = false;
     std::map<int, std::vector<Widget*>> outputRings; // paramId -> ring widgets (can be multiple)
+
+    ~TempestVS1Widget() {
+        destroying = true;
+    }
 
     void showOutputRing(int paramId) {
         if (outputRings.count(paramId)) {
