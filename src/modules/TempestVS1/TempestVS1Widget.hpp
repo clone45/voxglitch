@@ -28,19 +28,8 @@ struct HoverIndicatorParam : TParam {
     TempestVS1Widget* parentWidget = nullptr;
     int paramId = -1;
 
-    void onEnter(const widget::Widget::EnterEvent& e) override {
-        TParam::onEnter(e);
-        if (parentWidget && !parentWidget->destroying && paramId >= 0) {
-            showOutputRing();
-        }
-    }
-
-    void onLeave(const widget::Widget::LeaveEvent& e) override {
-        TParam::onLeave(e);
-        if (parentWidget && !parentWidget->destroying && paramId >= 0) {
-            hideOutputRing();
-        }
-    }
+    void onEnter(const widget::Widget::EnterEvent& e) override;
+    void onLeave(const widget::Widget::LeaveEvent& e) override;
 
     void showOutputRing();
     void hideOutputRing();
@@ -296,6 +285,22 @@ struct TempestVS1Widget : ModuleWidget
 };
 
 // Template method implementations
+template <typename TParam>
+void HoverIndicatorParam<TParam>::onEnter(const widget::Widget::EnterEvent& e) {
+    TParam::onEnter(e);
+    if (parentWidget && !parentWidget->destroying && paramId >= 0) {
+        showOutputRing();
+    }
+}
+
+template <typename TParam>
+void HoverIndicatorParam<TParam>::onLeave(const widget::Widget::LeaveEvent& e) {
+    TParam::onLeave(e);
+    if (parentWidget && !parentWidget->destroying && paramId >= 0) {
+        hideOutputRing();
+    }
+}
+
 template <typename TParam>
 void HoverIndicatorParam<TParam>::showOutputRing() {
     parentWidget->showOutputRing(paramId);
