@@ -228,6 +228,12 @@
         "name": "Kaiseki",
         "description": "OSC-controlled 8-track sample player with time stretching and BPM sync",
         "tags": ["Sampler", "External", "Utility"]
+    },
+    {
+        "slug": "rolzer",
+        "name": "Rolzer",
+        "description": "Ring oscillator rhythm generator inspired by Ciat-Lonbarde Rollz-5",
+        "tags": ["Sequencer", "Drum"]
     }
   ]
 }
