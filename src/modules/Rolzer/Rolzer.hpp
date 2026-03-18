@@ -4,6 +4,140 @@
 #include <vector>
 #include <cstring>
 
+// Models a single transistor stage in the ring oscillator.
+// Each node has a capacitor that charges exponentially toward a supply voltage,
+// fires when it reaches threshold, and sends an inverted impulse to the next
+// node — faithful to the Ciat-Lonbarde Rollz-5 / Rolzer circuit topology.
+struct RollNode
+{
+    float capVoltage = 0.0f;      // Base capacitor voltage (charges toward threshold)
+    float outputVoltage = 1.0f;   // Collector voltage (inverted — the sandrode output)
+    float prevOutput = 1.0f;      // Previous sample's output (for AC coupling)
+    bool fired = false;
+    float smoothedOutput = 0.0f;
+
+    void reset()
+    {
+        capVoltage = 0.0f;
+        outputVoltage = 1.0f;
+        prevOutput = 1.0f;
+        fired = false;
+        smoothedOutput = 0.0f;
+    }
+
+    void injectImpulse(float amount)
+    {
+        capVoltage += amount;
+    }
+};
+
+// Models a ring oscillator with N inverting transistor stages.
+// Even-count rings (4, 6) produce stable periodic oscillation because
+// a pulse traverses the ring and arrives back in the same polarity.
+// Odd-count rings (3, 5) produce chaotic, aperiodic behavior because
+// a pulse arrives back inverted — the "paradox spiral."
+struct Roll
+{
+    static const int MAX_NODES = 6;
+    int size;
+    RollNode nodes[MAX_NODES];
+
+    // Circuit parameters matching hardware behavior
+    static constexpr float SUPPLY_TARGET = 1.0f;
+    static constexpr float THRESHOLD = 0.7f;
+    static constexpr float RESET_VOLTAGE = 0.0f;
+    static constexpr float NOISE_AMOUNT = 0.001f;
+
+    // AC coupling through inter-stage coupling capacitor.
+    // The coupling cap passes the CHANGE in the predecessor's collector
+    // voltage to the current stage's base. This naturally produces:
+    //   - Large impulse when predecessor fires (collector drops sharply)
+    //   - Small continuous modulation during charging (collector recovers)
+    // Replaces the old separate impulse + DC continuous coupling model.
+    static constexpr float COUPLING_CAP = 0.5f;
+
+    // Collector recovery speed relative to base charging rate.
+    // Determines the timbre of the "swirl" — lower = darker/slower decay.
+    static constexpr float COLLECTOR_SPEED = 2.0f;
+
+    Roll() : size(4) {}
+    Roll(int sz) : size(sz) {}
+
+    RollNode& operator[](int i) { return nodes[i]; }
+    const RollNode& operator[](int i) const { return nodes[i]; }
+
+    // Process one sample of the ring oscillator.
+    // chargeAlpha = 1 - exp(-dt/RC), precomputed from tempo setting.
+    void process(float chargeAlpha, float dt)
+    {
+        // Snapshot collector voltages for order-independent AC coupling
+        float snapOutput[MAX_NODES];
+        float snapPrev[MAX_NODES];
+        for (int n = 0; n < size; n++)
+        {
+            snapOutput[n] = nodes[n].outputVoltage;
+            snapPrev[n] = nodes[n].prevOutput;
+        }
+
+        bool newFired[MAX_NODES] = {};
+
+        for (int n = 0; n < size; n++)
+        {
+            RollNode &node = nodes[n];
+            int pred = (n == 0) ? (size - 1) : (n - 1);
+
+            // AC coupling through inter-stage coupling capacitor.
+            // The cap passes the rate of change of the predecessor's
+            // collector voltage. On fire events this is a large negative
+            // delta (collector drops from ~1V to 0V), producing a sharp
+            // inhibitory kick. During recovery it's a small positive
+            // delta, gently pushing the next stage toward threshold.
+            float predDelta = snapOutput[pred] - snapPrev[pred];
+            node.capVoltage += predDelta * COUPLING_CAP;
+
+            // Small noise to seed chaos and prevent digital lock-up
+            node.capVoltage += (random::uniform() - 0.5f) * NOISE_AMOUNT;
+
+            // Exponential RC charging toward supply target
+            node.capVoltage += (SUPPLY_TARGET - node.capVoltage) * chargeAlpha;
+
+            // Soft clamp: base-emitter junction limits negative excursion
+            node.capVoltage = clamp(node.capVoltage, -0.3f, SUPPLY_TARGET);
+
+            // Threshold detection: transistor turns on, cap discharges
+            if (node.capVoltage >= THRESHOLD)
+            {
+                node.capVoltage = RESET_VOLTAGE;
+                newFired[n] = true;
+            }
+
+            // Update collector (output) voltage — the sandrode signal.
+            // Transistor ON (fired): collector drops sharply to ground (the "snap").
+            // Transistor OFF: collector recovers exponentially toward supply
+            // through the load resistor (the "swirl").
+            if (newFired[n])
+            {
+                node.outputVoltage = 0.0f;
+            }
+            else
+            {
+                node.outputVoltage += (SUPPLY_TARGET - node.outputVoltage)
+                    * chargeAlpha * COLLECTOR_SPEED;
+            }
+
+            // Smoothed output for visualization
+            node.smoothedOutput += (node.outputVoltage - node.smoothedOutput) * 30.0f * dt;
+        }
+
+        // Update states for next frame
+        for (int n = 0; n < size; n++)
+        {
+            nodes[n].fired = newFired[n];
+            nodes[n].prevOutput = snapOutput[n];
+        }
+    }
+};
+
 struct Rolzer : Module
 {
     static const int NUM_ROLLS = 5;
@@ -13,11 +147,10 @@ struct Rolzer : Module
     int rollSize[NUM_ROLLS] = {3, 4, 5, 6, 6};
     int rollNodeOffset[NUM_ROLLS] = {0, 3, 7, 12, 18};
 
-    // Precomputed ring predecessor for each node
-    int ringPredecessor[TOTAL_NODES] = {};
+    Roll rolls[NUM_ROLLS];
 
     enum ParamIds {
-        ENUMS(TEMPO_PARAM, NUM_ROLLS),
+        TEMPO_PARAM,  // Single tempo selector (E6 cap series, shared by all rolls)
         NUM_PARAMS
     };
 
@@ -27,6 +160,7 @@ struct Rolzer : Module
 
     enum OutputIds {
         ENUMS(GATE_OUTPUT, NUM_GATE_OUTPUTS),
+        ENUMS(WAVE_OUTPUT, NUM_ROLLS),
         NUM_OUTPUTS
     };
 
@@ -34,36 +168,35 @@ struct Rolzer : Module
         NUM_LIGHTS
     };
 
-    // Node DSP state
-    float nodeState[TOTAL_NODES] = {};
-    bool nodeFired[TOTAL_NODES] = {};
-    float nodeSmoothed[TOTAL_NODES] = {};
-
     // Gate output routing — which node drives each gate output
     int gateSourceNode[NUM_GATE_OUTPUTS] = {0, 3, 7, 12, 18};
-
-    // Gate pulse generators
     dsp::PulseGenerator gatePulse[NUM_GATE_OUTPUTS];
 
-    // Internal patch connections (bidirectional)
+    // Internal patch connections (bidirectional sandrode coupling)
     struct Connection {
         int nodeA;
         int nodeB;
     };
     std::vector<Connection> connections;
 
-    // DSP tuning constants
-    float decayRate = 2.0f;
-    float ringImpulse = 0.5f;    // direct charge injection (fraction of threshold)
-    float patchCoupling = 0.3f;  // direct charge injection from cross-patch fire
-    float noiseAmount = 0.001f;  // per-sample jitter (not scaled by dt)
+    // Cross-patch coupling: brown jacks connected directly (no current limiting).
+    // Impulse on fire + continuous voltage equalization between connected nodes.
+    static constexpr float PATCH_IMPULSE = 0.3f;
+    static constexpr float PATCH_CONTINUOUS = 200.0f;
 
-    static const int NUM_TEMPOS = 20;
-    float tempoChargeRates[NUM_TEMPOS] = {
-        0.25f, 0.5f, 0.9f, 1.5f, 2.5f,
-        4.0f, 5.5f, 7.0f, 10.0f, 14.0f,
-        20.0f, 28.0f, 38.0f, 48.0f, 60.0f,
-        75.0f, 95.0f, 120.0f, 160.0f, 200.0f
+    // E6 capacitor series RC time constants (seconds).
+    // Matches the Rolzer hardware: each tempo module uses one fixed cap value.
+    // RC = capacitance × ~66KΩ charge resistor (estimated from LTSpice data).
+    // Position 0 = fastest (Presto), position 6 = slowest (Grave).
+    static const int NUM_TEMPOS = 7;
+    float rcTimeConstants[NUM_TEMPOS] = {
+        0.066f,   // Presto   (1.0µF)
+        0.099f,   // Allegro  (1.5µF)
+        0.145f,   // Moderato (2.2µF)
+        0.218f,   // Andante  (3.3µF)
+        0.310f,   // Adagio   (4.7µF)
+        0.449f,   // Lento    (6.8µF)
+        0.660f    // Grave    (10.0µF)
     };
 
     Rolzer()
@@ -73,28 +206,35 @@ struct Rolzer : Module
         std::string rollNames[NUM_ROLLS] = {"Triangle", "Square", "Pentagon", "Hex A", "Hex B"};
 
         for (int r = 0; r < NUM_ROLLS; r++)
-        {
-            configParam(TEMPO_PARAM + r, 0.f, (float)(NUM_TEMPOS - 1), 7.f, rollNames[r] + " Tempo");
-            getParamQuantity(TEMPO_PARAM + r)->snapEnabled = true;
-        }
+            rolls[r] = Roll(rollSize[r]);
+
+        // Single tempo selector: matches hardware where each module has one
+        // fixed capacitor value. Default to Andante (position 3).
+        configParam(TEMPO_PARAM, 0.f, (float)(NUM_TEMPOS - 1), 3.f, "Tempo");
+        getParamQuantity(TEMPO_PARAM)->snapEnabled = true;
 
         for (int g = 0; g < NUM_GATE_OUTPUTS; g++)
             configOutput(GATE_OUTPUT + g, "Gate " + std::to_string(g + 1));
 
-        // Precompute ring predecessors
         for (int r = 0; r < NUM_ROLLS; r++)
-        {
-            int offset = rollNodeOffset[r];
-            int size = rollSize[r];
-            for (int n = 0; n < size; n++)
-            {
-                int pred = (n == 0) ? (size - 1) : (n - 1);
-                ringPredecessor[offset + n] = offset + pred;
-            }
-        }
+            configOutput(WAVE_OUTPUT + r, rollNames[r] + " Waveform");
     }
 
-    int getRollForNode(int nodeIndex)
+    // --- Node access ---
+
+    RollNode& getNode(int globalIndex)
+    {
+        int r = getRollForNode(globalIndex);
+        return rolls[r][globalIndex - rollNodeOffset[r]];
+    }
+
+    const RollNode& getNode(int globalIndex) const
+    {
+        int r = getRollForNode(globalIndex);
+        return rolls[r][globalIndex - rollNodeOffset[r]];
+    }
+
+    int getRollForNode(int nodeIndex) const
     {
         for (int r = NUM_ROLLS - 1; r >= 0; r--)
         {
@@ -103,14 +243,21 @@ struct Rolzer : Module
         return 0;
     }
 
-    float getChargeRate(int roll)
+    float getNodeSmoothedOutput(int globalIndex) const
     {
-        int idx = (int)params[TEMPO_PARAM + roll].getValue();
-        idx = clamp(idx, 0, NUM_TEMPOS - 1);
-        return tempoChargeRates[idx];
+        return getNode(globalIndex).smoothedOutput;
     }
 
-    // Gate output routing
+    // --- Tempo / RC ---
+
+    float getChargeAlpha(float dt)
+    {
+        int idx = (int)params[TEMPO_PARAM].getValue();
+        idx = clamp(idx, 0, NUM_TEMPOS - 1);
+        return 1.0f - expf(-dt / rcTimeConstants[idx]);
+    }
+
+    // --- Gate output routing ---
 
     void setGateSource(int gateIndex, int nodeIndex)
     {
@@ -119,8 +266,7 @@ struct Rolzer : Module
         gateSourceNode[gateIndex] = nodeIndex;
     }
 
-    // Returns the gate output index (0-4) if this node is assigned to one, or -1
-    int getGateOutputForNode(int nodeIndex)
+    int getGateOutputForNode(int nodeIndex) const
     {
         for (int g = 0; g < NUM_GATE_OUTPUTS; g++)
         {
@@ -129,7 +275,7 @@ struct Rolzer : Module
         return -1;
     }
 
-    // Connection management
+    // --- Connection management ---
 
     void addConnection(int nodeA, int nodeB)
     {
@@ -163,64 +309,66 @@ struct Rolzer : Module
         );
     }
 
-    // DSP
+    // --- DSP ---
 
     void process(const ProcessArgs &args) override
     {
         float dt = args.sampleTime;
-        bool firedThisFrame[TOTAL_NODES] = {};
 
-        for (int i = 0; i < TOTAL_NODES; i++)
+        // 1. Cross-patch coupling: sandrode (brown jack) connections.
+        //    Brown jacks connect collectors directly (no current limiting),
+        //    so connected nodes strongly influence each other.
+        for (auto &conn : connections)
         {
-            int roll = getRollForNode(i);
-            float chargeRate = getChargeRate(roll);
+            RollNode &nodeA = getNode(conn.nodeA);
+            RollNode &nodeB = getNode(conn.nodeB);
 
-            // Direct impulse from ring predecessor firing
-            if (nodeFired[ringPredecessor[i]])
-                nodeState[i] += ringImpulse;
+            // Fire events inject impulse into connected node's base
+            if (nodeA.fired)
+                nodeB.injectImpulse(-PATCH_IMPULSE);
+            if (nodeB.fired)
+                nodeA.injectImpulse(-PATCH_IMPULSE);
 
-            // Direct impulse from cross-patch connections firing
-            for (auto &conn : connections)
-            {
-                if (conn.nodeA == i && nodeFired[conn.nodeB])
-                    nodeState[i] += patchCoupling;
-                else if (conn.nodeB == i && nodeFired[conn.nodeA])
-                    nodeState[i] += patchCoupling;
-            }
-
-            // Per-sample noise to prevent lock-up
-            nodeState[i] += (random::uniform() - 0.5f) * noiseAmount;
-
-            // Leaky integrator: continuous charge + natural decay
-            nodeState[i] += (chargeRate - decayRate * nodeState[i]) * dt;
-            nodeState[i] = std::max(0.0f, nodeState[i]);
-
-            // Threshold and fire
-            if (nodeState[i] >= 1.0f)
-            {
-                nodeState[i] = 0.0f;
-                firedThisFrame[i] = true;
-            }
-
-            // Smooth node output for visualization (one-pole LP ~30Hz)
-            float target = firedThisFrame[i] ? 1.0f : nodeState[i];
-            nodeSmoothed[i] += (target - nodeSmoothed[i]) * 30.0f * dt;
+            // Collector voltage equalization: directly wired outputs
+            // pull toward each other through shared junction
+            float delta = nodeA.outputVoltage - nodeB.outputVoltage;
+            float coupling = PATCH_CONTINUOUS * delta * dt;
+            nodeA.outputVoltage -= coupling;
+            nodeB.outputVoltage += coupling;
         }
 
-        std::memcpy(nodeFired, firedThisFrame, sizeof(nodeFired));
+        // 2. Process each roll's internal ring oscillator.
+        //    All rolls share the same RC time constant (one cap value per module).
+        float chargeAlpha = getChargeAlpha(dt);
+        for (int r = 0; r < NUM_ROLLS; r++)
+            rolls[r].process(chargeAlpha, dt);
 
-        // Gate outputs — fire when the assigned source node fires
+        // 3. Gate outputs — fire a 1ms pulse when the assigned source node fires
         for (int g = 0; g < NUM_GATE_OUTPUTS; g++)
         {
             int srcNode = gateSourceNode[g];
-            if (srcNode >= 0 && srcNode < TOTAL_NODES && firedThisFrame[srcNode])
+            if (srcNode >= 0 && srcNode < TOTAL_NODES && getNode(srcNode).fired)
                 gatePulse[g].trigger(1e-3f);
 
             outputs[GATE_OUTPUT + g].setVoltage(gatePulse[g].process(dt) ? 10.0f : 0.0f);
         }
+
+        // 4. Waveform outputs — collector (sandrode) voltage scaled to ±5V.
+        //    Sharp drop on fire (the "snap"), smooth exponential recovery
+        //    (the "swirl"), modulated by inter-node coupling.
+        for (int r = 0; r < NUM_ROLLS; r++)
+        {
+            int srcNode = gateSourceNode[r];
+            if (srcNode >= 0 && srcNode < TOTAL_NODES)
+            {
+                float v = getNode(srcNode).outputVoltage;
+                float scaled = v * 10.0f - 5.0f;
+                outputs[WAVE_OUTPUT + r].setVoltage(clamp(scaled, -10.0f, 10.0f));
+            }
+        }
     }
 
-    // Serialization
+    // --- Serialization ---
 
     json_t *dataToJson() override
     {

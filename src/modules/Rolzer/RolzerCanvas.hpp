@@ -36,6 +36,11 @@ struct RolzerCanvas : TransparentWidget
     // Hover state
     int hoverNode = -1;
 
+    // Double-click tracking
+    double lastClickTime = -1.0;
+    int lastClickNode = -1;
+    static constexpr double DOUBLE_CLICK_TIME = 0.4;
+
     // Colors
     NVGcolor bgColor = nvgRGB(30, 30, 32);
     NVGcolor polygonColor = nvgRGBA(80, 80, 90, 140);
@@ -196,7 +201,7 @@ struct RolzerCanvas : TransparentWidget
     void drawNode(NVGcontext *vg, int nodeIndex)
     {
         Vec pos = nodePos[nodeIndex];
-        float activity = module ? module->nodeSmoothed[nodeIndex] : 0.0f;
+        float activity = module ? module->getNodeSmoothedOutput(nodeIndex) : 0.0f;
         bool isHovered = (nodeIndex == hoverNode);
         int gateOutput = module ? module->getGateOutputForNode(nodeIndex) : -1;
 
@@ -294,10 +299,44 @@ struct RolzerCanvas : TransparentWidget
                 int node = getNodeAtPos(e.pos);
                 if (node >= 0)
                 {
+                    double now = glfwGetTime();
+                    bool isDoubleClick = (node == lastClickNode &&
+                                          (now - lastClickTime) < DOUBLE_CLICK_TIME);
+
+                    if (isDoubleClick)
+                    {
+                        // Double-click: pick up the most recent cable on this node
+                        lastClickNode = -1;
+                        lastClickTime = -1.0;
+
+                        for (int i = (int)module->connections.size() - 1; i >= 0; i--)
+                        {
+                            auto &conn = module->connections[i];
+                            if (conn.nodeA == node || conn.nodeB == node)
+                            {
+                                int otherNode = (conn.nodeA == node) ? conn.nodeB : conn.nodeA;
+                                module->removeConnection(i);
+                                dragMode = DRAG_CABLE;
+                                cableStartNode = otherNode;
+                                cableEndPos = e.pos;
+                                e.consume(this);
+                                return;
+                            }
+                        }
+                        // No connections on this node — fall through to normal drag
+                    }
+
+                    lastClickTime = now;
+                    lastClickNode = node;
                     dragMode = DRAG_CABLE;
                     cableStartNode = node;
                     cableEndPos = e.pos;
                     e.consume(this);
+                }
+                else
+                {
+                    lastClickNode = -1;
+                    lastClickTime = -1.0;
                 }
             }
             else if (e.action == GLFW_RELEASE)

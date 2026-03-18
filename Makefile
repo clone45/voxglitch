@@ -17,7 +17,8 @@ SOURCES += $(wildcard src/*.cpp)
 SOURCES += $(wildcard src/modules/*.cpp)
 
 # Add OSC library sources (for Kaiseki module)
-SOURCES += $(wildcard src/osc/*.cpp)
+# Exclude OscPrintReceivedElements.cpp — it's a debug utility not used by any module
+SOURCES += $(filter-out src/osc/OscPrintReceivedElements.cpp, $(wildcard src/osc/*.cpp))
 
 # Add IP common sources
 SOURCES += $(wildcard src/ip/*.cpp)

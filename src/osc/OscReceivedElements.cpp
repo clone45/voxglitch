@@ -34,6 +34,11 @@
 	requested that these non-binding requests be included whenever the
 	above license is reproduced.
 */
+// Disable glibc fortification to prevent __assert_fail references
+// when cross-compiling from WSL2 Linux to Windows MinGW
+#undef _FORTIFY_SOURCE
+#define _FORTIFY_SOURCE 0
+
 #include "OscReceivedElements.h"
 
 #include "OscHostEndianness.h"

@@ -13,7 +13,7 @@ struct RolzerWidget : ModuleWidget
             asset::plugin(pluginInstance, "res/modules/rolzer/rolzer_panel.svg"));
 
         // Canvas takes upper portion, bottom strip has room for controls
-        float bottomBar = 48.0f;
+        float bottomBar = 70.0f;
         canvas = new RolzerCanvas();
         canvas->module = module;
         canvas->box.pos = Vec(2.0f, 2.0f);
@@ -21,24 +21,29 @@ struct RolzerWidget : ModuleWidget
         addChild(canvas);
 
         // Bottom strip layout
-        float spacing = box.size.x / (Rolzer::NUM_ROLLS + 1);
-        float knobY = box.size.y - 36.0f;
-        float portY = box.size.y - 14.0f;
+        float portSpacing = box.size.x / (Rolzer::NUM_ROLLS + 1);
+        float knobY = box.size.y - 56.0f;
+        float wavePortY = box.size.y - 34.0f;
+        float gatePortY = box.size.y - 12.0f;
 
-        // Tempo knobs (one per roll)
+        // Single tempo knob (E6 cap selector, shared by all rolls)
+        addParam(createParamCentered<RoundSmallBlackKnob>(
+            Vec(box.size.x * 0.5f, knobY), module, Rolzer::TEMPO_PARAM));
+
+        // Waveform outputs (raw node capVoltage — the "brown jack" sandrode output)
         for (int r = 0; r < Rolzer::NUM_ROLLS; r++)
         {
-            float x = spacing * (r + 1);
-            addParam(createParamCentered<RoundSmallBlackKnob>(
-                Vec(x, knobY), module, Rolzer::TEMPO_PARAM + r));
+            float x = portSpacing * (r + 1);
+            addOutput(createOutputCentered<PJ301MPort>(
+                Vec(x, wavePortY), module, Rolzer::WAVE_OUTPUT + r));
         }
 
         // Gate outputs (assignable to any node)
         for (int g = 0; g < Rolzer::NUM_GATE_OUTPUTS; g++)
         {
-            float x = spacing * (g + 1);
+            float x = portSpacing * (g + 1);
             addOutput(createOutputCentered<PJ301MPort>(
-                Vec(x, portY), module, Rolzer::GATE_OUTPUT + g));
+                Vec(x, gatePortY), module, Rolzer::GATE_OUTPUT + g));
         }
     }
 
