@@ -41,6 +41,8 @@ The main display is a horizontal timeline with up to 6 tracks stacked vertically
 
 Below the last track is a **pan strip** — a narrow bar with grip dots. Click and drag the pan strip to scroll the timeline horizontally. This is an alternative to click-dragging on empty canvas space.
 
+**Double-click** the pan strip to zoom-to-fit. If no clips are selected, the view zooms to fit all clips on the timeline. If any clips are selected, the view zooms to fit just the selected clips.
+
 ### The Playhead
 
 The playhead is a red vertical line that shows the current playback position. During playback, audio is read from whatever clips the playhead crosses.
