@@ -310,6 +310,10 @@ The Sequencer Control patch comes pre-loaded with a chain of three modules:
 
 This chain means the Sequencer Control patch drives the step position from the moment you first visit it. The Counter is automatically synchronized to the sequencer's current position, so there is no interruption to playback.
 
+### A common task might be to change the sequencer's lenght.  Here's a short visual tutorial:
+
+![Changing Sequence Length](./images/ga_setting_sequencer_length.jpg)
+
 You can remove SeqCtl if you do not want CV-driven step control, or add additional modules like Mutate alongside the existing chain.
 
 ## Global Effects
