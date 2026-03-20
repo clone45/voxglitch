@@ -228,6 +228,12 @@
         "name": "Kaiseki",
         "description": "OSC-controlled 8-track sample player with time stretching and BPM sync",
         "tags": ["Sampler", "External", "Utility"]
+    },
+    {
+        "slug": "one_shot",
+        "name": "One Shot",
+        "description": "Sample player with proportional envelope system",
+        "tags": ["Sampler"]
     }
   ]
 }
