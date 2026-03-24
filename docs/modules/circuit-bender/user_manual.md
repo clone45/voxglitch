@@ -1,5 +1,7 @@
 # Circuit Bender - Speech Synthesis with Virtual Circuit Bending
 
+![Circuit Bender Overview](./images/circuit-bender-overview.jpg)
+
 ## Overview
 
 Circuit Bender is a speech synthesis module inspired by the classic Speak & Spell toy from the 1980s. At its heart are virtual recreations of two Texas Instruments chips: the TMS5220 speech synthesizer and the TMS6100 voice ROM. These two chips work together to produce speech, and Circuit Bender lets you "bend" the connections between them in ways that would be difficult or impossible with real hardware.
