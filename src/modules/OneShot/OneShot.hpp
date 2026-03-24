@@ -38,8 +38,8 @@ struct OneShot : VoxglitchSamplerModule
 	{
 		WAV_SELECTOR_PARAM,
 		WAV_ATTENUATOR_PARAM,
-		TRANSPOSE_PARAM,
-		TRANSPOSE_ATTENUATOR_PARAM,
+		PITCH_KNOB,
+		PITCH_ATTENUATOR_PARAM,
 		ATTACK_PARAM,
 		ATTACK_ATTENUATOR_PARAM,
 		ATTACK_WAVEFORM_PARAM,
@@ -59,7 +59,7 @@ struct OneShot : VoxglitchSamplerModule
 	enum InputIds
 	{
 		WAV_CV_INPUT,
-		TRANSPOSE_CV_INPUT,
+		PITCH_INPUT,
 		ATTACK_CV_INPUT,
 		DECAY_CV_INPUT,
 		TRIGGER_INPUT,
@@ -94,9 +94,8 @@ struct OneShot : VoxglitchSamplerModule
 		// WAV Selector Section
 		configParam(WAV_SELECTOR_PARAM, 0.0f, 1.0f, 0.0f, "Sample Select");
 		configParam(WAV_ATTENUATOR_PARAM, 0.0f, 1.0f, 1.0f, "Sample Select CV Attenuator");
-		configParam(TRANSPOSE_PARAM, -24.0f, 24.0f, 0.0f, "Transpose (semitones)");
-		getParamQuantity(TRANSPOSE_PARAM)->snapEnabled = true;
-		configParam(TRANSPOSE_ATTENUATOR_PARAM, 0.0f, 1.0f, 0.0f, "Transpose CV Attenuator");
+		configParam(PITCH_KNOB, -1.0f, 1.0f, 0.0f, "Pitch");
+		configParam(PITCH_ATTENUATOR_PARAM, 0.0f, 1.0f, 0.0f, "Pitch CV Attenuator");
 
 		// Envelope Section
 		configParam(ATTACK_PARAM, 0.0f, 0.5f, 0.0f, "Attack (% of duration)");
@@ -119,7 +118,7 @@ struct OneShot : VoxglitchSamplerModule
 
 		// Configure inputs
 		configInput(WAV_CV_INPUT, "Sample Select CV");
-		configInput(TRANSPOSE_CV_INPUT, "Transpose CV");
+		configInput(PITCH_INPUT, "Pitch (V/Oct)");
 		configInput(ATTACK_CV_INPUT, "Attack CV");
 		configInput(DECAY_CV_INPUT, "Decay CV");
 		configInput(TRIGGER_INPUT, "Trigger");
@@ -223,18 +222,18 @@ struct OneShot : VoxglitchSamplerModule
 	}
 
 	//
-	// Get the transpose amount in semitones (knob + CV)
+	// Get the pitch value for V/Oct playback speed calculation
+	// Returns a voltage value: 0V = unity, +1V = octave up, -1V = octave down
 	//
-	float getTransposeSemitones()
+	float getPitch()
 	{
-		float semitones = params[TRANSPOSE_PARAM].getValue();
-		if (inputs[TRANSPOSE_CV_INPUT].isConnected())
+		float pitch = params[PITCH_KNOB].getValue();
+		if (inputs[PITCH_INPUT].isConnected())
 		{
-			float cv = inputs[TRANSPOSE_CV_INPUT].getVoltage() / 10.0f;
-			float attn = params[TRANSPOSE_ATTENUATOR_PARAM].getValue();
-			semitones += cv * attn * 48.0f - 24.0f;
+			float attn = params[PITCH_ATTENUATOR_PARAM].getValue();
+			pitch += inputs[PITCH_INPUT].getVoltage() * attn;
 		}
-		return clamp(semitones, -24.0f, 24.0f);
+		return pitch;
 	}
 
 	//
@@ -433,9 +432,10 @@ struct OneShot : VoxglitchSamplerModule
 			loop_enabled = (inputs[LOOP_INPUT].getVoltage() >= 1.0f);
 		}
 
-		// Calculate pitch/speed
-		float semitones = getTransposeSemitones();
-		float speed_ratio = pow(2.0f, semitones / 12.0f);
+		// Calculate pitch/speed using V/Oct standard
+		// 0V = unity (original pitch), +1V = octave up (2x), -1V = octave down (0.5x)
+		float pitch = getPitch();
+		float speed_ratio = rack::dsp::approxExp2_taylor5(pitch);
 		double base_increment = (double)selected_sample->sample_rate / (double)args.sampleRate;
 		double increment = base_increment * (double)speed_ratio;
 
