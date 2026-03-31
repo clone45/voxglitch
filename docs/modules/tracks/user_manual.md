@@ -6,7 +6,7 @@
 
 Tracks is a multi-track audio arranger for VCV Rack. It works like a simplified DAW timeline inside a single module — drag and drop audio files onto tracks, arrange clips on a timeline, and play them back with per-track volume, pan, and mute controls.
 
-Tracks supports up to 6 audio tracks with stereo output per track, plus a stereo master output. It includes time-stretching, clip envelopes, reverse playback, undo/redo, and a BPM-synced grid.
+Tracks supports up to 6 audio tracks with stereo output per track, plus a stereo master output. It includes time-stretching, warp markers, clip envelopes, reverse playback, undo/redo, and a BPM-synced grid.
 
 ## Quick Start
 
@@ -41,6 +41,8 @@ The main display is a horizontal timeline with up to 6 tracks stacked vertically
 
 Below the last track is a **pan strip** — a narrow bar with grip dots. Click and drag the pan strip to scroll the timeline horizontally. This is an alternative to click-dragging on empty canvas space.
 
+On the left side of the pan strip is a **rewind button** (|◀). Click it to jump the cursor and scroll position back to the beginning of the timeline.
+
 **Double-click** the pan strip to zoom-to-fit. If no clips are selected, the view zooms to fit all clips on the timeline. If any clips are selected, the view zooms to fit just the selected clips.
 
 ### The Playhead
@@ -50,6 +52,8 @@ The playhead is a red vertical line that shows the current playback position. Du
 ### The Cursor
 
 Click on the timeline ruler (the bar at the top) to position the cursor. The cursor determines where playback starts when you press Play. It appears as a distinct marker on the ruler.  It's also used to determine when to split a clip when using the clip feature available in the clip's context menu.
+
+**Double-click** the ruler to move the playhead to the cursor position. This is useful for repositioning the playhead without stopping and restarting playback.
 
 ## Adding Clips
 
@@ -154,7 +158,51 @@ Right-click a clip that has envelope points and select **Clear Envelope** to rem
 Right-click the clip, open the **Edit Mode** submenu, and select **Default** to return to normal clip editing.
 
 
-# Chapter 3: Time Stretching
+# Chapter 3: Warp Markers
+
+Warp markers let you rearrange the internal timing of a clip without changing its overall duration. Each marker anchors a point in the source audio to a position on the timeline. By dragging markers, you can speed up or slow down specific sections — for example, pushing a snare hit earlier or stretching out a vocal phrase — while the clip stays the same length. Audio between markers is pitch-preserving time-stretched using the selected stretch algorithm.
+
+### Entering Warp Mode
+
+1. Right-click a clip
+2. Open the **Edit Mode** submenu
+3. Select **Warp**
+
+The clip enters warp editing mode with a teal/cyan overlay.
+
+### Adding Markers
+
+Click inside the clip to place a warp marker. A vertical line with a diamond handle appears at the click position. The marker records both where it sits on the timeline (its destination position) and which point in the original audio it corresponds to (its source position).
+
+### Dragging Markers
+
+Click and drag a marker's diamond handle to move it along the timeline. This changes the destination position while the source position stays fixed, which rearranges the timing:
+
+- Dragging a marker **left** compresses the audio before it and stretches the audio after it
+- Dragging a marker **right** stretches the audio before it and compresses the audio after it
+
+When you release the mouse, the clip is re-stretched in the background using the currently selected time-stretch algorithm (see Chapter 4).
+
+### Removing Markers
+
+Right-click near a marker to remove it.
+
+### Clearing All Markers
+
+Right-click a clip with warp markers and select **Clear Warp Markers** to remove all markers and restore the clip to its original timing.
+
+### Exiting Warp Mode
+
+Right-click the clip, open the **Edit Mode** submenu, and select **Default** to return to normal clip editing. The warp markers and their timing adjustments are preserved.
+
+### Tips
+
+- Warp markers respect grid snapping — if **Snap to Grid** is enabled, marker positions snap to beat lines
+- You can combine warp markers with envelope editing: warp the timing first, then switch to envelope mode to shape the volume
+- The stretch algorithm selected in the module's context menu (Granular, Phase Vocoder, etc.) determines the quality of the warp — use Phase Vocoder for tonal material and Granular for percussive content
+
+
+# Chapter 4: Time Stretching
 
 ![Time Stretching](./images/tracks_stretch.jpg)
 
@@ -180,7 +228,7 @@ Right-click the module and open the **Time Stretch Algorithm** submenu to choose
 The selected algorithm applies to all new stretch operations. Existing stretched clips retain the algorithm they were stretched with.
 
 
-# Chapter 4: Outputs and Mixing
+# Chapter 5: Outputs and Mixing
 
 ![Outputs](./images/tracks_outputs.jpg)
 
@@ -199,7 +247,7 @@ Right-click an empty area of a track and toggle **Mute** from the context menu t
 Each track displays a label ("Track 1", "Track 2", etc.) in the upper-left corner of its lane.
 
 
-# Chapter 5: Transport and Playback
+# Chapter 6: Transport and Playback
 
 ## Play and Stop
 
@@ -255,7 +303,7 @@ The **Location** output is a polyphonic output with 12 channels carrying various
 The clock outputs (channels 3-5) are derived from the BPM setting. The track envelope outputs reflect the current amplitude envelope value at the playhead position for each track, making them useful for sidechain-style ducking or envelope following.
 
 
-# Chapter 6: BPM Grid
+# Chapter 7: BPM Grid
 
 ![BPM Grid](./images/tracks_grid.jpg)
 
@@ -294,7 +342,7 @@ As you zoom in, finer subdivisions become visible. As you zoom out, only bar lin
 Right-click and open the **Time Signature** submenu to choose from 2/4, 3/4, 4/4, 5/4, 6/4, 7/4, or 8/4. This determines how many beats make up a bar, which affects where the strong bar lines appear.
 
 
-# Chapter 7: Additional Features
+# Chapter 8: Additional Features
 
 ## Lock Editor
 
