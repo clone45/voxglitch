@@ -2,22 +2,22 @@
 
 ## Overview
 
-![Effects Bank Overview](./images/effects_bank_overview.jpg)
+![Effects Bank Overview](./images/overview.jpg)
 
 Effects Bank is a multi-effect preset module for VCV Rack. It bundles dozens of curated effect "presets" into a single module, where each preset is a stack of up to 6 effects, up to 4 modulators (LFOs, envelopes, sequencers, followers), and a routing matrix that connects modulators and incoming CV to effect parameters.
 
 You pick a preset with a knob (or CV), wire audio through, and play. If you want to dig deeper, the screen on the front of the module is a full editor: you can rearrange the effect stack, swap effects in and out, edit modulators, and rewire the routing matrix without leaving the patch.
 
-Effects Bank also has a built-in X/Y performance pad that doubles as a CV1/CV2 controller, a clock input for tempo-synced effects, and a per-effect wet/dry mix on every effect in the stack.
+Effects Bank also has a built-in X/Y performance pad that doubles as a CV1/CV2 controller, a clock input for tempo-synced effects, and a per-effect MIX on every effect in the stack.
 
 ## Quick Start
 
-![Quick Start](./images/effects_bank_quickstart.jpg)
+![Quick Start](./images/quickstart.jpg)
 
 1. Add Effects Bank to your VCV Rack patch
 2. Connect an audio source to the **L** input (and optionally the **R** input for stereo)
 3. Connect the **L** and **R** outputs to your audio interface (or anywhere downstream)
-4. Turn the **DRY/WET** knob up
+4. Turn the **MIX** knob up
 5. Use the **PRESET** knob to dial through presets
 
 The module ships with a large bank of factory presets covering filters, distortions, delays, reverbs, granular textures, pitch effects, beat-shufflers, and spectral processors. Each preset has its own internal routing already set up, so you should hear something interesting on every preset position.
@@ -25,25 +25,23 @@ The module ships with a large bank of factory presets covering filters, distorti
 If you want a single test patch to explore the module:
 
 - Patch a kick or beat source into **L**
-- Patch a slow LFO or ramp into the **MIX CV** input so the dry/wet sweeps automatically
+- Patch a slow LFO or ramp into the **MIX CV** input so the mix sweeps automatically
 - Patch a clock into the **CLOCK** input so tempo-synced effects (delays, gates, stutters) lock to your tempo
 - Drag inside the X/Y pad to performance-control the two effect CV inputs in real time
 
 
 # Chapter 1: Panel Tour
 
-![Panel Tour](./images/effects_bank_panel_tour.jpg)
-
 The panel is organized into three vertical bands:
 
 - **Left**: audio input and output, plus the gate input
 - **Center**: the dynamic screen (preset display, effect stack, modulators, routing matrix, X/Y pad)
-- **Right**: the **DRY/WET** and **PRESET** knobs, the CV inputs, and the clock and reset inputs
+- **Right**: the **MIX** and **PRESET** knobs, the CV inputs, and the clock and reset inputs
 
 ## Audio I/O
 
 - **L / R inputs**: Stereo audio input. If you only patch the **L** input, the right channel is fed from the same signal (mono in, stereo out).
-- **L / R outputs**: Stereo audio output. The dry/wet knob (and per-effect wet/dry inside each effect) determines how much of the processed signal you hear here.
+- **L / R outputs**: Stereo audio output. The MIX knob (and per-effect MIX inside each effect) determines how much of the processed signal you hear here.
 
 ## Gate
 
@@ -54,11 +52,9 @@ The **GATE** input controls whether the preset is "running" or not.
 
 This is the same pattern as a synthesizer voice. It's useful when you want the effect to only be active during certain notes or beats, rather than smearing across silence.
 
-## Dry/Wet
+## Mix
 
-![Dry Wet Knob](./images/effects_bank_drywet.jpg)
-
-The **DRY/WET** knob is the master mix control between the unprocessed input and the processed output.
+The **MIX** knob is the master mix control between the unprocessed input and the processed output.
 
 By default, this is a **crossfade**: at 0% the output is your input untouched, at 100% it's pure processed signal, and anywhere in between is a mix.
 
@@ -98,7 +94,7 @@ The active preset is determined by the sum of the **PRESET** knob and any voltag
 
 Switching presets is smooth. Internally the module crossfades between two voices, so a knob sweep or a modulated CV sweep doesn't produce clicks. Effects that hold internal buffers (delays, granular clouds, beat freezes) get a clean start when their voice activates.
 
-## Dry/Wet vs. Parallel Mix
+## Mix Modes
 
 Two master mix modes are available, switched through the right-click context menu under **Mix mode**:
 
@@ -124,8 +120,6 @@ All preset edits (including rename, file loads, and structural edits made throug
 
 # Chapter 3: The X/Y Performance Pad
 
-![X Y Pad](./images/effects_bank_xy_pad.jpg)
-
 The X/Y pad on the right side of the screen is a touch controller for **CV1** and **CV2**. Drag inside the pad to send continuous control values into the routing system.
 
 - Horizontal position drives CV1 (left = -1, right = +1)
@@ -146,8 +140,6 @@ The pad's position and these mode settings are saved with your patch.
 
 
 # Chapter 4: The Screen - Viewer Mode
-
-![Viewer Mode](./images/effects_bank_viewer.jpg)
 
 The screen has two modes: **Viewer** (the default overview) and **Editor** (focused editing of one effect or modulator). This chapter covers the Viewer; Chapter 5 covers the Editor.
 
@@ -185,7 +177,7 @@ The routing matrix shows which modulator and CV sources are wired into which eff
 
 # Chapter 5: The Screen - Editor Mode
 
-![Editor Mode](./images/effects_bank_editor.jpg)
+![Editor Mode](./images/editor.jpg)
 
 Click any effect tile or modulator card on the Viewer screen to enter the **Editor**. The Editor has three columns:
 
@@ -220,14 +212,14 @@ When an effect is selected, the center column shows its parameter sliders. Each 
 
 Sliders are normalized 0 to 1, but each effect maps the slider position to its own natural range internally. Some effects use exponential mapping for time and frequency parameters so you get fine resolution at the low end. Some effects snap to musically meaningful values (clock divisions, scale degrees, bit depths).
 
-### Per-Effect Wet/Dry (MIX)
+### Per-Effect MIX
 
-Every effect in the stack has its own **MIX** slider on the bottom of its parameter list. This is the per-effect wet/dry blend, separate from the master DRY/WET knob.
+Every effect in the stack has its own **MIX** slider on the bottom of its parameter list. This is the per-effect MIX blend, separate from the master MIX knob.
 
 - 0% MIX = the effect is bypassed (dry passes through to the next effect in the stack)
 - 100% MIX = the effect is fully wet
 
-The per-effect MIX is route-targetable like any other parameter, so you can modulate the wet/dry of an individual effect with an LFO, an envelope, or external CV.
+The per-effect MIX is route-targetable like any other parameter, so you can modulate the MIX of an individual effect with an LFO, an envelope, or external CV.
 
 ## Editing Modulators
 
@@ -372,7 +364,7 @@ Loaded presets replace the slot's contents wholesale. If you want to keep a slot
 
 # Chapter 9: Tips
 
-- **Master DRY/WET vs. per-effect MIX**: The master DRY/WET knob blends the entire processed output against the dry input. The per-effect MIX (parameter 7 on every effect) blends each individual effect's wet output against the audio flowing into its slot. Both are useful: the master knob is the right place for performance-time wet/dry sweeps, the per-effect MIX is the right place for sculpting how much of a particular effect colors the chain.
+- **Master MIX vs. per-effect MIX**: The master MIX knob blends the entire processed output against the dry input. The per-effect MIX (parameter 7 on every effect) blends each individual effect's wet output against the audio flowing into its slot. Both are useful: the master knob is the right place for performance-time mix sweeps, the per-effect MIX is the right place for sculpting how much of a particular effect colors the chain.
 - **Routing CV1 / CV2 to per-effect MIX**: Wiring an X/Y pad axis (or an external CV) to an individual effect's MIX is a quick way to dial in / dial out one effect at a time during a performance.
 - **Clock the module even if you don't use a sync effect**: Many of the modulators (Sequence, Sync Env Follower, Random, Bouncing Ball) sync to the clock input. Patching a clock makes their behavior musically locked even when no clock-synced effect is in the stack.
 - **Reset alignment**: A trigger at the **RESET** input re-aligns clock-synced effect and modulator phases. Useful when you want bar-aligned beats every time the song restarts.
