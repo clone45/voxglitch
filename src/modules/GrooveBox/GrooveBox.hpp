@@ -778,13 +778,13 @@ struct GrooveBox : VoxglitchSamplerModule
 
             json_t *track_json_object = json_object();
 
-            json_object_set(track_json_object, "sample_filename", json_string(filename.c_str()));
-            json_object_set(track_json_object, "sample_path", json_string(path.c_str()));
-            json_object_set(track_json_object, "sample_position_snap_index", json_integer(this->sample_position_snap_indexes[track_number]));
+            json_object_set_new(track_json_object, "sample_filename", json_string(filename.c_str()));
+            json_object_set_new(track_json_object, "sample_path", json_string(path.c_str()));
+            json_object_set_new(track_json_object, "sample_position_snap_index", json_integer(this->sample_position_snap_indexes[track_number]));
 
             json_array_append_new(track_data_json_array, track_json_object);
         }
-        json_object_set(json_root, "shared_track_data", track_data_json_array);
+        json_object_set_new(json_root, "shared_track_data", track_data_json_array);
 
         //
         // Save all memory slot data
@@ -801,7 +801,7 @@ struct GrooveBox : VoxglitchSamplerModule
                 for (int step_index = 0; step_index < NUMBER_OF_STEPS; step_index++)
                 {
                     json_t *step_data = json_object();
-                    json_object_set(step_data, "trigger", json_integer(this->memory_slots[memory_slot_number].tracks[track_number].getValue(step_index)));
+                    json_object_set_new(step_data, "trigger", json_integer(this->memory_slots[memory_slot_number].tracks[track_number].getValue(step_index)));
 
                     for (unsigned int parameter_index = 0; parameter_index < NUMBER_OF_PARAMETER_LOCKS; parameter_index++)
                     {
@@ -809,28 +809,28 @@ struct GrooveBox : VoxglitchSamplerModule
                         std::transform(key.begin(), key.end(), key.begin(), ::tolower);
                         std::replace(key.begin(), key.end(), ' ', '_'); // replace all ' ' to '_'
 
-                        json_object_set(step_data, key.c_str(), json_real(this->memory_slots[memory_slot_number].tracks[track_number].getParameter(parameter_index, step_index)));
+                        json_object_set_new(step_data, key.c_str(), json_real(this->memory_slots[memory_slot_number].tracks[track_number].getParameter(parameter_index, step_index)));
                     }
                     json_array_append_new(steps_json_array, step_data);
                 }
 
                 json_t *track_data = json_object();
 
-                json_object_set(track_data, "steps", steps_json_array);
-                json_object_set(track_data, "range_start", json_integer(this->memory_slots[memory_slot_number].tracks[track_number].getRangeStart()));
-                json_object_set(track_data, "range_end", json_integer(this->memory_slots[memory_slot_number].tracks[track_number].getRangeEnd()));
+                json_object_set_new(track_data, "steps", steps_json_array);
+                json_object_set_new(track_data, "range_start", json_integer(this->memory_slots[memory_slot_number].tracks[track_number].getRangeStart()));
+                json_object_set_new(track_data, "range_end", json_integer(this->memory_slots[memory_slot_number].tracks[track_number].getRangeEnd()));
                 json_array_append_new(tracks_json_array, track_data);
             }
 
             json_t *tracks_json_object = json_object();
-            json_object_set(tracks_json_object, "tracks", tracks_json_array);
+            json_object_set_new(tracks_json_object, "tracks", tracks_json_array);
             json_array_append_new(memory_slots_json_array, tracks_json_object);
         }
-        json_object_set(json_root, "memory_slots", memory_slots_json_array);
+        json_object_set_new(json_root, "memory_slots", memory_slots_json_array);
 
         // Save selected color theme
-        json_object_set(json_root, "selected_color_theme", json_integer(LCDColorScheme::selected_color_scheme));
-        json_object_set(json_root, "selected_memory_index", json_integer(memory_slot_index));
+        json_object_set_new(json_root, "selected_color_theme", json_integer(LCDColorScheme::selected_color_scheme));
+        json_object_set_new(json_root, "selected_memory_index", json_integer(memory_slot_index));
 
         return json_root;
     }
