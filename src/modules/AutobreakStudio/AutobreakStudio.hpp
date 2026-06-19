@@ -187,13 +187,13 @@ struct AutobreakStudio : VoxglitchSamplerModule
             saveSequencer(sequencers_json, &autobreak_memory[memory_index].reverse_sequencer, "reverse_sequencer");
             saveSequencer(sequencers_json, &autobreak_memory[memory_index].ratchet_sequencer, "ratchet_sequencer");
 
-            json_object_set(memory_json, std::string("memory_slot_" + std::to_string(memory_index)).c_str(), sequencers_json);
+            json_object_set_new(memory_json, std::string("memory_slot_" + std::to_string(memory_index)).c_str(), sequencers_json);
         }
 
-        json_object_set(json_root, "memory", memory_json);
+        json_object_set_new(json_root, "memory", memory_json);
 
         // Save which memory is selected
-        json_object_set(json_root, "selected_memory_index", json_integer(selected_memory_index));
+        json_object_set_new(json_root, "selected_memory_index", json_integer(selected_memory_index));
 
         return json_root;
     }
@@ -207,8 +207,8 @@ struct AutobreakStudio : VoxglitchSamplerModule
         }
 
         json_t *data_json = json_object();
-        json_object_set(data_json, "values", sequencer_values_json_array);
-        json_object_set(data_json, "length", json_integer(sequencer->getLength()));
+        json_object_set_new(data_json, "values", sequencer_values_json_array);
+        json_object_set_new(data_json, "length", json_integer(sequencer->getLength()));
 
         json_object_set_new(memory_json, sequencer_name.c_str(), data_json);
     }
