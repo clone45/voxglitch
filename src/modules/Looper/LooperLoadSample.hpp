@@ -22,10 +22,14 @@ struct LooperLoadSample : MenuItem
 	{
     if (filename != "")
 		{
+			// Stop playback so the audio thread cannot read the sample buffers
+			// while Sample::load() is clearing and refilling them.
+			module->sample_player.stop();
 			module->sample_player.loadSample(filename);
       module->sample_player.trigger();
 			module->loaded_filename = module->sample_player.getFilename();
 			module->setRoot(filename);
+			module->startBeatAnalysis();
 		}
 	}
 };

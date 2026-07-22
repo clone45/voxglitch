@@ -8,7 +8,7 @@
 // A collaboration between Bret Truchan and Claude AI.
 */
 
-#include "Marker.hpp"
+#include "../../vgLib-2.0/widgets/Marker.hpp"
 #include "ScrubState.hpp"
 
 struct CueResearch : VoxglitchSamplerModule

@@ -1,4 +1,4 @@
-# MIXER 6
+# GAMixer6
 
 A 6-input audio mixer that sums up to six audio signals into a single output, with individual level controls per channel and a master output level.
 
@@ -6,18 +6,18 @@ A 6-input audio mixer that sums up to six audio signals into a single output, wi
 
 | Port | Label | Type | Description |
 |------|-------|------|-------------|
-| MIXER6_IN1 | IN 1 | Audio | First audio input signal |
-| MIXER6_IN2 | IN 2 | Audio | Second audio input signal |
-| MIXER6_IN3 | IN 3 | Audio | Third audio input signal |
-| MIXER6_IN4 | IN 4 | Audio | Fourth audio input signal |
-| MIXER6_IN5 | IN 5 | Audio | Fifth audio input signal |
-| MIXER6_IN6 | IN 6 | Audio | Sixth audio input signal |
+| 0 | IN 1 | Audio | First audio input signal |
+| 1 | IN 2 | Audio | Second audio input signal |
+| 2 | IN 3 | Audio | Third audio input signal |
+| 3 | IN 4 | Audio | Fourth audio input signal |
+| 4 | IN 5 | Audio | Fifth audio input signal |
+| 5 | IN 6 | Audio | Sixth audio input signal |
 
 ## Outputs
 
 | Port | Label | Type | Description |
 |------|-------|------|-------------|
-| MIXER6_OUT | OUT | Audio | Summed and level-scaled audio output |
+| 6 | OUT | Audio | Summed and level-scaled audio output |
 
 ## Parameters
 
@@ -49,6 +49,6 @@ The mixer has no internal state, filters, or slew limiting. Parameters are synce
 
 - Use the per-channel knobs to set a rough balance between instruments or voices, then adjust the MSTR knob to control the overall volume going into downstream modules such as effects or the output module.
 - When mixing fewer than six sources, unused inputs contribute nothing to the output (they read 0V), so there is no need to turn down unused channel knobs.
-- Chain two MIXER 6 modules together (output of one into an input of the other) to mix more than six signals.
-- For mixing drums and melodic elements separately, use one MIXER 6 for drums and another for melodic voices, then combine them through a final mixer or directly into the output module. This gives you sub-group level control.
+- Chain two GAMixer6 modules together (output of one into an input of the other) to mix more than six signals.
+- For mixing drums and melodic elements separately, use one GAMixer6 for drums and another for melodic voices, then combine them through a final mixer or directly into the output module. This gives you sub-group level control.
 - Since the channel levels are unipolar (0.0 to 1.0), this mixer attenuates but does not invert signals. If you need signal inversion, place an Attenuverter (ATTEN) module before the mixer input.

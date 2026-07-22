@@ -60,6 +60,24 @@ struct PanelHelper
         return result;
     }
 
+    // Finds the full bounding box of a named SVG element.
+    // Useful when you want a widget to cover an exact placeholder rectangle
+    // instead of just being centered on it.
+    // If the element isn't found, returns Rect(0, 0, 0, 0).
+
+    rack::math::Rect findBounds(const std::string& name)
+    {
+        rack::math::Rect result(Vec(0, 0), Vec(0, 0));
+        forEachShape([&](NSVGshape* shape) {
+            if (std::string(shape->id) == name) {
+                result.pos  = Vec(shape->bounds[0], shape->bounds[1]);
+                result.size = Vec(shape->bounds[2] - shape->bounds[0],
+                                  shape->bounds[3] - shape->bounds[1]);
+            }
+        });
+        return result;
+    }
+
     std::vector<NamedPosition> findPrefixed(const std::string& prefix)
     {
         std::vector<NamedPosition> result;

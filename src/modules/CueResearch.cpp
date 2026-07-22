@@ -19,8 +19,8 @@
 
 using namespace vgLib_v2;
 
-#include "CueResearch/TrackModel.hpp"
-#include "CueResearch/TrackWidget.hpp"
+#include "vgLib-2.0/widgets/TrackModel.hpp"
+#include "vgLib-2.0/widgets/TrackWidget.hpp"
 
 #include "CueResearch/CueResearch.hpp"
 #include "CueResearch/CueResearchLoadSample.hpp"

@@ -4,12 +4,27 @@
 
 #include "Marker.hpp"
 
+// Orientation of the track display.
+//   HORIZONTAL: sample axis runs left-to-right, amplitude is vertical
+//   VERTICAL:   sample axis runs top-to-bottom, amplitude is horizontal
+//
+// Defaults to HORIZONTAL so existing callers (CueResearch) keep their
+// current behavior unchanged.
+enum class TrackOrientation { HORIZONTAL, VERTICAL };
+
+// One precomputed waveform slice. Field names are screen-axis-neutral so
+// the same struct can describe horizontal and vertical layouts.
+//   main_pos     - position along the SAMPLE axis (left edge in H, top edge in V)
+//   cross_pos    - position perpendicular to the sample axis (top of bar in H,
+//                  left of bar in V); already accounts for cross-axis centering
+//   main_size    - size along the sample axis (chunk width in H, chunk height in V)
+//   amplitude    - size in the amplitude direction (chunk height in H, chunk width in V)
 struct WaveformChunk {
-    float average_height;
-    float x_position;
-    float y_position;
-    float width;
-    bool valid;
+    float main_pos;
+    float cross_pos;
+    float main_size;
+    float amplitude;
+    bool  valid;
 };
 
 struct TrackModel
@@ -192,41 +207,51 @@ struct TrackModel
         updateVisibleWindow();
     }
 
-    void updateWaveformCache(float track_width, float track_height, float padding_left, float padding_right,
-                        float padding_top, float padding_bottom) {
+    // Recompute the chunk cache. Field names refer to MAIN (the sample axis,
+    // long edge) and CROSS (perpendicular, amplitude direction). The widget
+    // maps those to (x, y) at draw time according to its orientation.
+    //
+    //   main_track_size   = pixels along the sample axis
+    //   cross_track_size  = pixels along the amplitude axis
+    //   main_padding_*    = padding on the sample axis (start/end)
+    //   cross_padding_*   = padding on the amplitude axis (start/end)
+    void updateWaveformCache(float main_track_size, float cross_track_size,
+                             float main_padding_start, float main_padding_end,
+                             float cross_padding_start, float cross_padding_end) {
         if (!sample || !sample->isLoaded()) return;
 
-        float drawable_width = track_width - (padding_left + padding_right);
-        
+        float drawable_main = main_track_size - (main_padding_start + main_padding_end);
+        float drawable_cross = cross_track_size - (cross_padding_start + cross_padding_end);
+
         // Calculate chunk size based on visible window rather than total sample size
         float pixels_per_chunk = 1.0f;
         unsigned int visible_samples = visible_window_end - visible_window_start;
         unsigned int chunks_needed = std::max(
-            static_cast<unsigned int>(drawable_width / pixels_per_chunk),
+            static_cast<unsigned int>(drawable_main / pixels_per_chunk),
             1000u
         );
-        
+
         // Use the smaller of:
         // 1. Global chunk size (for stability)
         // 2. Visible chunk size (for detail when zoomed)
         unsigned int global_chunk_size = std::max(1u, sample->size() / chunks_needed);
         unsigned int visible_chunk_size = std::max(1u, visible_samples / chunks_needed);
         unsigned int chunk_size = std::min(global_chunk_size, visible_chunk_size);
-        
+
         // Calculate which chunks are visible
         unsigned int first_chunk = visible_window_start / chunk_size;
         unsigned int last_chunk = (visible_window_end / chunk_size) + 1;
         unsigned int actual_chunks = last_chunk - first_chunk;
-        
+
         chunk_cache.resize(actual_chunks);
-        
+
         for (unsigned int i = 0; i < actual_chunks; ++i) {
             WaveformChunk& chunk = chunk_cache[i];
-            
+
             // Calculate chunk boundaries, clamped to sample range
             unsigned int chunk_start = std::min((first_chunk + i) * chunk_size, sample->size());
             unsigned int chunk_end = std::min(chunk_start + chunk_size, sample->size());
-            
+
             // Skip if chunk is outside visible range
             if (chunk_start >= visible_window_end || chunk_end <= visible_window_start) {
                 chunk.valid = false;
@@ -236,16 +261,16 @@ struct TrackModel
             // Clamp chunk boundaries to visible window
             unsigned int visible_start = std::max(chunk_start, visible_window_start);
             unsigned int visible_end = std::min(chunk_end, visible_window_end);
-            
+
             if (visible_start >= visible_end) {
                 chunk.valid = false;
                 continue;
             }
-            
+
             float left_sum = 0.0f;
             float right_sum = 0.0f;
             unsigned int count = 0;
-            
+
             for (unsigned int pos = visible_start; pos < visible_end; ++pos) {
                 float left, right;
                 sample->read(pos, &left, &right);
@@ -255,39 +280,41 @@ struct TrackModel
             }
 
             if (count > 0) {
-                float average_height = (left_sum + right_sum) / (2.0f * count);
-                average_height *= (track_height - (padding_top + padding_bottom));
-                
-                chunk.average_height = average_height;
-                
-                // Calculate position using visible sample range
+                float amplitude = (left_sum + right_sum) / (2.0f * count);
+                amplitude *= drawable_cross;
+
+                chunk.amplitude = amplitude;
+
+                // Position along the sample axis.
                 float relative_pos = float(visible_start - visible_window_start) /
                     float(visible_window_end - visible_window_start);
-                chunk.x_position = padding_left + (relative_pos * drawable_width);
-                
-                chunk.y_position = padding_top +
-                    ((track_height - padding_top - padding_bottom - average_height) / 2.0f);
-                
-                // Calculate width based on visible portion of chunk
+                chunk.main_pos = main_padding_start + (relative_pos * drawable_main);
+
+                // Center the amplitude block along the cross axis.
+                chunk.cross_pos = cross_padding_start +
+                    ((drawable_cross - amplitude) / 2.0f);
+
+                // Size along the sample axis: span of this chunk's visible portion.
                 float end_relative_pos = float(visible_end - visible_window_start) /
                     float(visible_window_end - visible_window_start);
-                float end_x = padding_left + (end_relative_pos * drawable_width);
-                chunk.width = end_x - chunk.x_position;
-                
-                // Clamp width to drawable area
-                chunk.width = std::min(chunk.width, drawable_width - (chunk.x_position - padding_left));
-                
+                float end_main = main_padding_start + (end_relative_pos * drawable_main);
+                chunk.main_size = end_main - chunk.main_pos;
+
+                // Clamp to drawable main-axis area.
+                chunk.main_size = std::min(chunk.main_size,
+                    drawable_main - (chunk.main_pos - main_padding_start));
+
                 chunk.valid = true;
             } else {
                 chunk.valid = false;
             }
         }
-        
+
         cache_valid = true;
         cached_visible_start = visible_window_start;
         cached_visible_end = visible_window_end;
-        cached_width = track_width;
-        cached_height = track_height;
+        cached_width = main_track_size;
+        cached_height = cross_track_size;
     }
 
     // Update the visible window based on the current zoom factor
