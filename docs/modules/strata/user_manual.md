@@ -84,9 +84,9 @@ These controls are along the top of the panel.
 
 Patch a pitch source into **V/OCT** and a gate into **GATE**. Strata takes one pitch and one gate at a time.
 
-Strata has eight voices, and each note you play takes one of them. This is what lets a released note finish fading while you play the next note, instead of being cut off the moment the following note starts. Sounds with a long release, or with a long **Length**, use several voices at once for this reason.
+Strata has eight voices, and each note you play takes one of them. A voice stays busy until its release has finished, which is what lets a note you let go keep fading while you play the next one instead of being cut off. A long **Release** holds voices for longer, so playing quickly can put several voices in use at once.
 
-These eight voices are not Rack's polyphony. Strata reads the first channel of **V/OCT** and **GATE** and ignores the rest, so a polyphonic cable from a MIDI-CV module plays one note, not eight. To play chords, use one Strata per note, or place Strata after a polyphonic-to-monophonic split.
+These eight voices are not Rack's polyphony. Strata reads the first channel of **V/OCT** and **GATE** and ignores the rest, so a polyphonic cable from a MIDI-CV module plays one note, not eight. To play chords, use one Strata per note and feed each one a single channel, splitting the polyphonic cable with a module such as Core **Split**.
 
 While you hold a key, Strata plays from the start of the sound into the loop region, then repeats the loop region. When you release the key the sound fades out. See "How a note ends" below.
 
