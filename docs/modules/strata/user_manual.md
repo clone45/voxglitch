@@ -4,13 +4,13 @@
 
 ## Overview
 
-Strata is a polyphonic synthesizer voice. You design one sound inside the module, and Strata plays that sound at whatever pitch you send it.
+Strata is a synthesizer voice. You design one sound inside the module, and Strata plays that sound at whatever pitch you send it.
 
 The sound is not a recording. Strata stores a description of which frequencies are present, how loud each one is, and how it all changes over a few seconds. It rebuilds the sound from that description every time you play a note. The description is saved inside your patch, so a saved patch needs no additional files.
 
 You build the sound from a stack of layers. There are 11 layer types that add sound and 16 that change the sound already there. The display in the middle of the panel shows the result while you work.
 
-Strata plays up to eight notes at once, and has a keyboard along the bottom of the panel so you can hear your edits without patching anything.
+Strata has eight internal voices, so a note you release keeps fading while you play the next one. It also has a keyboard along the bottom of the panel so you can hear your edits without patching anything.
 
 ## Quick Start Guide
 
@@ -73,8 +73,8 @@ Playing the keyboard does not stop a note you are holding from the **GATE** inpu
 
 These controls are along the top of the panel.
 
-- **V/OCT**: pitch, 1 volt per octave. `0 V` plays middle C.
-- **GATE**: starts a note when the voltage rises above `1 V` and releases it when the voltage falls below `0.1 V`.
+- **V/OCT**: pitch, 1 volt per octave. `0 V` plays middle C. Reads one channel. Patching a polyphonic cable here plays only its first channel.
+- **GATE**: starts a note when the voltage rises above `1 V` and releases it when the voltage falls below `0.1 V`. Reads one channel, the same as **V/OCT**.
 - **OUT L** and **OUT R**: audio output. Strata produces a mono signal and sends the same signal to both jacks.
 - **VOL**: output level, `0` to `100%`.
 
@@ -82,7 +82,11 @@ These controls are along the top of the panel.
 
 ## Playing
 
-Patch a pitch source into **V/OCT** and a gate into **GATE**. Strata plays up to eight notes at once. When you release a note it continues to fade while you play new ones.
+Patch a pitch source into **V/OCT** and a gate into **GATE**. Strata takes one pitch and one gate at a time.
+
+Strata has eight voices, and each note you play takes one of them. This is what lets a released note finish fading while you play the next note, instead of being cut off the moment the following note starts. Sounds with a long release, or with a long **Length**, use several voices at once for this reason.
+
+These eight voices are not Rack's polyphony. Strata reads the first channel of **V/OCT** and **GATE** and ignores the rest, so a polyphonic cable from a MIDI-CV module plays one note, not eight. To play chords, use one Strata per note, or place Strata after a polyphonic-to-monophonic split.
 
 While you hold a key, Strata plays from the start of the sound into the loop region, then repeats the loop region. When you release the key the sound fades out. See "How a note ends" below.
 
@@ -263,6 +267,8 @@ A transform changes the sound that reaches it from the layers above.
 
 **Strata is out of tune with the rest of the patch.** Check **Base Pitch**. Strata reproduces the sound exactly at that pitch and transposes it for every other pitch.
 
+**A polyphonic cable plays only one note.** Strata reads the first channel of **V/OCT** and **GATE**. Its eight voices are internal, and they let released notes finish fading rather than accepting eight channels of input. Use one Strata per note to play chords.
+
 **Changing V/OCT during a held note does nothing.** Strata reads the pitch when the gate rises. Send a new gate to play the new pitch.
 
 **Editing feels slow.** Strata rebuilds the whole sound after each change. Longer **Length** settings and more layers take longer. The audio is not interrupted, but the display trails your control.
@@ -274,7 +280,8 @@ A transform changes the sound that reaches it from the layers above.
 ## Technical Specifications
 
 - **Synthesis**: spectral resynthesis using a bank of sine oscillators and filtered noise, driven by a grid of level, frequency, and noisiness values, with separate time-domain transients
-- **Polyphony**: 8 voices; the oldest note is replaced when all eight are in use
+- **Voices**: 8 internal voices, so released notes can finish fading under new ones; the oldest note is replaced when all eight are in use
+- **Cable channels**: **V/OCT** and **GATE** read one channel each; Rack's polyphonic cables are not supported
 - **Analysis grid**: 1024-point FFT, 256 sample hop, 513 frequency bands, 187.5 frames per second
 - **Frequencies per frame**: up to 64 per voice
 - **Layer types**: 27 (11 sources, 16 transforms)
