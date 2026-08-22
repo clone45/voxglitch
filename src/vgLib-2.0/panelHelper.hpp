@@ -60,6 +60,33 @@ struct PanelHelper
         return result;
     }
 
+    // Finds the BOUNDING BOX of a named shape, not just its centre.
+    //
+    // findNamed() is right for jacks and knobs, which are placed by their centre,
+    // but a rectangular child widget (a display, an editor surface) needs the whole
+    // rect. Reading it from the panel means the artwork stays the single source of
+    // truth: move the rect in Inkscape and the widget follows, with no constant to
+    // keep in sync.
+    //
+    // Returns an empty Rect if the id isn't found.
+
+    rack::Rect findNamedRect(const std::string& name)
+    {
+        rack::Rect result;
+        bool found = false;
+
+        forEachShape([&](NSVGshape* shape) {
+            if (!found && std::string(shape->id) == name) {
+                found = true;
+                result.pos = Vec(shape->bounds[0], shape->bounds[1]);
+                result.size = Vec(shape->bounds[2] - shape->bounds[0],
+                                  shape->bounds[3] - shape->bounds[1]);
+            }
+        });
+
+        return result;
+    }
+
     std::vector<NamedPosition> findPrefixed(const std::string& prefix)
     {
         std::vector<NamedPosition> result;

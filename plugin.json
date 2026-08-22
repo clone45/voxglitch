@@ -167,6 +167,13 @@
         "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/onezero/user_manual.md"
     },          
     {
+        "slug": "piano_roll",
+        "name": "Piano Roll",
+        "description": "Eight-track polyphonic piano-roll note sequencer with recording",
+        "tags": ["Sequencer", "Polyphonic"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/piano-roll/user_manual.md"
+    },
+    {
         "slug": "repeater",
         "name": "Repeater",
         "description": "Looping sample player with playback offset control.",

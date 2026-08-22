@@ -32,6 +32,7 @@ void init(Plugin* p) {
   p->addModel(modelLooper);
   p->addModel(modelMaya);
   p->addModel(modelNoteDetector);
+  p->addModel(modelPianoRoll);
   p->addModel(modelRepeater);
   p->addModel(modelSamplerX8);
   p->addModel(modelSampler16P);
