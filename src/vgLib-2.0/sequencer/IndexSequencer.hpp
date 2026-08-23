@@ -93,13 +93,18 @@ struct IndexSequencer
                 std::shuffle(random_steps.begin(), random_steps.end(), rng);
                 
                 // Check if the last played step is the same as the first in the new shuffle
-                if (!random_steps.empty() && random_steps.back() == last_played_step)
+                if (random_steps.size() > 1 && random_steps.back() == last_played_step)
                 {
                     // Swap the first and last element to avoid immediate repetition
-                    if(random_steps.size() > 1)
-                        std::swap(random_steps.front(), random_steps.back());
+                    std::swap(random_steps.front(), random_steps.back());
                 }
             }
+
+            // Everything below reads the back of the deck. indicies_vec is
+            // non-empty (checked above), so the refill guarantees this holds --
+            // but say so outright rather than leaving it to be inferred across
+            // the assignment and shuffle.
+            if (random_steps.empty()) return;
 
             // Pop the next step and play it
             sequence_playback_position = std::find(indicies_vec.begin(), indicies_vec.end(), random_steps.back()) - indicies_vec.begin();
