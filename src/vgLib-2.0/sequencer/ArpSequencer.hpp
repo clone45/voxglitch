@@ -14,7 +14,12 @@ struct ArpSequencer
     };
 
     // int max_length = 16;
-    int sequence_playback_position = 0;
+
+    // -1, not 0, so that a freshly constructed sequencer matches the state
+    // reset() leaves behind. step() advances before reading, so starting at 0
+    // would make the first clock land on index 1 and silently skip the first
+    // note until the user sent a reset.
+    int sequence_playback_position = -1;
     int pingpong_direction = 1; // 1 for forward, -1 for backward
     std::vector<int> random_steps;
     int last_played_step = -1; // for random mode

@@ -13,7 +13,9 @@ struct IndexSequencer
     };
 
     int max_length = 16;
-    int sequence_playback_position = 0;
+
+    // -1 to match the state reset() leaves behind; see ArpSequencer.
+    int sequence_playback_position = -1;
     int pingpong_direction = 1; // 1 for forward, -1 for backward
     std::vector<int> random_steps;
     int last_played_step = -1; // for random mode

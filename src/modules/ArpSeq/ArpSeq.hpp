@@ -602,7 +602,11 @@ struct ArpSeq : Module
             }
         }
 
-        if (sample_and_hold_mode)
+        // Only substitute the held note once something has actually been
+        // sampled. The hold starts at 0V, which is a C, so overwriting the
+        // live note before the first gate emitted a C that belonged to no
+        // scale and no sequencer step.
+        if (sample_and_hold_mode && sample_and_hold.hasSampled())
         {
             note_cv = sample_and_hold.getValue();
         }
@@ -768,6 +772,10 @@ struct ArpSeq : Module
         }
 
         arp_sequencer.reset();
+
+        // Drop the held note too, otherwise the note sampled before the reset
+        // is output until the first gate of the new cycle.
+        sample_and_hold.reset();
 
         // Set up a (reverse) counter so that the clock input will ignore
         // incoming clock pulses for 1 millisecond after a reset input. This
