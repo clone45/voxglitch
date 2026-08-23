@@ -45,8 +45,8 @@ acceptable, re-run with `--update-baseline` and commit the result.
 
 ## Scope
 
-Findings are split into voxglitch code and vendored third-party. `src/ip/` and
-`src/osc/` are oscpack; `dr_wav.h` and `dr_mp3.h` are dr_libs. Those aren't ours
-to fix, and the library maintainer has said he ignores the dr_libs output as too
-noisy. Note the library's invocation passes no `dep/` suppression, which is the
-only reason vendored code appears in the report at all.
+Findings are split into voxglitch code and vendored third-party -- `dr_wav.h`
+and `dr_mp3.h`, which are dr_libs. Those aren't ours to fix, and the library
+maintainer has said he ignores the dr_libs output as too noisy. Note the
+library's invocation passes no `dep/` suppression, so any vendored code kept
+under `src/` will show up in its report.

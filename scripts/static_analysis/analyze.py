@@ -36,7 +36,7 @@ CPPCHECK_FLAGS = ["--std=c++11", "--max-configs=1", "--enable=warning", "-q", "-
 # Vendored third-party code. Findings here are reported separately -- they are
 # real cppcheck output, but they aren't voxglitch's code to fix, and the library
 # maintainer has said he ignores the dr_libs ones as too noisy.
-VENDORED = ("src/ip/", "src/osc/", "src/vgLib-2.0/dr_wav.h", "src/vgLib-2.0/dr_mp3.h")
+VENDORED = ("src/vgLib-2.0/dr_wav.h", "src/vgLib-2.0/dr_mp3.h")
 
 
 def source_files() -> list[str]:

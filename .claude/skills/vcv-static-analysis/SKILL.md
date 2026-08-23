@@ -59,31 +59,34 @@ actually compiles:
 
 ```bash
 S=../Rack-SDK
-for f in src/*.cpp src/modules/*.cpp src/osc/*.cpp src/ip/*.cpp src/ip/posix/*.cpp; do
+for f in src/*.cpp src/modules/*.cpp; do
   g++ -fsyntax-only -std=c++11 -DARCH_LIN -Isrc -I$S/include -I$S/dep/include "$f" || echo "FAILED: $f"
 done
 ```
 
-42 translation units. Note `-Isrc` only — adding `-Isrc/vgLib-2.0` shadows Rack's
+35 translation units. Note `-Isrc` only — adding `-Isrc/vgLib-2.0` shadows Rack's
 own `common.hpp` and produces a flood of bogus errors.
 
 ## Reading the results
 
-Findings split into voxglitch code and vendored third-party (`src/ip/`,
-`src/osc/` are oscpack; `dr_wav.h`/`dr_mp3.h` are dr_libs). The maintainer
-has said he ignores the dr_libs ones as too noisy. Vendored findings are not
-voxglitch's to fix — say so rather than "fixing" vendored code.
+Findings split into voxglitch code and vendored third-party — currently just
+`dr_wav.h`/`dr_mp3.h`, which are dr_libs. The maintainer has said he ignores
+those as too noisy. Vendored findings are not voxglitch's to fix — say so rather
+than "fixing" vendored code.
 
-Known-benign categories currently in the baseline:
+Note the library's invocation passes no `dep/` suppression, so any vendored code
+kept under `src/` lands in its report.
 
-- **`duplInheritedMember`** (24) — child structs redeclaring `module`/`bar_width`
-  that a parent already has. Real shadowing, but reworking the sequencer display
-  hierarchies risks behavior changes for cosmetic gain.
-- **`containerOutOfBounds`** (6) — false positives in `ArpSequencer`/
-  `IndexSequencer`; cppcheck can't see that `random_steps` is refilled from a
-  vector already proven non-empty.
-- **`preprocessorErrorDirective`** (1) — cppcheck isn't passing
-  `OSC_HOST_LITTLE_ENDIAN`; a config artifact, not a code issue.
+Known-benign, currently in the baseline:
+
+- **`duplInheritedMember`** (7) — `KaisekiSamplePlayer` methods that genuinely
+  extend `SamplePlayer` (`trigger`, `step`, `stepReverse`, `stop`, `loadSample`,
+  `releaseSample`, `initialize`). `SamplePlayer` has no vtable and is used by
+  nine other modules, with `step`/`stepReverse` on the per-sample audio path, so
+  these were left shadowing deliberately. Latent, not live: every call site holds
+  the derived type and nothing casts to a `SamplePlayer` pointer or reference.
+  Watch for that changing.
+- **`dangerousTypeCast`** (2) — old-style C casts in `KaisekiReceiver.hpp`.
 
 ## Do not draft the issue reply
 

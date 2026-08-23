@@ -16,22 +16,13 @@ LDFLAGS +=
 SOURCES += $(wildcard src/*.cpp)
 SOURCES += $(wildcard src/modules/*.cpp)
 
-# Add OSC library sources (for Kaiseki module)
-SOURCES += $(wildcard src/osc/*.cpp)
-
-# Add IP common sources
-SOURCES += $(wildcard src/ip/*.cpp)
-
 # Include Rack SDK's arch.mk early so we can use ARCH_WIN / ARCH_LIN / ARCH_MAC
 # for platform-specific source selection (arch.mk is safe to include before plugin.mk)
 include $(RACK_DIR)/arch.mk
 
-# Add IP library sources (platform-specific, for Kaiseki OSC support)
+# Kaiseki opens its own UDP socket, so Windows still needs the winsock libs.
 ifdef ARCH_WIN
-    SOURCES += $(wildcard src/ip/win32/*.cpp)
     LDFLAGS += -lws2_32 -lwinmm
-else
-    SOURCES += $(wildcard src/ip/posix/*.cpp)
 endif
 
 # Add files to the ZIP package when running `make dist`
