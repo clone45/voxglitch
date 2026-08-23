@@ -9,3 +9,8 @@
 resolve_conflicts.py
 toolchain-build.log
 
+
+# Claude Code machine-local settings (the skills directory IS tracked)
+.claude/settings.local.json
+__pycache__/
+*.pyc
