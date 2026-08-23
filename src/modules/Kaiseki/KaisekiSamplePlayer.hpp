@@ -46,13 +46,13 @@ struct KaisekiSamplePlayer : public SamplePlayer
   }
   
   // Trigger sample playback with optional start position and reverse
-  void trigger(float sample_start = 0.0, bool reverse = false) {
+  void trigger(float sample_start = 0.0, bool reverse = false) override {
     SamplePlayer::trigger(sample_start, reverse);
     resetLoopState();
   }
   
   // Enhanced step method with loop logic
-  void step(float pitch = 0.0, float sample_start = 0.0, float sample_end = 1.0, bool loop = false) {
+  void step(float pitch = 0.0, float sample_start = 0.0, float sample_end = 1.0, bool loop = false) override {
     if (!playing || !sample.loaded) {
       return;
     }
@@ -101,7 +101,7 @@ struct KaisekiSamplePlayer : public SamplePlayer
   }
   
   // Reverse step with loop logic
-  void stepReverse(float pitch = 0.0, float sample_start = 0.0, float sample_end = 1.0, bool loop = false) {
+  void stepReverse(float pitch = 0.0, float sample_start = 0.0, float sample_end = 1.0, bool loop = false) override {
     if (!playing || !sample.loaded) {
       return;
     }
@@ -157,13 +157,13 @@ struct KaisekiSamplePlayer : public SamplePlayer
   }
   
   // Stop playback
-  void stop() {
+  void stop() override {
     SamplePlayer::stop();
     resetLoopState();
   }
   
   // Pass-through methods to maintain SamplePlayer interface
-  bool loadSample(std::string path) {
+  bool loadSample(std::string path) override {
     bool result = SamplePlayer::loadSample(path);
     if (result) {
       resetLoopState();
@@ -183,7 +183,7 @@ struct KaisekiSamplePlayer : public SamplePlayer
     resetLoopState();
   }
   
-  void releaseSample() {
+  void releaseSample() override {
     SamplePlayer::releaseSample();
     resetLoopState();
   }
@@ -192,7 +192,7 @@ struct KaisekiSamplePlayer : public SamplePlayer
   // getSampleRate, setOffset, isLoaded and getStereoOutput are inherited
   // from SamplePlayer unchanged.
 
-  void initialize() {
+  void initialize() override {
     SamplePlayer::initialize();
     resetLoopState();
   }

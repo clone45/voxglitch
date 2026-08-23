@@ -2,14 +2,7 @@
   "cppcheck_version": "2.21.1",
   "findings": {
     "src/modules/Kaiseki/KaisekiReceiver.hpp\tdangerousTypeCast\tPotentially invalid type conversion in old-style C cast, clarify/fix with C++ cast": 2,
-    "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'initialize' also defined in its parent struct 'SamplePlayer'.": 1,
-    "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'loadSample' also defined in its parent struct 'SamplePlayer'.": 1,
-    "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'releaseSample' also defined in its parent struct 'SamplePlayer'.": 1,
-    "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'step' also defined in its parent struct 'SamplePlayer'.": 1,
-    "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'stepReverse' also defined in its parent struct 'SamplePlayer'.": 1,
-    "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'stop' also defined in its parent struct 'SamplePlayer'.": 1,
-    "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'trigger' also defined in its parent struct 'SamplePlayer'.": 1,
     "src/vgLib-2.0/dr_mp3.h\tdangerousTypeCast\tPotentially invalid type conversion in old-style C cast, clarify/fix with C++ cast": 4
   },
-  "total": 13
+  "total": 6
 }
