@@ -71,7 +71,7 @@ struct TrackWidget : TransparentWidget
         nvgFill(vg);
 
         // Draw the waveform
-        if (track_model && track_model->sample && track_model->sample->isLoaded())
+        if (track_model->sample && track_model->sample->isLoaded())
         {
             drawWaveform(vg, box.size.x, box.size.y);
             drawMarkers(args, box.size.x, box.size.y);
@@ -256,7 +256,7 @@ struct TrackWidget : TransparentWidget
     {
         std::vector<unsigned int> found_markers;
 
-        if (track_model && track_model->markers && !track_model->isLockedMarkers())
+        if (track_model->markers && !track_model->isLockedMarkers())
         {
             float marker_distance = 5.0f;
             float drawable_width = box.size.x - (container_padding_left + container_padding_right);
@@ -392,7 +392,7 @@ struct TrackWidget : TransparentWidget
 
         e.consume(this);
 
-        if (track_model && track_model->sample && track_model->sample->isLoaded())
+        if (track_model->sample && track_model->sample->isLoaded())
         {
             // Zoom factor adjustment
             float zoom_factor = 1.1f;
@@ -429,7 +429,7 @@ struct TrackWidget : TransparentWidget
         e.consume(this);
 
         // Check for scrubber hover first
-        if (track_model && track_model->sample) {
+        if (track_model->sample) {
             // Convert playback percentage to visible window position, accounting for padding
             float drawable_width = box.size.x - (container_padding_left + container_padding_right);
             
@@ -447,7 +447,7 @@ struct TrackWidget : TransparentWidget
 
 
         // Check for marker hover
-        if (track_model && track_model->markers && !track_model->isLockedMarkers())
+        if (track_model->markers && !track_model->isLockedMarkers())
         {
             float marker_distance = 5.0f;
             float drawable_width = box.size.x - (container_padding_left + container_padding_right);
@@ -527,7 +527,7 @@ struct TrackWidget : TransparentWidget
             }
 
             // Check for marker dragging
-            if (track_model && track_model->markers && !track_model->isLockedMarkers())
+            if (track_model->markers && !track_model->isLockedMarkers())
             {
                 float marker_distance = 5.0f;
                 
@@ -587,7 +587,7 @@ struct TrackWidget : TransparentWidget
         else if (e.action == GLFW_PRESS && e.button == GLFW_MOUSE_BUTTON_RIGHT && (e.mods & RACK_MOD_MASK) == 0)
         {
             bool marker_hit = false;
-            if (track_model && track_model->markers && !track_model->isLockedMarkers())
+            if (track_model->markers && !track_model->isLockedMarkers())
             {
                 float marker_distance = 5.0f;
                 for (auto &marker_pair : *(track_model->markers))
@@ -634,7 +634,7 @@ struct TrackWidget : TransparentWidget
 
         float final_start, final_end;
 
-        if (dragging && track_model && track_model->sample && track_model->sample->isLoaded())
+        if (dragging && track_model->sample && track_model->sample->isLoaded())
         {
             // Calculate pan offset first
             cumulative_drag_offset += e.mouseDelta.x;
@@ -689,7 +689,7 @@ struct TrackWidget : TransparentWidget
 
             track_model->invalidateCache();
         }
-        else if (dragging_marker && markers_being_dragged && track_model && track_model->markers && !track_model->isLockedMarkers())
+        else if (dragging_marker && markers_being_dragged && track_model->markers && !track_model->isLockedMarkers())
         {
             // First, verify the marker still exists at drag_source_position
             if (!isValidMarker(drag_source_position)) {
@@ -727,7 +727,7 @@ struct TrackWidget : TransparentWidget
 
         if(track_model->areInteractionsLocked()) return;
 
-        if (track_model && track_model->markers && !track_model->isLockedMarkers())
+        if (track_model->markers && !track_model->isLockedMarkers())
         {
             // Find markers near the click position
             std::vector<unsigned int> nearby_markers = findMarkersNearPosition(mouse_click_position);

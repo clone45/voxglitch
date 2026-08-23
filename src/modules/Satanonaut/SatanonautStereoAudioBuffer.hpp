@@ -60,7 +60,7 @@ struct SatanonautStereoAudioBuffer
 
     unsigned int index = sample_position % buffer_size;
 
-    if(index < sizeof(buffer_left)) // very paranoid!
+    if(index < MAX_BUFFER_SIZE) // very paranoid!
     {
       output_left = buffer_left[index];
       output_right = buffer_right[index];

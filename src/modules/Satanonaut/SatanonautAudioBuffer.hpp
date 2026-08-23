@@ -51,7 +51,7 @@ struct SatanonautAudioBuffer
     float output = 0;
 
     index = sample_position % buffer_size;
-    if(index < sizeof(playBuffer)) output = playBuffer[index]; // very paranoid!
+    if(index < MAX_BUFFER_SIZE) output = playBuffer[index]; // very paranoid!
 
     return(output);
   }
