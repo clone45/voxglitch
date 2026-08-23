@@ -96,40 +96,6 @@ struct DigitalSequencerWidget : VoxglitchSamplerModuleWidget
 		addChild(gates_display);
 	}
 
-	struct LengthDisplay : TransparentWidget
-	{
-		DigitalSequencer *module = nullptr;
-		std::shared_ptr<Font> font;
-		unsigned int sequencer_number = 0;
-
-		void draw(const DrawArgs &args) override
-		{
-			const auto vg = args.vg;
-
-			nvgSave(vg);
-
-			std::string text_to_display = "16";
-
-			if (module)
-			{
-				text_to_display = std::to_string(module->voltage_sequencers[sequencer_number].max_length);
-			}
-
-			std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, "res/fonts/ShareTechMono-Regular.ttf"));
-			if (font)
-			{
-				nvgFontSize(vg, 9);
-				nvgFontFaceId(vg, font->handle);
-				nvgTextAlign(vg, NVG_ALIGN_CENTER);
-				nvgTextLetterSpacing(vg, -1);
-				nvgFillColor(vg, nvgRGBA(235, 229, 222, 240));
-				nvgText(vg, 0, 0, text_to_display.c_str(), NULL);
-			}
-
-			nvgRestore(vg);
-		}
-	};
-
 	//
 	// ==========================================================================================
 	// MENUS
