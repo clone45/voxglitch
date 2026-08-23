@@ -51,11 +51,6 @@ struct KaisekiSamplePlayer : public SamplePlayer
     resetLoopState();
   }
   
-  // Get stereo output - same interface as SamplePlayer
-  void getStereoOutput(float *left_output, float *right_output, unsigned int interpolation) {
-    SamplePlayer::getStereoOutput(left_output, right_output, interpolation);
-  }
-  
   // Enhanced step method with loop logic
   void step(float pitch = 0.0, float sample_start = 0.0, float sample_end = 1.0, bool loop = false) {
     if (!playing || !sample.loaded) {
@@ -193,38 +188,10 @@ struct KaisekiSamplePlayer : public SamplePlayer
     resetLoopState();
   }
   
-  std::string getFilename() {
-    return SamplePlayer::getFilename();
-  }
-  
-  void setFilename(std::string filename) {
-    SamplePlayer::setFilename(filename);
-  }
-  
-  std::string getPath() {
-    return SamplePlayer::getPath();
-  }
-  
-  void setPath(std::string path) {
-    SamplePlayer::setPath(path);
-  }
-  
-  void updateSampleRate() {
-    SamplePlayer::updateSampleRate();
-  }
-  
-  unsigned int getSampleRate() {
-    return SamplePlayer::getSampleRate();
-  }
-  
-  void setOffset(unsigned int offset) {
-    SamplePlayer::setOffset(offset);
-  }
-  
-  bool isLoaded() {
-    return SamplePlayer::isLoaded();
-  }
-  
+  // getFilename, setFilename, getPath, setPath, updateSampleRate,
+  // getSampleRate, setOffset, isLoaded and getStereoOutput are inherited
+  // from SamplePlayer unchanged.
+
   void initialize() {
     SamplePlayer::initialize();
     resetLoopState();

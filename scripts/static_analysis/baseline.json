@@ -6,25 +6,16 @@
     "src/ip/win32/UdpSocket.cpp\tdangerousTypeCast\tPotentially invalid type conversion in old-style C cast, clarify/fix with C++ cast": 10,
     "src/ip/win32/UdpSocket.cpp\tuninitMemberVar\tMember variable 'Implementation::break_' is not initialized in the constructor.": 1,
     "src/modules/Kaiseki/KaisekiReceiver.hpp\tdangerousTypeCast\tPotentially invalid type conversion in old-style C cast, clarify/fix with C++ cast": 2,
-    "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'getFilename' also defined in its parent struct 'SamplePlayer'.": 1,
-    "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'getPath' also defined in its parent struct 'SamplePlayer'.": 1,
-    "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'getSampleRate' also defined in its parent struct 'SamplePlayer'.": 1,
-    "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'getStereoOutput' also defined in its parent struct 'SamplePlayer'.": 1,
     "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'initialize' also defined in its parent struct 'SamplePlayer'.": 1,
-    "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'isLoaded' also defined in its parent struct 'SamplePlayer'.": 1,
     "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'loadSample' also defined in its parent struct 'SamplePlayer'.": 1,
     "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'releaseSample' also defined in its parent struct 'SamplePlayer'.": 1,
-    "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'setFilename' also defined in its parent struct 'SamplePlayer'.": 1,
-    "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'setOffset' also defined in its parent struct 'SamplePlayer'.": 1,
-    "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'setPath' also defined in its parent struct 'SamplePlayer'.": 1,
     "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'step' also defined in its parent struct 'SamplePlayer'.": 1,
     "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'stepReverse' also defined in its parent struct 'SamplePlayer'.": 1,
     "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'stop' also defined in its parent struct 'SamplePlayer'.": 1,
     "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'trigger' also defined in its parent struct 'SamplePlayer'.": 1,
-    "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'updateSampleRate' also defined in its parent struct 'SamplePlayer'.": 1,
     "src/osc/OscException.h\tuninitMemberVar\tMember variable 'Exception::what_' is not initialized in the constructor.": 1,
     "src/osc/OscHostEndianness.h\tpreprocessorErrorDirective\t#error please edit OSCHostEndianness.h or define one of {OSC_HOST_LITTLE_ENDIAN, OSC_HOST_BIG_ENDIAN} to configure endianness": 1,
     "src/vgLib-2.0/dr_mp3.h\tdangerousTypeCast\tPotentially invalid type conversion in old-style C cast, clarify/fix with C++ cast": 4
   },
-  "total": 47
+  "total": 38
 }
