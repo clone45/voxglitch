@@ -19,8 +19,8 @@ struct TrackWidget : TransparentWidget
     bool dragging_zoom = false;
     bool shift_key_held = false;
     bool right_button_held = false;
-    float initial_visible_window_start;
-    float initial_visible_window_end;
+    float initial_visible_window_start = 0.0f;
+    float initial_visible_window_end = 0.0f;
     float cumulative_zoom_offset = 0.0f;
 
     // Properties for marker dragging

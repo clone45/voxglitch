@@ -7,7 +7,7 @@
 struct TrackLabelDisplay : TransparentWidget
 {
 
-    GrooveBox *module;
+    GrooveBox *module = nullptr;
     unsigned int track_number = 0;
 
     TrackLabelDisplay(unsigned int track_number, float width, float height)
@@ -170,7 +170,7 @@ struct TrackLabelDisplay : TransparentWidget
 
     struct ClearTrackStepsMenuItem : MenuItem
     {
-        GrooveBox *module;
+        GrooveBox *module = nullptr;
         unsigned int track_number = 0;
 
         void onAction(const event::Action &e) override
@@ -181,7 +181,7 @@ struct TrackLabelDisplay : TransparentWidget
 
     struct ClearTrackParametersMenuItem : MenuItem
     {
-        GrooveBox *module;
+        GrooveBox *module = nullptr;
         unsigned int track_number = 0;
 
         void onAction(const event::Action &e) override
@@ -192,7 +192,7 @@ struct TrackLabelDisplay : TransparentWidget
 
     struct ClearTrackMenuItem : MenuItem
     {
-        GrooveBox *module;
+        GrooveBox *module = nullptr;
         unsigned int track_number = 0;
 
         void onAction(const event::Action &e) override
@@ -206,7 +206,7 @@ struct TrackLabelDisplay : TransparentWidget
 
     struct LoadSampleMenuItem : MenuItem
     {
-        GrooveBox *module;
+        GrooveBox *module = nullptr;
         unsigned int track_number = 0;
 
         void onAction(const event::Action &e) override
@@ -239,7 +239,7 @@ struct TrackLabelDisplay : TransparentWidget
 
     struct UnassignSampleMenuItem : MenuItem
     {
-        GrooveBox *module;
+        GrooveBox *module = nullptr;
         int track_index = 0;
 
         void onAction(const event::Action &e) override
@@ -302,7 +302,7 @@ struct TrackLabelDisplay : TransparentWidget
 
 struct TrackSampleNudge : TransparentWidget
 {
-    GrooveBox *module;
+    GrooveBox *module = nullptr;
     unsigned int track_number = 0;
 
     int direction = 1;

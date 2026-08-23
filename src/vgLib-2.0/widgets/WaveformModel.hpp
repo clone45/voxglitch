@@ -1,6 +1,6 @@
 struct WaveformModel
 {
-    Sample *sample;
+    Sample *sample = nullptr;
     bool visible = false;
     std::vector<float> marker_positions;
     bool *lock_interactions = nullptr;

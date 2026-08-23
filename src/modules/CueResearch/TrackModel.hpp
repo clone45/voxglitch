@@ -14,7 +14,7 @@ struct WaveformChunk {
 
 struct TrackModel
 {
-    Sample *sample;
+    Sample *sample = nullptr;
 
     unsigned int samples_per_average = 1000; // Number of samples to average per chunk
     std::vector<float> averages; // Store waveform averages

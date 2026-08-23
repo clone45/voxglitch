@@ -1,6 +1,6 @@
 struct VoltageSequencerDisplayABS : SequencerDisplayABS
 {
-    AutobreakStudio *module;
+    AutobreakStudio *module = nullptr;
     AutobreakVoltageSequencer **sequencer_ptr_ptr;
 
     bool shift_key = false;

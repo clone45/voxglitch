@@ -5,7 +5,7 @@ using namespace rack;
 
 struct SmallLightBase : app::ParamWidget {
     widget::FramebufferWidget* fb;
-    app::ModuleLightWidget* light;
+    app::ModuleLightWidget* light = nullptr;
     
     SmallLightBase() {
         fb = new widget::FramebufferWidget;

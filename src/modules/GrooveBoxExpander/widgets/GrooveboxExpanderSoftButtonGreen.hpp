@@ -1,6 +1,6 @@
 struct GrooveboxExpanderSoftButtonGreen : SvgSwitch
 {
-    GrooveBoxExpander *module;
+    GrooveBoxExpander *module = nullptr;
   
     GrooveboxExpanderSoftButtonGreen()
     {

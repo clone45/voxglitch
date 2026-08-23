@@ -1,6 +1,6 @@
 struct Sampler16PLoadSample : MenuItem
 {
-	Sampler16P *module;
+	Sampler16P *module = nullptr;
 	unsigned int sample_number = 0;
 
 	void onAction(const event::Action &e) override

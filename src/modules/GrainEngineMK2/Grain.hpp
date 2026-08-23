@@ -9,7 +9,7 @@ struct Grain
   // double playback_length;
 
   // sample_ptr points to the loaded sample in memory
-  Sample *sample_ptr;
+  Sample *sample_ptr = nullptr;
 
   // Eventually use inheritance to purge this sloppy pointer passing
   // Common *common;

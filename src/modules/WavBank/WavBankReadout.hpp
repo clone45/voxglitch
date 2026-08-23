@@ -1,6 +1,6 @@
 struct WavBankReadout : TransparentWidget
 {
-    WavBank *module;
+    WavBank *module = nullptr;
     std::shared_ptr<Font> font;
     std::string text_to_display = "";
     bool mouse_lock = false;

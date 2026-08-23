@@ -40,7 +40,7 @@ struct HazumiWidget : ModuleWidget
 
     struct TriggerOptionValueItem : MenuItem
     {
-        Hazumi *module;
+        Hazumi *module = nullptr;
         int option = 0;
         int column = 0;
 
@@ -62,7 +62,7 @@ struct HazumiWidget : ModuleWidget
 
     struct TriggerOptionMenuItem : MenuItem
     {
-        Hazumi *module;
+        Hazumi *module = nullptr;
         int column = 0;
 
         Menu *createChildMenu() override
@@ -111,7 +111,7 @@ struct HazumiWidget : ModuleWidget
 
     struct SequencerItem : MenuItem
     {
-        Hazumi *module;
+        Hazumi *module = nullptr;
         unsigned int column = 0;
 
         Menu *createChildMenu() override

@@ -24,10 +24,10 @@ struct FadeLine
 
 struct LooperWaveformDisplay : TransparentWidget
 {
-  Looper *module;
+  Looper *module = nullptr;
   std::deque<FadeLine *> fades;
-  float playback_position;
-  float vertical_position;
+  float playback_position = 0.0f;
+  float vertical_position = 0.0f;
   float spacing = 2.4;
   float stroke_width = 3;
   float audio_value = 0.0;

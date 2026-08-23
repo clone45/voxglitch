@@ -1,6 +1,6 @@
 struct SamplerX8LoadFolder : MenuItem
 {
-	SamplerX8 *module;
+	SamplerX8 *module = nullptr;
 	unsigned int sample_number = 0;
 	std::string root_dir;
 

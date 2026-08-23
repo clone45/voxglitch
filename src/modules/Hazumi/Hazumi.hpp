@@ -8,8 +8,8 @@ struct Hazumi : Module
   dsp::SchmittTrigger stepTrigger;
   dsp::SchmittTrigger resetTrigger;
   dsp::PulseGenerator gateOutputPulseGenerators[SEQUENCER_COLUMNS];
-  bool trigger_results[SEQUENCER_COLUMNS];
-  unsigned int gate_outputs[SEQUENCER_COLUMNS];
+  bool trigger_results[SEQUENCER_COLUMNS] = {};
+  unsigned int gate_outputs[SEQUENCER_COLUMNS] = {};
 
   std::string trigger_options_names[3] = { "Bottom", "Top", "Both" };
 

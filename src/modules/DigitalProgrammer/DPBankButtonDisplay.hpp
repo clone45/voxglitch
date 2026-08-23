@@ -1,7 +1,7 @@
 struct DPBankButtonDisplay : TransparentWidget
 {
   unsigned int button_index = 0;
-  DigitalProgrammer *module;
+  DigitalProgrammer *module = nullptr;
   bool paste_highlight = false;
 
   DPBankButtonDisplay(unsigned int bank_button_index) // pass in vector and button id?

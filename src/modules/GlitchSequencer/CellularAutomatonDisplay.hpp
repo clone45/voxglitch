@@ -1,6 +1,6 @@
 struct CellularAutomatonDisplay : VoxglitchWidget
 {
-  GlitchSequencer *module;
+  GlitchSequencer *module = nullptr;
   Vec drag_position;
   bool mouse_lock = false;
   bool cell_edit_value = true;

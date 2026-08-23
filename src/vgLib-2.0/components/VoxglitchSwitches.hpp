@@ -16,7 +16,7 @@ struct VoxglitchSwitch : SvgSwitch {
 
 struct squareToggle : VoxglitchSwitch {
 
-  ImageWidget* voxglitch_shadow;
+  ImageWidget* voxglitch_shadow = nullptr;
 
   squareToggle() 
   {

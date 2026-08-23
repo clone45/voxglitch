@@ -12,7 +12,7 @@ struct GrooveBoxExpander : VoxglitchModule
   bool mutes[NUMBER_OF_TRACKS];
   bool solos[NUMBER_OF_TRACKS];
   bool send_update_to_groovebox = false;
-  bool track_triggers[NUMBER_OF_TRACKS];
+  bool track_triggers[NUMBER_OF_TRACKS] = {};
   bool expander_connected = false;
   bool shift_key = false;
 

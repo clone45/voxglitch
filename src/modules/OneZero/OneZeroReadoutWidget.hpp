@@ -1,6 +1,6 @@
 struct OneZeroReadoutWidget : TransparentWidget
 {
-    OneZero *module;
+    OneZero *module = nullptr;
 
     OneZeroReadoutWidget()
     {

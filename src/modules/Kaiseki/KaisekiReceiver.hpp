@@ -33,7 +33,7 @@ private:
     int udpSocket = -1;
     bool enabled = false;
     int port = 7000;
-    char buffer[2048];
+    char buffer[2048] = {};
     
 #ifdef _WIN32
     bool wsaInitialized = false;

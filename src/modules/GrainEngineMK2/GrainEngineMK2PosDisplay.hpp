@@ -1,6 +1,6 @@
 struct GrainEngineMK2PosDisplay : TransparentWidget
 {
-  GrainEngineMK2 *module;
+  GrainEngineMK2 *module = nullptr;
 
   GrainEngineMK2PosDisplay()
   {

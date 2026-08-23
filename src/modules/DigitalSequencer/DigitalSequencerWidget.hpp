@@ -98,7 +98,7 @@ struct DigitalSequencerWidget : VoxglitchSamplerModuleWidget
 
 	struct LengthDisplay : TransparentWidget
 	{
-		DigitalSequencer *module;
+		DigitalSequencer *module = nullptr;
 		std::shared_ptr<Font> font;
 		unsigned int sequencer_number = 0;
 
@@ -138,7 +138,7 @@ struct DigitalSequencerWidget : VoxglitchSamplerModuleWidget
 
 	struct AllInputSnapsValueItem : MenuItem
 	{
-		DigitalSequencer *module;
+		DigitalSequencer *module = nullptr;
 		int snap_division = 0;
 
 		void onAction(const event::Action &e) override
@@ -172,7 +172,7 @@ struct DigitalSequencerWidget : VoxglitchSamplerModuleWidget
 
 	struct AllOutputRangesValueItem : MenuItem
 	{
-		DigitalSequencer *module;
+		DigitalSequencer *module = nullptr;
 		int range_index = 0;
 
 		void onAction(const event::Action &e) override
@@ -206,7 +206,7 @@ struct DigitalSequencerWidget : VoxglitchSamplerModuleWidget
 
 	struct AllSampleAndHoldsValueItem : MenuItem
 	{
-		DigitalSequencer *module;
+		DigitalSequencer *module = nullptr;
 		bool value = false;
 
 		void onAction(const event::Action &e) override
@@ -266,7 +266,7 @@ struct DigitalSequencerWidget : VoxglitchSamplerModuleWidget
 
 	struct InputSnapValueItem : MenuItem
 	{
-		DigitalSequencer *module;
+		DigitalSequencer *module = nullptr;
 		int snap_division = 0;
 		int sequencer_number = 0;
 
@@ -278,7 +278,7 @@ struct DigitalSequencerWidget : VoxglitchSamplerModuleWidget
 
 	struct InputSnapItem : MenuItem
 	{
-		DigitalSequencer *module;
+		DigitalSequencer *module = nullptr;
 		int sequencer_number = 0;
 
 		Menu *createChildMenu() override
@@ -302,7 +302,7 @@ struct DigitalSequencerWidget : VoxglitchSamplerModuleWidget
 
 	struct OutputRangeValueItem : MenuItem
 	{
-		DigitalSequencer *module;
+		DigitalSequencer *module = nullptr;
 		int range_index = 0;
 		int sequencer_number = 0;
 
@@ -314,7 +314,7 @@ struct DigitalSequencerWidget : VoxglitchSamplerModuleWidget
 
 	struct OutputRangeItem : MenuItem
 	{
-		DigitalSequencer *module;
+		DigitalSequencer *module = nullptr;
 		int sequencer_number = 0;
 
 		Menu *createChildMenu() override
@@ -399,7 +399,7 @@ struct DigitalSequencerWidget : VoxglitchSamplerModuleWidget
 	// Sample and Hold values
 	struct SampleAndHoldItem : MenuItem
 	{
-		DigitalSequencer *module;
+		DigitalSequencer *module = nullptr;
 		int sequencer_number = 0;
 
 		void onAction(const event::Action &e) override
@@ -410,7 +410,7 @@ struct DigitalSequencerWidget : VoxglitchSamplerModuleWidget
 
 	struct SequencerItem : MenuItem
 	{
-		DigitalSequencer *module;
+		DigitalSequencer *module = nullptr;
 		unsigned int sequencer_number = 0;
 
 		Menu *createChildMenu() override

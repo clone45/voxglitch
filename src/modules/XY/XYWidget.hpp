@@ -47,7 +47,7 @@ struct XYWidget : ModuleWidget
 
     struct OutputRangeValueItem : MenuItem
     {
-        XY *module;
+        XY *module = nullptr;
         int range_index = 0;
 
         void onAction(const event::Action &e) override

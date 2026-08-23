@@ -25,7 +25,7 @@ struct DigitalControl : Widget
     Module* module;
     float corner_radius = 2.5f;
     float bg_height = 18.0f;
-    float bg_width;
+    float bg_width = 0.0f;
     float text_width = 0.0f;
     bool hover = false;
 

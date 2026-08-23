@@ -8,11 +8,11 @@ struct GlitchSequencer : VoxglitchModule
   dsp::PulseGenerator gateOutputPulseGenerators[NUMBER_OF_TRIGGER_GROUPS];
 
   unsigned int mode = PLAY_MODE;
-  bool trigger_button_is_triggered[NUMBER_OF_TRIGGER_GROUPS];
+  bool trigger_button_is_triggered[NUMBER_OF_TRIGGER_GROUPS] = {};
   int selected_trigger_group_index = -1; // -1 means "none selected"
   long clock_ignore_on_reset = 0;
 
-  bool trigger_results[NUMBER_OF_TRIGGER_GROUPS];
+  bool trigger_results[NUMBER_OF_TRIGGER_GROUPS] = {};
 
   enum ParamIds
   {

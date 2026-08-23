@@ -5,7 +5,7 @@ struct Repeater : VoxglitchSamplerModule
     float pitch = 0;
     double sample_position = 0;
     DeclickFilter declick_filter;
-    int retrigger;
+    int retrigger = 0;
     std::string root_dir;
 
     // When this flag is flase, the display area on the front panel will

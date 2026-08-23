@@ -1,6 +1,6 @@
 struct ParameterKnob : Trimpot
 {
-  GrooveBox *module;
+  GrooveBox *module = nullptr;
   unsigned int parameter_index = 0;
   unsigned int step = 0;
 
@@ -119,7 +119,7 @@ struct ParameterKnob : Trimpot
 
   struct MatchParamMenuItem : MenuItem
   {
-    GrooveBox *module;
+    GrooveBox *module = nullptr;
     unsigned int source_parameter_id = 0;
 
     void onAction(const event::Action &e) override

@@ -116,7 +116,7 @@ struct DigitalProgrammerWidget : ModuleWidget
 
     struct InputSnapValueItem : MenuItem
     {
-        DigitalProgrammer *module;
+        DigitalProgrammer *module = nullptr;
         int snap_division_index = 0;
         int slider_number = 0;
 
@@ -128,7 +128,7 @@ struct DigitalProgrammerWidget : ModuleWidget
 
     struct InputSnapItem : MenuItem
     {
-        DigitalProgrammer *module;
+        DigitalProgrammer *module = nullptr;
         int slider_number = 0;
 
         Menu *createChildMenu() override
@@ -150,7 +150,7 @@ struct DigitalProgrammerWidget : ModuleWidget
 
     struct SliderItem : MenuItem
     {
-        DigitalProgrammer *module;
+        DigitalProgrammer *module = nullptr;
         unsigned int slider_number = 0;
 
         Menu *createChildMenu() override
@@ -187,7 +187,7 @@ struct DigitalProgrammerWidget : ModuleWidget
     struct labelTextField : TextField
     {
 
-        DigitalProgrammer *module;
+        DigitalProgrammer *module = nullptr;
         unsigned int column = 0;
 
         labelTextField(unsigned int column)
@@ -241,7 +241,7 @@ struct DigitalProgrammerWidget : ModuleWidget
 
     struct OutputRangeValueItem : MenuItem
     {
-        DigitalProgrammer *module;
+        DigitalProgrammer *module = nullptr;
         int range_index = 0;
         int slider_number = 0;
 
@@ -253,7 +253,7 @@ struct DigitalProgrammerWidget : ModuleWidget
 
     struct OutputRangeItem : MenuItem
     {
-        DigitalProgrammer *module;
+        DigitalProgrammer *module = nullptr;
         int slider_number = 0;
 
         Menu *createChildMenu() override
@@ -275,7 +275,7 @@ struct DigitalProgrammerWidget : ModuleWidget
 
     struct SliderMenuItem : MenuItem
     {
-        DigitalProgrammer *module;
+        DigitalProgrammer *module = nullptr;
         unsigned int slider_number = 0;
 
         Menu *createChildMenu() override

@@ -17,7 +17,7 @@ addChild(dp_slider_display);
 
 struct DPSliderDisplay : TransparentWidget
 {
-  DigitalProgrammer *module;
+  DigitalProgrammer *module = nullptr;
   double max_bar_height = 190;
   Vec drag_position;
   unsigned int column = 0;

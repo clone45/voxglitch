@@ -6,7 +6,7 @@
 
 struct SequenceLengthWidget : TransparentWidget
 {
-  GrooveBox *module;
+  GrooveBox *module = nullptr;
   // how far past the LEDs does this strip appear?
   float overhang = 16.25;
 

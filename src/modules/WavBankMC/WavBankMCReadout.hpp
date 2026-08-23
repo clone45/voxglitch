@@ -1,6 +1,6 @@
 struct WavBankMCReadout : TransparentWidget
 {
-	WavBankMC *module;
+	WavBankMC *module = nullptr;
 	float text_rotation_angle = -M_PI / 2.0f;
 	std::shared_ptr<Font> font;
 	std::string text_to_display = "";

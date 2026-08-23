@@ -1,6 +1,6 @@
 struct MenuItemLoadSample : MenuItem
 {
-    Repeater *module;
+    Repeater *module = nullptr;
     unsigned int sample_number = 0;
 
     void onAction(const event::Action &e) override

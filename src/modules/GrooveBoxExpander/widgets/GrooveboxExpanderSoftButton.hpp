@@ -1,6 +1,6 @@
 struct GrooveboxExpanderSoftButton : SvgSwitch
 {
-    GrooveBoxExpander *module;
+    GrooveBoxExpander *module = nullptr;
     bool is_moused_over = false;
     Vec drag_position;
   

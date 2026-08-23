@@ -1,6 +1,6 @@
 struct SequencerDisplayABS : VoxglitchWidget
 {
-  AutobreakStudio *module;
+  AutobreakStudio *module = nullptr;
   Vec drag_position;
   double bar_width = (DRAW_AREA_WIDTH / (double)MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
 

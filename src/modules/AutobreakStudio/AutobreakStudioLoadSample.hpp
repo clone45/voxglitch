@@ -1,6 +1,6 @@
 struct AutobreakStudioLoadSample : MenuItem
 {
-	AutobreakStudio *module;
+	AutobreakStudio *module = nullptr;
 	unsigned int sample_number = 0;
 
 	void onAction(const event::Action &e) override

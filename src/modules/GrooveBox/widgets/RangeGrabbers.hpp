@@ -1,6 +1,6 @@
 struct RangeGrabberRightWidget : TransparentWidget
 {
-  GrooveBox *module;
+  GrooveBox *module = nullptr;
   bool is_moused_over = false;
   // legacy values expected by callers
   float diameter = 20.0;
@@ -84,7 +84,7 @@ struct RangeGrabberRightWidget : TransparentWidget
 
 struct RangeGrabberLeftWidget : TransparentWidget
 {
-  GrooveBox *module;
+  GrooveBox *module = nullptr;
   bool is_moused_over = false;
   // legacy values expected by callers
   float diameter = 20.0;

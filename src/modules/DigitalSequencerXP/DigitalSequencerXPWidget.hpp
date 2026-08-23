@@ -142,7 +142,7 @@ struct DigitalSequencerXPWidget : ModuleWidget
 
 	struct AllInputSnapsValueItem : MenuItem
 	{
-		DigitalSequencerXP *module;
+		DigitalSequencerXP *module = nullptr;
 		int snap_division = 0;
 
 		void onAction(const event::Action &e) override
@@ -176,7 +176,7 @@ struct DigitalSequencerXPWidget : ModuleWidget
 
     struct AllOutputRangesValueItem : MenuItem
     {
-        DigitalSequencerXP *module;
+        DigitalSequencerXP *module = nullptr;
         int range_index = 0;
 
         void onAction(const event::Action &e) override
@@ -210,7 +210,7 @@ struct DigitalSequencerXPWidget : ModuleWidget
 
     struct AllSampleAndHoldsValueItem : MenuItem
     {
-        DigitalSequencerXP *module;
+        DigitalSequencerXP *module = nullptr;
         bool value = false;
 
         void onAction(const event::Action &e) override
@@ -270,7 +270,7 @@ struct DigitalSequencerXPWidget : ModuleWidget
 
 	struct InputSnapValueItem : MenuItem
 	{
-		DigitalSequencerXP *module;
+		DigitalSequencerXP *module = nullptr;
 		int snap_division = 0;
 		int sequencer_number = 0;
 
@@ -282,7 +282,7 @@ struct DigitalSequencerXPWidget : ModuleWidget
 
 	struct InputSnapItem : MenuItem
 	{
-		DigitalSequencerXP *module;
+		DigitalSequencerXP *module = nullptr;
 		int sequencer_number = 0;
 
 		Menu *createChildMenu() override
@@ -307,7 +307,7 @@ struct DigitalSequencerXPWidget : ModuleWidget
     struct LabelTextField : TextField
     {
 
-        DigitalSequencerXP *module;
+        DigitalSequencerXP *module = nullptr;
         unsigned int index = 0;
 
         LabelTextField(unsigned int index)
@@ -327,7 +327,7 @@ struct DigitalSequencerXPWidget : ModuleWidget
     struct OutputRangeValueItem : MenuItem
     {
 
-        DigitalSequencerXP *module;
+        DigitalSequencerXP *module = nullptr;
         int range_index = 0;
         int sequencer_number = 0;
 
@@ -339,7 +339,7 @@ struct DigitalSequencerXPWidget : ModuleWidget
 
     struct OutputRangeItem : MenuItem
     {
-        DigitalSequencerXP *module;
+        DigitalSequencerXP *module = nullptr;
         int sequencer_number = 0;
 
         Menu *createChildMenu() override
@@ -415,7 +415,7 @@ struct DigitalSequencerXPWidget : ModuleWidget
 
     struct SampleAndHoldItem : MenuItem
     {
-        DigitalSequencerXP *module;
+        DigitalSequencerXP *module = nullptr;
         int sequencer_number = 0;
 
         void onAction(const event::Action &e) override
@@ -426,7 +426,7 @@ struct DigitalSequencerXPWidget : ModuleWidget
 
     struct SequencerItem : MenuItem
     {
-        DigitalSequencerXP *module;
+        DigitalSequencerXP *module = nullptr;
         unsigned int sequencer_number = 0;
 
         Menu *createChildMenu() override

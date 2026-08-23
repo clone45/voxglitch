@@ -1,6 +1,6 @@
 struct GrainEngineMK2LoadSample : MenuItem
 {
-	GrainEngineMK2 *module;
+	GrainEngineMK2 *module = nullptr;
 	unsigned int sample_number = 0;
 
 	void onAction(const event::Action &e) override

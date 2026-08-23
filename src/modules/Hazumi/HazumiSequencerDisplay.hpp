@@ -7,7 +7,7 @@
 
 struct HazumiSequencerDisplay : TransparentWidget
 {
-  Hazumi *module;
+  Hazumi *module = nullptr;
   Vec drag_position;
   bool mouse_lock = false;
   int old_row = -1;

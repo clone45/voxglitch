@@ -4,7 +4,7 @@ struct GrooveboxExpanderSoloButton : GrooveboxExpanderSoftButtonGreen
 
     struct ExclusiveSoloMenuItem : MenuItem
     {
-        GrooveBoxExpander *module;
+        GrooveBoxExpander *module = nullptr;
         unsigned int track_index = 0;
 
         void onAction(const event::Action &e) override

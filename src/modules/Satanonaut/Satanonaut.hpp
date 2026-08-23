@@ -421,7 +421,7 @@ struct Satanonaut : Module
   struct FXSliceRepeat : Effect
   {
     int divisor = 4;
-    int window_size;
+    int window_size = 0;
     int offset = -1;
 
     std::pair<float, float> process(Satanonaut *satanonaut, unsigned int t, float p1, float p2)

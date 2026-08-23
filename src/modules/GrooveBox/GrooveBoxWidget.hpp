@@ -52,7 +52,7 @@ struct ModdedCL1362 : SvgPort
 
 struct LoadSamplesFromFolderMenuItem : MenuItem
 {
-    GrooveBox *module;
+    GrooveBox *module = nullptr;
     unsigned int track_number = 0;
 
     void onAction(const event::Action &e) override
@@ -104,7 +104,7 @@ struct LoadSamplesFromFolderMenuItem : MenuItem
 
 struct LoadSampleMenuItem : MenuItem
 {
-    GrooveBox *module;
+    GrooveBox *module = nullptr;
     unsigned int track_number = 0;
 
     void onAction(const event::Action &e) override
@@ -396,7 +396,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
 
     struct SamplePositionSnapValueItem : MenuItem
     {
-        GrooveBox *module;
+        GrooveBox *module = nullptr;
         unsigned int sample_position_snap_index = 0;
         unsigned int track_index = 0;
 
@@ -409,7 +409,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
 
     struct SamplePositionSnapMenuItem : MenuItem
     {
-        GrooveBox *module;
+        GrooveBox *module = nullptr;
         unsigned int track_index = 0;
 
         Menu *createChildMenu() override
@@ -431,7 +431,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
 
     struct ClearMenuItem : MenuItem
     {
-        GrooveBox *module;
+        GrooveBox *module = nullptr;
         int track_index = 0;
 
         void onAction(const event::Action &e) override
@@ -443,7 +443,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
 
     struct UnassignSampleMenuItem : MenuItem
     {
-        GrooveBox *module;
+        GrooveBox *module = nullptr;
         int track_index = 0;
 
         void onAction(const event::Action &e) override
@@ -454,7 +454,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
 
     struct TrackMenuItem : MenuItem
     {
-        GrooveBox *module;
+        GrooveBox *module = nullptr;
         unsigned int track_index = 0;
 
         Menu *createChildMenu() override
@@ -503,7 +503,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
 
     struct ShiftActionValueItem : MenuItem
     {
-        GrooveBox *module;
+        GrooveBox *module = nullptr;
         int direction = 0; // 1 == left, -1 == right
 
         void onAction(const event::Action &e) override
@@ -552,7 +552,7 @@ struct GrooveBoxWidget : VoxglitchSamplerModuleWidget
 
     struct LCDColorMenuItem : MenuItem
     {
-        GrooveBox *module;
+        GrooveBox *module = nullptr;
         unsigned int theme_id = 0;
 
         void onAction(const event::Action &e) override

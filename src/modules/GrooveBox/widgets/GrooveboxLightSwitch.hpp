@@ -1,6 +1,6 @@
 struct GrooveboxLightSwitch : LightWidget
 {
-    GrooveBox *module;
+    GrooveBox *module = nullptr;
     bool switch_position = false;
 
     bool momentary = false;

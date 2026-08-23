@@ -1,6 +1,6 @@
 struct GrooveboxStepButton : VCVLightBezel<BlueLight>
 {
-    GrooveBox *module;
+    GrooveBox *module = nullptr;
     unsigned int index = 0;
 
     GrooveboxStepButton()

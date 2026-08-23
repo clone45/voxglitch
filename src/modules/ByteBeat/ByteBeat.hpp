@@ -22,18 +22,18 @@ struct ByteBeat : Module
 {
   uint8_t w = 0;     // w is the output of the equations
   float output = 0;  // output is the audio output
-  uint32_t t;  // t is the time counter used in the equations
+  uint32_t t = 0;  // t is the time counter used in the equations
 
   // p1-p3 are variables used in equations.  These are values that the user
   // can manipulate to alter the sounds coming from the equations.
-  uint32_t p1;
-  uint32_t p2;
-  uint32_t p3;
+  uint32_t p1 = 0;
+  uint32_t p2 = 0;
+  uint32_t p3 = 0;
 
   // e1-e3 are sub-expressions to give equations more variance
-  uint32_t e1;
-  uint32_t e2;
-  uint32_t e3;
+  uint32_t e1 = 0;
+  uint32_t e2 = 0;
+  uint32_t e3 = 0;
 
   // I want to add better pitch control before this module is released.  But
   // in the short term, I'm simply skipping frames in the compute() function

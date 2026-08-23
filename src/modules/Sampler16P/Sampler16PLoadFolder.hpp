@@ -1,6 +1,6 @@
 struct Sampler16PLoadFolder : MenuItem
 {
-	Sampler16P *module;
+	Sampler16P *module = nullptr;
 	unsigned int sample_number = 0;
 	std::string root_dir;
 

@@ -26,7 +26,7 @@ struct DigitalProgrammer : VoxglitchModule
     bool visualize_sums = false;
     bool colorful_sliders = false;
 
-    PortWidget *output_ports[NUMBER_OF_SLIDERS];
+    PortWidget *output_ports[NUMBER_OF_SLIDERS] = {};
 
     unsigned int snap_settings[NUMBER_OF_SLIDERS] = {0};
     unsigned int range_settings[NUMBER_OF_SLIDERS] = {0};

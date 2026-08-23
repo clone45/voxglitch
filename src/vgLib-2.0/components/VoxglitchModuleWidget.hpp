@@ -4,7 +4,7 @@ namespace vgLib_v2
     struct VoxglitchModuleWidget : ModuleWidget
     {
         Theme theme;
-        json_t *widgets_json;
+        json_t *widgets_json = nullptr;
         widget::Widget *panel = new Widget();
 
         void addSVGLayer(std::string svg_path)

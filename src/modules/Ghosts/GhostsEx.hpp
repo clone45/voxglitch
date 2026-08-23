@@ -18,13 +18,13 @@ struct Ghost
 {
   // Start Position is the offset into the sample where playback should start.
   // It is set when the ghost is first created.
-  double start_position;
+  double start_position = 0.0;
 
   // Playback length for the ghost, measuring in .. er.. ticks?
-  double playback_length;
+  double playback_length = 0.0;
 
   // sample_ptr points to the loaded sample in memory
-  Sample *sample_ptr;
+  Sample *sample_ptr = nullptr;
 
   // playback_position is similar to samplePos used in for samples.  However,
   // it's relative to the Ghost's start_position rather than the sample

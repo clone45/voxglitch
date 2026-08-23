@@ -11,13 +11,13 @@ namespace groove_box
 
     // DSP classes
     ADSR adsr;
-    SimpleDelay *delay;
+    SimpleDelay *delay = nullptr;
     StereoFadeOut fade_out;
     Filter filter;
-    FastSlewLimiter *volume_slew_limiter;
-    FastSlewLimiter *pan_slew_limiter;
-    FastSlewLimiter *filter_cutoff_slew_limiter;
-    FastSlewLimiter *filter_resonance_slew_limiter;
+    FastSlewLimiter *volume_slew_limiter = nullptr;
+    FastSlewLimiter *pan_slew_limiter = nullptr;
+    FastSlewLimiter *filter_cutoff_slew_limiter = nullptr;
+    FastSlewLimiter *filter_resonance_slew_limiter = nullptr;
 
     // Random number generation
     Random random;
@@ -26,7 +26,7 @@ namespace groove_box
     float sample_time = APP->engine->getSampleTime();
 
     // Notes on the next line of code: 
-    SamplePlayer *sample_player;
+    SamplePlayer *sample_player = nullptr;
     //
     // Each memory slot has 8 tracks, and there are 16 memory slots.  That
     // means that there are ... (computing) ... 128 tracks total.  However,

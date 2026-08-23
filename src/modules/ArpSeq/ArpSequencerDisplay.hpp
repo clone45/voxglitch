@@ -1,6 +1,6 @@
 struct ArpSequencerDisplay : TransparentWidget
 {
-    ArpSeq *module;
+    ArpSeq *module = nullptr;
     SequencerDisplayConfig *config = NULL;
 
     Vec drag_position;

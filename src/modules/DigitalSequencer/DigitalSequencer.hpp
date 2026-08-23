@@ -26,7 +26,7 @@ struct DigitalSequencer : VoxglitchModule
     unsigned int voltage_range_indexes[NUMBER_OF_SEQUENCERS] = {};
 
     dsp::PulseGenerator gateOutputPulseGenerators[NUMBER_OF_SEQUENCERS];
-    double sample_rate;
+    double sample_rate = 0.0;
 
     std::string voltage_range_names[NUMBER_OF_VOLTAGE_RANGES] = {
         "0.0 to 10.0",

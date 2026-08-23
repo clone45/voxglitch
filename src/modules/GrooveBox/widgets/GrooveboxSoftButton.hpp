@@ -1,6 +1,6 @@
 struct GrooveboxSoftButton : SvgSwitch
 {
-    GrooveBox *module;
+    GrooveBox *module = nullptr;
 	NVGcolor halo_color = nvgRGBA(255, 204, 143, 255);
 
     GrooveboxSoftButton()

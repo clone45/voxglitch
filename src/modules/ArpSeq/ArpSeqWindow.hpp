@@ -1,6 +1,6 @@
 struct ArpSeqWindow : TransparentWidget
 {
-    ArpSeq *module;
+    ArpSeq *module = nullptr;
     VoltageSequencer *voltage_sequencer;
     VoltageSequencer *chance_sequencer;
 

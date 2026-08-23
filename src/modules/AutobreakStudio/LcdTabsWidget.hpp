@@ -1,10 +1,10 @@
 struct LcdTabsWidget : TransparentWidget
 {
-    AutobreakStudio *module;
+    AutobreakStudio *module = nullptr;
 
     unsigned int selected_tab = 0;
 
-    SequencerDisplayABS *sequencer_displays[NUMBER_OF_SEQUENCERS];
+    SequencerDisplayABS *sequencer_displays[NUMBER_OF_SEQUENCERS] = {};
 
     NVGcolor tab_color_default = nvgRGBA(48, 75, 79, 255);
     NVGcolor tab_color_selected = nvgRGBA(68, 95, 99, 255);

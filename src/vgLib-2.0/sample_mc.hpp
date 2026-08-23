@@ -54,7 +54,7 @@ struct SampleMC
   // Here, number_of_samples is the number of float values in a sample.
   // I might want to rename this to avoid confusion with "samples" meaning
   // .wav files.
-  unsigned int number_of_samples;
+  unsigned int number_of_samples = 0;
   unsigned int number_of_channels;
   unsigned int sample_rate;
 

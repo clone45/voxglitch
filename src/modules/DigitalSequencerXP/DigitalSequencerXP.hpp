@@ -27,12 +27,12 @@ struct DigitalSequencerXP : VoxglitchModule
     bool step[NUMBER_OF_SEQUENCERS] = {};
 
     dsp::PulseGenerator gateOutputPulseGenerators[NUMBER_OF_SEQUENCERS];
-    double sample_rate;
+    double sample_rate = 0.0;
 
     // There must be a better way...
     std::string labels[NUMBER_OF_SEQUENCERS] = {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""};
 
-    bool sequencer_button_is_triggered[NUMBER_OF_SEQUENCERS];
+    bool sequencer_button_is_triggered[NUMBER_OF_SEQUENCERS] = {};
 
     std::string voltage_range_names[NUMBER_OF_VOLTAGE_RANGES] = {
         "0.0 to 10.0",

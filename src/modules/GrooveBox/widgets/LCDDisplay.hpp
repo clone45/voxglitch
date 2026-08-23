@@ -3,7 +3,7 @@
 //
 struct LCDDisplay : TransparentWidget
 {
-    GrooveBox *module;
+    GrooveBox *module = nullptr;
 
     float box_pos_x = 249.011;
     float box_pos_y = 77.494;
