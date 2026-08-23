@@ -56,7 +56,25 @@ struct Quantizer
         // Initialize here if needed
     }
     
-    float quantize(float pitch) 
+    // Is an absolute semitone a member of the selected scale?
+    //
+    // The scale tables are interval patterns measured from the root -- index 0
+    // is the root, index 4 a major third, and so on -- so membership is tested
+    // by subtracting the root to get the interval above it. Adding the root
+    // instead reflects the scale around C rather than transposing it to the
+    // root, which leaves C correct and every other root sounding its mirror
+    // image (D# major came out as A major).
+    bool inScale(int semitone) const
+    {
+        // C++ '%' keeps the sign of the dividend, so a semitone below the root
+        // yields a negative interval and would index outside the table.
+        int interval = (semitone - static_cast<int>(rootNote)) % 12;
+        if (interval < 0) interval += 12;
+
+        return scales[selectedScale][interval];
+    }
+
+    float quantize(float pitch)
     {
         int octave = static_cast<int>(std::floor(pitch));
         int semitone = static_cast<int>(std::round((pitch - octave) * 12.0));
@@ -70,13 +88,15 @@ struct Quantizer
         int lowerSemitone = semitone;
         int upperSemitone = semitone;
 
-        // Find the closest lower note in the scale
-        while (!scales[selectedScale][(lowerSemitone + rootNote) % 12]) {
+        // Find the closest lower note in the scale. Both searches terminate
+        // within 12 steps: index 0 is set in every scale table, so a scale
+        // note occurs at least once per octave.
+        while (!inScale(lowerSemitone)) {
             lowerSemitone--;
         }
 
         // Find the closest upper note in the scale
-        while (!scales[selectedScale][(upperSemitone + rootNote) % 12]) {
+        while (!inScale(upperSemitone)) {
             upperSemitone++;
         }
 
