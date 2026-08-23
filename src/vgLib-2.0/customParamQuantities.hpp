@@ -67,7 +67,7 @@ struct ClockDividerRateParamQuantity : ParamQuantity
     }
 };
 
-static ClockDividerRateParamQuantity* createClockDividerRateParamQuantity(Module* module, int paramId, float minValue, float maxValue, float defaultValue, float displayMultiplier, bool snapEnabled, const std::string& name) {
+inline ClockDividerRateParamQuantity* createClockDividerRateParamQuantity(Module* module, int paramId, float minValue, float maxValue, float defaultValue, float displayMultiplier, bool snapEnabled, const std::string& name) {
     ClockDividerRateParamQuantity* pq = new ClockDividerRateParamQuantity();
     pq->module = module;
     pq->paramId = paramId;
@@ -132,7 +132,7 @@ struct ShapeParamQuantity : ParamQuantity
     }
 };
 
-static ShapeParamQuantity* createShapeParamQuantity(Module* module, int paramId, float minValue, float maxValue, float defaultValue, float displayMultiplier, bool snapEnabled, const std::string& name) {
+inline ShapeParamQuantity* createShapeParamQuantity(Module* module, int paramId, float minValue, float maxValue, float defaultValue, float displayMultiplier, bool snapEnabled, const std::string& name) {
     ShapeParamQuantity* pq = new ShapeParamQuantity();
     pq->module = module;
     pq->paramId = paramId;

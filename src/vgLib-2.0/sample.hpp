@@ -74,7 +74,7 @@ struct SampleAudioBuffer
 };
 
 // Helper function to detect MP3 files by extension
-static bool isMP3File(std::string path) {
+inline bool isMP3File(std::string path) {
   if (path.length() < 4) return false;
   std::string ext = path.substr(path.length() - 4);
   std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
