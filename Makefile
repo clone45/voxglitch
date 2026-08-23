@@ -16,15 +16,6 @@ LDFLAGS +=
 SOURCES += $(wildcard src/*.cpp)
 SOURCES += $(wildcard src/modules/*.cpp)
 
-# Include Rack SDK's arch.mk early so we can use ARCH_WIN / ARCH_LIN / ARCH_MAC
-# for platform-specific source selection (arch.mk is safe to include before plugin.mk)
-include $(RACK_DIR)/arch.mk
-
-# Kaiseki opens its own UDP socket, so Windows still needs the winsock libs.
-ifdef ARCH_WIN
-    LDFLAGS += -lws2_32 -lwinmm
-endif
-
 # Add files to the ZIP package when running `make dist`
 # The compiled plugin and "plugin.json" are automatically added.
 DISTRIBUTABLES += res

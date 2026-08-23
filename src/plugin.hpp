@@ -45,4 +45,3 @@ extern Model *modelWavBankMC;
 extern Model *modelNetrunner;
 extern Model *modelTempestVS1;
 extern Model *modelXY;
-extern Model *modelKaiseki;

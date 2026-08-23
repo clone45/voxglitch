@@ -28,7 +28,7 @@ struct SamplePlayer
 
   // Trigger restarts sample playback by setting the playback position and
   // setting the "playing" boolean to true.
-  virtual void trigger(float sample_start = 0.0, bool reverse = false)
+  void trigger(float sample_start = 0.0, bool reverse = false)
   {
     if(! reverse) // if forward playback
     {
@@ -88,7 +88,7 @@ struct SamplePlayer
   //   sample_end - unipolor, from 0.0 to 1.0
   //   loop - boolean (true or false)
 
-  virtual void step(float pitch = 0.0, float sample_start = 0.0, float sample_end = 1.0, bool loop = false)
+  void step(float pitch = 0.0, float sample_start = 0.0, float sample_end = 1.0, bool loop = false)
   {
     if(this->playing && this->sample.loaded)
     {
@@ -114,7 +114,7 @@ struct SamplePlayer
     }
   }
 
-  virtual void stepReverse(float pitch = 0.0, float sample_start = 0.0, float sample_end = 1.0, bool loop = false)
+  void stepReverse(float pitch = 0.0, float sample_start = 0.0, float sample_end = 1.0, bool loop = false)
   {
     if(this->playing && this->sample.loaded)
     {
@@ -142,12 +142,12 @@ struct SamplePlayer
     return(this->step_amount * rack::dsp::approxExp2_taylor5(pitch_cv_input));
   }
 
-  virtual void stop()
+  void stop()
   {
     playing = false;
   }
 
-  virtual bool loadSample(std::string path)
+  bool loadSample(std::string path)
   {
     if(sample.load(path))
     {
@@ -160,7 +160,7 @@ struct SamplePlayer
     }
   }
 
-  virtual void releaseSample()
+  void releaseSample()
   {
     sample.unload();
     this->playback_position = 0.0f;
@@ -214,7 +214,7 @@ struct SamplePlayer
     return(sample.loaded);
   }
 
-  virtual void initialize()
+  void initialize()
   {
     sample.unload();
     this->playback_position = 0.0f;
