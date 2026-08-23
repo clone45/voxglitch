@@ -3,7 +3,6 @@
 
 struct ArpVoltageSequencerDisplay : ArpSequencerDisplay
 {
-    ArpSeq *module = nullptr;
     VoltageSequencer *current_sequencer = NULL;
     DigitalSequencerTooltip *tooltip;
     std::function<std::string(int, float)> tooltipCallback;

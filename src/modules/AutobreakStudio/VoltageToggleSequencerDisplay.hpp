@@ -1,6 +1,5 @@
 struct VoltageToggleSequencerDisplay : SequencerDisplayABS
 {
-    AutobreakStudio *module = nullptr;
     AutobreakVoltageSequencer **sequencer_ptr_ptr;
     unsigned int sequencer_type;
 

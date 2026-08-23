@@ -5,14 +5,6 @@
     "src/ip/posix/UdpSocket.cpp\tuninitMemberVar\tMember variable 'Implementation::break_' is not initialized in the constructor.": 1,
     "src/ip/win32/UdpSocket.cpp\tdangerousTypeCast\tPotentially invalid type conversion in old-style C cast, clarify/fix with C++ cast": 10,
     "src/ip/win32/UdpSocket.cpp\tuninitMemberVar\tMember variable 'Implementation::break_' is not initialized in the constructor.": 1,
-    "src/modules/ArpSeq/ArpVoltageSequencerDisplay.hpp\tduplInheritedMember\tThe struct 'ArpVoltageSequencerDisplay' defines member variable with name 'module' also defined in its parent struct 'ArpSequencerDisplay'.": 1,
-    "src/modules/AutobreakStudio/VoltageSequencerDisplayABS.hpp\tduplInheritedMember\tThe struct 'VoltageSequencerDisplayABS' defines member variable with name 'module' also defined in its parent struct 'SequencerDisplayABS'.": 1,
-    "src/modules/AutobreakStudio/VoltageToggleSequencerDisplay.hpp\tduplInheritedMember\tThe struct 'VoltageToggleSequencerDisplay' defines member variable with name 'module' also defined in its parent struct 'SequencerDisplayABS'.": 1,
-    "src/modules/DigitalSequencer/GateSequencerDisplay.hpp\tduplInheritedMember\tThe struct 'GateSequencerDisplay' defines member variable with name 'bar_width' also defined in its parent struct 'SequencerDisplay'.": 1,
-    "src/modules/DigitalSequencerXP/GateSequencerDisplayXP.hpp\tduplInheritedMember\tThe struct 'GateSequencerDisplayXP' defines member variable with name 'bar_width' also defined in its parent struct 'SequencerDisplay'.": 1,
-    "src/modules/DigitalSequencerXP/VoltageSequencerDisplayXP.hpp\tduplInheritedMember\tThe struct 'VoltageSequencerDisplayXP' defines member variable with name 'module' also defined in its parent struct 'SequencerDisplay'.": 1,
-    "src/modules/GrooveBox/widgets/LCDSampleDisplay.hpp\tduplInheritedMember\tThe struct 'LCDSampleDisplay' defines member variable with name 'module' also defined in its parent struct 'LCDDisplay'.": 1,
-    "src/modules/GrooveBox/widgets/ParameterKnob.hpp\tduplInheritedMember\tThe struct 'ReduceParamMenuItem' defines member variable with name 'module' also defined in its parent struct 'BoostParamMenuItem'.": 1,
     "src/modules/Kaiseki/KaisekiReceiver.hpp\tdangerousTypeCast\tPotentially invalid type conversion in old-style C cast, clarify/fix with C++ cast": 2,
     "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'getFilename' also defined in its parent struct 'SamplePlayer'.": 1,
     "src/modules/Kaiseki/KaisekiSamplePlayer.hpp\tduplInheritedMember\tThe struct 'KaisekiSamplePlayer' defines member function with name 'getPath' also defined in its parent struct 'SamplePlayer'.": 1,
@@ -38,5 +30,5 @@
     "src/vgLib-2.0/sequencer/IndexSequencer.hpp\tcontainerOutOfBounds\tEither the condition 'random_steps.empty()' is redundant or expression 'random_steps.back()' causes access out of bounds.": 2,
     "src/vgLib-2.0/sequencer/IndexSequencer.hpp\tcontainerOutOfBounds\tEither the condition 'random_steps.empty()' is redundant or expression 'random_steps.pop_back()' causes access out of bounds.": 1
   },
-  "total": 61
+  "total": 53
 }

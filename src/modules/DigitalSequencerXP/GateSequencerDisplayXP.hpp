@@ -1,7 +1,6 @@
 struct GateSequencerDisplayXP : SequencerDisplay
 {
     bool mouse_lock = false;
-    double bar_width = (DRAW_AREA_WIDTH / MAX_SEQUENCER_STEPS) - BAR_HORIZONTAL_PADDING;
     int old_drag_bar_x = -1;
     bool trigger_edit_value = false;
 

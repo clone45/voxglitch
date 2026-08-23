@@ -109,7 +109,6 @@ struct ParameterKnob : Trimpot
 
   struct ReduceParamMenuItem : BoostParamMenuItem
   {
-    GrooveBox *module;
 
     void onAction(const event::Action &e) override
     {

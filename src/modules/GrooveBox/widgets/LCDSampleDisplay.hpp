@@ -1,6 +1,5 @@
 struct LCDSampleDisplay : LCDDisplay
 {
-  GrooveBox *module;
 
   // float width = 0;
   // float height = 0;

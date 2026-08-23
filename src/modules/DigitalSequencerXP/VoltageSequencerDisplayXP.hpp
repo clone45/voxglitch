@@ -1,6 +1,5 @@
 struct VoltageSequencerDisplayXP : SequencerDisplay
 {
-    DigitalSequencerXP *module = nullptr;
 
     bool draw_tooltip = false;
     double draw_tooltip_index = -1.0;
