@@ -114,7 +114,7 @@ public:
         addr.sin_addr.s_addr = htonl(INADDR_ANY);
         addr.sin_port = htons(port);
         
-        if (bind(udpSocket, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+        if (bind(udpSocket, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) < 0) {
 #ifdef _WIN32
             closesocket(udpSocket);
 #else
@@ -164,10 +164,10 @@ public:
             
 #ifdef _WIN32
             int size = recvfrom(udpSocket, buffer, sizeof(buffer), 0,
-                               (struct sockaddr*)&senderAddr, &senderAddrLen);
+                               reinterpret_cast<struct sockaddr*>(&senderAddr), &senderAddrLen);
 #else
             ssize_t size = recvfrom(udpSocket, buffer, sizeof(buffer), 0,
-                                   (struct sockaddr*)&senderAddr, &senderAddrLen);
+                                   reinterpret_cast<struct sockaddr*>(&senderAddr), &senderAddrLen);
 #endif
             
             if (size > 0) {
