@@ -45,6 +45,10 @@ struct ArpSeq : Module
     Quantizer output_quantizer;
     Quantizer transpose_quantizer;
     SampleAndHold sample_and_hold;
+
+    // The sample-and-hold latch is deferred by one audio sample after the
+    // clock edge that requests it. See the comment at the latch site.
+    bool sample_and_hold_pending = false;
     ClockDivider clock_divider;
     ClockModifier clock_modifier;
     ArpSequencer arp_sequencer;
@@ -385,6 +389,14 @@ struct ArpSeq : Module
         time_now += args.sampleTime;
         gate_timer -= args.sampleTime;
 
+        // Count down the boot clock-ignore window. This must sit above every
+        // early return: it used to run at the very end of process(), so on a
+        // patch with no notes held it never counted down at all and the "boot"
+        // window ended up swallowing the first 10ms of the user's first
+        // playing instead of the first 10ms after load.
+        if (clock_ignore_on_reset > 0)
+            clock_ignore_on_reset--;
+
         // Read the latch switch
         bool latch = (params[LATCH_SWITCH].getValue() > 0.5f);
 
@@ -443,6 +455,7 @@ struct ArpSeq : Module
 
         bool clock_triggered = isClockTriggered(time_now);
 
+
         //
         // Compute the time between clock input pulses
         // and store it in time_between_clocks_ms
@@ -462,9 +475,10 @@ struct ArpSeq : Module
             time_of_last_clock = time_now;
         }
 
-        // Suppress clock triggers during the clock-ignore window after
-        // reset.  This prevents the arp and sequencers from stepping
-        // on stale or simultaneous clock edges.
+        // Suppress clock triggers during the boot window (armed only in the
+        // constructor, against spurious edges while a patch loads). A reset no
+        // longer arms this: swallowing the clock that accompanies a reset
+        // delayed step one by a whole period. See the comment in reset().
         if (clock_ignore_on_reset > 0 && !legacy_reset_mode)
         {
             clock_triggered = false;
@@ -478,6 +492,11 @@ struct ArpSeq : Module
 
         if (any_notes_to_play == false)
         {
+            // A latch requested on the very last clock before the notes went
+            // away belongs to the chord that is gone; performing it after the
+            // next note-on would capture the new chord's position -1 fallback
+            // note and replace a legitimately held value.
+            sample_and_hold_pending = false;
             return;
         }
 
@@ -485,7 +504,13 @@ struct ArpSeq : Module
         // Handle note repeat
         //
 
-        if (shape_model.isNoteRepeat() && clock_triggered)
+        // The position guard: right after a reset (or before the first-ever
+        // clock) the arp sits at -1 and has not played anything, so there is
+        // nothing to repeat. Without the guard the first post-reset clock in a
+        // x2 shape spent itself on a phantom repeat -- gating the position -1
+        // fallback note (unsorted channel 0, possibly the wrong pitch) and
+        // pushing step one to the second clock.
+        if (shape_model.isNoteRepeat() && clock_triggered && arp_sequencer.getPlaybackPosition() >= 0)
         {
             note_repeat--;
 
@@ -505,6 +530,11 @@ struct ArpSeq : Module
 
         bool step_sequencers_forward = false;
 
+        // Whether this clock is the arp's own first advance (-1 -> 0) after a
+        // reset. Only that clock should hold the page sequencers at position 0;
+        // see the first_step consumption below.
+        bool arp_was_at_start = arp_sequencer.getPlaybackPosition() < 0;
+
         if (clock_triggered)
         {
             channel_step_counter++;
@@ -523,7 +553,11 @@ struct ArpSeq : Module
             }
         }
 
-        if (step_sequencers_forward && (clock_ignore_on_reset == 0 || legacy_reset_mode == true))
+        // No clock_ignore_on_reset check here: step_sequencers_forward can only
+        // be true when clock_triggered was true, and the boot window above
+        // already forced clock_triggered false (legacy mode was exempt from the
+        // window in both places), so the old check could never trip.
+        if (step_sequencers_forward)
         {
             // Two important things happen here.
             // 1. The sequencers are stepped
@@ -535,6 +569,18 @@ struct ArpSeq : Module
             else
             {
                 first_step = false;
+
+                // Hold the pages at position 0 only when this clock is the
+                // arp's own first advance, i.e. in STEP_EVERY_CLOCK, where the
+                // pages would otherwise run a step ahead of the arp. In
+                // STEP_AFTER_ARP with a polyphonic input, the first
+                // step_sequencers_forward arrives at the END of the first arp
+                // pass -- a legitimate page advance; eating it left the pages
+                // one full arp pass behind after every reset.
+                if (!arp_was_at_start)
+                {
+                    stepSequencers();
+                }
             }
 
             // 2. The cycle counters are decremented.  However, as well as decrementing the
@@ -560,6 +606,31 @@ struct ArpSeq : Module
         if (output_quantization)
         {
             note_cv = this->quantize(note_cv);
+        }
+
+        // Perform a sample-and-hold latch requested by the previous sample's
+        // clock edge.
+        //
+        // Rack does not order modules by cable topology, so a module upstream
+        // of this one may be processed later in the same audio frame. When the
+        // pitch input is driven by a sequencer sharing our clock, reading it on
+        // the clock edge itself returns the value from before that sequencer
+        // advanced -- the previous step's note.
+        //
+        // Without sample and hold that is harmless: the pitch output is
+        // rewritten every sample, so it corrects itself on the next one and is
+        // inaudible. With sample and hold the stale reading is latched and held
+        // for the whole step, which sounds like the arpeggio running a step
+        // behind, the first note repeating, and the last note of a pattern
+        // never being heard.
+        //
+        // Waiting one sample gives every upstream module a full frame to run,
+        // whatever order Rack chose. A held chord is unaffected -- the value is
+        // the same a sample later.
+        if (sample_and_hold_pending)
+        {
+            sample_and_hold.trigger(note_cv);
+            sample_and_hold_pending = false;
         }
 
         if (clock_triggered && step_mode == STEP_AFTER_ARP)
@@ -592,13 +663,23 @@ struct ArpSeq : Module
         {
             float gate_cv = pages[GATE_SEQUENCER].voltage_sequencer.getValue();
 
+
             outputGate(gate_cv);
             apply_sequencer[GATE_SEQUENCER] = false;
 
-            // Activate the sample and hold feature
+            // Latch now, and again on the next sample.
+            //
+            // The immediate latch keeps the output correct for sources that
+            // are already settled -- a held chord, or anything not clocked
+            // from our own clock. The repeat on the next sample corrects the
+            // value if the source had not been processed yet; see the latch
+            // site above. When the source was already settled the repeat is a
+            // no-op, so this costs nothing and avoids emitting the previous
+            // note for a sample while the gate is opening.
             if (gate_cv > 0.0f && sample_and_hold_mode)
             {
                 sample_and_hold.trigger(note_cv);
+                sample_and_hold_pending = true;
             }
         }
 
@@ -645,11 +726,6 @@ struct ArpSeq : Module
         }
 
         outputs[CYCLE_GATE_OUTPUT].setVoltage(cycle_pulse_generator.process(args.sampleTime) ? 10.0f : 0.0f);
-
-
-        // Decrement the clock_ignore_on_reset counter
-        if (clock_ignore_on_reset > 0)
-            clock_ignore_on_reset--;
     }
 
     // ======================================================================
@@ -774,16 +850,20 @@ struct ArpSeq : Module
         arp_sequencer.reset();
 
         // Drop the held note too, otherwise the note sampled before the reset
-        // is output until the first gate of the new cycle.
+        // is output until the first gate of the new cycle. Any latch still
+        // waiting to be performed belongs to the old cycle, so drop it as well.
         sample_and_hold.reset();
+        sample_and_hold_pending = false;
 
-        // Set up a (reverse) counter so that the clock input will ignore
-        // incoming clock pulses for 1 millisecond after a reset input. This
-        // is to comply with VCV Rack's standards.  See section "Timing" at
-        // https://vcvrack.com/manual/VoltageStandards
-
-        // Don't skip the first step after a reset
-        clock_ignore_on_reset = (long)(rack::settings::sampleRate / 100);
+        // Deliberately NOT arming clock_ignore_on_reset here (it remains a
+        // boot-time guard only; see the constructor). This module is
+        // advance-then-play: reset puts the arp at -1, so the very next clock
+        // advancing -1 -> 0 IS "play step one". Swallowing a clock that lands
+        // near the reset -- which an end-of-cycle reset does every time, and a
+        // manual reset does whenever it lands within the window -- silently
+        // delayed step one by a whole clock period. The first_step flag below
+        // keeps the page sequencers holding position 0 through that first
+        // clock, so nothing double-advances.
         first_step = true;
 
         channel_step_counter = 0;
