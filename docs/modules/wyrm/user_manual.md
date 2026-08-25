@@ -1,5 +1,7 @@
 # Wyrm - Dubstep Bass Workstation User Manual
 
+![Wyrm](./wyrm_front_panel.jpg)
+
 ## Overview
 
 Wyrm is a synthesizer voice built for bass. It holds three wavetable oscillators, a separate sub oscillator, two filters, a patchable effects rack, and a 32-slot modulation matrix.
