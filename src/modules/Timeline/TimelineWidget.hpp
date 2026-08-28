@@ -66,14 +66,22 @@ struct BpmKnob : RoundSmallBlackKnob
 // Only the wordmark is drawn in code. The control labels belong to the panel
 // art, as outlined paths — nanosvg cannot render <text>, so they are drawn in
 // a vector editor, not here.
+//
+// The ink MUST follow the panel theme. The art switches with
+// settings::preferDarkPanels (the same flag PianoRollControlBar reads), so
+// fixed dark ink here would leave the wordmark near-invisible on the dark
+// panel — and would read as "the dark panel never loaded".
 struct TimelineChrome : TransparentWidget
 {
     void draw(const DrawArgs& args) override
     {
         NVGcontext* vg = args.vg;
-        tlText(vg, MARGIN, HEADER_Y, "TIMELINE", 13.f, tcol(0x17171a),
+        bool dark = rack::settings::preferDarkPanels;
+        tlText(vg, MARGIN, HEADER_Y, "TIMELINE", 13.f,
+               dark ? tcol(0xe9e7e1) : tcol(0x17171a),
                NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE, 3.0f);
-        tlText(vg, MARGIN + 108.f, HEADER_Y, "AUTOMATION", 6.5f, tcol(0x4a4a50),
+        tlText(vg, MARGIN + 108.f, HEADER_Y, "AUTOMATION", 6.5f,
+               dark ? tcol(0x9a9aa0) : tcol(0x4a4a50),
                NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE, 1.2f);
     }
 };
