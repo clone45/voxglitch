@@ -1,234 +1,329 @@
 {
-    "slug": "voxglitch",
-    "name": "Voxglitch",
-    "version": "2.43.0",
-    "license": "GPL-3.0-or-later",
-    "brand": "Voxglitch",
-    "author": "Bret Truchan",
-    "authorEmail": "clone45@gmail.com",
-    "authorUrl": "",
-    "pluginUrl": "https://github.com/clone45/voxglitch",
-    "manualUrl": "https://github.com/clone45/voxglitch",
-    "sourceUrl": "https://github.com/clone45/voxglitch",
-    "donateUrl": "https://www.patreon.com/voxglitch",
-    "modules": [
+  "slug": "voxglitch",
+  "name": "Voxglitch",
+  "version": "2.43.0",
+  "license": "GPL-3.0-or-later",
+  "brand": "Voxglitch",
+  "author": "Bret Truchan",
+  "authorEmail": "clone45@gmail.com",
+  "authorUrl": "",
+  "pluginUrl": "https://github.com/clone45/voxglitch",
+  "manualUrl": "https://github.com/clone45/voxglitch",
+  "sourceUrl": "https://github.com/clone45/voxglitch",
+  "donateUrl": "https://www.patreon.com/voxglitch",
+  "modules": [
     {
-        "slug": "arpseq",
-        "name": "ArpSeq",
-        "description": "Arpeggiator and Sequencer Hybrid",
-        "tags": ["Utility", "Sequencer"],
-        "manualUrl": "https://docs.google.com/document/d/1eZ3NOTOMBoTuiFCpqTsKA6RBkN2Fk8rBIJbEp-pRykA/edit?usp=sharing"
+      "slug": "arpseq",
+      "name": "ArpSeq",
+      "description": "Arpeggiator and Sequencer Hybrid",
+      "tags": [
+        "Utility",
+        "Sequencer"
+      ],
+      "manualUrl": "https://docs.google.com/document/d/1eZ3NOTOMBoTuiFCpqTsKA6RBkN2Fk8rBIJbEp-pRykA/edit?usp=sharing"
     },
     {
-        "slug": "autobreak",
-        "name": "Autobreak",
-        "description": "Automatic breakbeat sample chopper",
-        "tags": ["Sampler", "Drum"],
-        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/autobreak/user_manual.md"
+      "slug": "autobreak",
+      "name": "Autobreak",
+      "description": "Automatic breakbeat sample chopper",
+      "tags": [
+        "Sampler",
+        "Drum"
+      ],
+      "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/autobreak/user_manual.md"
     },
     {
-        "slug": "AutobreakStudio",
-        "name": "Autobreak Studio",
-        "description": "Advanced automatic breakbeat sample chopper",
-        "tags": ["Sampler", "Drum"],
-        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/autobreak-studio/user_manual.md"
-    },    
-    {
-        "slug": "bytebeat",
-        "name": "Byte Beat",
-        "description": "Bytebeat player with built-in presets.",
-        "tags": ["Oscillator"]
+      "slug": "AutobreakStudio",
+      "name": "Autobreak Studio",
+      "description": "Advanced automatic breakbeat sample chopper",
+      "tags": [
+        "Sampler",
+        "Drum"
+      ],
+      "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/autobreak-studio/user_manual.md"
     },
     {
-        "slug": "digitalprogrammer",
-        "name": "Digital Programmer",
-        "description": "16 channel polyphonic programmer with built-in bank memory slots",
-        "tags": ["Utility", "Polyphonic"],
-        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/digital-programmer/user_manual.md"
-    },
-
-    {
-        "slug": "digitalsequencer",
-        "name": "Digital Sequencer",
-        "description": "Six-in-one cv/gate sequencers with independent control over clock division and sequence length.",
-        "tags": ["Sequencer"],
-        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/digital-sequencer/user_manual.md"
+      "slug": "bytebeat",
+      "name": "Byte Beat",
+      "description": "Bytebeat player with built-in presets.",
+      "tags": [
+        "Oscillator"
+      ]
     },
     {
-        "slug": "digitalsequencerxp",
-        "name": "Digital Sequencer XP",
-        "description": "Polyphonic version of the Digital Sequencer.  Sixteen-in-one cv/gate sequencers with independent control over clock division and sequence length.",
-        "tags": ["Sequencer", "Polyphonic"],
-        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/digital-sequencer-xp/user_manual.md"
+      "slug": "digitalprogrammer",
+      "name": "Digital Programmer",
+      "description": "16 channel polyphonic programmer with built-in bank memory slots",
+      "tags": [
+        "Utility",
+        "Polyphonic"
+      ],
+      "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/digital-programmer/user_manual.md"
     },
     {
-        "slug": "drumrandomizer",
-        "name": "Drum Randomizer",
-        "description": "Apply per-step percentage playback to gate sequences.",
-        "tags": ["Utility", "Polyphonic"]
-    },    
-    {
-        "slug": "cue_research",
-        "name": "Cue Research",
-        "description": "Sample player with cue based trigger outputs",
-        "tags": ["Sampler"],
-        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/cue-research/user_manual.md"
+      "slug": "digitalsequencer",
+      "name": "Digital Sequencer",
+      "description": "Six-in-one cv/gate sequencers with independent control over clock division and sequence length.",
+      "tags": [
+        "Sequencer"
+      ],
+      "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/digital-sequencer/user_manual.md"
     },
     {
-        "slug": "glitchsequencer",
-        "name": "Glitch Sequencer",
-        "description": "Cellular Automaton Gate Sequencer.",
-        "tags": ["Sequencer"]
+      "slug": "digitalsequencerxp",
+      "name": "Digital Sequencer XP",
+      "description": "Polyphonic version of the Digital Sequencer.  Sixteen-in-one cv/gate sequencers with independent control over clock division and sequence length.",
+      "tags": [
+        "Sequencer",
+        "Polyphonic"
+      ],
+      "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/digital-sequencer-xp/user_manual.md"
     },
     {
-        "slug": "ghosts",
-        "name": "Ghosts",
-        "description": "Granular synthesis sample player/scanner with looping grains.",
-        "tags": ["Granular", "Sampler"],
-        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/ghosts/user_manual.md"
+      "slug": "drumrandomizer",
+      "name": "Drum Randomizer",
+      "description": "Apply per-step percentage playback to gate sequences.",
+      "tags": [
+        "Utility",
+        "Polyphonic"
+      ]
     },
     {
-        "slug": "grainfx",
-        "name": "Grain Fx",
-        "description": "Granular effects for incoming audio.",
-        "tags": ["Granular", "Sampler"]
+      "slug": "cue_research",
+      "name": "Cue Research",
+      "description": "Sample player with cue based trigger outputs",
+      "tags": [
+        "Sampler"
+      ],
+      "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/cue-research/user_manual.md"
     },
     {
-        "slug": "GrainEngineMK2",
-        "name": "Grain Engine MK2",
-        "description": "Granular syntesis based .wav player",
-        "tags": ["Granular", "Sampler"],
-        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/grain-engine-mk2/user_manual.md"
+      "slug": "glitchsequencer",
+      "name": "Glitch Sequencer",
+      "description": "Cellular Automaton Gate Sequencer.",
+      "tags": [
+        "Sequencer"
+      ]
     },
     {
-        "slug": "GrainEngineMK2Expander",
-        "name": "Grain Engine MK2 Expander",
-        "description": "External audio recorder expander for Grain Engine MK2",
-        "tags": ["Granular", "Sampler", "Expander"],
-        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/grain-engine-mk2-expander/user_manual.md"
+      "slug": "ghosts",
+      "name": "Ghosts",
+      "description": "Granular synthesis sample player/scanner with looping grains.",
+      "tags": [
+        "Granular",
+        "Sampler"
+      ],
+      "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/ghosts/user_manual.md"
     },
     {
-        "slug": "groovebox",
-        "name": "Groove Box",
-        "description": "8-track sample based groovebox with parameter locks",
-        "tags": ["Sampler"],
-        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/groovebox/user_manual.md"
+      "slug": "grainfx",
+      "name": "Grain Fx",
+      "description": "Granular effects for incoming audio.",
+      "tags": [
+        "Granular",
+        "Sampler"
+      ]
     },
     {
-        "slug": "GrooveBoxExpander",
-        "name": "Groove Box Expander",
-        "description": "Expander module for the Voxglitch Groovebox that provides Mutes, Solos, Gate Outputs, and track-level control over volume, pan, and pitch.",
-        "tags": ["Sampler"]
+      "slug": "GrainEngineMK2",
+      "name": "Grain Engine MK2",
+      "description": "Granular syntesis based .wav player",
+      "tags": [
+        "Granular",
+        "Sampler"
+      ],
+      "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/grain-engine-mk2/user_manual.md"
     },
     {
-        "slug": "hazumi",
-        "name": "Hazumi",
-        "description": "Bouncing ball sequencer",
-        "tags": ["Sequencer"],
-        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/hazumi/user_manual.md"
+      "slug": "GrainEngineMK2Expander",
+      "name": "Grain Engine MK2 Expander",
+      "description": "External audio recorder expander for Grain Engine MK2",
+      "tags": [
+        "Granular",
+        "Sampler",
+        "Expander"
+      ],
+      "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/grain-engine-mk2-expander/user_manual.md"
     },
     {
-        "slug": "looper",
-        "name": "Looper",
-        "description": "Bare minimum sample looper",
-        "tags": ["Sampler"]
+      "slug": "groovebox",
+      "name": "Groove Box",
+      "description": "8-track sample based groovebox with parameter locks",
+      "tags": [
+        "Sampler"
+      ],
+      "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/groovebox/user_manual.md"
     },
     {
-        "slug": "maya",
-        "name": "Maya",
-        "description": "AI voice word player with CV-controlled word selection",
-        "tags": ["Sampler"]
+      "slug": "GrooveBoxExpander",
+      "name": "Groove Box Expander",
+      "description": "Expander module for the Voxglitch Groovebox that provides Mutes, Solos, Gate Outputs, and track-level control over volume, pan, and pitch.",
+      "tags": [
+        "Sampler"
+      ]
     },
     {
-        "slug": "tempest-vs1",
-        "name": "Tempest VS-1",
-        "description": "MIDI controller interface for Tempest VS-1",
-        "tags": ["MIDI", "Controller", "Utility"]
+      "slug": "hazumi",
+      "name": "Hazumi",
+      "description": "Bouncing ball sequencer",
+      "tags": [
+        "Sequencer"
+      ],
+      "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/hazumi/user_manual.md"
     },
     {
-        "slug": "noteDetector",
-        "name": "Note Detector",
-        "description": "Produces a gate or trigger output when a specified note is detected at the CV input",
-        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/note-detector/user_manual.md",
-        "tags": ["Utility"]
-    }, 
-    {
-        "slug": "onepoint",
-        "name": "One Point",
-        "description": "CV sequencer that uses external file as sequence data",
-        "tags": ["Sequencer"],
-        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/onepoint/user_manual.md"
+      "slug": "looper",
+      "name": "Looper",
+      "description": "Bare minimum sample looper",
+      "tags": [
+        "Sampler"
+      ]
     },
     {
-        "slug": "onezero",
-        "name": "One Zero",
-        "description": "Gate sequencer that uses external file as sequence data",
-        "tags": ["Sequencer"],
-        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/onezero/user_manual.md"
-    },          
-    {
-        "slug": "piano_roll",
-        "name": "Piano Roll",
-        "description": "Eight-track polyphonic piano-roll note sequencer with recording",
-        "tags": ["Sequencer", "Polyphonic"],
-        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/piano-roll/user_manual.md"
+      "slug": "maya",
+      "name": "Maya",
+      "description": "AI voice word player with CV-controlled word selection",
+      "tags": [
+        "Sampler"
+      ]
     },
     {
-        "slug": "repeater",
-        "name": "Repeater",
-        "description": "Looping sample player with playback offset control.",
-        "tags": ["Sampler"],
-        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/repeater/user_manual.md"
+      "slug": "tempest-vs1",
+      "name": "Tempest VS-1",
+      "description": "MIDI controller interface for Tempest VS-1",
+      "tags": [
+        "MIDI",
+        "Controller",
+        "Utility"
+      ]
     },
     {
-        "slug": "satanonaut",
-        "name": "Satanonaut",
-        "description": "Based on the new comic Galacto Pitfighter: An alien entity hell-bent on mutilating your audio.",
-        "tags": ["Effect"]
+      "slug": "noteDetector",
+      "name": "Note Detector",
+      "description": "Produces a gate or trigger output when a specified note is detected at the CV input",
+      "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/note-detector/user_manual.md",
+      "tags": [
+        "Utility"
+      ]
     },
     {
-        "slug": "satanonaut_unearthed",
-        "name": "Satanonaut Unearthed",
-        "description": "Satanonaut blank panel",
-        "tags": ["Effect"]
-    },    
-    {
-        "slug": "sampler16p",
-        "name": "Sampler16P",
-        "description": "Sixteen stereo sample playback devices in one compact module.",
-        "tags": ["Sampler"]
+      "slug": "onepoint",
+      "name": "One Point",
+      "description": "CV sequencer that uses external file as sequence data",
+      "tags": [
+        "Sequencer"
+      ],
+      "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/onepoint/user_manual.md"
     },
     {
-        "slug": "samplerx8",
-        "name": "SamplerX8",
-        "description": "Eight stereo sample playback devices in one compact module.",
-        "tags": ["Sampler"]
-    },    
-    {
-        "slug": "vector_rotation",
-        "name": "Vector Rotation",
-        "description": "Utility module for laser enthusiasts.",
-        "tags": ["Envelope Generator", "Oscillator"]
-    }, 
-    {
-        "slug": "wavbank",
-        "name": "Wav Bank",
-        "description": "Sample player that can load and switch between all .wav files in a folder.",
-        "tags": ["Sampler"],
-        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/wavebank/user_manual.md"
+      "slug": "onezero",
+      "name": "One Zero",
+      "description": "Gate sequencer that uses external file as sequence data",
+      "tags": [
+        "Sequencer"
+      ],
+      "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/onezero/user_manual.md"
     },
     {
-        "slug": "wavbankmc",
-        "name": "Wav Bank MC",
-        "description": "Extended version of Wav Bank that supports multi-channel WAV files",
-        "tags": ["Sampler", "Polyphonic"]
+      "slug": "piano_roll",
+      "name": "Piano Roll",
+      "description": "Eight-track polyphonic piano-roll note sequencer with recording",
+      "tags": [
+        "Sequencer",
+        "Polyphonic"
+      ],
+      "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/piano-roll/user_manual.md"
     },
     {
-        "slug": "xy",
-        "name": "XY",
-        "description": "CV output generator with built in gesture recording.",
-        "tags": ["Sequencer", "Recording", "Envelope Generator"],
-        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/xy-controller/user_manual.md"
+      "slug": "repeater",
+      "name": "Repeater",
+      "description": "Looping sample player with playback offset control.",
+      "tags": [
+        "Sampler"
+      ],
+      "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/repeater/user_manual.md"
+    },
+    {
+      "slug": "satanonaut",
+      "name": "Satanonaut",
+      "description": "Based on the new comic Galacto Pitfighter: An alien entity hell-bent on mutilating your audio.",
+      "tags": [
+        "Effect"
+      ]
+    },
+    {
+      "slug": "satanonaut_unearthed",
+      "name": "Satanonaut Unearthed",
+      "description": "Satanonaut blank panel",
+      "tags": [
+        "Effect"
+      ]
+    },
+    {
+      "slug": "sampler16p",
+      "name": "Sampler16P",
+      "description": "Sixteen stereo sample playback devices in one compact module.",
+      "tags": [
+        "Sampler"
+      ]
+    },
+    {
+      "slug": "samplerx8",
+      "name": "SamplerX8",
+      "description": "Eight stereo sample playback devices in one compact module.",
+      "tags": [
+        "Sampler"
+      ]
+    },
+    {
+      "slug": "vector_rotation",
+      "name": "Vector Rotation",
+      "description": "Utility module for laser enthusiasts.",
+      "tags": [
+        "Envelope Generator",
+        "Oscillator"
+      ]
+    },
+    {
+      "slug": "wavbank",
+      "name": "Wav Bank",
+      "description": "Sample player that can load and switch between all .wav files in a folder.",
+      "tags": [
+        "Sampler"
+      ],
+      "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/wavebank/user_manual.md"
+    },
+    {
+      "slug": "wavbankmc",
+      "name": "Wav Bank MC",
+      "description": "Extended version of Wav Bank that supports multi-channel WAV files",
+      "tags": [
+        "Sampler",
+        "Polyphonic"
+      ]
+    },
+    {
+      "slug": "xy",
+      "name": "XY",
+      "description": "CV output generator with built in gesture recording.",
+      "tags": [
+        "Sequencer",
+        "Recording",
+        "Envelope Generator"
+      ],
+      "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/xy-controller/user_manual.md"
+    },
+    {
+      "slug": "timeline",
+      "name": "Timeline",
+      "description": "Draw automation curves on a musical timeline: 16 breakpoint lanes, each with its own transport, out one polyphonic cable.",
+      "tags": [
+        "Controller",
+        "LFO",
+        "Polyphonic",
+        "Utility"
+      ],
+      "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/timeline/user_manual.md"
     }
   ]
 }

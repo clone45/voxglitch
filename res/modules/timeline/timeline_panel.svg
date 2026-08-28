@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" width="243.84mm" height="128.5mm" viewBox="0 0 720 379.37">
+  <g inkscape:groupmode="layer" inkscape:label="background" id="layer_background">
+    <rect x="0" y="0" width="720" height="379.37" fill="#e7e7e7" id="panel_background"/>
+    <rect x="452" y="318" width="258" height="56" rx="3" fill="#17171a" id="output_plate"/>
+  </g>
+  <g inkscape:groupmode="layer" inkscape:label="anchors" id="layer_anchors">
+    <circle id="start_input" cx="30" cy="356" r="11.34" fill="#213d42" stroke="none"/>
+    <circle id="stop_input" cx="70" cy="356" r="11.34" fill="#213d42" stroke="none"/>
+    <circle id="reset_input" cx="110" cy="356" r="11.34" fill="#213d42" stroke="none"/>
+    <circle id="clk_output" cx="478" cy="356" r="11.34" fill="#213d42" stroke="none"/>
+    <circle id="rst_output" cx="518" cy="356" r="11.34" fill="#213d42" stroke="none"/>
+    <circle id="rwnd_output" cx="558" cy="356" r="11.34" fill="#213d42" stroke="none"/>
+    <circle id="loop_output" cx="598" cy="356" r="11.34" fill="#213d42" stroke="none"/>
+    <circle id="run_output" cx="638" cy="356" r="11.34" fill="#213d42" stroke="none"/>
+    <circle id="lanes_output" cx="688" cy="356" r="11.34" fill="#213d42" stroke="none"/>
+    <circle id="rewind_button" cx="169" cy="356" r="2" fill="#d8d6cf" stroke="none"/>
+    <circle id="play_switch" cx="203" cy="356" r="2" fill="#d8d6cf" stroke="none"/>
+    <circle id="loop_switch" cx="237" cy="356" r="2" fill="#d8d6cf" stroke="none"/>
+    <circle id="chase_switch" cx="271" cy="356" r="2" fill="#d8d6cf" stroke="none"/>
+    <circle id="bpm_knob" cx="335" cy="356" r="2" fill="#d8d6cf" stroke="none"/>
+    <circle id="snap_knob" cx="375" cy="356" r="2" fill="#d8d6cf" stroke="none"/>
+    <circle id="div_knob" cx="415" cy="356" r="2" fill="#d8d6cf" stroke="none"/>
+  </g>
+</svg>

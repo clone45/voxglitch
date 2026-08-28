@@ -44,5 +44,6 @@ void init(Plugin* p) {
   // p->addModel(modelNetrunner);
   p->addModel(modelTempestVS1);
   p->addModel(modelXY);
+  p->addModel(modelTimeline);
 
 }
