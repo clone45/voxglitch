@@ -11,12 +11,9 @@
 //     outputs are polyphonic too, but they read as clocks, so they keep the
 //     ordinary output socket.
 //
-// PARTIAL adoption, deliberately: the LABELS and the wordmark are still drawn
-// in code below, not baked into the SVG. nanosvg cannot render <text>, so the
-// collection's panels carry their labels as outlined paths, which has to
-// happen in a vector editor. When the art is redrawn with outlined text,
-// delete TimelineChrome's label loop and the labels vector — nothing else
-// depends on them.
+// The control LABELS belong to the panel art, as outlined paths: nanosvg
+// cannot render <text>, so the collection draws labels in a vector editor.
+// The only typography left in code is the wordmark at the top.
 //
 // The editor, lane tabs and readout are code-drawn widgets, so their geometry
 // stays here as constants, the same way the collection's other displays do.
@@ -37,13 +34,6 @@ static const float TABS_H       = 13.f;
 static const float EDITOR_Y     = 47.f;
 static const float EDITOR_H     = 268.f;
 static const float EDITOR_RIGHT = PANEL_W - MARGIN;
-
-// Labels sit above whatever the SVG anchor placed, so they follow the art.
-static const float LABEL_DY = -23.f;
-
-// The output plate's ink is drawn in the SVG; this is only where the light
-// knocked-out labels go, and it must match the SVG's `output_plate` rect.
-static const float PLATE_X = 452.f;
 
 // The position readout: inside the editor, bottom right, above the scrollbar.
 static const float READOUT_W = 150.f;
@@ -73,12 +63,11 @@ struct BpmKnob : RoundSmallBlackKnob
     BpmKnob() { smooth = false; }
 };
 
+// Only the wordmark is drawn in code. The control labels belong to the panel
+// art, as outlined paths — nanosvg cannot render <text>, so they are drawn in
+// a vector editor, not here.
 struct TimelineChrome : TransparentWidget
 {
-    // `onPlate` labels sit on the SVG's ink plate and are knocked out light.
-    struct Lbl { float x, y; const char* text; bool onPlate; };
-    std::vector<Lbl> labels;
-
     void draw(const DrawArgs& args) override
     {
         NVGcontext* vg = args.vg;
@@ -86,10 +75,6 @@ struct TimelineChrome : TransparentWidget
                NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE, 3.0f);
         tlText(vg, MARGIN + 108.f, HEADER_Y, "AUTOMATION", 6.5f, tcol(0x4a4a50),
                NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE, 1.2f);
-        for (size_t i = 0; i < labels.size(); i++)
-            tlText(vg, labels[i].x, labels[i].y, labels[i].text, 7.f,
-                   labels[i].onPlate ? tcol(0xe9e7e1) : tcol(0x4a4a50),
-                   NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE, 0.6f);
     }
 };
 
@@ -130,62 +115,44 @@ struct TimelineWidget : ModuleWidget
         addChild(readout);
 
         // ── inputs: START / STOP / RESET, all polyphonic ──
-        struct Anchor { const char* id; int pid; const char* label; };
+        struct Anchor { const char* id; int pid; };
         static const Anchor INS[3] = {
-            { "start_input", Timeline::START_INPUT, "START" },
-            { "stop_input",  Timeline::STOP_INPUT,  "STOP" },
-            { "reset_input", Timeline::RESET_INPUT, "RESET" },
+            { "start_input", Timeline::START_INPUT },
+            { "stop_input",  Timeline::STOP_INPUT  },
+            { "reset_input", Timeline::RESET_INPUT },
         };
         for (int i = 0; i < 3; i++)
-        {
-            Vec p = panelHelper.findNamed(INS[i].id);
-            addInput(createInputCentered<VoxglitchPolyPort>(p, module, INS[i].pid));
-            chrome->labels.push_back({ p.x, p.y + LABEL_DY, INS[i].label, false });
-        }
+            addInput(createInputCentered<VoxglitchPolyPort>(
+                panelHelper.findNamed(INS[i].id), module, INS[i].pid));
 
         // ── transport switches and the timing knobs ──
         // No LEDs beside PLAY and LOOP: the switches show their own state, and
         // the readout's moving digits already say "playing".
-        {
-            Vec p = panelHelper.findNamed("rewind_button");
-            // VCVButton, not LEDButton: this collection uses the former
-            // (TempestVS1's MidiConfigButton) and the latter nowhere.
-            addParam(createParamCentered<VCVButton>(p, module, Timeline::REWIND_PARAM));
-            chrome->labels.push_back({ p.x, p.y + LABEL_DY, "RWND", false });
-
-            p = panelHelper.findNamed("play_switch");
-            addParam(createParamCentered<squareToggle>(p, module, Timeline::PLAY_PARAM));
-            chrome->labels.push_back({ p.x, p.y + LABEL_DY, "PLAY", false });
-
-            p = panelHelper.findNamed("loop_switch");
-            addParam(createParamCentered<squareToggle>(p, module, Timeline::LOOP_PARAM));
-            chrome->labels.push_back({ p.x, p.y + LABEL_DY, "LOOP", false });
-
-            p = panelHelper.findNamed("chase_switch");
-            addParam(createParamCentered<squareToggle>(p, module, Timeline::CHASE_PARAM));
-            chrome->labels.push_back({ p.x, p.y + LABEL_DY, "CHASE", false });
-
-            p = panelHelper.findNamed("bpm_knob");
-            addParam(createParamCentered<BpmKnob>(p, module, Timeline::BPM_PARAM));
-            chrome->labels.push_back({ p.x, p.y + LABEL_DY, "BPM", false });
-
-            p = panelHelper.findNamed("snap_knob");
-            addParam(createParamCentered<RoundSmallBlackKnob>(p, module, Timeline::SNAP_PARAM));
-            chrome->labels.push_back({ p.x, p.y + LABEL_DY, "SNAP", false });
-
-            p = panelHelper.findNamed("div_knob");
-            addParam(createParamCentered<RoundSmallBlackKnob>(p, module, Timeline::DIV_PARAM));
-            chrome->labels.push_back({ p.x, p.y + LABEL_DY, "DIV", false });
-        }
+        // VCVButton, not LEDButton: this collection uses the former
+        // (TempestVS1's MidiConfigButton) and the latter nowhere.
+        addParam(createParamCentered<VCVButton>(
+            panelHelper.findNamed("rewind_button"), module, Timeline::REWIND_PARAM));
+        addParam(createParamCentered<squareToggle>(
+            panelHelper.findNamed("play_switch"), module, Timeline::PLAY_PARAM));
+        addParam(createParamCentered<squareToggle>(
+            panelHelper.findNamed("loop_switch"), module, Timeline::LOOP_PARAM));
+        addParam(createParamCentered<squareToggle>(
+            panelHelper.findNamed("chase_switch"), module, Timeline::CHASE_PARAM));
+        addParam(createParamCentered<BpmKnob>(
+            panelHelper.findNamed("bpm_knob"), module, Timeline::BPM_PARAM));
+        addParam(createParamCentered<RoundSmallBlackKnob>(
+            panelHelper.findNamed("snap_knob"), module, Timeline::SNAP_PARAM));
+        addParam(createParamCentered<RoundSmallBlackKnob>(
+            panelHelper.findNamed("div_knob"), module, Timeline::DIV_PARAM));
 
         // ── outputs, on the SVG's ink plate; LANES last ──
         static const Anchor OUTS[6] = {
-            { "clk_output",   Timeline::CLK_OUTPUT,  "CLK" },
-            { "rst_output",   Timeline::RST_OUTPUT,  "RST" },
-            { "rwnd_output",  Timeline::RWND_OUTPUT, "RWND" },
-            { "loop_output",  Timeline::LOOP_OUTPUT, "LOOP" },
-            { "run_output",   Timeline::RUN_OUTPUT,  "RUN" },
-            { "lanes_output", Timeline::POLY_OUTPUT, "LANES" },
+            { "clk_output",   Timeline::CLK_OUTPUT  },
+            { "rst_output",   Timeline::RST_OUTPUT  },
+            { "rwnd_output",  Timeline::RWND_OUTPUT },
+            { "loop_output",  Timeline::LOOP_OUTPUT },
+            { "run_output",   Timeline::RUN_OUTPUT  },
+            { "lanes_output", Timeline::POLY_OUTPUT },
         };
         for (int i = 0; i < 6; i++)
         {
@@ -194,7 +161,6 @@ struct TimelineWidget : ModuleWidget
                 addOutput(createOutputCentered<VoxglitchPolyPort>(p, module, OUTS[i].pid));
             else
                 addOutput(createOutputCentered<VoxglitchOutputPort>(p, module, OUTS[i].pid));
-            chrome->labels.push_back({ p.x, p.y + LABEL_DY, OUTS[i].label, true });
         }
     }
 

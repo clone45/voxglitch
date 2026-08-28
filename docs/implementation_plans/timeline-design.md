@@ -186,10 +186,15 @@ changed:
   and LEDButton nowhere).
 - **The DRM overlay is gone.** This collection has no licence gate.
 
-### Partial adoption, on purpose
-The LABELS and the wordmark are still drawn in code by `TimelineChrome`.
-nanosvg cannot render `<text>`, so the collection's panels carry their labels
-as outlined paths, which has to be done in a vector editor. When the art is
-redrawn with outlined text, delete TimelineChrome's label loop and the
-`labels` vector; nothing else depends on them. The anchors already carry the
-geometry, so that change touches no positions.
+### Labels belong to the art
+The control labels are NOT drawn in code. nanosvg cannot render `<text>`, so
+the collection carries labels as outlined paths from a vector editor, and
+Timeline follows that: the panel art owns every control label. The code-drawn
+labels that came over from the devices build were removed 2026-08-28.
+
+The only typography left in code is the wordmark at the top left, "TIMELINE /
+AUTOMATION", which Bret kept.
+
+So the panel art still to be drawn is: the sixteen control labels, and
+whatever styling the background and the output plate deserve. The anchors
+already carry every position, so none of that touches code.
