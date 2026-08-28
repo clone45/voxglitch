@@ -1,0 +1,5 @@
+# Compiled test binaries — built on demand, never committed.
+engine_test
+transport_test
+scrollbar_test
+chase_test
