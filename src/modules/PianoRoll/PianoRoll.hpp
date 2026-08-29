@@ -47,6 +47,7 @@ struct PianoRoll : Module
         RESET_INPUT,
         REC_VOCT_INPUT,
         REC_GATE_INPUT,
+        REC_VEL_INPUT,
         NUM_INPUTS
     };
 
@@ -54,6 +55,7 @@ struct PianoRoll : Module
     {
         ENUMS(VOCT_OUTPUTS, TRACKS),
         ENUMS(GATE_OUTPUTS, TRACKS),
+        ENUMS(VELOCITY_OUTPUTS, TRACKS),
         NUM_OUTPUTS
     };
 
@@ -73,6 +75,14 @@ struct PianoRoll : Module
     // than to free placement: note positions are integers throughout, so one step
     // is the finest resolution the model has.
     int snap_steps = 1;
+
+    // ── Scale lock ───────────────────────────────────────────────────────────
+    // Restricts editor placements and moves to a scale: an out-of-scale target
+    // lands on the nearest in-scale pitch instead. Existing notes, recording,
+    // paste and MIDI import are deliberately never touched by it — it governs
+    // what the mouse creates, not what material already exists.
+    int scale_root = 0;      // 0..11, C-based, indexes SCALE_ROOT_NAMES
+    int scale_index = -1;    // index into scaleDefinitions(); -1 = off (default)
 
     // Selected notes, by ID rather than index, so a selection survives deletion,
     // reordering and undo. UI state, but module-owned so an undo action can put it
@@ -120,6 +130,11 @@ struct PianoRoll : Module
         int steps_left = 0;
         float voct = 0.0f;
         float retrigger_timer = 0.0f;   // seconds of forced gate-low remaining
+
+        // Held, not gated: the level stays put after the gate falls, the way
+        // Rack's own MIDI-CV behaves, so an envelope reading it during release
+        // still sees the velocity of the note that is releasing.
+        float velocity_volts = DEFAULT_VELOCITY / (float)MAX_VELOCITY * VELOCITY_OUTPUT_VOLTS;
     };
 
     Voice voices[TRACKS][rack::engine::PORT_MAX_CHANNELS];
@@ -157,18 +172,29 @@ struct PianoRoll : Module
     // too. Matches the Tracks module's "Lock Editor".
     bool locked = false;
 
+    // Whether the editor's velocity lane is expanded. Module state rather than
+    // widget state so it persists with the patch; new instances start collapsed.
+    // View preference, not musical content, so changing it is not undoable.
+    bool velocity_lane_open = false;
+
     struct RecordVoice
     {
         bool holding = false;
         int pitch = 60;
         int start_step = 0;
         float held_samples = 0.0f;
+
+        // Sampled once, at the gate edge that opened the note, and held for the
+        // note's whole life. Velocity is a property of the attack — following the
+        // input afterwards would let a moving CV rewrite a note that is already
+        // being played.
+        int velocity = DEFAULT_VELOCITY;
     };
 
     RecordVoice record_voices[rack::engine::PORT_MAX_CHANNELS];
     dsp::SchmittTrigger record_gate_triggers[rack::engine::PORT_MAX_CHANNELS];
 
-    struct CapturedNote { int pitch; int start; int length; int track; };
+    struct CapturedNote { int pitch; int start; int length; int track; int velocity; };
 
     static const int CAPTURE_RING = 32;
     CapturedNote capture_ring[CAPTURE_RING];
@@ -207,12 +233,14 @@ struct PianoRoll : Module
         configInput(RESET_INPUT, "Reset");
         configInput(REC_VOCT_INPUT, "Record V/OCT (polyphonic)");
         configInput(REC_GATE_INPUT, "Record gate (polyphonic)");
+        configInput(REC_VEL_INPUT, "Record velocity, 0-10V (polyphonic)");
 
         for (int track = 0; track < TRACKS; track++)
         {
             std::string number = std::to_string(track + 1);
             configOutput(VOCT_OUTPUTS + track, "Track " + number + " V/OCT");
             configOutput(GATE_OUTPUTS + track, "Track " + number + " gate");
+            configOutput(VELOCITY_OUTPUTS + track, "Track " + number + " velocity");
 
             track_channels[track] = 1;
         }
@@ -237,11 +265,11 @@ struct PianoRoll : Module
 
     // Adds a note, minting its identity. Returns NOTE_ID_NONE if the pattern is
     // full — callers must handle that rather than assume success.
-    NoteId addNote(int pitch, int start, int length, int track)
+    NoteId addNote(int pitch, int start, int length, int track, int velocity = DEFAULT_VELOCITY)
     {
         if ((int)notes.size() >= MAX_NOTES) return NOTE_ID_NONE;
 
-        Note note(id_minter.mint(), pitch, start, length, track);
+        Note note(id_minter.mint(), pitch, start, length, track, sanitizeVelocity(velocity));
         notes.push_back(note);
 
         notesChanged();
@@ -421,6 +449,8 @@ struct PianoRoll : Module
             Voice &voice = voices[note.track][channel];
 
             voice.voct = (note.pitch - 60.0f) / 12.0f;   // C4 = MIDI 60 = 0 V
+            voice.velocity_volts =
+                sanitizeVelocity(note.velocity) / (float)MAX_VELOCITY * VELOCITY_OUTPUT_VOLTS;
             voice.steps_left = std::min(note.length, loop);
             voice.active = true;
 
@@ -447,10 +477,29 @@ struct PianoRoll : Module
         return step;
     }
 
-    void emitCapturedNote(int pitch, int start, int length, int track)
+    // Velocity for a note being recorded on this channel.
+    //
+    // An unpatched velocity input records the default rather than 0 V, so arming
+    // REC with only pitch and gate patched behaves exactly as it did before
+    // velocity existed instead of silently recording every note at zero.
+    // Not const: Rack's Port::isConnected() and getPolyVoltage() are both
+    // non-const member functions.
+    int capturedVelocity(int channel)
+    {
+        if (!inputs[REC_VEL_INPUT].isConnected()) return DEFAULT_VELOCITY;
+
+        // getPolyVoltage, like the pitch input: a mono velocity source normals
+        // across every channel of a poly gate.
+        float volts = inputs[REC_VEL_INPUT].getPolyVoltage(channel);
+        float scaled = volts / VELOCITY_OUTPUT_VOLTS * (float)MAX_VELOCITY;
+
+        return sanitizeVelocity((int)std::round(scaled));
+    }
+
+    void emitCapturedNote(int pitch, int start, int length, int track, int velocity)
     {
         unsigned int write = capture_write.load();
-        capture_ring[write % CAPTURE_RING] = { pitch, start, length, track };
+        capture_ring[write % CAPTURE_RING] = { pitch, start, length, track, velocity };
         capture_write.store(write + 1);
     }
 
@@ -519,11 +568,12 @@ struct PianoRoll : Module
                 voice.pitch = pitch;
                 voice.start_step = snapNow(loop);
                 voice.held_samples = 0.0f;
+                voice.velocity = capturedVelocity(channel);
             }
             else if (voice.holding && gate <= constants::gate_low_trigger)
             {
                 emitCapturedNote(voice.pitch, voice.start_step,
-                                 recordedLength(voice.held_samples), active_track);
+                                 recordedLength(voice.held_samples), active_track, voice.velocity);
                 voice.holding = false;
                 voice.held_samples = 0.0f;
             }
@@ -534,10 +584,14 @@ struct PianoRoll : Module
                 {
                     // Close the note in flight and open the next at the boundary.
                     emitCapturedNote(voice.pitch, voice.start_step,
-                                     recordedLength(voice.held_samples), active_track);
+                                     recordedLength(voice.held_samples), active_track, voice.velocity);
                     voice.pitch = pitch;
                     voice.start_step = snapNow(loop);
                     voice.held_samples = 0.0f;
+
+                    // A legato pitch change is a new note, so it re-reads the
+                    // velocity input rather than inheriting the previous attack.
+                    voice.velocity = capturedVelocity(channel);
                 }
                 voice.held_samples += 1.0f;
             }
@@ -620,6 +674,7 @@ struct PianoRoll : Module
 
             outputs[VOCT_OUTPUTS + track].setChannels(channels);
             outputs[GATE_OUTPUTS + track].setChannels(channels);
+            outputs[VELOCITY_OUTPUTS + track].setChannels(channels);
 
             for (uint8_t channel = 0; channel < channels; channel++)
             {
@@ -629,6 +684,7 @@ struct PianoRoll : Module
 
                 outputs[VOCT_OUTPUTS + track].setVoltage(voice.voct, channel);
                 outputs[GATE_OUTPUTS + track].setVoltage(gate_high ? 10.0f : 0.0f, channel);
+                outputs[VELOCITY_OUTPUTS + track].setVoltage(voice.velocity_volts, channel);
 
                 if (voice.retrigger_timer > 0.0f) voice.retrigger_timer -= args.sampleTime;
             }
@@ -665,6 +721,9 @@ struct PianoRoll : Module
         json_object_set_new(json_root, "snap_steps", json_integer(snap_steps));
         json_object_set_new(json_root, "rec_armed", json_boolean(rec_armed));
         json_object_set_new(json_root, "locked", json_boolean(locked));
+        json_object_set_new(json_root, "velocity_lane_open", json_boolean(velocity_lane_open));
+        json_object_set_new(json_root, "scale_root", json_integer(scale_root));
+        json_object_set_new(json_root, "scale_index", json_integer(scale_index));
 
         json_t *notes_array = json_array();
 
@@ -678,6 +737,7 @@ struct PianoRoll : Module
             json_object_set_new(note_object, "start", json_integer(note.start));
             json_object_set_new(note_object, "length", json_integer(note.length));
             json_object_set_new(note_object, "track", json_integer(note.track));
+            json_object_set_new(note_object, "velocity", json_integer(note.velocity));
 
             json_array_append_new(notes_array, note_object);
         }
@@ -717,6 +777,22 @@ struct PianoRoll : Module
         json_t *locked_json = json_object_get(json_root, "locked");
         if (locked_json) locked = json_boolean_value(locked_json);
 
+        json_t *vel_lane_json = json_object_get(json_root, "velocity_lane_open");
+        if (vel_lane_json) velocity_lane_open = json_boolean_value(vel_lane_json);
+
+        json_t *scale_root_json = json_object_get(json_root, "scale_root");
+        if (scale_root_json)
+            scale_root = rack::math::clamp((int)json_integer_value(scale_root_json), 0, 11);
+
+        // Clamped against the CURRENT table: a patch from a build with more
+        // scales must fall back to off, not index past the end.
+        json_t *scale_index_json = json_object_get(json_root, "scale_index");
+        if (scale_index_json)
+        {
+            int index = (int)json_integer_value(scale_index_json);
+            scale_index = (index >= 0 && index < (int)scaleDefinitions().size()) ? index : -1;
+        }
+
         json_t *notes_array = json_object_get(json_root, "notes");
 
         if (notes_array && json_is_array(notes_array))
@@ -739,6 +815,14 @@ struct PianoRoll : Module
                 note.start = (int)json_integer_value(json_object_get(note_object, "start"));
                 note.length = (int)json_integer_value(json_object_get(note_object, "length"));
                 note.track = (int)json_integer_value(json_object_get(note_object, "track"));
+
+                // Absent in patches saved before velocity existed. json_integer_value
+                // returns 0 for a missing key, which would load every one of those
+                // notes silent, so the key has to be probed rather than read blind.
+                json_t *velocity_json = json_object_get(note_object, "velocity");
+                note.velocity = velocity_json
+                    ? sanitizeVelocity((int)json_integer_value(velocity_json))
+                    : DEFAULT_VELOCITY;
 
                 // Skip garbage rather than clamping it into range: a note silently
                 // moved to a different pitch is worse than a note that is missing.

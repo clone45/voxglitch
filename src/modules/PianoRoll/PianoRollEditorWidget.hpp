@@ -26,7 +26,7 @@ using namespace piano_roll;
 // always lands it on the receiving editor's active track. That is the only way to
 // move material between tracks.
 //
-struct ClipboardNote { int pitch; int start_offset; int length; };
+struct ClipboardNote { int pitch; int start_offset; int length; int velocity; };
 static std::vector<ClipboardNote> note_clipboard;
 
 //
@@ -74,6 +74,8 @@ struct PianoRollEditorWidget : OpaqueWidget
     NVGcolor screen_background = nvgRGB(0x10, 0x20, 0x20);
     NVGcolor lane_natural = nvgRGB(0x18, 0x2a, 0x2a);
     NVGcolor lane_sharp = nvgRGB(0x12, 0x22, 0x22);
+    // Darker than the screen itself, so a locked-out row reads as recessed.
+    NVGcolor lane_out_of_scale = nvgRGB(0x0b, 0x15, 0x15);
     NVGcolor line_step = nvgRGB(0x22, 0x38, 0x38);
     NVGcolor line_beat = nvgRGB(0x2e, 0x48, 0x48);
     NVGcolor line_bar = nvgRGB(0x46, 0x66, 0x66);
@@ -140,6 +142,26 @@ struct PianoRollEditorWidget : OpaqueWidget
     // Editing is frozen, but looking around is not.
     bool isLocked() const { return module && module->locked; }
 
+    // ── Scale lock ───────────────────────────────────────────────────────────
+    //
+    // While active, a placement or move that targets an out-of-scale pitch
+    // lands on the nearest in-scale pitch instead — the gesture always
+    // succeeds, it just cannot produce a wrong note. Recording, paste and MIDI
+    // import bypass this by design: they carry existing material.
+
+    bool scaleLockActive() const
+    {
+        return module && module->scale_index >= 0
+            && module->scale_index < (int)scaleDefinitions().size();
+    }
+
+    int restrictPitch(int pitch) const
+    {
+        if (!scaleLockActive()) return pitch;
+        return nearestDegree(pitch, module->scale_root,
+                             scaleDefinitions()[module->scale_index].degrees);
+    }
+
     //
     // Drain notes captured on the audio thread. Runs once per frame on the UI
     // thread, which is the only thread allowed to touch the note list.
@@ -170,7 +192,8 @@ struct PianoRollEditorWidget : OpaqueWidget
                 module->capture_read++;
 
                 beginEdit();
-                module->addNote(captured.pitch, captured.start, captured.length, captured.track);
+                module->addNote(captured.pitch, captured.start, captured.length, captured.track,
+                                captured.velocity);
                 endEdit("record note");
             }
         }
@@ -201,6 +224,7 @@ struct PianoRollEditorWidget : OpaqueWidget
         drawRecordingNotes(vg);
         drawPlayhead(vg);
         drawOverlay(vg);
+        drawVelocityLane(vg);
         drawCorner(vg);
         drawPreviewKey(vg);
 
@@ -233,9 +257,27 @@ struct PianoRollEditorWidget : OpaqueWidget
 
             float y = RULER_H + row * ROW_H;
 
+            // With the scale lock on, the sharp/natural zebra striping is
+            // REPLACED, not overlaid: two alternating darks plus a third
+            // "disabled" dark were unreadable together. Locked, the only
+            // distinction that matters is in-scale (uniform, light) against
+            // out-of-scale (recessed), and the striping returns when the lock
+            // is off.
+            NVGcolor row_fill;
+            if (scaleLockActive())
+            {
+                bool in_scale = inScale(pitch, module->scale_root,
+                                        scaleDefinitions()[module->scale_index].degrees);
+                row_fill = in_scale ? lane_natural : lane_out_of_scale;
+            }
+            else
+            {
+                row_fill = isSharp(pitch) ? lane_sharp : lane_natural;
+            }
+
             nvgBeginPath(vg);
             nvgRect(vg, layout.grid.pos.x, y, layout.grid.size.x, ROW_H);
-            nvgFillColor(vg, isSharp(pitch) ? lane_sharp : lane_natural);
+            nvgFillColor(vg, row_fill);
             nvgFill(vg);
 
             // The octave boundary reads stronger than an ordinary lane edge.
@@ -851,6 +893,115 @@ struct PianoRollEditorWidget : OpaqueWidget
         nvgRestore(vg);
     }
 
+    // ── Velocity lane ────────────────────────────────────────────────────────
+    //
+    // Overlay strip along the bottom edge. Collapsed it is a peek: miniature
+    // bars, purely informational, and one click opens it. Open, it edits: one
+    // bar per note start on the ACTIVE track, bar height = velocity — the same
+    // track-scoping rule as every other edit surface here.
+
+    void drawVelocityLane(NVGcontext *vg)
+    {
+        float top = velLaneTop();
+        float height = velLaneHeight();
+        bool open = velLaneOpen();
+
+        // Near-opaque scrim: the covered pitch rows should read as covered, not
+        // blend into the bars.
+        nvgBeginPath(vg);
+        nvgRect(vg, 0, top, box.size.x, height);
+        nvgFillColor(vg, nvgRGBA(0x0c, 0x18, 0x18, open ? 0xEA : 0xD0));
+        nvgFill(vg);
+
+        nvgBeginPath(vg);
+        nvgMoveTo(vg, 0, top + 0.5f);
+        nvgLineTo(vg, box.size.x, top + 0.5f);
+        nvgStrokeWidth(vg, 1.0f);
+        nvgStrokeColor(vg, line_bar);
+        nvgStroke(vg);
+
+        // Chevron in the keys column: points up when the lane can expand, down
+        // when it can collapse. Pure paths — NanoSVG-style, no font needed.
+        {
+            float cx = KEYS_W * 0.5f;
+            float cy = top + (open ? 8.0f : height * 0.5f);
+            float direction = open ? 1.0f : -1.0f;
+
+            nvgBeginPath(vg);
+            nvgMoveTo(vg, cx - 4.0f, cy - 2.0f * direction);
+            nvgLineTo(vg, cx, cy + 2.0f * direction);
+            nvgLineTo(vg, cx + 4.0f, cy - 2.0f * direction);
+            nvgStrokeWidth(vg, 1.6f);
+            nvgStrokeColor(vg, ruler_text);
+            nvgStroke(vg);
+        }
+
+        // Label, top-right. Open only: the peek strip is too short for even a
+        // 7px face to sit clear of the bars.
+        if (open)
+        {
+            std::shared_ptr<Font> font = APP->window->loadFont(
+                asset::plugin(pluginInstance, "res/fonts/ShareTechMono-Regular.ttf"));
+            if (font)
+            {
+                nvgFontSize(vg, 7.0f);
+                nvgFontFaceId(vg, font->handle);
+                nvgTextAlign(vg, NVG_ALIGN_RIGHT | NVG_ALIGN_TOP);
+                nvgFillColor(vg, ruler_text);
+                nvgText(vg, box.size.x - 4.0f, top + 3.0f, "VELOCITY", NULL);
+            }
+        }
+
+        // Bars, clipped to the grid's x range so they scroll and zoom with it.
+        nvgSave(vg);
+        nvgScissor(vg, layout.grid.pos.x, top, layout.grid.size.x, height);
+
+        const std::vector<Note> &notes = module ? module->notes : previewNotes();
+        int active = module ? module->active_track : 0;
+        const TrackColors &colors = trackColors(active);
+
+        // Scoped: unselected bars ghost right down, so the bars that CAN be
+        // grabbed are the only ones with visual weight.
+        bool scoped = velLaneScoped();
+
+        float bar_w = velBarWidth();
+        float area = height - VEL_LANE_PAD_TOP;
+        float bottom = box.size.y;
+
+        for (size_t i = 0; i < notes.size(); i++)
+        {
+            const Note &note = notes[i];
+            if (note.track != active) continue;
+
+            float x = xOfStep((float)note.start);
+            if (x + bar_w < layout.grid.pos.x) continue;
+            if (x > layout.grid.pos.x + layout.grid.size.x) continue;
+
+            float bar_h = std::max(1.0f,
+                area * sanitizeVelocity(note.velocity) / (float)MAX_VELOCITY);
+            bool selected = module && module->selection.count(note.id);
+
+            float alpha = open ? 0.95f : 0.65f;
+            if (scoped && !selected) alpha = open ? 0.18f : 0.12f;
+
+            nvgBeginPath(vg);
+            nvgRect(vg, x, bottom - bar_h, bar_w, bar_h);
+            nvgFillColor(vg, withAlpha(selected ? colors.selected_fill : colors.fill, alpha));
+            nvgFill(vg);
+
+            if (open && selected)
+            {
+                nvgBeginPath(vg);
+                nvgRect(vg, x + 0.5f, bottom - bar_h + 0.5f, bar_w - 1.0f, bar_h - 1.0f);
+                nvgStrokeWidth(vg, 1.0f);
+                nvgStrokeColor(vg, withAlpha(colors.selected_edge, 0.9f));
+                nvgStroke(vg);
+            }
+        }
+
+        nvgRestore(vg);
+    }
+
     // ── Undo ─────────────────────────────────────────────────────────────────
     //
     // Every edit is bracketed: beginEdit() before, endEdit() after. endEdit
@@ -917,7 +1068,9 @@ struct PianoRollEditorWidget : OpaqueWidget
     {
         if (module && (e.action == GLFW_PRESS || e.action == GLFW_REPEAT))
         {
-            if (e.isKeyCommand(GLFW_KEY_A, RACK_MOD_CTRL)) { selectAll(); e.consume(this); return; }
+            // No select-all keystroke, deliberately: Rack claims plain Ctrl+A
+            // before this widget sees it, and modified variants proved
+            // unreliable too. The grid context menu carries the command.
             if (e.isKeyCommand(GLFW_KEY_C, RACK_MOD_CTRL)) { copySelection(); e.consume(this); return; }
             if (e.isKeyCommand(GLFW_KEY_V, RACK_MOD_CTRL)) { pasteClipboard(); e.consume(this); return; }
 
@@ -972,6 +1125,28 @@ struct PianoRollEditorWidget : OpaqueWidget
         endEdit("delete notes");
     }
 
+    // Clears the ACTIVE track regardless of selection. Other tracks are never
+    // touched — same scoping rule as every other track-wide operation here.
+    void deleteAllOnTrack()
+    {
+        if (isLocked()) return;
+        beginEdit();
+
+        std::vector<Note> kept;
+        kept.reserve(module->notes.size());
+
+        for (size_t i = 0; i < module->notes.size(); i++)
+        {
+            const Note &note = module->notes[i];
+            if (note.track != module->active_track) kept.push_back(note);
+            else module->selection.erase(note.id);
+        }
+
+        module->notes.swap(kept);
+        module->notesChanged();
+        endEdit("delete all on track");   // a no-op on an empty track pushes nothing
+    }
+
     // The selection wins; only with nothing selected does Delete fall back to the
     // note under the pointer.
     void deleteAtCursor(Vec position)
@@ -1009,7 +1184,7 @@ struct PianoRollEditorWidget : OpaqueWidget
         {
             const Note &note = module->notes[i];
             if (!module->selection.count(note.id)) continue;
-            note_clipboard.push_back({note.pitch, note.start - earliest, note.length});
+            note_clipboard.push_back({note.pitch, note.start - earliest, note.length, note.velocity});
         }
     }
 
@@ -1037,7 +1212,7 @@ struct PianoRollEditorWidget : OpaqueWidget
             const ClipboardNote &source = note_clipboard[i];
 
             NoteId id = module->addNote(source.pitch, start + source.start_offset,
-                                        source.length, module->active_track);
+                                        source.length, module->active_track, source.velocity);
             if (id == NOTE_ID_NONE) break;   // hit the note cap: partial paste
 
             module->selection.insert(id);
@@ -1134,10 +1309,85 @@ struct PianoRollEditorWidget : OpaqueWidget
     // internal dispatcher — not sibling widgets. The press-precedence chain has to
     // be one function, or "what does this click do" fragments across five places.
 
-    enum Zone { ZONE_CORNER, ZONE_KEYS, ZONE_RULER, ZONE_GRID, ZONE_SCROLLBAR };
+    enum Zone { ZONE_CORNER, ZONE_KEYS, ZONE_RULER, ZONE_GRID, ZONE_SCROLLBAR, ZONE_VEL_LANE };
+
+    // ── Velocity lane geometry ───────────────────────────────────────────────
+    //
+    // The lane is an overlay along the bottom edge — it borrows screen space
+    // from the grid without reflowing it, so nothing jumps when it opens.
+
+    bool velLaneOpen() const { return module && module->velocity_lane_open; }
+    float velLaneHeight() const { return velLaneOpen() ? VEL_LANE_OPEN_H : VEL_LANE_PEEK_H; }
+    float velLaneTop() const { return box.size.y - velLaneHeight(); }
+
+    // Widget-local y -> velocity, measured from the lane's bottom edge.
+    int velocityAtY(float y) const
+    {
+        float area = velLaneHeight() - VEL_LANE_PAD_TOP;
+        float fraction = (box.size.y - y) / std::max(1.0f, area);
+        return rack::math::clamp((int)std::lround(fraction * MAX_VELOCITY),
+                                 MIN_VELOCITY, MAX_VELOCITY);
+    }
+
+    // Bar width tracks the zoom so bars neither collide when zoomed out nor
+    // look lost inside wide steps when zoomed in.
+    float velBarWidth() const
+    {
+        return rack::math::clamp(pixels_per_step - 1.0f, VEL_LANE_BAR_MIN_W, VEL_LANE_BAR_MAX_W);
+    }
+
+    // Whether the lane is SCOPED to the selection: true while any selected note
+    // lives on the active track. Scoped, the lane draws unselected marks as
+    // ghosts and refuses to grab them — so editing a chord is "select it in the
+    // grid, where the notes are stacked vertically and trivially clickable,
+    // then edit in the lane without ambiguity". Overlapping bars stop being a
+    // grabbing problem because the grid does the disambiguation.
+    bool velLaneScoped() const
+    {
+        if (!module) return false;
+
+        for (size_t i = 0; i < module->notes.size(); i++)
+        {
+            const Note &note = module->notes[i];
+            if (note.track == module->active_track && module->selection.count(note.id))
+                return true;
+        }
+        return false;
+    }
+
+    // The active-track note whose bar sits under x, nearest wins. Reverse
+    // iteration matches noteIndexAt, so overlapping bars resolve to the same
+    // note the grid would pick. While scoped, only selected notes are
+    // candidates.
+    int velBarIndexAt(float x) const
+    {
+        if (!module) return -1;
+
+        bool scoped = velLaneScoped();
+        float w = velBarWidth();
+        int best = -1;
+        float best_distance = 0.0f;
+
+        for (int i = (int)module->notes.size() - 1; i >= 0; i--)
+        {
+            const Note &note = module->notes[i];
+            if (note.track != module->active_track) continue;
+            if (scoped && module->selection.count(note.id) == 0) continue;
+
+            float center = xOfStep((float)note.start) + w * 0.5f;
+            float distance = std::fabs(center - x);
+
+            if (distance > w * 0.5f + VEL_LANE_HIT_SLOP) continue;
+            if (best < 0 || distance < best_distance) { best = i; best_distance = distance; }
+        }
+        return best;
+    }
 
     Zone zoneAt(Vec position) const
     {
+        // The lane overlays everything beneath its top edge, so it wins first.
+        if (position.y >= velLaneTop()) return ZONE_VEL_LANE;
+
         if (position.x < KEYS_W) return position.y < RULER_H ? ZONE_CORNER : ZONE_KEYS;
         if (position.x >= layout.scrollbarX()) return position.y < RULER_H ? ZONE_CORNER : ZONE_SCROLLBAR;
         return position.y < RULER_H ? ZONE_RULER : ZONE_GRID;
@@ -1266,7 +1516,8 @@ struct PianoRollEditorWidget : OpaqueWidget
     enum DragMode
     {
         DRAG_NONE, DRAG_PAN_X, DRAG_SCROLLBAR, DRAG_LOOP,
-        DRAG_CREATE, DRAG_MOVE, DRAG_RESIZE, DRAG_MARQUEE, DRAG_PREVIEW
+        DRAG_CREATE, DRAG_MOVE, DRAG_RESIZE, DRAG_MARQUEE, DRAG_PREVIEW,
+        DRAG_VELOCITY
     };
 
     struct OriginalNote { NoteId id; int start; int pitch; };
@@ -1290,6 +1541,13 @@ struct PianoRollEditorWidget : OpaqueWidget
     NoteId drag_collapse_to = NOTE_ID_NONE;
     std::vector<OriginalNote> drag_originals;
     std::set<NoteId> marquee_base;
+
+    // Velocity-lane drag state: the grabbed note and the pre-drag velocities of
+    // every note the gesture may rewrite (one note, or the whole selection).
+    struct OriginalVelocity { NoteId id; int velocity; };
+    std::vector<OriginalVelocity> drag_vel_originals;
+    NoteId drag_vel_note = NOTE_ID_NONE;
+    int drag_vel_grabbed_original = DEFAULT_VELOCITY;
 
     int last_note_length = DEFAULT_NOTE_LENGTH;
 
@@ -1342,6 +1600,9 @@ struct PianoRollEditorWidget : OpaqueWidget
                 else setCursor(cursor_crosshair);
                 break;
             }
+            case ZONE_VEL_LANE:
+                setCursor(cursor_hand);
+                break;
         }
 
         OpaqueWidget::onHover(e);
@@ -1459,24 +1720,8 @@ struct PianoRollEditorWidget : OpaqueWidget
 
     void openGridMenu()
     {
-        static const char *ROOT_NAMES[12] =
-            {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
-
-        struct Scale { const char *name; std::vector<int> degrees; };
-        static const std::vector<Scale> SCALES = {
-            {"Major",           {0,2,4,5,7,9,11}},
-            {"Minor",           {0,2,3,5,7,8,10}},
-            {"Harmonic Minor",  {0,2,3,5,7,8,11}},
-            {"Melodic Minor",   {0,2,3,5,7,9,11}},
-            {"Dorian",          {0,2,3,5,7,9,10}},
-            {"Phrygian",        {0,1,3,5,7,8,10}},
-            {"Lydian",          {0,2,4,6,7,9,11}},
-            {"Mixolydian",      {0,2,4,5,7,9,10}},
-            {"Locrian",         {0,1,3,5,6,8,10}},
-            {"Major Pentatonic",{0,2,4,7,9}},
-            {"Minor Pentatonic",{0,3,5,7,10}},
-            {"Blues",           {0,3,5,6,7,10}},
-        };
+        // Roots and scales come from the shared table in PianoRollGeometry.hpp —
+        // the same one the scale lock uses, so the two can never disagree.
 
         struct Amount { const char *name; int steps; };
         static const std::vector<Amount> AMOUNTS = {
@@ -1499,12 +1744,13 @@ struct PianoRollEditorWidget : OpaqueWidget
             [self](ui::Menu *root_menu) {
                 for (int root = 0; root < 12; root++)
                 {
-                    root_menu->addChild(createSubmenuItem(ROOT_NAMES[root], "",
+                    root_menu->addChild(createSubmenuItem(SCALE_ROOT_NAMES[root], "",
                         [self, root](ui::Menu *scale_menu) {
-                            for (size_t i = 0; i < SCALES.size(); i++)
+                            const std::vector<ScaleDefinition> &scales = scaleDefinitions();
+                            for (size_t i = 0; i < scales.size(); i++)
                             {
-                                std::vector<int> degrees = SCALES[i].degrees;
-                                scale_menu->addChild(createMenuItem(SCALES[i].name, "",
+                                std::vector<int> degrees = scales[i].degrees;
+                                scale_menu->addChild(createMenuItem(scales[i].name, "",
                                     [self, root, degrees]() { self->quantizeToScale(root, degrees); }));
                             }
                         }));
@@ -1533,10 +1779,12 @@ struct PianoRollEditorWidget : OpaqueWidget
 
         menu->addChild(new MenuSeparator);
 
-        menu->addChild(createMenuItem("Select all on track", "Ctrl+A",
+        menu->addChild(createMenuItem("Select all on track", "",
             [self]() { self->selectAll(); }));
         menu->addChild(createMenuItem("Delete selection", "Delete",
             [self]() { self->deleteSelection(); }));
+        menu->addChild(createMenuItem("Delete all on track", "",
+            [self]() { self->deleteAllOnTrack(); }));
 
         menu->addChild(new MenuSeparator);
 
@@ -1690,9 +1938,95 @@ struct PianoRollEditorWidget : OpaqueWidget
                 setFollow(!follow);
                 return;
 
+            case ZONE_VEL_LANE:
+                beginVelLaneDrag(position);
+                return;
+
             default:
                 return;
         }
+    }
+
+    void beginVelLaneDrag(Vec position)
+    {
+        if (!module) return;
+
+        // Collapsed, the whole strip is one big "open me" button; open, the keys
+        // column beneath the lane is the collapse control.
+        if (!velLaneOpen() || position.x < KEYS_W)
+        {
+            module->velocity_lane_open = !module->velocity_lane_open;
+            return;
+        }
+
+        if (isLocked()) return;
+
+        int index = velBarIndexAt(position.x);
+        if (index < 0) return;
+
+        const Note &grabbed = module->notes[index];
+
+        beginEdit();
+        drag_vel_note = grabbed.id;
+        drag_vel_grabbed_original = grabbed.velocity;
+        drag_vel_originals.clear();
+
+        // Dragging a bar that belongs to a multi-note selection scales the whole
+        // selection proportionally; dragging any other bar edits that one note
+        // and leaves the selection alone.
+        bool group = module->selection.count(grabbed.id) && module->selection.size() > 1;
+
+        for (size_t i = 0; i < module->notes.size(); i++)
+        {
+            const Note &note = module->notes[i];
+            if (note.track != module->active_track) continue;
+            if (group ? module->selection.count(note.id) == 0 : note.id != grabbed.id) continue;
+
+            drag_vel_originals.push_back({ note.id, note.velocity });
+        }
+
+        drag_mode = DRAG_VELOCITY;
+        applyVelocityDrag(position);   // the press itself already sets a value
+    }
+
+    void applyVelocityDrag(Vec position)
+    {
+        if (!module) return;
+
+        int target = velocityAtY(position.y);
+
+        for (size_t i = 0; i < drag_vel_originals.size(); i++)
+        {
+            const OriginalVelocity &original = drag_vel_originals[i];
+
+            Note *note = module->findNote(original.id);
+            if (!note) continue;
+
+            int value;
+            if (original.id == drag_vel_note)
+            {
+                value = target;
+            }
+            else if (drag_vel_grabbed_original > 0)
+            {
+                // Proportional: dragging the grabbed bar to half scales every
+                // selected note to half, preserving the selection's dynamics.
+                value = (int)std::lround(original.velocity
+                            * (double)target / drag_vel_grabbed_original);
+            }
+            else
+            {
+                // A grabbed original of 0 has no ratio to scale by; fall back to
+                // moving the group by the same absolute amount.
+                value = original.velocity + target;
+            }
+
+            note->velocity = sanitizeVelocity(value);
+        }
+
+        // Republish the playback snapshot so the audio thread hears the new
+        // velocities while the drag is still in progress.
+        module->notesChanged();
     }
 
     void beginGridDrag(Vec position, bool shift)
@@ -1775,7 +2109,7 @@ struct PianoRollEditorWidget : OpaqueWidget
         int start = std::max(0, (int)std::floor(step / snap) * snap);
         int length = std::max(snap, last_note_length);
 
-        NoteId id = module->addNote(pitch, start, length, module->active_track);
+        NoteId id = module->addNote(restrictPitch(pitch), start, length, module->active_track);
         if (id == NOTE_ID_NONE) return;   // at the note cap: silently refuse
 
         module->selection.insert(id);
@@ -1882,6 +2216,10 @@ struct PianoRollEditorWidget : OpaqueWidget
 
         switch (drag_mode)
         {
+            case DRAG_VELOCITY:
+                applyVelocityDrag(position);
+                break;
+
             case DRAG_PAN_X:
                 scroll_steps = std::max(0.0f, drag_scroll_origin - (position.x - drag_start_position.x) / pixels_per_step);
                 follow = false;
@@ -1905,7 +2243,7 @@ struct PianoRollEditorWidget : OpaqueWidget
                 Note *note = module->findNote(drag_note);
                 if (!note) break;
 
-                note->pitch = rack::math::clamp(pitchAtY(position.y), MIN_PITCH, MAX_PITCH);
+                note->pitch = restrictPitch(rack::math::clamp(pitchAtY(position.y), MIN_PITCH, MAX_PITCH));
 
                 // Length only tracks after real horizontal travel, or a pixel of
                 // click jitter would collapse the note to one snap unit.
@@ -1930,7 +2268,8 @@ struct PianoRollEditorWidget : OpaqueWidget
                     Note *note = module->findNote(drag_originals[i].id);
                     if (!note) continue;
                     note->start = std::max(0, drag_originals[i].start + delta_steps);
-                    note->pitch = rack::math::clamp(drag_originals[i].pitch + delta_pitch, MIN_PITCH, MAX_PITCH);
+                    note->pitch = restrictPitch(
+                        rack::math::clamp(drag_originals[i].pitch + delta_pitch, MIN_PITCH, MAX_PITCH));
                 }
 
                 // A jitter that rounds to zero is still a CLICK — that is what makes
@@ -2027,11 +2366,14 @@ struct PianoRollEditorWidget : OpaqueWidget
             else if (drag_mode == DRAG_PREVIEW) releasePreview();
             else if (drag_mode == DRAG_RESIZE) endEdit("resize note");
             else if (drag_mode == DRAG_LOOP)   endEdit("set loop length");
+            else if (drag_mode == DRAG_VELOCITY) endEdit("edit velocity");
             else abandonEdit();
         }
 
         drag_mode = DRAG_NONE;
         drag_note = NOTE_ID_NONE;
         drag_originals.clear();
+        drag_vel_originals.clear();
+        drag_vel_note = NOTE_ID_NONE;
     }
 };

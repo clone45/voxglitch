@@ -19,7 +19,11 @@
 namespace piano_roll
 {
     static const int MIDI_EXPORT_PPQ = 96;      // 96/4 = 24 ticks per step
-    static const int MIDI_EXPORT_VELOCITY = 80;
+
+    // Export writes each note's own velocity. The fixed MIDI_EXPORT_VELOCITY that
+    // used to live here is now DEFAULT_VELOCITY in PianoRollGeometry.hpp, and it
+    // keeps the same value of 80 so a pattern that predates velocity still
+    // exports byte-for-byte identically.
 
     // ── Writing ──────────────────────────────────────────────────────────────
 
@@ -110,7 +114,7 @@ namespace piano_roll
                 note_on.order = 1;
                 note_on.bytes.push_back(0x90 | channel);
                 note_on.bytes.push_back(pitch);
-                note_on.bytes.push_back((uint8_t)MIDI_EXPORT_VELOCITY);
+                note_on.bytes.push_back((uint8_t)sanitizeVelocity(note.velocity));
                 events.push_back(note_on);
 
                 MidiEvent note_off;
@@ -196,7 +200,7 @@ namespace piano_roll
         }
     };
 
-    struct PendingNoteOn { int pitch; int channel; uint32_t tick; bool active; };
+    struct PendingNoteOn { int pitch; int channel; uint32_t tick; bool active; int velocity; };
 
     //
     // Parses an SMF into note events. Returns false if the file is not an SMF.
@@ -231,7 +235,7 @@ namespace piano_roll
         double ticks_per_step = division / 4.0;
         if (ticks_per_step < 1.0) ticks_per_step = 1.0;
 
-        struct RawNote { int pitch; int channel; int chunk; int start; int length; };
+        struct RawNote { int pitch; int channel; int chunk; int start; int length; int velocity; };
         std::vector<RawNote> raw;
         std::set<int> channels_seen;
         std::vector<int> chunks_with_notes;
@@ -306,6 +310,12 @@ namespace piano_roll
                         pending[channel][pitch].channel = channel;
                         pending[channel][pitch].tick = tick;
                         pending[channel][pitch].active = true;
+
+                        // The note-ON velocity is the one that is musically
+                        // meaningful. Note-off release velocity is carried by the
+                        // same byte position and is almost always 0 or 64 filler,
+                        // so it is read and discarded below.
+                        pending[channel][pitch].velocity = velocity;
                     }
                     else if (pending[channel][pitch].active)
                     {
@@ -316,7 +326,8 @@ namespace piano_roll
                         int end = (int)std::llround(tick / ticks_per_step);
                         int length = std::max(1, end - start);
 
-                        RawNote note = { pitch, channel, (int)chunk_index, std::max(0, start), length };
+                        RawNote note = { pitch, channel, (int)chunk_index, std::max(0, start), length,
+                                         note_on.velocity };
                         raw.push_back(note);
 
                         channels_seen.insert(channel);
@@ -361,6 +372,7 @@ namespace piano_roll
             converted.start = std::max(0, note.start);
             converted.length = std::max(1, note.length);
             converted.track = rack::math::clamp(track, 0, track_count - 1);
+            converted.velocity = sanitizeVelocity(note.velocity);
             out.push_back(converted);
         }
 

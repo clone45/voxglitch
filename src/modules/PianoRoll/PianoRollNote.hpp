@@ -36,11 +36,14 @@ namespace piano_roll
         int start = 0;     // step offset from the beginning of the pattern
         int length = 1;    // steps, >= 1
         int track = 0;     // 0..TRACKS-1
+        int velocity = DEFAULT_VELOCITY;   // MIDI domain, 0..127
 
         Note() {}
 
-        Note(NoteId note_id, int note_pitch, int note_start, int note_length, int note_track)
-            : id(note_id), pitch(note_pitch), start(note_start), length(note_length), track(note_track) {}
+        Note(NoteId note_id, int note_pitch, int note_start, int note_length, int note_track,
+             int note_velocity = DEFAULT_VELOCITY)
+            : id(note_id), pitch(note_pitch), start(note_start), length(note_length),
+              track(note_track), velocity(note_velocity) {}
 
         // The half-open span [start, start + length). A note ending at step k and a
         // note starting at step k are NOT simultaneous — that is what makes
@@ -92,7 +95,7 @@ namespace piano_roll
     inline bool operator==(const Note &a, const Note &b)
     {
         return a.id == b.id && a.pitch == b.pitch && a.start == b.start
-            && a.length == b.length && a.track == b.track;
+            && a.length == b.length && a.track == b.track && a.velocity == b.velocity;
     }
     inline bool operator!=(const Note &a, const Note &b) { return !(a == b); }
 
@@ -107,6 +110,18 @@ namespace piano_roll
         if (note.length < 1 || note.length > max_length) return false;
         if (note.track < 0 || note.track >= track_count) return false;
         return true;
+    }
+
+    // Velocity is deliberately absent from isValidNote and clamped instead. It is
+    // not structural: an out-of-range value can only produce an odd voltage, so
+    // dropping the note over it would lose musical content to fix a cosmetic
+    // problem. Pitch, start, length and track all index something, and those
+    // still skip.
+    inline int sanitizeVelocity(int velocity)
+    {
+        if (velocity < MIN_VELOCITY) return MIN_VELOCITY;
+        if (velocity > MAX_VELOCITY) return MAX_VELOCITY;
+        return velocity;
     }
 
 } // namespace piano_roll

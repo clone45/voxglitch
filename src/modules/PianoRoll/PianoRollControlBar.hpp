@@ -62,11 +62,21 @@ struct PianoRollControlBar : TransparentWidget
     // Layout within the bar, all derived from its height so the bar can be
     // resized in the panel SVG without touching this.
     static constexpr float PAD = 8.0f;
-    static constexpr float SNAP_BUTTON_W = 64.0f;
-    // Space left clear for the "SNAP" label, which is drawn in the panel SVG.
-    static constexpr float SNAP_LABEL_SPACE = 34.0f;
-    // Nudge right off the label, a fifth of the button's own width.
-    static constexpr float SNAP_NUDGE = SNAP_BUTTON_W / 5.0f;
+
+    // The snap control is a STACK: the "SNAP" caption (panel SVG artwork) sits
+    // on the bar's top half, and this button — half the width of the original
+    // side-by-side design — sits beneath it.
+    static constexpr float SNAP_BUTTON_W = 32.0f;
+    static constexpr float SNAP_BUTTON_H = 16.0f;
+    // Widget-local y of the button's top edge: low enough to clear the caption
+    // above it, high enough to keep a bottom margin inside the 40px bar.
+    static constexpr float SNAP_BUTTON_Y = 18.0f;
+
+    // The scale-lock control: the same stacked caption-over-button design,
+    // sitting to the right of the snap stack. Wider, because it shows a root
+    // and an abbreviation ("C# HMin") rather than a bare fraction.
+    static constexpr float SCALE_BUTTON_W = 50.0f;
+    static constexpr float SCALE_BUTTON_X = PAD + SNAP_BUTTON_W + 12.0f;
     static constexpr float TRACK_GAP = 6.0f;
     static constexpr float REC_W = 46.0f;
     static constexpr float LOCK_W = 46.0f;
@@ -108,9 +118,24 @@ struct PianoRollControlBar : TransparentWidget
 
     rack::Rect snapRect() const
     {
-        float h = buttonHeight();
-        return rack::Rect(Vec(PAD + SNAP_LABEL_SPACE + SNAP_NUDGE, rowCenterY() - h * 0.5f),
-                          Vec(SNAP_BUTTON_W, h));
+        return rack::Rect(Vec(PAD, SNAP_BUTTON_Y),
+                          Vec(SNAP_BUTTON_W, SNAP_BUTTON_H));
+    }
+
+    rack::Rect scaleRect() const
+    {
+        return rack::Rect(Vec(SCALE_BUTTON_X, SNAP_BUTTON_Y),
+                          Vec(SCALE_BUTTON_W, SNAP_BUTTON_H));
+    }
+
+    std::string scaleButtonLabel() const
+    {
+        if (!module || module->scale_index < 0
+            || module->scale_index >= (int)scaleDefinitions().size())
+            return "OFF";
+
+        return std::string(SCALE_ROOT_NAMES[rack::math::clamp(module->scale_root, 0, 11)])
+             + " " + scaleDefinitions()[module->scale_index].abbrev;
     }
 
     float trackSquareSize() const { return std::min(26.0f, box.size.y - 8.0f); }
@@ -168,6 +193,7 @@ struct PianoRollControlBar : TransparentWidget
             asset::plugin(pluginInstance, "res/fonts/ShareTechMono-Regular.ttf"));
 
         drawSnap(vg, font);
+        drawScale(vg, font);
         drawTracks(vg, font);
         drawLock(vg, font);
         drawRec(vg, font);
@@ -179,8 +205,6 @@ struct PianoRollControlBar : TransparentWidget
     {
         rack::Rect r = snapRect();
 
-        // The "SNAP" caption is part of the panel artwork, not drawn here.
-
         nvgBeginPath(vg);
         nvgRoundedRect(vg, r.pos.x, r.pos.y, r.size.x, r.size.y, 3.0f);
         nvgFillColor(vg, valueBackground());
@@ -190,12 +214,49 @@ struct PianoRollControlBar : TransparentWidget
         {
             // nvgFontFaceId is set explicitly: drawSnap runs FIRST, so unlike the
             // later draws it cannot inherit a face from a previous call.
-            nvgFontSize(vg, 12.5f);
             nvgFontFaceId(vg, font->handle);
+
+            // Caption above the button, widget-drawn like SCALE's — the SVG no
+            // longer carries it, so both stacked controls are styled in one
+            // place and stay identical.
+            nvgFontSize(vg, 7.0f);
             nvgTextAlign(vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
+            nvgFillColor(vg, labelText());
+            nvgText(vg, r.pos.x + r.size.x * 0.5f, SNAP_BUTTON_Y - 8.0f, "SNAP", NULL);
+
+            nvgFontSize(vg, 10.5f);
             nvgFillColor(vg, valueText());
-            nvgText(vg, r.pos.x + r.size.x * 0.5f, rowCenterY(),
+            nvgText(vg, r.pos.x + r.size.x * 0.5f, r.pos.y + r.size.y * 0.5f,
                     snapLabel(snapSteps()).c_str(), NULL);
+        }
+    }
+
+    void drawScale(NVGcontext *vg, std::shared_ptr<Font> font)
+    {
+        rack::Rect r = scaleRect();
+
+        nvgBeginPath(vg);
+        nvgRoundedRect(vg, r.pos.x, r.pos.y, r.size.x, r.size.y, 3.0f);
+        nvgFillColor(vg, valueBackground());
+        nvgFill(vg);
+
+        if (font)
+        {
+            nvgFontFaceId(vg, font->handle);
+
+            // Caption above the button — drawn here rather than in the panel
+            // SVG, unlike SNAP's: panel text has to be authored as paths
+            // (NanoSVG renders no <text>), and this widget already has the
+            // font.
+            nvgFontSize(vg, 7.0f);
+            nvgTextAlign(vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
+            nvgFillColor(vg, labelText());
+            nvgText(vg, r.pos.x + r.size.x * 0.5f, SNAP_BUTTON_Y - 8.0f, "SCALE", NULL);
+
+            nvgFontSize(vg, 9.5f);
+            nvgFillColor(vg, valueText());
+            nvgText(vg, r.pos.x + r.size.x * 0.5f, r.pos.y + r.size.y * 0.5f,
+                    scaleButtonLabel().c_str(), NULL);
         }
     }
 
@@ -304,12 +365,52 @@ struct PianoRollControlBar : TransparentWidget
         }
     }
 
+    void openScaleMenu()
+    {
+        if (!module) return;
+
+        PianoRoll *m = module;
+        ui::Menu *menu = createMenu();
+
+        menu->addChild(createMenuLabel("Scale lock"));
+
+        menu->addChild(createMenuItem("Off", CHECKMARK(m->scale_index < 0),
+            [m]() { m->scale_index = -1; }));
+
+        menu->addChild(new MenuSeparator);
+
+        menu->addChild(createSubmenuItem("Root", SCALE_ROOT_NAMES[rack::math::clamp(m->scale_root, 0, 11)],
+            [m](ui::Menu *root_menu) {
+                for (int root = 0; root < 12; root++)
+                {
+                    root_menu->addChild(createMenuItem(SCALE_ROOT_NAMES[root],
+                        CHECKMARK(m->scale_root == root),
+                        [m, root]() { m->scale_root = root; }));
+                }
+            }));
+
+        menu->addChild(createSubmenuItem("Scale",
+            m->scale_index >= 0 && m->scale_index < (int)scaleDefinitions().size()
+                ? scaleDefinitions()[m->scale_index].name : "Off",
+            [m](ui::Menu *scale_menu) {
+                const std::vector<ScaleDefinition> &scales = scaleDefinitions();
+                for (size_t i = 0; i < scales.size(); i++)
+                {
+                    int index = (int)i;
+                    scale_menu->addChild(createMenuItem(scales[i].name,
+                        CHECKMARK(m->scale_index == index),
+                        [m, index]() { m->scale_index = index; }));
+                }
+            }));
+    }
+
     // ── Interaction ──────────────────────────────────────────────────────────
 
     // True only over an actual control, never over the bar's empty space.
     bool hitsControl(Vec position) const
     {
         if (snapRect().contains(position)) return true;
+        if (scaleRect().contains(position)) return true;
         if (lockRect().contains(position)) return true;
         if (recRect().contains(position)) return true;
 
@@ -358,6 +459,7 @@ struct PianoRollControlBar : TransparentWidget
             }
 
             if (snapRect().contains(e.pos)) { openSnapMenu(); e.consume(this); return; }
+            if (scaleRect().contains(e.pos)) { openScaleMenu(); e.consume(this); return; }
         }
 
         // Nothing was hit: leave the event alone so the module can be dragged.

@@ -30,8 +30,8 @@ struct PianoRollWidget : ModuleWidget
         }
 
         // Screws. The editor column is x-disjoint from every screw box (screws
-        // occupy x 15-30 and 750-765 only), which is what lets the editor span
-        // nearly the full panel height.
+        // occupy x 15-30 and, on the 56 HP panel, 810-825 only), which is what
+        // lets the editor span nearly the full panel height.
         addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, 0)));
         addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
         addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
@@ -45,9 +45,15 @@ struct PianoRollWidget : ModuleWidget
         addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("rec_voct_input"), module, PianoRoll::REC_VOCT_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed("rec_gate_input"), module, PianoRoll::REC_GATE_INPUT));
 
-        // Eight tracks, each a polyphonic V/OCT + GATE pair.
+        Vec rec_vel_position = panelHelper.findNamed("rec_vel_input");
+        if (rec_vel_position.y > 0.0f)
+        {
+            addInput(createInputCentered<VoxglitchInputPort>(rec_vel_position, module, PianoRoll::REC_VEL_INPUT));
+        }
+
+        // Eight tracks, each a polyphonic V/OCT + GATE + VEL group.
         //
-        // Each pair sits on a plate tinted with that track's colour, so a cable
+        // Each group sits on a plate tinted with that track's colour, so a cable
         // can be traced back to the notes that drive it. The plates are added
         // BEFORE the jacks so they draw underneath, and are sized from the jack
         // positions rather than a panel rect — the panel no longer carries one.
@@ -57,11 +63,17 @@ struct PianoRollWidget : ModuleWidget
 
             Vec voct_position = panelHelper.findNamed("voct_" + number + "_output");
             Vec gate_position = panelHelper.findNamed("gate_" + number + "_output");
+            Vec vel_position  = panelHelper.findNamed("vel_" + number + "_output");
 
             if (voct_position.y > 0.0f)
             {
+                // The plate ends at the rightmost jack the panel actually
+                // carries, so a panel without the VEL column still gets a
+                // correctly sized plate rather than one running off the edge.
+                float rightmost = (vel_position.y > 0.0f) ? vel_position.x : gate_position.x;
+
                 float lane_left = voct_position.x - 22.0f;
-                float lane_right = gate_position.x + 22.0f;
+                float lane_right = rightmost + 22.0f;
 
                 rack::Rect lane;
                 lane.pos = Vec(lane_left, voct_position.y - 18.0f);
@@ -75,6 +87,15 @@ struct PianoRollWidget : ModuleWidget
 
             addOutput(createOutputCentered<VoxglitchOutputPort>(
                 panelHelper.findNamed("gate_" + number + "_output"), module, PianoRoll::GATE_OUTPUTS + track));
+
+            // Guarded, unlike the pair above: a panel without the VEL column is a
+            // supported state during panel work, and findNamed returns (0,0) for a
+            // missing id, which would stack all eight jacks in the corner.
+            if (vel_position.y > 0.0f)
+            {
+                addOutput(createOutputCentered<VoxglitchOutputPort>(
+                    vel_position, module, PianoRoll::VELOCITY_OUTPUTS + track));
+            }
         }
 
         // The editor surface. Drawn even without a module so the browser preview

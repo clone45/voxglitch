@@ -48,6 +48,73 @@ namespace piano_roll
     static constexpr int PITCH_COUNT = MAX_PITCH - MIN_PITCH + 1;
     static constexpr int DEFAULT_TOP_PITCH = 79;   // G5 at the top row
 
+    // ── Velocity ─────────────────────────────────────────────────────────────
+    //
+    // Stored in the MIDI domain, 0..127, rather than as a voltage or a 0..1
+    // float. Import and export are first-class here, and the MIDI domain is the
+    // only one that round-trips a file byte-for-byte.
+    //
+    // The default is 80 because that is the fixed value every note was exported
+    // with before velocity existed. A patch saved by an older build loads with
+    // every note at 80 and exports byte-identically to what it did before.
+    static constexpr int MIN_VELOCITY = 0;
+    static constexpr int MAX_VELOCITY = 127;
+    static constexpr int DEFAULT_VELOCITY = 80;
+
+    // Velocity leaves the module as 0..10 V, matching Rack's own MIDI-CV.
+    static constexpr float VELOCITY_OUTPUT_VOLTS = 10.0f;
+
+    // ── Velocity lane ────────────────────────────────────────────────────────
+    //
+    // An OVERLAY along the bottom of the editor, never a reflow: expanding it
+    // covers the lowest pitch rows rather than resizing the grid, so the note
+    // under the cursor never jumps when it opens.
+    //
+    // Collapsed it is a peek strip: always visible, drawing miniature bars, and
+    // clicking anywhere on it expands the lane. That strip is the discoverability
+    // story — a lane reachable only through a context menu never gets found.
+    static constexpr float VEL_LANE_PEEK_H = 10.0f;
+    static constexpr float VEL_LANE_OPEN_H = 64.0f;
+    static constexpr float VEL_LANE_PAD_TOP = 3.0f;    // headroom above a full bar
+    static constexpr float VEL_LANE_BAR_MAX_W = 7.0f;  // bars never wider than this
+    static constexpr float VEL_LANE_BAR_MIN_W = 3.0f;  // ...or thinner than this
+    static constexpr float VEL_LANE_HIT_SLOP = 3.0f;   // extra pixels either side of a bar
+
+    // ── Scales ───────────────────────────────────────────────────────────────
+    //
+    // One table serving both the grid menu's one-shot "quantize to scale" and
+    // the persistent scale lock, so the two features can never disagree about
+    // what "Dorian" means. The abbreviation is what fits on the control-bar
+    // button next to a root name.
+    struct ScaleDefinition
+    {
+        const char *name;
+        const char *abbrev;
+        std::vector<int> degrees;
+    };
+
+    static const char *const SCALE_ROOT_NAMES[12] =
+        {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+
+    inline const std::vector<ScaleDefinition> &scaleDefinitions()
+    {
+        static const std::vector<ScaleDefinition> definitions = {
+            {"Major",            "Maj",  {0,2,4,5,7,9,11}},
+            {"Minor",            "Min",  {0,2,3,5,7,8,10}},
+            {"Harmonic Minor",   "HMin", {0,2,3,5,7,8,11}},
+            {"Melodic Minor",    "MMin", {0,2,3,5,7,9,11}},
+            {"Dorian",           "Dor",  {0,2,3,5,7,9,10}},
+            {"Phrygian",         "Phr",  {0,1,3,5,7,8,10}},
+            {"Lydian",           "Lyd",  {0,2,4,6,7,9,11}},
+            {"Mixolydian",       "Mix",  {0,2,4,5,7,9,10}},
+            {"Locrian",          "Loc",  {0,1,3,5,6,8,10}},
+            {"Major Pentatonic", "MajP", {0,2,4,7,9}},
+            {"Minor Pentatonic", "MinP", {0,3,5,7,10}},
+            {"Blues",            "Blu",  {0,3,5,6,7,10}},
+        };
+        return definitions;
+    }
+
     static constexpr int WHEEL_PITCH_STEP = 2;     // semitones per wheel notch
     static constexpr int WHEEL_STEP_SCROLL = 8;    // steps per wheel notch over the ruler
 
