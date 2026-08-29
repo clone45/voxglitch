@@ -235,3 +235,24 @@ node, exactly as before.
 Deliberately out of v1: S-curves. They need a second parameter and a second
 gesture. If they earn their way in, shift-drag on the same diamond is the
 natural slot.
+
+### Bend revision after the feel test (same day)
+Bret: "It doesn't quite feel right… I can only move the diamond up and down.
+And when I move it up all the way, the shape feels weird." Two separate
+flaws, one revision:
+
+- **Family swap.** frac^k grows a CORNER at high exponents — near-vertical
+  at one end, flat everywhere else (his screenshot). Replaced with the
+  exponential-approach (RC-charge) family
+  `f_b(x) = (1-e^(-bx))/(1-e^(-b))`, b in [-10,10]: saturates smoothly at
+  extremes, and the exp and log sides are exact mirrors
+  (`f_-b(x) = 1 - f_b(1-x)`), which the power family never was.
+- **2D solve.** The drag no longer reads only the pointer's height at the
+  midpoint: it solves b so the curve passes THROUGH the pointer, both axes
+  (f_b is monotone in b for fixed x, so 40 bisection steps, no derivative,
+  cannot diverge). The handle rides the curve at the pointer during the
+  drag. It feels like pulling a rubber band.
+- Detent widened to |b| < 0.4 to suit the new parameter's scale.
+
+The bend's stored meaning changed with the family. No compatibility shim:
+the old meaning existed for one unreleased commit.

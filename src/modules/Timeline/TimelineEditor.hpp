@@ -302,14 +302,17 @@ struct TimelineEditorWidget : OpaqueWidget
     }
 
     // ── segment bend (curves between nodes) ────────────────────────────────
-    // One parameter per segment: value = v0 + (v1-v0) * frac^(2^bend). The
-    // handle is a diamond at the segment's midpoint, ON the curve — drag it
-    // up or down and the curve follows the pointer. Passing the linear
-    // midpoint snaps briefly straight (the detent), so a straight line is
-    // part of the same gesture; right-clicking the handle straightens too.
+    // One parameter per segment, the exponential-approach shape:
+    // value = v0 + (v1-v0) * (1-e^(-b*frac))/(1-e^(-b)). The handle is a
+    // diamond at the segment's midpoint, ON the curve. While dragging, the
+    // bend is solved so the curve passes through the POINTER — both axes, so
+    // it feels like pulling a rubber band, not riding a vertical slider
+    // (Bret's feel note: vertical-only read as a constraint). The drag has a
+    // straight detent, and right-clicking the handle straightens.
     static double bendFrac(double frac, double bend)
     {
-        return (bend == 0.0) ? frac : std::pow(frac, std::exp2(bend));
+        if (bend < 1e-9 && bend > -1e-9) return frac;
+        return (1.0 - std::exp(-bend * frac)) / (1.0 - std::exp(-bend));
     }
 
     // The curve's y at pixel x inside segment i.
@@ -596,20 +599,29 @@ struct TimelineEditorWidget : OpaqueWidget
         }
         else if (dragMode == DRAG_BEND)
         {
-            // Pull the midpoint toward the pointer: invert
-            // mid = v0 + (v1-v0) * 0.5^k for k, store bend = log2(k).
+            // Solve the bend so the curve passes through the POINTER: find b
+            // with f_b(frac_p) = u_p. f_b is monotone in b for fixed frac, so
+            // bisection is exact enough and cannot diverge.
             int L = laneIdx();
             timeline_dsp::LaneSet* ls = module->beginEdit();
             if (dragSeg >= 0 && dragSeg + 1 < ls->count[L])
             {
+                double t0 = ls->t[L][dragSeg], t1 = ls->t[L][dragSeg + 1];
                 double v0 = ls->v[L][dragSeg], v1 = ls->v[L][dragSeg + 1];
-                if (std::fabs(v1 - v0) > 1e-9)
+                if (std::fabs(v1 - v0) > 1e-9 && t1 > t0)
                 {
+                    double fp = (x2t(dragPos.x) - t0) / (t1 - t0);
+                    fp = tlClamp(fp, 0.05, 0.95);
                     double u = (y2v(dragPos.y) - v0) / (v1 - v0);
-                    u = tlClamp(u, 0.004, 0.996);
-                    double k = std::log(u) / std::log(0.5);
-                    double bend = tlClamp(std::log(k) / std::log(2.0), -3.0, 3.0);
-                    if (std::fabs(bend) < 0.12) bend = 0.0;   // the detent
+                    u = tlClamp(u, 0.02, 0.98);
+                    double lo = -10.0, hi = 10.0;
+                    for (int it = 0; it < 40; it++)
+                    {
+                        double mid = 0.5 * (lo + hi);
+                        if (bendFrac(fp, mid) < u) lo = mid; else hi = mid;
+                    }
+                    double bend = 0.5 * (lo + hi);
+                    if (std::fabs(bend) < 0.4) bend = 0.0;   // the detent
                     ls->b[L][dragSeg] = bend;
                 }
             }
@@ -919,7 +931,16 @@ struct TimelineEditorWidget : OpaqueWidget
             int seg = (dragMode == DRAG_BEND) ? dragSeg : hoverSeg;
             if (seg >= 0 && seg + 1 < n && !(module && module->locked))
             {
+                // While dragging, the handle rides the curve AT THE POINTER,
+                // since that is the point the solve pins the curve through.
                 Vec hp = bendHandlePos(seg);
+                if (dragMode == DRAG_BEND)
+                {
+                    float hx = tlClamp(dragPos.x,
+                                       t2x(ls.t[L][seg]) + 4.f,
+                                       t2x(ls.t[L][seg + 1]) - 4.f);
+                    hp = Vec(hx, segCurveY(ls, L, seg, hx));
+                }
                 bool hot = (dragMode == DRAG_BEND) || bendHandleSeg(mousePos) >= 0;
                 float r = HANDLE_R + (hot ? 1.f : 0.f);
                 nvgBeginPath(vg);

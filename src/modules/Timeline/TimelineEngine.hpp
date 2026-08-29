@@ -45,8 +45,12 @@ struct LaneSet
     double t[TL_LANES][TL_MAX_NODES];      // beats, ascending
     double v[TL_LANES][TL_MAX_NODES];      // volts, -10..+10
     // Segment bend, stored on the segment's LEFT node: 0 = straight line,
-    // else value = v0 + (v1-v0) * frac^(2^bend), clamped to [-3, 3] (an
-    // exponent from 1/8 to 8 — exponential through linear to logarithmic).
+    // else the exponential-approach (RC-charge) shape
+    //   value = v0 + (v1-v0) * (1 - e^(-b*frac)) / (1 - e^(-b))
+    // with b in [-10, 10]. Chosen over frac^k after Bret's feel test: the
+    // power curve grows a CORNER at extremes (near-vertical then flat),
+    // while this family saturates smoothly, and its exp and log sides are
+    // exact mirror images (f_-b(x) = 1 - f_b(1-x)), which frac^k never was.
     // The last node's bend is meaningless (no segment to its right).
     double b[TL_LANES][TL_MAX_NODES];
 
@@ -199,10 +203,13 @@ struct Lane
         double t0 = ls.t[idx][c], t1 = ls.t[idx][c + 1];
         double v0 = ls.v[idx][c], v1 = ls.v[idx][c + 1];
         double frac = (t1 > t0) ? (t - t0) / (t1 - t0) : 0.0;
-        // Segment bend: frac^(2^bend). A straight segment skips the pow
-        // entirely, so lanes without curves cost exactly what they always did.
+        // Segment bend: the exponential-approach shape. A straight segment
+        // skips the exps entirely, so lanes without curves cost exactly what
+        // they always did. Endpoints are exact for ANY bend (f(0)=0, f(1)=1
+        // by construction), so a bend can never step at a node.
         double bend = ls.b[idx][c];
-        if (bend != 0.0) frac = std::pow(frac, std::exp2(bend));
+        if (bend > 1e-9 || bend < -1e-9)
+            frac = (1.0 - std::exp(-bend * frac)) / (1.0 - std::exp(-bend));
         value = v0 + frac * (v1 - v0);
     }
 

@@ -49,17 +49,21 @@ int main()
 
     printf("\nSegment bend (curves between nodes)\n");
     {
+        // The exponential-approach family:
+        //   f_b(x) = (1 - e^(-b x)) / (1 - e^(-b)), so
+        //   f_b(0.5) = 1 / (1 + e^(-b/2)) — a logistic in b.
         TimelineEngine c;
         LaneSet m;
-        m.add(0, 0.0, 0.0, 1.0);       // bend +1: exponent 2
+        m.add(0, 0.0, 0.0, 2.0);
         m.add(0, 4.0, 10.0);
+        double mid = 10.0 / (1.0 + std::exp(-1.0));   // b=2 -> 7.3106
         c.lanes[0].seek(2.0); c.lanes[0].eval(m);
-        near("bend +1 at the midpoint reads 0.5^2 of the range",
-             c.lanes[0].value, 2.5, 1e-9);
-        m.b[0][0] = -1.0;              // exponent 1/2
+        near("bend +2 at the midpoint follows the exp family",
+             c.lanes[0].value, mid, 1e-9);
+        m.b[0][0] = -2.0;
         c.lanes[0].seek(2.0); c.lanes[0].eval(m);
-        near("bend -1 at the midpoint reads 0.5^0.5 of the range",
-             c.lanes[0].value, 10.0 * std::pow(0.5, 0.5), 1e-9);
+        near("bend -2 mirrors it exactly (10 - the +2 value)",
+             c.lanes[0].value, 10.0 - mid, 1e-9);
         m.b[0][0] = 0.0;
         c.lanes[0].seek(2.0); c.lanes[0].eval(m);
         near("bend 0 is exactly linear", c.lanes[0].value, 5.0);
