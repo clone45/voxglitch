@@ -1,5 +1,11 @@
 name: Build for Linux
 
+# Builds against an explicitly pinned Rack SDK, like the macOS workflow,
+# instead of the qno/rack-plugin-toolchain Docker image. That image bundles
+# its own (older) SDK, and the version skew is what kept this workflow red:
+# code using Rack 2.6 API (e.g. HoverKeyEvent::isKeyCommand) built fine on
+# macOS and in the library's own toolchain but failed here.
+
 on:
   push:
     branches: [ main, master ]
@@ -9,35 +15,46 @@ on:
   workflow_dispatch:
 
 env:
-  rack-plugin-toolchain-dir: /home/build/rack-plugin-toolchain
+  rack-sdk-version: 2.6.4
 
 jobs:
   build-linux:
     name: Linux x64
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/qno/rack-plugin-toolchain-win-linux
-      options: --user root
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build plugin using toolchain
+      - name: Download and setup VCV Rack SDK
         run: |
-          export PLUGIN_DIR=$GITHUB_WORKSPACE
-          cd ${{ env.rack-plugin-toolchain-dir }}
-          make plugin-build-lin-x64
+          cd $HOME
+          wget -q https://vcvrack.com/downloads/Rack-SDK-${{ env.rack-sdk-version }}-lin-x64.zip
+          unzip -q Rack-SDK-${{ env.rack-sdk-version }}-lin-x64.zip
+          echo "RACK_DIR=$HOME/Rack-SDK" >> $GITHUB_ENV
 
-      - name: Upload artifact
+      - name: Build plugin
+        run: |
+          make -j$(nproc) RACK_DIR=$RACK_DIR
+          ls -lh plugin.so
+
+      - name: Create distribution package
+        run: |
+          make dist RACK_DIR=$RACK_DIR
+          ls -lh dist/
+
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ env.rack-plugin-toolchain-dir }}/plugin-build
-          name: voxglitch-linux-${{ github.run_number }}-${{ github.sha }}
+          name: voxglitch-linux-x64-${{ github.run_number }}-${{ github.sha }}
+          path: |
+            dist/*.vcvplugin
+          retention-days: 30
 
       - name: Upload release assets (if tagged)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ${{ env.rack-plugin-toolchain-dir }}/plugin-build/*.vcvplugin
+            dist/*.vcvplugin
           token: ${{ secrets.GITHUB_TOKEN }}
