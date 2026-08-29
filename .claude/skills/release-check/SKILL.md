@@ -15,6 +15,15 @@ python3 scripts/release_check.py --module "Piano Roll" --kind update
   (`New module: Piano Roll (updated)`); omit both for a plain plugin update.
 - `--skip-build` skips the compile sweep and cppcheck for a fast re-run after
   fixing a non-code finding.
+
+**Rack SDK version lives in FOUR places and must move together**: the
+`rack-sdk-version` env in `.github/workflows/build-macos.yml`,
+`build-linux.yml` and `build-windows.yml`, plus the local `../Rack-SDK` this
+check compiles against. Skew between them is how the Linux workflow stayed
+red for eight months (the CI image had a pre-2.6 SDK while local and macOS
+had 2.6.4, so `isKeyCommand` built here and failed there). When bumping the
+SDK, change all three workflows and refresh the local SDK in the same
+sitting.
 - `--version-ok` passes the version-bump check when Bret has confirmed the
   current version is meant to cover source commits made since it changed.
   Only pass it on his explicit say-so.

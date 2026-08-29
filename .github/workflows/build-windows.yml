@@ -8,6 +8,12 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+# Keep this pinned to the same version as build-macos.yml, build-linux.yml
+# and the local ../Rack-SDK the release check compiles against — SDK version
+# skew between them is exactly how the Linux workflow stayed red for months.
+env:
+  rack-sdk-version: 2.6.4
+
 jobs:
   build-windows:
     name: Windows x64
@@ -38,8 +44,8 @@ jobs:
       - name: Download and setup VCV Rack SDK
         run: |
           cd $HOME
-          wget https://vcvrack.com/downloads/Rack-SDK-2.6.4-win-x64.zip
-          unzip Rack-SDK-2.6.4-win-x64.zip
+          wget https://vcvrack.com/downloads/Rack-SDK-${{ env.rack-sdk-version }}-win-x64.zip
+          unzip Rack-SDK-${{ env.rack-sdk-version }}-win-x64.zip
 
       - name: Build plugin
         run: |
