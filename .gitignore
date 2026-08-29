@@ -14,3 +14,7 @@ toolchain-build.log
 .claude/settings.local.json
 __pycache__/
 *.pyc
+
+# Local CI-artifact downloads (gh run download)
+/dist-mac/
+/dist-win/

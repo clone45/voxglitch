@@ -30,17 +30,20 @@ Piano Roll is an eight-track note sequencer with a full piano-roll editor. Draw 
 - **RST** - Rewinds to the start of the pattern and silences all voices.
 - **REC V/O** - Pitch input for recording. Polyphonic.
 - **REC GT** - Gate input for recording. Polyphonic.
+- **REC VEL** - Velocity input for recording, 0-10V. Polyphonic. Sampled once at each gate's rising edge. Leave it unpatched and recorded notes get the default velocity, exactly as before.
 
 ### Outputs
 
 - **V/O 1-8** - Pitch output for each track, C4 = 0V. Polyphonic.
 - **GT 1-8** - Gate output for each track, 10V while a note sounds. Polyphonic.
+- **VEL 1-8** - Velocity output for each track, 0-10V, matching Rack's MIDI-CV convention. Polyphonic, channel-for-channel with the pitch and gate. The level holds after the gate falls, so an envelope in its release stage still reads the velocity of the note that is releasing.
 
 Each track's channel count is derived from your pattern: it equals the largest number of notes sounding at once anywhere on that track. Downstream modules therefore see an honest channel count rather than a fixed sixteen. Back-to-back notes get a brief gate dip between them so an envelope re-triggers instead of hearing one long note.
 
 ### The Control Bar
 
 - **Snap** - The editing grid: `1/16`, `1/8`, `1/4`, `1/2` or `Bar`. Governs painting, moving, resizing and pasting.
+- **Scale** - Locks editing to a key. Pick a root and a scale and any note you paint or drag lands on the nearest pitch in that scale - the gesture always succeeds, it just cannot produce a wrong note. Out-of-scale rows darken in the grid while the lock is on. Notes already in the pattern are never moved by it, and recording, pasting and MIDI import are deliberately exempt: the lock governs what the mouse creates. The quantize menu remains the tool for conforming existing material. `OFF` by default.
 - **Track 1-8** - The active track. Whatever you draw or record lands here, and only the active track can be edited. The other seven stay on screen dimmed so you can line parts up. Switching tracks clears the current selection.
 - **LOCK** - Freezes editing so a finished pattern cannot be disturbed. The grid takes on a red tint. You can still navigate, audition and select; you cannot paint, move, resize, delete, paste, import or record.
 - **REC** - Arms recording.
@@ -58,7 +61,6 @@ The editor has a single implicit tool. What a click does depends on what is unde
 Keyboard commands work while the pointer is over the grid:
 
 - `Delete` / `Backspace` - Delete the selection, or the note under the pointer when nothing is selected.
-- `Ctrl+A` - Select every note on the active track.
 - `Ctrl+C` / `Ctrl+V` - Copy and paste. Pasted notes land after the last note on the active track, so repeated pastes append. The clipboard is shared between Piano Roll modules and carries no track, which makes copy - switch track - paste the way to move material between tracks.
 - `Esc` - Deselect.
 - `Ctrl+Z` - Undo. Every gesture is one undo step, and undoing a delete restores the selection too.
@@ -84,19 +86,31 @@ The amber marker in the ruler sets where the pattern wraps. Drag it to change th
 
 A note that starts before the marker but runs past it keeps sounding across the wrap, and its tail is drawn at the start of the pattern so you can see what you are hearing. A note that starts *after* the marker never plays at all, and is drawn as an outline to show that it is present but silent.
 
+### The Velocity Lane
+
+The thin strip along the bottom edge of the editor shows each note's velocity as a miniature bar. Click it to expand the lane; click the arrow at its left edge to collapse it again. The lane overlays the lowest rows of the grid rather than resizing it, so nothing jumps when it opens, and whether it is open is saved with the patch.
+
+With the lane open, each note on the active track gets a bar at its start position - drag a bar up or down to set that note's velocity, and the change is audible while you drag. Dragging a bar that belongs to a multi-note selection scales the whole selection proportionally, preserving its dynamics.
+
+When notes are selected, the lane shows only their bars at full strength and the rest ghosted - so to edit one note of a chord, select it in the grid, where the chord's notes are stacked vertically and easy to tell apart, and the lane follows.
+
+Velocity travels with notes through copy, paste, undo, patch save and MIDI - imported files keep each note's recorded velocity, and exports write it back.
+
 ### Recording
 
 Patch a pitch source into **REC V/O** and its gate into **REC GT**, arm **REC**, and start the clock. What you play is written to the active track as you play it, over the top of whatever is already there, so you can build a part in passes.
 
 Everything is quantized to the sixteenth-note grid. A note's start snaps to the nearest step - play slightly early or slightly late and it still lands where you meant - and its length is how long you held the note, rounded to whole steps. The note in progress is drawn in red, growing to the playhead, so you can see what you are about to commit.
 
-Both recording inputs are polyphonic, so a chord from a polyphonic keyboard or MIDI-CV interface records as a chord. A mono pitch source paired with a polyphonic gate source works too. If a source never drops its gate between notes - an arpeggiator at full gate length, or a slid line - a change of pitch splits the recording into separate notes rather than one long smear.
+If a velocity source is patched into **REC VEL**, each note's velocity is captured at the moment its gate opens - velocity is a property of the attack, so a moving CV cannot rewrite a note that is already sounding. All the recording inputs are polyphonic, so a chord from a polyphonic keyboard or MIDI-CV interface records as a chord. A mono pitch source paired with a polyphonic gate source works too. If a source never drops its gate between notes - an arpeggiator at full gate length, or a slid line - a change of pitch splits the recording into separate notes rather than one long smear.
 
 Recording needs a running clock: nothing is captured until the module has seen enough clock pulses to know how long a step is, and stopping mid-note discards that note rather than guessing its length.
 
 ### Right-Click on the Grid
 
-- **Quantize** - Snaps note *pitches* to the nearest note of a key and scale. Timing is left alone. Twelve roots and twelve scales, from the modes through to pentatonics and blues.
+- **Quantize** - Snaps note *pitches* to the nearest note of a key and scale. Timing is left alone. Twelve roots and twelve scales, from the modes through to pentatonics and blues - the same list the Scale lock uses.
+- **Select all on track** - Selects every note on the active track.
+- **Delete all on track** - Clears the active track. Other tracks are untouched, and one press of undo brings everything back.
 - **Shift Left / Shift Right** - Rotates notes in time by a musical amount, wrapping around the loop, so a note pushed past the end reappears at the start.
 - **Import MIDI...** - Loads a standard MIDI file, replacing the pattern. Notes are quantized to the sixteenth grid, tracks are assigned by MIDI channel where the file uses more than one, and the loop grows to fit. One press of undo puts your pattern back.
 - **Export MIDI...** - Writes the pattern as a standard multi-track MIDI file that opens in any DAW.
