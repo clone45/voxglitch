@@ -41,5 +41,7 @@ What it checks, for context (the script is authoritative):
   `-fsyntax-only` is not used because it misses codegen-time warnings)
 - `scripts/static_analysis/analyze.py` reports nothing beyond the baseline
 - `plugin.json` version changed since the last `src/` commit
-- every module's `manualUrl` is present AND resolves (HEAD request)
+- every module's `manualUrl` resolves (HEAD request). A *missing* manualUrl
+  is warning-only — fourteen legacy modules have never had one (Bret's call,
+  2026-08-29) — but a set-and-broken or non-http URL still fails.
 - HEAD's commit exists on GitHub

@@ -256,13 +256,18 @@ def check_module_manual_urls():
     invalid = [(m.get("slug", "?"), m["manualUrl"]) for m in modules
                if m.get("manualUrl") and not m["manualUrl"].startswith("http")]
 
-    if missing or invalid:
-        parts = []
-        if missing:
-            parts.append("missing manualUrl: " + ", ".join(missing))
-        if invalid:
-            parts.append("invalid manualUrl: " + ", ".join(f"{s}={u}" for s, u in invalid))
-        return {"name": "Module manualUrl set", "passed": False, "detail": "; ".join(parts)}
+    # A MISSING manualUrl is warning-only (Bret's call, 2026-08-29): fourteen
+    # legacy modules have never had one, and blocking every release on paying
+    # that debt helps nobody. An INVALID one still fails -- a set-but-broken
+    # URL is a typo in this release, not old debt. The reachability check
+    # below stays strict for the same reason.
+    if invalid:
+        return {"name": "Module manualUrl set", "passed": False,
+                "detail": "invalid manualUrl: " + ", ".join(f"{s}={u}" for s, u in invalid)}
+
+    if missing:
+        return {"name": "Module manualUrl set", "passed": True,
+                "warning": "missing manualUrl (legacy, non-blocking): " + ", ".join(missing)}
 
     return {"name": "Module manualUrl set", "passed": True,
             "detail": f"all {len(modules)} module(s) have manualUrl"}
