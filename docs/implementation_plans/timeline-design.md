@@ -198,3 +198,40 @@ AUTOMATION", which Bret kept.
 So the panel art still to be drawn is: the sixteen control labels, and
 whatever styling the background and the output plate deserve. The anchors
 already carry every position, so none of that touches code.
+
+## Segment bends (2026-08-28)
+Users asked for curves between points (one cited Entrian's ctrl-J/ctrl-S
+keystroke cycling). Bret wanted a visual gesture, not hidden chords, with an
+easy way back to a straight line.
+
+**The gesture.** Hover a segment and a small DIAMOND appears at its midpoint,
+sitting on the curve — a different shape from the round nodes, so it reads as
+a different kind of thing. Drag it up or down and the curve bends to follow
+the pointer: toward one node is exponential, past straight and onward is
+logarithmic. One axis, one parameter, continuous — the DAW convention
+(Ableton/Bitwig/FL bend segments the same way).
+
+**Back to straight is part of the gesture:** the drag has a DETENT — within
+|bend| < 0.12 of the linear midpoint it snaps to exactly 0. Right-clicking
+the handle straightens that segment; the canvas menu gains "Straighten lane".
+
+**The maths.** One bend per segment, stored on the LEFT node:
+value = v0 + (v1-v0) * frac^(2^bend), bend clamped [-3, 3] (exponent 1/8..8).
+The editor inverts the midpoint the user drags: u = (m-v0)/(v1-v0),
+k = ln(u)/ln(0.5), bend = log2(k). A straight segment skips the pow entirely,
+so lanes without curves cost exactly what they always did. Endpoints are
+exact for any bend, so bending NEVER creates a discontinuity at a node.
+
+**Editing invariants:** the bend travels with its left node through insert
+(splitting a bent segment: the left half keeps the bend, the new node's
+segment starts straight), erase, and resort. Undo snapshots carry bends.
+Persistence writes "b" per node only when nonzero; old patches load with
+every segment straight.
+
+**Click priority:** the handle wins over add-node, but ONLY the hovered
+segment shows a handle, so clicking the curve anywhere else still adds a
+node, exactly as before.
+
+Deliberately out of v1: S-curves. They need a second parameter and a second
+gesture. If they earn their way in, shift-drag on the same diamond is the
+natural slot.

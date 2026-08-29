@@ -366,6 +366,8 @@ struct Timeline : Module
                 json_t* nJ = json_object();
                 json_object_set_new(nJ, "t", json_real(ls.t[L][i]));
                 json_object_set_new(nJ, "v", json_real(ls.v[L][i]));
+                if (ls.b[L][i] != 0.0)     // straight segments stay compact
+                    json_object_set_new(nJ, "b", json_real(ls.b[L][i]));
                 json_array_append_new(nodesJ, nJ);
             }
             json_array_append_new(lanesJ, nodesJ);
@@ -400,7 +402,10 @@ struct Timeline : Module
                 json_t* tJ = json_object_get(nJ, "t");
                 json_t* vJ = json_object_get(nJ, "v");
                 if (!tJ || !vJ) continue;
-                ls.add(L, json_number_value(tJ), json_number_value(vJ));
+                json_t* bJ = json_object_get(nJ, "b");   // optional: old
+                                                         // patches lack it
+                ls.add(L, json_number_value(tJ), json_number_value(vJ),
+                       (bJ && json_is_number(bJ)) ? json_number_value(bJ) : 0.0);
             }
             ls.resort(L);       // a hand-edited patch may be out of order
         }

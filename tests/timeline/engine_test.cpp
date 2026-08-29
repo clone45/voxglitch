@@ -47,6 +47,44 @@ int main()
     e.lanes[1].seek(0.0); e.lanes[1].eval(ls);
     near("holds before the first node", e.lanes[1].value, -7.0);
 
+    printf("\nSegment bend (curves between nodes)\n");
+    {
+        TimelineEngine c;
+        LaneSet m;
+        m.add(0, 0.0, 0.0, 1.0);       // bend +1: exponent 2
+        m.add(0, 4.0, 10.0);
+        c.lanes[0].seek(2.0); c.lanes[0].eval(m);
+        near("bend +1 at the midpoint reads 0.5^2 of the range",
+             c.lanes[0].value, 2.5, 1e-9);
+        m.b[0][0] = -1.0;              // exponent 1/2
+        c.lanes[0].seek(2.0); c.lanes[0].eval(m);
+        near("bend -1 at the midpoint reads 0.5^0.5 of the range",
+             c.lanes[0].value, 10.0 * std::pow(0.5, 0.5), 1e-9);
+        m.b[0][0] = 0.0;
+        c.lanes[0].seek(2.0); c.lanes[0].eval(m);
+        near("bend 0 is exactly linear", c.lanes[0].value, 5.0);
+        // endpoints are exact for any bend
+        m.b[0][0] = 2.5;
+        c.lanes[0].seek(0.0); c.lanes[0].eval(m);
+        near("a bent segment still starts at v0", c.lanes[0].value, 0.0);
+        c.lanes[0].seek(4.0); c.lanes[0].eval(m);
+        near("a bent segment still ends at v1", c.lanes[0].value, 10.0);
+
+        // The bend travels with its left node through edits.
+        LaneSet ed;
+        ed.add(0, 0.0, 0.0, 1.5);
+        ed.add(0, 8.0, 8.0);
+        ed.insert(0, 4.0, 1.0);        // split the bent segment
+        check("after a split the left keeps its bend, the new node is straight",
+              ed.b[0][0] == 1.5 && ed.b[0][1] == 0.0);
+        ed.erase(0, 1);
+        check("erase shifts bends with their nodes",
+              ed.count[0] == 2 && ed.b[0][0] == 1.5);
+        ed.t[0][0] = 9.0; ed.resort(0);
+        check("resort carries the bend with its node",
+              ed.t[0][0] == 8.0 && ed.b[0][0] == 0.0 && ed.b[0][1] == 1.5);
+    }
+
     printf("\nCursor tracking (forward play and seek-back)\n");
     e.seekAll(0.0);
     e.setPlayingAll(1);

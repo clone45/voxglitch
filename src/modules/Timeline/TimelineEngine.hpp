@@ -44,6 +44,11 @@ struct LaneSet
     int    count[TL_LANES];
     double t[TL_LANES][TL_MAX_NODES];      // beats, ascending
     double v[TL_LANES][TL_MAX_NODES];      // volts, -10..+10
+    // Segment bend, stored on the segment's LEFT node: 0 = straight line,
+    // else value = v0 + (v1-v0) * frac^(2^bend), clamped to [-3, 3] (an
+    // exponent from 1/8 to 8 — exponential through linear to logarithmic).
+    // The last node's bend is meaningless (no segment to its right).
+    double b[TL_LANES][TL_MAX_NODES];
 
     LaneSet() { clearAll(); }
 
@@ -52,6 +57,7 @@ struct LaneSet
         std::memset(count, 0, sizeof(count));
         std::memset(t, 0, sizeof(t));
         std::memset(v, 0, sizeof(v));
+        std::memset(b, 0, sizeof(b));
     }
 
     void clearLane(int L)
@@ -61,18 +67,21 @@ struct LaneSet
     }
 
     // Append in ascending time order (the caller keeps lanes sorted).
-    bool add(int L, double beat, double volt)
+    bool add(int L, double beat, double volt, double bend = 0.0)
     {
         if (L < 0 || L >= TL_LANES) return false;
         int n = count[L];
         if (n >= TL_MAX_NODES) return false;
         t[L][n] = beat;
         v[L][n] = volt;
+        b[L][n] = bend;
         count[L] = n + 1;
         return true;
     }
 
     // Insert keeping ascending order; returns the index placed at, or -1.
+    // The new node's own segment starts straight; the left neighbour keeps
+    // its bend (its segment now ends at the new node).
     int insert(int L, double beat, double volt)
     {
         if (L < 0 || L >= TL_LANES) return -1;
@@ -83,10 +92,12 @@ struct LaneSet
         {
             t[L][i] = t[L][i - 1];
             v[L][i] = v[L][i - 1];
+            b[L][i] = b[L][i - 1];
             i--;
         }
         t[L][i] = beat;
         v[L][i] = volt;
+        b[L][i] = 0.0;
         count[L] = n + 1;
         return i;
     }
@@ -100,28 +111,32 @@ struct LaneSet
         {
             t[L][i] = t[L][i + 1];
             v[L][i] = v[L][i + 1];
+            b[L][i] = b[L][i + 1];
         }
         count[L] = n - 1;
     }
 
     // Re-sort one lane after a drag moved a node in time (insertion sort: a
-    // drag moves ONE node, so this is O(n) in practice).
+    // drag moves ONE node, so this is O(n) in practice). The bend travels
+    // with its left node.
     void resort(int L)
     {
         if (L < 0 || L >= TL_LANES) return;
         int n = count[L];
         for (int i = 1; i < n; i++)
         {
-            double bt = t[L][i], bv = v[L][i];
+            double bt = t[L][i], bv = v[L][i], bb = b[L][i];
             int j = i - 1;
             while (j >= 0 && t[L][j] > bt)
             {
                 t[L][j + 1] = t[L][j];
                 v[L][j + 1] = v[L][j];
+                b[L][j + 1] = b[L][j];
                 j--;
             }
             t[L][j + 1] = bt;
             v[L][j + 1] = bv;
+            b[L][j + 1] = bb;
         }
     }
 
@@ -184,6 +199,10 @@ struct Lane
         double t0 = ls.t[idx][c], t1 = ls.t[idx][c + 1];
         double v0 = ls.v[idx][c], v1 = ls.v[idx][c + 1];
         double frac = (t1 > t0) ? (t - t0) / (t1 - t0) : 0.0;
+        // Segment bend: frac^(2^bend). A straight segment skips the pow
+        // entirely, so lanes without curves cost exactly what they always did.
+        double bend = ls.b[idx][c];
+        if (bend != 0.0) frac = std::pow(frac, std::exp2(bend));
         value = v0 + frac * (v1 - v0);
     }
 
