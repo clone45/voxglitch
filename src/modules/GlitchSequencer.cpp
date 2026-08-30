@@ -1,6 +1,3 @@
-// TODO: add ability to clear a pattern completely
-// TODO: pattern shift using arrow keys
-
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "settings.hpp"
@@ -12,10 +9,10 @@
 using namespace vgLib_v2;
 
 #include "GlitchSequencer/defines.h"
+#include "GlitchSequencer/PatternMemory.hpp"
 #include "GlitchSequencer/CellularAutomatonSequencer.hpp"
 #include "GlitchSequencer/GlitchSequencer.hpp"
 #include "GlitchSequencer/CellularAutomatonDisplay.hpp"
-#include "GlitchSequencer/LengthReadoutDisplay.hpp"
 #include "GlitchSequencer/GlitchSequencerWidget.hpp"
 
 Model* modelGlitchSequencer = createModel<GlitchSequencer, GlitchSequencerWidget>("glitchsequencer");
