@@ -130,7 +130,7 @@ struct PianoRollControlBar : TransparentWidget
 
     std::string scaleButtonLabel() const
     {
-        if (!module || module->scale_index < 0
+        if (!module || !module->scale_lock_enabled || module->scale_index < 0
             || module->scale_index >= (int)scaleDefinitions().size())
             return "OFF";
 
@@ -374,34 +374,50 @@ struct PianoRollControlBar : TransparentWidget
 
         menu->addChild(createMenuLabel("Scale lock"));
 
-        menu->addChild(createMenuItem("Off", CHECKMARK(m->scale_index < 0),
-            [m]() { m->scale_index = -1; }));
+        // "None" is a TOGGLE of the lock, not a selection: turning it on
+        // (disabling the lock) keeps the root+scale selection for later, and
+        // turning it off (re-enabling) auto-selects C Major if nothing was
+        // ever selected, so the lock can never be on with no scale.
+        menu->addChild(createMenuItem("None", CHECKMARK(!m->scale_lock_enabled),
+            [m]() {
+                if (m->scale_lock_enabled)
+                {
+                    m->scale_lock_enabled = false;
+                }
+                else
+                {
+                    if (m->scale_index < 0) { m->scale_root = 0; m->scale_index = 0; }
+                    m->scale_lock_enabled = true;
+                }
+            }));
 
         menu->addChild(new MenuSeparator);
 
-        menu->addChild(createSubmenuItem("Root", SCALE_ROOT_NAMES[rack::math::clamp(m->scale_root, 0, 11)],
-            [m](ui::Menu *root_menu) {
-                for (int root = 0; root < 12; root++)
-                {
-                    root_menu->addChild(createMenuItem(SCALE_ROOT_NAMES[root],
-                        CHECKMARK(m->scale_root == root),
-                        [m, root]() { m->scale_root = root; }));
-                }
-            }));
+        // One submenu per root, each listing the scales. Picking a scale sets
+        // root and scale together AND enables the lock, so changing key is one
+        // gesture and a selection is never silently inert.
+        for (int root = 0; root < 12; root++)
+        {
+            bool root_active = (m->scale_root == root)
+                && m->scale_index >= 0 && m->scale_index < (int)scaleDefinitions().size();
 
-        menu->addChild(createSubmenuItem("Scale",
-            m->scale_index >= 0 && m->scale_index < (int)scaleDefinitions().size()
-                ? scaleDefinitions()[m->scale_index].name : "Off",
-            [m](ui::Menu *scale_menu) {
-                const std::vector<ScaleDefinition> &scales = scaleDefinitions();
-                for (size_t i = 0; i < scales.size(); i++)
-                {
-                    int index = (int)i;
-                    scale_menu->addChild(createMenuItem(scales[i].name,
-                        CHECKMARK(m->scale_index == index),
-                        [m, index]() { m->scale_index = index; }));
-                }
-            }));
+            menu->addChild(createSubmenuItem(SCALE_ROOT_NAMES[root],
+                root_active ? scaleDefinitions()[m->scale_index].name : "",
+                [m, root](ui::Menu *scale_menu) {
+                    const std::vector<ScaleDefinition> &scales = scaleDefinitions();
+                    for (size_t i = 0; i < scales.size(); i++)
+                    {
+                        int index = (int)i;
+                        scale_menu->addChild(createMenuItem(scales[i].name,
+                            CHECKMARK(m->scale_root == root && m->scale_index == index),
+                            [m, root, index]() {
+                                m->scale_root = root;
+                                m->scale_index = index;
+                                m->scale_lock_enabled = true;
+                            }));
+                    }
+                }));
+        }
     }
 
     // ── Interaction ──────────────────────────────────────────────────────────

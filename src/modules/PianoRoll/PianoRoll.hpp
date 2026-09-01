@@ -81,8 +81,13 @@ struct PianoRoll : Module
     // lands on the nearest in-scale pitch instead. Existing notes, recording,
     // paste and MIDI import are deliberately never touched by it — it governs
     // what the mouse creates, not what material already exists.
+    // The lock's ON/OFF state is separate from the root+scale selection, so
+    // disabling the lock (the menu's "None") keeps the selection for when it
+    // is re-enabled. Invariant: scale_lock_enabled implies scale_index >= 0
+    // (enabling with no selection auto-selects C Major).
+    bool scale_lock_enabled = false;
     int scale_root = 0;      // 0..11, C-based, indexes SCALE_ROOT_NAMES
-    int scale_index = -1;    // index into scaleDefinitions(); -1 = off (default)
+    int scale_index = -1;    // index into scaleDefinitions(); -1 = never selected
 
     // Selected notes, by ID rather than index, so a selection survives deletion,
     // reordering and undo. UI state, but module-owned so an undo action can put it
@@ -722,6 +727,7 @@ struct PianoRoll : Module
         json_object_set_new(json_root, "rec_armed", json_boolean(rec_armed));
         json_object_set_new(json_root, "locked", json_boolean(locked));
         json_object_set_new(json_root, "velocity_lane_open", json_boolean(velocity_lane_open));
+        json_object_set_new(json_root, "scale_lock_enabled", json_boolean(scale_lock_enabled));
         json_object_set_new(json_root, "scale_root", json_integer(scale_root));
         json_object_set_new(json_root, "scale_index", json_integer(scale_index));
 
@@ -791,6 +797,17 @@ struct PianoRoll : Module
         {
             int index = (int)json_integer_value(scale_index_json);
             scale_index = (index >= 0 && index < (int)scaleDefinitions().size()) ? index : -1;
+        }
+
+        json_t *scale_lock_enabled_json = json_object_get(json_root, "scale_lock_enabled");
+        if (scale_lock_enabled_json)
+        {
+            scale_lock_enabled = json_boolean_value(scale_lock_enabled_json) && scale_index >= 0;
+        }
+        else
+        {
+            // Patches from before the enabled flag: a selected scale meant on.
+            scale_lock_enabled = (scale_index >= 0);
         }
 
         json_t *notes_array = json_object_get(json_root, "notes");

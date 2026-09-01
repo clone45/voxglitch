@@ -151,7 +151,7 @@ struct PianoRollEditorWidget : OpaqueWidget
 
     bool scaleLockActive() const
     {
-        return module && module->scale_index >= 0
+        return module && module->scale_lock_enabled && module->scale_index >= 0
             && module->scale_index < (int)scaleDefinitions().size();
     }
 
