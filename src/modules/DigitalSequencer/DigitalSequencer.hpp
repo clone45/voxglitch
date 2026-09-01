@@ -5,6 +5,10 @@ struct DigitalSequencer : VoxglitchModule
     dsp::SchmittTrigger sequencer_step_triggers[NUMBER_OF_SEQUENCERS];
     dsp::SchmittTrigger sequencer_button_triggers[NUMBER_OF_SEQUENCERS];
 
+    // Arm for the negative-pulse randomize on the RESET input (issue #279).
+    // Inverted Schmitt: fires once at -10v, rearms above -1v.
+    bool negative_reset_armed = true;
+
     long clock_ignore_on_reset = 0;
     bool legacy_reset = false;
     bool first_step = true;
@@ -168,6 +172,77 @@ struct DigitalSequencer : VoxglitchModule
                 this->gate_sequencers[sequencer_number].randomize();
             }
         }
+    }
+
+    // Copy/paste the selected sequence through the OS clipboard as JSON, so a
+    // sequence can move between sequencers, between Digital Sequencer and
+    // Digital Sequencer XP, and even between Rack instances.  (Issue #220)
+
+    void copySelectedSequenceToClipboard()
+    {
+        json_t *root = json_object();
+        json_object_set_new(root, "format", json_string("voxglitch-sequence"));
+        json_object_set_new(root, "version", json_integer(1));
+
+        json_t *voltages_json_array = json_array();
+        json_t *gates_json_array = json_array();
+
+        for (int i = 0; i < MAX_SEQUENCER_STEPS; i++)
+        {
+            json_array_append_new(voltages_json_array, json_real(selected_voltage_sequencer->getValue(i)));
+            json_array_append_new(gates_json_array, json_integer(selected_gate_sequencer->getValue(i)));
+        }
+
+        json_object_set_new(root, "voltages", voltages_json_array);
+        json_object_set_new(root, "gates", gates_json_array);
+
+        char *clipboard_string = json_dumps(root, JSON_COMPACT);
+        if (clipboard_string)
+        {
+            glfwSetClipboardString(APP->window->win, clipboard_string);
+            free(clipboard_string);
+        }
+        json_decref(root);
+    }
+
+    void pasteClipboardToSelectedSequence()
+    {
+        const char *clipboard_string = glfwGetClipboardString(APP->window->win);
+        if (!clipboard_string) return;
+
+        json_error_t error;
+        json_t *root = json_loads(clipboard_string, 0, &error);
+        if (!root) return;
+
+        json_t *format_json = json_object_get(root, "format");
+        if (json_is_string(format_json) && strcmp(json_string_value(format_json), "voxglitch-sequence") == 0)
+        {
+            json_t *voltages_json_array = json_object_get(root, "voltages");
+            if (json_is_array(voltages_json_array))
+            {
+                size_t i;
+                json_t *value_json;
+                json_array_foreach(voltages_json_array, i, value_json)
+                {
+                    if ((int)i >= MAX_SEQUENCER_STEPS) break;
+                    selected_voltage_sequencer->setValue(i, json_number_value(value_json));
+                }
+            }
+
+            json_t *gates_json_array = json_object_get(root, "gates");
+            if (json_is_array(gates_json_array))
+            {
+                size_t i;
+                json_t *value_json;
+                json_array_foreach(gates_json_array, i, value_json)
+                {
+                    if ((int)i >= MAX_SEQUENCER_STEPS) break;
+                    selected_gate_sequencer->setValue(i, json_integer_value(value_json) != 0);
+                }
+            }
+        }
+
+        json_decref(root);
     }
 
     float getScaledOutput(unsigned int sequencer_index)
@@ -518,6 +593,24 @@ struct DigitalSequencer : VoxglitchModule
                     sequencer_step_triggers[i].reset();
                     voltage_sequencers[i].reset();
                     gate_sequencers[i].reset();
+                }
+            }
+
+            // A -10v pulse on RESET randomizes all sequences, like Ctrl-R
+            // (issue #279). The comparison allows a hair of float tolerance so
+            // an attenuverted 10v gate still registers as -10v; the positive
+            // reset above is untouched, since its Schmitt trigger never sees
+            // negatives.
+            {
+                float reset_voltage = inputs[RESET_INPUT].getVoltage();
+                if (negative_reset_armed && reset_voltage <= -9.99f)
+                {
+                    negative_reset_armed = false;
+                    onRandomize();
+                }
+                else if (!negative_reset_armed && reset_voltage >= -1.0f)
+                {
+                    negative_reset_armed = true;
                 }
             }
 

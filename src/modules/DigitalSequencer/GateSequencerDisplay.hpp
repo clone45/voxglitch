@@ -177,6 +177,19 @@ struct GateSequencerDisplay : SequencerDisplay
                     module->selected_voltage_sequencer->randomize();
             }
         }
+
+        // Copy / paste the selected sequence via the OS clipboard (issue #220)
+        if (e.key == GLFW_KEY_C && e.action == GLFW_PRESS && ((e.mods & RACK_MOD_MASK) == RACK_MOD_CTRL))
+        {
+            module->copySelectedSequenceToClipboard();
+            e.consume(this);
+        }
+
+        if (e.key == GLFW_KEY_V && e.action == GLFW_PRESS && ((e.mods & RACK_MOD_MASK) == RACK_MOD_CTRL))
+        {
+            module->pasteClipboardToSelectedSequence();
+            e.consume(this);
+        }
     }
 
     int getIndexFromX(double x)
