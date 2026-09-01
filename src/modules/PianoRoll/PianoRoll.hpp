@@ -247,7 +247,7 @@ struct PianoRoll : Module
 
         live_snapshot.store(0);
         capture_write.store(0);
-        notesChanged();
+        patternChanged();
 
         id_minter.seed(id);
     }
@@ -272,7 +272,7 @@ struct PianoRoll : Module
         Note note(id_minter.mint(), pitch, start, length, track, sanitizeVelocity(velocity));
         notes.push_back(note);
 
-        notesChanged();
+        patternChanged();
         return note.id;
     }
 
@@ -286,13 +286,13 @@ struct PianoRoll : Module
         notes = new_notes;
         selection = new_selection;
         loop_steps = std::max(1, new_loop_steps);
-        notesChanged();
+        patternChanged();
     }
 
     void clearNotes()
     {
         notes.clear();
-        notesChanged();
+        patternChanged();
     }
 
     // ── Polyphony ────────────────────────────────────────────────────────────
@@ -368,7 +368,7 @@ struct PianoRoll : Module
 
     // Call after ANY edit to the note list or the loop length. Recomputes the
     // derived channel counts and republishes the snapshot the audio thread reads.
-    void notesChanged()
+    void patternChanged()
     {
         recomputeTrackChannels();
 
@@ -841,6 +841,6 @@ struct PianoRoll : Module
             }
         }
 
-        notesChanged();
+        patternChanged();
     }
 };

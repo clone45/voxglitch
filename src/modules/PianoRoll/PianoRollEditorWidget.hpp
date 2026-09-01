@@ -1042,6 +1042,14 @@ struct PianoRollEditorWidget : OpaqueWidget
         bool loop_changed = (edit_loop_before != module->loop_steps);
         if (!notes_changed && !loop_changed) return;   // no-op: push nothing
 
+        // Publish the gesture's result to the audio thread. The drag paths
+        // mutate notes/loop_steps per-frame with only recomputeTrackChannels(),
+        // so without this the snapshot keeps playing the pre-drag pattern (and
+        // the pre-drag loop length) until some unrelated edit republishes it.
+        // Every completed gesture passes through here, so it cannot be
+        // forgotten per-caller.
+        module->patternChanged();
+
         NoteEditAction *action = new NoteEditAction;
         action->name = name;
         action->moduleId = module->id;
@@ -1121,7 +1129,6 @@ struct PianoRollEditorWidget : OpaqueWidget
 
         module->notes.swap(kept);
         module->selection.clear();
-        module->notesChanged();
         endEdit("delete notes");
     }
 
@@ -1143,7 +1150,6 @@ struct PianoRollEditorWidget : OpaqueWidget
         }
 
         module->notes.swap(kept);
-        module->notesChanged();
         endEdit("delete all on track");   // a no-op on an empty track pushes nothing
     }
 
@@ -1160,7 +1166,6 @@ struct PianoRollEditorWidget : OpaqueWidget
 
         beginEdit();
         module->notes.erase(module->notes.begin() + index);
-        module->notesChanged();
         endEdit("delete note");
     }
 
@@ -1249,16 +1254,13 @@ struct PianoRollEditorWidget : OpaqueWidget
 
         beginEdit();
         int loop = loopSteps();
-        bool changed = false;
 
         for (size_t i = 0; i < targets.size(); i++)
         {
             Note &note = module->notes[targets[i]];
-            int shifted = ((note.start + delta) % loop + loop) % loop;
-            if (shifted != note.start) { note.start = shifted; changed = true; }
+            note.start = ((note.start + delta) % loop + loop) % loop;
         }
 
-        if (changed) module->notesChanged();
         endEdit("shift notes");
     }
 
@@ -1267,17 +1269,14 @@ struct PianoRollEditorWidget : OpaqueWidget
     {
         if (isLocked()) return;
         std::vector<size_t> targets = targetIndices();
-        bool changed = false;
 
         beginEdit();
         for (size_t i = 0; i < targets.size(); i++)
         {
             Note &note = module->notes[targets[i]];
-            int quantized = nearestDegree(note.pitch, root, degrees);
-            if (quantized != note.pitch) { note.pitch = quantized; changed = true; }
+            note.pitch = nearestDegree(note.pitch, root, degrees);
         }
 
-        if (changed) module->notesChanged();
         endEdit("quantize notes");
     }
 
@@ -1871,7 +1870,6 @@ struct PianoRollEditorWidget : OpaqueWidget
         int bars = (last_end + STEPS_PER_BAR - 1) / STEPS_PER_BAR;
         module->loop_steps = std::max(STEPS_PER_BAR, bars * STEPS_PER_BAR);
 
-        module->notesChanged();
         endEdit("import MIDI");
 
         // Frame the result, and stop Follow from immediately snapping away from it.
@@ -2026,7 +2024,7 @@ struct PianoRollEditorWidget : OpaqueWidget
 
         // Republish the playback snapshot so the audio thread hears the new
         // velocities while the drag is still in progress.
-        module->notesChanged();
+        module->patternChanged();
     }
 
     void beginGridDrag(Vec position, bool shift)

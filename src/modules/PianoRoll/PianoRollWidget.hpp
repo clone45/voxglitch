@@ -172,7 +172,7 @@ struct PianoRollWidget : ModuleWidget
             [piano_roll](int index) {
                 static const int BARS[5] = {1, 2, 4, 8, 16};
                 piano_roll->loop_steps = BARS[index] * piano_roll::STEPS_PER_BAR;
-                piano_roll->notesChanged();
+                piano_roll->patternChanged();
             }));
 
     }
