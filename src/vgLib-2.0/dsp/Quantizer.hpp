@@ -207,15 +207,18 @@ struct Quantizer
 const bool Quantizer::chromaticScale[12] = { true, true, true, true, true, true, true, true, true, true, true, true };
 const bool Quantizer::majorScale[12] = { true, false, true, false, true, true, false, true, false, true, false, true };
 const bool Quantizer::minorScale[12] = { true, false, true, true, false, true, false, true, true, false, true, false };
-const bool Quantizer::pentatonicScale[12] = { true, false, true, false, false, true, false, true, false, false, true, false };
+// Major pentatonic: C D E G A  (issue #234 — the old mask was C D F G Bb)
+const bool Quantizer::pentatonicScale[12] = { true, false, true, false, true, false, false, true, false, true, false, false };
 const bool Quantizer::dorianScale[12] = { true, false, true, true, false, true, false, true, false, true, true, false };
 const bool Quantizer::phrygianScale[12] = { true, true, false, true, false, true, false, true, true, false, true, false };
 const bool Quantizer::lydianScale[12] = { true, false, true, false, true, false, true, true, false, true, false, true };
 const bool Quantizer::mixolydianScale[12] = { true, false, true, false, true, true, false, true, false, true, true, false };
 const bool Quantizer::harmonicMinorScale[12] = { true, false, true, true, false, true, false, true, true, false, false, true };
 const bool Quantizer::melodicMinorScale[12] = { true, false, true, true, false, true, false, true, false, true, false, true };
-const bool Quantizer::bluesScale[12] = { true, false, true, true, true, true, false, true, false, true, true, false };
+// Blues hexatonic: C Eb F Gb G Bb  (issue #234 — the old mask had 8 notes)
+const bool Quantizer::bluesScale[12] = { true, false, false, true, false, true, true, true, false, false, true, false };
 const bool Quantizer::wholeToneScale[12] = { true, false, true, false, true, false, true, false, true, false, true, false };
+// The HALF-WHOLE diminished (dominant diminished) variant, deliberately.
 const bool Quantizer::diminishedScale[12] = { true, true, false, true, true, false, true, true, false, true, true, false };
 
 
