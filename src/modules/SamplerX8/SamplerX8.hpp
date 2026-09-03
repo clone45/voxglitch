@@ -121,6 +121,12 @@ struct SamplerX8 : VoxglitchSamplerModule
             float left_audio, right_audio;
             sample_players[i].getStereoOutput(&left_audio, &right_audio, interpolation);
 
+            // Scale the +-1.0 sample to Rack's +-5 V, as the other samplers do.
+            // (Missing since the module shipped, which left it ~14 dB quieter
+            // than WavBank at the same knob position.)
+            left_audio *= GAIN;
+            right_audio *= GAIN;
+
             // Apply volume knobs
             left_audio = (left_audio * params[VOLUME_KNOBS + i].getValue());
             right_audio = (right_audio * params[VOLUME_KNOBS + i].getValue());

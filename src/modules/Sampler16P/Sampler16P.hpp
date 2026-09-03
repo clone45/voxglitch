@@ -103,9 +103,10 @@ struct Sampler16P : VoxglitchSamplerModule
       float left_audio, right_audio;
       sample_players[i].getStereoOutput(&left_audio, &right_audio, interpolation);
 
-      // Sum up the output for the mix L/R output
-      summed_output_left += left_audio;
-      summed_output_right += right_audio;
+      // Scale the +-1.0 sample to Rack's +-5 V, as the other samplers do
+      // (missing since the module shipped, ~14 dB quieter than WavBank).
+      summed_output_left += left_audio * GAIN;
+      summed_output_right += right_audio * GAIN;
 
       // Step samples
       sample_players[i].step();
