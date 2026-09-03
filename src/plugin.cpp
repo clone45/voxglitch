@@ -45,5 +45,7 @@ void init(Plugin* p) {
   p->addModel(modelTempestVS1);
   p->addModel(modelXY);
   p->addModel(modelTimeline);
+  p->addModel(modelVXDrums);
+  p->addModel(modelVXDrumSequencer);
 
 }

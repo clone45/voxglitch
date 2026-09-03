@@ -18,6 +18,8 @@ Modules for VCV Rack.  My apologies if I fall behind on the documentation.
 * [Note Detector](docs/modules/note-detector/user_manual.md)
 * [Repeater](docs/modules/repeater/user_manual.md)
 * [Spores](docs/modules/spores/user_manual.md)
+* [VX Drums](docs/modules/vx-drums/user_manual.md)
+* [VX Drum Sequencer](docs/modules/vx-drum-sequencer/user_manual.md)
 * [Wavebank](docs/modules/wavebank/user_manual.md)
 * [XY Controller](docs/modules/xy-controller/user_manual.md)
 

@@ -236,6 +236,20 @@
         "description": "Draw automation curves on a musical timeline: 16 breakpoint lanes, each with its own transport, out one polyphonic cable.",
         "tags": ["Controller", "LFO", "Polyphonic", "Utility"],
         "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/timeline/user_manual.md"
+    },
+    {
+        "slug": "VXDrums",
+        "name": "VX Drums",
+        "description": "Six analog-modelled drum voices (kick, snare, clap, percussion, closed and open hat) with six kits of switchable analog-modelled voice models, fired by a polyphonic trigger cable, with an accent gate, a stereo mix with drive, and dry individual outs. The top half of the VX Drum Machine.",
+        "tags": ["Drum", "Synth voice", "Polyphonic"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/vx-drums/user_manual.md"
+    },
+    {
+        "slug": "VXDrumSequencer",
+        "name": "VX Drum Sequencer",
+        "description": "16-step, six-lane trigger sequencer with an accent lane, ratchets, sixteen pattern memories with CV select, and an external clock input with reset. Drives VX Drums over one poly trigger cable plus an accent cable. The bottom half of the VX Drum Machine.",
+        "tags": ["Drum", "Sequencer"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/vx-drum-sequencer/user_manual.md"
     }
   ]
 }
