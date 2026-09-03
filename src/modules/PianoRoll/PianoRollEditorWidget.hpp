@@ -2076,6 +2076,11 @@ struct PianoRollEditorWidget : OpaqueWidget
         if (edgeGrabAt(position, grab))
         {
             const Note &note = module->notes[grab.index];
+            // Open the edit bracket like every other gesture: without it,
+            // endEdit("resize note") returns early, the playback snapshot is
+            // never republished, and a note whose start was dragged keeps
+            // triggering at its old step until some other edit publishes.
+            beginEdit();
             drag_mode = DRAG_RESIZE;
             drag_note = note.id;
             drag_left_edge = grab.left_edge;
