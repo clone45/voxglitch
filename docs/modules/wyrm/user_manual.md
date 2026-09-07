@@ -6,15 +6,15 @@
 
 Wyrm is a synthesizer voice built for bass. It holds three wavetable oscillators, a separate sub oscillator, two filters, a patchable effects rack, and a 32-slot modulation matrix.
 
-The whole instrument lives behind eleven tabs. A rail down the left side of the panel switches between them. The command strip along the top and the jack row along the bottom never hide, so the tempo, the preset, and the patch points are always in reach.
+The interface is divided into eleven tabs. Use the tab rail on the left side of the panel to switch between them. The command strip at the top and the jack row at the bottom remain visible on every tab, giving you access to the tempo, preset, and patch connections at all times.
 
-Wyrm makes sound from wavetables. The plugin ships a 22 MB bank of 55 tables. A wavetable is a set of single-cycle waveforms; the **Pos** control moves through them.
+Wyrm uses wavetables to generate its oscillator waveforms. The plugin includes a 22 MB bank of 55 tables. Each wavetable contains a set of single-cycle waveforms, and the **Pos** control selects the position within the table.
 
 The instrument has eight internal voices. A note you release keeps fading while you play the next one.
 
 ## Quick Start Guide
 
-Wyrm makes sound as soon as you play it. Osc A opens at level `0.8` with a saw wave.
+Wyrm produces sound as soon as you play a note. Osc A starts at level `0.8` with a saw wave.
 
 **To play Wyrm from your rack:** patch a pitch source into **V/OCT**, a gate into **GATE**, and connect **OUT L** and **OUT R** to your audio output. A gate is a voltage that rises to start a note and falls to stop it. MIDI-CV modules and most sequencers provide both signals.
 
@@ -33,7 +33,7 @@ Wyrm makes sound as soon as you play it. Osc A opens at level `0.8` with a saw w
 
 ## How Wyrm makes sound
 
-The signal runs through the instrument in a fixed order.
+The main signal follows a fixed processing order:
 
 1. **The three oscillators** read the wavetable bank. Each one can warp its waveform twice, and can modulate the other two.
 2. **The filter block** takes the oscillators and the noise source. You choose which source goes into which filter.
@@ -43,7 +43,7 @@ The signal runs through the instrument in a fixed order.
 6. **The Lo-Fi stage** crushes the band.
 7. **The master stage** adds the sub back in, applies the master level, and holds the peak with the limiter.
 
-The **sub oscillator does not take this path.** It is a direct out. It skips the filters, the drive, the crossover, the effects rack, and the Lo-Fi stage. It reaches the master stage clean. This is why the sub stays solid while the rest of the sound is torn apart.
+The **sub oscillator does not take this path.** It is a direct out. It skips the filters, the drive, the crossover, the effects rack, and the Lo-Fi stage. It reaches the master stage clean. The sub therefore remains unaffected by processing applied to the main band.
 
 ***
 
@@ -98,7 +98,7 @@ The jacks run along the bottom of the panel. They never hide.
 - **Toggles and checkboxes**: click to switch.
 - **Number fields**: drag up or down. One step is 10 pixels. Double-click for the default.
 
-The scroll wheel does not change a control you are pointing at. Only an open list scrolls. This is deliberate: a silent wheel edit over a 55-entry wave menu is a hazard.
+The scroll wheel does not change the control under the pointer. It only scrolls an open list. This prevents accidental changes while moving through a long list such as the 55-entry wavetable menu.
 
 Right-click anywhere on the panel to reach Rack's context menu.
 
@@ -136,11 +136,11 @@ Set the glide times on the **Performance** tab. **Rising Time** covers a slide u
 
 Many controls in Wyrm can sync to the tempo. A synced control shows a **Div** list instead of a **Rate** knob. The divisions run from `16 bars` down to `1/32`, and include dotted and triplet values.
 
-**The cable decides which tempo is used.** With nothing in the **CLOCK** jack, the BPM field is the tempo. With a cable in the CLOCK jack and pulses arriving, the measured tempo takes over and the field reads `EXT`.
+**The cable determines which tempo source is used.** With nothing in the **CLOCK** jack, the BPM field is the tempo. With a cable in the CLOCK jack and pulses arriving, the measured tempo takes over and the field reads `EXT`.
 
 Wyrm measures the tempo from the interval between pulses, so it needs two pulses before it has a figure. The BPM knob covers that gap. Pull the cable and the measurement is forgotten, so the knob takes over cleanly.
 
-The measured number is not displayed. It is computed from a whole number of samples, so it wobbles in the last digit even against a perfectly steady clock, and a readout flickering between 127 and 128 reads as a fault.
+The measured tempo is not displayed. It is calculated from an integer number of samples, so the value can vary slightly even with a steady clock. A value alternating between 127 and 128 is normal.
 
 A trigger into the **RESET** jack sets every LFO, sequencer, chaos generator and the pump back to the start of its cycle. Free-running modulators reset too, which is the whole reason the jack exists.
 
@@ -148,7 +148,7 @@ A trigger into the **RESET** jack sets every LFO, sequencer, chaos generator and
 
 ## The Oscillators tab
 
-Three oscillator cards sit beside a cross-modulation card.
+The tab contains three oscillator cards and a cross-modulation card.
 
 Each oscillator has the same controls.
 
@@ -289,10 +289,10 @@ Each effect has one input jack and one output jack. Every port holds at most one
 
 - **Drag from a jack** to pull a cable out of it.
 - **Grab an existing cable near one of its ends** to move that end. The cables run across the whole bay, and the effects' knobs sit under them, so a cable is only grabbed at the plug.
-- **Drop on an occupied port** and the cable that was there is displaced. Repatching is direct, not a permissions dialogue.
+- **Drop on an occupied port** and the cable that was there is displaced. Dropping a cable on an occupied port replaces the existing connection.
 - **Drop on nothing** and the cable is removed.
 
-**An effect is on only when it sits on the path from Effects Input to Effects Output.** Anything off that path fades out and is bypassed. If you patch a loop, the signal never reaches the output, so the whole rack falls back to dry.
+**An effect is active only when it is on the path from Effects Input to Effects Output.** Anything off that path fades out and is bypassed. If you patch a loop, the signal never reaches the output, so the whole rack falls back to dry.
 
 ### Cable colours
 
@@ -362,7 +362,7 @@ The curve display shows a playhead that follows the sounding note. It rides the 
 
 Two 16-step sequencers each fill a strip.
 
-**Drag a contour across the grid to play it in.** The drag keeps painting as it crosses columns. This is how the sequencers are meant to be used.
+**Drag a contour across the grid to play it in.** The drag continues across columns as you move, allowing you to draw several steps in one motion.
 
 | Control | What it does |
 |---|---|
@@ -373,7 +373,7 @@ Two 16-step sequencers each fill a strip.
 | **Scale** | Quantizes the output to one of 32 scales, or `off`. |
 | **Range** | How many semitones the full step height covers. |
 
-**Changing the scale is never destructive.** The step value stored is the raw one you drew. Quantizing happens after that, so switching scales and switching back returns exactly what you drew.
+**Changing the scale does not modify the stored step values.** The step value stored is the raw one you drew. Quantizing happens after that, so switching scales and switching back returns exactly what you drew.
 
 ***
 
@@ -390,7 +390,7 @@ Two random generators, each with the same controls.
 | **Smooth** | Rounds the movement. |
 | **Seed** | Sets the pattern. The same seed always produces the same pattern. |
 
-The plot keeps the recent history, so you can see the character of the source before you route it.
+The plot shows recent output history, which lets you inspect the source before routing it.
 
 ***
 
@@ -404,7 +404,7 @@ The matrix holds up to 32 routes. A route sends one source to one destination, w
 - **Drag the depth field** up or down. 150 pixels spans the full `-1.00` to `+1.00`.
 - **Click the ×** to remove the route.
 
-The coloured square at the left of each row identifies the source at a glance.
+The coloured square at the left of each row identifies its source.
 
 **One route per source-and-destination pair.** Two routes between the same pair would sum, and would be indistinguishable from one route of twice the depth. If you re-point a route onto a pair that already exists, the change is refused. The dropdown simply does not move.
 
@@ -438,7 +438,7 @@ The four CV jacks divide their voltage by 5.
 - A bipolar `±5 V` source arrives as `-1` to `+1`, the same range an internal LFO gives.
 - A unipolar `0` to `10 V` source arrives as `0` to `2`.
 
-The limit is the bus, not the source. Voltages are clamped at `±10 V`. A source that runs past a destination's range cannot push it past its end; it only gets there sooner. The route's **depth** is the attenuator, exactly as it would be in a real rack.
+The limit is the bus, not the source. Voltages are clamped at `±10 V`. A source that runs past a destination's range cannot push it past its end; it only gets there sooner. The route's **depth** controls the amount of modulation.
 
 ***
 
@@ -499,7 +499,7 @@ Draws the sound's spectrum behind the filter response curve. This is saved with 
 
 **The filter does not affect the sub.** It never does. The sub is a direct out. Use its own **Tone** control instead.
 
-**The BPM field says EXT.** A cable is in the **CLOCK** jack and pulses are arriving, so the measured tempo is in charge. The knob's own number is still there underneath, and dragging the field still edits it. Pull the cable to get it back.
+**The BPM field says EXT.** A cable is in the **CLOCK** jack and pulses are arriving, so the measured tempo is in charge. The BPM value remains stored while external sync is active, and you can still edit it by dragging the field. Remove the cable to return to the internal BPM.
 
 **Rack's undo does not reverse my edit.** Only **Master**, **Pan** and **BPM** are Rack parameters. Every other control writes to Wyrm's own patch store, which Rack's undo does not cover. The values are still saved with your patch.
 
