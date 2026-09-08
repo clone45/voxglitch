@@ -33,7 +33,7 @@ VX Drums is a six-voice drum kit - kick, snare, clap, a percussion voice and a p
 ### Outputs
 
 - **BD / SD / CP / PERC / CH / OH** - Individual outs, one per voice, dry: level and accent applied, drive and volume not. Taking a voice out does not remove it from the mix, so turn its level down there if you want it fully separate.
-- **L / R** - The stereo mix. The voices sit at subtle fixed pans - bass drum and snare centred, clap a little left, percussion a little right, the two hats split slightly either side - and pass through the master **DRIVE** and **VOLUME**.
+- **L / R** - The stereo mix. The voices sit at subtle fixed pans - bass drum and snare centred, clap a little left, percussion a little right, the two hats split slightly either side - and pass through the master **DRIVE** and **VOLUME**. Untick "Stereo panning" in the right-click menu to put every voice dead centre.
 
 ### Controls
 
@@ -72,6 +72,16 @@ A kit is a named set of six models, one per column. The **KIT** display at the t
 
 House is the kit's original sound. A fresh module starts on it, and Initialize returns to it. When any column has been overridden with a model of your own choosing (see below), the display adds a `*` after the kit name.
 
+#### Your own kits
+
+Once you have a sound you like - a kit, a few overridden columns, the knobs where you want them - you can keep it as a kit of your own. Right-click the panel, open **Kit Customization** and choose **Save kit as…**, give it a name, and it appears below the factory kits in every kit list: on this module, on every other VX Drums in the patch, and on any VX Drums you add later, in this patch or another. Saved kits live in one file in your Rack user folder, `voxglitch/vx_drums_kits.json`, not in the patch.
+
+A saved kit is more than the six models: it also remembers the 24 voice knobs (`TUNE`, `DECAY`, `SHAPE` and `LEVEL` for every column), because your kit is your tuned sound. So loading one of your kits sets those knobs, where loading a factory kit leaves them alone. The master strip (`ACCENT`, `DRIVE`, `VOLUME`, `VARY`) and the panning switch are not part of a kit. Loading is one undo step.
+
+While one of your kits is loaded, **Update "<name>"** in the same menu overwrites it with the module's current sound, overrides and knobs included. **Manage kits** lists every saved kit with **Rename…** and **Delete…**. A patch that uses one of your kits carries a copy of it, so it still loads and sounds right on a machine that does not have the kit - or after you delete it - and the display still shows its name; only the checkmark in the kit list is missing there.
+
+Saving, updating, renaming and deleting a kit change the library file at once and are not undoable; the change to the module that goes with them is.
+
 ### Models
 
 A model is one drum circuit reduced to three knobs. Each has its own natural range for `TUNE` and `DECAY`, and its own job for `SHAPE`:
@@ -103,11 +113,12 @@ Every model sits at roughly the same loudness at the same `LEVEL`, so swapping k
 
 ### Right-Click on the Panel
 
-- **Kit** - The same list as the KIT display.
-- **Bass drum model / Snare model / Clap model / Percussion model / Closed hat model / Open hat model** - One submenu per column. The first entry, "Kit default", names the model the current kit puts there; below it is every model. Choosing one overrides that column; pick "Kit default" to hand the column back to the kit. Changing kit clears every override, so a new kit always starts as designed (undo brings the overrides back). The KIT display shows a `*` while any override is set. One undo step each.
+- **Kit** - The same list as the KIT display: the factory kits, then your own.
+- **Kit Customization** - Holds one submenu per column: **Bass drum model / Snare model / Clap model / Percussion model / Closed hat model / Open hat model**. The first entry in each, "Kit default", names the model the current kit puts there; below it is every model. Choosing one overrides that column; pick "Kit default" to hand the column back to the kit. Changing kit clears every override, so a new kit always starts as designed (undo brings the overrides back). The KIT display shows a `*` while any override is set. One undo step each. Below the columns: **Save kit as…**, **Update "<name>"** and **Manage kits** (see "Your own kits").
+- **Stereo panning** - On by default. The L / R mix places the clap a little left, the percussion voice a little right and the two hats slightly either side. Untick it to put every voice dead centre; the individual outs are unaffected either way.
 - **Reset knobs to model defaults** - Sets every column's `TUNE`, `DECAY` and `SHAPE` to the defaults of the model that column is currently playing. `LEVEL` and the master strip are left alone. One undo step.
 
-The kit and the overrides are saved with the patch.
+The kit, the overrides and the panning switch are saved with the patch.
 
 ### Tips
 

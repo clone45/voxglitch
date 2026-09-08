@@ -22,6 +22,8 @@
 using namespace vgLib_v2;
 
 #include "VXDrums/VXDrumVoices.hpp"
+#include "VXDrums/VXDrumKit.hpp"
+#include "VXDrums/VXDrumKitStore.hpp"
 #include "VXDrums/VXDrums.hpp"
 #include "VXDrums/VXDrumsWidget.hpp"
 

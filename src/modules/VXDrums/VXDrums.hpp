@@ -10,8 +10,12 @@
 // KITS and MODELS. A kit is a named row of six voice models (one per column
 // BD SD CP PERC CH OH); a per-column OVERRIDE replaces the kit's choice for
 // that column. The effective model of column c is
-//     override[c] if set, else kitSpec(kit).models[c]
-// and process() keeps `voices` in step with it. Every column's three sound
+//     override[c] if set, else kit.models[c]
+// and process() keeps `voices` in step with it. `kit` is a vx_drums::KitState
+// (VXDrumKit.hpp, 2026-09-07): a RESOLVED COPY of a factory kit or of one of
+// the user's saved kits, so the module never depends on the kit library
+// (VXDrumKitStore.hpp) at audio time or at patch-load time. A user kit also
+// carries the 24 voice knobs; loading one sets them (one undo step). Every column's three sound
 // knobs are NORMALIZED 0..1 params (TUNE / DECAY / SHAPE); the effective
 // model's KnobSpec maps them to natural units for display, typed entry and
 // the double-click default. Knob POSITIONS survive a kit or model change
@@ -31,8 +35,9 @@
 // TUNE does not recompute filter coefficients every sample; the trigger and
 // accent path stays per-sample.
 //
-// Threading: `kit` and `model_override[]` are single ints written on the UI
-// thread (menus, undo, patch load) and read by process(). A torn read is not
+// Threading: `kit.models[]`, `model_override[]` and `stereo_panning` are single
+// ints / bools written on the UI thread (menus, undo, patch load) and read by
+// process(); the strings in `kit` are UI-only. A torn read is not
 // possible for an aligned int on any platform Rack ships on, and
 // effectiveModel() range-checks what it reads, so the audio thread can at
 // worst be one sample late — the accepted house pattern for small shared
@@ -152,8 +157,14 @@ struct VXDrums : VoxglitchModule
     vx_drums::Voices voices;
 
     // ── Kit state (UI writes, audio reads; see the header comment) ──
-    vx_drums::KitId kit = vx_drums::KIT_HOUSE;
+    vx_drums::KitState kit = vx_drums::KitState::factory(vx_drums::KIT_HOUSE);
     int model_override[vx_drums::COLUMNS] = { NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE };
+
+    // The Machine's fixed per-voice pans on the L/R mix (VXDrumVoices.hpp,
+    // Voices::process). Off = every voice dead centre. Menu checkbox, saved
+    // with the patch; a patch without the key loads with panning ON, which is
+    // what every patch saved before the switch existed was hearing.
+    bool stereo_panning = true;
 
     // One Schmitt per TRIG channel. Thresholds are the house pair
     // (constants::gate_low_trigger 0.1 V / gate_high_trigger 2 V, the idiom at
@@ -341,7 +352,7 @@ struct VXDrums : VoxglitchModule
         if (c < 0 || c >= vx_drums::COLUMNS) return vx_drums::MODEL_KICK_808;
         int ov = model_override[c];
         if (ov >= 0 && ov < vx_drums::NUM_MODELS) return (vx_drums::ModelId)ov;
-        return vx_drums::kitSpec(kit).models[c];
+        return kit.models[c];
     }
 
     bool anyOverride() const
@@ -353,9 +364,15 @@ struct VXDrums : VoxglitchModule
 
     // UI thread. The single write path for kit + overrides (menus, undo/redo,
     // patch load), so the double-click defaults are never left stale.
-    void setKitState(vx_drums::KitId new_kit, const int overrides[vx_drums::COLUMNS])
+    void setKitState(const vx_drums::KitState& new_kit, const int overrides[vx_drums::COLUMNS])
     {
-        kit = ((int)new_kit >= 0 && (int)new_kit < vx_drums::NUM_KITS) ? new_kit : vx_drums::KIT_HOUSE;
+        kit = new_kit;
+        if (kit.uuid.empty()) kit = vx_drums::KitState::factory(vx_drums::KIT_HOUSE);
+        for (int c = 0; c < vx_drums::COLUMNS; c++)
+        {
+            int id = (int)kit.models[c];
+            if (id < 0 || id >= vx_drums::NUM_MODELS) kit.models[c] = vx_drums::kitSpec(vx_drums::KIT_HOUSE).models[c];
+        }
         for (int c = 0; c < vx_drums::COLUMNS; c++)
         {
             int ov = overrides[c];
@@ -421,7 +438,8 @@ struct VXDrums : VoxglitchModule
     void onReset(const ResetEvent& e) override
     {
         int none[vx_drums::COLUMNS] = { NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE };
-        setKitState(vx_drums::KIT_HOUSE, none);
+        setKitState(vx_drums::KitState::factory(vx_drums::KIT_HOUSE), none);
+        stereo_panning = true;
         Module::onReset(e);
     }
 
@@ -434,6 +452,7 @@ struct VXDrums : VoxglitchModule
             vx_drums::ModelId want = effectiveModel(c);
             if (voices.model(c) != want) voices.setModel(c, want);
         }
+        voices.setPanning(stereo_panning);
 
         // (1) Knobs + CV → voices, at control rate and on change only. The
         // EFFECTIVE value is what the engine sees; a moving CV therefore
@@ -490,17 +509,30 @@ struct VXDrums : VoxglitchModule
     }
 
     // ── Persistence ──────────────────────────────────────────────────────────
-    // Params are Rack's to save. Ours: the kit and the six overrides, BY UUID
-    // (frozen in VXDrumVoices.hpp; never the enum value or the name —
-    // DESIGN-KITS.md §1). Shape:
-    //   {"version":"1.1.0","kit":"<uuid>","model_overrides":["<uuid>"|"" ×6]}
+    // Params are Rack's to save. Ours: the kit, RESOLVED (uuid, name, the six
+    // models, custom flag), and the six overrides, models BY UUID (frozen in
+    // VXDrumVoices.hpp; never the enum value or the name). Shape:
+    //   {"version":"1.2.0","kit":"<uuid>","kit_name":"...","kit_custom":false,
+    //    "kit_models":["<model uuid>" ×6],"model_overrides":["<uuid>"|"" ×6],
+    //    "stereo_panning":true}
+    // A factory uuid is re-resolved from the table on load (so a factory kit
+    // retuned by an update wins); any other uuid is a user kit and loads from
+    // the stored name and models, whether or not this machine's library has
+    // it. 1.1.0 patches carry only "kit" + overrides and load the same way.
     // Written with json_object_set_new / json_array_append_new so ownership
     // transfers and no decref is owed (PianoRoll.hpp:711-717).
     json_t* dataToJson() override
     {
         json_t* json_root = json_object();
-        json_object_set_new(json_root, "version", json_string("1.1.0"));
-        json_object_set_new(json_root, "kit", json_string(vx_drums::kitSpec(kit).uuid));
+        json_object_set_new(json_root, "version", json_string("1.2.0"));
+        json_object_set_new(json_root, "kit", json_string(kit.uuid.c_str()));
+        json_object_set_new(json_root, "kit_name", json_string(kit.name.c_str()));
+        json_object_set_new(json_root, "kit_custom", json_boolean(kit.custom));
+
+        json_t* kit_models = json_array();
+        for (int c = 0; c < vx_drums::COLUMNS; c++)
+            json_array_append_new(kit_models, json_string(vx_drums::modelSpec(kit.models[c]).uuid));
+        json_object_set_new(json_root, "kit_models", kit_models);
 
         json_t* overrides = json_array();
         for (int c = 0; c < vx_drums::COLUMNS; c++)
@@ -511,6 +543,7 @@ struct VXDrums : VoxglitchModule
             json_array_append_new(overrides, json_string(uuid));
         }
         json_object_set_new(json_root, "model_overrides", overrides);
+        json_object_set_new(json_root, "stereo_panning", json_boolean(stereo_panning));
         return json_root;
     }
 
@@ -521,12 +554,23 @@ struct VXDrums : VoxglitchModule
     {
         if (!json_root) return;
 
-        vx_drums::KitId new_kit = vx_drums::KIT_HOUSE;
+        vx_drums::KitState new_kit = vx_drums::KitState::factory(vx_drums::KIT_HOUSE);
         int overrides[vx_drums::COLUMNS] = { NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE };
 
         json_t* kit_json = json_object_get(json_root, "kit");
-        if (json_is_string(kit_json))
-            new_kit = vx_drums::kitFromUuid(json_string_value(kit_json), vx_drums::KIT_HOUSE);
+        if (json_is_string(kit_json) && json_string_value(kit_json)[0] != '\0')
+        {
+            const std::string uuid = json_string_value(kit_json);
+            if (!vx_drums::factoryKitFromUuid(uuid, new_kit))
+            {
+                // A user kit: everything it needs travels in the patch.
+                new_kit.uuid = uuid;
+                new_kit.custom = true;
+                json_t* name_json = json_object_get(json_root, "kit_name");
+                new_kit.name = json_is_string(name_json) ? json_string_value(name_json) : "Custom kit";
+                vx_drums::modelsFromJson(json_object_get(json_root, "kit_models"), new_kit.models);
+            }
+        }
 
         json_t* overrides_json = json_object_get(json_root, "model_overrides");
         if (json_is_array(overrides_json))
@@ -546,6 +590,9 @@ struct VXDrums : VoxglitchModule
         }
 
         setKitState(new_kit, overrides);
+
+        json_t* pan_json = json_object_get(json_root, "stereo_panning");
+        stereo_panning = json_is_boolean(pan_json) ? json_boolean_value(pan_json) : true;
         // The control-rate compares in process() then switch the models and
         // re-push any param the patch changed.
     }
@@ -610,8 +657,8 @@ inline std::string VXDrumsKnobQuantity::getUnit()
 //
 struct VXDrumsKitAction : history::ModuleAction
 {
-    vx_drums::KitId kit_before = vx_drums::KIT_HOUSE;
-    vx_drums::KitId kit_after = vx_drums::KIT_HOUSE;
+    vx_drums::KitState kit_before;
+    vx_drums::KitState kit_after;
     int overrides_before[vx_drums::COLUMNS] = { -1, -1, -1, -1, -1, -1 };
     int overrides_after[vx_drums::COLUMNS] = { -1, -1, -1, -1, -1, -1 };
 
@@ -641,7 +688,7 @@ struct VXDrumsKitAction : history::ModuleAction
         return true;
     }
 
-    void apply(vx_drums::KitId kit, const int overrides[vx_drums::COLUMNS])
+    void apply(const vx_drums::KitState& kit, const int overrides[vx_drums::COLUMNS])
     {
         VXDrums* m = dynamic_cast<VXDrums*>(APP->engine->getModule(moduleId));
         if (!m) return;
@@ -654,7 +701,7 @@ struct VXDrumsKitAction : history::ModuleAction
 
 // Pick a kit. Overrides are kept (DESIGN-KITS.md §5): a kit is the default
 // row, an override is the user's explicit choice for that column.
-inline void vxDrumsChangeKit(VXDrums* m, vx_drums::KitId kit)
+inline void vxDrumsChangeKit(VXDrums* m, const vx_drums::KitState& kit)
 {
     if (!m) return;
     VXDrumsKitAction* action = new VXDrumsKitAction;
@@ -668,6 +715,70 @@ inline void vxDrumsChangeKit(VXDrums* m, vx_drums::KitId kit)
     action->captureAfter(m);
     if (action->isNoop()) { delete action; return; }
     APP->history->push(action);
+}
+
+// ── User kits (VXDrumKit.hpp) ────────────────────────────────────────────────
+
+// What the module sounds like right now as a UserKit: the EFFECTIVE model of
+// every column (overrides baked in) and the 24 voice knob positions. The
+// caller supplies the identity.
+inline vx_drums::UserKit vxDrumsCaptureUserKit(VXDrums* m, const std::string& uuid, const std::string& name)
+{
+    vx_drums::UserKit k;
+    k.kit.uuid = uuid;
+    k.kit.name = name;
+    k.kit.custom = true;
+    for (int c = 0; c < vx_drums::COLUMNS; c++)
+    {
+        k.kit.models[c] = m->effectiveModel(c);
+        for (int i = 0; i < vx_drums::KIT_KNOBS_PER_COLUMN; i++)
+            k.knobs[c][i] = m->params[c * VXDrums::KNOBS_PER_COLUMN + i].getValue();
+    }
+    return k;
+}
+
+// Load a user kit: its models become the kit (overrides cleared) AND its 24
+// knobs are set, as ONE undo step — a history::ComplexAction holding the kit
+// action plus Rack's own ParamChange entries (the resetKnobsToModelDefaults
+// idiom, VXDrumsWidget.hpp). The master strip is not part of a kit.
+inline void vxDrumsLoadUserKit(VXDrums* m, const vx_drums::UserKit& k)
+{
+    if (!m) return;
+    history::ComplexAction* complex = new history::ComplexAction;
+    complex->name = "load kit";
+
+    VXDrumsKitAction* action = new VXDrumsKitAction;
+    action->name = "load kit";
+    action->captureBefore(m);
+    int none[vx_drums::COLUMNS];
+    for (int c = 0; c < vx_drums::COLUMNS; c++) none[c] = VXDrums::NO_OVERRIDE;
+    m->setKitState(k.kit, none);
+    action->captureAfter(m);
+    if (action->isNoop()) delete action;
+    else complex->push(action);
+
+    for (int c = 0; c < vx_drums::COLUMNS; c++)
+    {
+        for (int i = 0; i < vx_drums::KIT_KNOBS_PER_COLUMN; i++)
+        {
+            const int pid = c * VXDrums::KNOBS_PER_COLUMN + i;
+            const float old_value = m->params[pid].getValue();
+            const float new_value = k.knobs[c][i];
+            if (old_value == new_value) continue;
+
+            APP->engine->setParamValue(m, pid, new_value);
+
+            history::ParamChange* change = new history::ParamChange;
+            change->moduleId = m->id;
+            change->paramId = pid;
+            change->oldValue = old_value;
+            change->newValue = new_value;
+            complex->push(change);
+        }
+    }
+
+    if (complex->isEmpty()) { delete complex; return; }
+    APP->history->push(complex);
 }
 
 // Set (model >= 0) or clear (model == VXDrums::NO_OVERRIDE) one column's override.

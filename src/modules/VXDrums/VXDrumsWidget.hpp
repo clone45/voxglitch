@@ -17,6 +17,7 @@
 // and nothing else. Labels are paths in the art. `module` is NULL in the
 // module browser; every path here tolerates that.
 
+#include <cstdlib>
 #include <memory>
 #include <string>
 #include <vector>
@@ -33,6 +34,111 @@
 // column is overriding the kit's choice; the ▼ at the right is a path, since
 // the font may not carry the glyph.
 //
+namespace vx_drums_ui
+{
+    // The kit list every kit menu shows: the factory kits, then, after a
+    // separator, the user's saved kits (VXDrumKitStore.hpp), each checked by
+    // uuid. Picking a factory kit keeps the knobs (the physical-knob rule);
+    // picking a user kit loads its knobs too, one undo step either way.
+    inline void addKitChoices(ui::Menu* menu, VXDrums* m)
+    {
+        for (int k = 0; k < vx_drums::NUM_KITS; k++)
+        {
+            const vx_drums::KitState kit = vx_drums::KitState::factory((vx_drums::KitId)k);
+            menu->addChild(createMenuItem(kit.name, CHECKMARK(m->kit.sameKit(kit)),
+                [m, kit]() { vxDrumsChangeKit(m, kit); }));
+        }
+
+        const vx_drums::KitLibrary& lib = vx_drums::kitStore().library;
+        if (lib.kits.empty()) return;
+
+        menu->addChild(new MenuSeparator);
+        for (size_t i = 0; i < lib.kits.size(); i++)
+        {
+            const vx_drums::UserKit k = lib.kits[i];   // a copy: the library may change before the lambda runs
+            menu->addChild(createMenuItem(k.kit.name, CHECKMARK(m->kit.sameKit(k.kit)),
+                [m, k]() { vxDrumsLoadUserKit(m, k); }));
+        }
+    }
+
+    // A name from the user, or "" if they cancelled or typed nothing.
+    inline std::string promptKitName(const char* message, const std::string& initial)
+    {
+        char* text = osdialog_prompt(OSDIALOG_INFO, message, initial.c_str());
+        if (!text) return "";
+        std::string name = text;
+        std::free(text);
+        // Trim.
+        const size_t a = name.find_first_not_of(" \t\r\n");
+        const size_t b = name.find_last_not_of(" \t\r\n");
+        if (a == std::string::npos) return "";
+        return name.substr(a, b - a + 1);
+    }
+
+    // "Save kit as…": capture the module's current sound under a new name,
+    // add it to the library, write the file, and make it the module's kit
+    // (overrides are baked into the saved models, so they clear). The library
+    // change is not undoable; the module's kit change is.
+    inline void saveKitAs(VXDrums* m)
+    {
+        if (!m) return;
+        const std::string name = promptKitName("Name for the new kit:", m->kit.custom ? m->kit.name : "My Kit");
+        if (name.empty()) return;
+
+        vx_drums::KitStore& store = vx_drums::kitStore();
+        vx_drums::UserKit k = vxDrumsCaptureUserKit(m, vx_drums::mintUuid(), name);
+        if (!store.library.add(k)) return;
+        if (!store.save())
+        {
+            osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, "Could not write the kit library file.");
+        }
+        vxDrumsLoadUserKit(m, k);
+    }
+
+    // "Update <kit>": overwrite the loaded user kit with the module's current
+    // sound; the name stays.
+    inline void updateKit(VXDrums* m)
+    {
+        if (!m || !m->kit.custom) return;
+        vx_drums::KitStore& store = vx_drums::kitStore();
+        if (!store.library.find(m->kit.uuid)) return;
+
+        vx_drums::UserKit k = vxDrumsCaptureUserKit(m, m->kit.uuid, m->kit.name);
+        if (!store.library.update(k)) return;
+        if (!store.save())
+        {
+            osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, "Could not write the kit library file.");
+        }
+        vxDrumsLoadUserKit(m, k);   // clears the overrides now baked in; a no-op otherwise
+    }
+
+    inline void renameKit(VXDrums* m, const std::string& uuid)
+    {
+        vx_drums::KitStore& store = vx_drums::kitStore();
+        const vx_drums::UserKit* k = store.library.find(uuid);
+        if (!k) return;
+        const std::string name = promptKitName("New name for the kit:", k->kit.name);
+        if (name.empty() || !store.library.rename(uuid, name)) return;
+        store.save();
+
+        // The module showing this kit follows the rename (a display change,
+        // not a sound change: no undo step).
+        if (m && m->kit.custom && m->kit.uuid == uuid) m->kit.name = name;
+    }
+
+    // Deleting a kit does not touch any module playing it: the module carries
+    // its own copy, and the patch will still load and sound the same.
+    inline void deleteKit(const std::string& uuid)
+    {
+        vx_drums::KitStore& store = vx_drums::kitStore();
+        const vx_drums::UserKit* k = store.library.find(uuid);
+        if (!k) return;
+        const std::string question = "Delete the kit \"" + k->kit.name + "\"? Modules using it keep playing it.";
+        if (!osdialog_message(OSDIALOG_WARNING, OSDIALOG_OK_CANCEL, question.c_str())) return;
+        if (store.library.remove(uuid)) store.save();
+    }
+}
+
 struct VXDrumsKitDisplay : TransparentWidget
 {
     VXDrums* module = NULL;
@@ -47,8 +153,7 @@ struct VXDrumsKitDisplay : TransparentWidget
     // Null-safe: the browser shows the default kit.
     std::string label() const
     {
-        vx_drums::KitId kit = module ? module->kit : vx_drums::KIT_HOUSE;
-        std::string s(vx_drums::kitSpec(kit).name);
+        std::string s = module ? module->kit.name : std::string(vx_drums::kitSpec(vx_drums::KIT_HOUSE).name);
         for (size_t i = 0; i < s.size(); i++)
             if (s[i] >= 'a' && s[i] <= 'z') s[i] = (char)(s[i] - 'a' + 'A');
         if (module && module->anyOverride()) s += " *";
@@ -130,12 +235,7 @@ struct VXDrumsKitDisplay : TransparentWidget
 
         ui::Menu* menu = createMenu();
         menu->addChild(createMenuLabel("Kit"));
-        for (int k = 0; k < vx_drums::NUM_KITS; k++)
-        {
-            vx_drums::KitId kit = (vx_drums::KitId)k;
-            menu->addChild(createMenuItem(vx_drums::kitSpec(kit).name, CHECKMARK(m->kit == kit),
-                [m, kit]() { vxDrumsChangeKit(m, kit); }));
-        }
+        vx_drums_ui::addKitChoices(menu, m);
     }
 };
 
@@ -306,7 +406,8 @@ struct VXDrumsWidget : ModuleWidget
     }
 
     // Module-wide settings live on the panel menu (PianoRollWidget.hpp:135-138):
-    // the kit, the six per-column model overrides, and the knob reset.
+    // the kit, the six per-column model overrides (grouped under "Kit
+    // Customization"), the stereo panning switch, and the knob reset.
     void appendContextMenu(Menu* menu) override
     {
         VXDrums* m = dynamic_cast<VXDrums*>(this->module);
@@ -314,32 +415,65 @@ struct VXDrumsWidget : ModuleWidget
 
         menu->addChild(new MenuSeparator);
 
-        std::vector<std::string> kit_names;
-        for (int k = 0; k < vx_drums::NUM_KITS; k++)
-            kit_names.push_back(vx_drums::kitSpec((vx_drums::KitId)k).name);
-        menu->addChild(createIndexSubmenuItem("Kit", kit_names,
-            [m]() { return (size_t)m->kit; },
-            [m](size_t k) { vxDrumsChangeKit(m, (vx_drums::KitId)k); }));
+        menu->addChild(createSubmenuItem("Kit", m->kit.name, [m](ui::Menu* sub) {
+            vx_drums_ui::addKitChoices(sub, m);
+        }));
 
-        static const char* const COLUMN_MENU[vx_drums::COLUMNS] = {
-            "Bass drum model", "Snare model", "Clap model", "Percussion model", "Closed hat model", "Open hat model",
-        };
-        for (int c = 0; c < vx_drums::COLUMNS; c++)
-        {
-            menu->addChild(createSubmenuItem(COLUMN_MENU[c], "", [m, c](ui::Menu* sub) {
-                const char* kit_model = vx_drums::modelSpec(vx_drums::kitSpec(m->kit).models[c]).name;
-                sub->addChild(createMenuItem(std::string("Kit default (") + kit_model + ")",
-                    CHECKMARK(m->model_override[c] == VXDrums::NO_OVERRIDE),
-                    [m, c]() { vxDrumsChangeOverride(m, c, VXDrums::NO_OVERRIDE); }));
-                sub->addChild(new MenuSeparator);
-                for (int i = 0; i < vx_drums::NUM_MODELS; i++)
-                {
-                    sub->addChild(createMenuItem(vx_drums::modelSpec((vx_drums::ModelId)i).name,
-                        CHECKMARK(m->model_override[c] == i),
-                        [m, c, i]() { vxDrumsChangeOverride(m, c, i); }));
-                }
-            }));
-        }
+        // The six per-column model overrides, one submenu each, under a
+        // single "Kit Customization" entry so the top level stays short.
+        menu->addChild(createSubmenuItem("Kit Customization", "", [m](ui::Menu* group) {
+            static const char* const COLUMN_MENU[vx_drums::COLUMNS] = {
+                "Bass drum model", "Snare model", "Clap model", "Percussion model", "Closed hat model", "Open hat model",
+            };
+            for (int c = 0; c < vx_drums::COLUMNS; c++)
+            {
+                group->addChild(createSubmenuItem(COLUMN_MENU[c], "", [m, c](ui::Menu* sub) {
+                    const char* kit_model = vx_drums::modelSpec(m->kit.models[c]).name;
+                    sub->addChild(createMenuItem(std::string("Kit default (") + kit_model + ")",
+                        CHECKMARK(m->model_override[c] == VXDrums::NO_OVERRIDE),
+                        [m, c]() { vxDrumsChangeOverride(m, c, VXDrums::NO_OVERRIDE); }));
+                    sub->addChild(new MenuSeparator);
+                    for (int i = 0; i < vx_drums::NUM_MODELS; i++)
+                    {
+                        sub->addChild(createMenuItem(vx_drums::modelSpec((vx_drums::ModelId)i).name,
+                            CHECKMARK(m->model_override[c] == i),
+                            [m, c, i]() { vxDrumsChangeOverride(m, c, i); }));
+                    }
+                }));
+            }
+
+            // ── The user's kits (VXDrumKitStore.hpp; Bret, 2026-09-07) ──
+            group->addChild(new MenuSeparator);
+            group->addChild(createMenuItem("Save kit as…", "", [m]() { vx_drums_ui::saveKitAs(m); }));
+
+            const bool loaded_user_kit = m->kit.custom && vx_drums::kitStore().library.find(m->kit.uuid) != nullptr;
+            group->addChild(createMenuItem(loaded_user_kit ? "Update \"" + m->kit.name + "\"" : std::string("Update kit"), "",
+                [m]() { vx_drums_ui::updateKit(m); }, !loaded_user_kit));
+
+            const vx_drums::KitLibrary& lib = vx_drums::kitStore().library;
+            group->addChild(createSubmenuItem("Manage kits", lib.kits.empty() ? "none saved" : std::to_string(lib.kits.size()) + " saved",
+                [m](ui::Menu* kits) {
+                    const vx_drums::KitLibrary& lib = vx_drums::kitStore().library;
+                    if (lib.kits.empty())
+                    {
+                        kits->addChild(createMenuLabel("No saved kits"));
+                        return;
+                    }
+                    for (size_t i = 0; i < lib.kits.size(); i++)
+                    {
+                        const std::string uuid = lib.kits[i].kit.uuid;
+                        kits->addChild(createSubmenuItem(lib.kits[i].kit.name, "", [m, uuid](ui::Menu* one) {
+                            one->addChild(createMenuItem("Rename…", "", [m, uuid]() { vx_drums_ui::renameKit(m, uuid); }));
+                            one->addChild(createMenuItem("Delete…", "", [uuid]() { vx_drums_ui::deleteKit(uuid); }));
+                        }));
+                    }
+                }));
+        }));
+
+        // The Machine's fixed per-voice pans on the L/R mix. A plain bool
+        // checkbox (the ArpSeqWidget.hpp:602 idiom): no undo step, saved with
+        // the patch.
+        menu->addChild(createBoolPtrMenuItem("Stereo panning", "", &m->stereo_panning));
 
         VXDrumsWidget* self = this;
         menu->addChild(createMenuItem("Reset knobs to model defaults", "",

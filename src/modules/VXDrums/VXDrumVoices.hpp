@@ -1878,6 +1878,7 @@ struct Voices
     double v01[COLUMNS][3] = {};      // stored knob positions: [c][0 tune, 1 decay, 2 shape]
     double level[COLUMNS] = { 0.9, 0.8, 0.75, 0.7, 0.7, 0.65 };   // vxdrumvoices.c:104-112 defaults
     double m_accent = 0.5, m_drive = 0.15, m_volume = 0.8;         // :308-314
+    bool m_panning = true;   // the Machine's fixed per-voice pans on the mix; off = every voice dead centre
 
     // Every coefficient is valid from construction (the create path at
     // :326-327 does the same): the House kit at each model's default knobs.
@@ -1952,6 +1953,7 @@ struct Voices
     void setAccent(double v) { m_accent = clampd(v, 0.0, 1.0); }   // vxdrums.c:576 (deviation 6)
     void setDrive(double v)  { m_drive = clampd(v, 0.0, 1.0); }    // vxdrums.c:578
     void setVolume(double v) { m_volume = v; }
+    void setPanning(bool on) { m_panning = on; }
 
     // Strike ONE column at amplitude `amp` (accent already applied) — the
     // single path every trigger takes. Column rule: a strike on column 4
@@ -1979,8 +1981,16 @@ struct Voices
         }
 
         // The mix: the Machine's fixed pans → one-knob normalized tanh drive → volume.   :422-430
-        double mixL = v[0] * 0.50 + v[1] * 0.50 + v[2] * 0.62 + v[3] * 0.38 + v[4] * 0.42 + v[5] * 0.58;
-        double mixR = v[0] * 0.50 + v[1] * 0.50 + v[2] * 0.38 + v[3] * 0.62 + v[4] * 0.58 + v[5] * 0.42;
+        // With panning off every voice takes the centre gain (0.50 each side), so a
+        // centred voice is identical in both modes and the total energy per voice
+        // is unchanged (each voice's pair sums to 1.0 either way).
+        double mixL, mixR;
+        if (m_panning) {
+            mixL = v[0] * 0.50 + v[1] * 0.50 + v[2] * 0.62 + v[3] * 0.38 + v[4] * 0.42 + v[5] * 0.58;
+            mixR = v[0] * 0.50 + v[1] * 0.50 + v[2] * 0.38 + v[3] * 0.62 + v[4] * 0.58 + v[5] * 0.42;
+        } else {
+            mixL = mixR = (v[0] + v[1] + v[2] + v[3] + v[4] + v[5]) * 0.50;
+        }
         double dr = 1.0 + m_drive * 5.0;
         double tdr = fastTanh(dr);
         mixL = fastTanh(mixL * dr) / tdr;
