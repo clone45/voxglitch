@@ -63,6 +63,38 @@ struct BpmKnob : RoundSmallBlackKnob
     BpmKnob() { smooth = false; }
 };
 
+// The REC switch: the shared squareToggle's frames and size, with a RED
+// glow when armed instead of the warm white the transport switches use.
+// Local to Timeline (the shared switch is untouched): red is the recording
+// convention, and it must read differently from PLAY at a glance.
+struct RecSquareToggle : squareToggle
+{
+    void draw(const DrawArgs& args) override
+    {
+        nvgBeginPath(args.vg);
+        nvgRect(args.vg, -1, -1, box.size.x + 3.0, box.size.y + 3.0);
+        nvgFillColor(args.vg, nvgRGBA(0, 0, 0, 60));
+        nvgFill(args.vg);
+
+        SvgSwitch::draw(args);
+
+        if (!module) return;
+        ParamQuantity* pq = getParamQuantity();
+        if (!pq || pq->getValue() == pq->getMinValue()) return;
+
+        math::Vec c = box.size.div(2);
+        float radius = std::min(box.size.x, box.size.y) / 2.0f;
+        float oradius = radius + std::min(radius * 2.f, 8.f);
+        nvgBeginPath(args.vg);
+        nvgRect(args.vg, c.x - oradius, c.y - oradius, 2 * oradius, 2 * oradius);
+        NVGcolor icol = nvgRGBA(255, 70, 70, 90);
+        NVGcolor ocol = nvgRGBA(0, 0, 0, 0);
+        NVGpaint paint = nvgRadialGradient(args.vg, c.x, c.y, radius, oradius, icol, ocol);
+        nvgFillPaint(args.vg, paint);
+        nvgFill(args.vg);
+    }
+};
+
 // Only the wordmark is drawn in code. The control labels belong to the panel
 // art, as outlined paths — nanosvg cannot render <text>, so they are drawn in
 // a vector editor, not here.
@@ -122,36 +154,37 @@ struct TimelineWidget : ModuleWidget
         readout->box = Rect(Vec(READOUT_X, READOUT_Y), Vec(READOUT_W, READOUT_H));
         addChild(readout);
 
-        // ── inputs: START / STOP / RESET, all polyphonic ──
+        // ── inputs: START / STOP / RESET / REC, all polyphonic ──
         struct Anchor { const char* id; int pid; };
-        static const Anchor INS[3] = {
+        static const Anchor INS[4] = {
             { "start_input", Timeline::START_INPUT },
             { "stop_input",  Timeline::STOP_INPUT  },
             { "reset_input", Timeline::RESET_INPUT },
+            { "rec_input",   Timeline::REC_INPUT   },
         };
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 4; i++)
             addInput(createInputCentered<VoxglitchPolyPort>(
                 panelHelper.findNamed(INS[i].id), module, INS[i].pid));
 
-        // ── transport switches and the timing knobs ──
+        // ── transport switches and the tempo knob ──
         // No LEDs beside PLAY and LOOP: the switches show their own state, and
         // the readout's moving digits already say "playing".
         // VCVButton, not LEDButton: this collection uses the former
         // (TempestVS1's MidiConfigButton) and the latter nowhere.
+        // SNAP and DIV left the panel 2026-09-03: their params keep their
+        // ids (persisted) and are set from the context menu.
         addParam(createParamCentered<VCVButton>(
             panelHelper.findNamed("rewind_button"), module, Timeline::REWIND_PARAM));
         addParam(createParamCentered<squareToggle>(
             panelHelper.findNamed("play_switch"), module, Timeline::PLAY_PARAM));
+        addParam(createParamCentered<RecSquareToggle>(
+            panelHelper.findNamed("rec_switch"), module, Timeline::REC_PARAM));
         addParam(createParamCentered<squareToggle>(
             panelHelper.findNamed("loop_switch"), module, Timeline::LOOP_PARAM));
         addParam(createParamCentered<squareToggle>(
             panelHelper.findNamed("chase_switch"), module, Timeline::CHASE_PARAM));
         addParam(createParamCentered<BpmKnob>(
             panelHelper.findNamed("bpm_knob"), module, Timeline::BPM_PARAM));
-        addParam(createParamCentered<RoundSmallBlackKnob>(
-            panelHelper.findNamed("snap_knob"), module, Timeline::SNAP_PARAM));
-        addParam(createParamCentered<RoundSmallBlackKnob>(
-            panelHelper.findNamed("div_knob"), module, Timeline::DIV_PARAM));
 
         // ── outputs, on the SVG's ink plate; LANES last ──
         static const Anchor OUTS[6] = {
@@ -172,6 +205,15 @@ struct TimelineWidget : ModuleWidget
         }
     }
 
+    // Retired lane snapshots are freed here, once per frame, on the UI
+    // thread — never by the audio thread (see LaneStore).
+    void step() override
+    {
+        Timeline* m = dynamic_cast<Timeline*>(this->module);
+        if (m) m->housekeep();
+        ModuleWidget::step();
+    }
+
     void appendContextMenu(Menu* menu) override
     {
         Timeline* m = dynamic_cast<Timeline*>(this->module);
@@ -183,5 +225,27 @@ struct TimelineWidget : ModuleWidget
             [=](bool val) { m->locked = val; }
         ));
         // Chase is a panel switch, not a menu item — one control per thing.
+
+        // SNAP and DIV are params (same ids as v2.44, persisted, MIDI-mappable)
+        // that lost their knobs; the menu is now their only panel-side control.
+        // The labels mirror the configSwitch labels.
+        menu->addChild(new MenuSeparator);
+        menu->addChild(createIndexSubmenuItem("Snap",
+            { "Off", "1 bar", "1/2", "1/4", "1/8", "1/16" },
+            [=]() { return (size_t)(int)(m->params[Timeline::SNAP_PARAM].getValue() + 0.5f); },
+            [=](size_t val) { m->getParamQuantity(Timeline::SNAP_PARAM)->setValue((float)val); }
+        ));
+        menu->addChild(createIndexSubmenuItem("Clock division",
+            { "1/1 (bar)", "1/2", "1/4", "1/8", "1/16", "1/32" },
+            [=]() { return (size_t)(int)(m->params[Timeline::DIV_PARAM].getValue() + 0.5f); },
+            [=](size_t val) { m->getParamQuantity(Timeline::DIV_PARAM)->setValue((float)val); }
+        ));
+        // Record rate is a module setting, not a param (persisted as
+        // "record_rate").
+        menu->addChild(createIndexSubmenuItem("Record rate",
+            { "1 bar", "1/2", "1/4", "1/8", "1/16", "1/32" },
+            [=]() { return (size_t)m->recordRate; },
+            [=](size_t val) { m->recordRate = (int)val; }
+        ));
     }
 };

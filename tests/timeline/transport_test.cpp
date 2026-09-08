@@ -2,7 +2,7 @@
 // poly START/STOP/RESET, per-lane song-clock pulses) mirrored outside Rack.
 // A line-for-line copy of Timeline::process's decision structure with params
 // and jacks stubbed; if it and the module diverge, re-sync THIS file.
-// Per-lane restructure 2026-08-28.
+// Per-lane restructure 2026-08-28; per-lane snapshot store 2026-09-03.
 #include <cstdio>
 #include <cmath>
 #include "TimelineEngine.hpp"
@@ -29,7 +29,10 @@ struct Trig
 struct Sim
 {
     TimelineEngine engine;
-    LaneSet lanes;
+    // The node store as process() sees it: one snapshot per lane, read
+    // through a const pointer array (what LaneStore::loadAll fills).
+    LaneData laneData[TL_LANES];
+    const LaneData* lanes[TL_LANES];
     double SR = 48000.0;
     // params
     double bpm = 120.0, div = 0.25;
@@ -54,13 +57,13 @@ struct Sim
     {
         engine.setSampleRate(SR);
         clkPulseLen = (int)(SR * 0.01); trigPulseLen = (int)(SR * 0.001);
-        for (int L = 0; L < TL_LANES; L++) lastBeatL[L] = -1e-9;
+        for (int L = 0; L < TL_LANES; L++) { lastBeatL[L] = -1e-9; lanes[L] = &laneData[L]; }
     }
 
     double effectiveLoopEnd()
     {
         if (loopEndUser > 0.0) return loopEndUser;
-        double last = lanes.lastBeat();
+        double last = lastBeatOf(lanes);
         if (last <= 0.0) return 16.0;
         return std::ceil(last / 4.0) * 4.0;
     }

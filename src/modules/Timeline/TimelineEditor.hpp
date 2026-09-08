@@ -18,8 +18,8 @@
 // One committed gesture = ONE undo step.
 //
 // It owns no data: it reads the module's lane store and pushes edits back
-// through beginEdit()/commitEdit(), which publish atomically for the audio
-// thread.
+// through laneCopy()/publishLane(), which copy ONE lane, mutate the copy
+// and swap it in atomically for the audio thread.
 
 #include "Timeline.hpp"
 #include <cstdio>
@@ -55,25 +55,29 @@ inline NVGcolor tcol(int hex, float a = 1.f)
     return nvgRGBA((hex >> 16) & 0xff, (hex >> 8) & 0xff, hex & 0xff, (unsigned char)(a * 255.f));
 }
 
-// ── undo: one lane's nodes before and after a gesture ───────────────────────
+// ── undo: the touched lanes' nodes before and after a gesture ───────────────
+// A mouse gesture touches one lane; a recording take touches every lane it
+// recorded, and is still ONE undo step.
 struct LaneEditAction : history::ModuleAction
 {
-    int lane = 0;
-    std::vector<double> beforeT, beforeV, beforeB, afterT, afterV, afterB;
+    struct Entry
+    {
+        int lane = 0;
+        timeline_dsp::LaneData before;
+        timeline_dsp::LaneData after;
+    };
+    std::vector<Entry> entries;
 
-    void apply(const std::vector<double>& ts, const std::vector<double>& vs,
-               const std::vector<double>& bs)
+    void apply(bool forward)
     {
         Module* m = APP->engine->getModule(moduleId);
         Timeline* tl = dynamic_cast<Timeline*>(m);
         if (!tl) return;
-        timeline_dsp::LaneSet* ls = tl->beginEdit();
-        ls->clearLane(lane);
-        for (size_t i = 0; i < ts.size(); i++) ls->add(lane, ts[i], vs[i], bs[i]);
-        tl->commitEdit();
+        for (size_t i = 0; i < entries.size(); i++)
+            tl->publishLane(entries[i].lane, forward ? entries[i].after : entries[i].before);
     }
-    void undo() override { apply(beforeT, beforeV, beforeB); }
-    void redo() override { apply(afterT, afterV, afterB); }
+    void undo() override { apply(false); }
+    void redo() override { apply(true); }
 };
 
 struct TimelineEditorWidget : OpaqueWidget
@@ -91,7 +95,7 @@ struct TimelineEditorWidget : OpaqueWidget
     int dragSeg = -1;             // segment being bent (DRAG_BEND)
     int hoverSeg = -1;            // segment whose bend handle shows
     Vec dragPos;
-    std::vector<double> gestureT, gestureV, gestureB;   // the lane BEFORE the gesture
+    timeline_dsp::LaneData gestureBefore;   // the lane BEFORE the gesture
     int hoverNode = -1;
     float grabDX = 0.f;          // pointer offset inside the thumb when grabbed
     bool hoverThumb = false;
@@ -115,6 +119,63 @@ struct TimelineEditorWidget : OpaqueWidget
     double lastPlayhead = 0.0;
     int lastChaseLane = -1;       // chase follows the SELECTED lane; switching
                                   // tabs must not read as a rewind
+
+    // ── recording drain (the PianoRoll idiom) ──────────────────────────────
+    // The audio thread pushes captures into the module's ring; this widget
+    // drains it once per frame, on the UI thread, which is the only thread
+    // allowed to publish lanes. Each capture replaces the nodes the
+    // playhead passed over since the previous one and inserts the new
+    // node, committed through the pointer-swap path so playback and the
+    // drawing follow within a frame. When every recorded lane has its END,
+    // the whole take becomes ONE undo step.
+    timeline_dsp::TakeAssembler take;
+
+    // A finished take becomes one undo action. Called BEFORE a START is
+    // applied as well as after the drain: when a take's END and the next
+    // take's START arrive in the same frame, applying the START first would
+    // reset that lane's record and lose the finished take's `before`.
+    void finishTake()
+    {
+        using namespace timeline_dsp;
+        if (!module || !take.complete()) return;
+        LaneEditAction* a = new LaneEditAction;
+        a->moduleId = module->id;
+        a->name = "record automation";
+        for (int L = 0; L < TL_LANES; L++)
+        {
+            if (!take.lanes[L].open) continue;
+            LaneEditAction::Entry e;
+            e.lane = L;
+            e.before = take.lanes[L].before;
+            e.after = module->laneCopy(L);
+            a->entries.push_back(e);
+        }
+        APP->history->push(a);
+        take.reset();
+    }
+
+    void drainCaptures()
+    {
+        using namespace timeline_dsp;
+        if (!module) return;
+        Capture c;
+        while (module->captureRing.pop(c))
+        {
+            if (c.lane < 0 || c.lane >= TL_LANES) continue;
+            if (c.kind == CAP_START) finishTake();
+            LaneData d = module->laneCopy(c.lane);
+            if (!take.apply(c, d)) continue;
+            module->publishLane(c.lane, d);                 // clears laneFull
+            module->laneFull[c.lane] = take.lanes[c.lane].full != 0;
+        }
+        finishTake();
+    }
+
+    void step() override
+    {
+        drainCaptures();
+        OpaqueWidget::step();
+    }
 
     // The lane the editor is showing — its playhead is the one the view, the
     // readout and chase all follow (Bret's call, 2026-08-28).
@@ -216,7 +277,7 @@ struct TimelineEditorWidget : OpaqueWidget
         double last = 0.0;
         if (module)
         {
-            last = module->lanes().lastBeat();
+            last = module->lastBeat();
             if (module->params[Timeline::LOOP_PARAM].getValue() > 0.5f)
             {
                 double le = module->effectiveLoopEnd();
@@ -287,14 +348,14 @@ struct TimelineEditorWidget : OpaqueWidget
     int nodeAt(Vec p)
     {
         if (!module) return -1;
-        const timeline_dsp::LaneSet& ls = module->lanes();
-        int L = laneIdx();
+        const timeline_dsp::LaneData& ld = module->lane(laneIdx());
         int best = -1;
         float bestD = HIT_PX;
-        for (int i = 0; i < ls.count[L]; i++)
+        int n = ld.count();
+        for (int i = 0; i < n; i++)
         {
-            float dx = t2x(ls.t[L][i]) - p.x;
-            float dy = v2y(ls.v[L][i]) - p.y;
+            float dx = t2x(ld.t[i]) - p.x;
+            float dy = v2y(ld.v[i]) - p.y;
             float d = std::sqrt(dx * dx + dy * dy);
             if (d < bestD) { bestD = d; best = i; }
         }
@@ -316,23 +377,22 @@ struct TimelineEditorWidget : OpaqueWidget
     }
 
     // The curve's y at pixel x inside segment i.
-    float segCurveY(const timeline_dsp::LaneSet& ls, int L, int i, float x)
+    float segCurveY(const timeline_dsp::LaneData& ld, int i, float x)
     {
-        double t0 = ls.t[L][i], t1 = ls.t[L][i + 1];
-        double v0 = ls.v[L][i], v1 = ls.v[L][i + 1];
+        double t0 = ld.t[i], t1 = ld.t[i + 1];
+        double v0 = ld.v[i], v1 = ld.v[i + 1];
         double t = x2t(x);
         double frac = (t1 > t0) ? (t - t0) / (t1 - t0) : 0.0;
-        frac = bendFrac(tlClamp(frac, 0.0, 1.0), ls.b[L][i]);
+        frac = bendFrac(tlClamp(frac, 0.0, 1.0), ld.b[i]);
         return v2y(v0 + frac * (v1 - v0));
     }
 
     Vec bendHandlePos(int i)
     {
-        const timeline_dsp::LaneSet& ls = module->lanes();
-        int L = laneIdx();
-        double tm = (ls.t[L][i] + ls.t[L][i + 1]) * 0.5;
-        double v0 = ls.v[L][i], v1 = ls.v[L][i + 1];
-        double frac = bendFrac(0.5, ls.b[L][i]);
+        const timeline_dsp::LaneData& ld = module->lane(laneIdx());
+        double tm = ((double)ld.t[i] + (double)ld.t[i + 1]) * 0.5;
+        double v0 = ld.v[i], v1 = ld.v[i + 1];
+        double frac = bendFrac(0.5, ld.b[i]);
         return Vec(t2x(tm), v2y(v0 + frac * (v1 - v0)));
     }
 
@@ -343,8 +403,7 @@ struct TimelineEditorWidget : OpaqueWidget
     {
         int seg = (dragMode == DRAG_BEND) ? dragSeg : hoverSeg;
         if (!module || seg < 0) return -1;
-        const timeline_dsp::LaneSet& ls = module->lanes();
-        if (seg + 1 >= ls.count[laneIdx()]) return -1;
+        if (seg + 1 >= module->lane(laneIdx()).count()) return -1;
         Vec h = bendHandlePos(seg);
         return (std::fabs(h.x - p.x) <= HANDLE_R + 3.f
                 && std::fabs(h.y - p.y) <= HANDLE_R + 3.f) ? seg : -1;
@@ -354,33 +413,19 @@ struct TimelineEditorWidget : OpaqueWidget
     int segAt(Vec p)
     {
         if (!module) return -1;
-        const timeline_dsp::LaneSet& ls = module->lanes();
-        int L = laneIdx();
-        int n = ls.count[L];
+        const timeline_dsp::LaneData& ld = module->lane(laneIdx());
+        int n = ld.count();
         double t = x2t(p.x);
         for (int i = 0; i + 1 < n; i++)
         {
-            if (t < ls.t[L][i] || t > ls.t[L][i + 1]) continue;
-            return (std::fabs(segCurveY(ls, L, i, p.x) - p.y) <= 8.f) ? i : -1;
+            if (t < ld.t[i] || t > ld.t[i + 1]) continue;
+            return (std::fabs(segCurveY(ld, i, p.x) - p.y) <= 8.f) ? i : -1;
         }
         return -1;
     }
 
     // Snapshot the current lane (for the undo record).
-    void snapshot(std::vector<double>& ts, std::vector<double>& vs,
-                  std::vector<double>& bs)
-    {
-        ts.clear(); vs.clear(); bs.clear();
-        if (!module) return;
-        const timeline_dsp::LaneSet& ls = module->lanes();
-        int L = laneIdx();
-        for (int i = 0; i < ls.count[L]; i++)
-        {
-            ts.push_back(ls.t[L][i]);
-            vs.push_back(ls.v[L][i]);
-            bs.push_back(ls.b[L][i]);
-        }
-    }
+    void snapshot() { gestureBefore = module ? module->laneCopy(laneIdx()) : timeline_dsp::LaneData(); }
 
     void pushGesture(const char* name)
     {
@@ -388,11 +433,11 @@ struct TimelineEditorWidget : OpaqueWidget
         LaneEditAction* a = new LaneEditAction;
         a->moduleId = module->id;
         a->name = name;
-        a->lane = laneIdx();
-        a->beforeT = gestureT;
-        a->beforeV = gestureV;
-        a->beforeB = gestureB;
-        snapshot(a->afterT, a->afterV, a->afterB);
+        LaneEditAction::Entry e;
+        e.lane = laneIdx();
+        e.before = gestureBefore;
+        e.after = module->laneCopy(e.lane);
+        a->entries.push_back(e);
         APP->history->push(a);
     }
 
@@ -451,19 +496,20 @@ struct TimelineEditorWidget : OpaqueWidget
             int hit = (!inRuler && !inPan) ? nodeAt(e.pos) : -1;
             if (hit >= 0)
             {
-                snapshot(gestureT, gestureV, gestureB);
-                timeline_dsp::LaneSet* ls = module->beginEdit();
-                ls->erase(laneIdx(), hit);
-                module->commitEdit();
+                snapshot();
+                timeline_dsp::LaneData ld = module->laneCopy(laneIdx());
+                ld.erase(hit);
+                module->publishLane(laneIdx(), ld);
                 pushGesture("delete automation node");
             }
             else if (!inRuler && !inPan && bendHandleSeg(e.pos) >= 0)
             {
                 // Right-click the bend handle: back to a straight line.
-                snapshot(gestureT, gestureV, gestureB);
-                timeline_dsp::LaneSet* ls = module->beginEdit();
-                ls->b[laneIdx()][bendHandleSeg(e.pos)] = 0.0;
-                module->commitEdit();
+                snapshot();
+                int seg = bendHandleSeg(e.pos);
+                timeline_dsp::LaneData ld = module->laneCopy(laneIdx());
+                if (seg < ld.count()) ld.b[seg] = 0.f;
+                module->publishLane(laneIdx(), ld);
                 pushGesture("straighten automation segment");
             }
             else
@@ -535,7 +581,7 @@ struct TimelineEditorWidget : OpaqueWidget
             int seg = bendHandleSeg(e.pos);
             if (seg >= 0)
             {
-                snapshot(gestureT, gestureV, gestureB);
+                snapshot();
                 chaseHeld = true;
                 dragMode = DRAG_BEND;
                 dragSeg = seg;
@@ -546,16 +592,16 @@ struct TimelineEditorWidget : OpaqueWidget
         }
 
         // Body: grab an existing node, or add one and keep dragging it.
-        snapshot(gestureT, gestureV, gestureB);
+        snapshot();
         int hit = nodeAt(e.pos);
         if (hit < 0)
         {
             double beat = clampT(applySnap(x2t(e.pos.x)));
             double volt = y2v(e.pos.y);
-            timeline_dsp::LaneSet* ls = module->beginEdit();
-            hit = ls->insert(laneIdx(), beat, volt);
-            module->commitEdit();
+            timeline_dsp::LaneData ld = module->laneCopy(laneIdx());
+            hit = ld.insert(beat, volt);
             if (hit < 0) { e.consume(this); return; }   // lane full
+            module->publishLane(laneIdx(), ld);
         }
         chaseHeld = true;                      // hold for the gesture only:
                                                // a scroll moving under the
@@ -603,11 +649,11 @@ struct TimelineEditorWidget : OpaqueWidget
             // with f_b(frac_p) = u_p. f_b is monotone in b for fixed frac, so
             // bisection is exact enough and cannot diverge.
             int L = laneIdx();
-            timeline_dsp::LaneSet* ls = module->beginEdit();
-            if (dragSeg >= 0 && dragSeg + 1 < ls->count[L])
+            timeline_dsp::LaneData ld = module->laneCopy(L);
+            if (dragSeg >= 0 && dragSeg + 1 < ld.count())
             {
-                double t0 = ls->t[L][dragSeg], t1 = ls->t[L][dragSeg + 1];
-                double v0 = ls->v[L][dragSeg], v1 = ls->v[L][dragSeg + 1];
+                double t0 = ld.t[dragSeg], t1 = ld.t[dragSeg + 1];
+                double v0 = ld.v[dragSeg], v1 = ld.v[dragSeg + 1];
                 if (std::fabs(v1 - v0) > 1e-9 && t1 > t0)
                 {
                     double fp = (x2t(dragPos.x) - t0) / (t1 - t0);
@@ -622,10 +668,10 @@ struct TimelineEditorWidget : OpaqueWidget
                     }
                     double bend = 0.5 * (lo + hi);
                     if (std::fabs(bend) < 0.4) bend = 0.0;   // the detent
-                    ls->b[L][dragSeg] = bend;
+                    ld.b[dragSeg] = (float)bend;
                 }
             }
-            module->commitEdit();
+            module->publishLane(L, ld);
         }
         else if (dragMode == DRAG_NODE)
         {
@@ -648,20 +694,19 @@ struct TimelineEditorWidget : OpaqueWidget
                 dragPos.x = tlClamp(dragPos.x, 0.f, box.size.x);
             }
             int L = laneIdx();
-            timeline_dsp::LaneSet* ls = module->beginEdit();
-            if (dragNode >= 0 && dragNode < ls->count[L])
+            timeline_dsp::LaneData ld = module->laneCopy(L);
+            if (dragNode >= 0 && dragNode < ld.count())
             {
                 double beat = clampT(applySnap(x2t(dragPos.x)));
                 double volt = y2v(dragPos.y);
-                ls->t[L][dragNode] = beat;
-                ls->v[L][dragNode] = volt;
+                ld.t[dragNode] = (float)beat;
+                ld.v[dragNode] = (float)volt;
                 // Keep the lane sorted; follow the node to its new index.
-                double keyT = beat, keyV = volt;
-                ls->resort(L);
-                for (int i = 0; i < ls->count[L]; i++)
-                    if (ls->t[L][i] == keyT && ls->v[L][i] == keyV) { dragNode = i; break; }
+                ld.resort();
+                int at = ld.indexOf(beat, volt);
+                if (at >= 0) dragNode = at;
             }
-            module->commitEdit();
+            module->publishLane(L, ld);
         }
         OpaqueWidget::onDragMove(e);
     }
@@ -686,25 +731,25 @@ struct TimelineEditorWidget : OpaqueWidget
         TimelineEditorWidget* self = this;
         menu->addChild(createMenuItem("Clear lane", "", [self]() {
             if (!self->module) return;
-            self->snapshot(self->gestureT, self->gestureV, self->gestureB);
-            timeline_dsp::LaneSet* ls = self->module->beginEdit();
-            ls->clearLane(self->laneIdx());
-            self->module->commitEdit();
+            self->snapshot();
+            timeline_dsp::LaneData empty;
+            self->module->publishLane(self->laneIdx(), empty);
             self->pushGesture("clear automation lane");
         }));
         menu->addChild(createMenuItem("Straighten lane", "", [self]() {
             if (!self->module) return;
-            self->snapshot(self->gestureT, self->gestureV, self->gestureB);
-            timeline_dsp::LaneSet* ls = self->module->beginEdit();
+            self->snapshot();
             int L = self->laneIdx();
-            for (int i = 0; i < ls->count[L]; i++) ls->b[L][i] = 0.0;
-            self->module->commitEdit();
+            timeline_dsp::LaneData ld = self->module->laneCopy(L);
+            int n = ld.count();
+            for (int i = 0; i < n; i++) ld.b[i] = 0.f;
+            self->module->publishLane(L, ld);
             self->pushGesture("straighten automation lane");
         }));
         // Both of these place the view deliberately, so they break the chase.
         menu->addChild(createMenuItem("Fit view to content", "", [self]() {
             if (!self->module) return;
-            double last = self->module->lanes().lastBeat();
+            double last = self->module->lastBeat();
             if (last <= 0.0) last = 16.0;
             self->breakChase();
             self->scroll = 0.0;
@@ -860,9 +905,8 @@ struct TimelineEditorWidget : OpaqueWidget
     void drawCurve(NVGcontext* vg, float w, float top, float bot)
     {
         if (!module) return;
-        const timeline_dsp::LaneSet& ls = module->lanes();
-        int L = laneIdx();
-        int n = ls.count[L];
+        const timeline_dsp::LaneData& ld = module->lane(laneIdx());
+        int n = ld.count();
 
         nvgSave(vg);
         nvgScissor(vg, 0, top, w, bot - top);
@@ -883,27 +927,36 @@ struct TimelineEditorWidget : OpaqueWidget
         // The curve: hold before the first node, each segment drawn with its
         // bend (straight segments as single lines, bent ones subdivided),
         // hold after the last.
+        // With thousands of recorded nodes, only the visible ones need
+        // stroking: skip nodes left of the view except the last one before
+        // it, and stop after the first one past the right edge.
         nvgBeginPath(vg);
-        nvgMoveTo(vg, 0, v2y(ls.v[L][0]));
-        nvgLineTo(vg, t2x(ls.t[L][0]), v2y(ls.v[L][0]));
-        for (int i = 0; i + 1 < n; i++)
+        nvgMoveTo(vg, 0, v2y(ld.v[0]));
+        nvgLineTo(vg, t2x(ld.t[0]), v2y(ld.v[0]));
+        int first = 0;
+        while (first + 1 < n && t2x(ld.t[first + 1]) < 0.f) first++;
+        if (first > 0) nvgLineTo(vg, t2x(ld.t[first]), v2y(ld.v[first]));
+        for (int i = first; i + 1 < n; i++)
         {
-            float x0 = t2x(ls.t[L][i]), x1 = t2x(ls.t[L][i + 1]);
-            if (ls.b[L][i] == 0.0)
+            float x0 = t2x(ld.t[i]), x1 = t2x(ld.t[i + 1]);
+            if (ld.b[i] == 0.f)
             {
-                nvgLineTo(vg, x1, v2y(ls.v[L][i + 1]));
-                continue;
+                nvgLineTo(vg, x1, v2y(ld.v[i + 1]));
             }
-            int steps = (int)tlClamp((x1 - x0) / 4.0, 8.0, 48.0);
-            for (int s = 1; s <= steps; s++)
+            else
             {
-                double frac = (double)s / steps;
-                double fb = bendFrac(frac, ls.b[L][i]);
-                nvgLineTo(vg, x0 + (x1 - x0) * (float)frac,
-                          v2y(ls.v[L][i] + fb * (ls.v[L][i + 1] - ls.v[L][i])));
+                int steps = (int)tlClamp((x1 - x0) / 4.0, 8.0, 48.0);
+                for (int s = 1; s <= steps; s++)
+                {
+                    double frac = (double)s / steps;
+                    double fb = bendFrac(frac, ld.b[i]);
+                    nvgLineTo(vg, x0 + (x1 - x0) * (float)frac,
+                              v2y(ld.v[i] + fb * (ld.v[i + 1] - ld.v[i])));
+                }
             }
+            if (x1 > w) break;
         }
-        nvgLineTo(vg, w, v2y(ls.v[L][n - 1]));
+        if (t2x(ld.t[n - 1]) < w) nvgLineTo(vg, w, v2y(ld.v[n - 1]));
         nvgStrokeColor(vg, tcol(0x39ff14));
         nvgStrokeWidth(vg, 1.5f);
         nvgLineJoin(vg, NVG_ROUND);
@@ -912,8 +965,9 @@ struct TimelineEditorWidget : OpaqueWidget
         // Nodes.
         for (int i = 0; i < n; i++)
         {
-            float x = t2x(ls.t[L][i]), y = v2y(ls.v[L][i]);
-            if (x < -8.f || x > w + 8.f) continue;
+            float x = t2x(ld.t[i]), y = v2y(ld.v[i]);
+            if (x < -8.f) continue;
+            if (x > w + 8.f) break;
             bool hot = (i == hoverNode) || (dragMode == DRAG_NODE && i == dragNode);
             nvgBeginPath(vg);
             nvgCircle(vg, x, y, NODE_R + (hot ? 1.5f : 0.f));
@@ -937,9 +991,9 @@ struct TimelineEditorWidget : OpaqueWidget
                 if (dragMode == DRAG_BEND)
                 {
                     float hx = tlClamp(dragPos.x,
-                                       t2x(ls.t[L][seg]) + 4.f,
-                                       t2x(ls.t[L][seg + 1]) - 4.f);
-                    hp = Vec(hx, segCurveY(ls, L, seg, hx));
+                                       t2x(ld.t[seg]) + 4.f,
+                                       t2x(ld.t[seg + 1]) - 4.f);
+                    hp = Vec(hx, segCurveY(ld, seg, hx));
                 }
                 bool hot = (dragMode == DRAG_BEND) || bendHandleSeg(mousePos) >= 0;
                 float r = HANDLE_R + (hot ? 1.f : 0.f);
@@ -1044,7 +1098,7 @@ struct TimelineLaneTabs : OpaqueWidget
         for (int i = 0; i < timeline_dsp::TL_LANES; i++)
         {
             float x = (float)i * tw;
-            bool drawn = module && module->lanes().count[i] > 0;
+            bool drawn = module && !module->lane(i).empty();
             bool sel = (i == cur);
             nvgBeginPath(vg);
             nvgRect(vg, x + 1.f, 1.f, tw - 2.f, box.size.y - 2.f);
@@ -1115,6 +1169,16 @@ struct TimelineReadout : TransparentWidget
         nvgFillColor(vg, tcol(0x39ff14, 0.85f));
         nvgTextAlign(vg, NVG_ALIGN_RIGHT | NVG_ALIGN_MIDDLE);
         nvgText(vg, box.size.x - 4.f, box.size.y * 0.5f, buf, NULL);
+
+        // The selected lane hit the node cap during a take: a small red
+        // notice at the readout's left, until the next take or edit on it.
+        if (module && module->laneFull[module->currentLane()])
+        {
+            nvgFontSize(vg, 8.f);
+            nvgFillColor(vg, tcol(0xff5d5d));
+            nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
+            nvgText(vg, 4.f, box.size.y * 0.5f, "LANE FULL", NULL);
+        }
     }
 };
 

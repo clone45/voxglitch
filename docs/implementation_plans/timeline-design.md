@@ -256,3 +256,154 @@ flaws, one revision:
 
 The bend's stored meaning changed with the family. No compatibility shim:
 the old meaning existed for one unreleased commit.
+
+## Recording and the per-lane store (2026-09-03)
+
+Two changes that had to land together: automation RECORDING (latch mode),
+and the lane store it needed. Owner decisions are Bret's, 2026-09-03.
+Timeline shipped in v2.44, so every param, input and output id that
+existed keeps its numeric value; `REC_PARAM` and `REC_INPUT` are APPENDED,
+and every patch saved by v2.44-2.46 loads unchanged.
+
+### Why the store changed
+The old store was `LaneSet laneBuf[2]`: 16 lanes x 256 nodes x 3 doubles,
+double-buffered, published wholesale by one pointer swap. The 256 budget
+was never a design decision here — it was inherited from the web engine's
+fixed C arrays. Recording at 1/32 makes 256 nodes a 32-bar ceiling, so the
+budget had to go, and with it the fixed arrays: a vector-backed LaneSet
+copied on every drag would allocate 16 lanes to move one node.
+
+### The store now
+- `LaneData` — ONE lane: three `std::vector<float>` (t, v, b), immutable
+  once published. The same helpers the editor used (insert, erase, resort,
+  indexOf, eraseRange, lastBeat, count) operate on one lane.
+- `LaneStore` — `std::atomic<const LaneData*> live[16]`, plus an
+  `audioGeneration` counter the audio thread increments once per
+  `process()` (and once per `processBypass()`, so a bypassed module keeps
+  the clock moving).
+- **Audio thread:** loads the 16 pointers once per sample, reads through
+  them, never allocates, frees, or touches a refcount.
+- **UI thread:** `laneCopy(L)` -> mutate -> `publishLane(L, copy)`. The
+  copy is heap-allocated, swapped in with one atomic exchange, and the OLD
+  pointer goes on a retire list stamped with the generation at retirement.
+  `housekeep()` (from the widget's `step()`) frees a retired snapshot once
+  `audioGeneration > retire_gen + 2`: the audio thread has provably run two
+  full blocks past the swap. `onRemove` frees all retired; `~LaneStore`
+  frees everything. Module removal does not leak (store_test builds under
+  AddressSanitizer to prove it).
+- **Why retire-by-generation, not shared_ptr:** the audio thread must
+  never free (a free is a lock and an unbounded stall), and refcount
+  traffic on every sample is the wrong price for a pointer that changes a
+  few times a second. One relaxed increment per block is the whole
+  audio-side cost.
+- Per-lane edits copy only that lane. `LaneEditAction` holds a vector of
+  (lane, before, after), so a mouse gesture is one entry and a recording
+  take is one action across every lane it recorded.
+- `TL_MAX_NODES` is now a SOFT cap of 8192 per lane: the JSON load bound
+  and the "lane full" state. Where the 256 / fixed-array assumptions lived
+  and what replaced them: `LaneSet`'s `count[16]` + `t/v/b[16][256]` ->
+  `LaneData` vectors; `LaneSet::add/insert` returning false/-1 at 256 ->
+  `LaneData::full()` at the soft cap; `laneBuf[2]` + `editBuf` +
+  `beginEdit()/commitEdit()/setLanes()/lanes()` -> `LaneStore` +
+  `laneCopy()/publishLane()/lane()/lastBeat()`; `Lane::eval(const LaneSet&)`
+  indexing `ls.t[idx][c]` -> `eval(const LaneData*)`; `TimelineEngine::tick`
+  taking one LaneSet -> an array of 16 const pointers; the editor's drag
+  re-find loop -> `LaneData::indexOf`; `LaneEditAction`'s six double vectors
+  for one lane -> a vector of (lane, before, after) LaneData; `dataFromJson`
+  building a LaneSet -> per-lane LaneData bounded by the cap; the manual's
+  "up to 256 nodes"; and the tests' `LaneSet` fixtures -> a `Set` of 16
+  LaneData with a pointer array.
+- Storage is `float`. Beats to 86,400 keep ~0.008-beat precision at the
+  ceiling, far finer than any grid; volts and bends never needed doubles.
+- JSON: same top-level shape (`loopEnd`, `locked`, `lanes`: 16 arrays of
+  `{t, v[, b]}`), arrays may exceed 256, plus `record_rate` (absent in
+  old patches -> default 1/4).
+
+### Recording: latch mode, the only mode
+- `REC_PARAM` (a switch, "Off"/"Armed", red squareToggle variant local to
+  the Timeline widget) and `REC_INPUT` (poly). A TAKE runs while REC is
+  armed AND a target lane is playing; it starts on the first sample both
+  are true and ends when either goes false. Arming while stopped waits
+  for PLAY.
+- Targets: REC IN mono or unpatched -> the selected lane; poly with N
+  channels -> lanes 0..N-1, each from its channel — but only those that
+  are PLAYING at the take start. A parked lane has no sweep to record,
+  and bypassing it for the whole take would silence it for nothing
+  (review finding, 2026-09-03). The target set is FROZEN at the take
+  start (switching tabs mid-take does not move the take). An unpatched
+  REC IN records 0 V — still a take.
+- Record rate: a module setting (not a param), persisted as
+  `"record_rate"`, index into {1 bar, 1/2, 1/4, 1/8, 1/16, 1/32}, default
+  1/4. The grid is ABSOLUTE beat positions, not relative to the take.
+- Audio side (`Recorder`, Rack-free): at the take start, at every grid
+  line a target lane's playhead crosses, and at the take end, push
+  `(lane, beat, volts)` into a single-producer single-consumer ring
+  (`CaptureRing`, 8192 fixed entries; overflow drops the NEWEST and counts
+  it — overwriting the oldest would write into the slot the consumer may
+  be copying, and a torn capture is worse than a missing one). A loop
+  wrap is flagged on the next capture with the loop end it crossed, so the
+  drain can sweep `(prev, loopEnd]` then `[0, B]`. A seek (serial bump; a
+  wrap does not bump it) is flagged too, and that capture lands on the
+  seek target rather than the grid cell below it.
+- Bypass: while a lane is being recorded its poly output IS the live REC
+  IN voltage, so the user hears what they record with no UI latency. The
+  lane's playhead keeps running underneath; when the take ends the lane
+  returns to its nodes.
+- UI side (`TakeAssembler`, drained from the editor's `step()` — the
+  PianoRoll idiom): each capture removes the nodes with
+  `prev_B < t <= B` (the ones the playhead passed over), writes a node
+  ONLY IF THE VALUE CHANGED (Bret, 2026-09-03; tolerance 0.001 V against
+  the last node the take wrote), and publishes through the pointer-swap
+  path so playback and the drawing follow within a frame. The audio side
+  keeps pushing every grid capture regardless, because the sweep must
+  still erase the passed-over region under a static input. What gets
+  written: the take START (anchors the take); at a change, the grid point
+  BEFORE it with the old value (the "hold node", so a hold stays flat up
+  to the change instead of ramping across the gap) and then the new
+  node; the take END (pins where the latch stops, skipped only when the
+  previous capture already put a node on that beat). A hold spanning a
+  loop wrap is pinned at the last grid point before the loop end, and the
+  wrap capture starts a new hold. Seek captures follow the same rule
+  after their single-node erase. Only beats actually inserted go on the
+  take's `captured` list, so the simplifier never sees a phantom. Nodes not yet reached are
+  untouched: THAT is latch mode. A seek mid-take, in EITHER direction,
+  replaces only the node on the new beat and restarts the sweep there:
+  nothing between the old and new positions was passed over, so a
+  forward scrub must not erase it. An END on the beat of the previous
+  capture is not inserted (it would only duplicate that node).
+- Take end: Ramer-Douglas-Peucker over the recorded region, vertical
+  deviation, tol 0.02 V, considering ONLY the nodes this take inserted
+  (each lane's take keeps the list of beats it captured): after a wrap
+  or a seek the bounding interval contains stretches the playhead never
+  passed, and the hand-placed nodes there are the latch promise. The
+  take's first and last node and any node carrying a bend are never
+  removed either. Then ONE undo action for the whole take (per lane:
+  before = the lane at the take start, after = simplified). The editor
+  pushes a finished take BEFORE applying the next take's START as well as
+  after each drain, since both can arrive in one frame and applying the
+  START first would discard the finished take's `before`.
+- Lane full: a lane at the cap stops capturing for the rest of the take,
+  and the readout shows a red LANE FULL until the next take or edit on it.
+- The editor lock does not block recording: arming REC is a deliberate
+  panel gesture, and the bypass means the user would otherwise hear a
+  take that silently recorded nothing.
+
+### Panel and menu
+SNAP and DIV left the panel (their params keep their ids, persisted and
+MIDI-mappable, and are set from the context menu: Snap, Clock division,
+plus Record rate). `rec_input` sits right of `reset_input` at the 40 px
+jack pitch; `rec_switch` between PLAY and LOOP; the transport group
+RWND · PLAY · REC · LOOP · CHASE moved right at its 34 px pitch and BPM
+with it. New anchor centres (y 356): rec_input 150, rewind_button 194,
+play_switch 228, rec_switch 262, loop_switch 296, chase_switch 330,
+bpm_knob 394; every other anchor unchanged. The REC labels are Pilat
+outlines from `scripts/generate_vx_drums_panels.py`'s `text_paths`, same
+size (7.29 px), tracking and baseline (334.60) as the hand-authored
+neighbours; the dark file carries them in `#f4eee9`.
+
+### Tests
+`tests/timeline/store_test.cpp` (publish/retire/no leak under ASan, the
+cap) and `record_test.cpp` (grid capture at 1/4 and 1/32, loop-wrap
+replacement, latch leaves untouched regions, the simplifier, poly lane
+mapping, bypass, lane full, ring overflow). The four existing tests moved
+to the new store and still pass.

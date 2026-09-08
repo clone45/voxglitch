@@ -4,6 +4,8 @@ Timeline is a 16-lane automation sequencer. Draw a control curve on a musical ti
 
 Each lane has its own transport: the polyphonic START, STOP and RESET inputs can run, halt and rewind every lane independently, so one Timeline can be sixteen loosely-coupled modulation sources rather than one rigid one.
 
+Curves can also be recorded: patch a CV source into **REC IN**, arm **REC**, press play, and the incoming voltage is written into the lane as you go.
+
 ### Quick Start
 
 1. Draw a curve
@@ -32,13 +34,14 @@ All three transport inputs are polyphonic with the same rule: a mono cable is a 
 - **START** - A trigger starts the lane(s) playing.
 - **STOP** - A trigger stops them where they are.
 - **RESET** - A trigger rewinds them to the beginning.
+- **REC IN** - The CV to record (see Recording below). A mono cable records into the selected lane; a polyphonic cable records channel *n* into lane *n*.
 
 ### Outputs
 
 Every output is polyphonic, one channel per lane.
 
 - **LANES** - The sixteen automation curves, -10V to +10V. An empty lane outputs 0V.
-- **CLK** - A clock derived from each lane's playhead, at the division set by the **DIV** knob (1/1 bar down to 1/32).
+- **CLK** - A clock derived from each lane's playhead, at the division set by **Clock division** in the right-click menu (1/1 bar down to 1/32).
 - **RST** - Fires on a rewind *or* a loop wrap — the "start over" signal for downstream sequencers.
 - **RWND** - Fires only on a user rewind (the RWND button, a RESET trigger, or scrubbing backward). A loop wrap does not fire it.
 - **LOOP** - Fires only on a loop wrap.
@@ -50,11 +53,27 @@ The RST/RWND/LOOP split lets a patch react differently to "the user started the 
 
 - **PLAY** - Starts and stops all lanes. Flipping the switch is a global gesture; between flips, the polyphonic inputs own each lane's state.
 - **RWND** - Rewinds all lanes to the beginning.
+- **REC** - Arms recording. Lights red while armed; a take runs whenever the transport is also playing (see Recording).
 - **LOOP** - Loops playback. The loop end is your drawn content rounded up to a whole bar (four bars if the timeline is empty), unless you have dragged the amber handle in the ruler.
 - **CHASE** - The view follows the selected lane's playhead, keeping it centred. Deliberately moving the view — panning, paging the scrollbar — suspends the chase; it re-arms when you seek, when the loop wraps, or when the playhead leaves the screen and comes back. A red tick at the top centre shows the chase is active.
 - **BPM** - Tempo, snapped to half-BPM steps.
-- **SNAP** - The editing grid: off, 1 bar, 1/2, 1/4, 1/8 or 1/16. Governs node placement and the loop handle.
-- **DIV** - The CLK output's division.
+
+Snap and clock division moved off the panel into the right-click menu (see Right-Click Menus). They are still parameters, so MIDI mappings and presets that used them keep working.
+
+### Recording
+
+Recording is a latch: arm **REC**, and while the transport plays, whatever arrives at **REC IN** is written over the part of the lane the playhead passes. Everything the playhead has not reached is left exactly as it was, so you can punch in over a section, let it run to the end, or go round a loop several times, overwriting only where you are playing.
+
+- **A take** starts on the first sample where REC is armed *and* a target lane is playing, and ends when either stops — disarm REC, or stop the transport. Arming while stopped does nothing until you play. Each take is one undo step.
+- **Which lanes** - With REC IN mono (or unpatched) the take records into the selected lane. With a polyphonic cable of *n* channels it records channel 1 into lane 1, channel 2 into lane 2, and so on (up to 16), all in the same take. Only lanes that are playing when the take starts take part; a stopped lane is left alone and keeps playing its nodes. The target lanes are fixed when the take starts. An unpatched REC IN still records — it writes 0 V.
+- **Record rate** - The right-click menu's **Record rate** (1 bar down to 1/32, default 1/4) is the grid the input is sampled on. A node is written only when the value changes; the grid point before a change is written too, so holds stay flat right up to the change instead of ramping. A steady voltage therefore records as just its start and end nodes. The grid is in absolute beats, so recordings started mid-bar still land on the bar's own subdivisions.
+- **What you hear** - While a lane is being recorded its output is the live REC IN voltage, so what you hear is what you are recording, with no delay. When the take ends the lane goes back to playing its nodes.
+- **Tidy-up** - When a take ends, recorded nodes that lie within 0.02 V of a straight line through their neighbours are removed, so a slow drift becomes a few segments rather than one node per grid line. The first and last node of the take are always kept, and nodes you placed by hand are never touched by the tidy-up. Bends are never added by recording.
+- **Loops** - If the loop wraps mid-take, the sweep continues from the loop end back to the start, and the second lap overwrites the first.
+- **Scrubbing** - Seeking mid-take (the ruler, RESET, RWND) does not erase what you jumped over; recording simply continues from the new position.
+- **Lane full** - A lane holds up to 8192 nodes. If a take reaches that, the lane stops taking new nodes and a red LANE FULL notice appears beside the readout until you record over or edit that lane again. A coarser record rate keeps well clear of the limit.
+
+Snap does not apply to recording; recorded nodes land on the record-rate grid.
 
 ### The Lane Tabs
 
@@ -71,7 +90,7 @@ Sixteen numbered tabs above the editor choose which lane the editor shows. A tab
 - **Pan** - Middle-drag the editor body, or use the scrollbar at the bottom. The scrollbar always leaves a screenful of empty future beyond your content, so there is never a wall in the direction you compose.
 - **Readout** - Bar.beat and minutes:seconds at the bottom right, following the selected lane.
 
-A curve holds its first node's value before it and its last node's value after it, so a lane is defined everywhere. Each lane holds up to 256 nodes.
+A curve holds its first node's value before it and its last node's value after it, so a lane is defined everywhere. Each lane holds up to 8192 nodes.
 
 Every completed gesture is one undo step.
 
@@ -84,7 +103,12 @@ On the editor:
 - **Fit view to content** - Zooms to show everything you have drawn.
 - **Reset zoom** - Back to the default view.
 
-On the panel: **Lock Editor** freezes the editor against mouse edits — the display takes a red tint, and clicks fall through to the panel. Unlock from the same menu.
+On the panel:
+
+- **Lock Editor** - Freezes the editor against mouse edits — the display takes a red tint, and clicks fall through to the panel. Unlock from the same menu. Recording is not a mouse edit and still works while locked.
+- **Snap** - The editing grid: off, 1 bar, 1/2, 1/4, 1/8 or 1/16. Governs node placement and the loop handle.
+- **Clock division** - The CLK output's division, 1/1 bar down to 1/32.
+- **Record rate** - The grid recording samples on, 1 bar down to 1/32.
 
 ### Tips
 
@@ -92,3 +116,5 @@ On the panel: **Lock Editor** freezes the editor against mouse edits — the dis
 - RST fires on both rewinds and loop wraps, so it is usually the one to patch into a sequencer's reset.
 - The CHASE tick disappearing tells you why the view stopped moving: you moved it, and the chase is waiting to re-arm.
 - Lock the editor once a piece is finished — a stray click cannot then add a node in the middle of your automation.
+- To record a performance from a controller, patch it into REC IN, arm REC, turn LOOP on and play: each pass round the loop overwrites only what you play over, so you can build a lane up a section at a time. Undo reverts the whole take.
+- Record a polyphonic source (a poly LFO, a MIDI-CV's poly outputs) in one go: each channel lands in its own lane.

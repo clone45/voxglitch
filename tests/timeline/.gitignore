@@ -3,3 +3,5 @@ engine_test
 transport_test
 scrollbar_test
 chase_test
+record_test
+store_test
