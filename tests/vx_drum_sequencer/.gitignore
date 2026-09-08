@@ -1,0 +1,5 @@
+# Compiled test binaries — built on demand, never committed.
+engine_test
+shaper_test
+chain_test
+types_test

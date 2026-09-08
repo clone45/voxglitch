@@ -16,14 +16,22 @@
 //   * module may be NULL (module browser): every read is null-safe and the
 //     pads show the SEED pattern (CellularAutomatonDisplay.hpp:73-84).
 //   * a left press is consumed -> drag events follow; a right press is consumed
-//     ONLY over a lit voice pad, where the ratchet menu opens; anywhere else it
-//     falls through so the module's own context menu still opens
+//     ONLY over a lit pad, where the pad menu (ratchet, chance) opens; anywhere
+//     else it falls through so the module's own context menu still opens
 //     (PianoRollEditorWidget.hpp:1622-1642).
 //   * the drag position is accumulated from mouseDelta / getAbsoluteZoom()
 //     (PianoRollEditorWidget.hpp:1650-1658).
 //   * every edit goes bankCopy() -> mutate -> publishBank() and pushes ONE
 //     VXDrumSequencerBankAction per gesture; a no-op gesture pushes nothing
 //     (PianoRollEditorWidget.hpp:1010-1066; DESIGN §4.7).
+//   * CHANCE MODE (module->chance_mode, 2026-09-07): lit pads draw as bars
+//     whose fill height is their chance, and the left-button gesture changes:
+//     the press only ARMS (DRAG_PENDING); a vertical move past CHANCE_DRAG_PX
+//     on a lit pad becomes a chance drag (DRAG_CHANCE), a release without one
+//     toggles the pad as a click would. The drag is ABSOLUTE, the Digital
+//     Sequencer's editBar idiom (VoltageSequencerDisplay.hpp): the bar follows
+//     the pointer's height within the pad, top = 100 %, bottom = 0 %. There is
+//     no paint-across in chance mode. Steps mode is unchanged.
 //   * lit pads, lamps, the playhead and the lane flashes are drawn in
 //     drawLayer(args, 1); the wells and labels in draw(). The module browser
 //     gets no layer-1 pass, so a NULL module draws the lit pass from draw()
@@ -143,10 +151,10 @@ namespace vx_drum_sequencer_ui
         pushBankEdit(module, name, before, mute_before);
     }
 
-    // Right-click ratchet: write the 2-bit "extra hits" field of one voice pad
-    // (source menuAt :264-285). Captured by the menu lambdas with the module
-    // pointer and plain indices only — never a widget pointer, which an undo of
-    // a module delete could invalidate (brief-rack-sdk-api §9).
+    // Right-click ratchet: the "extra hits" of one voice pad (source menuAt
+    // :264-285). Captured by the menu lambdas with the module pointer and plain
+    // indices only — never a widget pointer, which an undo of a module delete
+    // could invalidate (brief-rack-sdk-api §9).
     inline void setRatchet(VXDrumSequencer* module, int slot, int lane, int step, int extra)
     {
         if (!module) return;
@@ -155,12 +163,28 @@ namespace vx_drum_sequencer_ui
         if (step < 0 || step >= vx_drum_sequencer::STEPS) return;
 
         vx_drum_sequencer::Bank b = module->bankCopy();
-        uint32_t& word = b.memories[slot].ratchets[lane];
-        const unsigned int shift = (unsigned int)step * 2u;
-        word = (word & ~(3u << shift)) | (((uint32_t)rack::math::clamp(extra, 0, 3)) << shift);
+        b.memories[slot].at(lane, step).ratchet = (uint8_t)rack::math::clamp(extra, 0, vx_drum_sequencer::RATCHET_MAX);
 
         commitBankEdit(module, "ratchet", b, module->mute);
     }
+
+    // Right-click chance: the percent probability of one pad (any lane, the
+    // accent lane included). Same capture rule as setRatchet.
+    inline void setChance(VXDrumSequencer* module, int slot, int lane, int step, int percent)
+    {
+        if (!module) return;
+        if (slot < 0 || slot >= vx_drum_sequencer::SLOTS) return;
+        if (lane < 0 || lane >= vx_drum_sequencer::LANES) return;
+        if (step < 0 || step >= vx_drum_sequencer::STEPS) return;
+
+        vx_drum_sequencer::Bank b = module->bankCopy();
+        b.memories[slot].at(lane, step).chance = (uint8_t)rack::math::clamp(percent, 0, vx_drum_sequencer::CHANCE_MAX);
+
+        commitBankEdit(module, "chance", b, module->mute);
+    }
+
+    // The right-click menu's chance presets.
+    static const int CHANCE_PRESETS[6] = { 100, 75, 50, 25, 10, 0 };
 }
 
 struct VXDrumSequencerGridWidget : OpaqueWidget
@@ -174,8 +198,8 @@ struct VXDrumSequencerGridWidget : OpaqueWidget
     float flash[vx_drum_sequencer::LANES] = {};
     uint32_t last_serial = 0;
 
-    // ── Paint gesture ────────────────────────────────────────────────────────
-    enum DragMode { DRAG_NONE, DRAG_PAINT };
+    // ── Paint / chance gesture ───────────────────────────────────────────────
+    enum DragMode { DRAG_NONE, DRAG_PAINT, DRAG_PENDING, DRAG_CHANCE };
 
     DragMode drag_mode = DRAG_NONE;
     Vec drag_position;              // accumulated pointer position, widget-local
@@ -183,6 +207,13 @@ struct VXDrumSequencerGridWidget : OpaqueWidget
     int paint_slot = 0;             // the edit target, latched at press (source :326)
     int last_lane = -1;
     int last_step = -1;
+
+    // Chance mode's gesture: the pad pressed and where the press landed, so
+    // the threshold is measured from it (widget pixels).
+    static constexpr float CHANCE_DRAG_PX = 3.f;
+    int chance_lane = -1;
+    int chance_step = -1;
+    float press_y = 0.f;
 
     // The gesture's undo bracket (PianoRollEditorWidget.hpp:1010-1066).
     bool edit_open = false;
@@ -197,7 +228,7 @@ struct VXDrumSequencerGridWidget : OpaqueWidget
 
         // A widget rebuilt around a live module (undo of a delete, a reloaded
         // patch) must not flash every lane of the last fire on its first frame.
-        if (module) last_serial = module->fired_serial;
+        if (module) last_serial = module->report.fired_serial;
     }
 
     // ── Geometry (source :95-113) ────────────────────────────────────────────
@@ -285,7 +316,7 @@ struct VXDrumSequencerGridWidget : OpaqueWidget
     int slot() const
     {
         if (drag_mode == DRAG_PAINT) return paint_slot;
-        return module ? rack::math::clamp(module->current_slot, 0, vx_drum_sequencer::SLOTS - 1) : 0;
+        return module ? rack::math::clamp(module->report.slot, 0, vx_drum_sequencer::SLOTS - 1) : 0;
     }
 
     const vx_drum_sequencer::Memory& memory() const
@@ -294,29 +325,32 @@ struct VXDrumSequencerGridWidget : OpaqueWidget
     }
 
     int length() const { return rack::math::clamp(memory().length, 1, vx_drum_sequencer::STEPS); }
-    int position() const { return module ? module->position : 0; }   // the preview parks on step 1 (CellularAutomatonDisplay.hpp:79)
+    int position() const { return module ? module->report.position : 0; }   // the preview parks on step 1 (CellularAutomatonDisplay.hpp:79)
     uint8_t muteMask() const { return module ? module->mute : 0; }
 
-    bool padOn(int lane, int step) const { return ((memory().lanes[lane] >> step) & 1u) != 0u; }
+    bool padOn(int lane, int step) const { return memory().at(lane, step).on; }
     bool laneMuted(int lane) const { return ((muteMask() >> lane) & 1u) != 0u; }
 
     // 1..4 total hits for a voice pad; the accent lane has no ratchets (:182-183).
     int hitsAt(int lane, int step) const
     {
         if (lane >= vx_drum_sequencer::VOICES) return 1;
-        return (int)((memory().ratchets[lane] >> (step * 2)) & 3u) + 1;
+        return memory().at(lane, step).hits();
     }
+
+    int chanceAt(int lane, int step) const { return memory().at(lane, step).chance; }
+    bool chanceMode() const { return module && module->chance_mode; }
 
     // ── Per-frame sync (the UI thread; brief-rack-sdk-api §7 "put sync logic in step") ──
     void step() override
     {
         if (module)
         {
-            const uint32_t serial = module->fired_serial;
+            const uint32_t serial = module->report.fired_serial;
             if (serial != last_serial)
             {
                 last_serial = serial;
-                const uint32_t fired = module->fired_mask;   // one word behind the serial at worst: one frame misdrawn
+                const uint32_t fired = module->report.fired_mask;   // one word behind the serial at worst: one frame misdrawn
                 for (int l = 0; l < vx_drum_sequencer::LANES; l++)
                 {
                     if ((fired >> l) & 1u) flash[l] = 1.f;
@@ -537,12 +571,40 @@ struct VXDrumSequencerGridWidget : OpaqueWidget
                 const bool in_len = c < len;
                 const bool playing = (c == pos);
 
-                const float alpha = muted ? 0.28f : (in_len ? (playing ? 1.f : 0.9f) : 0.35f);
+                const int chance = chanceAt(l, c);
+                const float state_alpha = muted ? 0.28f : (in_len ? (playing ? 1.f : 0.9f) : 0.35f);
 
-                nvgBeginPath(vg);
-                nvgRoundedRect(vg, x + 1.f, y + 1.f, w - 2.f, h - 2.f, 2.5f);
-                nvgFillColor(vg, vx_drum_sequencer_ui::vxdColor(col, alpha));
-                nvgFill(vg);
+                if (chanceMode())
+                {
+                    // Chance mode: the pad is a bar. A faint full-height
+                    // ghost says "this pad is on"; the solid fill rises from
+                    // the bottom to the pad's chance, never below a 2 px
+                    // sliver so a 0 % pad is still visibly lit.
+                    nvgBeginPath(vg);
+                    nvgRoundedRect(vg, x + 1.f, y + 1.f, w - 2.f, h - 2.f, 2.5f);
+                    nvgFillColor(vg, vx_drum_sequencer_ui::vxdColor(col, state_alpha * 0.22f));
+                    nvgFill(vg);
+
+                    const float inner_h = h - 2.f;
+                    const float bar_h = std::max(2.f, inner_h * (float)chance / (float)vx_drum_sequencer::CHANCE_MAX);
+                    nvgBeginPath(vg);
+                    nvgRoundedRect(vg, x + 1.f, y + 1.f + (inner_h - bar_h), w - 2.f, bar_h, 2.f);
+                    nvgFillColor(vg, vx_drum_sequencer_ui::vxdColor(col, state_alpha));
+                    nvgFill(vg);
+                }
+                else
+                {
+                    // Steps mode: a pad below 100 % chance is dimmed toward
+                    // its probability, so a hit that only sometimes plays
+                    // reads that way at a glance (never below 35 % of the lit
+                    // alpha: the pad must still read as ON).
+                    const float certainty = (chance >= vx_drum_sequencer::CHANCE_MAX)
+                        ? 1.f : 0.35f + 0.65f * ((float)chance / (float)vx_drum_sequencer::CHANCE_MAX);
+                    nvgBeginPath(vg);
+                    nvgRoundedRect(vg, x + 1.f, y + 1.f, w - 2.f, h - 2.f, 2.5f);
+                    nvgFillColor(vg, vx_drum_sequencer_ui::vxdColor(col, state_alpha * certainty));
+                    nvgFill(vg);
+                }
 
                 // Ratchet: the pad splits into n slivers — the visual is the meaning.
                 const int hits = hitsAt(l, c);
@@ -564,6 +626,21 @@ struct VXDrumSequencerGridWidget : OpaqueWidget
                     nvgStrokeWidth(vg, 1.5f);
                     nvgStrokeColor(vg, vx_drum_sequencer_ui::vxdColor(vx_drum_sequencer_ui::PLAYCOL, 0.85f));
                     nvgStroke(vg);
+                }
+
+                // The pad being chance-dragged shows its percent.
+                if (drag_mode == DRAG_CHANCE && l == chance_lane && c == chance_step)
+                {
+                    std::shared_ptr<Font> font = vx_drum_sequencer_ui::displayFont();
+                    if (font)
+                    {
+                        nvgFontFaceId(vg, font->handle);
+                        nvgFontSize(vg, 8.f);
+                        nvgTextLetterSpacing(vg, 0.f);
+                        nvgTextAlign(vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
+                        nvgFillColor(vg, vx_drum_sequencer_ui::vxdColor(vx_drum_sequencer_ui::LANE_TEXT, 1.f));
+                        nvgText(vg, x + w * 0.5f, y + h * 0.5f, std::to_string(chance).c_str(), NULL);
+                    }
                 }
             }
         }
@@ -629,13 +706,10 @@ struct VXDrumSequencerGridWidget : OpaqueWidget
         if (!module) return;
 
         vx_drum_sequencer::Bank b = module->bankCopy();
-        uint32_t& mask = b.memories[paint_slot].lanes[lane];
-        const uint32_t bit = 1u << step;
-        const bool current = (mask & bit) != 0u;
-        if (current == paint_value) return;
+        vx_drum_sequencer::Step& pad = b.memories[paint_slot].at(lane, step);
+        if (pad.on == paint_value) return;
 
-        if (paint_value) mask |= bit;
-        else mask &= ~bit;
+        pad.on = paint_value;
 
         module->publishBank(b);
     }
@@ -648,11 +722,11 @@ struct VXDrumSequencerGridWidget : OpaqueWidget
         edit_before = module->bankCopy();
         edit_mute_before = module->mute;
 
-        // ONE read of the audio-written current_slot per press: latch it, then
+        // ONE read of the audio-written report.slot per press: latch it, then
         // decide the value through slot(), which now resolves to paint_slot. A
         // padOn() read before the latch could name a different memory than the
-        // one the drag paints (the MEM CV rewrites current_slot every sample).
-        paint_slot = rack::math::clamp(module->current_slot, 0, vx_drum_sequencer::SLOTS - 1);
+        // one the drag paints (the MEM CV rewrites report.slot every sample).
+        paint_slot = rack::math::clamp(module->report.slot, 0, vx_drum_sequencer::SLOTS - 1);
         drag_mode = DRAG_PAINT;
         paint_value = !padOn(lane, step);
 
@@ -661,17 +735,71 @@ struct VXDrumSequencerGridWidget : OpaqueWidget
         last_step = step;
     }
 
-    void endPaint()
+    void endPaint(const char* name = "VX Drum Sequencer edit")
     {
         if (module && edit_open)
         {
-            vx_drum_sequencer_ui::pushBankEdit(module, "VX Drum Sequencer edit", edit_before, edit_mute_before);
+            vx_drum_sequencer_ui::pushBankEdit(module, name, edit_before, edit_mute_before);
         }
 
         edit_open = false;
         drag_mode = DRAG_NONE;
         last_lane = -1;
         last_step = -1;
+        chance_lane = -1;
+        chance_step = -1;
+    }
+
+    // ── Chance mode's gesture ────────────────────────────────────────────────
+
+    // The press: open the undo bracket and latch the slot like beginPaint,
+    // but decide nothing yet. Whether this is a click (toggle) or a drag
+    // (chance) is settled by the first vertical move, or by the release.
+    void beginPending(int lane, int step)
+    {
+        if (!module) return;
+
+        edit_open = true;
+        edit_before = module->bankCopy();
+        edit_mute_before = module->mute;
+
+        paint_slot = rack::math::clamp(module->report.slot, 0, vx_drum_sequencer::SLOTS - 1);
+        drag_mode = DRAG_PENDING;
+        chance_lane = lane;
+        chance_step = step;
+        press_y = drag_position.y;
+    }
+
+    // One step of the chance drag: the pad's chance is the pointer's height
+    // within the pad's inner rect — the top edge is 100 %, the bottom 0 %,
+    // and past either edge it pins (Digital Sequencer's editBar rule, so the
+    // bar sits under the cursor). Published immediately so the odds change
+    // while the drag is in progress; the undo action waits for the release.
+    void dragChance()
+    {
+        if (!module) return;
+
+        const float top = laneY(chance_lane) + vx_drum_sequencer_ui::CELL_GAP * 0.5f + 1.f;
+        const float inner_h = laneH() - vx_drum_sequencer_ui::CELL_GAP - 2.f;
+        const float frac = (inner_h > 0.f) ? 1.f - (drag_position.y - top) / inner_h : 1.f;
+        const int chance = rack::math::clamp((int)std::lround(frac * (float)vx_drum_sequencer::CHANCE_MAX),
+                                             0, vx_drum_sequencer::CHANCE_MAX);
+
+        vx_drum_sequencer::Bank b = module->bankCopy();
+        vx_drum_sequencer::Step& pad = b.memories[paint_slot].at(chance_lane, chance_step);
+        if (pad.chance == chance) return;
+
+        pad.chance = (uint8_t)chance;
+        module->publishBank(b);
+    }
+
+    // The release of a press that never became a drag: a click, so toggle.
+    void togglePending()
+    {
+        if (!module) return;
+
+        paint_value = !module->liveBank().memories[paint_slot].at(chance_lane, chance_step).on;
+        paintPad(chance_lane, chance_step);
     }
 
     // ── Ratchet menu (source menuAt :264-285) ────────────────────────────────
@@ -681,35 +809,56 @@ struct VXDrumSequencerGridWidget : OpaqueWidget
     //
     // The slot is read ONCE for the whole gesture: the lit test, the checked
     // item and the slot the lambdas write to all come from that one memory.
-    // The audio thread rewrites current_slot every sample, so separate reads
+    // The audio thread rewrites report.slot every sample, so separate reads
     // through padOn() / slot() / hitsAt() could each name a different memory.
-    bool openRatchetMenu(int lane, int step)
+    //
+    // A lit VOICE pad gets the ratchet entries and a Chance submenu; a lit
+    // ACCENT pad gets the Chance submenu alone (the accent lane has no
+    // ratchets). An unlit pad opens nothing.
+    bool openPadMenu(int lane, int step)
     {
         if (!module) return false;
-        if (lane < 0 || lane >= vx_drum_sequencer::VOICES) return false;
+        if (lane < 0 || lane >= vx_drum_sequencer::LANES) return false;
 
         VXDrumSequencer* m = module;
         const int s = slot();
-        const vx_drum_sequencer::Memory& mem = module->liveBank().memories[s];
-        if (((mem.lanes[lane] >> step) & 1u) == 0u) return false;
-        const int current = (int)((mem.ratchets[lane] >> (step * 2)) & 3u);
+        const vx_drum_sequencer::Step pad = module->liveBank().memories[s].at(lane, step);   // a copy: one read
+        if (!pad.on) return false;
 
         ui::Menu* menu = createMenu();
         menu->addChild(createMenuLabel(std::string(vx_drum_sequencer::LANE_NAMES[lane]) + " · step " + std::to_string(step + 1)));
 
-        for (int n = 0; n < 4; n++)
+        if (lane < vx_drum_sequencer::VOICES)
         {
-            const std::string label = (n == 0) ? std::string("Single") : ("Ratchet ×" + std::to_string(n + 1));
-            menu->addChild(createMenuItem(label, CHECKMARK(n == current),
-                [m, s, lane, step, n]() { vx_drum_sequencer_ui::setRatchet(m, s, lane, step, n); },
-                n == current));
+            const int current = pad.ratchet;
+            for (int n = 0; n <= vx_drum_sequencer::RATCHET_MAX; n++)
+            {
+                const std::string label = (n == 0) ? std::string("Single") : ("Ratchet ×" + std::to_string(n + 1));
+                menu->addChild(createMenuItem(label, CHECKMARK(n == current),
+                    [m, s, lane, step, n]() { vx_drum_sequencer_ui::setRatchet(m, s, lane, step, n); },
+                    n == current));
+            }
+            menu->addChild(new MenuSeparator);
         }
+
+        // Chance: the percent probability the pad plays when its step is
+        // reached, rolled once per step (Bret, 2026-09-07).
+        const int chance = pad.chance;
+        menu->addChild(createSubmenuItem("Chance", std::to_string(chance) + " %", [m, s, lane, step, chance](ui::Menu* sub) {
+            for (int i = 0; i < 6; i++)
+            {
+                const int p = vx_drum_sequencer_ui::CHANCE_PRESETS[i];
+                sub->addChild(createMenuItem(std::to_string(p) + " %", CHECKMARK(p == chance),
+                    [m, s, lane, step, p]() { vx_drum_sequencer_ui::setChance(m, s, lane, step, p); },
+                    p == chance));
+            }
+        }));
         return true;
     }
 
     // Shift-click on a LIT voice pad steps its ratchet Single -> x2 -> x3 -> x4
     // -> Single (Bret, 2026-09-02: a faster gesture than the right-click menu).
-    // One slot() read for the whole gesture, like openRatchetMenu. Returns true
+    // One slot() read for the whole gesture, like openPadMenu. Returns true
     // when it handled a pad (lit or not), so the press never falls through to
     // painting. The accent lane has no ratchets and is left alone.
     bool cycleRatchet(int lane, int step)
@@ -718,11 +867,10 @@ struct VXDrumSequencerGridWidget : OpaqueWidget
         if (lane < 0 || lane >= vx_drum_sequencer::VOICES) return false;
 
         const int s = slot();
-        const vx_drum_sequencer::Memory& mem = module->liveBank().memories[s];
-        if (((mem.lanes[lane] >> step) & 1u) == 0u) return true;   // unlit: swallow, do nothing
-        const int current = (int)((mem.ratchets[lane] >> (step * 2)) & 3u);
+        const vx_drum_sequencer::Step pad = module->liveBank().memories[s].at(lane, step);   // a copy: one read
+        if (!pad.on) return true;   // unlit: swallow, do nothing
 
-        vx_drum_sequencer_ui::setRatchet(module, s, lane, step, (current + 1) & 3);
+        vx_drum_sequencer_ui::setRatchet(module, s, lane, step, (pad.ratchet + 1) % (vx_drum_sequencer::RATCHET_MAX + 1));
         return true;
     }
 
@@ -740,7 +888,7 @@ struct VXDrumSequencerGridWidget : OpaqueWidget
         {
             int lane = -1;
             int step = -1;
-            if (cellAt(e.pos, lane, step) && openRatchetMenu(lane, step))
+            if (cellAt(e.pos, lane, step) && openPadMenu(lane, step))
             {
                 e.consume(this);
                 return;
@@ -780,7 +928,8 @@ struct VXDrumSequencerGridWidget : OpaqueWidget
                 {
                     return;
                 }
-                beginPaint(cell_lane, cell_step);
+                if (chanceMode()) beginPending(cell_lane, cell_step);
+                else beginPaint(cell_lane, cell_step);
             }
             return;
         }
@@ -810,6 +959,23 @@ struct VXDrumSequencerGridWidget : OpaqueWidget
                 last_step = step;
             }
         }
+        else if (module && (drag_mode == DRAG_PENDING || drag_mode == DRAG_CHANCE))
+        {
+            float zoom = getAbsoluteZoom();
+            if (zoom <= 0.f) zoom = 1.f;
+            drag_position = drag_position.plus(e.mouseDelta.div(zoom));
+
+            // A pending press on a LIT pad becomes a chance drag once the
+            // pointer has clearly moved vertically; on an unlit pad it stays a
+            // click, whatever the pointer does.
+            if (drag_mode == DRAG_PENDING
+                && std::fabs(drag_position.y - press_y) > CHANCE_DRAG_PX
+                && module->liveBank().memories[paint_slot].at(chance_lane, chance_step).on)
+            {
+                drag_mode = DRAG_CHANCE;
+            }
+            if (drag_mode == DRAG_CHANCE) dragChance();
+        }
 
         OpaqueWidget::onDragMove(e);
     }
@@ -817,6 +983,8 @@ struct VXDrumSequencerGridWidget : OpaqueWidget
     void onDragEnd(const DragEndEvent& e) override
     {
         if (drag_mode == DRAG_PAINT) endPaint();
+        else if (drag_mode == DRAG_PENDING) { togglePending(); endPaint(); }
+        else if (drag_mode == DRAG_CHANCE) endPaint("chance");
 
         drag_mode = DRAG_NONE;
         OpaqueWidget::onDragEnd(e);

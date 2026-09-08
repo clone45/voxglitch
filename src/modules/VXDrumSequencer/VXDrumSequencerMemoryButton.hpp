@@ -105,7 +105,7 @@ struct VXDrumSequencerMemoryButton : VCVLightBezel<WhiteLight>
             vx_drum_sequencer_ui::commitBankEdit(m, "paste memory", b, m->mute);
         }, !can_paste));
 
-        // An empty memory: masks 0, no ratchets, length 16 (memory-slots.js:74-78).
+        // An empty memory: every pad off, single, chance 100, length 16 (memory-slots.js:74-78).
         menu->addChild(createMenuItem("Clear", "", [m, s]() {
             vx_drum_sequencer::Bank b = m->bankCopy();
             b.memories[s] = vx_drum_sequencer::Memory();

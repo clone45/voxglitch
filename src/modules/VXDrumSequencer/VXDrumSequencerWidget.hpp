@@ -113,7 +113,8 @@ struct VXDrumSequencerWidget : ModuleWidget
         if (!m) return;
 
         vx_drum_sequencer::Bank b = m->bankCopy();
-        vx_drum_sequencer::randomizeMemory(b.memories[rack::math::clamp(m->current_slot, 0, vx_drum_sequencer::SLOTS - 1)]);
+        vx_drum_sequencer::randomizeMemory(b.memories[rack::math::clamp(m->report.slot, 0, vx_drum_sequencer::SLOTS - 1)],
+                                           m->random_lanes);
         vx_drum_sequencer_ui::commitBankEdit(m, "random pattern", b, m->mute);
     }
 
@@ -125,6 +126,16 @@ struct VXDrumSequencerWidget : ModuleWidget
         if (!m) return;
 
         menu->addChild(new MenuSeparator);
+
+        // The chain, as a status line: resolved on the audio thread from
+        // adjacency, read here as plain ints.
+        if (m->chain.length > 1)
+        {
+            const std::string role = m->chain.isHead()
+                ? "Chain: head of " + std::to_string(m->chain.length)
+                : "Chain: member " + std::to_string(m->chain.index + 1) + " of " + std::to_string(m->chain.length);
+            menu->addChild(createMenuLabel(role));
+        }
 
         // ArpSeq's list (ArpSeqWidget.hpp:510-517), persisted as an index.
         static const std::vector<std::string> TRIGGER_LENGTH_LABELS = {
@@ -140,6 +151,28 @@ struct VXDrumSequencerWidget : ModuleWidget
                 m->trigger_length_index = rack::math::clamp((int)index, 0, last);
             }));
 
+        // Which lanes RND rewrites (Bret, 2026-09-07: a user asked to re-roll
+        // one drum at a time). Every lane ticked by default; unticking one
+        // leaves it exactly as it is. Not undoable, saved with the patch.
+        menu->addChild(createSubmenuItem("Randomize settings", "", [m](ui::Menu* sub) {
+            sub->addChild(createMenuLabel("Lanes RND rewrites"));
+            for (int l = 0; l < vx_drum_sequencer::LANES; l++)
+            {
+                const uint8_t bit = (uint8_t)(1u << l);
+                sub->addChild(createMenuItem(vx_drum_sequencer::LANE_NAMES[l], CHECKMARK(m->random_lanes & bit),
+                    [m, bit]() { m->random_lanes ^= bit; }));
+            }
+            sub->addChild(new MenuSeparator);
+            sub->addChild(createMenuItem("All", "", [m]() { m->random_lanes = 0x7F; }));
+            sub->addChild(createMenuItem("None", "", [m]() { m->random_lanes = 0; }));
+        }));
+
+        // Chance mode (Bret, 2026-09-07): lit pads draw as bars whose height
+        // is their chance, and a vertical drag on a pad sets it. A plain bool
+        // checkbox (VXDrumsWidget.hpp "Stereo panning" idiom), saved with the
+        // patch, no undo step.
+        menu->addChild(createBoolPtrMenuItem("Chance mode", "", &m->chance_mode));
+
         // The playing memory as a file (Bret, 2026-09-02). The same JSON as the
         // clipboard (memoryToJson / memoryFromJson, format-tagged), so a file and
         // a paste are interchangeable. Import replaces the playing memory as one
@@ -147,13 +180,22 @@ struct VXDrumSequencerWidget : ModuleWidget
         menu->addChild(new MenuSeparator);
         menu->addChild(createMenuItem("Export pattern…", "", [this]() { exportPattern(); }));
         menu->addChild(createMenuItem("Import pattern…", "", [this]() { importPattern(); }));
+
+        // Clear the playing memory: the memory button's Clear, reached from the
+        // panel (Bret, 2026-09-07). An empty memory is every pad off, single,
+        // chance 100, length 16 (memory-slots.js:74-78). One undo step.
+        menu->addChild(createMenuItem("Clear pattern", "", [m, this]() {
+            vx_drum_sequencer::Bank b = m->bankCopy();
+            b.memories[effectiveSlot(m)] = vx_drum_sequencer::Memory();
+            vx_drum_sequencer_ui::commitBankEdit(m, "clear pattern", b, m->mute);
+        }));
     }
 
     // ── pattern files (PianoRollEditorWidget.hpp:1797-1825 dialog idiom) ─────
 
     int effectiveSlot(VXDrumSequencer* m) const
     {
-        return rack::math::clamp(m->current_slot, 0, vx_drum_sequencer::SLOTS - 1);
+        return rack::math::clamp(m->report.slot, 0, vx_drum_sequencer::SLOTS - 1);
     }
 
     void exportPattern()

@@ -13,9 +13,11 @@ the same date, and *brief-clock-reset §n* to the clock/reset investigation that
 adopts.
 
 **Status:** design bound. Every behaviour below is either fixed by the spec or copied
-from the source unchanged. Nothing here is provisional. One revision after the initial
+from the source unchanged. Nothing here is provisional. Two revisions after the initial
 port shipped: on 2026-09-02 the owner dropped the internal clock and swing, so the
-sequencer is external-clock only (§1, §3, §4).
+sequencer is external-clock only (§1, §3, §4); on 2026-09-07 the sequencing logic moved
+into a Rack-free engine and sequencers gained chaining by adjacency (§10,
+`chain-foundations.md`).
 
 ---
 
@@ -32,11 +34,13 @@ sequencer is external-clock only (§1, §3, §4).
 | Reset | `position = -1`, advance-then-play, **no clock-ignore window**, the clock Schmitt is never reset; RST = the RWD button |
 | Swing | **None.** Dropped with the internal clock on 2026-09-02 (it only ever applied in Int); swing the clock upstream instead |
 | Ratchets | x1-x4 per hit, subdividing the measured clock period (dropped until one is measured) |
-| Memories | 16 x (7 lane masks + 6 ratchet words + length); mutes and kit knobs are global |
-| Random | Acts on the **effective** memory (MEM CV when patched, else the buttons) |
+| Memories | 16 x (a 7 x 16 grid of pads, each `{on, ratchet, chance}`, + length); mutes and kit knobs are global. The source's lane masks and ratchet words were unpacked into a per-pad struct on 2026-09-07 (§7.1) |
+| Chance | Per pad, 0-100 %, rolled once per step reached; a failed roll neither strikes nor arms ratchets nor flashes. The accent lane rolls too. Set from the pad's right-click menu (presets) or, in **Chance mode** (a persisted panel-menu checkbox), by a vertical drag on the pad, which the grid then draws as a bar. Added 2026-09-07 at a user's request |
+| Random | Acts on the **effective** memory (MEM CV when patched, else the buttons), rewriting the lanes chosen in "Randomize settings" (all seven by default; a persisted mask, added 2026-09-07 at a user's request). Every lane is still DRAWN whatever the mask, so a kept lane does not shift the random stream for the others |
 | Clipboard | The **OS clipboard**, as JSON text |
 | Undo | Rack's history system, one `history::ModuleAction` per gesture |
 | Pattern hand-off to audio | Double-buffered `Bank` + atomic index (the PianoRoll idiom) |
+| Chaining | **By adjacency** (Rack expanders), no jacks: the leftmost sequencer is the head and owns the one engine; members to its right play in turn. The head pulls each member's bank, slot and mute directly; no hop-by-hop messages (§10). Added 2026-09-07 |
 | Panels | Authored by the port from a generator script; light plus the generated dark theme |
 
 ---
@@ -347,11 +351,20 @@ Changing the kit clears every per-column override (owner decision 2026-09-02), s
 
 ## 7. Memories, Random and the clipboard
 
-### 7.1 Data model - unchanged
+### 7.1 Data model
 
-A memory is seven 16-bit lane masks (lane 6 = accent), six 2-bit-per-step ratchet words
-(the accent lane has none) and a length 1-16. Mutes and the kit knobs are global, not
-part of a memory (source `vxdrums-faceplate.js:36-40`). The seed pattern in memory 1 of
+A memory is a 7 x 16 grid of pads (lane 6 = accent) and a length 1-16. Each pad is a
+`Step { bool on; uint8_t ratchet; uint8_t chance; }`: lit or not, 0-3 extra hits (the
+accent lane's is unused), and the percent probability it plays when reached, 100 by
+default. Mutes and the kit knobs are global, not part of a memory (source
+`vxdrums-faceplate.js:36-40`).
+
+The source packs the same information into seven 16-bit lane masks and six
+2-bit-per-step ratchet words (`vxdrums.c:106-112`), and the port shipped that way in
+v2.46.0. On 2026-09-07 the owner unpacked it into the per-pad struct: a pad's fields
+belong together, a new attribute (chance) is then a field rather than a fourth word to
+shift, and equality is elementwise instead of `memcmp` over a padding-free layout. The
+packed form survives only as the 1.0.0 JSON, which is still read (§8.5). The seed pattern in memory 1 of
 a fresh module - and after Initialize - is the source's (`vxdrums.js:80-87`): BD on
 1/5/9/13, CP on 5/13, CH on the eighths, OH on 7/15, accents on 1/9, length 16.
 
@@ -403,9 +416,21 @@ livery (dark body, yellow pads, red accent pads, alternating 4-step wells) is dr
 regardless of the Rack theme, as the source drew it regardless of the page theme. Lit
 pads and lamps draw in layer 1, the lights layer, so they stay lit when the room is dimmed. Interaction is the
 source's: click/paint pads with the value of the first pad, lamp click sets length, label
-click mutes, right-click on a lit voice pad opens the Single / x2 / x3 / x4 menu, shift-click
-on a lit voice pad cycles it one step through that list (an addition to the source), and a
-right-click anywhere else falls through to the module menu. In the module browser
+click mutes, right-click on a lit voice pad opens the Single / x2 / x3 / x4 list plus a
+Chance submenu, right-click on a lit accent pad opens the Chance submenu alone (both
+2026-09-07), shift-click on a lit voice pad cycles it one step through the ratchet list (an
+addition to the source), and a right-click on an unlit pad or anywhere else falls through
+to the module menu. In Chance mode (`chance_mode`, 2026-09-07) lit pads draw as bars
+whose fill is their chance over a faint full-pad ghost, and the left button changes
+meaning: the press only arms; a vertical move past 3 px on a lit pad becomes a chance
+drag that tracks the pointer's height within the pad, top 100 % / bottom 0 %, pinned
+past the edges — Digital Sequencer's `editBar` rule, so the bar sits under the cursor
+(published live, one undo step on release); a release without one
+toggles the pad as a click would; there is no paint-across. The owner chose a mode over
+always-on bars so the default grid stays as the source drew it (the feature was requested
+by one user). Painting a pad off leaves its ratchet and chance on the pad, so
+relighting it brings them back (the source's rule for ratchets, `panel-vxdrumsgrid.js:345-350`,
+extended to chance); the pad's dimming and its menu show them. In the module browser
 (`module == NULL`) the grid draws the seed pattern.
 
 ### 8.3 Undo
@@ -420,19 +445,28 @@ at drag end.
 
 The bank is UI-owned and double-buffered with an atomic index: the UI mutates a copy and
 publishes it; `process()` reads whichever buffer is live. `mute` is a single byte written
-by the UI and read by the audio thread. `position`, `current_slot`, `fired_mask` and
-`fired_serial` are written by the audio thread and read by the widgets for drawing.
+by the UI and read by the audio thread. The `Report` (`position`, `slot`, `fired_mask`,
+`fired_serial`; 2026-09-07, formerly loose fields) is written by the audio thread and read
+by the widgets for drawing; in a chain the head's `ChainReport` feeds it (§10).
 
 ### 8.5 Persistence
 
 ```json
-{ "version": "1.0.0",
-  "memories": [ { "lanes": [7 ints], "ratchets": [6 ints], "length": 16 }, ... 16 ],
-  "mute": 0, "memory_slot": 0, "trigger_length_index": 0 }
+{ "version": "1.1.0",
+  "memories": [ { "steps": [ { "on": [0|1 x16], "ratchet": [0..3 x16], "chance": [0..100 x16] }, x7 ],
+                  "length": 16 }, ... 16 ],
+  "mute": 0, "memory_slot": 0, "trigger_length_index": 0, "chance_mode": false }
 ```
 
-Loading starts from a seeded bank and overwrites from JSON with bounds checks (arrays
-capped at 16/7/6, length clamped 1-16). `position` is **not** persisted: it is -1 after
+One object per lane, three arrays of sixteen, so a memory reads the way the grid does.
+The same body is the clipboard and pattern-file shape (with a `"format"` tag). The
+1.0.0 body - `"lanes": [7 bit-mask words], "ratchets": [6 two-bit-per-step words]` - is
+still read whenever `"steps"` is absent, so every patch and file saved before
+2026-09-07 loads with every pad at 100 % chance; it is never written.
+
+Loading starts from a seeded bank and overwrites from JSON with bounds checks (memories
+capped at 16, lanes at 7, steps at 16, ratchet clamped 0-3, chance 0-100, length
+1-16), probing every key so a missing one keeps its default. `position` is **not** persisted: it is -1 after
 every load, as PianoRoll does. Neither is the measured period nor any pending ratchet
 state. The sequencer has no clock, tempo or swing params; its remaining params are
 momentary buttons.
@@ -453,3 +487,135 @@ interval floor; the `> 1 && < 4 s` measurement debounce; accent as a strike mult
 `1 + accent` that enters each voice's own nonlinearity; the CH -> OH choke; per-memory
 length with wrap; global mutes including the accent lane; the seed pattern; the Random
 generator; the memory data model; and every voice algorithm.
+
+---
+
+## 10. Chaining by adjacency (2026-09-07)
+
+Sequencers placed side by side, touching, play one after another as one longer
+pattern. The design and the refactor that made it a small change are in
+`chain-foundations.md`; this section records the behaviour.
+
+### 10.1 Why adjacency and not jacks
+
+The alternatives were surveyed on 2026-09-07: the classic Nord Modular's Link -> Rst
+recipe (the first sequencer counts past its own pattern; only really works for two),
+the Nord G2's Park / Link / Loop trio (every sequencer one-shot, a dedicated Loop input
+on the head so patch load knows who starts, and every row output OR'd with a chain
+input so no mixer is needed), the Division 6 Mini Sequencer's XP jacks, and Spellbook's
+Page expanders in Rack. Jacks need three things a Rack expander chain gets for free:
+a way to know which module is the head after a reset, a merge of every member's TRIG
+into the kit's single input, and a hand-off signal that survives Rack's one-sample
+cable delay. Adjacency answers all three: the leftmost module is the head by
+construction, the head drives the one TRIG / ACC pair, and there is no cable.
+
+### 10.2 The rules
+
+- **Roles** are resolved from `leftExpander` / `rightExpander` on every `process()`
+  call (a walk of at most 16 pointers) and in `onExpanderChange`. The module with no
+  VX Drum Sequencer on its left is the head; every VX Drum Sequencer to its right,
+  contiguous, is a member with index 1, 2, ... Roles are never persisted; a loaded
+  patch resolves them on its first frame.
+- **The head owns the engine.** Its CLK and RST are the chain's transport; its trigger
+  length applies to all. A member's CLK, RST and RWD are inert.
+- **Every member's TRIG and ACC mirror the head's** (owner request, 2026-09-07: a row
+  of sequencers patched into the kit from its right end reads better than a cable
+  back from the left). The head writes each frame's voltages into a two-slot buffer
+  indexed by `ProcessArgs::frame & 1`; a member reads the other slot, the one the head
+  wrote last frame and does not touch this frame. That is a fixed one-sample delay
+  with no race: reading the current slot could catch a half-written sample or, if the
+  member sampled it twice, skip the one-sample gap between two pulses and merge them.
+  Only one member's outputs should reach the kit.
+- **A member chooses its contribution.** Its memory buttons, MEM CV and mute mask are
+  read by the head each sample, through the member's own module: `liveBank()` (the
+  UI-written double buffer, safe from any thread), `report.slot` and `mute` (single
+  aligned words, one-sample stale at worst).
+- **The hand-off.** When the active member fires its last step (`position >=
+  length - 1`), the head marks a hand-off pending. On the **next clock edge**, before
+  the advance, it makes the next member active and rewinds the playhead only
+  (`Sequencer::handOff`, not `rewind`): ratchets armed on the last step keep running,
+  the clock anchor keeps its period, and the advance from -1 lands on the new member's
+  step 0 on that very edge. So the last step keeps its lamp lit for the whole step and
+  the next member's step 1 is exactly one period later. The last member hands back
+  to the head. A chain of one never marks a hand-off and wraps as before.
+- **Reset, RWD and Initialize** on the head rewind the engine and return the chain to
+  the head (member 0). A member removed from under the playhead does the same.
+- **Telemetry** flows one way. The head writes a `ChainReport` (active member, the
+  member whose step fired last, the playhead, the fired mask and serial); each member
+  copies it into its own `Report` in its `process()`: the playhead only while it is
+  active, the fired mask and serial only when the fire is tagged with its index. The
+  grid widget reads `report` and does not know whether it is on a head or a member.
+- **Becoming a member** (a sequencer placed on the left) rewinds and silences the
+  engine once; **becoming the head** (the left neighbour removed) rewinds once.
+
+### 10.3 Threads
+
+The head reads a member's fields and a member reads the head's `ChainReport` while
+the other may be writing them: Rack can run one frame's modules on several workers.
+Every shared field is a single aligned word, and the worst case is one frame's flash
+misdrawn or a one-sample-stale slot or mute, the class of read the module already
+accepted for `fired_mask` (§8). No expander messages, no locks on the audio path.
+
+### 10.4 The engine split
+
+`VXDrumSequencerEngine.hpp` (Rack-free) holds `ClockFollower`, `Playhead`,
+`resolveStep`, `Ratchets`, `TriggerShaper` and the `Sequencer` that composes them;
+`VXDrumSequencerTypes.hpp` holds the pattern data types. The module is the Rack
+adapter. Every rule in §4 and §5 moved with its comment and is now a case in
+`tests/vx_drum_sequencer/`. The `amp` argument the old `strike()` carried for source
+parity was dropped; parity is recorded here, not in a dead parameter.
+
+---
+
+## 11. VX Drums: the user's kits (2026-09-07)
+
+Users asked to save their custom kits and have them appear on every VX Drums, new
+instances included. Recorded here because the two modules share this document.
+
+### 11.1 Where they live
+
+One file, `<Rack user folder>/voxglitch/vx_drums_kits.json` (`asset::user`), read on
+first use and rewritten atomically (temp file, then `system::rename`) the moment the
+library changes. Three Rack mechanisms were weighed:
+
+| Mechanism | Verdict |
+|---|---|
+| Module presets (`Preset > Save as`) | Already work and still do. But they capture the whole module (master strip, panning), live in Rack's Preset menu rather than the KIT display, and are files by name, not kits with an identity |
+| Plugin settings hooks (`settingsToJson` / `settingsFromJson`, stored in Rack's `settings.json`) | Written when Rack saves its own settings, mostly at quit: a kit saved before a crash is lost. Meant for preferences; on the owner's machine two plugins use it, for ~150 bytes each |
+| **A plugin-owned file in the user folder** | **Chosen.** The idiom Bidoo, Geodesics, Stoermelder and voxglitch-devices use; written on change, independent of Rack's save cycle, human-readable, shareable |
+
+Shape: `{ "version": "1.0.0", "kits": [ { "uuid", "name", "models": [6 model uuids],
+"knobs": [[tune, decay, shape, level] x6] } ] }`. Models by uuid; an unknown one falls
+back to House's model for that column rather than dropping the kit. A duplicate uuid in
+the file is refused on load, not shadowed.
+
+### 11.2 What a kit is
+
+`KitState` (VXDrumKit.hpp, Rack-free): uuid, display name, the six models, and a
+`custom` flag. The module's `kit` is one of these, a RESOLVED COPY, replacing the
+enum into the factory table it was until now. `UserKit` is a `KitState` plus the 24
+voice knobs: a user's kit is their tuned sound, not only the circuits. The master
+strip and the panning switch are not part of a kit. `KitLibrary` is the in-memory
+list with add / update / rename / remove; identity is the uuid, minted once at save
+(`mintUuid`, a v4 from `rack::random`); names are display only and may collide.
+
+### 11.3 Rules
+
+- **Loading a factory kit keeps the knobs** (the physical-knob rule, §8 of the kits
+  design); **loading a user kit sets them**, as one `history::ComplexAction` holding
+  the kit action plus Rack's `ParamChange` entries. Overrides clear either way.
+- **Save kit as…** captures the EFFECTIVE model of every column (overrides baked in)
+  and the knobs, mints a uuid, writes the file, then loads the new kit into the module.
+  **Update "<name>"** overwrites the loaded user kit in place. **Manage kits** offers
+  Rename… and Delete… per kit. Names come from `osdialog_prompt`. The library changes
+  are not undoable (they are a file); the module change that accompanies them is.
+- **Patches stay portable.** The patch stores the resolved kit (`kit`, `kit_name`,
+  `kit_custom`, `kit_models`) plus the overrides, format 1.2.0. A factory uuid is
+  re-resolved from the table on load so a retuned factory kit wins; any other uuid
+  loads from the stored name and models, whether or not this machine's library has it.
+  Deleting a kit therefore never silences a module. 1.1.0 patches (kit uuid + overrides
+  only) load unchanged.
+- **Threads.** The library is UI-thread only (every caller is a menu). The audio thread
+  reads `kit.models[]`, aligned ints; the strings in `KitState` are never read there.
+- **Tests.** `tests/vx_drums/kit_test.cpp` covers `KitState` and `KitLibrary`.
+
