@@ -26,6 +26,7 @@ using namespace vgLib_v2;
 #include "VXDrumSequencer/VXDrumSequencerTypes.hpp"
 #include "VXDrumSequencer/VXDrumSequencerPattern.hpp"
 #include "VXDrumSequencer/VXDrumSequencerEngine.hpp"
+#include "VXDrumSequencer/VXDrumSequencerTweak.hpp"
 #include "VXDrumSequencer/VXDrumSequencer.hpp"
 #include "VXDrumSequencer/VXDrumSequencerGridWidget.hpp"
 #include "VXDrumSequencer/VXDrumSequencerMemoryButton.hpp"

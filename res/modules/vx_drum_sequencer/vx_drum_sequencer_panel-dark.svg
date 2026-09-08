@@ -13,7 +13,7 @@
   External clock only (owner decision 2026-09-02): no INT switch, BPM knob, BPM readout, RUN switch or SWING knob.
   grid_area (15,42) 465 x 200 is painted over by the grid widget; the plate is the browser fallback.
   Memory buttons mem_1..mem_16 at cx 38 + 28(n-1), cy 262 (VCVLightBezel), numbers at baseline 282.
-  One control row cy 340, labels at 318.7: CLK 40, RST 80, MEM 120 (jacks); RWD 176, RND 216 (VCVButton);
+  One control row cy 340, labels at 318.7: CLK 40, RST 80, MEM 120, TWK 160 (jacks; TWK added 2026-09-08); RWD 216, RND 256 (VCVButton);
   outputs plate (403,304) 82 x 70 with TRIG 425 (poly) and ACC 465. Only the bottom screw squares
   (x 15-30 and 465-480, y 365-380) are on this panel; the top strip holds the wordmark / name box alone.
 -->
@@ -61,6 +61,7 @@
   </g>
   <g inkscape:groupmode="layer" inkscape:label="anchors" id="layer_anchors">
     <!-- widget anchors: top-level, untransformed; PanelHelper reads the centre of each id (light file only) -->
+    
     
     
     
@@ -157,15 +158,20 @@
       <path transform="matrix(0.007292,0,0,0.007292,117.7469,318.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M576 -130H210V-286H576V-415H210V-570H576V-700H55V0H576Z"/>
       <path transform="matrix(0.007292,0,0,0.007292,122.9406,318.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M910 -700H660L492 -228H485L320 -700H55V0H207V-555H213L412 0H550L751 -555H757V0H910Z"/>
     </g>
+    <g id="label_twk" aria-label="TWK">
+      <path transform="matrix(0.007292,0,0,0.007292,150.6099,318.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M384 -566H600V-700H15V-566H228V0H384Z"/>
+      <path transform="matrix(0.007292,0,0,0.007292,155.7818,318.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M1032 -700H876L764 -167H757L614 -700H443L299 -167H293L180 -700H14L180 0H391L524 -478L655 0H866Z"/>
+      <path transform="matrix(0.007292,0,0,0.007292,164.0964,318.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M210 -211 306 -308H313L522 0H711L424 -421L703 -700H509L216 -402H210V-700H55V0H210Z"/>
+    </g>
     <g id="label_rewind" aria-label="RWD">
-      <path transform="matrix(0.007292,0,0,0.007292,166.2745,318.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M210 -255H382C474 -255 499 -238 499 -159V0H654V-169C654 -291 621 -316 547 -328V-335C622 -347 654 -393 654 -497V-515C654 -651 590 -700 416 -700H55V0H210ZM383 -571C471 -571 499 -549 499 -478V-472C499 -405 471 -383 399 -383H210V-571Z"/>
-      <path transform="matrix(0.007292,0,0,0.007292,172.0078,318.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M1032 -700H876L764 -167H757L614 -700H443L299 -167H293L180 -700H14L180 0H391L524 -478L655 0H866Z"/>
-      <path transform="matrix(0.007292,0,0,0.007292,180.3224,318.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M686 -370C686 -601 584 -700 359 -700H55V0H359C584 0 686 -98 686 -329ZM357 -569C495 -569 528 -488 528 -361V-339C528 -210 495 -133 357 -131H210V-569Z"/>
+      <path transform="matrix(0.007292,0,0,0.007292,206.2745,318.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M210 -255H382C474 -255 499 -238 499 -159V0H654V-169C654 -291 621 -316 547 -328V-335C622 -347 654 -393 654 -497V-515C654 -651 590 -700 416 -700H55V0H210ZM383 -571C471 -571 499 -549 499 -478V-472C499 -405 471 -383 399 -383H210V-571Z"/>
+      <path transform="matrix(0.007292,0,0,0.007292,212.0078,318.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M1032 -700H876L764 -167H757L614 -700H443L299 -167H293L180 -700H14L180 0H391L524 -478L655 0H866Z"/>
+      <path transform="matrix(0.007292,0,0,0.007292,220.3224,318.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M686 -370C686 -601 584 -700 359 -700H55V0H359C584 0 686 -98 686 -329ZM357 -569C495 -569 528 -488 528 -361V-339C528 -210 495 -133 357 -131H210V-569Z"/>
     </g>
     <g id="label_random" aria-label="RND">
-      <path transform="matrix(0.007292,0,0,0.007292,207.2005,318.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M210 -255H382C474 -255 499 -238 499 -159V0H654V-169C654 -291 621 -316 547 -328V-335C622 -347 654 -393 654 -497V-515C654 -651 590 -700 416 -700H55V0H210ZM383 -571C471 -571 499 -549 499 -478V-472C499 -405 471 -383 399 -383H210V-571Z"/>
-      <path transform="matrix(0.007292,0,0,0.007292,212.9995,318.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M728 -700H575V-168H569L295 -700H55V0H208V-531H214L489 0H728Z"/>
-      <path transform="matrix(0.007292,0,0,0.007292,219.3964,318.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M686 -370C686 -601 584 -700 359 -700H55V0H359C584 0 686 -98 686 -329ZM357 -569C495 -569 528 -488 528 -361V-339C528 -210 495 -133 357 -131H210V-569Z"/>
+      <path transform="matrix(0.007292,0,0,0.007292,247.2005,318.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M210 -255H382C474 -255 499 -238 499 -159V0H654V-169C654 -291 621 -316 547 -328V-335C622 -347 654 -393 654 -497V-515C654 -651 590 -700 416 -700H55V0H210ZM383 -571C471 -571 499 -549 499 -478V-472C499 -405 471 -383 399 -383H210V-571Z"/>
+      <path transform="matrix(0.007292,0,0,0.007292,252.9995,318.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M728 -700H575V-168H569L295 -700H55V0H208V-531H214L489 0H728Z"/>
+      <path transform="matrix(0.007292,0,0,0.007292,259.3964,318.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M686 -370C686 -601 584 -700 359 -700H55V0H359C584 0 686 -98 686 -329ZM357 -569C495 -569 528 -488 528 -361V-339C528 -210 495 -133 357 -131H210V-569Z"/>
     </g>
     <g id="label_trig" aria-label="TRIG">
       <path transform="matrix(0.007292,0,0,0.007292,415.5760,318.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M384 -566H600V-700H15V-566H228V0H384Z"/>

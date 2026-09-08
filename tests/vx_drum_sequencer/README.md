@@ -9,6 +9,8 @@ engine directly.
     g++ -std=c++11 -O2 -I ../../src/modules/VXDrumSequencer -o engine_test engine_test.cpp && ./engine_test
     g++ -std=c++11 -O2 -I ../../src/modules/VXDrumSequencer -o shaper_test shaper_test.cpp && ./shaper_test
     g++ -std=c++11 -O2 -I ../../src/modules/VXDrumSequencer -o chain_test  chain_test.cpp  && ./chain_test
+    g++ -std=c++11 -O2 -I ../../src/modules/VXDrumSequencer -o tweak_test  tweak_test.cpp  && ./tweak_test
+    g++ -std=c++11 -O2 -I ../../src/modules/VXDrumSequencer -o tweak_ladder tweak_ladder.cpp && ./tweak_ladder   # not a test: prints the ladders
 
 - **types_test.cpp** — the per-pad model (`Step`, `Memory`, `Bank`): the
   defaults a fresh or cleared memory carries (off, single, chance 100),
@@ -35,3 +37,10 @@ engine directly.
   length change under the playhead, ratchets finishing across a hand-off,
   a member removed from under the playhead. **`Head` is a copy of
   `VXDrumSequencer::process()` steps 4-7 — if those change, re-sync it.**
+- **tweak_test.cpp** — `tweakMemory` invariants (level 0 is the base, one
+  pad per level per lane, lanes outside the mask and steps past the length
+  untouched, the kick on the 1 survives, soft adds carry the soft chance) and
+  `tweakLevelFromVolts` (range, big jumps, the hysteresis at a boundary).
+- **tweak_ladder.cpp** — not a test: prints levels 0-8 of every lane's TWEAK
+  ladder for a few base patterns as text grids, with the reason for each
+  level. The tool for tuning the vocabulary in `VXDrumSequencerTweak.hpp`.

@@ -47,13 +47,14 @@ struct VXDrumSequencerWidget : ModuleWidget
 
         struct Anchor { const char* id; int pid; };
 
-        // ── inputs: CLK / RST / MEM (no plate: only outputs sit on one) ──
-        static const Anchor INS[3] = {
+        // ── inputs: CLK / RST / MEM / TWK (no plate: only outputs sit on one) ──
+        static const Anchor INS[4] = {
             { "clk_input", VXDrumSequencer::CLOCK_INPUT  },
             { "rst_input", VXDrumSequencer::RESET_INPUT  },
             { "mem_input", VXDrumSequencer::MEM_CV_INPUT },
+            { "twk_input", VXDrumSequencer::TWEAK_INPUT  },
         };
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 4; i++)
         {
             addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed(INS[i].id), module, INS[i].pid));
         }
@@ -165,6 +166,21 @@ struct VXDrumSequencerWidget : ModuleWidget
             sub->addChild(new MenuSeparator);
             sub->addChild(createMenuItem("All", "", [m]() { m->random_lanes = 0x7F; }));
             sub->addChild(createMenuItem("None", "", [m]() { m->random_lanes = 0; }));
+        }));
+
+        // Which lanes the TWEAK CV evolves (experiment, 2026-09-08). Same shape
+        // as Randomize settings. Not undoable, saved with the patch.
+        menu->addChild(createSubmenuItem("Tweak settings", "", [m](ui::Menu* sub) {
+            sub->addChild(createMenuLabel("Lanes the TWK input evolves"));
+            for (int l = 0; l < vx_drum_sequencer::LANES; l++)
+            {
+                const uint8_t bit = (uint8_t)(1u << l);
+                sub->addChild(createMenuItem(vx_drum_sequencer::LANE_NAMES[l], CHECKMARK(m->tweak_lanes & bit),
+                    [m, bit]() { m->tweak_lanes ^= bit; }));
+            }
+            sub->addChild(new MenuSeparator);
+            sub->addChild(createMenuItem("All", "", [m]() { m->tweak_lanes = 0x7F; }));
+            sub->addChild(createMenuItem("None", "", [m]() { m->tweak_lanes = 0; }));
         }));
 
         // Chance mode (Bret, 2026-09-07): lit pads draw as bars whose height

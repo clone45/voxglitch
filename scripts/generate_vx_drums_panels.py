@@ -565,9 +565,9 @@ def sequencer_panel():
     ctrl_cy = 340
     ctrl_label_baseline = ctrl_cy - JACK_LABEL_DY            # 318.7
     controls = [("clk_input", "CLK", 40, "jack"), ("rst_input", "RST", 80, "jack"),
-                ("mem_input", "MEM", 120, "jack"), ("rewind_button", "RWD", 176, "dot"),
-                ("random_button", "RND", 216, "dot"), ("trig_output", "TRIG", 425, "jack"),
-                ("acc_output", "ACC", 465, "jack")]
+                ("mem_input", "MEM", 120, "jack"), ("twk_input", "TWK", 160, "jack"),
+                ("rewind_button", "RWD", 216, "dot"), ("random_button", "RND", 256, "dot"),
+                ("trig_output", "TRIG", 425, "jack"), ("acc_output", "ACC", 465, "jack")]
 
     rects = [rect("grid_area", 15, 42, 465, 200, 4.5, COL_PLATE, "background"),
              rect("outputs_plate", 403, 304, 82, 70, 4.5, COL_PLATE, "background")]   # extended down to y 374 (Bret, 2026-09-02); it may crowd the bottom-right screw
@@ -596,7 +596,7 @@ def sequencer_panel():
             "External clock only (owner decision 2026-09-02): no INT switch, BPM knob, BPM readout, RUN switch or SWING knob.",
             "grid_area (15,42) 465 x 200 is painted over by the grid widget; the plate is the browser fallback.",
             "Memory buttons mem_1..mem_16 at cx 38 + 28(n-1), cy 262 (VCVLightBezel), numbers at baseline 282.",
-            "One control row cy 340, labels at 318.7: CLK 40, RST 80, MEM 120 (jacks); RWD 176, RND 216 (VCVButton);",
+            "One control row cy 340, labels at 318.7: CLK 40, RST 80, MEM 120, TWK 160 (jacks; TWK added 2026-09-08); RWD 216, RND 256 (VCVButton);",
             "outputs plate (403,304) 82 x 70 with TRIG 425 (poly) and ACC 465. Only the bottom screw squares",
             "(x 15-30 and 465-480, y 365-380) are on this panel; the top strip holds the wordmark / name box alone.",
         ],

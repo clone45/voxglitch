@@ -553,6 +553,17 @@ struct VXDrumSequencerGridWidget : OpaqueWidget
             }
         }
 
+        // With TWEAK up, the grid shows what is PLAYING: the tweaked copy,
+        // computed here from the same inputs the head uses (deterministic, so
+        // it matches). A pad the tweak ADDED gets a ring in the lane colour; a
+        // pad it REMOVED stays as a faint ghost of the drawn pattern.
+        const vx_drum_sequencer::Memory& base = memory();
+        const int tweak_level = module ? module->tweak_level : 0;
+        const uint8_t tweak_lanes = module ? module->tweak_lanes : 0;
+        const bool tweaking = tweak_level > 0 && tweak_lanes != 0;
+        const vx_drum_sequencer::Memory shown = tweaking
+            ? vx_drum_sequencer::tweakMemory(base, tweak_lanes, tweak_level) : base;
+
         // Lit pads (source :180-189).
         for (int l = 0; l < vx_drum_sequencer::LANES; l++)
         {
@@ -564,14 +575,27 @@ struct VXDrumSequencerGridWidget : OpaqueWidget
 
             for (int c = 0; c < vx_drum_sequencer::STEPS; c++)
             {
-                if (!padOn(l, c)) continue;
+                const vx_drum_sequencer::Step& st = shown.at(l, c);
+                const bool base_on = base.at(l, c).on;
+                const bool added = st.on && !base_on;
+                const bool removed = !st.on && base_on;
+                if (!st.on && !removed) continue;
 
                 const float x = stepX(c) + vx_drum_sequencer_ui::CELL_GAP * 0.5f;
                 const float w = cw - vx_drum_sequencer_ui::CELL_GAP;
                 const bool in_len = c < len;
                 const bool playing = (c == pos);
 
-                const int chance = chanceAt(l, c);
+                if (removed)
+                {
+                    nvgBeginPath(vg);
+                    nvgRoundedRect(vg, x + 1.f, y + 1.f, w - 2.f, h - 2.f, 2.5f);
+                    nvgFillColor(vg, vx_drum_sequencer_ui::vxdColor(col, 0.16f));
+                    nvgFill(vg);
+                    continue;
+                }
+
+                const int chance = st.chance;
                 const float state_alpha = muted ? 0.28f : (in_len ? (playing ? 1.f : 0.9f) : 0.35f);
 
                 if (chanceMode())
@@ -606,8 +630,17 @@ struct VXDrumSequencerGridWidget : OpaqueWidget
                     nvgFill(vg);
                 }
 
+                if (added)
+                {
+                    nvgBeginPath(vg);
+                    nvgRoundedRect(vg, x + 0.5f, y + 0.5f, w - 1.f, h - 1.f, 3.f);
+                    nvgStrokeWidth(vg, 1.5f);
+                    nvgStrokeColor(vg, vx_drum_sequencer_ui::vxdColor(vx_drum_sequencer_ui::LANE_TEXT, 0.9f));
+                    nvgStroke(vg);
+                }
+
                 // Ratchet: the pad splits into n slivers — the visual is the meaning.
-                const int hits = hitsAt(l, c);
+                const int hits = (l < vx_drum_sequencer::VOICES) ? st.hits() : 1;
                 for (int d = 1; d < hits; d++)
                 {
                     const float dx = x + (w * (float)d) / (float)hits;

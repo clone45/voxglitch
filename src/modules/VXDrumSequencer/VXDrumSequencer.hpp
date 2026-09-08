@@ -74,6 +74,7 @@ struct VXDrumSequencer : VoxglitchModule
         CLOCK_INPUT,
         RESET_INPUT,
         MEM_CV_INPUT,
+        TWEAK_INPUT,
         NUM_INPUTS
     };
 
@@ -118,6 +119,16 @@ struct VXDrumSequencer : VoxglitchModule
     int trigger_length_index = 0;        // index into triggerLengths() (ArpSeq's list), persisted
     bool chance_mode = false;            // the grid draws pads as chance bars and a vertical drag sets them; UI only, persisted
     uint8_t random_lanes = 0x7F;         // which lanes RND and Randomize rewrite, bit l = lane l; all seven by default, persisted
+
+    // TWEAK (VXDrumSequencerTweak.hpp, experiment 2026-09-08): the CV picks a
+    // level 0..8 and the chosen lanes play a deterministic evolution of the
+    // stored pattern. `tweak_lanes` UI writes / audio reads (persisted);
+    // `tweak_level` audio writes from the jack every sample / UI reads for the
+    // grid; `tweak_cache` is the head's tweaked copy, rebuilt on each clock
+    // edge (the engine only reads a memory on the edge), audio only.
+    uint8_t tweak_lanes = 0x7F;
+    int tweak_level = 0;
+    Memory tweak_cache;
     std::atomic<bool> random_request{false};   // audio sets on RANDOM_PARAM edge; the widget's step() consumes it
 
     // What the UI reads (chain-foundations.md §4): the playhead, the last
@@ -214,6 +225,7 @@ struct VXDrumSequencer : VoxglitchModule
         configInput(CLOCK_INPUT, "Clock (one pulse per step)");
         configInput(RESET_INPUT, "Reset (restarts the pattern; the next clock plays step 1)");
         configInput(MEM_CV_INPUT, "Memory select CV (0-10 V = memory 1-16; overrides the buttons)");
+        configInput(TWEAK_INPUT, "Tweak (0-10 V = level 0-8: evolves the chosen lanes, 0 V = the pattern as drawn)");
         configOutput(TRIG_OUTPUT, "Triggers (poly: 1 BD, 2 SD, 3 CP, 4 PERC, 5 CH, 6 OH)");
         configOutput(ACC_OUTPUT, "Accent (10 V pulse with every accented hit)");
 
@@ -293,6 +305,11 @@ struct VXDrumSequencer : VoxglitchModule
             }
         }
 
+        // 1b. TWEAK level from the jack, every member for itself (the head
+        //     reads a member's level the way it reads its slot). Unpatched = 0.
+        tweak_level = inputs[TWEAK_INPUT].isConnected()
+            ? tweakLevelFromVolts(inputs[TWEAK_INPUT].getVoltage(), tweak_level) : 0;
+
         // 2. Effective slot (source: ov_selector, core_head.c:624 — truncation, clamped).
         if (mem_cv)
         {
@@ -366,8 +383,15 @@ struct VXDrumSequencer : VoxglitchModule
         }
 
         // 7. The engine: this sample's source is the active member's effective
-        //    memory and mute.
-        const PlaySource src = sourceOf(chain.members[chain_active]);
+        //    memory and mute — or, with TWEAK up, a tweaked copy of it, rebuilt
+        //    on the clock edge that is about to read it.
+        VXDrumSequencer* member = chain.members[chain_active];
+        PlaySource src = sourceOf(member);
+        if (member->tweak_level > 0 && member->tweak_lanes)
+        {
+            if (clock_edge) tweak_cache = tweakMemory(*src.memory, member->tweak_lanes, member->tweak_level);
+            src.memory = &tweak_cache;
+        }
         const int index = rack::math::clamp(trigger_length_index, 0, (int)triggerLengths().size() - 1);
         const int64_t pulse_len = std::max((int64_t)1, (int64_t)(sample_rate * triggerLengths()[index]));
 
@@ -460,6 +484,8 @@ struct VXDrumSequencer : VoxglitchModule
         trigger_length_index = 0;
         chance_mode = false;
         random_lanes = 0x7F;
+        tweak_lanes = 0x7F;
+        tweak_level = 0;
         seq.rewind();
         chain_active = 0;
         handoff_pending = false;
@@ -487,7 +513,7 @@ struct VXDrumSequencer : VoxglitchModule
     //   { "version": "1.1.0",
     //     "memories": [ { "steps": [7 lane objects], "length": 16 }, ... 16 ],
     //     "mute": 0, "memory_slot": 0, "trigger_length_index": 0, "chance_mode": false,
-    //     "random_lanes": 127 }
+    //     "random_lanes": 127, "tweak_lanes": 127 }
     //
     // The memory body is the shared shape in VXDrumSequencerPattern.hpp
     // (memoryBodyToJson / memoryBodyFromJson), which also reads the 1.0.0
@@ -516,6 +542,7 @@ struct VXDrumSequencer : VoxglitchModule
         json_object_set_new(root, "trigger_length_index", json_integer(trigger_length_index));
         json_object_set_new(root, "chance_mode", json_boolean(chance_mode));
         json_object_set_new(root, "random_lanes", json_integer(random_lanes));
+        json_object_set_new(root, "tweak_lanes", json_integer(tweak_lanes));
 
         return root;
     }
@@ -571,6 +598,9 @@ struct VXDrumSequencer : VoxglitchModule
 
         json_t* random_lanes_json = json_object_get(root, "random_lanes");
         if (json_is_integer(random_lanes_json)) random_lanes = (uint8_t)(json_integer_value(random_lanes_json) & 0x7F);
+
+        json_t* tweak_lanes_json = json_object_get(root, "tweak_lanes");
+        if (json_is_integer(tweak_lanes_json)) tweak_lanes = (uint8_t)(json_integer_value(tweak_lanes_json) & 0x7F);
     }
 };
 
