@@ -62,6 +62,8 @@
 #include <cmath>
 #include <cstdint>
 #include <cstring>
+#include <string>
+#include <vector>
 
 namespace vx_drums
 {
@@ -79,7 +81,9 @@ enum ModelId { MODEL_KICK_808, MODEL_KICK_SINE, MODEL_KICK_FM, MODEL_KICK_DIST,
                MODEL_SNARE_909, MODEL_SNARE_808, MODEL_SNARE_LAYERED, MODEL_SNARE_RING,
                MODEL_SNARE_606, MODEL_SNARE_SWEEP, MODEL_SNARE_GATE,
                MODEL_CLAP, MODEL_CLAP_909, MODEL_CLAP_TRAP, MODEL_CLAP_LOFI, MODEL_CLAP_GATE,
-               MODEL_RIMSHOT, MODEL_TOM, MODEL_HAT_CLOSED, MODEL_HAT_OPEN, NUM_MODELS };
+               MODEL_RIMSHOT, MODEL_TOM, MODEL_HAT_CLOSED, MODEL_HAT_OPEN,
+               MODEL_SAMPLE,   // a user's audio file (SampleModel); the file is the ModelChoice's parameter
+               NUM_MODELS };
 enum KitId { KIT_HOUSE, KIT_TR808, KIT_TR909, KIT_LAYERED, KIT_INDUSTRIAL, KIT_HARDCORE, KIT_EIGHTIES, NUM_KITS };
 
 // One sound knob: natural = min + v01 * (max - min). For "%" specs the natural
@@ -131,6 +135,12 @@ const ModelSpec MODEL_SPECS[NUM_MODELS] = {
       { "Tone",   0.0,    1.0,   0.6,  "%",   1 }, { "Decay", 0.02, 0.2, 0.06, " s", 0 }, { "Metal",  0.0, 1.0, 0.5,  "%", 1 } },
     { MODEL_HAT_OPEN,      "ee02c667-eb80-45ad-ad87-1409b2103482", "Open Hat",
       { "Tone",   0.0,    1.0,   0.6,  "%",   1 }, { "Decay", 0.05, 1.2, 0.35, " s", 0 }, { "Metal",  0.0, 1.0, 0.5,  "%", 1 } },
+    // The sample player (SampleModel, 2026-09-13): TUNE is pitch in semitones,
+    // DECAY is an amplitude decay in seconds like every synth voice (at its
+    // maximum the envelope is off and the file plays out in full, which is
+    // the default), SHAPE is where in the file the hit starts.
+    { MODEL_SAMPLE,        "bf4da961-8289-42b4-96ad-7530423c9b5f", "Sample",
+      { "Tune", -24.0,   24.0,   0.0,  " st", 0 }, { "Decay", 0.02, 4.0, 4.0, " s", 0 }, { "Start",  0.0, 1.0, 0.0,  "%", 1 } },
 };
 
 // Column order: BD SD CP PERC CH OH.   DESIGN-KITS.md §2
@@ -1802,6 +1812,185 @@ struct ClapGate : Model
     }
 };
 
+// ── The sample player ────────────────────────────────────────────────────
+//
+// SampleData is one decoded audio file: mono, at the file's own rate,
+// IMMUTABLE once built. The module owns it (VXDrums.hpp, UI thread: decode
+// on load, publish the pointer, retire the previous one a frame later) and
+// SampleModel only ever reads through the pointer, so nothing here allocates
+// and the audio thread never touches a vector that could be resized under it.
+// Rack-free: tests build these by hand.
+//
+struct SampleData
+{
+    std::vector<float> mono;          // (L + R) / 2, or the single channel
+    std::vector<float> energy;        // the start knob's curve through frame i, 0..1 (finalize())
+    double sampleRate = 44100.0;      // the FILE's rate
+    std::string path;                 // where it came from (display + reload; never identity)
+    std::string name;                 // file name for the menus
+
+    int frames() const { return (int)mono.size(); }
+
+    // Build the start knob's curve; call once after `mono` is filled. The
+    // curve is ENERGY_WEIGHT of the cumulative energy plus the rest of plain
+    // position, both normalized 0..1: a drum's energy is nearly all in its
+    // first few percent, so a knob linear in position spends most of its
+    // travel in the near-silent tail, while a knob purely in energy would
+    // squeeze a quiet tail into the last fraction of a percent and make it
+    // unreachable. The blend gives the loud part most of the knob and keeps
+    // the last tenth for sweeping the tail by position (Bret, 2026-09-13).
+    // A silent file gets the position term alone.
+    static double energyWeight() { return 0.9; }
+    void finalize()
+    {
+        const int n = frames();
+        energy.assign(n, 0.f);
+        double total = 0.0;
+        for (int i = 0; i < n; i++) total += (double)mono[i] * (double)mono[i];
+        const double w = (total > 0.0) ? energyWeight() : 0.0;
+        double running = 0.0;
+        for (int i = 0; i < n; i++)
+        {
+            running += (double)mono[i] * (double)mono[i];
+            const double e = (total > 0.0) ? running / total : 0.0;
+            const double p = (double)(i + 1) / (double)n;
+            energy[i] = (float)(w * e + (1.0 - w) * p);
+        }
+    }
+
+    // The frame the start knob at `fraction` (0..1) lands on (see finalize).
+    double startFrame(double fraction) const
+    {
+        const int n = frames();
+        if (n == 0) return 0.0;
+        fraction = clamp01(fraction);
+        if (fraction <= 0.0) return 0.0;
+        if ((int)energy.size() != n) return fraction * (double)n;   // not finalized: plain position
+        int lo = 0, hi = n - 1;
+        while (lo < hi)
+        {
+            int mid = lo + (hi - lo) / 2;
+            if ((double)energy[mid] < fraction) lo = mid + 1; else hi = mid;
+        }
+        return (double)lo;
+    }
+    float at(int i) const { return (i >= 0 && i < (int)mono.size()) ? mono[i] : 0.f; }
+    // Linear interpolation; outside the file is silence.
+    float read(double pos) const
+    {
+        int i = (int)std::floor(pos);
+        double f = pos - (double)i;
+        return (float)((1.0 - f) * at(i) + f * at(i + 1));
+    }
+};
+
+// A one-shot sample voice. A strike restarts the file at the SHAPE start
+// point (a fraction of the file, so it scales with the file's length) and
+// reads it with linear interpolation at
+//
+//   rate = 2^(tune / 12) * file_rate / engine_rate    (file frames per engine sample)
+//
+// so any file rate plays correctly and TUNE is pitch in semitones. The
+// start point is set through the file's energy curve (SampleData::startFrame)
+// and, when it is not the head of the file, the hit fades in over
+// FADE_IN_SECONDS so it does not click on a non-zero sample. DECAY is
+// a T60 amplitude envelope over the playback, the same convention as the
+// house snares (t60Coeff): a long file is shortened the way a synth voice's
+// tail is, and at the knob's maximum the envelope is bypassed so the file
+// plays out exactly as recorded. (The first cut, 2026-09-13, had a grain
+// time-stretch on DECAY instead; Bret found it did not work musically and
+// asked for this.) choke() fades out over the hats' 9.05 ms so an open-hat
+// sample chokes under a closed hat like the Hat model does.
+//
+struct SampleModel : Model
+{
+    const SampleData* data = nullptr;
+    static double fadeInSeconds() { return 0.0015; }
+
+    double tune = 0.0, decay = 4.0, start = 0.0;   // natural: semitones, s, 0..1
+    double pitch = 1.0;                            // 2^(tune/12), cached
+    double coeff = 1.0;                            // per-sample envelope multiplier, 1 = bypassed
+    double chokeCoeff = 0.0;                       // deviation 5: 9.05 ms fade
+
+    bool playing = false;
+    double amp = 0.0;
+    double pos = 0.0;          // read position, file frames
+    double env = 1.0;          // the DECAY envelope
+    double fadeIn = 1.0;       // 0 -> 1 over fadeInSeconds after a mid-file start; 1 = no fade
+    double fadeInStep = 1.0;
+    bool choking = false;
+    double chokeEnv = 1.0;
+
+    SampleModel() { SampleModel::setSampleRate(44100.0); }
+
+    void setData(const SampleData* d)
+    {
+        data = d;
+        playing = false;
+    }
+
+    // The envelope is off at the top of the knob; the spec's max is the line.
+    static bool decayIsFull(double seconds) { return seconds >= modelSpec(MODEL_SAMPLE).decay.max - 1e-9; }
+    void updateCoeff() { coeff = decayIsFull(decay) ? 1.0 : t60Coeff(decay, sampleTime); }
+
+    void setSampleRate(double sr) override
+    {
+        cacheRate(sr);
+        chokeCoeff = std::exp(-1.0 / (0.00905 * sr));
+        fadeInStep = 1.0 / fastMax(1.0, fadeInSeconds() * sr);
+        updateCoeff();
+    }
+    void setTune(double v) override  { tune = clampd(v, -48.0, 48.0); pitch = std::exp2(tune / 12.0); }
+    void setDecay(double v) override { decay = fastMax(0.001, v); updateCoeff(); }
+    void setShape(double v) override { start = clamp01(v); }
+    void reset() override
+    {
+        playing = false; choking = false;
+        amp = 0.0; pos = 0.0; env = 1.0; chokeEnv = 1.0; fadeIn = 1.0;
+    }
+    void strike(double a, Rng&) override
+    {
+        if (!data || data->frames() == 0) { playing = false; return; }
+        amp = clampd(a, 0.0, 2.0);
+        pos = data->startFrame(start);
+        fadeIn = (pos > 0.0) ? 0.0 : 1.0;   // the head of the file starts from silence already
+        env = 1.0;
+        choking = false;
+        chokeEnv = 1.0;
+        playing = true;
+    }
+    void choke() override { if (playing) choking = true; }
+
+    double fileRate() const { return (data && data->sampleRate > 0.0) ? data->sampleRate : sampleRate; }
+
+    double tick(Rng&) override
+    {
+        if (!playing || !data) return 0.0;
+        const int n = data->frames();
+        if (n == 0 || pos >= (double)n) { playing = false; return 0.0; }
+
+        double out = data->read(pos) * amp * env * chokeEnv;
+        if (fadeIn < 1.0)
+        {
+            out *= fadeIn;
+            fadeIn += fadeInStep;
+            if (fadeIn > 1.0) fadeIn = 1.0;
+        }
+
+        pos += pitch * fileRate() / sampleRate;
+        env *= coeff;
+        if (choking)
+        {
+            chokeEnv *= chokeCoeff;
+            if (chokeEnv < 0.0001) { playing = false; choking = false; chokeEnv = 1.0; }
+        }
+        if (env < 0.0001 || pos >= (double)n) playing = false;   // -80 dB, or the end of the file
+
+        if (std::isnan(out)) out = 0.0;
+        return clampd(out, -2.0, 2.0);
+    }
+};
+
 // ── One column: every concrete model as a member, plus the active pointer ──
 // Shared kernels are configured, not duplicated: Ping808 flips `rimshot`,
 // SineKick takes its fixed `click`, Hat is the same object for both hats.
@@ -1824,6 +2013,7 @@ struct ModelBank
     ClapLoFi     clapLoFi;
     ClapGate     clapGate;
     Hat          hat;
+    SampleModel  sample;
 
     ModelId id = MODEL_KICK_808;
     Model* active = &ping;
@@ -1852,6 +2042,7 @@ struct ModelBank
             case MODEL_CLAP_GATE:     return &clapGate;
             case MODEL_HAT_CLOSED:    return &hat;
             case MODEL_HAT_OPEN:      return &hat;
+            case MODEL_SAMPLE:        return &sample;
             default:                  ping.rimshot = false; return &ping;
         }
     }
@@ -1864,6 +2055,7 @@ struct ModelBank
         hat.setSampleRate(sr);   s606.setSampleRate(sr);    sweep.setSampleRate(sr);
         gate.setSampleRate(sr);  clap909.setSampleRate(sr); clapTrap.setSampleRate(sr);
         clapLoFi.setSampleRate(sr); clapGate.setSampleRate(sr);
+        sample.setSampleRate(sr);
     }
 };
 
@@ -1922,6 +2114,22 @@ struct Voices
     {
         if (column < 0 || column >= COLUMNS) return MODEL_KICK_808;
         return bank[column].id;
+    }
+
+    // The audio file column `column` plays when its model is MODEL_SAMPLE.
+    // UI thread: the caller owns `d` and keeps it alive until the audio
+    // thread can no longer be inside a tick that read the old pointer (a
+    // frame is plenty; VXDrums.hpp retires the previous one on the next
+    // widget step). NULL = no file, the column is silent.
+    void setSample(int column, const SampleData* d)
+    {
+        if (column < 0 || column >= COLUMNS) return;
+        bank[column].sample.setData(d);
+    }
+    const SampleData* sample(int column) const
+    {
+        if (column < 0 || column >= COLUMNS) return nullptr;
+        return bank[column].sample.data;
     }
 
     // Normalized knobs; the active model maps each to its natural range and

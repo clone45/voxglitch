@@ -6,6 +6,10 @@
 // (VXDrumVoices.hpp KIT_SPECS). A user kit cannot be an enum value, so the
 // module now carries a RESOLVED COPY of whichever kit it plays:
 //
+//   ModelChoice what one column plays: a ModelId, plus the audio file when the
+//              id is MODEL_SAMPLE. The sample player is one model with one
+//              frozen uuid; the file path is its PARAMETER (what to load),
+//              never an identity — nothing is keyed or matched on it.
 //   KitState   the module's kit: uuid, display name, the six models, and
 //              whether it is one of the user's (custom). A patch saves all of
 //              it, so a patch that names a custom kit still sounds right and
@@ -34,12 +38,60 @@ namespace vx_drums
 
 static const int KIT_KNOBS_PER_COLUMN = 4;   // TUNE DECAY SHAPE LEVEL
 
+// ── ModelChoice ──────────────────────────────────────────────────────────────
+//
+// `id` is always a real model for a kit column. For a per-column OVERRIDE the
+// same type carries a "none" state (id == NUM_MODELS: hand the column back to
+// the kit), so one value type serves both and the undo action copies it.
+// `sample_path` is meaningful only with MODEL_SAMPLE and is "" otherwise;
+// two choices are equal when id and path agree.
+//
+struct ModelChoice
+{
+    ModelId id = MODEL_KICK_808;
+    std::string sample_path;
+
+    ModelChoice() {}
+    explicit ModelChoice(ModelId model) : id(model) {}
+    ModelChoice(ModelId model, const std::string& path) : id(model), sample_path(model == MODEL_SAMPLE ? path : "") {}
+
+    static ModelChoice none() { ModelChoice c; c.id = NUM_MODELS; return c; }
+    static ModelChoice sample(const std::string& path) { return ModelChoice(MODEL_SAMPLE, path); }
+
+    bool isNone() const   { return (int)id < 0 || (int)id >= NUM_MODELS; }
+    bool isSample() const { return id == MODEL_SAMPLE; }
+
+    // What the menus call it: the spec name, or the file name of a sample.
+    std::string displayName() const
+    {
+        if (isNone()) return "";
+        if (!isSample()) return modelSpec(id).name;
+        if (sample_path.empty()) return "Sample (no file)";
+        size_t slash = sample_path.find_last_of("/\\");
+        std::string file = (slash == std::string::npos) ? sample_path : sample_path.substr(slash + 1);
+        return "Sample: " + file;
+    }
+
+    bool operator==(const ModelChoice& o) const { return id == o.id && sample_path == o.sample_path; }
+    bool operator!=(const ModelChoice& o) const { return !(*this == o); }
+};
+
+// A choice that is safe for a KIT column: an out-of-range id, or a sample
+// with no file, falls back to `fallback`.
+inline ModelChoice sanitizedChoice(const ModelChoice& c, ModelId fallback)
+{
+    if (c.isNone()) return ModelChoice(fallback);
+    if (c.isSample() && c.sample_path.empty()) return ModelChoice(fallback);
+    if (!c.isSample() && !c.sample_path.empty()) return ModelChoice(c.id);
+    return c;
+}
+
 // ── KitState ─────────────────────────────────────────────────────────────────
 struct KitState
 {
     std::string uuid;
     std::string name;
-    ModelId models[COLUMNS] = { MODEL_KICK_808, MODEL_KICK_808, MODEL_KICK_808, MODEL_KICK_808, MODEL_KICK_808, MODEL_KICK_808 };
+    ModelChoice models[COLUMNS];
     bool custom = false;
 
     static KitState factory(KitId id)
@@ -48,7 +100,7 @@ struct KitState
         KitState k;
         k.uuid = spec.uuid;
         k.name = spec.name;
-        for (int c = 0; c < COLUMNS; c++) k.models[c] = spec.models[c];
+        for (int c = 0; c < COLUMNS; c++) k.models[c] = ModelChoice(spec.models[c]);
         k.custom = false;
         return k;
     }

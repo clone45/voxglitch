@@ -18,6 +18,7 @@
 
 #include "vgLib-2.0/constants.h"
 #include "vgLib-2.0/components/VoxglitchComponents.hpp"
+#include "vgLib-2.0/sample.hpp"   // the sample player's file decoder (VXDrums::loadSampleInto)
 
 using namespace vgLib_v2;
 

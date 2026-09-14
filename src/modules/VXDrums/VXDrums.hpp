@@ -11,7 +11,15 @@
 // BD SD CP PERC CH OH); a per-column OVERRIDE replaces the kit's choice for
 // that column. The effective model of column c is
 //     override[c] if set, else kit.models[c]
-// and process() keeps `voices` in step with it. `kit` is a vx_drums::KitState
+// and process() keeps `voices` in step with it. Each is a
+// vx_drums::ModelChoice (VXDrumKit.hpp): a ModelId, plus the audio file when
+// the id is the SAMPLE PLAYER (2026-09-13). The file is decoded on the UI
+// thread the moment the choice changes (setKitState → syncSamples, the
+// GrooveBox / SamplerX8 idiom: synchronous, a blip on load is accepted since
+// a kit is built first and played after) into an immutable SampleData the
+// module owns; `voices` reads it through a pointer, and the previous one is
+// retired and freed on the next widget frame, when no tick can still be
+// reading it. `kit` is a vx_drums::KitState
 // (VXDrumKit.hpp, 2026-09-07): a RESOLVED COPY of a factory kit or of one of
 // the user's saved kits, so the module never depends on the kit library
 // (VXDrumKitStore.hpp) at audio time or at patch-load time. A user kit also
@@ -37,7 +45,7 @@
 //
 // Threading: `kit.models[]`, `model_override[]` and `stereo_panning` are single
 // ints / bools written on the UI thread (menus, undo, patch load) and read by
-// process(); the strings in `kit` are UI-only. A torn read is not
+// process(); the strings in `kit` and in the choices are UI-only. A torn read is not
 // possible for an aligned int on any platform Rack ships on, and
 // effectiveModel() range-checks what it reads, so the audio thread can at
 // worst be one sample late — the accepted house pattern for small shared
@@ -46,9 +54,12 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "VXDrumVoices.hpp"
+#include "VXDrumKit.hpp"
 
 struct VXDrums;
 
@@ -75,6 +86,7 @@ namespace vx_drums_ui
         }
         std::string unit(k.unit);
         if (unit == " Hz" || unit == " ms") std::snprintf(buf, sizeof(buf), "%.0f", natural);
+        else if (unit == " st")             std::snprintf(buf, sizeof(buf), "%.1f", natural);
         else                                std::snprintf(buf, sizeof(buf), "%.2f", natural);
         return std::string(buf);
     }
@@ -138,7 +150,12 @@ struct VXDrums : VoxglitchModule
     };
 
     static const int KNOBS_PER_COLUMN = 4;
-    static const int NO_OVERRIDE = -1;
+
+    // Six "no override" choices, the shape every kit-changing call passes.
+    static void noOverrides(vx_drums::ModelChoice out[vx_drums::COLUMNS])
+    {
+        for (int c = 0; c < vx_drums::COLUMNS; c++) out[c] = vx_drums::ModelChoice::none();
+    }
 
     // CV conventions (header comment). 10 V spans a knob's full range; the
     // seventh channel addresses the row's master knob; knobs + CV are read
@@ -158,7 +175,22 @@ struct VXDrums : VoxglitchModule
 
     // ── Kit state (UI writes, audio reads; see the header comment) ──
     vx_drums::KitState kit = vx_drums::KitState::factory(vx_drums::KIT_HOUSE);
-    int model_override[vx_drums::COLUMNS] = { NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE };
+    vx_drums::ModelChoice model_override[vx_drums::COLUMNS];   // none() each, set in the constructor
+
+    // ── Sample files (UI thread owns; audio reads through Voices) ──
+    // One slot per column: the file the column's SampleModel is playing, or
+    // tried to. `retired` holds buffers a newer load replaced; the widget's
+    // step() frees them a frame later (housekeepSamples), by which time no
+    // process() call can still hold the old pointer. Without a widget they
+    // simply wait for the destructor.
+    struct SampleSlot
+    {
+        std::string path;                              // what was asked for
+        bool failed = false;                           // asked for, could not be read
+        std::unique_ptr<vx_drums::SampleData> data;    // decoded, or null
+    };
+    SampleSlot sample_slots[vx_drums::COLUMNS];
+    std::vector<std::unique_ptr<vx_drums::SampleData>> retired_samples;
 
     // The Machine's fixed per-voice pans on the L/R mix (VXDrumVoices.hpp,
     // Voices::process). Off = every voice dead centre. Menu checkbox, saved
@@ -193,6 +225,7 @@ struct VXDrums : VoxglitchModule
     VXDrums()
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+        noOverrides(model_override);
 
         // Sound knobs: normalized, defaulting to the House kit's model for the
         // column (DESIGN-KITS.md §1 table). The label/unit strings here are
@@ -347,38 +380,115 @@ struct VXDrums : VoxglitchModule
 
     // ── Kit / model resolution ───────────────────────────────────────────────
 
-    vx_drums::ModelId effectiveModel(int c) const
+    // By reference, so the audio thread's per-sample call copies no string.
+    const vx_drums::ModelChoice& effectiveModel(int c) const
     {
-        if (c < 0 || c >= vx_drums::COLUMNS) return vx_drums::MODEL_KICK_808;
-        int ov = model_override[c];
-        if (ov >= 0 && ov < vx_drums::NUM_MODELS) return (vx_drums::ModelId)ov;
+        static const vx_drums::ModelChoice fallback(vx_drums::MODEL_KICK_808);
+        if (c < 0 || c >= vx_drums::COLUMNS) return fallback;
+        if (!model_override[c].isNone()) return model_override[c];
         return kit.models[c];
     }
 
     bool anyOverride() const
     {
         for (int c = 0; c < vx_drums::COLUMNS; c++)
-            if (model_override[c] != NO_OVERRIDE) return true;
+            if (!model_override[c].isNone()) return true;
         return false;
     }
 
+    // True when column c should be playing a file that could not be read.
+    bool sampleMissing(int c) const
+    {
+        if (c < 0 || c >= vx_drums::COLUMNS) return false;
+        const vx_drums::ModelChoice& m = effectiveModel(c);
+        return m.isSample() && sample_slots[c].failed && sample_slots[c].path == m.sample_path;
+    }
+
     // UI thread. The single write path for kit + overrides (menus, undo/redo,
-    // patch load), so the double-click defaults are never left stale.
-    void setKitState(const vx_drums::KitState& new_kit, const int overrides[vx_drums::COLUMNS])
+    // patch load), so the double-click defaults are never left stale and every
+    // sample the effective models need is loaded.
+    void setKitState(const vx_drums::KitState& new_kit, const vx_drums::ModelChoice overrides[vx_drums::COLUMNS])
     {
         kit = new_kit;
         if (kit.uuid.empty()) kit = vx_drums::KitState::factory(vx_drums::KIT_HOUSE);
+        const vx_drums::KitSpec& house = vx_drums::kitSpec(vx_drums::KIT_HOUSE);
+        for (int c = 0; c < vx_drums::COLUMNS; c++)
+            kit.models[c] = vx_drums::sanitizedChoice(kit.models[c], house.models[c]);
         for (int c = 0; c < vx_drums::COLUMNS; c++)
         {
-            int id = (int)kit.models[c];
-            if (id < 0 || id >= vx_drums::NUM_MODELS) kit.models[c] = vx_drums::kitSpec(vx_drums::KIT_HOUSE).models[c];
-        }
-        for (int c = 0; c < vx_drums::COLUMNS; c++)
-        {
-            int ov = overrides[c];
-            model_override[c] = (ov >= 0 && ov < vx_drums::NUM_MODELS) ? ov : NO_OVERRIDE;
+            const vx_drums::ModelChoice& ov = overrides[c];
+            // A sample override with no file is no override at all.
+            if (ov.isNone() || (ov.isSample() && ov.sample_path.empty())) model_override[c] = vx_drums::ModelChoice::none();
+            else model_override[c] = vx_drums::sanitizedChoice(ov, house.models[c]);
         }
         syncKnobDefaults();
+        syncSamples();
+    }
+
+    // ── Sample loading (UI thread) ───────────────────────────────────────────
+
+    // Every column whose effective model is the sample player has its file
+    // decoded, unless the slot already holds (or already failed on) that path.
+    void syncSamples()
+    {
+        for (int c = 0; c < vx_drums::COLUMNS; c++)
+        {
+            const vx_drums::ModelChoice& m = effectiveModel(c);
+            if (!m.isSample()) continue;
+            SampleSlot& slot = sample_slots[c];
+            if (slot.path == m.sample_path && (slot.data || slot.failed)) continue;
+            loadSampleInto(c, m.sample_path);
+        }
+    }
+
+    // Decode `path` (vgLib Sample: WAV via AudioFile, MP3 via dr_mp3) into a
+    // fresh mono SampleData, publish it to the column's SampleModel, and
+    // retire whatever the column had. Synchronous; a failed read leaves the
+    // column silent and marks the slot so the menu can say so.
+    void loadSampleInto(int c, const std::string& path)
+    {
+        SampleSlot& slot = sample_slots[c];
+        slot.path = path;
+        slot.failed = false;
+
+        std::unique_ptr<vx_drums::SampleData> next;
+        if (!path.empty())
+        {
+            Sample file;
+            if (file.load(path))
+            {
+                next.reset(new vx_drums::SampleData);
+                next->path = path;
+                next->name = rack::system::getFilename(path);
+                next->sampleRate = (file.sample_rate > 0.f) ? (double)file.sample_rate : 44100.0;
+                const unsigned int n = file.size();
+                const std::vector<float>& L = file.sample_audio_buffer.left_buffer;
+                const std::vector<float>& R = file.sample_audio_buffer.right_buffer;
+                next->mono.resize(n);
+                for (unsigned int i = 0; i < n; i++)
+                {
+                    const float l = (i < L.size()) ? L[i] : 0.f;
+                    const float r = (i < R.size()) ? R[i] : l;
+                    next->mono[i] = 0.5f * (l + r);
+                }
+                next->finalize();   // the start knob's energy table
+            }
+        }
+        if (!next)
+        {
+            slot.failed = true;
+            WARN("VXDrums: could not load sample \"%s\"", path.c_str());
+        }
+
+        voices.setSample(c, next.get());                              // publish (a pointer store)
+        if (slot.data) retired_samples.push_back(std::move(slot.data));   // freed by housekeepSamples()
+        slot.data = std::move(next);
+    }
+
+    // Widget thread, once per frame: free buffers no tick can still be reading.
+    void housekeepSamples()
+    {
+        if (!retired_samples.empty()) retired_samples.clear();
     }
 
     // Keep each TUNE/DECAY/SHAPE quantity's defaultValue equal to the
@@ -390,7 +500,7 @@ struct VXDrums : VoxglitchModule
     {
         for (int c = 0; c < vx_drums::COLUMNS; c++)
         {
-            const vx_drums::ModelSpec& ms = vx_drums::modelSpec(effectiveModel(c));
+            const vx_drums::ModelSpec& ms = vx_drums::modelSpec(effectiveModel(c).id);
             const vx_drums::KnobSpec* specs[3] = { &ms.tune, &ms.decay, &ms.shape };
             for (int which = 0; which < 3; which++)
             {
@@ -437,7 +547,8 @@ struct VXDrums : VoxglitchModule
     // models, so the knobs land on the House sound (DESIGN-KITS.md §2).
     void onReset(const ResetEvent& e) override
     {
-        int none[vx_drums::COLUMNS] = { NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE };
+        vx_drums::ModelChoice none[vx_drums::COLUMNS];
+        noOverrides(none);
         setKitState(vx_drums::KitState::factory(vx_drums::KIT_HOUSE), none);
         stereo_panning = true;
         Module::onReset(e);
@@ -449,7 +560,7 @@ struct VXDrums : VoxglitchModule
         // column's stored knobs into the new model, so nothing else is owed.
         for (int c = 0; c < vx_drums::COLUMNS; c++)
         {
-            vx_drums::ModelId want = effectiveModel(c);
+            vx_drums::ModelId want = effectiveModel(c).id;
             if (voices.model(c) != want) voices.setModel(c, want);
         }
         voices.setPanning(stereo_panning);
@@ -512,37 +623,40 @@ struct VXDrums : VoxglitchModule
     // Params are Rack's to save. Ours: the kit, RESOLVED (uuid, name, the six
     // models, custom flag), and the six overrides, models BY UUID (frozen in
     // VXDrumVoices.hpp; never the enum value or the name). Shape:
-    //   {"version":"1.2.0","kit":"<uuid>","kit_name":"...","kit_custom":false,
-    //    "kit_models":["<model uuid>" ×6],"model_overrides":["<uuid>"|"" ×6],
+    //   {"version":"1.3.0","kit":"<uuid>","kit_name":"...","kit_custom":false,
+    //    "kit_models":["<model uuid>" ×6],"kit_samples":["<path>"|"" ×6],
+    //    "model_overrides":["<uuid>"|"" ×6],"override_samples":["<path>"|"" ×6],
     //    "stereo_panning":true}
     // A factory uuid is re-resolved from the table on load (so a factory kit
     // retuned by an update wins); any other uuid is a user kit and loads from
     // the stored name and models, whether or not this machine's library has
     // it. 1.1.0 patches carry only "kit" + overrides and load the same way.
+    // The two *_samples arrays (1.3.0) are the sample player's files, kept
+    // parallel to the uuid arrays so a 1.2.0 plugin still reads the rest of
+    // the patch (it sees an unknown model uuid and falls back to House).
     // Written with json_object_set_new / json_array_append_new so ownership
     // transfers and no decref is owed (PianoRoll.hpp:711-717).
     json_t* dataToJson() override
     {
         json_t* json_root = json_object();
-        json_object_set_new(json_root, "version", json_string("1.2.0"));
+        json_object_set_new(json_root, "version", json_string("1.3.0"));
         json_object_set_new(json_root, "kit", json_string(kit.uuid.c_str()));
         json_object_set_new(json_root, "kit_name", json_string(kit.name.c_str()));
         json_object_set_new(json_root, "kit_custom", json_boolean(kit.custom));
 
-        json_t* kit_models = json_array();
-        for (int c = 0; c < vx_drums::COLUMNS; c++)
-            json_array_append_new(kit_models, json_string(vx_drums::modelSpec(kit.models[c]).uuid));
-        json_object_set_new(json_root, "kit_models", kit_models);
+        json_object_set_new(json_root, "kit_models", vx_drums::modelsToJson(kit.models));
+        json_object_set_new(json_root, "kit_samples", vx_drums::samplePathsToJson(kit.models));
 
         json_t* overrides = json_array();
+        json_t* override_samples = json_array();
         for (int c = 0; c < vx_drums::COLUMNS; c++)
         {
-            int ov = model_override[c];
-            const char* uuid = (ov >= 0 && ov < vx_drums::NUM_MODELS)
-                ? vx_drums::modelSpec((vx_drums::ModelId)ov).uuid : "";
-            json_array_append_new(overrides, json_string(uuid));
+            const vx_drums::ModelChoice& ov = model_override[c];
+            json_array_append_new(overrides, json_string(ov.isNone() ? "" : vx_drums::modelSpec(ov.id).uuid));
+            json_array_append_new(override_samples, json_string(ov.isSample() ? ov.sample_path.c_str() : ""));
         }
         json_object_set_new(json_root, "model_overrides", overrides);
+        json_object_set_new(json_root, "override_samples", override_samples);
         json_object_set_new(json_root, "stereo_panning", json_boolean(stereo_panning));
         return json_root;
     }
@@ -555,7 +669,8 @@ struct VXDrums : VoxglitchModule
         if (!json_root) return;
 
         vx_drums::KitState new_kit = vx_drums::KitState::factory(vx_drums::KIT_HOUSE);
-        int overrides[vx_drums::COLUMNS] = { NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE, NO_OVERRIDE };
+        vx_drums::ModelChoice overrides[vx_drums::COLUMNS];
+        noOverrides(overrides);
 
         json_t* kit_json = json_object_get(json_root, "kit");
         if (json_is_string(kit_json) && json_string_value(kit_json)[0] != '\0')
@@ -568,11 +683,13 @@ struct VXDrums : VoxglitchModule
                 new_kit.custom = true;
                 json_t* name_json = json_object_get(json_root, "kit_name");
                 new_kit.name = json_is_string(name_json) ? json_string_value(name_json) : "Custom kit";
-                vx_drums::modelsFromJson(json_object_get(json_root, "kit_models"), new_kit.models);
+                vx_drums::modelsFromJson(json_object_get(json_root, "kit_models"),
+                                         json_object_get(json_root, "kit_samples"), new_kit.models);
             }
         }
 
         json_t* overrides_json = json_object_get(json_root, "model_overrides");
+        json_t* override_samples_json = json_object_get(json_root, "override_samples");
         if (json_is_array(overrides_json))
         {
             size_t n = json_array_size(overrides_json);
@@ -585,7 +702,14 @@ struct VXDrums : VoxglitchModule
                 if (!uuid || uuid[0] == '\0') continue;   // "" = no override
                 // NUM_MODELS as the fallback sentinel: an unknown uuid stays "none".
                 vx_drums::ModelId id = vx_drums::modelFromUuid(uuid, vx_drums::NUM_MODELS);
-                if (id != vx_drums::NUM_MODELS) overrides[c] = (int)id;
+                if (id == vx_drums::NUM_MODELS) continue;
+                std::string path;
+                if (json_is_array(override_samples_json) && c < json_array_size(override_samples_json))
+                {
+                    json_t* p = json_array_get(override_samples_json, c);
+                    if (json_is_string(p)) path = json_string_value(p);
+                }
+                overrides[c] = vx_drums::ModelChoice(id, path);   // setKitState drops a sample with no file
             }
         }
 
@@ -603,7 +727,7 @@ struct VXDrums : VoxglitchModule
 inline const vx_drums::KnobSpec& VXDrumsKnobQuantity::spec()
 {
     VXDrums* m = dynamic_cast<VXDrums*>(module);
-    vx_drums::ModelId id = m ? m->effectiveModel(column)
+    vx_drums::ModelId id = m ? m->effectiveModel(column).id
                              : vx_drums::kitSpec(vx_drums::KIT_HOUSE).models[
                                    (column >= 0 && column < vx_drums::COLUMNS) ? column : 0];
     const vx_drums::ModelSpec& ms = vx_drums::modelSpec(id);
@@ -650,21 +774,25 @@ inline std::string VXDrumsKnobQuantity::getUnit()
 
 // ── Undo: one action type for the kit menu and the override submenus ─────────
 //
-// Before/after copies of the whole kit state (7 ints), the module referenced
-// BY ID (history.hpp: Rack may delete and restore the object). Usage (UI
-// thread): captureBefore(m); mutate through m->setKitState(); captureAfter(m);
-// skip the push when isNoop(). The helpers below do exactly that.
+// Before/after copies of the whole kit state (the kit and six choices, a
+// sample's file path included, so undo reloads the file), the module
+// referenced BY ID (history.hpp: Rack may delete and restore the object).
+// Usage (UI thread): captureBefore(m); mutate through m->setKitState();
+// captureAfter(m); skip the push when isNoop(). The helpers below do exactly
+// that.
 //
 struct VXDrumsKitAction : history::ModuleAction
 {
     vx_drums::KitState kit_before;
     vx_drums::KitState kit_after;
-    int overrides_before[vx_drums::COLUMNS] = { -1, -1, -1, -1, -1, -1 };
-    int overrides_after[vx_drums::COLUMNS] = { -1, -1, -1, -1, -1, -1 };
+    vx_drums::ModelChoice overrides_before[vx_drums::COLUMNS];
+    vx_drums::ModelChoice overrides_after[vx_drums::COLUMNS];
 
     VXDrumsKitAction()
     {
         name = "change kit";
+        VXDrums::noOverrides(overrides_before);
+        VXDrums::noOverrides(overrides_after);
     }
 
     void captureBefore(VXDrums* m)
@@ -688,7 +816,7 @@ struct VXDrumsKitAction : history::ModuleAction
         return true;
     }
 
-    void apply(const vx_drums::KitState& kit, const int overrides[vx_drums::COLUMNS])
+    void apply(const vx_drums::KitState& kit, const vx_drums::ModelChoice overrides[vx_drums::COLUMNS])
     {
         VXDrums* m = dynamic_cast<VXDrums*>(APP->engine->getModule(moduleId));
         if (!m) return;
@@ -709,8 +837,8 @@ inline void vxDrumsChangeKit(VXDrums* m, const vx_drums::KitState& kit)
     action->captureBefore(m);
     // A kit change is a fresh start: every per-column override is cleared so the
     // kit plays as designed (Bret, 2026-09-02). Undo restores the overrides.
-    int none[vx_drums::COLUMNS];
-    for (int c = 0; c < vx_drums::COLUMNS; c++) none[c] = VXDrums::NO_OVERRIDE;
+    vx_drums::ModelChoice none[vx_drums::COLUMNS];
+    VXDrums::noOverrides(none);
     m->setKitState(kit, none);
     action->captureAfter(m);
     if (action->isNoop()) { delete action; return; }
@@ -750,8 +878,8 @@ inline void vxDrumsLoadUserKit(VXDrums* m, const vx_drums::UserKit& k)
     VXDrumsKitAction* action = new VXDrumsKitAction;
     action->name = "load kit";
     action->captureBefore(m);
-    int none[vx_drums::COLUMNS];
-    for (int c = 0; c < vx_drums::COLUMNS; c++) none[c] = VXDrums::NO_OVERRIDE;
+    vx_drums::ModelChoice none[vx_drums::COLUMNS];
+    VXDrums::noOverrides(none);
     m->setKitState(k.kit, none);
     action->captureAfter(m);
     if (action->isNoop()) delete action;
@@ -781,14 +909,15 @@ inline void vxDrumsLoadUserKit(VXDrums* m, const vx_drums::UserKit& k)
     APP->history->push(complex);
 }
 
-// Set (model >= 0) or clear (model == VXDrums::NO_OVERRIDE) one column's override.
-inline void vxDrumsChangeOverride(VXDrums* m, int column, int model)
+// Set (a model, or a sample with its file) or clear (ModelChoice::none()) one
+// column's override.
+inline void vxDrumsChangeOverride(VXDrums* m, int column, const vx_drums::ModelChoice& model)
 {
     if (!m || column < 0 || column >= vx_drums::COLUMNS) return;
     VXDrumsKitAction* action = new VXDrumsKitAction;
-    action->name = "change voice model";
+    action->name = model.isSample() ? "load sample" : "change voice model";
     action->captureBefore(m);
-    int overrides[vx_drums::COLUMNS] = {};
+    vx_drums::ModelChoice overrides[vx_drums::COLUMNS];
     for (int c = 0; c < vx_drums::COLUMNS; c++) overrides[c] = m->model_override[c];
     overrides[column] = model;
     m->setKitState(m->kit, overrides);

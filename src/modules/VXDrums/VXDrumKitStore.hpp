@@ -10,16 +10,20 @@
 // changes. Not module presets either: those capture the whole module and
 // live in Rack's Preset menu, not the KIT display (rack-port-design.md §11).
 //
-// Shape (version 1.0.0):
-//   { "version": "1.0.0",
+// Shape (version 1.1.0):
+//   { "version": "1.1.0",
 //     "kits": [ { "uuid": "<v4>", "name": "...",
 //                 "models": ["<model uuid>" x6],
+//                 "samples": ["<file path>" | "" x6],
 //                 "knobs": [[tune, decay, shape, level] x6] }, ... ] }
 //
 // Models are referenced BY UUID (VXDrumVoices.hpp MODEL_SPECS), never by
 // enum value or name, so the table can be reordered or renamed. An unknown
 // model uuid (a kit saved by a newer plugin) falls back to the House model for
-// that column rather than dropping the kit.
+// that column rather than dropping the kit. "samples" (1.1.0) carries the
+// audio file of every column whose model is the sample player, as an
+// absolute path like every other Voxglitch sampler stores its files; a kit
+// with samples is therefore only as portable as those paths.
 //
 // Loaded lazily on first use, UI thread only (every caller is a menu). The
 // write is atomic: a temp file then system::rename over the old one, so a
@@ -60,15 +64,30 @@ inline std::string mintUuid()
 // ── JSON ─────────────────────────────────────────────────────────────────────
 // json_object_set_new / json_array_append_new EXCLUSIVELY (PianoRoll.hpp:711-717).
 
+// Six model uuids, and six sample paths ("" for a column that is not the
+// sample player), the two arrays the kit file and the patch both use.
+inline json_t* modelsToJson(const ModelChoice models[COLUMNS])
+{
+    json_t* arr = json_array();
+    for (int c = 0; c < COLUMNS; c++) json_array_append_new(arr, json_string(modelSpec(models[c].id).uuid));
+    return arr;
+}
+inline json_t* samplePathsToJson(const ModelChoice models[COLUMNS])
+{
+    json_t* arr = json_array();
+    for (int c = 0; c < COLUMNS; c++)
+        json_array_append_new(arr, json_string(models[c].isSample() ? models[c].sample_path.c_str() : ""));
+    return arr;
+}
+
 inline json_t* userKitToJson(const UserKit& k)
 {
     json_t* root = json_object();
     json_object_set_new(root, "uuid", json_string(k.kit.uuid.c_str()));
     json_object_set_new(root, "name", json_string(k.kit.name.c_str()));
 
-    json_t* models = json_array();
-    for (int c = 0; c < COLUMNS; c++) json_array_append_new(models, json_string(modelSpec(k.kit.models[c]).uuid));
-    json_object_set_new(root, "models", models);
+    json_object_set_new(root, "models", modelsToJson(k.kit.models));
+    json_object_set_new(root, "samples", samplePathsToJson(k.kit.models));
 
     json_t* knobs = json_array();
     for (int c = 0; c < COLUMNS; c++)
@@ -81,20 +100,27 @@ inline json_t* userKitToJson(const UserKit& k)
     return root;
 }
 
-// Six model uuids into `models`; a missing, short or unknown entry keeps
-// House's model for that column.
-inline void modelsFromJson(json_t* arr, ModelId models[COLUMNS])
+// Six model uuids (+ paths) into `models`; a missing, short or unknown entry
+// keeps House's model for that column, and so does a sample with no path.
+inline void modelsFromJson(json_t* uuids, json_t* paths, ModelChoice models[COLUMNS])
 {
     const KitSpec& house = kitSpec(KIT_HOUSE);
-    for (int c = 0; c < COLUMNS; c++) models[c] = house.models[c];
-    if (!json_is_array(arr)) return;
-    const size_t n = std::min(json_array_size(arr), (size_t)COLUMNS);
+    for (int c = 0; c < COLUMNS; c++) models[c] = ModelChoice(house.models[c]);
+    if (!json_is_array(uuids)) return;
+    const size_t n = std::min(json_array_size(uuids), (size_t)COLUMNS);
     for (size_t c = 0; c < n; c++)
     {
-        json_t* s = json_array_get(arr, c);
+        json_t* s = json_array_get(uuids, c);
         if (!json_is_string(s)) continue;
         const ModelId id = modelFromUuid(json_string_value(s), NUM_MODELS);
-        if (id != NUM_MODELS) models[c] = id;
+        if (id == NUM_MODELS) continue;
+        std::string path;
+        if (json_is_array(paths) && c < json_array_size(paths))
+        {
+            json_t* p = json_array_get(paths, c);
+            if (json_is_string(p)) path = json_string_value(p);
+        }
+        models[c] = sanitizedChoice(ModelChoice(id, path), house.models[c]);
     }
 }
 
@@ -112,13 +138,13 @@ inline bool userKitFromJson(json_t* root, UserKit& out)
     json_t* name = json_object_get(root, "name");
     k.kit.name = json_is_string(name) ? json_string_value(name) : "Custom kit";
 
-    modelsFromJson(json_object_get(root, "models"), k.kit.models);
+    modelsFromJson(json_object_get(root, "models"), json_object_get(root, "samples"), k.kit.models);
 
     // Knobs default to the models' own defaults, so a kit saved without them
     // (or with a short array) still plays as designed.
     for (int c = 0; c < COLUMNS; c++)
     {
-        const ModelSpec& ms = modelSpec(k.kit.models[c]);
+        const ModelSpec& ms = modelSpec(k.kit.models[c].id);
         k.knobs[c][0] = (float)knobDefault01(ms.tune);
         k.knobs[c][1] = (float)knobDefault01(ms.decay);
         k.knobs[c][2] = (float)knobDefault01(ms.shape);
@@ -152,7 +178,7 @@ inline bool userKitFromJson(json_t* root, UserKit& out)
 inline json_t* kitLibraryToJson(const KitLibrary& lib)
 {
     json_t* root = json_object();
-    json_object_set_new(root, "version", json_string("1.0.0"));
+    json_object_set_new(root, "version", json_string("1.1.0"));
     json_t* kits = json_array();
     for (size_t i = 0; i < lib.kits.size(); i++) json_array_append_new(kits, userKitToJson(lib.kits[i]));
     json_object_set_new(root, "kits", kits);

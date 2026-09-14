@@ -126,6 +126,32 @@ namespace vx_drums_ui
         if (m && m->kit.custom && m->kit.uuid == uuid) m->kit.name = name;
     }
 
+    // "Load sample…" for one column: pick an audio file, and make the sample
+    // player with that file the column's override (one undo step, like any
+    // other model choice). The dialog opens where the column's current file
+    // lives, if it has one.
+    inline void loadSampleOverride(VXDrums* m, int column)
+    {
+        if (!m || column < 0 || column >= vx_drums::COLUMNS) return;
+        std::string dir;
+        const vx_drums::ModelChoice& current = m->effectiveModel(column);
+        if (current.isSample() && !current.sample_path.empty()) dir = rack::system::getDirectory(current.sample_path);
+
+        osdialog_filters* filters = osdialog_filters_parse("Audio (WAV or MP3):wav,WAV,mp3,MP3");
+        char* path_c = osdialog_file(OSDIALOG_OPEN, dir.empty() ? NULL : dir.c_str(), NULL, filters);
+        osdialog_filters_free(filters);
+        if (!path_c) return;
+        const std::string path = path_c;
+        std::free(path_c);
+        if (path.empty()) return;
+
+        vxDrumsChangeOverride(m, column, vx_drums::ModelChoice::sample(path));
+        if (m->sampleMissing(column))
+        {
+            osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, ("Could not read \"" + rack::system::getFilename(path) + "\".").c_str());
+        }
+    }
+
     // Deleting a kit does not touch any module playing it: the module carries
     // its own copy, and the patch will still load and sound the same.
     inline void deleteKit(const std::string& uuid)
@@ -365,7 +391,11 @@ struct VXDrumsWidget : ModuleWidget
         ModuleWidget::step();
 
         VXDrums* m = dynamic_cast<VXDrums*>(this->module);
-        if (m) m->syncKnobDefaults();
+        if (m)
+        {
+            m->syncKnobDefaults();
+            m->housekeepSamples();   // sample buffers replaced since last frame (VXDrums.hpp)
+        }
     }
 
     // Reset every column's TUNE/DECAY/SHAPE to its effective model's default,
@@ -381,7 +411,7 @@ struct VXDrumsWidget : ModuleWidget
 
         for (int c = 0; c < vx_drums::COLUMNS; c++)
         {
-            const vx_drums::ModelSpec& ms = vx_drums::modelSpec(m->effectiveModel(c));
+            const vx_drums::ModelSpec& ms = vx_drums::modelSpec(m->effectiveModel(c).id);
             const vx_drums::KnobSpec* specs[3] = { &ms.tune, &ms.decay, &ms.shape };
             for (int which = 0; which < 3; which++)
             {
@@ -428,17 +458,34 @@ struct VXDrumsWidget : ModuleWidget
             for (int c = 0; c < vx_drums::COLUMNS; c++)
             {
                 group->addChild(createSubmenuItem(COLUMN_MENU[c], "", [m, c](ui::Menu* sub) {
-                    const char* kit_model = vx_drums::modelSpec(m->kit.models[c]).name;
-                    sub->addChild(createMenuItem(std::string("Kit default (") + kit_model + ")",
-                        CHECKMARK(m->model_override[c] == VXDrums::NO_OVERRIDE),
-                        [m, c]() { vxDrumsChangeOverride(m, c, VXDrums::NO_OVERRIDE); }));
+                    const vx_drums::ModelChoice& ov = m->model_override[c];
+                    const bool missing = m->sampleMissing(c);
+
+                    std::string kit_model = m->kit.models[c].displayName();
+                    if (ov.isNone() && missing) kit_model += " (missing)";
+                    sub->addChild(createMenuItem("Kit default (" + kit_model + ")",
+                        CHECKMARK(ov.isNone()),
+                        [m, c]() { vxDrumsChangeOverride(m, c, vx_drums::ModelChoice::none()); }));
                     sub->addChild(new MenuSeparator);
                     for (int i = 0; i < vx_drums::NUM_MODELS; i++)
                     {
-                        sub->addChild(createMenuItem(vx_drums::modelSpec((vx_drums::ModelId)i).name,
-                            CHECKMARK(m->model_override[c] == i),
-                            [m, c, i]() { vxDrumsChangeOverride(m, c, i); }));
+                        const vx_drums::ModelChoice choice((vx_drums::ModelId)i);
+                        if (choice.isSample()) continue;   // the sample player is chosen through "Load sample…"
+                        sub->addChild(createMenuItem(choice.displayName(),
+                            CHECKMARK(ov == choice),
+                            [m, c, choice]() { vxDrumsChangeOverride(m, c, choice); }));
                     }
+
+                    // ── The sample player: the loaded file (checked) and the loader ──
+                    sub->addChild(new MenuSeparator);
+                    if (ov.isSample())
+                    {
+                        std::string label = ov.displayName();
+                        if (missing) label += " (missing)";
+                        sub->addChild(createMenuItem(label, CHECKMARK(true), []() {}));
+                    }
+                    sub->addChild(createMenuItem(ov.isSample() ? "Load another sample…" : "Load sample…", "",
+                        [m, c]() { vx_drums_ui::loadSampleOverride(m, c); }));
                 }));
             }
 

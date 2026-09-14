@@ -52,7 +52,7 @@ The knobs are physical: their positions stay where they are when you change kit 
 
 The column labelled **PERC** is the percussion slot. In the House, TR-808 and TR-909 kits it is a rimshot; Layered and Industrial put a tom there, Hardcore a ringing snare, Eighties a sweep snare, and you can put any model in it yourself (see "Right-Click on the Panel").
 
-The closed hat chokes the open hat, the classic trick for playing a hi-hat line on one pair of circuits: a closed-hat trigger cuts an open-hat tail exactly as it does on the hardware. The choke belongs to the columns, not to the sounds - a strike in the closed-hat column always chokes whatever is in the open-hat column. Hat models fade out when choked; any other model placed in the open-hat column ignores the choke.
+The closed hat chokes the open hat, the classic trick for playing a hi-hat line on one pair of circuits: a closed-hat trigger cuts an open-hat tail exactly as it does on the hardware. The choke belongs to the columns, not to the sounds - a strike in the closed-hat column always chokes whatever is in the open-hat column. Hat models and samples fade out when choked; any other model placed in the open-hat column ignores the choke.
 
 The kit has no timing controls of its own. Tempo, swing and the pattern all belong to whatever is sending the triggers.
 
@@ -76,7 +76,7 @@ House is the kit's original sound. A fresh module starts on it, and Initialize r
 
 Once you have a sound you like - a kit, a few overridden columns, the knobs where you want them - you can keep it as a kit of your own. Right-click the panel, open **Kit Customization** and choose **Save kit as…**, give it a name, and it appears below the factory kits in every kit list: on this module, on every other VX Drums in the patch, and on any VX Drums you add later, in this patch or another. Saved kits live in one file in your Rack user folder, `voxglitch/vx_drums_kits.json`, not in the patch.
 
-A saved kit is more than the six models: it also remembers the 24 voice knobs (`TUNE`, `DECAY`, `SHAPE` and `LEVEL` for every column), because your kit is your tuned sound. So loading one of your kits sets those knobs, where loading a factory kit leaves them alone. The master strip (`ACCENT`, `DRIVE`, `VOLUME`, `VARY`) and the panning switch are not part of a kit. Loading is one undo step.
+A saved kit is more than the six models: it also remembers the 24 voice knobs (`TUNE`, `DECAY`, `SHAPE` and `LEVEL` for every column), because your kit is your tuned sound, and for any column playing a sample it remembers which file (by its location, see "Samples"). So loading one of your kits sets those knobs, where loading a factory kit leaves them alone. The master strip (`ACCENT`, `DRIVE`, `VOLUME`, `VARY`) and the panning switch are not part of a kit. Loading is one undo step.
 
 While one of your kits is loaded, **Update "<name>"** in the same menu overwrites it with the module's current sound, overrides and knobs included. **Manage kits** lists every saved kit with **Rename…** and **Delete…**. A patch that uses one of your kits carries a copy of it, so it still loads and sounds right on a machine that does not have the kit - or after you delete it - and the display still shows its name; only the checkmark in the kit list is missing there.
 
@@ -108,13 +108,26 @@ A model is one drum circuit reduced to three knobs. Each has its own natural ran
 | **Tom** | 60-300 Hz | 0.05-0.8 s | Punch - the pitch-sweep attack, on the same circuit as Kick Sine with a lighter click. |
 | **Closed Hat** | Tone 0-100 % | 0.02-0.2 s | Metal - from pure metallic ring to pure sizzle; `TUNE` is the hat's tone and brightens it. |
 | **Open Hat** | Tone 0-100 % | 0.05-1.2 s | Metal - from pure metallic ring to pure sizzle; `TUNE` is the hat's tone and brightens it. |
+| **Sample** | -24 to +24 st | 0.02-4 s, full = the whole file | Start 0-100 % of the file's energy - where the hit begins, for trimming a slow attack. See "Samples" below. |
 
 Every model sits at roughly the same loudness at the same `LEVEL`, so swapping kits does not need a remix. Any model can go in any column: a second Snare Ring in the percussion slot, a Tom in the snare column, a Kick Sine under an 808 kick.
+
+#### Samples
+
+Any column can play an audio file of your own instead of a circuit. Right-click the panel, open **Kit Customization**, pick the column's model submenu and choose **Load sample…** (WAV or MP3; stereo files are summed to mono, and any sample rate is fine). The file becomes that column's override, the entry above the loader shows its name, and the three knobs take on new meanings:
+
+- **TUNE** is pitch, in semitones, -24 to +24, with 0 at the middle of the knob playing the file as recorded.
+- **DECAY** is a decay envelope over the playback, 20 ms to 4 s, the same idea as on every circuit: turn it down and a long sample becomes a short hit. It only ever shortens; a file that ends before the decay does simply ends. Fully clockwise, which is where a freshly loaded sample sits, the envelope is off and the file plays out exactly as recorded.
+- **SHAPE** is the start point, for trimming a slow attack or playing only a tail. The percentage is of the file's *energy*, not its length: most of a drum is in its first few milliseconds, so a knob that swept plain position would spend nearly all its travel in the near-silent tail. Instead 50 % starts where about half the sound has gone by, which on a kick is well inside the attack, and the last tenth of the knob sweeps whatever tail is left by plain position, so a quiet tail is always reachable. Starting mid-file fades in over 1.5 ms so it does not click.
+
+A sample retriggers from its start point on every hit, like every other voice, and `LEVEL`, `VARY`, the accent and CV all apply as usual. A sample in the open-hat column chokes under a closed hat.
+
+The module stores the file's location, not the audio: a patch or a saved kit that uses a sample looks for the file at the same path when it loads, the way the other Voxglitch samplers do. If the file is not there the column is silent and the menu marks it "(missing)"; put the file back or load another. A saved kit with samples is therefore only as portable as the files it points to.
 
 ### Right-Click on the Panel
 
 - **Kit** - The same list as the KIT display: the factory kits, then your own.
-- **Kit Customization** - Holds one submenu per column: **Bass drum model / Snare model / Clap model / Percussion model / Closed hat model / Open hat model**. The first entry in each, "Kit default", names the model the current kit puts there; below it is every model. Choosing one overrides that column; pick "Kit default" to hand the column back to the kit. Changing kit clears every override, so a new kit always starts as designed (undo brings the overrides back). The KIT display shows a `*` while any override is set. One undo step each. Below the columns: **Save kit as…**, **Update "<name>"** and **Manage kits** (see "Your own kits").
+- **Kit Customization** - Holds one submenu per column: **Bass drum model / Snare model / Clap model / Percussion model / Closed hat model / Open hat model**. The first entry in each, "Kit default", names the model the current kit puts there; below it is every model, and at the bottom **Load sample…** (see "Samples"). Choosing one overrides that column; pick "Kit default" to hand the column back to the kit. Changing kit clears every override, so a new kit always starts as designed (undo brings the overrides back). The KIT display shows a `*` while any override is set. One undo step each. Below the columns: **Save kit as…**, **Update "<name>"** and **Manage kits** (see "Your own kits").
 - **Stereo panning** - On by default. The L / R mix places the clap a little left, the percussion voice a little right and the two hats slightly either side. Untick it to put every voice dead centre; the individual outs are unaffected either way.
 - **Reset knobs to model defaults** - Sets every column's `TUNE`, `DECAY` and `SHAPE` to the defaults of the model that column is currently playing. `LEVEL` and the master strip are left alone. One undo step.
 
