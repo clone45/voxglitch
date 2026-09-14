@@ -17,6 +17,8 @@ Modules for VCV Rack.  My apologies if I fall behind on the documentation.
 * [Hazumi](docs/modules/hazumi/user_manual.md)
 * [Note Detector](docs/modules/note-detector/user_manual.md)
 * [Repeater](docs/modules/repeater/user_manual.md)
+* [Sample Tracker](docs/modules/sample-tracker/user_manual.md)
+* [Scatter](docs/modules/scatter/user_manual.md)
 * [Spores](docs/modules/spores/user_manual.md)
 * [VX Drums](docs/modules/vx-drums/user_manual.md)
 * [VX Drum Sequencer](docs/modules/vx-drum-sequencer/user_manual.md)
