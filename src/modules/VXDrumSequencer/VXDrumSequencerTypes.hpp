@@ -95,6 +95,26 @@ namespace vx_drum_sequencer
     }
     inline bool operator!=(const Bank& a, const Bank& b) { return !(a == b); }
 
+    // Rotate every lane of `m` by `steps` within the memory's LENGTH (a user
+    // request, 2026-09-08): positive moves hits later (right), negative earlier
+    // (left); a hit pushed past the last step wraps to the first. Each pad
+    // travels whole — on, ratchet and chance together. Steps past the length
+    // are not part of the ring and stay where they are.
+    inline void rotateMemory(Memory& m, int steps)
+    {
+        const int len = (m.length < 1) ? 1 : (m.length > STEPS ? STEPS : m.length);
+        int shift = steps % len;
+        if (shift < 0) shift += len;
+        if (shift == 0) return;
+
+        for (int l = 0; l < LANES; l++)
+        {
+            Step ring[STEPS];
+            for (int s = 0; s < len; s++) ring[(s + shift) % len] = m.at(l, s);
+            for (int s = 0; s < len; s++) m.at(l, s) = ring[s];
+        }
+    }
+
     // SEED (memory 0 on a fresh module / Initialize): vxdrums.js:80-87.
     // Four-on-the-floor kick, clap backbeat, closed-hat eighths, open hat on the
     // offbeats of 2 and 4, accents on the downbeats. Every other memory is empty.

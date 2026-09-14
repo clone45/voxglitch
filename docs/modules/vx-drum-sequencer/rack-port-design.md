@@ -619,3 +619,28 @@ list with add / update / rename / remove; identity is the uuid, minted once at s
   reads `kit.models[]`, aligned ints; the strings in `KitState` are never read there.
 - **Tests.** `tests/vx_drums/kit_test.cpp` covers `KitState` and `KitLibrary`.
 
+---
+
+## 12. TWEAK (experiment, 2026-09-08)
+
+A CV input that evolves the pattern predictably, Bret's idea: a level 0-8, each level
+one more musical edit, no randomness. The vocabulary is seven ordered edit lists, one per
+lane role, in `VXDrumSequencerTweak.hpp`; each entry adds, soft-adds (a ghost at 60 %
+chance), removes or flams one step of that lane, optionally conditioned on another step
+of the same lane. A lane never looks at another lane. An entry that changes nothing is
+skipped and does not count, so every level differs from the one below by one edit.
+
+Rejected on the way: a lookup table keyed by the whole 16-bit base pattern (65,536 x 8
+levels per role, 7 MB, and nobody can author it), and a seeded rule (a performer needs
+level 5 to be the same pattern every time). The edit list is the table idea with the
+authoring problem removed.
+
+Plumbing: the CV is quantised to 1.25 V per level with 0.12 V of hysteresis
+(`tweakLevelFromVolts`), read every sample by every member; the head rebuilds a tweaked
+copy of the active member's memory on each clock edge (the only moment the engine reads
+a memory) and hands it to the engine as the `PlaySource`, so neither the engine nor the
+chain knows Tweak exists. The grid computes the same copy for display. `tweak_lanes` is a
+persisted mask like `random_lanes`; the level is not persisted. The panel gained a TWK
+jack at x 160 and RWD / RND moved right to 216 / 256 (`scripts/generate_vx_drums_panels.py`).
+`tests/vx_drum_sequencer/tweak_ladder.cpp` prints the ladders for tuning by eye.
+

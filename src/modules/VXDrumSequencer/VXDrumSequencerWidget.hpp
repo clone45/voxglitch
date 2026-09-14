@@ -197,6 +197,31 @@ struct VXDrumSequencerWidget : ModuleWidget
         menu->addChild(createMenuItem("Export pattern…", "", [this]() { exportPattern(); }));
         menu->addChild(createMenuItem("Import pattern…", "", [this]() { importPattern(); }));
 
+        // Rotate the playing memory within its length (a user request,
+        // 2026-09-08): every lane together, each pad travelling whole. One
+        // undo step per pick.
+        menu->addChild(createSubmenuItem("Rotate pattern", "", [this, m](ui::Menu* sub) {
+            struct Choice { const char* label; int steps; };
+            static const Choice CHOICES[6] = {
+                { "Left 1 step",            -1 },
+                { "Left 2 steps",           -2 },
+                { "Left 4 steps (a beat)",  -4 },
+                { "Right 1 step",            1 },
+                { "Right 2 steps",           2 },
+                { "Right 4 steps (a beat)",  4 },
+            };
+            for (int i = 0; i < 6; i++)
+            {
+                if (i == 3) sub->addChild(new MenuSeparator);
+                const int steps = CHOICES[i].steps;
+                sub->addChild(createMenuItem(CHOICES[i].label, "", [this, m, steps]() {
+                    vx_drum_sequencer::Bank b = m->bankCopy();
+                    vx_drum_sequencer::rotateMemory(b.memories[effectiveSlot(m)], steps);
+                    vx_drum_sequencer_ui::commitBankEdit(m, "rotate pattern", b, m->mute);
+                }));
+            }
+        }));
+
         // Clear the playing memory: the memory button's Clear, reached from the
         // panel (Bret, 2026-09-07). An empty memory is every pad off, single,
         // chance 100, length 16 (memory-slots.js:74-78). One undo step.

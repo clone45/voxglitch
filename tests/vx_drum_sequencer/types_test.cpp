@@ -86,10 +86,59 @@ static void seed()
     check("every other memory is empty", rest_empty);
 }
 
+static void rotate()
+{
+    std::printf("rotate\n");
+    Bank b;
+    seedBank(b);
+    const Memory base = b.memories[0];
+
+    Memory m = base;
+    rotateMemory(m, 1);
+    check("right 1: the kick moves from step 1 to step 2", !m.at(0, 0).on && m.at(0, 1).on);
+    check("right 1: the last-step hat wraps to step 1", base.at(4, 14).on && m.at(4, 15).on);
+    check("right 1: the open hat moves from step 15 to step 16", m.at(5, 15).on && !m.at(5, 14).on);
+
+    Memory back = m;
+    rotateMemory(back, -1);
+    check("left 1 undoes right 1", back == base);
+
+    Memory full = base;
+    rotateMemory(full, 16);
+    check("a full turn is the identity", full == base);
+    Memory zero = base;
+    rotateMemory(zero, 0);
+    check("zero is the identity", zero == base);
+    Memory neg = base;
+    rotateMemory(neg, -16);
+    check("a full turn backwards is the identity", neg == base);
+
+    // Pads travel whole.
+    Memory r = base;
+    r.at(1, 4).on = true; r.at(1, 4).ratchet = 2; r.at(1, 4).chance = 35;
+    rotateMemory(r, 4);
+    check("ratchet and chance travel with the hit", r.at(1, 8).on && r.at(1, 8).ratchet == 2 && r.at(1, 8).chance == 35);
+    check("and leave nothing behind", !r.at(1, 4).on);
+
+    // Within the length: a 12-step pattern rotates as twelve, and steps 13-16 stay put.
+    Memory s = base;
+    s.length = 12;
+    s.at(0, 15).on = true;   // beyond the length
+    rotateMemory(s, 1);
+    check("length 12: the hat on step 11 moves to step 12", s.at(4, 11).on);
+    check("length 12: step 1 receives step 12, which was empty", !s.at(4, 0).on);
+    check("beyond the length is untouched", s.at(0, 15).on);
+    Memory s2 = base;
+    s2.length = 12;
+    rotateMemory(s2, 12);
+    check("length 12: twelve steps is a full turn", s2 == [&]{ Memory t = base; t.length = 12; return t; }());
+}
+
 int main()
 {
     defaults();
     equality();
     seed();
+    rotate();
     return finish("types_test");
 }

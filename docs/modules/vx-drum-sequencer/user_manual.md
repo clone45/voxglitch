@@ -26,6 +26,7 @@ VX Drum Sequencer is a 16-step drum pattern sequencer built to sit under VX Drum
 
 - **CLK** - Clock input, the only source of timing. One pulse = one step, a sixteenth at four beats to the bar. There is no clock division, so feed it sixteenths (a x16 ratio on a module like Clocked). A rising edge that reaches 2 V advances the pattern, and the line must fall back to 0.1 V before the next edge counts. Nothing plays until a pulse arrives, and unplugging the clock stops the pattern where it is.
 - **RST** - Reset. A rising edge cancels any hits still waiting to fire, rewinds the pattern and makes the *next* clock play step 1. See "Reset and the First Step" below for exactly what happens in each situation. The **RWD** button does the same thing.
+- **TWK** - Tweak, 0-10 V. Evolves the pattern as it plays without changing what you drew: 0 V is the pattern as drawn, and each 1.25 V step up applies one more musical edit to every lane ticked in **Tweak settings** (see "Tweak" below). Unpatched, nothing is tweaked.
 - **MEM** - Memory select CV, 0-10 V across the sixteen memories: 0 V is memory 1, every further 0.625 V moves up one, and 10 V is memory 16. While a cable is connected the CV owns the selection: the buttons lock, presses are ignored, and the lit button follows the CV. Unpatch it and the button you last pressed takes over again. A change of memory takes effect at the next step; hits already in flight finish, and if the new memory is shorter than the step you are on, the next step is step 1.
 
 ### Outputs
@@ -73,6 +74,17 @@ The sequencer keeps no position until something plays: after loading a patch, a 
 
 There is no window after a reset during which clock pulses are ignored, and there is no need for one: a clock pulse only ever counts on its rising edge, so a line that is still high cannot fire a phantom step.
 
+### Tweak
+
+**TWK** is a way to make a pattern evolve under CV control, predictably. Level 0 (0 V) is the memory exactly as drawn. Each level up, in 1.25 V steps to level 8 at 10 V, applies one more edit from a fixed list written for that lane's instrument: the kick gains the "and" of 3, then a ghost pickup into the 1; the snare gains its pickup, then ghosts around the backbeat, then a flam, then the start of a fill; the closed hat fills toward sixteenths from the end of the bar, or thins if it is already there; the open hat lifts on the offbeats; and so on. Edits that would change nothing on your pattern are skipped, so every level is exactly one hit different from the one below it, and the same level on the same pattern always sounds the same.
+
+- **What changes** - Hits are added (some as ghosts that play 60 % of the time), removed, or flammed. The stored pattern is never touched: turn the CV back down and it is exactly as you drew it. The grid shows what is playing: an added hit has a bright ring, a removed hit fades to a ghost.
+- **Which lanes** - **Tweak settings** in the right-click menu, all seven by default. A lane that is not ticked plays as drawn whatever the CV does.
+- **When** - The level is read on each clock, so a change lands cleanly on the next step, and there is a little hysteresis at each level boundary so a CV resting on one does not flicker.
+- In a chain, each member's own TWK input tweaks that member's pattern.
+
+Tweak is an experiment in this release; the edit lists are the part most likely to change.
+
 ### Chaining Sequencers
 
 Place two or more VX Drum Sequencers side by side, touching, and they play one after another as a single longer pattern. No cables are needed between them.
@@ -92,8 +104,10 @@ Because the chain is by placement, drop a member out of the row to audition it a
 
 - **Chain: head of N / member M of N** - Shown only while the sequencer is part of a chain (see "Chaining Sequencers"). Information only.
 - **Randomize settings** - Which lanes the **RND** button rewrites. All seven are ticked by default; untick one and it keeps every hit it has, chance and ratchets included, while the others are re-rolled. **All** and **None** at the bottom set them in one go. Unticking a lane does not change what the ticked ones draw: re-rolling only the hats gives the same hats a full randomize would have given. The setting is saved with the patch, and it applies to **Randomize** in the module's own menu too.
+- **Tweak settings** - Which lanes the **TWK** input evolves, all seven ticked by default, with **All** and **None** shortcuts. Saved with the patch.
 - **Chance mode** - Off by default. When it is on, every lit pad draws as a bar whose height is its chance, with a faint ghost of the full pad behind it so a low bar still reads as a hit. Drag up or down on a lit pad and the bar follows the pointer - the top of the pad is 100 %, the bottom 0 % - with the number showing in the pad while you drag; a click without a drag still toggles the pad on or off, so you never have to leave the mode to edit the beat. Painting across pads is off in Chance mode. Shift-click and the right-click menu work as always. Length, mutes and everything else are unchanged. One undo step per drag. The setting is saved with the patch.
 - **Export pattern… / Import pattern…** - Save the memory that is playing right now to a JSON file, or replace it with one from a file. The file is the same format the memory buttons put on the clipboard, so a pattern copied in one patch can be saved for another. Import is one undo step.
+- **Rotate pattern** - Shifts the memory that is playing right now left or right by 1, 2 or 4 steps, every lane together. A hit pushed off the end comes round to the start, and each hit keeps its ratchet and chance. The rotation is within the memory's length, so a 12-step pattern rotates as twelve. One undo step. Pick "Left 4 steps" to move the whole beat back by a quarter note, or "Right 1 step" a few times to find a syncopated version of a pattern you like.
 - **Clear pattern** - Empties the memory that is playing right now and sets its length back to 16, the same as **Clear** on its memory button. One undo step.
 - **Trigger length** - The length of the pulses at TRIG and ACC: 1, 2, 5, 10, 20, 50, 100 or 200 ms. The default 1 ms is the standard for triggers and is all VX Drums needs; pick a longer one for a downstream module that wants a wider pulse. Whatever the length, every hit still gets its own rising edge. The setting is saved with the patch.
 
