@@ -150,6 +150,7 @@ struct PianoRollWidget : ModuleWidget
         static const int SNAP_VALUES[6] = {1, 2, 4, 8, 16, 1};
         menu->addChild(createBoolPtrMenuItem("Lock Editor", "", &piano_roll->locked));
         menu->addChild(createBoolPtrMenuItem("Record armed", "", &piano_roll->rec_armed));
+        menu->addChild(createBoolPtrMenuItem("Focus active track", "", &piano_roll->focus));
 
         menu->addChild(createIndexSubmenuItem("Snap",
             {"1/16", "1/8", "1/4", "1/2", "Bar", "Off"},

@@ -44,7 +44,7 @@ Each track's channel count is derived from your pattern: it equals the largest n
 
 - **Snap** - The editing grid: `1/16`, `1/8`, `1/4`, `1/2` or `Bar`. Governs painting, moving, resizing and pasting.
 - **Scale** - Locks editing to a key. Pick a root and a scale and any note you paint or drag lands on the nearest pitch in that scale - the gesture always succeeds, it just cannot produce a wrong note. Out-of-scale rows darken in the grid while the lock is on. Notes already in the pattern are never moved by it, and recording, pasting and MIDI import are deliberately exempt: the lock governs what the mouse creates. The quantize menu remains the tool for conforming existing material. `OFF` by default.
-- **Track 1-8** - The active track. Whatever you draw or record lands here, and only the active track can be edited. The other seven stay on screen dimmed so you can line parts up. Switching tracks clears the current selection.
+- **Track 1-8** - The active track. Whatever you draw or record lands here, and only the active track can be edited. The other seven stay on screen dimmed so you can line parts up, unless **Focus active track** on the panel's right-click menu hides them. Switching tracks clears the current selection.
 - **LOCK** - Freezes editing so a finished pattern cannot be disturbed. The grid takes on a red tint. You can still navigate, audition and select; you cannot paint, move, resize, delete, paste, import or record.
 - **REC** - Arms recording.
 
@@ -120,6 +120,7 @@ Both Quantize and Shift act on the selection if you have one, and on the whole a
 ### Right-Click on the Panel
 
 - **Lock Editor** and **Record armed** - The same switches as the LOCK and REC buttons.
+- **Focus active track** - Hides the other tracks' ghost notes so only the active track is drawn. Nothing about the notes changes; switch it off and the ghosts return. Handy when eight busy tracks make the grid hard to read.
 - **Snap** and **Loop length** - The same settings as the control bar and the loop marker.
 
 ### Tips

@@ -371,6 +371,15 @@ lands on, and **overlapping dimmed notes composite into false track identities**
 five combinations read as a *different* solo track at ΔE < 5 (e.g. Rose over Azure
 reads as solo Purple). Per-track visibility toggles fix both.
 
+**Shipped (2026-09, after v2.47.0): a single "Focus active track" toggle** on the
+module's right-click menu, persisted as `"focus"` in the patch. It skips the dimmed
+draw pass entirely, so only the active track is rendered. This is the blunt form of
+the per-track toggles above — one switch rather than eight — and was added on a
+user's request rather than from the CVD analysis, but it resolves both effects
+whenever it is on. It is a view setting only: nothing about the notes, hit-testing
+or the velocity lane changes, since ghosts were never grabbable. Per-track toggles
+remain open if the single switch proves too coarse.
+
 Also: Rack applies a **global brightness tint** to everything a module draws
 (`settings.hpp:58 rackBrightness`, plus Rack's NanoVG `nvgGlobalTint`), which
 compresses exactly the lightness axis this palette depends on. Every figure above is

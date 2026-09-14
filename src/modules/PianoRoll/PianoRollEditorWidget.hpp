@@ -384,7 +384,9 @@ struct PianoRollEditorWidget : OpaqueWidget
 
         int loop = loopSteps();
 
-        for (size_t i = 0; i < notes.size(); i++)
+        // Focus drops the ghost pass entirely; the active track draws as usual.
+        bool focus = module && module->focus;
+        for (size_t i = 0; i < notes.size() && !focus; i++)
         {
             if (notes[i].track != active) drawNote(vg, notes[i], loop, false, true);
         }

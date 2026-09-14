@@ -177,6 +177,12 @@ struct PianoRoll : Module
     // too. Matches the Tracks module's "Lock Editor".
     bool locked = false;
 
+    // Hides the other tracks' ghost notes so only the active track is drawn.
+    // A view setting: nothing about the notes changes, and the ghosts come
+    // back the moment it is switched off. Requested by a user whose eight
+    // tracks made the grid too busy to read.
+    bool focus = false;
+
     // Whether the editor's velocity lane is expanded. Module state rather than
     // widget state so it persists with the patch; new instances start collapsed.
     // View preference, not musical content, so changing it is not undoable.
@@ -726,6 +732,7 @@ struct PianoRoll : Module
         json_object_set_new(json_root, "snap_steps", json_integer(snap_steps));
         json_object_set_new(json_root, "rec_armed", json_boolean(rec_armed));
         json_object_set_new(json_root, "locked", json_boolean(locked));
+        json_object_set_new(json_root, "focus", json_boolean(focus));
         json_object_set_new(json_root, "velocity_lane_open", json_boolean(velocity_lane_open));
         json_object_set_new(json_root, "scale_lock_enabled", json_boolean(scale_lock_enabled));
         json_object_set_new(json_root, "scale_root", json_integer(scale_root));
@@ -782,6 +789,9 @@ struct PianoRoll : Module
 
         json_t *locked_json = json_object_get(json_root, "locked");
         if (locked_json) locked = json_boolean_value(locked_json);
+
+        json_t *focus_json = json_object_get(json_root, "focus");
+        if (focus_json) focus = json_boolean_value(focus_json);
 
         json_t *vel_lane_json = json_object_get(json_root, "velocity_lane_open");
         if (vel_lane_json) velocity_lane_open = json_boolean_value(vel_lane_json);
