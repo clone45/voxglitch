@@ -125,5 +125,24 @@ int main()
     kitState();
     modelChoice();
     library();
+    // ── kitBandFromVolts: the KIT CV law (0-10 V in n bands, hysteresis at a crossing) ──
+    checkEq("0 V is band 0", kitBandFromVolts(0.f, 7, -1), 0);
+    checkEq("10 V is the last band", kitBandFromVolts(10.f, 7, -1), 6);
+    checkEq("above 10 V clamps", kitBandFromVolts(12.f, 7, -1), 6);
+    checkEq("below 0 V clamps", kitBandFromVolts(-3.f, 7, -1), 0);
+    checkEq("7 kits: 1.43 V is band 1", kitBandFromVolts(1.43f, 7, -1), 1);
+    checkEq("7 kits: 1.42 V is band 0", kitBandFromVolts(1.42f, 7, -1), 0);
+    checkEq("10 kits: 5 V is band 5", kitBandFromVolts(5.f, 10, -1), 5);
+    checkEq("no kits gives -1", kitBandFromVolts(5.f, 0, -1), -1);
+    // 5 bands of 2 V: band 1 is 2..4 V, band 2 is 4..6 V; the crossing under test is 4 V.
+    checkEq("hysteresis: 4.01 V from band 1 stays on 1", kitBandFromVolts(4.01f, 5, 1), 1);
+    checkEq("hysteresis: 4.06 V from band 1 moves to 2", kitBandFromVolts(4.06f, 5, 1), 2);
+    checkEq("hysteresis: 3.99 V from band 2 stays on 2", kitBandFromVolts(3.99f, 5, 2), 2);
+    checkEq("hysteresis: 3.94 V from band 2 moves to 1", kitBandFromVolts(3.94f, 5, 2), 1);
+    checkEq("hysteresis: 4.01 V with no last is band 2", kitBandFromVolts(4.01f, 5, -1), 2);
+    checkEq("hysteresis: a jump of two bands is taken at once", kitBandFromVolts(9.f, 5, 0), 4);
+    checkEq("hysteresis: same band is a no-op", kitBandFromVolts(3.f, 5, 1), 1);
+    checkEq("a stale last past n is ignored", kitBandFromVolts(2.5f, 5, 9), 1);
+
     return finish("kit_test");
 }

@@ -24,10 +24,24 @@
 // step of one member finish while the next member's step 1 fires, because a
 // hand-off does not call Sequencer::rewind() (which cancels them).
 //
+// RESET (2026-09-16, the VCV standard; rack-port-design.md §4 and the header
+// comment of vgLib-2.0/sequencer/ResetClockWindow.hpp): a reset puts the
+// playhead ON step 1 and plays it at the reset instant; clock edges inside the
+// 1 ms window that follows are the reset's own clock and are swallowed; the
+// next clock after the window is step 2's. Patch load, becoming the head of a
+// chain, a member leaving from under the playhead and Rack's Initialize are
+// IMPLICIT resets: step 1 current, window armed, nothing fires. This replaced
+// the port's original "position = -1, the next clock plays step 1" rule, which
+// left the sequencer one step behind Fundamental SEQ3 and Impromptu Clocked
+// whenever a reset arrived without a coincident clock edge (a stopped Clocked
+// holds its outputs high, so run start produces no edge). The chain hand-off
+// keeps its -1-then-advance shape: the next member's step 1 is played by the
+// next clock, not by the hand-off.
+//
 // Timing rules carried over from the module unchanged (brief-clock-reset §5-§7
-// and rack-port-design.md): advance-then-play from -1, no clock-ignore window
-// after a reset, the period is measured only from a valid anchor inside the
-// (1 sample, 4 s) window and survives a reset, ratchets need a known period.
+// and rack-port-design.md): the period is measured only from a valid anchor
+// inside the (1 sample, 4 s) window and survives a reset, ratchets need a
+// known period.
 //
 // Compiled standalone by tests/vx_drum_sequencer/.
 //
@@ -36,6 +50,11 @@
 #include <cstdint>
 
 #include "VXDrumSequencerTypes.hpp"
+
+// Relative, not "vgLib-2.0/...": this header is compiled standalone by
+// tests/vx_drum_sequencer/ with only its own directory on the include path
+// (TempestVS1Widget.hpp:4 is the house precedent for the form).
+#include "../../vgLib-2.0/sequencer/ResetClockWindow.hpp"
 
 namespace vx_drum_sequencer
 {
@@ -96,16 +115,20 @@ struct ClockFollower
 
 // ── Playhead ─────────────────────────────────────────────────────────────────
 //
-// FIRST-STEP CONVENTION (brief-clock-reset §3, §5): advance-then-play from
-// position -1. "Has anything played yet?" is position >= 0.
+// FIRST-STEP CONVENTION (the VCV standard, rack-port-design.md §4.2; SEQ3's
+// `index = 0` on reset): step 1 (position 0) is CURRENT after load and after a
+// reset, and an explicit reset plays it. Every clock edge is advance-then-play,
+// so the first clock after a reset plays step 2. Position -1 survives for one
+// purpose, the chain hand-off (chain-foundations.md §2): rewind() to -1 and
+// the next clock's advance lands on the next member's step 1.
 //
 struct Playhead
 {
-    int position = -1;               // -1 = nothing played since load/reset/rewind/hand-off
+    int position = 0;                // the current step; -1 only between a hand-off and the next clock
 
     // Advance one step (source: vxd_step + vxd_step_at, vxdrums.c:399-421,
-    // minus swing). From -1 this lands on step 0: the first clock after a
-    // reset plays step 1. A length that shrank below the position wraps.
+    // minus swing). From -1 (a hand-off) this lands on step 0. A length that
+    // shrank below the position wraps.
     int advance(int length)
     {
         length = std::max(1, std::min(length, STEPS));
@@ -115,6 +138,10 @@ struct Playhead
         return position;
     }
 
+    // Reset, implicit or explicit: step 1 is current.
+    void reset() { position = 0; }
+
+    // Hand-off only: the next advance lands on step 0.
     void rewind() { position = -1; }
 };
 
@@ -376,7 +403,7 @@ struct PlaySource
 // memory shown and edited) and the engine never touches it.
 struct Report
 {
-    int position = -1;               // current step, -1 = nothing played yet
+    int position = -1;               // current step; -1 = no step to show (before the owner's first process() call, or a chain member that is not active)
     uint32_t fired_mask = 0;         // lanes struck at the last step fire, bit ACCENT_LANE = accent lamp
     uint32_t fired_serial = 0;       // incremented on every step fire; widgets flash lanes when it changes
     int slot = 0;                    // owner's: the effective memory
@@ -391,20 +418,50 @@ struct Sequencer
     TriggerShaper shaper;
     Report report;
     Rng rng;                         // the chance rolls
+    vgLib_v2::ResetClockWindow window;   // the standard's 1 ms clock-ignore window after a reset
 
-    // True after process() when a step fired on that call.
+    // True after process() when a step fired on that sample: a clocked
+    // advance, or a reset() the caller made earlier on the same sample.
     bool fired_this_sample = false;
 
-    // Reset = rewind (source: vxd_reset_pos, :542-549; §6.h). Cancels the
-    // ratchets (silence, :424-430) and the lamp bits; trigger pulses already
-    // high are left to finish (§6.k). No clock-ignore window.
-    void rewind()
+    // Set by reset() when it played step 1, consumed by the process() call
+    // that follows on the same sample so fired_this_sample reports that fire.
+    bool reset_fired = false;
+
+    // IMPLICIT reset (Impromptu: power-up is treated as a reset). Cancels the
+    // ratchets (silence, vxdrums.c:424-430) and the lamp bits, makes step 1
+    // current, arms the clock-ignore window and drops the measurement anchor
+    // (the period survives). Nothing fires; trigger pulses already high are
+    // left to finish (§6.k). Used at patch load, on becoming the head of a
+    // chain, when a member leaves from under the playhead, when a follower
+    // starts, and on Rack's Initialize. `window_samples` is
+    // vgLib_v2::ResetClockWindow::samplesFor(sample_rate), computed by the
+    // caller each time it arms, never cached.
+    void rewind(int window_samples)
     {
         ratchets.cancel();
         report.fired_mask = 0;       // the serial is untouched: nothing fired
-        head.rewind();
+        head.reset();
         report.position = head.position;
+        window.arm(window_samples);
         clock.rearm();
+    }
+
+    // EXPLICIT reset: an RST edge or the RWD button (SEQ3: `index = 0`, and
+    // its TRIG fires because the index moved). rewind(), then play step 1 NOW
+    // through fire(), so the report, the serial and fired_this_sample behave
+    // exactly as for a clocked fire and the ratchets arm from the surviving
+    // period. Call it BEFORE process() on the same sample: a clock edge on
+    // that sample is inside the window just armed and is swallowed, so a
+    // same-sample reset + clock plays step 1 once, at the reset.
+    void reset(const PlaySource& src, int window_samples)
+    {
+        rewind(window_samples);
+        if (src.memory)
+        {
+            fire(*src.memory, src.mute, 0);
+            reset_fired = true;
+        }
     }
 
     // Hand-off to the next member of a chain: the playhead only. Ratchets
@@ -416,17 +473,23 @@ struct Sequencer
         report.position = head.position;
     }
 
-    // One sample, in the module's order (brief-clock-reset §5.3):
-    //   clock counter -> the edge (measure, advance, fire) -> ratchet re-strikes
-    //   -> the pulses. `reset` is handled by the caller (rewind()) BEFORE this,
-    //   so a same-sample reset + clock fires step 0 on this sample (§6.b).
+    // One sample, in the module's order (rack-port-design.md §4.2, the
+    // ResetClockWindow header): clock counter -> the clock edge, honoured only
+    // while the reset window is closed (measure, advance, fire) -> the window
+    // counts down -> ratchet re-strikes -> the pulses. A reset is the
+    // caller's, made BEFORE this call (reset() or rewind()). An edge the
+    // window swallows is dropped entirely, SEQ3's `clockTriggered &&
+    // !resetGate`: it neither steps nor touches the ClockFollower, whose
+    // anchor the reset already dropped, so the next honoured edge anchors
+    // without measuring and the one after re-measures, as before.
     void process(bool clock_edge, const PlaySource& src, float sample_rate,
                  int64_t pulse_len, float out[LANES])
     {
-        fired_this_sample = false;
+        fired_this_sample = reset_fired;   // a reset() on this sample already played step 1
+        reset_fired = false;
         clock.tick();
 
-        if (clock_edge)
+        if (clock_edge && !window.open())
         {
             clock.edge(sample_rate);
             if (src.memory)
@@ -435,6 +498,7 @@ struct Sequencer
                 fire(*src.memory, src.mute, pos);
             }
         }
+        window.tick();
 
         shaper.strike(ratchets.tick());
         shaper.tick(pulse_len, out);

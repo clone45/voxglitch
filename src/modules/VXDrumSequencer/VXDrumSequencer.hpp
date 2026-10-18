@@ -7,9 +7,10 @@
 // live in the VXDrums kit module; the two panels are linked by a polyphonic
 // TRIG cable (channel c = voice c: BD SD CP PERC CH OH) and a separate mono ACC
 // gate cable. See:
-//   docs/modules/vx-drum-sequencer/rack-port-design.md    <- what diverges from vxsynth and why
+//   docs/modules/vx-drum-sequencer/rack-port-design.md    <- what diverges from vxsynth and why; §4 is the reset rule
 //   docs/modules/vx-drum-sequencer/chain-foundations.md   <- the engine split and the chain
-//   scratchpad brief-clock-reset.md §5-§7                <- the clock/reset algorithm this follows
+//   src/vgLib-2.0/sequencer/ResetClockWindow.hpp           <- the VCV reset standard the rule follows (2026-09-16)
+//   scratchpad brief-clock-reset.md §5-§7                <- the clock algorithm this follows (its reset half is superseded)
 //
 // This file is the RACK ADAPTER. The sequencing itself — the clock period, the
 // playhead and its first-step convention, the ratchets, the trigger pulses
@@ -75,6 +76,7 @@ struct VXDrumSequencer : VoxglitchModule
         RESET_INPUT,
         MEM_CV_INPUT,
         TWEAK_INPUT,
+        RANDOM_INPUT,        // poly trigger: mono = the whole pattern as the RND button, channel c = lane c only (2026-09-18); appended last so older patches keep their cable ids
         NUM_INPUTS
     };
 
@@ -125,15 +127,23 @@ struct VXDrumSequencer : VoxglitchModule
     // stored pattern. `tweak_lanes` UI writes / audio reads (persisted);
     // `tweak_level` audio writes from the jack every sample / UI reads for the
     // grid; `tweak_cache` is the head's tweaked copy, rebuilt on each clock
-    // edge (the engine only reads a memory on the edge), audio only.
+    // edge, reset and implicit reset (the samples on which a memory is
+    // read), audio only.
     uint8_t tweak_lanes = 0x7F;
     int tweak_level = 0;
     Memory tweak_cache;
-    std::atomic<bool> random_request{false};   // audio sets on RANDOM_PARAM edge; the widget's step() consumes it
+    // Randomize requests, audio -> UI (the widget's step() drains them): bit l
+    // (0..6) = "randomize lane l" from channel l+1 of the RND jack; bit 7 =
+    // "as the button" (the RND button, or a MONO cable on the jack), which
+    // rewrites the lanes chosen in Randomize settings. One undo step per frame.
+    static const int RANDOM_AS_BUTTON = 0x80;
+    std::atomic<int> random_request{0};
+    dsp::SchmittTrigger random_input_triggers[LANES];
 
     // What the UI reads (chain-foundations.md §4): the playhead, the last
     // fire, and the effective memory. Audio writes, UI reads. NOT persisted:
-    // -1 / nothing fired after load.
+    // after load, step 1 is current and nothing has fired (the load is an
+    // implicit reset, rack-port-design.md §4.2).
     Report report;
 
     // ── The engine ───────────────────────────────────────────────────────────
@@ -193,6 +203,7 @@ struct VXDrumSequencer : VoxglitchModule
     int chain_active = 0;                // head only: the member playing now
     bool handoff_pending = false;        // head only: the active member fired its last step; switch on the next clock
     bool was_follower = false;           // to rewind the engine once on becoming a follower
+    bool loaded = false;                 // the first process() call is the load's implicit reset (step 1 current, window armed, nothing fires); Initialize clears it so the same path runs again
 
     // const to keep the binding signature; Port::isConnected() is a non-const
     // member in the SDK (PianoRoll.hpp:490-491 notes the same), so a read-only
@@ -223,9 +234,10 @@ struct VXDrumSequencer : VoxglitchModule
         configButton(RANDOM_PARAM, "Random pattern");
 
         configInput(CLOCK_INPUT, "Clock (one pulse per step)");
-        configInput(RESET_INPUT, "Reset (restarts the pattern; the next clock plays step 1)");
+        configInput(RESET_INPUT, "Reset (jumps to step 1 and plays it; the next clock is step 2)");
         configInput(MEM_CV_INPUT, "Memory select CV (0-10 V = memory 1-16; overrides the buttons)");
         configInput(TWEAK_INPUT, "Tweak (0-10 V = level 0-8: evolves the chosen lanes, 0 V = the pattern as drawn)");
+        configInput(RANDOM_INPUT, "Randomize (trigger; mono = the whole pattern like RND, poly = channel 1-6 randomizes that voice's lane, 7 the accent lane)");
         configOutput(TRIG_OUTPUT, "Triggers (poly: 1 BD, 2 SD, 3 CP, 4 PERC, 5 CH, 6 OH)");
         configOutput(ACC_OUTPUT, "Accent (10 V pulse with every accented hit)");
 
@@ -287,10 +299,16 @@ struct VXDrumSequencer : VoxglitchModule
         return src;
     }
 
-    // ── process() — brief-clock-reset §5.3, in this order, every sample ──────
+    // ── process() — brief-clock-reset §5.3 with the reset rule of
+    //    rack-port-design.md §4.2, in this order, every sample ─────────────
     void process(const ProcessArgs& args) override
     {
         const float sample_rate = args.sampleRate;
+
+        // The standard's 1 ms clock-ignore window, in samples at the live
+        // rate, computed afresh each time it is armed and never cached, so
+        // onSampleRateChange has no part in it (rack-port-design.md §4.1 row 6).
+        const int window_samples = vgLib_v2::ResetClockWindow::samplesFor(sample_rate);
 
         resolveChain();
 
@@ -329,7 +347,29 @@ struct VXDrumSequencer : VoxglitchModule
         const bool rewind_pressed = rewind_button_trigger.process(params[REWIND_PARAM].getValue() > 0.5f);
         if (random_button_trigger.process(params[RANDOM_PARAM].getValue() > 0.5f))
         {
-            random_request.store(true);   // the widget does the undo-wrapped randomize on the UI thread
+            random_request.fetch_or(RANDOM_AS_BUTTON);   // the widget does the undo-wrapped randomize on the UI thread
+        }
+        // The RND jack: a mono cable is the button; a poly cable addresses the
+        // lanes, channel c = lane c (1 BD .. 6 OH, 7 accent). Channels beyond
+        // the cable's count never fire; the Schmitts use the house thresholds.
+        {
+            const int channels = inputs[RANDOM_INPUT].getChannels();
+            if (channels <= 1)
+            {
+                if (random_input_triggers[0].process(inputs[RANDOM_INPUT].getVoltage(),
+                                                     constants::gate_low_trigger, constants::gate_high_trigger))
+                    random_request.fetch_or(RANDOM_AS_BUTTON);
+            }
+            else
+            {
+                const int n = std::min(channels, LANES);
+                for (int c = 0; c < n; c++)
+                {
+                    if (random_input_triggers[c].process(inputs[RANDOM_INPUT].getVoltage(c),
+                                                         constants::gate_low_trigger, constants::gate_high_trigger))
+                        random_request.fetch_or(1 << c);
+                }
+            }
         }
 
         // 3. A follower: no transport, no outputs. Copy the head's telemetry
@@ -339,32 +379,63 @@ struct VXDrumSequencer : VoxglitchModule
             processAsFollower(args);
             return;
         }
+
+        // True when this sample is an IMPLICIT reset (steps 3 and 4 below, and
+        // the one Initialize asks for by clearing `loaded`): step 1 current,
+        // nothing fires. Step 7 reads it to decide the hand-off the way it
+        // does for a fire. A head one step long is put on its LAST step by an
+        // implicit reset, so the next accepted clock is member 1's step 1, not
+        // a replay of the head's; without this the chain sat one step behind a
+        // flat sequencer of the same total length after every patch load
+        // until the next explicit reset (chain-foundations.md §1: members
+        // "play one after another as a single longer pattern").
+        bool implicit_reset = false;
+        if (!loaded)
+        {
+            // Patch load / module add is an IMPLICIT reset (Impromptu's rule,
+            // rack-port-design.md §4.2): step 1 current, the window armed,
+            // nothing fires, so the first clock plays step 2. Armed here on
+            // the first process() call, not in the constructor, because the
+            // window length needs the engine's live sample rate.
+            loaded = true;
+            implicit_reset = true;
+            seq.rewind(window_samples);
+        }
         if (was_follower)
         {
-            // Just became the head (the module to my left went away): start
-            // clean rather than from a stale playhead.
+            // Just became the head (the module to my left went away): an
+            // implicit reset rather than a stale playhead.
             was_follower = false;
-            seq.rewind();
+            implicit_reset = true;
+            seq.rewind(window_samples);
         }
 
-        // 4. A member left the chain from under the playhead.
+        // 4. A member left the chain from under the playhead: an implicit
+        //    reset to the head's step 1. A clock edge on this same sample is
+        //    inside the window just armed and does not step.
         if (chain_active >= chain.length)
         {
             chain_active = 0;
             handoff_pending = false;
-            seq.rewind();
+            implicit_reset = true;
+            seq.rewind(window_samples);
         }
 
-        // 5. Rewind button (source: vxdrums_fire_rewind, :542-549; §6.h), then
-        //    RESET input — BEFORE the clock, so a same-sample reset+clock fires
-        //    step 0 on this sample (§6.b; GrooveBox.hpp:1028/:1085). A reset
-        //    while the clock line is high does not fire (§6.c). No window
-        //    (§6.a, §6.d). Either one returns the chain to its head.
+        // 5. Rewind button (source: vxdrums_fire_rewind, :542-549) and RESET
+        //    input: the VCV standard (rack-port-design.md §4.1-§4.3, SEQ3's
+        //    order, reset BEFORE the clock). Either one returns the chain to
+        //    its head and, once the head's source is resolved in step 7,
+        //    plays the head's step 1 on THIS sample through seq.reset(). A
+        //    clock edge on this sample is the reset's own: the engine
+        //    swallows it inside the window, so the next clock plays step 2.
+        //    A reset while the clock line is high sees no edge (the Schmitt
+        //    is never reset(): a high line is high, not an edge) and the next
+        //    rising edge is step 2's.
         const bool reset_edge = reset_trigger.process(inputs[RESET_INPUT].getVoltage(),
                                                       constants::gate_low_trigger, constants::gate_high_trigger);
-        if (rewind_pressed || reset_edge)
+        const bool reset_now = rewind_pressed || reset_edge;
+        if (reset_now)
         {
-            seq.rewind();
             chain_active = 0;
             handoff_pending = false;
         }
@@ -372,10 +443,19 @@ struct VXDrumSequencer : VoxglitchModule
         // 6. CLOCK input — poll the Schmitt EVERY sample (§1.2). A pending
         //    hand-off is taken on the edge, before the advance, so the member
         //    that fired its last step keeps its lamp lit for the whole step and
-        //    the next member's step 1 lands on this very clock.
+        //    the next member's step 1 lands on this very clock. Never on a
+        //    sample that reset: step 5 cleared the pending hand-off, so the
+        //    reset's own clock cannot carry the chain past the head. And only
+        //    on an edge the engine will honour: an edge inside the reset window
+        //    is swallowed whole (SEQ3's `clockTriggered && !resetGate`), so it
+        //    takes no hand-off either; the pending flag survives and the next
+        //    accepted clock takes it. Otherwise a head one step long (its
+        //    reset fire is also its last step) would hand off on the master's
+        //    late clock a sample after the reset and every grid would show
+        //    position -1 until the next clock.
         const bool clock_edge = clock_trigger.process(inputs[CLOCK_INPUT].getVoltage(),
                                                       constants::gate_low_trigger, constants::gate_high_trigger);
-        if (clock_edge && handoff_pending)
+        if (clock_edge && handoff_pending && !seq.window.open())
         {
             handoff_pending = false;
             chain_active = (chain_active + 1) % chain.length;
@@ -384,33 +464,47 @@ struct VXDrumSequencer : VoxglitchModule
 
         // 7. The engine: this sample's source is the active member's effective
         //    memory and mute — or, with TWEAK up, a tweaked copy of it, rebuilt
-        //    on the clock edge that is about to read it.
+        //    on the clock edge, the reset, or the implicit reset that is about
+        //    to read it (an implicit reset reads only its length, for the
+        //    hand-off below, but on the load sample the cache has never been
+        //    built). A reset plays step 1 now, through seq.reset() BEFORE
+        //    seq.process(), which then finds the window open and drops this
+        //    sample's clock edge.
         VXDrumSequencer* member = chain.members[chain_active];
         PlaySource src = sourceOf(member);
         if (member->tweak_level > 0 && member->tweak_lanes)
         {
-            if (clock_edge) tweak_cache = tweakMemory(*src.memory, member->tweak_lanes, member->tweak_level);
+            if (clock_edge || reset_now || implicit_reset) tweak_cache = tweakMemory(*src.memory, member->tweak_lanes, member->tweak_level);
             src.memory = &tweak_cache;
         }
         const int index = rack::math::clamp(trigger_length_index, 0, (int)triggerLengths().size() - 1);
         const int64_t pulse_len = std::max((int64_t)1, (int64_t)(sample_rate * triggerLengths()[index]));
 
         float out[LANES];
+        if (reset_now) seq.reset(src, window_samples);
         seq.process(clock_edge, src, sample_rate, pulse_len, out);
 
+        // A reset's fire counts exactly like a clocked one from here on: the
+        // lamp and the serial.
         if (seq.fired_this_sample)
         {
             chain_report.fired_member = chain_active;
             chain_report.fired_mask = seq.report.fired_mask;
             chain_report.fired_serial = seq.report.fired_serial;
+        }
 
-            // The active member just played its last step: the next clock
-            // belongs to the next member. A lone sequencer wraps as it always
-            // has.
-            if (chain.length > 1 && src.memory && seq.head.position >= src.memory->length - 1)
-            {
-                handoff_pending = true;
-            }
+        // The hand-off. The active member is on its last step, because it just
+        // PLAYED it (a clocked advance, or an explicit reset on a one-step
+        // head) or because an implicit reset just PUT it there (a one-step
+        // head after load, after becoming the head, after a member left): the
+        // next accepted clock belongs to the next member. Deciding it here for
+        // the implicit case keeps the chain in step with a flat sequencer
+        // whose first clock after load is step 2, i.e. member 1's step 1. A
+        // lone sequencer wraps as it always has.
+        if ((seq.fired_this_sample || implicit_reset)
+            && chain.length > 1 && src.memory && seq.head.position >= src.memory->length - 1)
+        {
+            handoff_pending = true;
         }
         chain_report.active = chain_active;
         chain_report.position = seq.head.position;
@@ -439,7 +533,7 @@ struct VXDrumSequencer : VoxglitchModule
         if (!was_follower)
         {
             was_follower = true;
-            seq.rewind();
+            seq.rewind(vgLib_v2::ResetClockWindow::samplesFor(args.sampleRate));
             seq.shaper.reset();
             chain_active = 0;
             handoff_pending = false;
@@ -473,7 +567,10 @@ struct VXDrumSequencer : VoxglitchModule
     }
 
     // Initialize: SEED in memory 1, everything else empty, no mutes, memory 1
-    // selected, 1 ms triggers, transport rewound; then the params via the base.
+    // selected, 1 ms triggers, the transport on step 1 (an implicit reset:
+    // nothing fires); then the params via the base. The window length comes
+    // from the engine's current rate: this runs on the UI thread, with no
+    // ProcessArgs in hand (Ghosts.hpp:286 idiom).
     void onReset(const ResetEvent& e) override
     {
         Bank b;
@@ -486,9 +583,10 @@ struct VXDrumSequencer : VoxglitchModule
         random_lanes = 0x7F;
         tweak_lanes = 0x7F;
         tweak_level = 0;
-        seq.rewind();
+        seq.rewind(vgLib_v2::ResetClockWindow::samplesFor(APP->engine->getSampleRate()));
         chain_active = 0;
         handoff_pending = false;
+        loaded = false;                  // the next process() call repeats the rewind (idempotent) and decides the hand-off for a one-step head
         Module::onReset(e);
     }
 
@@ -507,8 +605,8 @@ struct VXDrumSequencer : VoxglitchModule
     //
     // Raw jansson, json_object_set_new / json_array_append_new EXCLUSIVELY
     // (PianoRoll.hpp:711-717). Params are serialized by Rack. The playhead, the
-    // clock period and the chain state are deliberately not persisted: -1 /
-    // unknown / head after load.
+    // clock period and the chain state are deliberately not persisted: step 1
+    // current (the load is an implicit reset) / unknown / head after load.
     //
     //   { "version": "1.1.0",
     //     "memories": [ { "steps": [7 lane objects], "length": 16 }, ... 16 ],

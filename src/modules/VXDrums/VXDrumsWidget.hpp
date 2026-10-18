@@ -342,6 +342,8 @@ struct VXDrumsWidget : ModuleWidget
             panelHelper.findNamed("trig_input"), module, VXDrums::TRIG_INPUT));
         addInput(createInputCentered<VoxglitchInputPort>(
             panelHelper.findNamed("acc_input"), module, VXDrums::ACC_INPUT));
+        addInput(createInputCentered<VoxglitchInputPort>(
+            panelHelper.findNamed("kit_cv_input"), module, VXDrums::KIT_CV_INPUT));
 
         // ── the CV column: one poly jack per knob row, left of the knobs.
         //    Channel c = column c's knob, channel 7 = the row's master knob ──
@@ -393,6 +395,7 @@ struct VXDrumsWidget : ModuleWidget
         VXDrums* m = dynamic_cast<VXDrums*>(this->module);
         if (m)
         {
+            m->serviceKitCv();       // KIT CV: follow the jack, or return to the manual kit (VXDrums.hpp)
             m->syncKnobDefaults();
             m->housekeepSamples();   // sample buffers replaced since last frame (VXDrums.hpp)
         }

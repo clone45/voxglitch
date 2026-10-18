@@ -13,7 +13,8 @@
   External clock only (owner decision 2026-09-02): no INT switch, BPM knob, BPM readout, RUN switch or SWING knob.
   grid_area (15,42) 465 x 200 is painted over by the grid widget; the plate is the browser fallback.
   Memory buttons mem_1..mem_16 at cx 38 + 28(n-1), cy 262 (VCVLightBezel), numbers at baseline 282.
-  One control row cy 340, labels at 318.7: CLK 40, RST 80, MEM 120, TWK 160 (jacks; TWK added 2026-09-08); RWD 216, RND 256 (VCVButton);
+  One control row cy 340, labels at 318.7: CLK 40, RST 80, MEM 120, TWK 160 (jacks; TWK added 2026-09-08); RWD 216, RND 256 (VCVButton),
+  rnd_input 296 (poly trigger jack, unlabelled, tied to RND by a 1.2 px rule at cy 340; 2026-09-18);
   outputs plate (403,304) 82 x 70 with TRIG 425 (poly) and ACC 465. Only the bottom screw squares
   (x 15-30 and 465-480, y 365-380) are on this panel; the top strip holds the wordmark / name box alone.
 -->
@@ -36,6 +37,7 @@
     <!-- plates only behind output clusters (house rule); named rects for code-drawn widgets (findNamedRect) -->
     <rect id="grid_area" x="15" y="42" width="465" height="200" rx="4.5" fill="#3e3e3e"/>
     <rect id="outputs_plate" x="403" y="304" width="82" height="70" rx="4.5" fill="#3e3e3e"/>
+    <line id="rnd_link_rule" x1="256" y1="340" x2="296" y2="340" stroke="#f3eee8" stroke-opacity="0.952941" stroke-width="1.2"/>
   </g>
   <g inkscape:groupmode="layer" inkscape:label="branding" id="layer_branding">
     <!-- VOXGLITCH wordmark (arpseq path50), ink top-left at (20.7, 13.1) -->
@@ -61,6 +63,7 @@
   </g>
   <g inkscape:groupmode="layer" inkscape:label="anchors" id="layer_anchors">
     <!-- widget anchors: top-level, untransformed; PanelHelper reads the centre of each id (light file only) -->
+    
     
     
     

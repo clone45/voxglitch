@@ -19,6 +19,19 @@ sequencer is external-clock only (§1, §3, §4); on 2026-09-07 the sequencing l
 into a Rack-free engine and sequencers gained chaining by adjacency (§10,
 `chain-foundations.md`).
 
+**2026-09-16: reset moved to the VCV standard after a sync report; §1, §3, §4 revised.**
+A user reported the sequencer "not syncing to other modules". The cause was the reset
+convention this document bound on 2026-09-01 (`position = -1`, nothing at the reset
+instant, no clock-ignore window, "the next clock plays step 1"): it is the family the
+VCV community thread "Reset Sequencers are one step off" found one step behind. A reset
+now puts the sequencer ON step 1 and plays it, clock edges within 1 ms of a reset are
+swallowed, the next clock is step 2, and patch load is an implicit reset, as VCV's own
+SEQ3 and Impromptu's modules do and Impromptu Clocked's defaults assume. The rule is
+written once, in `src/vgLib-2.0/sequencer/ResetClockWindow.hpp`, and shared with Euclid;
+`tests/vx_drum_sequencer/seq3_parity_test.cpp` drives this engine and a model of SEQ3
+with the same edge streams and requires the playhead to agree on every sample. The chain
+hand-off (§10) is unchanged.
+
 ---
 
 ## 1. Decisions locked
@@ -31,7 +44,7 @@ into a Rack-free engine and sequencers gained chaining by adjacency (§10,
 | Trigger pulses | 10 V, **1 ms** default, context-menu selectable 1-200 ms, one-sample forced 0 V gap on a re-strike |
 | Accent | A **gate sampled at the trigger instant**; poly ACC accents per voice, mono ACC normals to all six |
 | Clock | **External only.** No internal clock, no BPM control, no RUN transport; Song dropped with the rest. The initial port shipped Ext/Int; the owner dropped Int on 2026-09-02 |
-| Reset | `position = -1`, advance-then-play, **no clock-ignore window**, the clock Schmitt is never reset; RST = the RWD button |
+| Reset | **The VCV standard** (2026-09-16, §4): a reset puts the sequencer ON step 1 and plays it at the reset instant; clock edges within **1 ms** of a reset are the reset's own clock and are swallowed (`ResetClockWindow`, shared with Euclid); the next clock is step 2; patch load, becoming a chain head, a member leaving from under the playhead and Initialize are implicit resets (step 1 current, window armed, nothing fires); the clock Schmitt is never reset; RST = the RWD button. Replaced the 2026-09-01 rule, `position = -1` / no window / "the next clock plays step 1": the offset family a user found out of sync |
 | Swing | **None.** Dropped with the internal clock on 2026-09-02 (it only ever applied in Int); swing the clock upstream instead |
 | Ratchets | x1-x4 per hit, subdividing the measured clock period (dropped until one is measured) |
 | Memories | 16 x (a 7 x 16 grid of pads, each `{on, ratchet, chance}`, + length); mutes and kit knobs are global. The source's lane masks and ratchet words were unpacked into a per-pad struct on 2026-09-07 (§7.1) |
@@ -112,7 +125,9 @@ TRIG and ACC edges together.
   port kept that rule while it had Int (delaying a step against an explicit clock moves
   where beats land); once Int went, so did the knob. Users swing the clock upstream.
 - **The in-app clipboard** (`memory-slots.js`), replaced by the OS clipboard (§7.3).
-- **The 1 ms post-reset clock-ignore window and the hand-rolled `clkArmed` arm** (§4).
+- **The hand-rolled `clkArmed` arm** (§4). The source's 1 ms post-reset clock-ignore
+  window was dropped by the initial port and reinstated on 2026-09-16: it is the
+  standard's window, and the source's real defect was next to it (§4.1 row 1).
 - **The kit's six mono trigger inputs** (`vxdrumvoices.c:37-39`): one polyphonic input.
 - **`rewind` as a store-bypassing live param**: a plain momentary button.
 - **The flash-timing quirk**: the source flashes lane labels on a *step* change and, for
@@ -124,15 +139,37 @@ TRIG and ACC edges together.
 ## 4. Clock, reset and the first note
 
 The owner's requirement: reset must be right and the first note must play correctly in
-every situation. The engine is *brief-clock-reset §5* verbatim, with the decisions in
-§4.4 confirmed, minus the Int branch removed on 2026-09-02. This section records why the
-source could not be copied here.
+every situation. The clock path is *brief-clock-reset §5* verbatim, with the decisions in
+§4.4 confirmed, minus the Int branch removed on 2026-09-02. The reset rule is **the VCV
+standard**, since 2026-09-16. The Voltage Standards page
+(https://vcvrack.com/manual/VoltageStandards) says: a pulse "sent through a utility
+module and then to a sequencer's CLOCK input will arrive one sample later than the same
+pulse sent directly to the sequencer's RESET input. This will cause the sequencer to
+reset to step 1, and one sample later, advance to step 2, which is undesired behavior.
+Therefore, modules with a CLOCK and RESET input, or similar variants, should ignore
+CLOCK triggers up to 1 ms after receiving a RESET trigger." The model behind that
+sentence, which Fundamental SEQ3
+(https://github.com/VCVRack/Fundamental/blob/v2/src/SEQ3.cpp) and Impromptu Modular
+(https://github.com/MarcBoule/ImpromptuModular, README "1ms-clock-ignore-on-reset")
+implement and Impromptu Clocked's defaults assume, is that **the reset itself puts the
+sequencer ON step 1 and plays it**, so the clock that accompanies it must be swallowed or
+it would advance to step 2. The port's 2026-09-01 rule was the other family: `position =
+-1`, nothing at the reset, the next clock plays step 1. The community thread "Reset
+Sequencers are one step off"
+(https://community.vcvrack.com/t/reset-sequencers-are-one-step-off/12898) sorted
+sequencers into exactly these two families, in sync (SEQ-3, AS SEQ-16: "reset to step 1,
+play step 2 on next clock") and offset (JW Trigs, LedSeq: "reset to no active step, play
+step 1 on next clock"), and the offset family is one step behind after any reset that
+arrives without a clock edge: a stopped Clocked holds its outputs high and produces no
+edge at run start, and a running reset that lands in the clock's high half produces none
+either. That was the reported "does not sync". This section records why the source could
+not be copied here and what the standard replaced.
 
 ### 4.1 Defects in the source the port does not copy
 
 | # | Source behaviour | Effect | Port |
 |---|---|---|---|
-| 1 | RST arms a 1 ms window during which clock edges are swallowed (`vxdrums.c:593`) | Reset and clock on the same sample: the clock consumes the arm inside the window and is rejected, so **step 1 plays one whole period late**. The same symptom ArpSeq fixed in #278 and DigitalSequencer still has | **No window, ever.** Reset is processed before the clock on the same sample, so a coincident edge fires step 1 immediately |
+| 1 | RST arms a 1 ms window during which clock edges are swallowed (`vxdrums.c:593`) but leaves the playhead at -1, so step 1 waits for a clock | Reset and clock on the same sample: the window swallows the clock and nothing has played, so **step 1 plays one whole period late**. The same symptom ArpSeq met in #278 and DigitalSequencer still has | **Keep the window, and make the reset itself play step 1** (the standard's answer, 2026-09-16). The 2026-09-01 port reasoned from the swallowed coincident clock to "no window, ever" and kept the playhead at -1, which traded one lateness for another (§4.3). Now: `ResetClockWindow::samplesFor(sampleRate)` = ceil(1 ms) samples, armed on the reset sample, and the reset plays step 1 on that sample; a coincident or later edge inside the window is the reset's own clock and is dropped; the next clock is step 2 |
 | 2 | A rejected edge does not zero `extClkCounter` (only the accept branch does, `:613`) | The next accepted edge measures **two** periods, so ratchets run at half speed | Zero the counter on **every** detected edge, accepted or not (the PianoRoll port found and fixed the same bug in `pianoroll.c`) |
 | 3 | Reset and mode change set `clkArmed = 1` (`:522`, `:588-600`) | A clock line that is high at the moment of a reset (or, in the source, a switch to Ext) fires a **phantom step** mid-pulse | One `dsp::SchmittTrigger`, polled every sample, never `reset()`. A high line is `HIGH`, not an edge |
 | 4 | `extClkCounter` only counts in Ext (`:603`) and is not zeroed by a mode change | The first edge after Int -> Ext measures a frozen count plus the time since the switch: garbage, accepted if under 4 s | No mode change exists any more. The counter runs every sample and the measurement **anchor** is invalidated on load, reset and rewind (and on a sample-rate change, row 6); the first edge after any of those anchors without measuring |
@@ -142,15 +179,37 @@ source could not be copied here.
 
 ### 4.2 The rules
 
-- **`position = -1` and advance-then-play.** -1 means nothing has played since load,
-  reset or rewind; the next step to fire is step 1 (index 0). The source already does
-  this (`vxdrums.c:117`, `:431-435`); PianoRoll and ArpSeq do the same. The clock edge
-  that accompanies a reset **is** the step-1 edge; nothing fires at the reset instant.
-- **Reset = `rewind()`:** cancel every ratchet re-strike (the source's `vxd_silence`,
-  `:424-430`), `position = -1`, invalidate the measurement anchor, zero the sample
-  counter. Voices ring out; trigger pulses already high finish.
-- **Order inside one sample:** RWD button, **RST input, then CLK input**, then ratchet
-  re-strikes, then the outputs.
+- **Step 1 is current after a reset, and the reset plays it** (SEQ3: `index = 0`, and
+  its TRIG fires because the index moved). Every clock edge is advance-then-play, so the
+  clock after a reset plays step 2. The playhead is -1 only between a chain hand-off and
+  the next clock (§10.2), where the -1-then-advance shape puts the next member's step 1
+  on that clock. The source (`vxdrums.c:117`, `:431-435`), PianoRoll and ArpSeq keep -1
+  after a reset; this module no longer does.
+- **Explicit reset (RST edge or RWD) = `Sequencer::reset()`:** cancel every ratchet
+  re-strike (the source's `vxd_silence`, `:424-430`), `position = 0`, invalidate the
+  measurement anchor and zero the sample counter (the period survives), arm the 1 ms
+  window, then `fire()` step 1 on this sample: its ratchets arm from the surviving
+  period, the lamp and the serial behave as for a clocked fire. Voices ring out; trigger
+  pulses already high finish (a step-1 strike on a lane still high takes the one-sample
+  gap of §5). **Implicit reset = `Sequencer::rewind()`:** the same without the fire.
+  Patch load (armed on the first `process()` call, from the live sample rate), becoming
+  the head of a chain, a member leaving from under the playhead, a follower starting and
+  Rack's Initialize are implicit resets, Impromptu's rule: "the clock is also ignored
+  during 1ms when the module is initialized or powered up (which is treated as an
+  implicit reset)".
+- **Order inside one sample:** RWD button, **RST input, then CLK input**, then the
+  window counts down, then ratchet re-strikes, then the outputs. A clock edge is honoured
+  only while the window is closed (SEQ3's `clockTriggered && !resetGate`); an edge the
+  window swallows neither steps nor touches the period measurement, whose anchor the
+  reset already dropped. The window is `sampleRate / 1000` rounded up (48 samples at
+  48 kHz, 45 at 44.1 kHz; integer arithmetic, so no float overshoot), computed when
+  armed and never cached: the reset sample plus the rest of the millisecond. That is
+  the span of SEQ3's float `resetPulse.trigger(1e-3f)` at 44.1 and 48 kHz and at every
+  other Rack rate but three; at 96, 192 and 384 kHz SEQ3's float runs one sample longer
+  (97 / 193 / 385), so the boundary sample there is the one place the two can differ.
+  A reset inside an open window re-arms it to the
+  full length. The Schmitt triggers are never `reset()`: a line that is high is high,
+  not an edge.
 - **Period measurement:** count samples since the last detected edge; measure only
   when the anchor is valid and the count is `> 1` and `< 4 s` (the source's debounce,
   `:610`); the measured period **survives reset** and is 0 only at load (so ratchets on
@@ -175,20 +234,33 @@ source could not be copied here.
 
 | Situation | Result |
 |---|---|
-| Reset while the clock is low | Silent; the next rising edge plays step 1 |
-| Reset and clock edge on the same sample | **Step 1 plays on that sample** |
-| Reset while the clock line is still high | Silent; the line must fall and rise; that rise plays step 1 |
-| Reset mid-period, clock free-running | Silent; the next edge plays step 1; the partial interval is *not* measured; ratchets use the previous period; the edge after re-measures |
-| First clock after patch load | Step 1 with single hits (no period yet); the second edge measures |
-| Clock line already high at load | Nothing until it falls and rises |
+| Reset and clock edge on the same sample (Clocked restarting its cycle) | **Step 1 plays once, at the reset.** The clock is inside the window and is swallowed. Next edge: step 2 |
+| Reset direct, clock one sample later (the clock routed through a utility module) | Same: step 1 at the reset; the late clock is inside the window |
+| Clock direct, reset one sample later (the reset routed through a utility) | Step N+1 fires, then step 1 one sample later: two hits. The standard's known limitation; SEQ3 does the same. Delay reset and clock equally (the manual says so) |
+| Reset while the clock line is high (no edge from the master) | Step 1 plays at the reset; the next rising edge is step 2. In sync with SEQ3, AS SEQ-16 and Impromptu |
+| Reset while stopped, then run (Impromptu Clocked's default "outputs high on reset when not running") | Step 1 plays at the reset; run start produces no edge; beat 2 is step 2. In sync. Under the old rule: silent at the reset and step 1 on beat 2, one step behind: the reported symptom |
+| Mid-period reset, clock free-running | Step 1 plays at the reset and gets the remainder of the period; the interrupted step's ratchets are cancelled; step 1's subdivide the period measured before the reset; the next edge is step 2 and anchors without measuring; the edge after re-measures |
+| First clock after patch load | **Step 2.** Load is an implicit reset: step 1 is current and shown, nothing fires, the window is armed. A master that sends a reset on start (Clocked does) plays step 1 there, and the pattern lands as drawn. Single hits until the second edge has measured the period |
+| Clock line already high at load | Nothing until it falls and rises; that rise is step 2 |
+| Clock faster than 1 kHz | Edges within 1 ms of a reset are lost. Acceptable; that is the standard's window, ten times shorter than the source's |
 | Clock unpatched mid-pattern | Silent; position kept; the next edge after re-patching plays the following step |
-| Sample-rate change | Ratchets keep their subdivision from the rescaled period; the next edge anchors without measuring; the edge after re-measures |
-| Patch reload | `position = -1` regardless of where it was saved |
+| Sample-rate change | Ratchets keep their subdivision from the rescaled period; the next edge anchors without measuring; the edge after re-measures. The window is computed from the live rate whenever it is armed, so it needs nothing here |
+| Patch reload | Step 1 current regardless of where it was saved; nothing fires |
+| Chain hand-off (§10.2) | Unchanged: the playhead goes to -1 and the next clock plays the next member's step 1. A reset while a member is active returns to the head's step 1 and plays it; a member leaving from under the playhead is an implicit reset to the head's step 1 |
 
-The manual's advice follows from the fourth row: a clock master that restarts its own
-clock on reset turns a mid-bar reset into the second row, so users who want resets to
-land where they press them should patch the master's reset into RST as well as its
-clock into CLK.
+Every row is a case in `tests/vx_drum_sequencer/engine_test.cpp`, including the integer
+contract of the window (at 48 kHz a clock 47 samples after a reset is swallowed and one
+48 samples after is accepted; at 44.1 kHz the window is 45 samples), and the whole rule
+is checked against a model of SEQ3, float arithmetic included, in
+`seq3_parity_test.cpp`. The one deliberate difference from SEQ3 is the trigger, not the
+position: SEQ3's TRIG fires only when the index moved, so a reset while already on step
+1 is silent there; this sequencer plays step 1 on every explicit reset, as Impromptu's
+sequencers do (gates forced low and re-raised), because a drum pattern restarted from
+its downbeat should be heard restarting.
+
+The manual's advice follows from the first three rows: feed CLK and RST from the same
+master, and if either is routed through a utility module, route both, so they keep
+arriving on the same sample.
 
 ---
 
@@ -466,8 +538,8 @@ still read whenever `"steps"` is absent, so every patch and file saved before
 
 Loading starts from a seeded bank and overwrites from JSON with bounds checks (memories
 capped at 16, lanes at 7, steps at 16, ratchet clamped 0-3, chance 0-100, length
-1-16), probing every key so a missing one keeps its default. `position` is **not** persisted: it is -1 after
-every load, as PianoRoll does. Neither is the measured period nor any pending ratchet
+1-16), probing every key so a missing one keeps its default. `position` is **not** persisted: step 1 is
+current after every load, an implicit reset (§4.2). Neither is the measured period nor any pending ratchet
 state. The sequencer has no clock, tempo or swing params; its remaining params are
 momentary buttons.
 
@@ -481,8 +553,9 @@ never keys.
 
 ## 9. What survives unchanged
 
-Position -1 and advance-then-play; silence on every discontinuity with voices left to
-ring; ratchets from the measured period with the `> 4`-sample guard and the two-sample
+Advance-then-play on every clock edge (the reset convention itself is the VCV
+standard's since 2026-09-16, §4, not the source's); silence on every discontinuity with
+voices left to ring; ratchets from the measured period with the `> 4`-sample guard and the two-sample
 interval floor; the `> 1 && < 4 s` measurement debounce; accent as a strike multiplier
 `1 + accent` that enters each voice's own nonlinearity; the CH -> OH choke; per-memory
 length with wrap; global mutes including the accent lane; the seed pattern; the Random
@@ -530,8 +603,15 @@ construction, the head drives the one TRIG / ACC pair, and there is no cable.
   read by the head each sample, through the member's own module: `liveBank()` (the
   UI-written double buffer, safe from any thread), `report.slot` and `mute` (single
   aligned words, one-sample stale at worst).
-- **The hand-off.** When the active member fires its last step (`position >=
-  length - 1`), the head marks a hand-off pending. On the **next clock edge**, before
+- **The hand-off.** When the active member is on its last step (`position >=
+  length - 1`), because it just fired it or because an implicit reset (load, becoming
+  the head, a member leaving, Initialize) just put a one-step head on its only step,
+  the head marks a hand-off pending. *[2026-09-17: the implicit-reset half was added.
+  Decided on a fire only, a chain with a one-step head replayed the head's step 1 on
+  the first clock after every load and ran one step behind a flat sequencer of the same
+  total length until the next explicit reset, which does fire.]* On the **next accepted clock edge**
+  (an edge inside the reset window is swallowed whole, SEQ3's `clockTriggered &&
+  !resetGate`, and takes no hand-off either; the flag survives it), before
   the advance, it makes the next member active and rewinds the playhead only
   (`Sequencer::handOff`, not `rewind`): ratchets armed on the last step keep running,
   the clock anchor keeps its period, and the advance from -1 lands on the new member's
@@ -644,3 +724,45 @@ persisted mask like `random_lanes`; the level is not persisted. The panel gained
 jack at x 160 and RWD / RND moved right to 216 / 256 (`scripts/generate_vx_drums_panels.py`).
 `tests/vx_drum_sequencer/tweak_ladder.cpp` prints the ladders for tuning by eye.
 
+---
+
+## 13. KIT CV and the RND jack (user requests, 2026-09-18)
+
+### 13.1 VX Drums: KIT CV
+
+A jack right of ACC (the three inputs re-centred at x 38.5 / 78.5 / 118.5 in the space
+left of the outputs plate), `KIT_CV_INPUT` appended last in the enum so older patches
+keep their cable ids. The law is MEM CV's (§7): 0-10 V in equal bands over the list the
+KIT menu shows, the seven factory kits in table order, then the user's library in its
+order, `kitBandFromVolts` in `VXDrumKit.hpp` (pinned in `tests/vx_drums/kit_test.cpp`),
+with a 0.05 V hysteresis at a crossing so a voltage on a boundary cannot flip kits every
+frame, each flip possibly decoding sample files. The owner chose bands over 1 V per kit,
+and the whole list over factory kits only, knowing a patch that addresses a user kit by
+band is only portable to a machine with the same library.
+
+Threads: the audio thread publishes the jack (two atomics, every sample) and decides
+nothing; `serviceKitCv()` runs from the widget's `step()` and owns every kit decision,
+because `setKitState` re-syncs knob defaults and decodes samples. A band change applies
+the kit like a menu pick (overrides cleared) but pushes no history entry.
+
+**Unpatching returns to the user's own selection** (the owner's requirement, not the
+"stay where the CV left it" alternative), so that selection is a second persisted state:
+`manual_kit` / `manual_override`, recorded by every `setKitState` call that is not the
+CV's (menus, undo, patch load, Initialize). Persistence 1.4.0 keeps the root kit block
+as the EFFECTIVE kit, so a 1.3.0 plugin still loads the sound that was playing, and
+adds `"kit_cv_active"` plus `"manual_kit"` (the same kit block nested once). The kit
+block is now one helper pair, `kitBlockToJson` / `kitBlockFromJson`.
+
+### 13.2 VX Drum Sequencer: the RND jack
+
+A polyphonic trigger jack at x 296, right of RND, tied to the button by a 1.2 px rule
+(`hrule` in `panel_gen`), `RANDOM_INPUT` appended last. One `dsp::SchmittTrigger` per
+lane at the house thresholds. A **mono** cable is the button: its trigger raises the
+"as the button" request, which rewrites `random_lanes`. A **poly** cable addresses the
+lanes, channel c = lane c (1-6 the voices, 7 the accent), and an explicit lane is
+re-rolled whatever `random_lanes` says; channels beyond the cable's count never fire.
+`random_request` became a bit mask (bit l = lane l, bit 7 = as the button) drained by
+the widget's `step()` into one `randomizeMemory` call and one undo step per frame.
+Because `randomizeMemory` draws every lane whatever the mask (§7.2), a single-lane
+re-roll gives that lane exactly what a full randomize would have. On a chain member the
+jack randomizes that member's own memory: the read sits before the follower early-return.

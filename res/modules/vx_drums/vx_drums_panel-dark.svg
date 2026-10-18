@@ -19,7 +19,8 @@
   VARY (row 2), DRIVE (row 3), VOLUME (row 4).
   kit_display (363,18) 116 x 20 dark plate, rx 3, top right (findNamedRect; VXDrumsKitDisplay paints it);
   KIT label ink-centred at cx 348, baseline 30. The top-right screw square is x 465-480, y 0-15.
-  Jack row cy 346, labels at 324.7: TRIG 44 and ACC 84 (inputs, no plate); outputs on the #d2d2d3 plate
+  Jack row cy 346, labels at 324.7: TRIG 38.5, ACC 78.5, KIT 118.5 (inputs, no plate, centred left of the
+  plate; KIT = kit select CV, 2026-09-18); outputs on the #d2d2d3 plate
   at pitch 40: BD 177, SD 217, CP 257, PERC 297, CH 337, OH 377, L 417, R 457.
 -->
 <svg version="1.1" id="vx_drums_panel"
@@ -70,6 +71,7 @@
     <!-- re-inserted by scripts/generate_vx_drums_panels.py: the dark pass strips *_display ids, and this plate must stay dark in both themes -->
     <rect id="kit_display" x="363" y="18" width="116" height="20" rx="3" fill="#17171a"/>
     <!-- widget anchors: top-level, untransformed; PanelHelper reads the centre of each id (light file only) -->
+    
     
     
     
@@ -376,15 +378,20 @@
       <path transform="matrix(0.007292,0,0,0.007292,460.0391,287.0000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M576 -130H210V-286H576V-415H210V-570H576V-700H55V0H576Z"/>
     </g>
     <g id="label_trig" aria-label="TRIG">
-      <path transform="matrix(0.007292,0,0,0.007292,34.5760,324.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M384 -566H600V-700H15V-566H228V0H384Z"/>
-      <path transform="matrix(0.007292,0,0,0.007292,39.7479,324.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M210 -255H382C474 -255 499 -238 499 -159V0H654V-169C654 -291 621 -316 547 -328V-335C622 -347 654 -393 654 -497V-515C654 -651 590 -700 416 -700H55V0H210ZM383 -571C471 -571 499 -549 499 -478V-472C499 -405 471 -383 399 -383H210V-571Z"/>
-      <path transform="matrix(0.007292,0,0,0.007292,45.5469,324.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M210 -700H55V0H210Z"/>
-      <path transform="matrix(0.007292,0,0,0.007292,48.1667,324.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M383 10C608 10 706 -88 706 -319V-410H356V-281H550C550 -169 516 -124 390 -124H368C229 -124 200 -199 200 -327V-371C200 -498 229 -575 368 -575H385C469 -575 519 -551 536 -496H699C668 -647 563 -710 383 -710H370C143 -710 43 -611 43 -380V-319C43 -88 143 10 370 10H383Z"/>
+      <path transform="matrix(0.007292,0,0,0.007292,29.0760,324.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M384 -566H600V-700H15V-566H228V0H384Z"/>
+      <path transform="matrix(0.007292,0,0,0.007292,34.2479,324.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M210 -255H382C474 -255 499 -238 499 -159V0H654V-169C654 -291 621 -316 547 -328V-335C622 -347 654 -393 654 -497V-515C654 -651 590 -700 416 -700H55V0H210ZM383 -571C471 -571 499 -549 499 -478V-472C499 -405 471 -383 399 -383H210V-571Z"/>
+      <path transform="matrix(0.007292,0,0,0.007292,40.0469,324.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M210 -700H55V0H210Z"/>
+      <path transform="matrix(0.007292,0,0,0.007292,42.6667,324.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M383 10C608 10 706 -88 706 -319V-410H356V-281H550C550 -169 516 -124 390 -124H368C229 -124 200 -199 200 -327V-371C200 -498 229 -575 368 -575H385C469 -575 519 -551 536 -496H699C668 -647 563 -710 383 -710H370C143 -710 43 -611 43 -380V-319C43 -88 143 10 370 10H383Z"/>
     </g>
     <g id="label_acc" aria-label="ACC">
-      <path transform="matrix(0.007292,0,0,0.007292,75.4156,324.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M502 -700H268L12 0H178L235 -160H530L587 0H759ZM386 -570 485 -290H280L379 -570Z"/>
-      <path transform="matrix(0.007292,0,0,0.007292,81.4771,324.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M382 10C574 10 659 -66 691 -225H532C512 -153 464 -125 377 -125H364C225 -125 200 -202 200 -329V-371C200 -498 225 -575 364 -575H377C464 -575 512 -547 532 -475H691C659 -634 574 -710 382 -710H359C133 -710 43 -612 43 -381V-319C43 -88 133 10 359 10H382Z"/>
-      <path transform="matrix(0.007292,0,0,0.007292,87.4583,324.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M382 10C574 10 659 -66 691 -225H532C512 -153 464 -125 377 -125H364C225 -125 200 -202 200 -329V-371C200 -498 225 -575 364 -575H377C464 -575 512 -547 532 -475H691C659 -634 574 -710 382 -710H359C133 -710 43 -612 43 -381V-319C43 -88 133 10 359 10H382Z"/>
+      <path transform="matrix(0.007292,0,0,0.007292,69.9156,324.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M502 -700H268L12 0H178L235 -160H530L587 0H759ZM386 -570 485 -290H280L379 -570Z"/>
+      <path transform="matrix(0.007292,0,0,0.007292,75.9771,324.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M382 10C574 10 659 -66 691 -225H532C512 -153 464 -125 377 -125H364C225 -125 200 -202 200 -329V-371C200 -498 225 -575 364 -575H377C464 -575 512 -547 532 -475H691C659 -634 574 -710 382 -710H359C133 -710 43 -612 43 -381V-319C43 -88 133 10 359 10H382Z"/>
+      <path transform="matrix(0.007292,0,0,0.007292,81.9583,324.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M382 10C574 10 659 -66 691 -225H532C512 -153 464 -125 377 -125H364C225 -125 200 -202 200 -329V-371C200 -498 225 -575 364 -575H377C464 -575 512 -547 532 -475H691C659 -634 574 -710 382 -710H359C133 -710 43 -612 43 -381V-319C43 -88 133 10 359 10H382Z"/>
+    </g>
+    <g id="label_kit_cv" aria-label="KIT">
+      <path transform="matrix(0.007292,0,0,0.007292,111.8443,324.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M210 -211 306 -308H313L522 0H711L424 -421L703 -700H509L216 -402H210V-700H55V0H210Z"/>
+      <path transform="matrix(0.007292,0,0,0.007292,117.7599,324.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M210 -700H55V0H210Z"/>
+      <path transform="matrix(0.007292,0,0,0.007292,120.3797,324.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M384 -566H600V-700H15V-566H228V0H384Z"/>
     </g>
     <g id="label_bd" aria-label="BD">
       <path transform="matrix(0.007292,0,0,0.007292,171.4099,324.7000)" style="fill:#f3eee8;fill-opacity:0.952941" d="M655 -207C655 -302 619 -349 534 -358V-364C614 -375 646 -423 646 -514V-527C646 -645 587 -700 414 -700H55V0H424C592 0 655 -59 655 -187ZM383 -571C466 -571 491 -552 491 -491V-487C491 -424 466 -413 390 -413H210V-571ZM381 -298C474 -298 500 -286 500 -218V-211C500 -148 473 -129 384 -129H210V-298Z"/>

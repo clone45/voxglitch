@@ -7,12 +7,12 @@ VX Drum Sequencer is a 16-step drum pattern sequencer built to sit under VX Drum
 ### Quick Start
 
 1. Stack the panels
-   - Place VX Drums directly above VX Drum Sequencer; both are 30 HP.
+   - Place VX Drums directly above VX Drum Sequencer; both are 33 HP.
    - Patch **TRIG** to the kit's **TRIG** (one polyphonic cable, six voices) and **ACC** to the kit's **ACC**.
 
 2. Clock it
    - Patch a clock into **CLK**: one pulse per step, so feed it sixteenths. There is no internal clock, so nothing plays until a clock arrives.
-   - Patch your clock module's reset output into **RST**. A reset makes the next clock play step 1, and a clock pulse on the same sample as the reset plays it immediately.
+   - Patch your clock module's reset output into **RST**. A reset puts the sequencer on step 1 and plays it; the next clock pulse is step 2. That is what VCV's SEQ3 and Impromptu Clocked expect, so the bar lands where the master says it does.
 
 3. Edit the beat
    - Memory 1 arrives with a starter beat: kick on the beats, closed hats on the eighths, a clap on 2 and 4, open hats pushing into 3 and 1, accents on 1 and 3.
@@ -25,8 +25,9 @@ VX Drum Sequencer is a 16-step drum pattern sequencer built to sit under VX Drum
 ### Inputs
 
 - **CLK** - Clock input, the only source of timing. One pulse = one step, a sixteenth at four beats to the bar. There is no clock division, so feed it sixteenths (a x16 ratio on a module like Clocked). A rising edge that reaches 2 V advances the pattern, and the line must fall back to 0.1 V before the next edge counts. Nothing plays until a pulse arrives, and unplugging the clock stops the pattern where it is.
-- **RST** - Reset. A rising edge cancels any hits still waiting to fire, rewinds the pattern and makes the *next* clock play step 1. See "Reset and the First Step" below for exactly what happens in each situation. The **RWD** button does the same thing.
+- **RST** - Reset. A rising edge cancels any hits still waiting to fire, puts the sequencer on step 1 and plays it at once; the *next* clock plays step 2. See "Reset and the First Step" below for exactly what happens in each situation. The **RWD** button does the same thing.
 - **TWK** - Tweak, 0-10 V. Evolves the pattern as it plays without changing what you drew: 0 V is the pattern as drawn, and each 1.25 V step up applies one more musical edit to every lane ticked in **Tweak settings** (see "Tweak" below). Unpatched, nothing is tweaked.
+- **RND jack** - The polyphonic trigger jack to the right of the **RND** button, tied to it by a short line. A trigger on a **mono** cable does what a press of the button does: a new beat into the playing memory, for the lanes ticked in **Randomize settings**. A **polyphonic** cable addresses the lanes one by one: a trigger on channel 1 re-rolls only the bass drum lane, 2 the snare, 3 the clap, 4 the percussion, 5 the closed hat, 6 the open hat, and 7 the accent lane, whatever Randomize settings say. Channels the cable does not carry never fire. So a clock divider into channel 5 re-rolls the hats every four bars while the kick you like stays put, and one gate into a mono cable is a "surprise me" button. Each lane draws the same hits a full randomize would have given it, so re-rolling one lane never changes the others. Triggers arriving in the same frame are one undo step.
 - **MEM** - Memory select CV, 0-10 V across the sixteen memories: 0 V is memory 1, every further 0.625 V moves up one, and 10 V is memory 16. While a cable is connected the CV owns the selection: the buttons lock, presses are ignored, and the lit button follows the CV. Unpatch it and the button you last pressed takes over again. A change of memory takes effect at the next step; hits already in flight finish, and if the new memory is shorter than the step you are on, the next step is step 1.
 
 ### Outputs
@@ -38,7 +39,7 @@ VX Drum Sequencer is a 16-step drum pattern sequencer built to sit under VX Drum
 
 - **1-16** - The memory buttons. Press one to choose the memory that plays and that the grid edits. The lit button is the memory playing right now; under MEM CV it follows the CV and presses are ignored. Right-click any button for Copy, Paste and Clear (see "Memories").
 - **RWD** - Rewind. Identical to a pulse at RST.
-- **RND** - Random. Writes a new beat into the memory that is playing right now, with a sensible role per lane: the kick on the downbeats (and always on step 1), snare and clap on the backbeat, the percussion lane only off the beat, closed hats busy on the eighths with sixteenth fills, open hats on the offbeat eighths, accents on 1 and 3 with the occasional push. It sprinkles in a few ratchets and keeps the memory's length. One undo step. By default it rewrites all seven lanes; **Randomize settings** in the right-click menu narrows that to the ones you tick, so you can re-roll just the hats and keep the kick you like.
+- **RND** - Random. Writes a new beat into the memory that is playing right now, with a sensible role per lane: the kick on the downbeats (and always on step 1), snare and clap on the backbeat, the percussion lane only off the beat, closed hats busy on the eighths with sixteenth fills, open hats on the offbeat eighths, accents on 1 and 3 with the occasional push. It sprinkles in a few ratchets and keeps the memory's length. One undo step. By default it rewrites all seven lanes; **Randomize settings** in the right-click menu narrows that to the ones you tick, so you can re-roll just the hats and keep the kick you like. The jack beside the button does the same from a trigger, and per lane from a polyphonic cable (see "Inputs").
 
 ### The Grid
 
@@ -51,7 +52,7 @@ The dark display is the pattern in the memory that is playing. Across the top is
 - **Mute** - Click a lane label to mute that lane; click again to unmute. A muted lane dims red and neither sounds nor pulses at TRIG. Muting AC removes the accent boost and the accent lamp. Mutes are global rather than part of a memory - they survive a memory change - and are saved with the patch.
 - **Ratchets** - Shift-click a lit voice pad to step it through `x2`, `x3`, `x4` and back to `Single`, or right-click it and pick one from the menu. The step subdivides into that many evenly spaced hits, each at the same strength as the step (accent included), and the pad splits into slivers so you can read the roll at a glance. A closed-hat ratchet re-chokes the open hat on every repeat. The accent lane has no ratchets. The sequencer measures the incoming clock's period to place the repeats, so the first pulse after connecting plays single hits and everything after subdivides correctly.
 - **Chance** - Right-click a lit pad and open **Chance** to give it a probability: 100 % (the default), 75, 50, 25, 10 or 0. Each time the step comes round the pad rolls once; a hit that fails its roll does not play, does not ratchet and does not flash its lane. A pad below 100 % draws dimmer the less likely it is, so a hit that only sometimes plays reads that way at a glance. The accent lane has chance too, for an accent that only sometimes lands. Chance is part of the memory, so it copies, pastes, exports and saves with the pattern; RND resets every pad it writes to 100 %. Like a ratchet, a pad's chance stays with the pad when you paint it off, so relighting it brings the same odds back. For finer control than the presets, turn on **Chance mode** (see "Right-Click on the Panel").
-- **Playhead** - A white outline surrounds the playing column, the red lamp above it chases, and a lane label flashes when its lane fires (AC flashes red). Before the first clock, and after a reset, no step is playing yet.
+- **Playhead** - A white outline surrounds the playing column, the red lamp above it chases, and a lane label flashes when its lane fires (AC flashes red). After loading a patch, and after a reset, the outline sits on step 1: that is the current step, and the next clock moves to step 2.
 
 ### Memories
 
@@ -64,15 +65,17 @@ Sixteen patterns live behind the numbered buttons. A memory is its grid - the se
 
 ### Reset and the First Step
 
-The sequencer keeps no position until something plays: after loading a patch, a reset or a rewind it is "before step 1", and the first thing that fires is step 1. In plain words:
+VX Drum Sequencer follows the VCV Rack reset convention - the one VCV's own SEQ3, Impromptu Clocked and the sequencers built to match them use - so it stays in step with them through resets and transport starts. In plain words:
 
-- **A reset makes the next clock play step 1.** Nothing fires at the instant of the reset itself; whatever was waiting to fire - the rest of a ratchet - is cancelled, and the voices ring out.
-- **A clock pulse arriving on the same sample as the reset plays step 1 immediately.** The clock is checked after the reset, so a master that raises its reset and its clock together - a Clocked-style master, or Timeline's loop wrap with RST patched - lands step 1 exactly on the downbeat, never one pulse late.
-- **A reset while the clock line is still high does not fire.** The line has to fall and rise again, and that rise plays step 1.
-- **A mid-bar reset from a clock master:** if you press reset on your clock module part-way through a bar and only its clock is patched here, VX Drum Sequencer waits for the master's next pulse and plays step 1 on it. So for resets to land where you press them, patch the master's reset output into **RST** as well as its clock into **CLK**. A master that restarts its own clock on reset then delivers the two together, and step 1 plays at once.
-- Ratchets keep using the clock period measured before the reset, so a ratchet on step 1 still subdivides sensibly; the period is measured afresh on the pulse after that.
+- **A reset puts the sequencer on step 1 and plays it.** Step 1's hits fire at the instant of the reset, ratchets included; whatever was still waiting to fire from before - the rest of a ratchet - is cancelled first, and the voices ring out.
+- **The next clock is step 2.** Step 1 has already played, so the clock pulse after a reset advances.
+- **Clock pulses arriving within 1 ms of a reset are ignored.** A clock master that restarts its own clock on reset raises the two together, or a sample apart when one of them passes through another module on the way; that pulse belongs to the reset, and without the window step 1 would be followed by step 2 in the same instant. The VCV Voltage Standards ask every sequencer to do this. The one thing to avoid: routing the reset through a utility module but not the clock, because then the clock arrives a sample *before* the reset, the old step fires, and step 1 follows it. Route both the same way and it cannot happen.
+- **A reset while the clock line is still high** plays step 1 at the reset, and the line's next rise is step 2. This is what makes stop / reset / run land with Impromptu Clocked at its defaults: Clocked holds its clock outputs high when it is reset while stopped and sends no pulse when it starts again, precisely because it expects the reset to have put every sequencer on step 1. VX Drum Sequencer does, so beat 2 is step 2 and the bar plays as drawn.
+- **A mid-bar reset** plays step 1 at once and gives it the rest of the current step; the master's next pulse is step 2.
+- **Loading a patch counts as a reset, without the hit:** step 1 is current and shown, nothing plays, and the first clock plays step 2. A master that sends a reset when it starts - Clocked does - plays step 1 then, so the bar begins with step 1 after all.
+- Ratchets keep using the clock period measured before the reset, so a ratchet on step 1 still subdivides sensibly; the period is measured afresh on the second pulse after the reset.
 
-There is no window after a reset during which clock pulses are ignored, and there is no need for one: a clock pulse only ever counts on its rising edge, so a line that is still high cannot fire a phantom step.
+Feed **CLK** and **RST** from the same master and every reset lands on the downbeat.
 
 ### Tweak
 
@@ -94,9 +97,9 @@ Place two or more VX Drum Sequencers side by side, touching, and they play one a
 - **Each member plays its own memory from step 1 to its length**, then hands off to the sequencer on its right. The last one hands back to the head. Two sequencers at length 16 give a 32-step pattern; three give 48; members can have different lengths.
 - **Every member still chooses what it contributes.** Its memory buttons, its **MEM** CV input and its lane mutes all work as before, so a MEM CV into a member changes which of its sixteen memories plays in its slot of the chain. The trigger length is the head's.
 - **The grid shows the playhead only while that member is playing**, and its lanes flash only for its own hits, so a chain reads left to right as the pattern moves through it.
-- **Reset and RWD on the head return the chain to the head's step 1.** A member's own RWD button does nothing while it is a member.
+- **Reset and RWD on the head return the chain to the head's step 1 and play it**; the next clock is the head's step 2. A member's own RWD button does nothing while it is a member.
 - **The hand-off is seamless.** The clock that would have wrapped the member instead plays the next member's step 1, and ratchets on a member's last step finish while the next member starts.
-- Adding a sequencer to the right of a running chain adds it at the end; removing one restarts the chain from the head. Moving a sequencer away from the chain makes it a lone sequencer again, ready to be patched on its own. The right-click menu shows the sequencer's place in a chain.
+- Adding a sequencer to the right of a running chain adds it at the end; removing the member that is playing restarts the chain from the head's step 1 (without playing it), while removing any other member just shortens the chain. Moving a sequencer away from the chain makes it a lone sequencer again, ready to be patched on its own. The right-click menu shows the sequencer's place in a chain.
 
 Because the chain is by placement, drop a member out of the row to audition it alone, then push it back into place.
 

@@ -51,6 +51,7 @@
 // worst be one sample late — the accepted house pattern for small shared
 // fields (PianoRoll.hpp:102-105). No mutex on the audio path.
 
+#include <atomic>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
@@ -137,6 +138,7 @@ struct VXDrums : VoxglitchModule
         DECAY_CV_INPUT,
         SHAPE_CV_INPUT,
         LEVEL_CV_INPUT,
+        KIT_CV_INPUT,        // 0-10 V in bands over the kit list (factory kits, then the user's library); appended last so older patches keep their cable ids
         NUM_INPUTS
     };
     enum OutputIds {
@@ -176,6 +178,25 @@ struct VXDrums : VoxglitchModule
     // ── Kit state (UI writes, audio reads; see the header comment) ──
     vx_drums::KitState kit = vx_drums::KitState::factory(vx_drums::KIT_HOUSE);
     vx_drums::ModelChoice model_override[vx_drums::COLUMNS];   // none() each, set in the constructor
+
+    // ── KIT CV (2026-09-18) ──
+    // The audio thread only PUBLISHES the jack (two atomics, every sample);
+    // every kit decision is made on the UI thread in serviceKitCv(), called
+    // from the widget's step(), because a kit change decodes sample files and
+    // re-syncs knob defaults (setKitState). While the jack is patched the CV
+    // owns the kit: 0-10 V in bands over the factory kits followed by the
+    // user's library (kitBandFromVolts, VXDrumKit.hpp), applied on a band
+    // change only and without a history entry (like MEM CV on the sequencer).
+    // `manual_kit` / `manual_override` are what the USER last chose (menus,
+    // undo, patch load: every setKitState call that is not the CV's), so
+    // unpatching the jack returns to that selection. Both are persisted.
+    std::atomic<bool> kit_cv_connected{false};
+    std::atomic<float> kit_cv_volts{0.f};
+    bool kit_cv_active = false;            // the CV owned the kit on the last frame
+    int kit_cv_band = -1;                  // the band applied last (-1 = none yet)
+    bool kit_cv_applying = false;          // true only inside serviceKitCv's setKitState
+    vx_drums::KitState manual_kit = vx_drums::KitState::factory(vx_drums::KIT_HOUSE);
+    vx_drums::ModelChoice manual_override[vx_drums::COLUMNS];
 
     // ── Sample files (UI thread owns; audio reads through Voices) ──
     // One slot per column: the file the column's SampleModel is playing, or
@@ -226,6 +247,7 @@ struct VXDrums : VoxglitchModule
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
         noOverrides(model_override);
+        noOverrides(manual_override);
 
         // Sound knobs: normalized, defaulting to the House kit's model for the
         // column (DESIGN-KITS.md §1 table). The label/unit strings here are
@@ -259,6 +281,7 @@ struct VXDrums : VoxglitchModule
         configInput(DECAY_CV_INPUT, "Decay CV (poly: 1-6 = voice column; 10 V = full knob range)");
         configInput(SHAPE_CV_INPUT, "Shape CV (poly: 1-6 = voice column, 7 = drive; 10 V = full knob range)");
         configInput(LEVEL_CV_INPUT, "Level CV (poly: 1-6 = voice column, 7 = volume; 10 V = full knob range)");
+        configInput(KIT_CV_INPUT,   "Kit select CV (0-10 V in equal bands over the kits, factory then saved; overrides the menu while patched)");
 
         configOutput(LEFT_OUTPUT,  "Mix left");
         configOutput(RIGHT_OUTPUT, "Mix right");
@@ -423,6 +446,63 @@ struct VXDrums : VoxglitchModule
         }
         syncKnobDefaults();
         syncSamples();
+
+        // Everything but the CV's own apply is the user's choice: remember it
+        // so unpatching KIT CV can return to it.
+        if (!kit_cv_applying)
+        {
+            manual_kit = kit;
+            for (int c = 0; c < vx_drums::COLUMNS; c++) manual_override[c] = model_override[c];
+        }
+    }
+
+    // UI thread, every frame (the widget's step()). Takes the jack the audio
+    // thread published and owns every kit decision the CV implies.
+    void serviceKitCv()
+    {
+        const bool connected = kit_cv_connected.load();
+        if (!connected)
+        {
+            if (kit_cv_active)
+            {
+                // Unpatched: back to what the user had chosen.
+                kit_cv_active = false;
+                kit_cv_band = -1;
+                setKitState(manual_kit, manual_override);
+            }
+            return;
+        }
+
+        if (!kit_cv_active)
+        {
+            kit_cv_active = true;
+            kit_cv_band = -1;
+        }
+
+        // The list the voltage addresses: the factory kits in table order,
+        // then the user's saved kits in library order. The library can grow
+        // or shrink while patched (Save kit as / Manage kits); a band index
+        // is re-derived from the current size every frame, never stored by
+        // position across frames except as the hysteresis reference.
+        const vx_drums::KitLibrary& lib = vx_drums::kitStore().library;
+        const int n = vx_drums::NUM_KITS + (int)lib.kits.size();
+        const int band = vx_drums::kitBandFromVolts(kit_cv_volts.load(), n, kit_cv_band);
+        if (band < 0 || band == kit_cv_band) return;
+        kit_cv_band = band;
+
+        vx_drums::KitState chosen = (band < vx_drums::NUM_KITS)
+            ? vx_drums::KitState::factory((vx_drums::KitId)band)
+            : lib.kits[band - vx_drums::NUM_KITS].kit;
+        if (chosen == kit) return;
+
+        // A CV kit change is a fresh start like a menu one (overrides cleared),
+        // but it is the CV's doing: no history entry, and the user's own
+        // selection is left untouched for the unpatch.
+        vx_drums::ModelChoice none[vx_drums::COLUMNS];
+        noOverrides(none);
+        kit_cv_applying = true;
+        setKitState(chosen, none);
+        kit_cv_applying = false;
     }
 
     // ── Sample loading (UI thread) ───────────────────────────────────────────
@@ -549,13 +629,20 @@ struct VXDrums : VoxglitchModule
     {
         vx_drums::ModelChoice none[vx_drums::COLUMNS];
         noOverrides(none);
-        setKitState(vx_drums::KitState::factory(vx_drums::KIT_HOUSE), none);
+        kit_cv_active = false;
+        kit_cv_band = -1;
+        setKitState(vx_drums::KitState::factory(vx_drums::KIT_HOUSE), none);   // also resets manual_kit
         stereo_panning = true;
         Module::onReset(e);
     }
 
     void process(const ProcessArgs& args) override
     {
+        // KIT CV: publish the jack for serviceKitCv() (UI thread). Two atomic
+        // stores; the decision is not made here.
+        kit_cv_connected.store(inputs[KIT_CV_INPUT].isConnected());
+        kit_cv_volts.store(inputs[KIT_CV_INPUT].getVoltage());
+
         // (0) Models → voices. setModel is allocation-free and re-pushes the
         // column's stored knobs into the new model, so nothing else is owed.
         for (int c = 0; c < vx_drums::COLUMNS; c++)
@@ -623,10 +710,11 @@ struct VXDrums : VoxglitchModule
     // Params are Rack's to save. Ours: the kit, RESOLVED (uuid, name, the six
     // models, custom flag), and the six overrides, models BY UUID (frozen in
     // VXDrumVoices.hpp; never the enum value or the name). Shape:
-    //   {"version":"1.3.0","kit":"<uuid>","kit_name":"...","kit_custom":false,
+    //   {"version":"1.4.0","kit":"<uuid>","kit_name":"...","kit_custom":false,
     //    "kit_models":["<model uuid>" ×6],"kit_samples":["<path>"|"" ×6],
     //    "model_overrides":["<uuid>"|"" ×6],"override_samples":["<path>"|"" ×6],
-    //    "stereo_panning":true}
+    //    "stereo_panning":true,
+    //    "kit_cv_active":false,"manual_kit":{ the kit/kit_*/model_overrides/override_samples keys again }}
     // A factory uuid is re-resolved from the table on load (so a factory kit
     // retuned by an update wins); any other uuid is a user kit and loads from
     // the stored name and models, whether or not this machine's library has
@@ -636,60 +724,57 @@ struct VXDrums : VoxglitchModule
     // the patch (it sees an unknown model uuid and falls back to House).
     // Written with json_object_set_new / json_array_append_new so ownership
     // transfers and no decref is owed (PianoRoll.hpp:711-717).
-    json_t* dataToJson() override
+    // The kit block: the same keys at the root (the shape above, 1.1.0-1.3.0
+    // compatible) and, since 1.4.0, nested once more under "manual_kit" for the
+    // user's own selection while KIT CV owns the kit. Ownership transfers to
+    // `into` (json_object_set_new).
+    static void kitBlockToJson(json_t* into, const vx_drums::KitState& k, const vx_drums::ModelChoice overrides[vx_drums::COLUMNS])
     {
-        json_t* json_root = json_object();
-        json_object_set_new(json_root, "version", json_string("1.3.0"));
-        json_object_set_new(json_root, "kit", json_string(kit.uuid.c_str()));
-        json_object_set_new(json_root, "kit_name", json_string(kit.name.c_str()));
-        json_object_set_new(json_root, "kit_custom", json_boolean(kit.custom));
+        json_object_set_new(into, "kit", json_string(k.uuid.c_str()));
+        json_object_set_new(into, "kit_name", json_string(k.name.c_str()));
+        json_object_set_new(into, "kit_custom", json_boolean(k.custom));
+        json_object_set_new(into, "kit_models", vx_drums::modelsToJson(k.models));
+        json_object_set_new(into, "kit_samples", vx_drums::samplePathsToJson(k.models));
 
-        json_object_set_new(json_root, "kit_models", vx_drums::modelsToJson(kit.models));
-        json_object_set_new(json_root, "kit_samples", vx_drums::samplePathsToJson(kit.models));
-
-        json_t* overrides = json_array();
+        json_t* ov_json = json_array();
         json_t* override_samples = json_array();
         for (int c = 0; c < vx_drums::COLUMNS; c++)
         {
-            const vx_drums::ModelChoice& ov = model_override[c];
-            json_array_append_new(overrides, json_string(ov.isNone() ? "" : vx_drums::modelSpec(ov.id).uuid));
+            const vx_drums::ModelChoice& ov = overrides[c];
+            json_array_append_new(ov_json, json_string(ov.isNone() ? "" : vx_drums::modelSpec(ov.id).uuid));
             json_array_append_new(override_samples, json_string(ov.isSample() ? ov.sample_path.c_str() : ""));
         }
-        json_object_set_new(json_root, "model_overrides", overrides);
-        json_object_set_new(json_root, "override_samples", override_samples);
-        json_object_set_new(json_root, "stereo_panning", json_boolean(stereo_panning));
-        return json_root;
+        json_object_set_new(into, "model_overrides", ov_json);
+        json_object_set_new(into, "override_samples", override_samples);
     }
 
-    // Clear first (this also runs on paste / preset load into a populated
-    // module), probe every key, and let an unknown uuid fall back: kit →
-    // House, override → none. A 1.0.0 patch has neither key and loads as House.
-    void dataFromJson(json_t* json_root) override
+    // Probe every key and let an unknown uuid fall back: kit -> House,
+    // override -> none. An object with neither key yields House and no
+    // overrides (a 1.0.0 patch).
+    static void kitBlockFromJson(json_t* from, vx_drums::KitState& out_kit, vx_drums::ModelChoice overrides[vx_drums::COLUMNS])
     {
-        if (!json_root) return;
-
-        vx_drums::KitState new_kit = vx_drums::KitState::factory(vx_drums::KIT_HOUSE);
-        vx_drums::ModelChoice overrides[vx_drums::COLUMNS];
+        out_kit = vx_drums::KitState::factory(vx_drums::KIT_HOUSE);
         noOverrides(overrides);
+        if (!from) return;
 
-        json_t* kit_json = json_object_get(json_root, "kit");
+        json_t* kit_json = json_object_get(from, "kit");
         if (json_is_string(kit_json) && json_string_value(kit_json)[0] != '\0')
         {
             const std::string uuid = json_string_value(kit_json);
-            if (!vx_drums::factoryKitFromUuid(uuid, new_kit))
+            if (!vx_drums::factoryKitFromUuid(uuid, out_kit))
             {
                 // A user kit: everything it needs travels in the patch.
-                new_kit.uuid = uuid;
-                new_kit.custom = true;
-                json_t* name_json = json_object_get(json_root, "kit_name");
-                new_kit.name = json_is_string(name_json) ? json_string_value(name_json) : "Custom kit";
-                vx_drums::modelsFromJson(json_object_get(json_root, "kit_models"),
-                                         json_object_get(json_root, "kit_samples"), new_kit.models);
+                out_kit.uuid = uuid;
+                out_kit.custom = true;
+                json_t* name_json = json_object_get(from, "kit_name");
+                out_kit.name = json_is_string(name_json) ? json_string_value(name_json) : "Custom kit";
+                vx_drums::modelsFromJson(json_object_get(from, "kit_models"),
+                                         json_object_get(from, "kit_samples"), out_kit.models);
             }
         }
 
-        json_t* overrides_json = json_object_get(json_root, "model_overrides");
-        json_t* override_samples_json = json_object_get(json_root, "override_samples");
+        json_t* overrides_json = json_object_get(from, "model_overrides");
+        json_t* override_samples_json = json_object_get(from, "override_samples");
         if (json_is_array(overrides_json))
         {
             size_t n = json_array_size(overrides_json);
@@ -712,8 +797,49 @@ struct VXDrums : VoxglitchModule
                 overrides[c] = vx_drums::ModelChoice(id, path);   // setKitState drops a sample with no file
             }
         }
+    }
 
+    // 1.4.0 adds "kit_cv_active" and "manual_kit" (the kit block again). The
+    // root block stays the EFFECTIVE kit, so a 1.3.0 plugin loads the sound
+    // that was playing; a 1.4.0 plugin restores the CV takeover as well.
+    json_t* dataToJson() override
+    {
+        json_t* json_root = json_object();
+        json_object_set_new(json_root, "version", json_string("1.4.0"));
+        kitBlockToJson(json_root, kit, model_override);
+        json_object_set_new(json_root, "stereo_panning", json_boolean(stereo_panning));
+
+        json_object_set_new(json_root, "kit_cv_active", json_boolean(kit_cv_active));
+        json_t* manual = json_object();
+        kitBlockToJson(manual, manual_kit, manual_override);
+        json_object_set_new(json_root, "manual_kit", manual);
+        return json_root;
+    }
+
+    // Clear first (this also runs on paste / preset load into a populated
+    // module). The root block is applied through setKitState, which records
+    // it as the manual selection; a "manual_kit" block then replaces that
+    // record, and "kit_cv_active" restores the takeover so the next frame's
+    // serviceKitCv() either keeps following the jack or, if the cable did
+    // not come back, returns to the manual kit.
+    void dataFromJson(json_t* json_root) override
+    {
+        if (!json_root) return;
+
+        vx_drums::KitState new_kit;
+        vx_drums::ModelChoice overrides[vx_drums::COLUMNS];
+        kitBlockFromJson(json_root, new_kit, overrides);
+        kit_cv_active = false;
+        kit_cv_band = -1;
         setKitState(new_kit, overrides);
+
+        json_t* manual_json = json_object_get(json_root, "manual_kit");
+        if (json_is_object(manual_json))
+        {
+            kitBlockFromJson(manual_json, manual_kit, manual_override);
+            json_t* active_json = json_object_get(json_root, "kit_cv_active");
+            kit_cv_active = json_is_boolean(active_json) && json_boolean_value(active_json);
+        }
 
         json_t* pan_json = json_object_get(json_root, "stereo_panning");
         stereo_panning = json_is_boolean(pan_json) ? json_boolean_value(pan_json) : true;

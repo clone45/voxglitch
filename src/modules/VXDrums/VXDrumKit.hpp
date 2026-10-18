@@ -28,6 +28,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -115,6 +116,26 @@ struct KitState
     }
     bool operator!=(const KitState& o) const { return !(*this == o); }
 };
+
+// KIT CV (2026-09-18, a user request): 0..10 V spread over the kit list in
+// bands, the MEM CV law (VXDrumSequencer.hpp): band = floor(v / 10 * n),
+// clamped. `last` is the band chosen last time (-1 = none): a change is only
+// taken once the voltage is `hysteresis` volts past the boundary it crosses,
+// so a CV parked on a boundary cannot flip kits every frame (each flip may
+// decode sample files). n <= 0 gives -1.
+inline int kitBandFromVolts(float volts, int n, int last, float hysteresis = 0.05f)
+{
+    if (n <= 0) return -1;
+    int band = (int)std::floor(volts / 10.f * (float)n);
+    if (band < 0) band = 0;
+    if (band >= n) band = n - 1;
+    if (last >= 0 && last < n && band != last)
+    {
+        const float boundary = 10.f / (float)n * (float)(band > last ? band : last);
+        if (std::fabs(volts - boundary) < hysteresis) return last;
+    }
+    return band;
+}
 
 // A factory kit by uuid, or `fallback` when the uuid is not one.
 inline bool factoryKitFromUuid(const std::string& uuid, KitState& out)

@@ -73,7 +73,7 @@ struct ClockFollower {
 
 // The playhead. Knows nothing about lanes, only length.
 struct Playhead {
-    int position = -1;                     // -1 = nothing played yet
+    int position = -1;                     // -1 = nothing played yet   [2026-09-16: now 0 after load and reset (step 1 current); -1 only after a hand-off. See §7 and rack-port-design.md §4]
     int advance(int length);               // returns the step to fire
     void rewind();
 };
@@ -132,7 +132,10 @@ the caller passes*, not a change inside the engine. The hand-off rule ("after
 the active module's last step, the next module's step 1 on the next clock")
 becomes a few lines in the head's adapter, and the first-step convention the
 module already documents (advance-then-play from -1) applies unchanged at
-each hand-off because `Playhead::rewind()` is what a hand-off calls.
+each hand-off because `Playhead::rewind()` is what a hand-off calls. *[2026-09-16:
+the module's first-step convention is now step 1 current after load and after a
+reset, with -1 only between a hand-off and the next clock; the hand-off itself keeps
+the -1-then-advance shape described here. See §7 and `rack-port-design.md` §4.]*
 
 ### Why this makes the code cleaner regardless
 
@@ -305,7 +308,11 @@ without them. *[Written: 113 + 29 + 27 checks, all passing.]*
   untouched; edits on a follower stay local to that follower's bank.
 - The clock/reset semantics in the design record. The first-step convention,
   the no-ignore-window rule, and the period measurement move into named
-  objects but keep their behaviour and their comments.
+  objects but keep their behaviour and their comments. *[Overtaken on
+  2026-09-16: the reset rule moved to the VCV standard - step 1 current and
+  played at the reset, a 1 ms clock-ignore window, the next clock is step 2;
+  `rack-port-design.md` §4. The hand-off keeps the -1-then-advance shape this
+  document relies on.]*
 - The `VoxglitchModule` base, the `PanelHelper` marker contract, the grid
   widget's geometry and paint gesture.
 

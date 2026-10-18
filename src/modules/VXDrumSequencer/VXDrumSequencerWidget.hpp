@@ -54,6 +54,8 @@ struct VXDrumSequencerWidget : ModuleWidget
             { "mem_input", VXDrumSequencer::MEM_CV_INPUT },
             { "twk_input", VXDrumSequencer::TWEAK_INPUT  },
         };
+        // The RND jack is poly (channel = lane), so it gets the poly port like TRIG.
+        addInput(createInputCentered<VoxglitchPolyPort>(panelHelper.findNamed("rnd_input"), module, VXDrumSequencer::RANDOM_INPUT));
         for (int i = 0; i < 4; i++)
         {
             addInput(createInputCentered<VoxglitchInputPort>(panelHelper.findNamed(INS[i].id), module, INS[i].pid));
@@ -101,21 +103,30 @@ struct VXDrumSequencerWidget : ModuleWidget
         ModuleWidget::step();
 
         VXDrumSequencer* m = dynamic_cast<VXDrumSequencer*>(this->module);
-        if (m && m->random_request.exchange(false))
+        if (m)
         {
-            randomizeCurrentMemory(m);
+            const int request = m->random_request.exchange(0);
+            if (request)
+            {
+                // "As the button" means the lanes chosen in Randomize settings;
+                // an explicit lane from a poly channel is randomized whatever
+                // the settings say. Both in one frame make one undo step.
+                uint8_t lanes = (uint8_t)(request & 0x7F);
+                if (request & VXDrumSequencer::RANDOM_AS_BUTTON) lanes |= m->random_lanes;
+                if (lanes) randomizeCurrentMemory(m, lanes);
+            }
         }
     }
 
     // A new beat into the CURRENT (effective) memory — the same slot the grid
     // shows and edits — as one undo step (vxdrums-random.js; DESIGN §4.6).
-    void randomizeCurrentMemory(VXDrumSequencer* m)
+    void randomizeCurrentMemory(VXDrumSequencer* m, uint8_t lanes)
     {
         if (!m) return;
 
         vx_drum_sequencer::Bank b = m->bankCopy();
         vx_drum_sequencer::randomizeMemory(b.memories[rack::math::clamp(m->report.slot, 0, vx_drum_sequencer::SLOTS - 1)],
-                                           m->random_lanes);
+                                           lanes);
         vx_drum_sequencer_ui::commitBankEdit(m, "random pattern", b, m->mute);
     }
 
