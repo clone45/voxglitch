@@ -48,3 +48,4 @@ extern Model *modelXY;
 extern Model *modelTimeline;
 extern Model *modelVXDrums;
 extern Model *modelVXDrumSequencer;
+extern Model *modelEuclid;

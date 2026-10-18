@@ -250,6 +250,13 @@
         "description": "16-step, six-lane trigger sequencer with an accent lane, ratchets, sixteen pattern memories with CV select, a randomize trigger that can re-roll one lane per poly channel, and an external clock input with reset. Drives VX Drums over one poly trigger cable plus an accent cable. The bottom half of the VX Drum Machine.",
         "tags": ["Drum", "Sequencer"],
         "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/vx-drum-sequencer/user_manual.md"
+    },
+    {
+        "slug": "euclid",
+        "name": "Euclid",
+        "description": "Euclidean rhythm sequencer: hits spread as evenly as possible over up to 32 steps, rotated, stepped by an external clock with reset, with a trigger output. Three CV inputs with attenuverters for hits, steps and rotation, and a ring display that shows the live pattern and rotates it when dragged.",
+        "tags": ["Sequencer"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/euclid/user_manual.md"
     }
   ]
 }

@@ -47,5 +47,6 @@ void init(Plugin* p) {
   p->addModel(modelTimeline);
   p->addModel(modelVXDrums);
   p->addModel(modelVXDrumSequencer);
+  p->addModel(modelEuclid);
 
 }

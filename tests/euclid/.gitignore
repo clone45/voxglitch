@@ -1,0 +1,4 @@
+# Compiled test binaries — built on demand, never committed.
+pattern_test
+engine_test
+seq3_parity_test

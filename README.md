@@ -10,6 +10,7 @@ Modules for VCV Rack.  My apologies if I fall behind on the documentation.
 * [Digital Programmer](docs/modules/digital-programmer/user_manual.md)
 * [Digital Sequencer](docs/modules/digital-sequencer/user_manual.md)
 * [Digital Sequencer XP](docs/modules/digital-sequencer-xp/user_manual.md)
+* [Euclid](docs/modules/euclid/user_manual.md)
 * [Ghosts](docs/modules/ghosts/user_manual.md)
 * [Grain Engine MK2](docs/modules/grain-engine-mk2/user_manual.md)
 * [Grain Engine MK2 Expander](docs/modules/grain-engine-mk2-expander/user_manual.md)
