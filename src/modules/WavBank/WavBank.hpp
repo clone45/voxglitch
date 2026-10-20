@@ -190,7 +190,7 @@ struct WavBank : VoxglitchSamplerModule
 				{
 					playback = true;
 					declick_filter.trigger();
-					selected_sample_player->trigger(SAMPLE_START_POSITION, loop);
+					selected_sample_player->trigger(SAMPLE_START_POSITION);
 				}
 			}
 			else if (trig_input_response_mode == GATE)
@@ -203,7 +203,7 @@ struct WavBank : VoxglitchSamplerModule
 					if (playback == false)
 					{
 						playback = true;
-						selected_sample_player->trigger(SAMPLE_START_POSITION, loop); // TODO: May have to come back to this
+						selected_sample_player->trigger(SAMPLE_START_POSITION);
 						declick_filter.trigger();
 					}
 				}
@@ -223,6 +223,9 @@ struct WavBank : VoxglitchSamplerModule
 
 		if (playback)
 		{
+			// Store previous playback position before stepping
+			previousPlaybackPosition = selected_sample_player->playback_position;
+
 			float left_audio;
 			float right_audio;
 
@@ -234,6 +237,65 @@ struct WavBank : VoxglitchSamplerModule
 			outputs[WAV_RIGHT_OUTPUT].setVoltage(right_audio * GAIN);
 
 			selected_sample_player->step(pitch, SAMPLE_START_POSITION, SAMPLE_END_POSITION, loop);
+
+			// Detect end of sample (works in both loop and non-loop modes)
+			if (selected_sample_player->sample.loaded)
+			{
+				bool reached_end = false;
+
+				if (loop)
+				{
+					// Playback only moves forward, so a backwards jump means the
+					// position wrapped around to the start of the loop.
+					reached_end = selected_sample_player->playing && (selected_sample_player->playback_position < previousPlaybackPosition);
+				}
+				else
+				{
+					// In non-loop mode, detect when sample stops playing
+					reached_end = !selected_sample_player->playing && previousPlaybackState;
+				}
+
+				if (reached_end)
+				{
+					endOfSamplePulse.trigger(0.01f);
+
+					// Don't auto-increment when CV is controlling sample selection
+					if (auto_increment_on_completion && !inputs[WAV_INPUT].isConnected())
+					{
+						incrementSampleSelection();
+					}
+				}
+			}
+
+			previousPlaybackState = sample_players[selected_sample_slot].playing;
 		}
+
+		// Process the pulse generator and output the trigger
+		bool endPulse = endOfSamplePulse.process(args.sampleTime);
+		outputs[END_OF_SAMPLE_OUTPUT].setVoltage(endPulse ? 10.0f : 0.0f);
+	}
+
+private:
+	void incrementSampleSelection()
+	{
+		unsigned int number_of_samples = sample_players.size();
+		if (number_of_samples == 0) return;
+
+		// Calculate next sample index with wrap-around
+		unsigned int next_sample = (selected_sample_slot + 1) % number_of_samples;
+
+		// Move the WAV knob so that process() reads back the new selection.
+		// The knob ranges from 0.0 to 1.0.
+		float knob_value = (number_of_samples > 1) ? (float)next_sample / (float)(number_of_samples - 1) : 0.0f;
+		params[WAV_KNOB].setValue(knob_value);
+
+		sample_players[selected_sample_slot].stop();
+		selected_sample_slot = next_sample;
+
+		// Start playback of the new sample
+		sample_players[selected_sample_slot].trigger(SAMPLE_START_POSITION);
+		playback = true;
+
+		declick_filter.trigger();
 	}
 };
