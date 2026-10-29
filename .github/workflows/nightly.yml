@@ -1,0 +1,101 @@
+name: Nightly
+
+# Rebuilds master on all platforms each night and publishes the plugins to a
+# single rolling "nightly" pre-release, so users can grab the newest work
+# without a GitHub login (Actions artifacts need one, and expire in 30 days).
+#
+# The release is updated in place rather than deleted and recreated: creating
+# a release notifies everyone watching the repo, which would happen nightly.
+
+on:
+  schedule:
+    - cron: '0 7 * * *'   # 07:00 UTC = midnight Pacific (PDT), 11pm PST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nightly
+  cancel-in-progress: false
+
+env:
+  NIGHTLY_TAG: nightly
+
+jobs:
+  check:
+    name: Anything new?
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.compare.outputs.changed }}
+    steps:
+      - id: compare
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          last=$(gh api "repos/${{ github.repository }}/git/ref/tags/$NIGHTLY_TAG" -q .object.sha 2>/dev/null || true)
+          echo "Last nightly: ${last:-<none>}, master: ${{ github.sha }}"
+          # A manual run always rebuilds; a scheduled one skips if master hasn't moved
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$last" != "${{ github.sha }}" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  linux:
+    needs: check
+    if: needs.check.outputs.changed == 'true'
+    uses: ./.github/workflows/build-linux.yml
+
+  macos:
+    needs: check
+    if: needs.check.outputs.changed == 'true'
+    uses: ./.github/workflows/build-macos.yml
+
+  windows:
+    needs: check
+    if: needs.check.outputs.changed == 'true'
+    uses: ./.github/workflows/build-windows.yml
+
+  # Only runs if every platform built, so the nightly is never a partial set
+  publish:
+    name: Publish nightly release
+    needs: [linux, macos, windows]
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Collect plugins
+        uses: actions/download-artifact@v4
+        with:
+          pattern: voxglitch-*
+          merge-multiple: true
+          path: dist
+
+      - name: Update the nightly release
+        run: |
+          ls -lh dist/
+          short_sha="${GITHUB_SHA::7}"
+          title="Nightly $(date -u +%Y-%m-%d) ($short_sha)"
+          cat > notes.md <<EOF
+          Automated, untested build of \`master\` at ${GITHUB_SHA}.
+
+          **To install:** download the \`.vcvplugin\` for your platform, put it in your Rack 2 \`plugins-<os>-<arch>\` folder (Help > Open user folder in Rack), and restart Rack.
+
+          If you are subscribed to Voxglitch in the VCV Library, Rack will replace this build with the next library release once that release has a higher version number.
+          EOF
+
+          if gh release view "$NIGHTLY_TAG" > /dev/null 2>&1; then
+            # Move the tag to this commit, swap the assets, refresh the text
+            gh api -X PATCH "repos/$GH_REPO/git/refs/tags/$NIGHTLY_TAG" -f sha="$GITHUB_SHA" -F force=true > /dev/null
+            for asset in $(gh release view "$NIGHTLY_TAG" --json assets -q '.assets[].name'); do
+              gh release delete-asset "$NIGHTLY_TAG" "$asset" --yes
+            done
+            gh release upload "$NIGHTLY_TAG" dist/*.vcvplugin
+            gh release edit "$NIGHTLY_TAG" --title "$title" --notes-file notes.md --prerelease
+          else
+            gh release create "$NIGHTLY_TAG" dist/*.vcvplugin \
+              --target "$GITHUB_SHA" --prerelease --latest=false \
+              --title "$title" --notes-file notes.md
+          fi

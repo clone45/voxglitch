@@ -7,6 +7,7 @@ on:
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
+  workflow_call:      # lets nightly.yml reuse this build
 
 # Keep this pinned to the same version as build-macos.yml, build-linux.yml
 # and the local ../Rack-SDK the release check compiles against — SDK version
@@ -37,7 +38,7 @@ jobs:
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-autotools
             mingw-w64-x86_64-pkg-config
-            mingw-w64-x86_64-jq
+            jq
             unzip
             wget
 
