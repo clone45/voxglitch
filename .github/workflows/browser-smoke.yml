@@ -87,11 +87,14 @@ jobs:
           curl -sSL -o sdk.zip https://vcvrack.com/downloads/Rack-SDK-${{ env.rack-sdk-version }}-mac-arm64.zip
           unzip -q sdk.zip
           echo "RACK_DIR=$HOME/Rack-SDK" >> $GITHUB_ENV
-          curl -sSL -o rack.dmg https://vcvrack.com/downloads/RackFree-${{ env.rack-version }}-mac-arm64.dmg
-          hdiutil attach -nobrowse -readonly -mountpoint "$RUNNER_TEMP/rackdmg" rack.dmg
+          # Rack Free for macOS ships as one universal installer package;
+          # expanding it yields the .app without installing anything.
+          curl -sSL -o rack.pkg "https://vcvrack.com/downloads/RackFree-${{ env.rack-version }}-mac-x64+arm64.pkg"
+          pkgutil --expand-full rack.pkg "$RUNNER_TEMP/rackpkg"
+          APP=$(find "$RUNNER_TEMP/rackpkg" -maxdepth 6 -name "*.app" -type d | head -1)
+          test -n "$APP" || { echo "no .app inside the package"; find "$RUNNER_TEMP/rackpkg" -maxdepth 3; exit 1; }
           mkdir -p $HOME/rack
-          cp -R "$RUNNER_TEMP"/rackdmg/*.app $HOME/rack/
-          hdiutil detach "$RUNNER_TEMP/rackdmg"
+          cp -R "$APP" $HOME/rack/
           xattr -dr com.apple.quarantine $HOME/rack/*.app || true
           ls $HOME/rack
 
