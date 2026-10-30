@@ -1,0 +1,116 @@
+name: Browser smoke test
+
+# Opens every Voxglitch module the way Rack's module browser does, inside a
+# real Rack Free, with the plugin built under UBSan (scripts/browser_smoke.py,
+# src/modules/BrowserSmoke/BrowserSmoke.hpp). The browser builds every widget
+# with module == NULL; a widget that reaches through that pointer crashes
+# Rack on some compilers (ArpSeq, nightly of 2026-10-30, Xcode clang) and is
+# silent on others. UBSan names the line on all of them.
+#
+# Linux is the authoritative run (full UBSan diagnostics under Xvfb); macOS
+# arm64 repeats it with the compiler that exposed the ArpSeq crash.
+# release_check.py requires a passing run on the release commit, and the
+# nightly will not publish without one.
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+  workflow_call:      # lets nightly.yml gate on this
+
+env:
+  rack-sdk-version: 2.6.4   # keep in step with build-*.yml
+  rack-version: 2.6.4       # the Rack Free the test runs inside
+
+jobs:
+  smoke-linux:
+    name: Linux x64 (UBSan, Xvfb)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rack's runtime libraries, Xvfb and the UBSan runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgl1 libglx-mesa0 libgl1-mesa-dri libx11-6 libjack0 libpulse0 libubsan1
+          sudo apt-get install -y libasound2t64 || sudo apt-get install -y libasound2
+
+      - name: Download the Rack SDK and Rack Free
+        run: |
+          cd $HOME
+          wget -q https://vcvrack.com/downloads/Rack-SDK-${{ env.rack-sdk-version }}-lin-x64.zip
+          unzip -q Rack-SDK-${{ env.rack-sdk-version }}-lin-x64.zip
+          echo "RACK_DIR=$HOME/Rack-SDK" >> $GITHUB_ENV
+          wget -q https://vcvrack.com/downloads/RackFree-${{ env.rack-version }}-lin-x64.zip
+          unzip -q RackFree-${{ env.rack-version }}-lin-x64.zip -d $HOME/rack
+          ls $HOME/rack
+
+      - name: Build the plugin with the smoke module and UBSan
+        run: |
+          make -j$(nproc) BROWSER_SMOKE=1 RACK_DIR=$RACK_DIR
+          ls -lh plugin.so
+
+      - name: Run the module browser smoke test
+        run: python3 scripts/browser_smoke.py --rack $HOME/rack/Rack2Free --work "$RUNNER_TEMP/smoke"
+
+      - name: Keep the logs if it failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-smoke-linux-${{ github.run_number }}
+          path: |
+            ${{ runner.temp }}/smoke/rack.log
+            ${{ runner.temp }}/smoke/report.txt
+            ${{ runner.temp }}/smoke/ubsan.*
+          if-no-files-found: ignore
+
+  smoke-macos:
+    name: macOS arm64 (UBSan)
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Download the Rack SDK and Rack Free
+        run: |
+          cd $HOME
+          curl -sSL -o sdk.zip https://vcvrack.com/downloads/Rack-SDK-${{ env.rack-sdk-version }}-mac-arm64.zip
+          unzip -q sdk.zip
+          echo "RACK_DIR=$HOME/Rack-SDK" >> $GITHUB_ENV
+          curl -sSL -o rack.dmg https://vcvrack.com/downloads/RackFree-${{ env.rack-version }}-mac-arm64.dmg
+          hdiutil attach -nobrowse -readonly -mountpoint "$RUNNER_TEMP/rackdmg" rack.dmg
+          mkdir -p $HOME/rack
+          cp -R "$RUNNER_TEMP"/rackdmg/*.app $HOME/rack/
+          hdiutil detach "$RUNNER_TEMP/rackdmg"
+          xattr -dr com.apple.quarantine $HOME/rack/*.app || true
+          ls $HOME/rack
+
+      - name: Build the plugin with the smoke module and UBSan
+        run: |
+          make -j$(sysctl -n hw.ncpu) BROWSER_SMOKE=1 RACK_DIR=$RACK_DIR
+          ls -lh plugin.dylib
+          otool -L plugin.dylib | grep -i ubsan || echo "note: no UBSan runtime linked"
+
+      - name: Run the module browser smoke test
+        run: python3 scripts/browser_smoke.py --rack $HOME/rack --work "$RUNNER_TEMP/smoke"
+
+      - name: Keep the logs if it failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-smoke-macos-${{ github.run_number }}
+          path: |
+            ${{ runner.temp }}/smoke/rack.log
+            ${{ runner.temp }}/smoke/report.txt
+            ${{ runner.temp }}/smoke/ubsan.*
+          if-no-files-found: ignore

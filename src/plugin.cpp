@@ -49,4 +49,11 @@ void init(Plugin* p) {
   p->addModel(modelVXDrumSequencer);
   p->addModel(modelEuclid);
 
+#ifdef VOXGLITCH_BROWSER_SMOKE
+  // `make BROWSER_SMOKE=1` only. Not in plugin.json: scripts/browser_smoke.py
+  // injects its manifest entry into a scratch copy, so Rack never sees it
+  // in a shipped build.
+  p->addModel(modelBrowserSmoke);
+#endif
+
 }

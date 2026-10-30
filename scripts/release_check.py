@@ -348,6 +348,43 @@ def check_commit_on_github(commit_hash):
             "detail": "" if found else result.stderr.strip()}
 
 
+BROWSER_SMOKE_WORKFLOW = "browser-smoke.yml"
+
+
+def check_browser_smoke_ci(commit_hash):
+    """The module-browser smoke test must have passed on this exact commit.
+
+    It runs in CI only (.github/workflows/browser-smoke.yml): it needs a Rack
+    Free, a display and a UBSan build of the plugin, which is what
+    scripts/browser_smoke.py sets up on the runner. So this check asks GitHub
+    for the workflow's runs on HEAD and requires one that completed
+    successfully -- no run (not pushed yet, or still queued) is a failure,
+    not a pass."""
+    name = "Browser smoke test passed on this commit"
+    result = subprocess.run(["gh", "run", "list", "--workflow", BROWSER_SMOKE_WORKFLOW,
+                             "--commit", commit_hash, "--limit", "10",
+                             "--json", "status,conclusion,url,createdAt"],
+                            capture_output=True, text=True, cwd=REPO_ROOT)
+    if result.returncode != 0:
+        return {"name": name, "passed": False, "detail": "gh run list failed: " + result.stderr.strip()}
+    try:
+        runs = json.loads(result.stdout or "[]")
+    except json.JSONDecodeError:
+        return {"name": name, "passed": False, "detail": "unreadable gh output: " + result.stdout[:200]}
+    if not runs:
+        return {"name": name, "passed": False,
+                "detail": f"no '{BROWSER_SMOKE_WORKFLOW}' run for {commit_hash[:10]} -- push it and wait for the "
+                          "Browser smoke test workflow (or start one with `gh workflow run browser-smoke.yml`)"}
+    runs.sort(key=lambda r: r.get("createdAt", ""), reverse=True)
+    latest = runs[0]
+    if latest.get("status") != "completed":
+        return {"name": name, "passed": False,
+                "detail": f"latest run is {latest.get('status')}: {latest.get('url')}"}
+    passed = latest.get("conclusion") == "success"
+    return {"name": name, "passed": passed,
+            "detail": "" if passed else f"latest run {latest.get('conclusion')}: {latest.get('url')}"}
+
+
 def get_plugin_version():
     return json.loads(PLUGIN_JSON.read_text(encoding="utf-8")).get("version", "unknown")
 
@@ -403,6 +440,7 @@ def main():
         check_module_manual_urls_reachable(),
         commit_info,
         check_commit_on_github(commit_info["hash"]),
+        check_browser_smoke_ci(commit_info["hash"]),
     ]
 
     if not args.skip_build:

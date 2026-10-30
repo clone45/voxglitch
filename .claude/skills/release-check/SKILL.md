@@ -54,6 +54,14 @@ What it checks, for context (the script is authoritative):
   library's older toolchain hides it, and no compiler or analyzer we run
   reports it. A hit is fixed by guarding the use (`module ? &module->x : NULL`
   or moving it under the `if (module)`), never by silencing the check.
+- the **module-browser smoke test** passed in CI on HEAD's exact commit
+  (`.github/workflows/browser-smoke.yml`, `scripts/browser_smoke.py`). It
+  builds the plugin with `make BROWSER_SMOKE=1` (UBSan + the hidden
+  BrowserSmoke module), installs it in a real Rack Free and previews every
+  module the way the browser does, with module == NULL. This is the test
+  that actually runs the code; the lexical check above is only the fast
+  local hint. No run on the commit is a failure, not a pass: push, let the
+  workflow finish (about 10 minutes), re-run the check.
 - every TU compiles with full codegen and `-Wall -Wextra` (warnings fail —
   `-fsyntax-only` is not used because it misses codegen-time warnings)
 - `scripts/static_analysis/analyze.py` reports nothing beyond the baseline

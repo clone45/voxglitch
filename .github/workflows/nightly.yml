@@ -57,10 +57,18 @@ jobs:
     if: needs.check.outputs.changed == 'true'
     uses: ./.github/workflows/build-windows.yml
 
-  # Only runs if every platform built, so the nightly is never a partial set
+  # Every module must survive the module browser (browser-smoke.yml) before
+  # a nightly goes out: the one of 2026-10-30 crashed Rack on launch.
+  smoke:
+    needs: check
+    if: needs.check.outputs.changed == 'true'
+    uses: ./.github/workflows/browser-smoke.yml
+
+  # Only runs if every platform built and the smoke test passed, so the
+  # nightly is never a partial set and never a known crasher
   publish:
     name: Publish nightly release
-    needs: [linux, macos, windows]
+    needs: [linux, macos, windows, smoke]
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}

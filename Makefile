@@ -12,6 +12,16 @@ CXXFLAGS += -Isrc
 # Static libraries are fine, but they should be added to this plugin's build system.
 LDFLAGS +=
 
+# The module-browser smoke test build (scripts/browser_smoke.py): compiles the
+# hidden BrowserSmoke module in and instruments the plugin with UBSan, which
+# reports `&module->x` on the browser's NULL module at its exact line on any
+# compiler -- the ArpSeq crash of 2026-10-30 only showed on Xcode's clang.
+# vptr is off: Rack's own classes are not instrumented.
+ifdef BROWSER_SMOKE
+FLAGS += -DVOXGLITCH_BROWSER_SMOKE -fsanitize=undefined -fno-sanitize=vptr
+LDFLAGS += -fsanitize=undefined
+endif
+
 # Add .cpp files to the build
 SOURCES += $(wildcard src/*.cpp)
 SOURCES += $(wildcard src/modules/*.cpp)
