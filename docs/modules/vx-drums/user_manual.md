@@ -123,6 +123,8 @@ Any column can play an audio file of your own instead of a circuit. Right-click 
 
 A sample retriggers from its start point on every hit, like every other voice, and `LEVEL`, `VARY`, the accent and CV all apply as usual. A sample in the open-hat column chokes under a closed hat.
 
+**Drag and drop.** You can also drop a file straight onto a column. With stoermelder's **SIREN** sample browser in the patch, drag a file out of SIREN and over VX Drums: the six voice columns light up as drop targets, the one under the cursor brightest, and releasing over a column loads the file there, the same as **Load sample…** (one undo step). SIREN's trim, resample and repitch options all apply to what arrives. Files dragged in from Finder or Explorer land in the column under the cursor too, though Rack gives no highlight for those. VX Drums reads WAV and MP3, so for FLAC files turn on **Convert to WAV on drop** in SIREN's source menu.
+
 The module stores the file's location, not the audio: a patch or a saved kit that uses a sample looks for the file at the same path when it loads, the way the other Voxglitch samplers do. If the file is not there the column is silent and the menu marks it "(missing)"; put the file back or load another. A saved kit with samples is therefore only as portable as the files it points to.
 
 ### Right-Click on the Panel

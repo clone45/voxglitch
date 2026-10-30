@@ -14,12 +14,16 @@
 //
 // Two things are drawn in code: the KIT display (a dark pill with the kit
 // name, sized from the `kit_display` rect; a left click opens the kit menu)
-// and nothing else. Labels are paths in the art. `module` is NULL in the
-// module browser; every path here tolerates that.
+// and the drop targets that appear over the six voice columns while a sample
+// is being dragged in from stoermelder SIREN (VXDrumsDropTargets). Labels
+// are paths in the art. `module` is NULL in the module browser; every path
+// here tolerates that.
 
 #include <cstdlib>
+#include <cstring>
 #include <memory>
 #include <string>
+#include <typeinfo>
 #include <vector>
 
 #include "VXDrums.hpp"
@@ -126,10 +130,21 @@ namespace vx_drums_ui
         if (m && m->kit.custom && m->kit.uuid == uuid) m->kit.name = name;
     }
 
-    // "Load sample…" for one column: pick an audio file, and make the sample
-    // player with that file the column's override (one undo step, like any
-    // other model choice). The dialog opens where the column's current file
-    // lives, if it has one.
+    // Make the sample player with this file one column's override (one undo
+    // step, like any other model choice), and say so if the file cannot be
+    // read. Shared by "Load sample…" and the drop targets.
+    inline void applySampleOverride(VXDrums* m, int column, const std::string& path)
+    {
+        if (!m || column < 0 || column >= vx_drums::COLUMNS || path.empty()) return;
+        vxDrumsChangeOverride(m, column, vx_drums::ModelChoice::sample(path));
+        if (m->sampleMissing(column))
+        {
+            osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, ("Could not read \"" + rack::system::getFilename(path) + "\".").c_str());
+        }
+    }
+
+    // "Load sample…" for one column: pick an audio file. The dialog opens
+    // where the column's current file lives, if it has one.
     inline void loadSampleOverride(VXDrums* m, int column)
     {
         if (!m || column < 0 || column >= vx_drums::COLUMNS) return;
@@ -143,13 +158,25 @@ namespace vx_drums_ui
         if (!path_c) return;
         const std::string path = path_c;
         std::free(path_c);
-        if (path.empty()) return;
 
-        vxDrumsChangeOverride(m, column, vx_drums::ModelChoice::sample(path));
-        if (m->sampleMissing(column))
+        applySampleOverride(m, column, path);
+    }
+
+    // A file dropped on one column. The file dialog filters by extension; a
+    // drop cannot, so the check is here. SIREN hands over FLAC as-is unless
+    // its "Convert to WAV on drop" option is on, which is the likely way to
+    // get here, hence the hint.
+    inline void dropSampleOverride(VXDrums* m, int column, const std::string& path)
+    {
+        const std::string ext = rack::string::lowercase(rack::system::getExtension(path));
+        if (ext != ".wav" && ext != "wav" && ext != ".mp3" && ext != "mp3")
         {
-            osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, ("Could not read \"" + rack::system::getFilename(path) + "\".").c_str());
+            osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK,
+                ("VX Drums plays WAV and MP3 files, and \"" + rack::system::getFilename(path) + "\" is neither.\n\n"
+                 "If it came from SIREN, turn on \"Convert to WAV on drop\" in SIREN's source menu.").c_str());
+            return;
         }
+        applySampleOverride(m, column, path);
     }
 
     // Deleting a kit does not touch any module playing it: the module carries
@@ -265,10 +292,139 @@ struct VXDrumsKitDisplay : TransparentWidget
     }
 };
 
+// ── Drop targets for samples dragged in from stoermelder SIREN ───────────────
+//
+// SIREN (stoermelder PackOne) is a sample browser. A file dragged out of it
+// is an ordinary in-Rack mouse drag that ends in Rack's standard file-drop
+// event at the release point (SirenDropHandler.hpp in PackOne), the same
+// event a file dragged in from the OS produces. While such a drag is over
+// this panel the six voice columns are painted as drop targets, the one under
+// the cursor brighter; a release over a column makes the file that column's
+// sample override, exactly like "Load sample…". An OS drag gives Rack no
+// hover events, so it lands in the right column but without the highlight.
+//
+// The drag is watched from step(), not from the DragHover/DragEnter events:
+// DragHover only arrives while the mouse moves, and every knob is an
+// OpaqueWidget that would take DragEnter/DragLeave as the cursor crosses it.
+// APP->event->getDraggedWidget() says what is being dragged every frame, and
+// the rack's mouse position says where (the idiom SIREN itself uses).
+//
+// Column rectangles come from the panel anchors: from a column's strike lamp
+// down past its LEVEL knob, centred on its TUNE knob, as wide as the pitch
+// between two column rules. Added as the LAST child so it paints over the
+// knobs; TransparentWidget, so it takes no events away from them.
+//
+struct VXDrumsDropTargets : TransparentWidget
+{
+    VXDrums* module = NULL;
+    rack::Rect columns[vx_drums::COLUMNS];
+    bool active = false;   // a SIREN drag is over the panel this frame
+    int hovered = -1;      // the column under the cursor, or -1
+
+    // The dragged widget last examined and the verdict, so the type lookup
+    // runs once per drag rather than once per frame.
+    widget::Widget* checked_origin = NULL;
+    bool checked_is_siren = false;
+
+    VXDrumsDropTargets(VXDrums* module, PanelHelper& panelHelper, Vec panel_size)
+    {
+        this->module = module;
+        box.pos = Vec(0.f, 0.f);
+        box.size = panel_size;
+
+        float pitch = panelHelper.findNamed("column_rule_2").x - panelHelper.findNamed("column_rule_1").x;
+        if (pitch <= 0.f) pitch = 59.f;   // the panel's column pitch, should the rules go missing
+        const float half_width = pitch * 0.5f - 2.f;
+
+        static const char* const PREFIX[vx_drums::COLUMNS] = { "bd", "sd", "cp", "perc", "ch", "oh" };
+        for (int c = 0; c < vx_drums::COLUMNS; c++)
+        {
+            const std::string p = PREFIX[c];
+            const float cx     = panelHelper.findNamed(p + "_tune_knob").x;
+            const float top    = panelHelper.findNamed(p + "_light").y - 10.f;       // above the lamp and the title
+            const float bottom = panelHelper.findNamed(p + "_level_knob").y + 30.f;  // below the LEVEL label
+            columns[c] = rack::Rect(Vec(cx - half_width, top), Vec(half_width * 2.f, bottom - top));
+        }
+    }
+
+    // The column under a panel-local point, or -1.
+    int columnAt(Vec pos) const
+    {
+        for (int c = 0; c < vx_drums::COLUMNS; c++)
+            if (columns[c].contains(pos)) return c;
+        return -1;
+    }
+
+    // A drag from SIREN's file list or waveform pane starts inside its
+    // ModuleWidget, so the plugin and module slugs identify it. SIREN's
+    // "Ctrl+Shift-click anywhere" drag starts from an overlay it adds to the
+    // rack itself, with no module above it, so that one is recognised by its
+    // type name. Moving a module, or turning a knob, is never a sample drag.
+    static bool isSirenDrag(widget::Widget* w)
+    {
+        if (dynamic_cast<ModuleWidget*>(w) || dynamic_cast<ParamWidget*>(w) || dynamic_cast<PortWidget*>(w)) return false;
+        ModuleWidget* mw = w->getAncestorOfType<ModuleWidget>();
+        if (mw)
+            return mw->model && mw->model->plugin && mw->model->plugin->slug == "Stoermelder-P1" && mw->model->slug == "Siren";
+        return std::strstr(typeid(*w).name(), "Siren") != NULL;
+    }
+
+    void step() override
+    {
+        TransparentWidget::step();
+        active = false;
+        hovered = -1;
+        if (!module || !parent) return;
+
+        widget::Widget* dragged = APP->event->getDraggedWidget();
+        if (!dragged) { checked_origin = NULL; return; }
+        if (dragged != checked_origin)
+        {
+            checked_origin = dragged;
+            checked_is_siren = isSirenDrag(dragged);
+        }
+        if (!checked_is_siren) return;
+
+        // Rack-local mouse position to panel-local (the module sits in a
+        // container at the rack's origin; SIREN compares the same way).
+        const Vec mouse = APP->scene->rack->getMousePos().minus(parent->box.pos);
+        if (!rack::Rect(Vec(0.f, 0.f), box.size).contains(mouse)) return;
+        active = true;
+        hovered = columnAt(mouse);
+    }
+
+    // Layer 1, like the KIT text: on top of the knobs and lamps, and not
+    // dimmed by the room brightness.
+    void drawLayer(const DrawArgs& args, int layer) override
+    {
+        if (layer == 1 && active)
+        {
+            NVGcontext* vg = args.vg;
+            nvgSave(vg);
+            for (int c = 0; c < vx_drums::COLUMNS; c++)
+            {
+                const bool hot = (c == hovered);
+                const rack::Rect& r = columns[c];
+                nvgBeginPath(vg);
+                nvgRoundedRect(vg, r.pos.x, r.pos.y, r.size.x, r.size.y, 6.f);
+                nvgFillColor(vg, nvgRGBA(0xd8, 0xc9, 0x4a, hot ? 0x60 : 0x22));
+                nvgFill(vg);
+                nvgStrokeWidth(vg, hot ? 2.f : 1.2f);
+                nvgStrokeColor(vg, nvgRGBA(0xd8, 0xc9, 0x4a, hot ? 0xff : 0x90));
+                nvgStroke(vg);
+            }
+            nvgRestore(vg);
+        }
+        TransparentWidget::drawLayer(args, layer);
+    }
+};
+
 // ── The panel ────────────────────────────────────────────────────────────────
 
 struct VXDrumsWidget : ModuleWidget
 {
+    VXDrumsDropTargets* drop_targets = NULL;
+
     VXDrumsWidget(VXDrums* module)
     {
         setModule(module);
@@ -383,6 +539,26 @@ struct VXDrumsWidget : ModuleWidget
         {
             WARN("VXDrums: panel is missing a 'kit_display' rect; the kit selector is menu-only");
         }
+
+        // ── the SIREN drop targets, last so they paint over everything ──
+        drop_targets = new VXDrumsDropTargets(module, panelHelper, box.size);
+        addChild(drop_targets);
+    }
+
+    // A file dropped on the panel (from SIREN, or from the OS): the column
+    // under the drop point takes it as its sample. Anywhere else, Rack's
+    // default handling.
+    void onPathDrop(const PathDropEvent& e) override
+    {
+        VXDrums* m = dynamic_cast<VXDrums*>(this->module);
+        const int c = (m && drop_targets && !e.paths.empty()) ? drop_targets->columnAt(e.pos) : -1;
+        if (c < 0)
+        {
+            ModuleWidget::onPathDrop(e);
+            return;
+        }
+        e.consume(this);
+        vx_drums_ui::dropSampleOverride(m, c, e.paths[0]);
     }
 
     // Double-click on a TUNE/DECAY/SHAPE knob must land on the EFFECTIVE
