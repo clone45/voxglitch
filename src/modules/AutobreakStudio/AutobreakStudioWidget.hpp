@@ -30,7 +30,11 @@ struct AutobreakStudioWidget : VoxglitchSamplerModuleWidget
 		addChild(createWidget<ThemedScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 		addChild(createWidget<ThemedScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-		VoltageSequencerDisplayABS *position_sequencer_display = new VoltageSequencerDisplayABS(& this->module->position_sequencer, 0);
+		// `module` is NULL in the module browser: taking &module->x through a null
+		// pointer is undefined behaviour, and a recent clang used the same thing in
+		// ArpSeq to drop the `if(module)` below and crash. The display only reads
+		// the pointer under its own module check, so NULL is safe.
+		VoltageSequencerDisplayABS *position_sequencer_display = new VoltageSequencerDisplayABS(module ? & this->module->position_sequencer : NULL, 0);
 		position_sequencer_display->box.pos = Vec(157.778, 75.59056); // {"x": 157.778, "y": 75.59056 }
 		position_sequencer_display->module = module;
 		addChild(position_sequencer_display);

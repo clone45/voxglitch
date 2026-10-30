@@ -46,6 +46,14 @@ What it checks, for context (the script is authoritative):
 - `#define DEVELOPMENT` commented out in `vgLib-2.0/helpers/Debugging.hpp`,
   and no `-DDEVELOPMENT` in the Makefile (either ships VBUG logging to every
   user's Rack log)
+- no ModuleWidget constructor reaches through `module` before checking it
+  for NULL (`scripts/check_null_module.py`). The module browser constructs
+  every widget with module == NULL; `&module->x` before the `if (module)` is
+  undefined behaviour that a recent clang turns into a dropped null check and
+  a crash on opening the browser (ArpSeq, nightly of 2026-10-30, macOS). The
+  library's older toolchain hides it, and no compiler or analyzer we run
+  reports it. A hit is fixed by guarding the use (`module ? &module->x : NULL`
+  or moving it under the `if (module)`), never by silencing the check.
 - every TU compiles with full codegen and `-Wall -Wextra` (warnings fail —
   `-fsyntax-only` is not used because it misses codegen-time warnings)
 - `scripts/static_analysis/analyze.py` reports nothing beyond the baseline

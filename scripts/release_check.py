@@ -30,6 +30,9 @@ from concurrent.futures import ThreadPoolExecutor
 from glob import glob
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from check_null_module import find_issues as find_null_module_issues  # noqa: E402
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SRC_DIR = REPO_ROOT / "src"
 PLUGIN_JSON = REPO_ROOT / "plugin.json"
@@ -158,6 +161,23 @@ def check_development_define():
                     "detail": f"Debugging.hpp:{lineno}: {stripped}"}
 
     return {"name": "DEVELOPMENT define commented out", "passed": True, "detail": ""}
+
+
+def check_null_module_in_widget_ctors():
+    """No ModuleWidget constructor may reach through `module` unguarded.
+
+    The module browser builds every widget with module == NULL. `&module->x`
+    before the `if (module)` is undefined behaviour that a recent clang turns
+    into a dropped null check and a crash on opening the browser (ArpSeq,
+    nightly of 2026-10-30). No compiler or analyzer we run reports it, so
+    scripts/check_null_module.py looks for it lexically."""
+    issues = find_null_module_issues()
+    return {"name": "ModuleWidget constructors null-safe for the browser",
+            "passed": len(issues) == 0,
+            "issues": [f"{i['file']}:{i['line']}: {i['content']}" for i in issues],
+            "detail": "" if not issues else
+                      "the module browser constructs these with module == NULL; guard the use "
+                      "(see scripts/check_null_module.py)"}
 
 
 def check_build_flags():
@@ -376,6 +396,7 @@ def main():
         check_pushed(),
         check_debug_statements(),
         check_development_define(),
+        check_null_module_in_widget_ctors(),
         check_build_flags(),
         check_version_bumped(args.version_ok),
         check_module_manual_urls(),
