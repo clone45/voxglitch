@@ -26,7 +26,7 @@ There are a lot of ways to interact with the grid, from typing in values directl
 Here are a few more quick tips, just in case you want to jump in without reading the rest of this manual:
 
 * It's possible to multi-select and copy/paste rows.  
-* There are four effect slots.  Selecting and adjusting effects is done by right-clicking one of the four effects sections underneath the main tracker table.  Enabling or disabling effects is done through the FX1, FX2, FX3, and FX4 columns in the tracker table.
+* There are four effect slots.  The effects strip underneath the main tracker table shows one slot at a time: click a numbered chip (1 to 4) to choose the slot, and right-click the strip to select and adjust that slot's effect.  Enabling or disabling effects is done through the FX1, FX2, FX3, and FX4 columns in the tracker table.
 
 
 # Inputs and Outputs
@@ -203,11 +203,11 @@ Row FX cell options are:
 - ON: Enable the effect
 - OFF: Disable the effect.
 
-The four effects slots directly under the main sequencer are used to select which effect is assigned to the slot, and select the parameters for the effect (which vary depending on effect).
+The effects strip directly under the main sequencer shows one slot at a time.  The four numbered chips at its left choose the slot; the strip follows the sequencer cursor too, so putting the cursor in the FX2 column shows slot 2.  A lit chip number means that slot's effect is currently on.  To the right of the chips are the slot's effect name, with a lamp that lights while the effect is running, and the two parameter bars with their values for the row the cursor is on.
 
 ## Choosing an effect
 
-Right-click (or left-click) a slot cell to open its context menu. Under Effect, select the effect to assign to the slot, or choose None.
+Click a chip to choose the slot, then right-click (or left-click) anywhere else in the strip to open its context menu. Under Effect, select the effect to assign to the slot, or choose None.
 
 ## The two value bars
 

@@ -83,8 +83,8 @@ Which tab is showing is not saved with the patch. Wyrm opens on the Oscillators 
 
 The jacks run along the bottom of the panel. They never hide.
 
-- **V/OCT**: pitch, 1 volt per octave. `0 V` plays middle C. Reads one channel.
-- **GATE**: starts a note when the voltage rises above `1 V`. Releases it when the voltage falls below `0.1 V`. Reads one channel.
+- **V/OCT**: pitch, 1 volt per octave. `0 V` plays middle C. Polyphonic: each channel pairs with the same channel of GATE.
+- **GATE**: starts a note when the voltage rises above `1 V`. Releases it when the voltage falls below `0.1 V`. Polyphonic: the number of channels on this cable is the number of notes Wyrm plays.
 - **CV 1** to **CV 4**: four modulation inputs. They do nothing until you route them in the Mod Matrix.
 - **CLOCK**: a tempo input. One pulse is one quarter note.
 - **RESET**: re-aligns every modulator.
@@ -110,7 +110,9 @@ Right-click anywhere on the panel to reach Rack's context menu.
 
 Patch a pitch source into **V/OCT** and a gate into **GATE**.
 
-Wyrm reads the first channel of both jacks. A polyphonic cable from a MIDI-CV module plays one note, not six. The eight internal voices are not Rack's polyphony. They exist so a released note can finish fading under the next one.
+Both jacks are polyphonic. A polyphonic cable from a MIDI-CV module plays chords: the GATE cable's channel count sets how many notes Wyrm reads, and V/OCT follows it channel for channel. A mono V/OCT cable feeds every channel. Up to six notes sound at once, or fewer if you lower the **Voices** setting on the Performance tab. The eight internal voices are not Rack's polyphony; the two spares let a released note finish fading under the next one.
+
+You can also play from the keyboard on the Performance tab. Click a key to play it, drag for a glissando, and Shift-click keys to build a chord of up to eight notes that stays held until a plain click clears it. The keyboard plays alongside the jacks.
 
 ### Voice modes
 
@@ -118,11 +120,13 @@ Set the mode with the **VOICE** select in the jack row, or on the Performance ta
 
 | Mode | What it does |
 |---|---|
-| `poly` | Up to six notes sound at once. One gate jack can only start one at a time, so in Rack this mostly lengthens the overlap between notes. |
-| `mono` | One note at a time. Each gate re-articulates the envelopes. |
-| `legato` | One note at a time. A new note under a held gate does not re-articulate. |
+| `poly` | Up to six notes sound at once, from a polyphonic cable, the keyboard chord, or both. |
+| `mono` | One note at a time, the newest. Releasing it falls back to the newest note still held and re-articulates there. |
+| `legato` | One note at a time, the newest. A new note under a held note slides instead of re-articulating, and so does the fall-back. |
 
 Changing the mode stops every sounding note.
+
+**Voices**, under the mode on the Performance tab, caps how many notes sound at once, from 1 to 6. Release tails count toward the cap, so a lower setting bounds the CPU Wyrm uses. Lowering it while notes sound fades the surplus out.
 
 ### Glide
 
@@ -444,9 +448,20 @@ The limit is the bus, not the source. Voltages are clamped at `±10 V`. A source
 
 ## The Performance tab
 
-**Voice** sets the voice mode. It is the same control as the VOICE select in the jack row.
+**Glide**: **Rising Time** and **Falling Time** set the glide, as described under "Playing" above. Each has three shape buttons beside it for its curve.
 
-**Rising Time** and **Falling Time** set the glide, as described under "Playing" above. Each has a curve display and three shape buttons.
+**Voice**: **Mode** sets the voice mode. **Voices** caps how many notes sound at once, 1 to 6.
+
+**Arpeggiator**: an arpeggiator in the style of the JP-8000. It takes every held note, from the cables and the keyboard alike, and plays them one at a time.
+
+- **On** turns it on. While it is on, held notes feed the arpeggiator instead of sounding directly.
+- **Mode**: `up`, `down`, `up & down` or `random`. Notes always play in order of pitch, never in the order you pressed them.
+- **Range**: 1 to 4 octaves. The chord is repeated an octave higher for each step of range.
+- **Hold** keeps the last chord playing after you let go. A new note replaces it.
+- **Rate**: the step length, as a division of the tempo: 1/4, 1/6, 1/8, 1/12, 1/16 or 1/32. The tempo comes from the BPM setting or the CLOCK jack, and a RESET pulse restarts the pattern from its first step.
+- **Pattern**: the rhythm. `Straight` plays every step with a half-step gate. The others add rests, short or held notes, and accents: `Accent`, `Offbeat`, `Dotted`, `Gallop`, `Echo`, `Mute`, `Strum`, `Percussion`, `Sequence` and `Random`. Accents play at full velocity and plain steps at 70 percent, so they are audible only when the patch uses velocity.
+
+**Keyboard**: a piano strip across the bottom of the tab. Click to play, drag for a glissando, Shift-click to toggle keys into a held chord, and use the arrows at the card's top right to move up or down an octave.
 
 ***
 
