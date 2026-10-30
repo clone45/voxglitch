@@ -145,7 +145,12 @@ struct ArpSeqWidget : ModuleWidget
         // Create TabsWidget and set its position.  The module->page variable is set
         // to the selected tab index in the TabsWidget::onButton function.  Another way to have done this may have been
         // to pass in a pointer to a function that gets called anytime a tab is selected.
-        TabsWidget *tabs_widget = new TabsWidget(&module->page);
+        //
+        // `module` is NULL in the module browser. Taking &module->page on a null
+        // pointer is undefined behaviour, and a recent clang (the nightly's macOS
+        // build) used it to assume module is non-null, dropped the `if (module)`
+        // below, and crashed Rack on opening the browser. TabsWidget accepts NULL.
+        TabsWidget *tabs_widget = new TabsWidget(module ? &module->page : NULL);
         tabs_widget->box.pos = Vec(138.89827, 53.577);
         addChild(tabs_widget); // Add tabs_widget to ArpSeqWidget
 
