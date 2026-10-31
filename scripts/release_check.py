@@ -64,7 +64,12 @@ EXCLUDED_PATHS = [
     "src/vgLib-2.0/dr_mp3.h",
     "src/vgLib-2.0/helpers/Debugging.hpp",
 ]
-EXCLUDED_DIRS = ["docs"]
+EXCLUDED_DIRS = [
+    "docs",
+    # The module-browser smoke test: compiled only with -DVOXGLITCH_BROWSER_SMOKE
+    # (never in a shipped build) and its fprintf writes the test report.
+    "src/modules/BrowserSmoke",
+]
 
 DEBUG_PATTERNS = [
     r'(?<!sn)(?<!s)printf\(',   # printf( but not snprintf( / sprintf(
