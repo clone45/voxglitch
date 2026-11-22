@@ -48,6 +48,7 @@ void init(Plugin* p) {
   p->addModel(modelVXDrums);
   p->addModel(modelVXDrumSequencer);
   p->addModel(modelEuclid);
+  p->addModel(modelSpectralGranulator);
 
 #ifdef VOXGLITCH_BROWSER_SMOKE
   // `make BROWSER_SMOKE=1` only. Not in plugin.json: scripts/browser_smoke.py

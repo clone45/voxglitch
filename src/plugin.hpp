@@ -49,6 +49,7 @@ extern Model *modelTimeline;
 extern Model *modelVXDrums;
 extern Model *modelVXDrumSequencer;
 extern Model *modelEuclid;
+extern Model *modelSpectralGranulator;
 #ifdef VOXGLITCH_BROWSER_SMOKE
 extern Model *modelBrowserSmoke;   // the module-browser smoke test, test builds only (BrowserSmoke.hpp)
 #endif

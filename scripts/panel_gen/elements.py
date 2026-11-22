@@ -93,20 +93,37 @@ def fmt(v):
     return "0" if s in ("", "-0") else s
 
 
-def frame_geometry(frame_xy=None):
+def frame_geometry(frame_xy=None, frame_w=None):
     """Frame placement in Rack px from the raw bbox (Appendix B) and the FRAME_X/Y target.
 
     frame_xy overrides the house position (a panel too narrow to stack the frame under the
-    wordmark puts it to the wordmark's right: Euclid, 2026-09-18)."""
+    wordmark puts it to the wordmark's right: Euclid, 2026-09-18). frame_w overrides the
+    house width for a name too long for it (Spectral Granulator, 2026-11-21)."""
     x0, y0, x1, y1 = FRAME_RAW_BBOX
-    w = (x1 - x0) * RAW2PX
+    w = frame_w if frame_w else (x1 - x0) * RAW2PX
     h = (y1 - y0) * RAW2PX
     fx, fy = frame_xy if frame_xy else (FRAME_X, FRAME_Y)
     return fx, fy, w, h
 
 
-def emit_branding(name, frame_xy=None):
-    fx, fy, fw, fh = frame_geometry(frame_xy)
+# The frame path's right-hand x, as written in FRAME_D. A wider frame moves it and nothing
+# else, so the line weight and the corner radii stay the house's.
+FRAME_RIGHT_RAW = "54.96854"
+
+
+def frame_path(frame_w=None):
+    """FRAME_D, or FRAME_D with its right side moved out so the frame is frame_w px wide."""
+    if not frame_w:
+        return FRAME_D
+    if FRAME_D.count(FRAME_RIGHT_RAW) != 3:
+        raise ValueError("FRAME_D no longer carries its right edge as %s three times" % FRAME_RIGHT_RAW)
+    x0, _y0, x1, _y1 = FRAME_RAW_BBOX
+    extra_raw = (frame_w - (x1 - x0) * RAW2PX) / RAW2PX
+    return FRAME_D.replace(FRAME_RIGHT_RAW, fmt(float(FRAME_RIGHT_RAW) + extra_raw))
+
+
+def emit_branding(name, frame_xy=None, frame_w=None):
+    fx, fy, fw, fh = frame_geometry(frame_xy, frame_w)
     name_cx = fx + fw / 2.0
     name_baseline = fy + fh / 2.0 + NAME_CAP_PX / 2.0      # name ink centred in the frame
     wm_tx = WORDMARK_X - RAW2PX * WORDMARK_RAW_MIN[0]
@@ -120,7 +137,7 @@ def emit_branding(name, frame_xy=None):
     lines.append('    </g>')
     lines.append('    <!-- module-name frame (cue_research path6-5) at (%s, %s), %s x %s -->' % (fmt(fx), fmt(fy), fmt(fw), fmt(fh)))
     lines.append('    <g id="module_name_box" transform="matrix(%.7f,0,0,%.7f,%.4f,%.4f)">' % (RAW2PX, RAW2PX, fr_tx, fr_ty))
-    lines.append('      <path id="module_name_box_path" style="fill:%s;fill-opacity:%s;stroke:none" d="%s"/>' % (COL_INK, INK_OPACITY, FRAME_D))
+    lines.append('      <path id="module_name_box_path" style="fill:%s;fill-opacity:%s;stroke:none" d="%s"/>' % (COL_INK, INK_OPACITY, frame_path(frame_w)))
     lines.append('    </g>')
     lines.append('    <!-- module name, Pilat Condensed Bold %s px, ink-centred in the frame -->' % fmt(SIZE_NAME))
     lines.append(text_paths(name, name_cx, name_baseline, NAME_GLYPHS, NAME_KERN, SIZE_NAME,
@@ -183,7 +200,7 @@ def emit_svg(panel):
     lines.append('  </g>')
 
     lines.append('  <g inkscape:groupmode="layer" inkscape:label="branding" id="layer_branding">')
-    lines.extend(emit_branding(panel["name"], panel.get("frame_xy")))
+    lines.extend(emit_branding(panel["name"], panel.get("frame_xy"), panel.get("frame_w")))
     lines.append('  </g>')
 
     lines.append('  <g inkscape:groupmode="layer" inkscape:label="anchors" id="layer_anchors">')

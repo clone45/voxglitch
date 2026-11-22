@@ -257,6 +257,13 @@
         "description": "Euclidean rhythm sequencer: hits spread as evenly as possible over up to 32 steps, rotated, stepped by an external clock with reset, with a trigger output. Three CV inputs with attenuverters for hits, steps and rotation, and a ring display that shows the live pattern and rotates it when dragged.",
         "tags": ["Sequencer"],
         "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/euclid/user_manual.md"
+    },
+    {
+        "slug": "spectral_granulator",
+        "name": "Spectral Granulator",
+        "description": "Granular smear steered by the input's own spectrum. An analysis section turns the input into an onset trigger and level, brightness and tonality signals; each has an output and is normalled into the grain controls (stretch, grain length, blend, resync). Feedback, jitter, tune (1 V/oct) and spread shape the grains further, and Imprint re-shapes them toward the live input's spectrum. CV inputs for every knob.",
+        "tags": ["Granular", "Effect", "Envelope follower"],
+        "manualUrl": "https://github.com/clone45/voxglitch/blob/master/docs/modules/spectral-granulator/user_manual.md"
     }
   ]
 }
