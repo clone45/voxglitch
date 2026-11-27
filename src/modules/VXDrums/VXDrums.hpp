@@ -1051,3 +1051,56 @@ inline void vxDrumsChangeOverride(VXDrums* m, int column, const vx_drums::ModelC
     if (action->isNoop()) { delete action; return; }
     APP->history->push(action);
 }
+
+// Make `path` the column's sample override and, if the column was not
+// already playing a sample, put its TUNE / DECAY / SHAPE at the sample
+// player's defaults (0 st, envelope off, start at 0) so the file plays as
+// recorded. The knobs keep their positions across a model change (the
+// physical-knob rule), and a circuit's settings make a sample sound muted and
+// cut short, so every load used to start with the same three corrections
+// (Bret, 2026-10-31). LEVEL is left alone, and loading another sample over a
+// sample keeps the knobs. One undo step: the vxDrumsLoadUserKit idiom.
+inline void vxDrumsLoadSampleOverride(VXDrums* m, int column, const std::string& path)
+{
+    if (!m || column < 0 || column >= vx_drums::COLUMNS || path.empty()) return;
+    const bool was_sample = m->effectiveModel(column).isSample();
+
+    history::ComplexAction* complex = new history::ComplexAction;
+    complex->name = "load sample";
+
+    VXDrumsKitAction* action = new VXDrumsKitAction;
+    action->name = "load sample";
+    action->captureBefore(m);
+    vx_drums::ModelChoice overrides[vx_drums::COLUMNS];
+    for (int c = 0; c < vx_drums::COLUMNS; c++) overrides[c] = m->model_override[c];
+    overrides[column] = vx_drums::ModelChoice::sample(path);
+    m->setKitState(m->kit, overrides);
+    action->captureAfter(m);
+    if (action->isNoop()) delete action;
+    else complex->push(action);
+
+    if (!was_sample)
+    {
+        const vx_drums::ModelSpec& ms = vx_drums::modelSpec(vx_drums::MODEL_SAMPLE);
+        const vx_drums::KnobSpec* specs[3] = { &ms.tune, &ms.decay, &ms.shape };
+        for (int which = 0; which < 3; which++)
+        {
+            const int pid = column * VXDrums::KNOBS_PER_COLUMN + which;
+            const float old_value = m->params[pid].getValue();
+            const float new_value = (float)vx_drums::knobDefault01(*specs[which]);
+            if (old_value == new_value) continue;
+
+            APP->engine->setParamValue(m, pid, new_value);
+
+            history::ParamChange* change = new history::ParamChange;
+            change->moduleId = m->id;
+            change->paramId = pid;
+            change->oldValue = old_value;
+            change->newValue = new_value;
+            complex->push(change);
+        }
+    }
+
+    if (complex->isEmpty()) { delete complex; return; }
+    APP->history->push(complex);
+}

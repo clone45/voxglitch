@@ -115,7 +115,7 @@ Every model sits at roughly the same loudness at the same `LEVEL`, so swapping k
 
 #### Samples
 
-Any column can play an audio file of your own instead of a circuit. Right-click the panel, open **Kit Customization**, pick the column's model submenu and choose **Load sample…** (WAV or MP3; stereo files are summed to mono, and any sample rate is fine). The file becomes that column's override, the entry above the loader shows its name, and the three knobs take on new meanings:
+Any column can play an audio file of your own instead of a circuit. Right-click the panel, open **Kit Customization**, pick the column's model submenu and choose **Load sample…** (WAV or MP3; stereo files are summed to mono, and any sample rate is fine). The file becomes that column's override, the entry above the loader shows its name, and the three knobs take on new meanings. If the column was not already playing a sample, the load also puts those three knobs where the file plays exactly as recorded: `TUNE` centred, `DECAY` fully clockwise, `SHAPE` at zero (`LEVEL` is left alone, and undo restores all of it). Loading another sample over a sample keeps the knobs where they are.
 
 - **TUNE** is pitch, in semitones, -24 to +24, with 0 at the middle of the knob playing the file as recorded.
 - **DECAY** is a decay envelope over the playback, 20 ms to 4 s, the same idea as on every circuit: turn it down and a long sample becomes a short hit. It only ever shortens; a file that ends before the decay does simply ends. Fully clockwise, which is where a freshly loaded sample sits, the envelope is off and the file plays out exactly as recorded.
