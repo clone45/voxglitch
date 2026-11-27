@@ -22,6 +22,15 @@ FLAGS += -DVOXGLITCH_BROWSER_SMOKE -fsanitize=undefined -fno-sanitize=vptr
 LDFLAGS += -fsanitize=undefined
 endif
 
+# The Wav Bank MC load-race test build: adds a context-menu item that reloads
+# the current folder repeatedly while audio plays, to reproduce the
+# load-while-playing crash on demand (WavBankMCWidget.hpp). Never in a shipped
+# build. Make does not notice the flag changing, so touch the source first:
+#   touch src/modules/wavbank_mc.cpp && make WAVBANK_RACE_TEST=1 install
+ifdef WAVBANK_RACE_TEST
+FLAGS += -DVOXGLITCH_WAVBANK_RACE_TEST
+endif
+
 # Add .cpp files to the build
 SOURCES += $(wildcard src/*.cpp)
 SOURCES += $(wildcard src/modules/*.cpp)

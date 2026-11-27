@@ -250,5 +250,20 @@ struct WavBankMCWidget : ModuleWidget
         menu_item_load_bank_mc->text = "Select Directory Containing WAV Files";
         menu_item_load_bank_mc->module = module;
         menu->addChild(menu_item_load_bank_mc);
+
+#ifdef VOXGLITCH_WAVBANK_RACE_TEST
+        // TEST BUILDS ONLY (`make WAVBANK_RACE_TEST=1`, see the Makefile): reproduces
+        // the load-while-playing crash of 2026-11-21 on demand. It calls the same
+        // load_samples_from_path() the directory picker calls, on this (the UI)
+        // thread, while the audio thread goes on playing. Nothing here is rigged:
+        // the race is the loader's. Start a sample looping first.
+        menu->addChild(new MenuSeparator);
+        menu->addChild(createMenuItem("TEST: reload this folder 10 times while playing", "",
+            [module]() {
+                if (module->path.empty()) return;
+                const std::string folder = module->path;
+                for (int i = 0; i < 10; i++) module->load_samples_from_path(folder);
+            }));
+#endif
     }
 };
