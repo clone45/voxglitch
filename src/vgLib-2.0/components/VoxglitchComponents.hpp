@@ -32,6 +32,8 @@
 #include "DigitalHorizontalSlider.hpp"
 #include "DigitalControl.hpp"
 
+#include "SampleDropTargets.hpp"
+
 
 // =========================================
 #endif

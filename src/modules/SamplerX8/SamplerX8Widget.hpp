@@ -1,5 +1,7 @@
 struct SamplerX8Widget : VoxglitchSamplerModuleWidget
 {
+    vgLib_v2::SampleDropTargets* drop_targets = NULL;   // SIREN drag feedback over the eight columns
+
     SamplerX8Widget(SamplerX8 *module)
     {
         setModule(module);
@@ -82,6 +84,56 @@ struct SamplerX8Widget : VoxglitchSamplerModuleWidget
         // Add mix outputs
         addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("mix_output_left"), module, SamplerX8::AUDIO_MIX_OUTPUT_LEFT));
         addOutput(createOutputCentered<VoxglitchOutputPort>(panelHelper.findNamed("mix_output_right"), module, SamplerX8::AUDIO_MIX_OUTPUT_RIGHT));
+
+        // Drop targets for samples dragged in from stoermelder SIREN
+        // (SampleDropTargets.hpp): one per column, from the VOL knob down to
+        // the R output, as wide as the column pitch. A drop lands in
+        // onPathDrop() below. Last, so they paint over the knobs.
+        drop_targets = new vgLib_v2::SampleDropTargets(module, box.size);
+        {
+            float pitch = panelHelper.findNamed("volume_knob_2").x - panelHelper.findNamed("volume_knob_1").x;
+            if (pitch <= 0.f) pitch = 15.f * 3.f;
+            const float half_width = pitch * 0.5f - 1.5f;
+            for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
+            {
+                const std::string n = std::to_string(i + 1);
+                const float cx     = panelHelper.findNamed("volume_knob_" + n).x;
+                const float top    = panelHelper.findNamed("volume_knob_" + n).y - 24.f;
+                const float bottom = panelHelper.findNamed("right_output_" + n).y + 18.f;
+                drop_targets->targets.push_back(rack::Rect(Vec(cx - half_width, top), Vec(half_width * 2.f, bottom - top)));
+            }
+        }
+        addChild(drop_targets);
+    }
+
+    // A file dropped on the panel (from SIREN, or from the OS) loads into the
+    // column under the drop point, exactly like that slot's "Load" menu item.
+    // Anywhere else, Rack's default handling.
+    void onPathDrop(const PathDropEvent& e) override
+    {
+        SamplerX8* module = dynamic_cast<SamplerX8*>(this->module);
+        const int slot = (module && drop_targets && !e.paths.empty()) ? drop_targets->targetAt(e.pos) : -1;
+        if (slot < 0)
+        {
+            VoxglitchSamplerModuleWidget::onPathDrop(e);
+            return;
+        }
+        e.consume(this);
+
+        const std::string path = e.paths[0];
+        if (module->sample_players[slot].loadSample(path))
+        {
+            module->loaded_filenames[slot] = module->sample_players[slot].getFilename();
+            module->setRoot(path);
+        }
+        else
+        {
+            // WAV and MP3 only. SIREN hands over FLAC as-is unless its
+            // "Convert to WAV on drop" option is on, the likely way to get here.
+            osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK,
+                ("Could not read \"" + rack::system::getFilename(path) + "\". Sampler X8 plays WAV and MP3 files; "
+                 "if it came from SIREN, turn on \"Convert to WAV on drop\" in SIREN's source menu.").c_str());
+        }
     }
 
     void appendContextMenu(Menu *menu) override
