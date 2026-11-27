@@ -226,6 +226,132 @@ int main()
     check("node ceiling holds", full.count() == TL_MAX_NODES, full.count(), TL_MAX_NODES);
     check("insert refuses a full lane", full.insert(0.5, 0.0) == -1 && full.full());
 
+    printf("\nStep lanes\n");
+    {
+        Set ss;
+        TimelineEngine es;
+        es.setSampleRate(48000.0);
+        LaneData& d = ss.d[0];
+        d.add(0.0, 1.0);
+        d.add(4.0, 3.0, 5.0);          // a bend, which a step lane must ignore
+        d.add(8.0, -2.0);
+        check("a new lane is RAMP", d.mode == LANE_RAMP && !d.step());
+        es.lanes[0].seek(2.0); es.lanes[0].eval(ss.p[0]);
+        near("RAMP interpolates (control)", es.lanes[0].value, 2.0);
+        d.mode = LANE_STEP;
+        es.lanes[0].seek(2.0); es.lanes[0].eval(ss.p[0]);
+        near("STEP holds the left node mid-step", es.lanes[0].value, 1.0);
+        es.lanes[0].seek(3.999); es.lanes[0].eval(ss.p[0]);
+        near("STEP holds right up to the next node", es.lanes[0].value, 1.0);
+        es.lanes[0].seek(4.0); es.lanes[0].eval(ss.p[0]);
+        near("STEP jumps exactly on the node", es.lanes[0].value, 3.0);
+        es.lanes[0].seek(6.0); es.lanes[0].eval(ss.p[0]);
+        near("STEP ignores the bend", es.lanes[0].value, 3.0);
+        es.lanes[0].seek(20.0); es.lanes[0].eval(ss.p[0]);
+        near("STEP holds after the last node", es.lanes[0].value, -2.0);
+        ss.d[1].add(4.0, 6.0); ss.d[1].mode = LANE_STEP;
+        es.lanes[1].seek(1.0); es.lanes[1].eval(ss.p[1]);
+        near("STEP holds the first value before the first node", es.lanes[1].value, 6.0);
+
+        // Playing forward through the staircase, the cursor-tracked path.
+        es.lanes[0].seek(0.0); es.lanes[0].setPlaying(1);
+        es.bpm = 120.0;                 // 2 beats/s
+        for (int i = 0; i < 48000 * 3; i++) es.tick(ss.p);   // to beat 6
+        near("STEP while playing: beat 6 holds node 2's value", es.lanes[0].value, 3.0, 1e-6);
+
+        // Two nodes on one beat: the later one wins from that beat on.
+        LaneData& q = ss.d[2];
+        q.mode = LANE_STEP;
+        q.add(0.0, 0.0); q.add(2.0, 4.0); q.add(2.0, 7.0);
+        es.lanes[2].seek(2.0); es.lanes[2].eval(ss.p[2]);
+        near("STEP: of two nodes on one beat, the later holds", es.lanes[2].value, 7.0);
+
+        LaneData same = d;
+        check("sameLaneData: a copy is the same", sameLaneData(d, same));
+        same.v[1] += 0.5f;
+        check("sameLaneData: a moved value differs", !sameLaneData(d, same));
+        same = d; same.mode = LANE_RAMP;
+        check("sameLaneData: a mode change differs", !sameLaneData(d, same));
+        same = d; same.insert(5.0, 3.0);
+        check("sameLaneData: a split (same value, new node) differs", !sameLaneData(d, same));
+
+        d.clear();
+        check("clear() keeps the mode", d.step());
+        LaneData copy = d;
+        check("a copy carries the mode (the undo path)", copy.step());
+    }
+
+    printf("\nVoltage snap\n");
+    {
+        VoltSnap off;
+        check("off by default", !off.on());
+        near("off passes values through", off.snap(3.21), 3.21);
+
+        VoltSnap vs; vs.count = 39; vs.lo = 0.f; vs.hi = 10.f;
+        check("39 values over 0-10 V is on", vs.on());
+        near("value 1 is exactly 0 V", vs.value(0), 0.0, 0.0);
+        near("value 39 is exactly 10 V", vs.value(38), 10.0, 0.0);
+        near("value 2", vs.value(1), 10.0 / 38.0);
+        near("0 V snaps to 0 V", vs.snap(0.0), 0.0, 0.0);
+        near("10 V snaps to 10 V", vs.snap(10.0), 10.0, 0.0);
+        bool roundTrip = true, roundMap = true, floorMap = true;
+        for (int k = 0; k < 39; k++)
+        {
+            float c = (float)vs.value(k);             // node values are stored as float
+            if (vs.indexOf(c) != k) roundTrip = false;
+            if ((int)std::lround(c / 10.0 * 38.0) != k) roundMap = false;
+            int f = (int)std::floor(c / 10.0 * 39.0);
+            if (f > 38) f = 38;                       // such a module clamps the top
+            if (f != k) floorMap = false;
+        }
+        check("every stored value reads back as its own index", roundTrip);
+        check("value k selects choice k under a round-to-(N-1) mapping", roundMap);
+        check("... and under a floor mapping that clamps the top", floorMap);
+        near("a value snaps to the nearest", vs.snap(3.0), vs.value(11));   // 3.0*3.8 = 11.4
+        near("below the range clamps to the first", vs.snap(-4.0), 0.0, 0.0);
+        near("above the range clamps to the last", vs.snap(12.0), 10.0, 0.0);
+        check("indexOf clamps", vs.indexOf(-1.0) == 0 && vs.indexOf(99.0) == 38);
+        check("value clamps", vs.value(-3) == 0.0 && vs.value(99) == 10.0);
+
+        VoltSnap bi; bi.count = 3; bi.lo = -5.f; bi.hi = 5.f;
+        near("a bipolar range: -5, 0, +5", bi.value(0), -5.0, 0.0);
+        near("... its middle is 0 V", bi.value(1), 0.0);
+        near("... and its top", bi.value(2), 5.0, 0.0);
+
+        VoltSnap one; one.count = 1;
+        check("a count of 1 is not a snap", !one.on());
+        one.sanitize();
+        check("sanitize turns 1 into 2", one.count == 2 && one.on());
+
+        VoltSnap bad; bad.count = 9999; bad.lo = 4.f; bad.hi = 2.f;
+        bad.sanitize();
+        check("sanitize caps the count", bad.count == TL_VSNAP_MAX, bad.count, TL_VSNAP_MAX);
+        check("sanitize repairs an inverted range", bad.lo == 0.f && bad.hi == 10.f);
+        VoltSnap wide; wide.count = -2; wide.lo = -50.f; wide.hi = 50.f;
+        wide.sanitize();
+        check("sanitize clamps the range to +/-10 V and a negative count to off",
+              wide.lo == -10.f && wide.hi == 10.f && wide.count == 0);
+    }
+
+    printf("\nThe editor's vertical view\n");
+    {
+        double lo = 0, hi = 0;
+        VoltSnap off;
+        LaneData d;
+        laneViewRange(off, d, lo, hi);
+        check("no snap: the full +/-10 V", lo == -10.0 && hi == 10.0);
+        VoltSnap vs; vs.count = 6; vs.lo = 0.f; vs.hi = 5.f;
+        laneViewRange(vs, d, lo, hi);
+        check("a 0-5 V snap: the view is 0-5 V", lo == 0.0 && hi == 5.0);
+        d.add(0.0, 2.0); d.add(1.0, 4.0);
+        laneViewRange(vs, d, lo, hi);
+        check("nodes inside the range leave it alone", lo == 0.0 && hi == 5.0);
+        d.add(2.0, -3.0); d.add(3.0, 7.5);
+        laneViewRange(vs, d, lo, hi);
+        check("nodes outside the range widen the view to include them",
+              lo == -3.0 && hi == 7.5);
+    }
+
     printf("\nGuards\n");
     e.lanes[0].seek(-5.0);  near("seek clamps below zero", e.lanes[0].playhead, 0.0);
     e.lanes[0].seek(1e9);   near("seek clamps to the ceiling", e.lanes[0].playhead, TL_MAX_BEAT);

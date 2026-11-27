@@ -88,18 +88,52 @@ Sixteen numbered tabs above the editor choose which lane the editor shows. A tab
 - **Scrub** - Drag the ruler at the top. Scrubbing seeks every lane.
 - **Zoom** - Mouse wheel, anchored so the beat under the pointer stays put. When the rack itself is zoomed out, the wheel passes through to the rack.
 - **Pan** - Middle-drag the editor body, or use the scrollbar at the bottom. The scrollbar always leaves a screenful of empty future beyond your content, so there is never a wall in the direction you compose.
+- **Nudge** - Hover a node (or a step's flat top) and press Up or Down. The value moves to the next snap value when the lane has a voltage snap, and 0.1 V when it does not.
+- **Value tag** - Hovering or dragging a node shows its value: which snap value it is and its voltage (such as `12/39 (2.89V)`) on a lane with a voltage snap, or the voltage on one without.
 - **Readout** - Bar.beat and minutes:seconds at the bottom right, following the selected lane.
 
 A curve holds its first node's value before it and its last node's value after it, so a lane is defined everywhere. Each lane holds up to 8192 nodes.
 
+### Step Lanes
+
+Each lane is either a **Ramp** lane (the default: the output glides from node to node) or a **Step** lane. Right-click empty space in the editor to switch the selected lane.
+
+On a step lane, each node's value holds until the next node, then the output jumps to the new value. Nothing slews in between, so one node is one change. Use step lanes to sequence anything that wants discrete values: preset selection, mode switches, a sequencer's pattern number.
+
+- **Add a change** - Click where the new value should start. The node lands on the snap grid.
+- **Change a value** - Drag a step's flat top up or down. It stays where it is in time.
+- **Split a step** - Double-click a step's flat top. A new node appears at that beat (on the snap grid) holding the same value, so nothing changes until you move it. Keep holding after the second click and drag to set the new step's value straight away.
+- **Move a change** - Drag its node, as on a ramp lane.
+
+Step lanes have no bends. A bend drawn while the lane was a ramp is kept, though, and comes back if you switch the lane to Ramp again. Recording into a step lane keeps one node for each change in the input.
+
 Every completed gesture is one undo step.
+
+### Voltage Snap
+
+The **V SNAP** display at the top right of the panel sets the selected lane's voltage snap. It spreads a number of evenly spaced values across a voltage range, including both ends, and any value you add, drag or nudge lands on the nearest one. With 39 values over 0-10 V, the first is exactly 0 V, the next 0.263 V, and the last exactly 10 V. Each lane has its own setting, so lane 1 can step through 39 presets while lane 2 picks one of 8 modes.
+
+Click the display for its menu:
+
+- **Off** - No voltage snap: values go wherever you put them.
+- **Values** - Type how many values, then press Enter. For a module with 39 presets spread over 0-10 V, type 39.
+- **Common counts** - A quick list. 11 over 0-10 V gives whole volts.
+- **Range** - The voltages the values span: 0 to 10 V (the default), 0 to 5 V, -5 to 5 V, or -10 to 10 V. Match it to the input of the module you are sequencing.
+- **Copy to all lanes** - Gives every lane this lane's setting.
+
+Scrolling over the display steps the count up or down by one.
+
+While a lane has a voltage snap, the editor's height spans that lane's range, so 0-5 V fills the whole editor. If the lane has nodes outside the range (placed before you set it), the view stretches to include them. Lanes without a snap show -10 to 10 V. Small voltage labels at the left edge show the scale.
+
+When the values are far enough apart to see, the editor draws a faint line at each one. Nodes placed before you turned the snap on stay where they are until you move them. Recording does not snap.
 
 ### Right-Click Menus
 
 On the editor:
 
-- **Clear lane** - Removes every node from the selected lane.
-- **Straighten lane** - Removes every bend, keeping the nodes.
+- **Ramp / Step** - How the selected lane plays its nodes: glide between them, or hold each value until the next node. See Step Lanes.
+- **Clear lane** - Removes every node from the selected lane. The lane keeps its mode.
+- **Straighten lane** - Removes every bend, keeping the nodes. Ramp lanes only.
 - **Fit view to content** - Zooms to show everything you have drawn.
 - **Reset zoom** - Back to the default view.
 

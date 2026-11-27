@@ -20,6 +20,7 @@
 
 #include "Timeline.hpp"
 #include "TimelineEditor.hpp"
+#include "TimelineVoltSnap.hpp"
 
 namespace timeline_ui
 {
@@ -34,6 +35,13 @@ static const float TABS_H       = 13.f;
 static const float EDITOR_Y     = 47.f;
 static const float EDITOR_H     = 268.f;
 static const float EDITOR_RIGHT = PANEL_W - MARGIN;
+
+// The V SNAP display: top right, on the wordmark's row, right edge flush
+// with the tabs and the editor.
+static const float VSNAP_W = 120.f;
+static const float VSNAP_H = TABS_H;
+static const float VSNAP_X = PANEL_W - MARGIN - VSNAP_W;
+static const float VSNAP_Y = HEADER_Y - VSNAP_H * 0.5f;
 
 // The position readout: inside the editor, bottom right, above the scrollbar.
 static const float READOUT_W = 150.f;
@@ -153,6 +161,11 @@ struct TimelineWidget : ModuleWidget
         readout->module = module;
         readout->box = Rect(Vec(READOUT_X, READOUT_Y), Vec(READOUT_W, READOUT_H));
         addChild(readout);
+
+        TimelineVoltSnapDisplay* vsnap = new TimelineVoltSnapDisplay();
+        vsnap->module = module;
+        vsnap->box = Rect(Vec(VSNAP_X, VSNAP_Y), Vec(VSNAP_W, VSNAP_H));
+        addChild(vsnap);
 
         // ── inputs: START / STOP / RESET / REC, all polyphonic ──
         struct Anchor { const char* id; int pid; };

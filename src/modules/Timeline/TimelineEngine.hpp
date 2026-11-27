@@ -45,10 +45,83 @@ static const double TL_MAX_BEAT  = 86400.0;   // 12 h at 120 BPM — runaway cei
 static const double TL_BPM_MIN   = 20.0;
 static const double TL_BPM_MAX   = 300.0;
 
+// How a lane reads its nodes (2026-11-26). The values are PERSISTED (the
+// "lane_modes" array in the patch), so they are frozen: never renumber, only
+// append.
+//   RAMP  the original: interpolate between nodes, with the segment bend.
+//   STEP  hold each node's value until the next node, then jump. For
+//         sequencing discrete changes (preset selects, mode switches): one
+//         node per change, where a ramp lane needed two stacked nodes to
+//         fake a vertical edge. Bends are kept in the data but ignored, so
+//         switching a lane back to RAMP restores its curves.
+enum LaneMode { LANE_RAMP = 0, LANE_STEP = 1, LANE_MODE_COUNT = 2 };
+
 inline double tlClampD(double x, double lo, double hi)
 {
     return x < lo ? lo : (x > hi ? hi : x);
 }
+
+// ── voltage snap (2026-11-26): an EDITING aid, per lane ────────────────────
+// `count` evenly spaced values spanning [lo, hi], BOTH ends included: 39
+// over 0-10 V is 0, 0.263, ... 9.737, 10. A snapped value lands on the
+// nearest of them.
+//
+// Both ends, because the first and last choices must be reachable: Bret,
+// sequencing a 39-preset module, needed preset 1 at exactly 0 V. (The first
+// version used slot MIDPOINTS, 0.128 .. 9.872 V, and 0 V was unreachable.)
+// How the module on the other end maps voltage to a choice:
+//   round((v - lo) / range * (N - 1))  -> exact: value k IS choice k
+//   floor((v - lo) / range * N)        -> value k reads k + k/(N-1), so it
+//                                         still floors to k (the last value
+//                                         reads N, which such a module clamps
+//                                         to N-1), with the margin shrinking
+//                                         toward the top of the range
+// Never seen by the audio thread: it changes how the editor places values,
+// not how a lane plays them.
+static const int TL_VSNAP_MAX = 512;
+
+struct VoltSnap
+{
+    int   count = 0;          // how many values; 0 = off (1 is never stored)
+    float lo = 0.f, hi = 10.f;
+
+    bool on() const { return count >= 2 && hi > lo; }
+    double stepV() const { return ((double)hi - (double)lo) / (double)(count - 1); }
+
+    // The nearest value's index, 0-based, clamped into the range.
+    int indexOf(double v) const
+    {
+        if (!on()) return 0;
+        int k = (int)std::floor((v - (double)lo) / stepV() + 0.5);
+        if (k < 0) k = 0;
+        if (k >= count) k = count - 1;
+        return k;
+    }
+
+    // Value k. The last is `hi` exactly, not lo + (N-1)*step, which can miss
+    // it by a rounding error.
+    double value(int k) const
+    {
+        if (!on()) return 0.0;
+        if (k <= 0) return (double)lo;
+        if (k >= count - 1) return (double)hi;
+        return (double)lo + (double)k * stepV();
+    }
+
+    double snap(double v) const { return on() ? value(indexOf(v)) : v; }
+
+    // Forces a loaded or typed setting into range: count 0 or 2..TL_VSNAP_MAX,
+    // lo/hi within +/-10 V, and a range that cannot be empty or inverted.
+    void sanitize()
+    {
+        if (count < 0) count = 0;
+        if (count == 1) count = 2;
+        if (count > TL_VSNAP_MAX) count = TL_VSNAP_MAX;
+        lo = (float)tlClampD(lo, -10.0, 10.0);
+        hi = (float)tlClampD(hi, -10.0, 10.0);
+        if (!(hi > lo)) { lo = 0.f; hi = 10.f; }
+    }
+};
 
 // ── one lane's nodes: an immutable snapshot once published ──────────────────
 // Three parallel float vectors. Mutated ONLY on a private copy (the UI
@@ -69,10 +142,16 @@ struct LaneData
     // The last node's bend is meaningless (no segment to its right).
     std::vector<float> b;
 
+    // LaneMode. Lives IN the snapshot, so a mode change publishes atomically
+    // with the nodes it reinterprets and rides the same undo path.
+    int mode = LANE_RAMP;
+    bool step() const { return mode == LANE_STEP; }
+
     int  count() const { return (int)t.size(); }
     bool empty() const { return t.empty(); }
     bool full()  const { return (int)t.size() >= TL_MAX_NODES; }
 
+    // Removes the nodes; the lane keeps its mode.
     void clear() { t.clear(); v.clear(); b.clear(); }
 
     // Append in ascending time order (the caller keeps lanes sorted).
@@ -160,6 +239,31 @@ struct LaneData
     // The last drawn beat (0 if nothing is drawn).
     double lastBeat() const { return t.empty() ? 0.0 : (double)t.back(); }
 };
+
+// Two lanes hold the same nodes, bends and mode: how the editor tells a
+// gesture that changed nothing (no undo step for it).
+inline bool sameLaneData(const LaneData& a, const LaneData& b)
+{
+    return a.mode == b.mode && a.t == b.t && a.v == b.v && a.b == b.b;
+}
+
+// The editor's vertical view for a lane (2026-11-26). A lane with a voltage
+// snap shows its snap range, so 0-5 V fills the editor instead of a quarter
+// of it; any node lying outside that range (placed before the snap was set)
+// widens the view to include it, so nothing is ever drawn off screen. A
+// lane without a snap shows the full +/-10 V.
+inline void laneViewRange(const VoltSnap& vs, const LaneData& ld, double& lo, double& hi)
+{
+    if (!vs.on()) { lo = -10.0; hi = 10.0; return; }
+    lo = vs.lo;
+    hi = vs.hi;
+    int n = ld.count();
+    for (int i = 0; i < n; i++)
+    {
+        if (ld.v[i] < lo) lo = ld.v[i];
+        if (ld.v[i] > hi) hi = ld.v[i];
+    }
+}
 
 // The last drawn beat across a set of lanes — the loop-end default and the
 // "content ends here" marker. Null entries count as empty.
@@ -331,6 +435,7 @@ struct Lane
         cursor = c;
         if (t <= (double)T[0]) { value = V[0]; return; }          // hold before first
         if (c >= n - 1)        { value = V[n - 1]; return; }      // hold after last
+        if (ld->step())        { value = V[c]; return; }          // hold until the next node
         double t0 = T[c], t1 = T[c + 1];
         double v0 = V[c], v1 = V[c + 1];
         double frac = (t1 > t0) ? (t - t0) / (t1 - t0) : 0.0;
@@ -673,46 +778,68 @@ inline void simplifyRegion(LaneData& d, double lo, double hi, double tol,
     if (ia < 0 || ib - ia < 2) return;
 
     std::vector<char> keep(n, 1);
-    for (int i = ia + 1; i < ib; i++)
-    {
-        if (!std::binary_search(rem.begin(), rem.end(), d.t[i])) continue;
-        keep[i] = 0;
-        if (d.b[i] != 0.f) keep[i] = 1;
-        for (int k = 0; k < nKeep; k++) if (d.t[i] == keepBeats[k]) keep[i] = 1;
-    }
 
-    // Iterative RDP between consecutive kept nodes.
-    std::vector<int> stack;
-    int a = ia;
-    for (int i = ia + 1; i <= ib; i++)
+    // A STEP lane cannot use RDP: the chord test asks "is this node on the
+    // straight line between its neighbours?", and a staircase climbing one
+    // volt per beat is exactly on that line, so RDP would flatten it to a
+    // single jump. On a step lane a node only matters if it CHANGES the
+    // held value, so the take's nodes that repeat the value before them go,
+    // and nothing else does. (This drops the hold-end node the assembler
+    // writes before each change: on a step lane the hold is already flat.)
+    if (d.step())
     {
-        if (!keep[i]) continue;
-        stack.push_back(a);
-        stack.push_back(i);
-        a = i;
-    }
-    while (!stack.empty())
-    {
-        int b1 = stack.back(); stack.pop_back();
-        int a1 = stack.back(); stack.pop_back();
-        if (b1 - a1 < 2) continue;
-        double ta = d.t[a1], tb = d.t[b1];
-        double va = d.v[a1], vb = d.v[b1];
-        double span = tb - ta;
-        int best = -1;
-        double bestDev = -1.0;
-        for (int i = a1 + 1; i < b1; i++)
+        float held = d.v[ia];
+        for (int i = ia + 1; i < ib; i++)
         {
-            double frac = (span > 0.0) ? ((double)d.t[i] - ta) / span : 0.0;
-            double line = va + (vb - va) * frac;
-            double dev = std::fabs((double)d.v[i] - line);
-            if (dev > bestDev) { bestDev = dev; best = i; }
+            bool mayGo = std::binary_search(rem.begin(), rem.end(), d.t[i]);
+            for (int k = 0; k < nKeep; k++) if (d.t[i] == keepBeats[k]) mayGo = false;
+            if (mayGo && std::fabs(d.v[i] - held) <= TL_REC_VALUE_EPS) { keep[i] = 0; continue; }
+            held = d.v[i];
         }
-        if (best >= 0 && bestDev > tol)
+    }
+    else
+    {
+        for (int i = ia + 1; i < ib; i++)
         {
-            keep[best] = 1;
-            stack.push_back(a1); stack.push_back(best);
-            stack.push_back(best); stack.push_back(b1);
+            if (!std::binary_search(rem.begin(), rem.end(), d.t[i])) continue;
+            keep[i] = 0;
+            if (d.b[i] != 0.f) keep[i] = 1;
+            for (int k = 0; k < nKeep; k++) if (d.t[i] == keepBeats[k]) keep[i] = 1;
+        }
+    
+        // Iterative RDP between consecutive kept nodes.
+        std::vector<int> stack;
+        int a = ia;
+        for (int i = ia + 1; i <= ib; i++)
+        {
+            if (!keep[i]) continue;
+            stack.push_back(a);
+            stack.push_back(i);
+            a = i;
+        }
+        while (!stack.empty())
+        {
+            int b1 = stack.back(); stack.pop_back();
+            int a1 = stack.back(); stack.pop_back();
+            if (b1 - a1 < 2) continue;
+            double ta = d.t[a1], tb = d.t[b1];
+            double va = d.v[a1], vb = d.v[b1];
+            double span = tb - ta;
+            int best = -1;
+            double bestDev = -1.0;
+            for (int i = a1 + 1; i < b1; i++)
+            {
+                double frac = (span > 0.0) ? ((double)d.t[i] - ta) / span : 0.0;
+                double line = va + (vb - va) * frac;
+                double dev = std::fabs((double)d.v[i] - line);
+                if (dev > bestDev) { bestDev = dev; best = i; }
+            }
+            if (best >= 0 && bestDev > tol)
+            {
+                keep[best] = 1;
+                stack.push_back(a1); stack.push_back(best);
+                stack.push_back(best); stack.push_back(b1);
+            }
         }
     }
 

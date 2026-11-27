@@ -283,6 +283,67 @@ int main()
               hasBeat(h, 2.0) && !hasBeat(h, 1.0) && !hasBeat(h, 3.0), h.count(), 3);
     }
 
+    printf("\nThe simplifier on a STEP lane\n");
+    {
+        // A staircase climbing a volt per beat lies exactly on the chord,
+        // so RDP would flatten it. A step lane keeps every change.
+        LaneData d;
+        d.mode = LANE_STEP;
+        for (int i = 0; i <= 4; i++) d.add((double)i, (double)i);
+        float keep[2] = { 0.f, 4.f };
+        std::vector<float> rec(d.t);
+        simplifyRegion(d, 0.0, 4.0, TL_REC_TOL, keep, 2, rec);
+        check("every step of a staircase survives", d.count() == 5, d.count(), 5);
+
+        // Repeats of the held value change nothing on a step lane: they go,
+        // the changes and the protected ends stay.
+        LaneData e;
+        e.mode = LANE_STEP;
+        e.add(0.0, 1.0); e.add(1.0, 1.0); e.add(2.0, 1.0); e.add(3.0, 4.0);
+        e.add(4.0, 4.0); e.add(5.0, 4.0);
+        float keep2[2] = { 0.f, 5.f };
+        std::vector<float> rec2(e.t);
+        simplifyRegion(e, 0.0, 5.0, TL_REC_TOL, keep2, 2, rec2);
+        check("repeats of the held value are removed",
+              e.count() == 3 && hasBeat(e, 0.0) && hasBeat(e, 3.0) && hasBeat(e, 5.0), e.count(), 3);
+
+        // A hand-placed repeat (not recorded) is left alone.
+        LaneData f;
+        f.mode = LANE_STEP;
+        f.add(0.0, 2.0); f.add(1.0, 2.0); f.add(2.0, 2.0); f.add(3.0, 2.0);
+        float keep3[2] = { 0.f, 3.f };
+        std::vector<float> rec3; rec3.push_back(0.f); rec3.push_back(2.f); rec3.push_back(3.f);
+        simplifyRegion(f, 0.0, 3.0, TL_REC_TOL, keep3, 2, rec3);
+        check("a hand-placed node is never removed", hasBeat(f, 1.0) && !hasBeat(f, 2.0), f.count(), 3);
+
+        // End to end: record a staircase into a step lane. The ramp lane's
+        // hold-end nodes (written so a RAMP stays flat before each change)
+        // are redundant on a step lane and are simplified away.
+        Rig r; r.rate = 2; r.selected = 0; r.channels = 1;
+        LaneData empty; empty.mode = LANE_STEP;
+        r.store.publishCopy(0, empty);
+        r.engine.lanes[0].setPlaying(1);
+        r.armed = true;
+        r.volts[0] = 1.f;
+        r.runBeats(2.5);  r.drain();
+        r.volts[0] = 2.f;
+        r.runBeats(2.0);  r.drain();
+        r.volts[0] = 3.f;
+        r.runBeats(2.0);  r.drain();
+        r.armed = false; r.run(1); r.drain();
+        const LaneData& d2 = r.store.lane(0);
+        check("the recorded lane is still STEP", d2.step());
+        // START 0 @1V, change at beat 3 (2V), change at beat 5 (3V), END ~6.5
+        check("a recorded staircase keeps one node per change plus the ends",
+              d2.count() == 4, d2.count(), 4);
+        bool ok = d2.count() == 4 && d2.v[0] == 1.f && d2.v[1] == 2.f && d2.v[2] == 3.f
+                  && hasBeat(d2, 0.0) && hasBeat(d2, 3.0) && hasBeat(d2, 5.0);
+        check("... at the beats where the input changed", ok);
+        r.engine.lanes[0].seek(4.5); r.engine.lanes[0].eval(&d2);
+        check("playback holds 2 V between the changes", std::fabs(r.engine.lanes[0].value - 2.0) < 1e-6,
+              r.engine.lanes[0].value, 2.0);
+    }
+
     printf("\nPoly lane mapping\n");
     {
         check("mono -> the selected lane", Recorder::targetMask(1, 7) == (1u << 7));

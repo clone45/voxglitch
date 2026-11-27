@@ -204,6 +204,11 @@ struct Timeline : Module
         store.freeRetired(true);
     }
 
+    // Voltage snap, per lane (an editing aid: see VoltSnap). UI thread only;
+    // persisted as "volt_snap". Not params: a value count is unbounded-ish
+    // and typed, and sixteen of them would crowd the param list.
+    timeline_dsp::VoltSnap voltSnap[timeline_dsp::TL_LANES];
+
     // "Lane full": set when a recording take hits the soft cap on that lane;
     // cleared by the next take or edit on it. UI thread only.
     bool laneFull[timeline_dsp::TL_LANES] = {};
@@ -224,6 +229,7 @@ struct Timeline : Module
     {
         Module::onReset(e);
         clearAllLanes();
+        for (int L = 0; L < timeline_dsp::TL_LANES; L++) voltSnap[L] = timeline_dsp::VoltSnap();
         engine.seekAll(0.0);
         engine.setPlayingAll(0);
         engine.setLoopEnd(0.0);
@@ -454,6 +460,26 @@ struct Timeline : Module
             json_array_append_new(lanesJ, nodesJ);
         }
         json_object_set_new(rootJ, "lanes", lanesJ);
+        // Lane modes ride beside "lanes" rather than inside it, so the
+        // "lanes" shape stays exactly what v2.44 reads. One LaneMode
+        // integer per lane; absent means every lane is RAMP.
+        json_t* modesJ = json_array();
+        for (int L = 0; L < TL_LANES; L++)
+            json_array_append_new(modesJ, json_integer(lane(L).mode));
+        json_object_set_new(rootJ, "lane_modes", modesJ);
+        // Voltage snap per lane. The range is stored as its volts, not as a
+        // menu index, so reordering or extending the menu never changes
+        // what a saved patch means.
+        json_t* snapsJ = json_array();
+        for (int L = 0; L < TL_LANES; L++)
+        {
+            json_t* sJ = json_object();
+            json_object_set_new(sJ, "count", json_integer(voltSnap[L].count));
+            json_object_set_new(sJ, "lo", json_real(voltSnap[L].lo));
+            json_object_set_new(sJ, "hi", json_real(voltSnap[L].hi));
+            json_array_append_new(snapsJ, sJ);
+        }
+        json_object_set_new(rootJ, "volt_snap", snapsJ);
         return rootJ;
     }
 
@@ -476,13 +502,39 @@ struct Timeline : Module
             recordRate = r;
         }
 
+        json_t* snapsJ = json_object_get(rootJ, "volt_snap");    // absent before 2.50
+        for (int L = 0; L < TL_LANES; L++)
+        {
+            VoltSnap vs;
+            json_t* sJ = (snapsJ && json_is_array(snapsJ)) ? json_array_get(snapsJ, L) : NULL;
+            if (sJ && json_is_object(sJ))
+            {
+                json_t* dJ = json_object_get(sJ, "count");
+                json_t* loJ = json_object_get(sJ, "lo");
+                json_t* hiJ = json_object_get(sJ, "hi");
+                if (dJ && json_is_integer(dJ)) vs.count = (int)json_integer_value(dJ);
+                if (loJ && json_is_number(loJ)) vs.lo = (float)json_number_value(loJ);
+                if (hiJ && json_is_number(hiJ)) vs.hi = (float)json_number_value(hiJ);
+                vs.sanitize();
+            }
+            voltSnap[L] = vs;
+        }
+
         json_t* lanesJ = json_object_get(rootJ, "lanes");
         if (!lanesJ || !json_is_array(lanesJ)) return;
         int nL = (int)json_array_size(lanesJ);
         if (nL > TL_LANES) nL = TL_LANES;
+        json_t* modesJ = json_object_get(rootJ, "lane_modes");   // absent before 2.50
+        if (modesJ && !json_is_array(modesJ)) modesJ = NULL;
         for (int L = 0; L < TL_LANES; L++)
         {
             LaneData ld;
+            json_t* modeJ = modesJ ? json_array_get(modesJ, L) : NULL;
+            if (modeJ && json_is_integer(modeJ))
+            {
+                int m = (int)json_integer_value(modeJ);
+                if (m >= 0 && m < LANE_MODE_COUNT) ld.mode = m;   // unknown = RAMP
+            }
             json_t* nodesJ = (L < nL) ? json_array_get(lanesJ, L) : NULL;
             if (nodesJ && json_is_array(nodesJ))
             {

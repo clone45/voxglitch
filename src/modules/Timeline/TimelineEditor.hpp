@@ -15,6 +15,14 @@
 //   ruler scrub    drag the top ruler to seek
 //   node edit      click empty = add (and keep dragging it in the same
 //                  gesture); drag a node = move; right-click a node = delete
+//   step lanes     (2026-11-26) drawn as a staircase; drag a step's flat
+//                  top to change its value without moving it in time;
+//                  double-click a flat top to split the step there; no
+//                  bend handles
+//   voltage snap   (2026-11-26) per lane: added and dragged values land on
+//                  N evenly spaced values (ends included); a tag names the
+//                  value; Up/Down over a node or step nudges it one value
+//                  (0.1 V unsnapped)
 // One committed gesture = ONE undo step.
 //
 // It owns no data: it reads the module's lane store and pushes edits back
@@ -89,11 +97,13 @@ struct TimelineEditorWidget : OpaqueWidget
     Vec mousePos;
 
     // drag state
-    enum DragMode { DRAG_NONE, DRAG_NODE, DRAG_PAN, DRAG_SCRUB, DRAG_LOOP, DRAG_SCROLL, DRAG_BEND };
+    enum DragMode { DRAG_NONE, DRAG_NODE, DRAG_PAN, DRAG_SCRUB, DRAG_LOOP, DRAG_SCROLL, DRAG_BEND, DRAG_STEP };
     int dragMode = DRAG_NONE;
     int dragNode = -1;
     int dragSeg = -1;             // segment being bent (DRAG_BEND)
     int hoverSeg = -1;            // segment whose bend handle shows
+    int hoverStep = -1;           // step lane: the step whose flat top is under the pointer
+    bool stepSplit = false;       // this DRAG_STEP began as a double-click split
     Vec dragPos;
     timeline_dsp::LaneData gestureBefore;   // the lane BEFORE the gesture
     int hoverNode = -1;
@@ -236,19 +246,35 @@ struct TimelineEditorWidget : OpaqueWidget
     float t2x(double t) { return (float)((t - scroll) / tpp); }
     double x2t(float x) { return scroll + (double)x * tpp; }
 
+    // ── the vertical view: viewLo at the bottom, viewHi at the top ──────────
+    // Follows the selected lane (laneViewRange): its voltage-snap range when
+    // it has one, else +/-10 V. Recomputed once per frame in draw(), so the
+    // events between frames map through what is on screen. FROZEN while a
+    // value is being dragged: dragging a stray out-of-range node back inside
+    // would otherwise shrink the view under the pointer and fling the node.
+    double viewLo = -V_MAX, viewHi = V_MAX;
+
+    void updateViewRange()
+    {
+        if (dragMode == DRAG_NODE || dragMode == DRAG_STEP || dragMode == DRAG_BEND) return;
+        if (!module) { viewLo = -V_MAX; viewHi = V_MAX; return; }
+        int L = laneIdx();
+        timeline_dsp::laneViewRange(module->voltSnap[L], module->lane(L), viewLo, viewHi);
+    }
+
     float v2y(double v)
     {
         float top = bodyTop() + PAD_V, bot = bodyBot() - PAD_V;
-        float mid = (top + bot) * 0.5f, half = (bot - top) * 0.5f;
-        return mid - (float)(v / V_MAX) * half;
+        double span = viewHi - viewLo;
+        if (span <= 0.0) return (top + bot) * 0.5f;
+        return top + (float)((viewHi - v) / span) * (bot - top);
     }
     double y2v(float y)
     {
         float top = bodyTop() + PAD_V, bot = bodyBot() - PAD_V;
-        float mid = (top + bot) * 0.5f, half = (bot - top) * 0.5f;
-        if (half <= 0.f) return 0.0;
-        double v = (double)((mid - y) / half) * V_MAX;
-        return tlClamp(v, -V_MAX, V_MAX);
+        if (bot <= top) return viewLo;
+        double v = viewHi - (double)((y - top) / (bot - top)) * (viewHi - viewLo);
+        return tlClamp(v, viewLo, viewHi);
     }
 
     double applySnap(double beat)
@@ -258,12 +284,19 @@ struct TimelineEditorWidget : OpaqueWidget
         if (s <= 0.0) return beat;
         return std::round(beat / s) * s;
     }
+    // The selected lane's voltage snap. Precondition as laneIdx().
+    const timeline_dsp::VoltSnap& vsnap() { return module->voltSnap[laneIdx()]; }
+
     double clampT(double beat)
     {
         return tlClamp(beat, 0.0, timeline_dsp::TL_MAX_BEAT);
     }
 
-    int laneIdx() { return module ? module->currentLane() : 0; }
+    // PRECONDITION: module is non-null. Every caller has already checked it,
+    // and every caller dereferences module straight after. A `module ? : 0`
+    // test here handed GCC 15 a null path to those dereferences, which it
+    // reported as -Wstringop-overflow on the lane store's atomic load.
+    int laneIdx() { return module->currentLane(); }
 
     // ── scrollbar geometry ─────────────────────────────────────────────────
     // The scrollable extent is the CONTENT, not the engine's 86,400-beat
@@ -402,7 +435,8 @@ struct TimelineEditorWidget : OpaqueWidget
     int bendHandleSeg(Vec p)
     {
         int seg = (dragMode == DRAG_BEND) ? dragSeg : hoverSeg;
-        if (!module || seg < 0) return -1;
+        if (!module || seg < 0 || stepLane()) return -1;   // hoverSeg may be stale
+                                                            // across a mode switch
         if (seg + 1 >= module->lane(laneIdx()).count()) return -1;
         Vec h = bendHandlePos(seg);
         return (std::fabs(h.x - p.x) <= HANDLE_R + 3.f
@@ -424,19 +458,45 @@ struct TimelineEditorWidget : OpaqueWidget
         return -1;
     }
 
+    // ── step lanes ─────────────────────────────────────────────────────────
+    bool stepLane() { return module && module->lane(laneIdx()).step(); }
+
+    // The step whose flat top passes near the pointer, or -1. Step i holds
+    // node i's value from node i to node i+1; the last runs on forever, and
+    // the lead-in before the first node holds node 0's value, so it counts
+    // as step 0. Grabbing the flat top drags the value only: on a step lane
+    // the value is the thing being sequenced, and the time stays where the
+    // snap grid put it.
+    int stepAt(Vec p)
+    {
+        if (!module) return -1;
+        const timeline_dsp::LaneData& ld = module->lane(laneIdx());
+        if (!ld.step() || ld.empty()) return -1;
+        int n = ld.count();
+        double t = x2t(p.x);
+        int i = 0;
+        while (i + 1 < n && t >= ld.t[i + 1]) i++;
+        return (std::fabs(v2y(ld.v[i]) - p.y) <= 6.f) ? i : -1;
+    }
+
     // Snapshot the current lane (for the undo record).
     void snapshot() { gestureBefore = module ? module->laneCopy(laneIdx()) : timeline_dsp::LaneData(); }
 
+    // One undo step for the gesture just finished, unless it changed
+    // nothing: a click on a node or step that never moved (every
+    // double-click's first press is one) would otherwise leave an empty
+    // "move" in the history that undo has to step through.
     void pushGesture(const char* name)
     {
         if (!module) return;
-        LaneEditAction* a = new LaneEditAction;
-        a->moduleId = module->id;
-        a->name = name;
         LaneEditAction::Entry e;
         e.lane = laneIdx();
         e.before = gestureBefore;
         e.after = module->laneCopy(e.lane);
+        if (timeline_dsp::sameLaneData(e.before, e.after)) return;
+        LaneEditAction* a = new LaneEditAction;
+        a->moduleId = module->id;
+        a->name = name;
         a->entries.push_back(e);
         APP->history->push(a);
     }
@@ -446,9 +506,11 @@ struct TimelineEditorWidget : OpaqueWidget
     {
         mousePos = e.pos;
         hoverNode = (module && module->locked) ? -1 : nodeAt(e.pos);
-        hoverSeg = (hoverNode < 0 && module && !module->locked
-                    && e.pos.y > bodyTop() && e.pos.y < bodyBot())
-                   ? segAt(e.pos) : -1;
+        bool inBody = hoverNode < 0 && module && !module->locked
+                      && e.pos.y > bodyTop() && e.pos.y < bodyBot();
+        bool step = stepLane();
+        hoverSeg = (inBody && !step) ? segAt(e.pos) : -1;     // no bends on a step lane
+        hoverStep = (inBody && step) ? stepAt(e.pos) : -1;
         if (e.pos.y >= bodyBot())
         {
             float tx = thumbX(), tw = thumbW();
@@ -476,14 +538,56 @@ struct TimelineEditorWidget : OpaqueWidget
         e.consume(this);
     }
 
+    // Up/Down over a node (or a step's flat top) nudges its value: one snap
+    // value when the lane snaps, 0.1 V when it does not. At 39 values over
+    // 0-10 V they are about three pixels apart, so the mouse alone is too coarse.
+    // Keys with modifiers, and keys with nothing under the pointer, pass
+    // through to Rack.
+    void onHoverKey(const HoverKeyEvent& e) override
+    {
+        Timeline* m = module;
+        bool arrow = (e.key == GLFW_KEY_UP || e.key == GLFW_KEY_DOWN);
+        bool press = (e.action == GLFW_PRESS || e.action == GLFW_REPEAT);
+        if (!m || m->locked || !arrow || !press || (e.mods & RACK_MOD_MASK) != 0
+            || dragMode != DRAG_NONE)
+        {
+            OpaqueWidget::onHoverKey(e);
+            return;
+        }
+        const int L = m->currentLane();
+        int target = (hoverNode >= 0) ? hoverNode : hoverStep;
+        timeline_dsp::LaneData ld = m->laneCopy(L);
+        if (target < 0 || target >= ld.count()) { OpaqueWidget::onHoverKey(e); return; }
+        int dir = (e.key == GLFW_KEY_UP) ? 1 : -1;
+        const timeline_dsp::VoltSnap& vs = m->voltSnap[L];
+        double v = ld.v[target];
+        double nv = vs.on() ? vs.value(vs.indexOf(v) + dir)
+                            : tlClamp(std::round(v * 10.0) / 10.0 + 0.1 * dir, -V_MAX, V_MAX);
+        if ((float)nv != ld.v[target])
+        {
+            gestureBefore = ld;
+            ld.v[target] = (float)nv;
+            m->publishLane(L, ld);
+            pushGesture("nudge automation value");
+        }
+        e.consume(this);
+    }
+
     void onButton(const ButtonEvent& e) override
     {
-        if (!module) return;
+        // A LOCAL, checked once, and every lane access goes through it. GCC 15
+        // cannot carry a null check on the `module` MEMBER past an opaque
+        // call, so it invents a null path and reports the lane store's atomic
+        // load as a write "at address zero" (-Wstringop-overflow, Bret's
+        // MinGW build, 2026-11-26). A local cannot change behind its back.
+        Timeline* m = module;
+        if (!m) return;
+        const int L = m->currentLane();   // the lane cannot change mid-handler
         // Locked: freeze the editor against every mouse event (the Tracks
         // rule, and its position — first line, before anything else runs).
         // Deliberately NOT consumed, so the press falls through to the
         // module's own context menu, where Lock Editor can be switched off.
-        if (module->locked) return;
+        if (m->locked) return;
 
         mousePos = e.pos;
         if (e.action != GLFW_PRESS) { OpaqueWidget::onButton(e); return; }
@@ -497,9 +601,9 @@ struct TimelineEditorWidget : OpaqueWidget
             if (hit >= 0)
             {
                 snapshot();
-                timeline_dsp::LaneData ld = module->laneCopy(laneIdx());
+                timeline_dsp::LaneData ld = m->laneCopy(L);
                 ld.erase(hit);
-                module->publishLane(laneIdx(), ld);
+                m->publishLane(L, ld);
                 pushGesture("delete automation node");
             }
             else if (!inRuler && !inPan && bendHandleSeg(e.pos) >= 0)
@@ -507,9 +611,9 @@ struct TimelineEditorWidget : OpaqueWidget
                 // Right-click the bend handle: back to a straight line.
                 snapshot();
                 int seg = bendHandleSeg(e.pos);
-                timeline_dsp::LaneData ld = module->laneCopy(laneIdx());
+                timeline_dsp::LaneData ld = m->laneCopy(L);
                 if (seg < ld.count()) ld.b[seg] = 0.f;
-                module->publishLane(laneIdx(), ld);
+                m->publishLane(L, ld);
                 pushGesture("straighten automation segment");
             }
             else
@@ -555,9 +659,9 @@ struct TimelineEditorWidget : OpaqueWidget
         if (inRuler)
         {
             // The loop handle lives at the loop end when looping is on.
-            if (module->params[Timeline::LOOP_PARAM].getValue() > 0.5f)
+            if (m->params[Timeline::LOOP_PARAM].getValue() > 0.5f)
             {
-                float lx = t2x(module->effectiveLoopEnd());
+                float lx = t2x(m->effectiveLoopEnd());
                 if (std::fabs(lx - e.pos.x) < LOOP_HIT)
                 {
                     chaseHeld = true;          // hold for the gesture only
@@ -570,7 +674,7 @@ struct TimelineEditorWidget : OpaqueWidget
             chaseHeld = true;                  // hold for the gesture only
             dragMode = DRAG_SCRUB;
             dragPos = e.pos;
-            module->engine.seekAll(clampT(x2t(e.pos.x)));   // scrub = global
+            m->engine.seekAll(clampT(x2t(e.pos.x)));   // scrub = global
             e.consume(this);
             return;
         }
@@ -591,17 +695,31 @@ struct TimelineEditorWidget : OpaqueWidget
             }
         }
 
-        // Body: grab an existing node, or add one and keep dragging it.
+        // Body: grab an existing node, or a step's flat top, or add a node
+        // and keep dragging it.
         snapshot();
         int hit = nodeAt(e.pos);
         if (hit < 0)
         {
+            int st = stepAt(e.pos);
+            if (st >= 0)
+            {
+                chaseHeld = true;
+                dragMode = DRAG_STEP;
+                dragNode = st;
+                dragPos = e.pos;
+                e.consume(this);
+                return;
+            }
+        }
+        if (hit < 0)
+        {
             double beat = clampT(applySnap(x2t(e.pos.x)));
-            double volt = y2v(e.pos.y);
-            timeline_dsp::LaneData ld = module->laneCopy(laneIdx());
+            double volt = m->voltSnap[L].snap(y2v(e.pos.y));
+            timeline_dsp::LaneData ld = m->laneCopy(L);
             hit = ld.insert(beat, volt);
             if (hit < 0) { e.consume(this); return; }   // lane full
-            module->publishLane(laneIdx(), ld);
+            m->publishLane(L, ld);
         }
         chaseHeld = true;                      // hold for the gesture only:
                                                // a scroll moving under the
@@ -612,6 +730,36 @@ struct TimelineEditorWidget : OpaqueWidget
         e.consume(this);
     }
 
+    // Double-click a step's flat top: split it with a new node at the
+    // (snapped) beat under the pointer, holding the same value, so nothing
+    // changes until the new right half is moved. Rack delivers the
+    // double-click on the SECOND press, after that press's own onButton,
+    // which has already grabbed the step (DRAG_STEP) and snapshotted the
+    // lane; the split takes over that drag, so double-click-and-drag sets
+    // the new step's value in one gesture, and one undo step covers both.
+    // A split landing on the step's own start node (or the next one) is
+    // refused: it would stack two nodes on one beat.
+    void onDoubleClick(const DoubleClickEvent& e) override
+    {
+        Timeline* m = module;
+        if (!m || m->locked || dragMode != DRAG_STEP) return;
+        const int L = m->currentLane();
+        timeline_dsp::LaneData ld = m->laneCopy(L);
+        int st = dragNode;
+        int n = ld.count();
+        if (!ld.step() || st < 0 || st >= n) return;
+        double beat = clampT(applySnap(x2t(mousePos.x)));
+        bool leadIn = (st == 0 && beat < (double)ld.t[0]);
+        bool inside = beat > (double)ld.t[st] && (st + 1 >= n || beat < (double)ld.t[st + 1]);
+        if (!leadIn && !inside) return;
+        int at = ld.insert(beat, ld.v[st]);
+        if (at < 0) return;                      // lane full
+        m->publishLane(L, ld);
+        dragNode = at;                           // the drag now moves the new half
+        stepSplit = true;
+        e.consume(this);
+    }
+
     void onDragStart(const DragStartEvent& e) override
     {
         OpaqueWidget::onDragStart(e);
@@ -619,7 +767,10 @@ struct TimelineEditorWidget : OpaqueWidget
 
     void onDragMove(const DragMoveEvent& e) override
     {
-        if (!module || dragMode == DRAG_NONE) return;
+        // A checked local, as in onButton (GCC 15's -Wstringop-overflow).
+        Timeline* m = module;
+        if (!m || dragMode == DRAG_NONE) return;
+        const int L = m->currentLane();
         float zoom = getAbsoluteZoom();
         if (zoom <= 0.f) zoom = 1.f;
         dragPos = dragPos.plus(e.mouseDelta.div(zoom));
@@ -635,21 +786,20 @@ struct TimelineEditorWidget : OpaqueWidget
         }
         else if (dragMode == DRAG_SCRUB)
         {
-            module->engine.seekAll(clampT(x2t(dragPos.x)));
+            m->engine.seekAll(clampT(x2t(dragPos.x)));
         }
         else if (dragMode == DRAG_LOOP)
         {
             double end = clampT(applySnap(x2t(dragPos.x)));
             if (end < LOOP_MIN) end = LOOP_MIN;
-            module->loopEndUser = end;
+            m->loopEndUser = end;
         }
         else if (dragMode == DRAG_BEND)
         {
             // Solve the bend so the curve passes through the POINTER: find b
             // with f_b(frac_p) = u_p. f_b is monotone in b for fixed frac, so
             // bisection is exact enough and cannot diverge.
-            int L = laneIdx();
-            timeline_dsp::LaneData ld = module->laneCopy(L);
+            timeline_dsp::LaneData ld = m->laneCopy(L);
             if (dragSeg >= 0 && dragSeg + 1 < ld.count())
             {
                 double t0 = ld.t[dragSeg], t1 = ld.t[dragSeg + 1];
@@ -671,7 +821,14 @@ struct TimelineEditorWidget : OpaqueWidget
                     ld.b[dragSeg] = (float)bend;
                 }
             }
-            module->publishLane(L, ld);
+            m->publishLane(L, ld);
+        }
+        else if (dragMode == DRAG_STEP)
+        {
+            timeline_dsp::LaneData ld = m->laneCopy(L);
+            if (dragNode >= 0 && dragNode < ld.count())
+                ld.v[dragNode] = (float)m->voltSnap[L].snap(y2v(dragPos.y));
+            m->publishLane(L, ld);
         }
         else if (dragMode == DRAG_NODE)
         {
@@ -693,12 +850,11 @@ struct TimelineEditorWidget : OpaqueWidget
                                                   // extent is elastic
                 dragPos.x = tlClamp(dragPos.x, 0.f, box.size.x);
             }
-            int L = laneIdx();
-            timeline_dsp::LaneData ld = module->laneCopy(L);
+            timeline_dsp::LaneData ld = m->laneCopy(L);
             if (dragNode >= 0 && dragNode < ld.count())
             {
                 double beat = clampT(applySnap(x2t(dragPos.x)));
-                double volt = y2v(dragPos.y);
+                double volt = m->voltSnap[L].snap(y2v(dragPos.y));
                 ld.t[dragNode] = (float)beat;
                 ld.v[dragNode] = (float)volt;
                 // Keep the lane sorted; follow the node to its new index.
@@ -706,7 +862,7 @@ struct TimelineEditorWidget : OpaqueWidget
                 int at = ld.indexOf(beat, volt);
                 if (at >= 0) dragNode = at;
             }
-            module->publishLane(L, ld);
+            m->publishLane(L, ld);
         }
         OpaqueWidget::onDragMove(e);
     }
@@ -715,6 +871,8 @@ struct TimelineEditorWidget : OpaqueWidget
     {
         if (dragMode == DRAG_NODE) pushGesture("move automation node");
         if (dragMode == DRAG_BEND) pushGesture("bend automation segment");
+        if (dragMode == DRAG_STEP) pushGesture(stepSplit ? "split automation step" : "move automation step");
+        stepSplit = false;
         dragMode = DRAG_NONE;
         latchedSpan = 0.0;
         chaseHeld = false;                     // the gesture is over
@@ -729,13 +887,40 @@ struct TimelineEditorWidget : OpaqueWidget
         ui::Menu* menu = createMenu();
         menu->addChild(createMenuLabel(string::f("Lane %d", laneIdx() + 1)));
         TimelineEditorWidget* self = this;
+        // The lane's mode. Non-destructive both ways: STEP ignores bends
+        // without erasing them, so switching back to RAMP restores the
+        // curves. One undo step.
+        struct ModeChoice { int mode; const char* label; const char* undo; };
+        static const ModeChoice MODES[2] = {
+            { timeline_dsp::LANE_RAMP, "Ramp (glide between nodes)",   "set automation lane to ramp" },
+            { timeline_dsp::LANE_STEP, "Step (hold until next node)", "set automation lane to step" },
+        };
+        for (int k = 0; k < 2; k++)
+        {
+            const ModeChoice* mc = &MODES[k];
+            menu->addChild(createCheckMenuItem(mc->label, "",
+                [self, mc]() { return self->module && self->module->lane(self->laneIdx()).mode == mc->mode; },
+                [self, mc]() {
+                    if (!self->module) return;
+                    int L = self->laneIdx();
+                    if (self->module->lane(L).mode == mc->mode) return;
+                    self->snapshot();
+                    timeline_dsp::LaneData ld = self->module->laneCopy(L);
+                    ld.mode = mc->mode;
+                    self->module->publishLane(L, ld);
+                    self->pushGesture(mc->undo);
+                }));
+        }
+        menu->addChild(new MenuSeparator);
         menu->addChild(createMenuItem("Clear lane", "", [self]() {
             if (!self->module) return;
             self->snapshot();
             timeline_dsp::LaneData empty;
+            empty.mode = self->module->lane(self->laneIdx()).mode;   // clearing keeps the mode
             self->module->publishLane(self->laneIdx(), empty);
             self->pushGesture("clear automation lane");
         }));
+        if (!stepLane())        // a step lane has no bends to straighten
         menu->addChild(createMenuItem("Straighten lane", "", [self]() {
             if (!self->module) return;
             self->snapshot();
@@ -771,6 +956,7 @@ struct TimelineEditorWidget : OpaqueWidget
 
         updateChase();          // may move `scroll`; must run before anything
                                 // maps beats to pixels
+        updateViewRange();      // likewise for volts to pixels
 
         // Ground.
         nvgBeginPath(vg);
@@ -863,19 +1049,67 @@ struct TimelineEditorWidget : OpaqueWidget
             }
         }
 
-        // Voltage guides: +/-5 V hairlines, 0 V centre.
+        // Voltage guides: hairlines at a step that suits the view (5 V
+        // across +/-10 V, as before; 1 V across 0-5 V), the 0 V line
+        // brighter, and a small volt label on each, since the scale now
+        // changes with the lane.
+        double span = viewHi - viewLo;
+        double vstep = span > 12.0 ? 5.0 : (span > 6.0 ? 2.0 : (span > 2.5 ? 1.0 : 0.5));
+        double g0 = std::ceil(viewLo / vstep - 1e-9) * vstep;
         nvgBeginPath(vg);
-        nvgMoveTo(vg, 0, std::floor(v2y(5.0)) + 0.5f);
-        nvgLineTo(vg, w, std::floor(v2y(5.0)) + 0.5f);
-        nvgMoveTo(vg, 0, std::floor(v2y(-5.0)) + 0.5f);
-        nvgLineTo(vg, w, std::floor(v2y(-5.0)) + 0.5f);
+        for (double g = g0; g <= viewHi + 1e-9; g += vstep)
+        {
+            if (std::fabs(g) < 1e-9) continue;          // 0 V is drawn below
+            float y = std::floor(v2y(g)) + 0.5f;
+            nvgMoveTo(vg, 0, y);
+            nvgLineTo(vg, w, y);
+        }
         nvgStrokeColor(vg, tcol(0xffffff, 0.05f));
         nvgStroke(vg);
-        nvgBeginPath(vg);
-        nvgMoveTo(vg, 0, std::floor(v2y(0.0)) + 0.5f);
-        nvgLineTo(vg, w, std::floor(v2y(0.0)) + 0.5f);
-        nvgStrokeColor(vg, tcol(0xffffff, 0.16f));
-        nvgStroke(vg);
+        if (viewLo <= 0.0 && viewHi >= 0.0)
+        {
+            nvgBeginPath(vg);
+            nvgMoveTo(vg, 0, std::floor(v2y(0.0)) + 0.5f);
+            nvgLineTo(vg, w, std::floor(v2y(0.0)) + 0.5f);
+            nvgStrokeColor(vg, tcol(0xffffff, 0.16f));
+            nvgStroke(vg);
+        }
+        if (font)
+        {
+            nvgFontFaceId(vg, font->handle);
+            nvgFontSize(vg, 7.f);
+            nvgFillColor(vg, tcol(0x8b98a5, 0.6f));
+            nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_BOTTOM);
+            for (double g = g0; g <= viewHi + 1e-9; g += vstep)
+            {
+                char buf[24];
+                std::snprintf(buf, sizeof(buf), "%gV", std::fabs(g) < 1e-9 ? 0.0 : g);
+                float y = v2y(g);
+                if (y - 9.f < top) y = top + 9.f;       // keep the top label inside
+                nvgText(vg, 3.f, y - 1.f, buf, NULL);
+            }
+        }
+
+        // Voltage snap: a faint line at every snap value. Skipped when they
+        // are too dense to read.
+        if (module && vsnap().on())
+        {
+            const timeline_dsp::VoltSnap& vs = vsnap();
+            float pitch = std::fabs(v2y(0.0) - v2y(vs.stepV()));
+            if (pitch >= 4.f)
+            {
+                nvgBeginPath(vg);
+                for (int k = 0; k < vs.count; k++)
+                {
+                    float y = std::floor(v2y(vs.value(k))) + 0.5f;
+                    nvgMoveTo(vg, 0, y);
+                    nvgLineTo(vg, w, y);
+                }
+                nvgStrokeColor(vg, tcol(0x39ff14, 0.07f));
+                nvgStrokeWidth(vg, 1.f);
+                nvgStroke(vg);
+            }
+        }
     }
 
     void drawLoop(NVGcontext* vg, float w, float top, float bot)
@@ -924,6 +1158,13 @@ struct TimelineEditorWidget : OpaqueWidget
             return;
         }
 
+        if (ld.step())
+        {
+            drawSteps(vg, w, ld);
+            nvgRestore(vg);
+            return;
+        }
+
         // The curve: hold before the first node, each segment drawn with its
         // bend (straight segments as single lines, bent ones subdivided),
         // hold after the last.
@@ -962,21 +1203,8 @@ struct TimelineEditorWidget : OpaqueWidget
         nvgLineJoin(vg, NVG_ROUND);
         nvgStroke(vg);
 
-        // Nodes.
-        for (int i = 0; i < n; i++)
-        {
-            float x = t2x(ld.t[i]), y = v2y(ld.v[i]);
-            if (x < -8.f) continue;
-            if (x > w + 8.f) break;
-            bool hot = (i == hoverNode) || (dragMode == DRAG_NODE && i == dragNode);
-            nvgBeginPath(vg);
-            nvgCircle(vg, x, y, NODE_R + (hot ? 1.5f : 0.f));
-            nvgFillColor(vg, hot ? tcol(0xc8ffb0) : tcol(0x39ff14));
-            nvgFill(vg);
-            nvgStrokeColor(vg, tcol(0x0b0d10));
-            nvgStrokeWidth(vg, 1.f);
-            nvgStroke(vg);
-        }
+        drawNodes(vg, w, ld);
+        drawValueTag(vg, w, ld);
 
         // The bend handle: a diamond at the hovered segment's midpoint. A
         // different shape from the round nodes, so it reads as a different
@@ -1011,6 +1239,123 @@ struct TimelineEditorWidget : OpaqueWidget
             }
         }
         nvgRestore(vg);
+    }
+
+    void drawNodes(NVGcontext* vg, float w, const timeline_dsp::LaneData& ld)
+    {
+        int n = ld.count();
+        for (int i = 0; i < n; i++)
+        {
+            float x = t2x(ld.t[i]), y = v2y(ld.v[i]);
+            if (x < -8.f) continue;
+            if (x > w + 8.f) break;
+            bool hot = (i == hoverNode) || (dragMode == DRAG_NODE && i == dragNode)
+                       || (dragMode == DRAG_STEP && i == dragNode);
+            nvgBeginPath(vg);
+            nvgCircle(vg, x, y, NODE_R + (hot ? 1.5f : 0.f));
+            nvgFillColor(vg, hot ? tcol(0xc8ffb0) : tcol(0x39ff14));
+            nvgFill(vg);
+            nvgStrokeColor(vg, tcol(0x0b0d10));
+            nvgStrokeWidth(vg, 1.f);
+            nvgStroke(vg);
+        }
+    }
+
+    // A step lane: a staircase. Each node's value runs flat to the next
+    // node, then rises (or falls) straight to it. Same visible-range culling
+    // as the ramp path. Called inside drawCurve's scissor.
+    void drawSteps(NVGcontext* vg, float w, const timeline_dsp::LaneData& ld)
+    {
+        int n = ld.count();
+        int first = 0;
+        while (first + 1 < n && t2x(ld.t[first + 1]) < 0.f) first++;
+
+        nvgBeginPath(vg);
+        if (first == 0) nvgMoveTo(vg, 0, v2y(ld.v[0]));    // the lead-in hold
+        else            nvgMoveTo(vg, t2x(ld.t[first]), v2y(ld.v[first]));
+        for (int i = first; i + 1 < n; i++)
+        {
+            float x1 = t2x(ld.t[i + 1]);
+            nvgLineTo(vg, x1, v2y(ld.v[i]));
+            nvgLineTo(vg, x1, v2y(ld.v[i + 1]));
+            if (x1 > w) break;
+        }
+        if (t2x(ld.t[n - 1]) < w) nvgLineTo(vg, w, v2y(ld.v[n - 1]));
+        nvgStrokeColor(vg, tcol(0x39ff14));
+        nvgStrokeWidth(vg, 1.5f);
+        nvgLineJoin(vg, NVG_MITER);
+        nvgStroke(vg);
+
+        // The grabbable flat top under the pointer (or being dragged).
+        int st = (dragMode == DRAG_STEP) ? dragNode
+                 : ((module && module->locked) ? -1 : hoverStep);
+        if (st >= 0 && st < n)
+        {
+            float xa = (st == 0) ? 0.f : t2x(ld.t[st]);
+            float xb = (st + 1 < n) ? t2x(ld.t[st + 1]) : w;
+            float y = v2y(ld.v[st]);
+            nvgBeginPath(vg);
+            nvgMoveTo(vg, xa, y);
+            nvgLineTo(vg, xb, y);
+            nvgStrokeColor(vg, tcol(0xc8ffb0));
+            nvgStrokeWidth(vg, 3.f);
+            nvgStroke(vg);
+        }
+
+        drawNodes(vg, w, ld);
+        drawValueTag(vg, w, ld);
+    }
+
+    // The value of the node or step under the pointer (or being dragged):
+    // "12/39 (2.89V)" on a snapping lane, so a preset number can be read off
+    // without counting gridlines, else the volts.
+    void drawValueTag(NVGcontext* vg, float w, const timeline_dsp::LaneData& ld)
+    {
+        if (!module || module->locked) return;
+        int idx = -1;
+        bool atPointer = false;          // a step tag follows the pointer along the step
+        if (dragMode == DRAG_NODE) idx = dragNode;
+        else if (dragMode == DRAG_STEP) { idx = dragNode; atPointer = true; }
+        else if (dragMode == DRAG_NONE)
+        {
+            if (hoverNode >= 0) idx = hoverNode;
+            else if (hoverStep >= 0) { idx = hoverStep; atPointer = true; }
+        }
+        if (idx < 0 || idx >= ld.count()) return;
+
+        const timeline_dsp::VoltSnap& vs = vsnap();
+        char buf[64];
+        // The volts ride along so "1/39" can be seen to be 0 V (Bret read
+        // "1/39" alone as "not reaching zero"). %.3g keeps it short: 0,
+        // 0.263, 9.74, 10.
+        if (vs.on()) std::snprintf(buf, sizeof(buf), "%d/%d (%.3gV)",
+                                   vs.indexOf(ld.v[idx]) + 1, vs.count, (double)ld.v[idx]);
+        else         std::snprintf(buf, sizeof(buf), "%.2f V", (double)ld.v[idx]);
+
+        std::shared_ptr<Font> font =
+            APP->window->loadFont(asset::system("res/fonts/ShareTechMono-Regular.ttf"));
+        if (!font) return;
+        nvgFontFaceId(vg, font->handle);
+        nvgFontSize(vg, 9.f);
+        nvgTextLetterSpacing(vg, 0.f);
+        float bounds[4];
+        nvgTextBounds(vg, 0, 0, buf, NULL, bounds);
+        float tw = bounds[2] - bounds[0] + 6.f, th = 12.f;
+        float px = (dragMode == DRAG_STEP) ? dragPos.x : mousePos.x;
+        float x = (atPointer ? px : t2x(ld.t[idx])) + 8.f;
+        float y = v2y(ld.v[idx]) - th - 4.f;
+        if (x + tw > w) x -= tw + 16.f;                      // flip left at the right edge
+        if (y < bodyTop() + 2.f) y = v2y(ld.v[idx]) + 4.f;   // below, at the top edge
+        nvgBeginPath(vg);
+        nvgRoundedRect(vg, x, y, tw, th, 2.f);
+        nvgFillColor(vg, tcol(0x0e1117, 0.85f));
+        nvgFill(vg);
+        nvgStrokeColor(vg, tcol(0x39ff14, 0.5f));
+        nvgStrokeWidth(vg, 1.f);
+        nvgStroke(vg);
+        nvgFillColor(vg, tcol(0xc8ffb0));
+        nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
+        nvgText(vg, x + 3.f, y + th * 0.5f, buf, NULL);
     }
 
     void drawPlayhead(NVGcontext* vg, float h, float top, float bot)

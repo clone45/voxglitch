@@ -16,7 +16,11 @@ no-use-after-free claims are enforced by the tool.)
 - **engine_test.cpp** — `TimelineEngine`: lane interpolation, the hold rules,
   cursor tracking through forward play and seek-back, the seek serial, loop
   wraps, tempo changes keeping musical position, the LaneData editing
-  primitives, and the guards.
+  primitives, step lanes (hold until the next node, bends ignored, the mode
+  survives clear and copy), voltage snap
+  (both ends reachable, each value selecting its choice under round and
+  floor mappings, clamping, sanitize), the editor's vertical view (the
+  snap range, widened by out-of-range nodes), and the guards.
 - **store_test.cpp** — `LaneStore`: publish swaps the pointer and retires the
   old snapshot; retire-by-generation frees only once the audio generation is
   more than RETIRE_LAG past the swap; the backlog stays bounded under an
@@ -25,7 +29,8 @@ no-use-after-free claims are enforced by the tool.)
   `Recorder` (grid capture at 1/4 and 1/32 on absolute grid lines, take
   start/end on arm+play, poly lane mapping, lane full, ring overflow) and the
   UI-side `TakeAssembler` (passed-over nodes replaced, untouched regions kept,
-  loop-wrap sweep, the RDP simplifier keeping endpoints and bends). Its `Rig`
+  loop-wrap sweep, the RDP simplifier keeping endpoints and bends, and the step-lane
+  simplifier, which drops repeated values instead of running RDP). Its `Rig`
   mirrors the module's process() wiring and the editor's drain — re-sync if
   either changes.
 - **chase_test.cpp** — centred-playhead scrolling: the two phases, zoom,
